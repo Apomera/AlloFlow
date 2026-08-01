@@ -635,9 +635,24 @@ onSpeak: function(formats) {
         ];
 
         var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': t('stem.algebraCAS.algebra_cas_sections', 'Algebra CAS sections') },
-          TABS.map(function(t) {
-            return h('button', { key: t.id, onClick: function() { upd('tab', t.id); },
+          TABS.map(function(t, tabIndex) {
+            return h('button', { key: t.id, id: 'stem-algebracas-tab-' + t.id,
+              onClick: function() { upd('tab', t.id); },
+              onKeyDown: function(e) {
+                var next = tabIndex;
+                if (e.key === 'ArrowRight') next = (tabIndex + 1) % TABS.length;
+                else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + TABS.length) % TABS.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = TABS.length - 1;
+                else return;
+                e.preventDefault();
+                var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+                if (tabs[next]) tabs[next].focus();
+                upd('tab', TABS[next].id);
+              },
               role: 'tab', 'aria-selected': tab === t.id,
+              'aria-controls': 'stem-algebracas-panel-' + t.id,
+              tabIndex: tab === t.id ? 0 : -1,
               style: btnStyle(tab === t.id)
             }, t.label);
           })
@@ -648,7 +663,7 @@ onSpeak: function(formats) {
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '10px' } },
               MODES.map(function(m) {
-                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, style: btnStyle(mode === m.id) }, m.label);
+                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, 'aria-pressed': mode === m.id, style: btnStyle(mode === m.id) }, m.label);
               })
             ),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
@@ -699,7 +714,7 @@ onSpeak: function(formats) {
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.difficulty', 'Difficulty')),
               h('div', { style: { display: 'flex', gap: '4px' } },
                 DIFFICULTIES.map(function(df) {
-                  return h('button', { 'aria-label': t('stem.algebraCAS.problem_type', 'Problem Type'), key: df.id, onClick: function() { updMulti({ difficulty: df.id, practiceQ: null, practiceFeedback: null }); if (df.id === 'advanced') upd('_triedAdvanced', true); }, style: btnStyle(difficulty === df.id) }, df.label);
+                  return h('button', { 'aria-label': t('stem.algebraCAS.problem_type', 'Problem Type'), key: df.id, onClick: function() { updMulti({ difficulty: df.id, practiceQ: null, practiceFeedback: null }); if (df.id === 'advanced') upd('_triedAdvanced', true); }, 'aria-pressed': difficulty === df.id, style: btnStyle(difficulty === df.id) }, df.label);
                 })
               )
             ),
@@ -707,7 +722,7 @@ onSpeak: function(formats) {
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.problem_type_2', 'Problem Type')),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 PROBLEM_TYPES.map(function(pt) {
-                  return h('button', { key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
+                  return h('button', { key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, 'aria-pressed': practiceType === pt.id, style: btnStyle(practiceType === pt.id) }, pt.label);
                 })
               )
             ),
@@ -1017,11 +1032,14 @@ onSpeak: function(formats) {
               )
             );
           })(),
-          tab === 'solve' ? renderSolve() : null,
-          tab === 'practice' ? renderPractice() : null,
-          tab === 'builder' ? renderBuilder() : null,
-          tab === 'scale' ? renderScale() : null,
-          tab === 'tutor' ? renderTutor() : null
+          h('div', { id: 'stem-algebracas-panel-' + tab, role: 'tabpanel',
+            'aria-labelledby': 'stem-algebracas-tab-' + tab, tabIndex: 0 },
+            tab === 'solve' ? renderSolve() : null,
+            tab === 'practice' ? renderPractice() : null,
+            tab === 'builder' ? renderBuilder() : null,
+            tab === 'scale' ? renderScale() : null,
+            tab === 'tutor' ? renderTutor() : null
+          )
         );
       })();
     }
