@@ -1622,6 +1622,7 @@
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('span', { className: 'text-sm font-bold text-indigo-800' }, '\u2696 Compare: ' + sel.name + ' vs'),
                   h('select', {
+                    'aria-label': t('stem.decomposer.compare_material', 'Compare with material'),
                     value: d.compareTo || cmpMat.name,
                     onChange: function(e) {
                       upd('compareTo', e.target.value);
@@ -3043,6 +3044,7 @@
                   }
                 },
                 placeholder: 'Ask about ' + sel.name + '...',
+                'aria-label': 'Ask the Decomposer tutor',
                 className: 'flex-1 px-3 py-2 rounded-xl border border-slate-400 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
               h('button', { onClick: function() {
@@ -3109,6 +3111,7 @@
                   h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most important for decomposition?',
+                  'aria-label': 'Decomposition hypothesis',
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -3119,6 +3122,7 @@
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how temperature, humidity, and oxygen jointly drive decomposition.',
+                  'aria-label': 'Explain decomposition conditions',
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')
               )
