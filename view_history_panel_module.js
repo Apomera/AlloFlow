@@ -576,9 +576,12 @@ function HistoryPanel(props) {
       ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-help-key": "history_move_to_unit_btn",
+          "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
+          "aria-expanded": movingItemId === item.id,
           onClick: () => setMovingItemId(movingItemId === item.id ? null : item.id),
-          className: `p-1 rounded hover:bg-indigo-700 text-indigo-300 transition-colors ${item.unitId ? "text-yellow-400" : ""}`,
+          className: `min-h-11 min-w-11 p-2 rounded hover:bg-indigo-700 text-indigo-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${item.unitId ? "text-yellow-400" : ""}`,
           title: t("history.tooltips.move_to_unit")
         },
         /* @__PURE__ */ React.createElement(FolderInput, { size: 12 })
