@@ -1343,6 +1343,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
                     'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
+                    'aria-label': t('stem.unitconvert.table_value_to_convert', 'Value to convert in unit table'),
                     onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
                     className: 'w-24 text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
@@ -1682,6 +1683,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.unitconvert.hypothesis_what_real_world_examples_sp', 'Hypothesis: What real-world examples span each magnitude band?'),
+                  'aria-label': t('stem.unitconvert.magnitude_hypothesis', 'Magnitude relationship hypothesis'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -1692,6 +1694,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.unitconvert.explain_why_dimensional_reasoning_acro', 'Explain why dimensional reasoning across many OOM is hard.'),
+                  'aria-label': t('stem.unitconvert.magnitude_explanation', 'Explain dimensional reasoning across orders of magnitude'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
               )
