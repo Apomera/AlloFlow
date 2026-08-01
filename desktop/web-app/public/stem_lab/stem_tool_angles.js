@@ -192,6 +192,7 @@ window.StemLab = window.StemLab || {
       var speedActive = d.speedActive || false;
       var speedScore = d.speedScore || 0;
       var speedTimeLeft = d.speedTimeLeft != null ? d.speedTimeLeft : 30;
+      var speedPaused = !!d.speedPaused;
       var speedTarget = d.speedTarget || null;
 
       // Estimate Mode state
@@ -501,19 +502,23 @@ window.StemLab = window.StemLab || {
       // ── Speed Round ──
       var startSpeedRound = function() {
         var target = targetAngles[Math.floor(Math.random() * targetAngles.length)];
-        upd({ speedActive: true, speedScore: 0, speedTimeLeft: 30, speedTarget: { angle: target, type: classifyAngle(target) } });
+        upd({ speedActive: true, speedPaused: false, speedScore: 0, speedTimeLeft: 30, speedTarget: { angle: target, type: classifyAngle(target) } });
         // Drive the countdown from a LOCAL counter + a window score mirror. The captured
         // ctx.toolData is a per-render snapshot, so the old code read a STALE speedTimeLeft
         // (always the pre-round value) \u2014 cur was 0 on the first tick, so the round ended after
         // one second every time. Also track the timer id so the setTimeout chain can't leak or
         // double-run across rounds / unmount.
         window.__anglesSpeedScore = 0;
+        window.__anglesSpeedPaused = false;
         if (window.__anglesSpeedTimer) { clearTimeout(window.__anglesSpeedTimer); }
         var timeLeft = 30;
         var countdown = function() {
+          if (window.__anglesSpeedPaused) { window.__anglesSpeedTimer = null; return; }
           timeLeft -= 1;
           if (timeLeft <= 0) {
             window.__anglesSpeedTimer = null;
+            window.__anglesSpeedResume = null;
+            window.__anglesSpeedAddTime = null;
             var finalScore = window.__anglesSpeedScore || 0;
             upd({ speedActive: false, speedTimeLeft: 0 });
             if (addToast) addToast('\u23F1\uFE0F Time\u2019s up! Score: ' + finalScore, 'info');
@@ -524,8 +529,19 @@ window.StemLab = window.StemLab || {
           if (soundEnabled) sfxTick();
           window.__anglesSpeedTimer = setTimeout(countdown, 1000);
         };
+        window.__anglesSpeedResume = function() { if (!window.__anglesSpeedTimer && !window.__anglesSpeedPaused && timeLeft > 0) window.__anglesSpeedTimer = setTimeout(countdown, 1000); };
+        window.__anglesSpeedAddTime = function(seconds) { if (timeLeft > 0) { timeLeft += seconds; upd('speedTimeLeft', timeLeft); } };
         window.__anglesSpeedTimer = setTimeout(countdown, 1000);
       };
+
+      var toggleSpeedPause = function() {
+        if (!speedActive) return;
+        window.__anglesSpeedPaused = !window.__anglesSpeedPaused;
+        upd('speedPaused', window.__anglesSpeedPaused);
+        if (window.__anglesSpeedPaused) { if (window.__anglesSpeedTimer) clearTimeout(window.__anglesSpeedTimer); window.__anglesSpeedTimer = null; }
+        else if (window.__anglesSpeedResume) window.__anglesSpeedResume();
+      };
+      var extendSpeedRound = function() { if (speedActive && window.__anglesSpeedAddTime) window.__anglesSpeedAddTime(15); };
 
       var answerSpeed = function(cls) {
         if (!speedTarget) return;
@@ -1018,10 +1034,14 @@ window.StemLab = window.StemLab || {
           speedActive && h('div', { className: 'bg-red-50 rounded-xl p-4 border-2 border-red-300 animate-in fade-in' },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'text-sm font-bold text-red-700' }, t('stem.angles.speed_round_3', '\u26A1 Speed Round')),
-              h('div', { className: 'flex gap-3' },
+              h('div', { className: 'flex gap-3 items-center' },
                 h('div', { className: 'text-lg font-bold text-red-600' }, '\u23F1 ' + speedTimeLeft + 's'),
                 h('div', { className: 'text-lg font-bold text-emerald-600' }, '\u2714 ' + speedScore)
               )
+            ),
+            h('div', { className: 'flex gap-2 justify-end mb-2' },
+              h('button', { type: 'button', 'aria-label': speedPaused ? t('stem.angles.resume_speed_round', 'Resume speed round') : t('stem.angles.pause_speed_round', 'Pause speed round'), 'aria-pressed': speedPaused ? 'true' : 'false', onClick: toggleSpeedPause, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-red-700 text-white hover:bg-red-800' }, speedPaused ? t('stem.angles.resume', 'Resume') : t('stem.angles.pause', 'Pause')),
+              h('button', { type: 'button', 'aria-label': t('stem.angles.add_fifteen_seconds', 'Add 15 seconds'), onClick: extendSpeedRound, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, '+15s')
             ),
             speedTarget && h('div', null,
               h('div', { className: 'text-center mb-2' },
@@ -1107,7 +1127,7 @@ window.StemLab = window.StemLab || {
           // Reset
           h('div', { className: 'flex gap-2' },
             h('button', { 'aria-label': t('stem.angles.reset', 'Reset'),
-              onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); upd({ estimateActive: false, speedActive: false, estimateResult: null }); },
+              onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); if (window.__anglesSpeedTimer) { clearTimeout(window.__anglesSpeedTimer); window.__anglesSpeedTimer = null; } window.__anglesSpeedPaused = false; upd({ estimateActive: false, speedActive: false, speedPaused: false, estimateResult: null }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
             }, t('stem.angles.reset_2', '\u21BA Reset'))
           )
@@ -1636,7 +1656,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['n', 'Name', 'Sum interior', 'Each (regular)', 'Each exterior', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -1685,7 +1705,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Degrees', 'Radians', 'sin', 'cos', 'tan', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -1815,7 +1835,7 @@ window.StemLab = window.StemLab || {
             { x: topCx - halfW * Math.cos(thetaRad), y: topCy - halfW * Math.sin(thetaRad) }
           ];
           var pathStr = 'M ' + corners.map(function(c) { return c.x.toFixed(1) + ',' + c.y.toFixed(1); }).join(' L ') + ' Z';
-          return h('svg', { viewBox: '0 0 260 220', width: '100%', style: { height: 'auto', maxWidth: 280, background: 'linear-gradient(180deg,#f0f9ff 0%,#e0f2fe 60%,#bae6fd 100%)', borderRadius: 8 } },
+          return h('svg', { viewBox: '0 0 260 220', width: '100%', role: 'img', 'aria-label': t('stem.angles.angle_diagram', 'Angle diagram showing the current tower or triangle measurements.'), style: { height: 'auto', maxWidth: 280, background: 'linear-gradient(180deg,#f0f9ff 0%,#e0f2fe 60%,#bae6fd 100%)', borderRadius: 8 } },
             // Ground
             h('line', { x1: 5, y1: baseY, x2: 255, y2: baseY, stroke: '#92400e', strokeWidth: 2 }),
             h('rect', { x: 5, y: baseY, width: 250, height: 20, fill: '#fed7aa' }),
@@ -1850,7 +1870,7 @@ window.StemLab = window.StemLab || {
           var rb_x = triLeft + visAdj;
           var rt_x = triLeft;
           var rt_y = triBase - visOpp;
-          return h('svg', { viewBox: '0 0 260 220', width: '100%', style: { height: 'auto', maxWidth: 280, background: '#fafafa', borderRadius: 8, border: '1px solid #e2e8f0' } },
+          return h('svg', { viewBox: '0 0 260 220', width: '100%', role: 'img', 'aria-label': t('stem.angles.angle_diagram', 'Angle diagram showing the current tower or triangle measurements.'), style: { height: 'auto', maxWidth: 280, background: '#fafafa', borderRadius: 8, border: '1px solid #e2e8f0' } },
             // Triangle
             h('polygon', { points: triLeft+','+triBase+' '+rb_x+','+triBase+' '+rt_x+','+rt_y, fill: 'rgba(251,191,36,0.3)', stroke: '#92400e', strokeWidth: 2 }),
             // Right angle marker
@@ -2125,7 +2145,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['a', 'b', 'c', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -2205,7 +2225,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Solid', 'Volume (V)', 'Surface area (SA)', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -2576,7 +2596,7 @@ window.StemLab = window.StemLab || {
                 h('thead', null,
                   h('tr', { className: 'bg-slate-100' },
                     ['Pitch (X:12)', 'Angle', '% slope', 'Notes'].map(function(hh, i) {
-                      return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                      return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
                 ),
@@ -2599,7 +2619,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Use case', 'Grade', 'Angle', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -2674,7 +2694,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Peak', 'Height', 'Range', 'Country', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -2703,7 +2723,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Planet', 'Diameter', 'Distance', 'Day', 'Year', 'Tilt', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -2847,7 +2867,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['City', 'Latitude', 'Longitude', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3015,7 +3035,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Symbol', 'Value', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3041,7 +3061,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Measurement', 'Value', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3088,7 +3108,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Curve', 'Equation', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3131,7 +3151,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Context', 'Angle', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3332,7 +3352,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Name', 'Faces', 'V', 'E', 'Dual', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
