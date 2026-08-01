@@ -2248,7 +2248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ai' + e.ai + ' le' + e.le + ' nov' + e.nov + ' ec' + e.ec + ' → learn ' + e.lg + ' risk ' + e.rk); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.allobotsage.your_hypothesis_when_does_ai_assist_he', 'Your hypothesis (when does AI assist help vs hurt? Where would you draw the line?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.allobotsage.e_g_on_high_novelty_tasks_ai_is_a_brai', 'e.g., on high-novelty tasks AI is a brainstorm partner; on routine work it short-circuits skill...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.allobotsage.e_g_on_high_novelty_tasks_ai_is_a_brai', 'e.g., on high-novelty tasks AI is a brainstorm partner; on routine work it short-circuits skill...'), 'aria-label': t('stem.allobotsage.hypothesis_input', 'AI workload hypothesis'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.allobotsage.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.allobotsage.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -2263,7 +2263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, t('stem.allobotsage.i_can_explain_why_this_ai_effort_novel', 'I can explain why this AI/effort/novelty/cost combo yields this state.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.allobotsage.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.allobotsage.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': t('stem.allobotsage.explanation_input', 'AI workload explanation'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
           h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.allobotsage.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. "Learning gain" is a heuristic; real measures need pre/post assessment, transfer tasks, retention checks. AI assist effects vary by domain (creative vs technical vs reflective).'))
         );
       }
@@ -3817,6 +3817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               key: 'reflection-input',
               defaultValue: '',
               id: 'abs-reflection-textarea',
+              'aria-label': t('stem.allobotsage.run_reflection', 'Run reflection'),
               maxLength: 200,
               rows: 2,
               placeholder: t('stem.allobotsage.e_g_the_bee_flower_question_keeps_trip', 'e.g., "The bee/flower question keeps tripping me up — mutualism = both benefit"'),
