@@ -5051,16 +5051,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         svg = svgSkullCompare();
         caption = 'Tooth shape reveals diet. Dogs have flat-topped molars (can grind plants) and a longer braincase. Cats have only sharp canines + carnassial teeth (slicing only — no grinding) and proportionally larger eye sockets for low-light hunting. Anatomy confirms what biochemistry already shows: cats are obligate carnivores.';
       }
+      var petsDiagramTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        var total = DIAGRAM_TABS.length;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % total;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + total - 1) % total;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = total - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
       return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
         backBar('🔬 Diagrams'),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
           '4 labeled anatomical schematics. Switch tabs to compare different topics covered across the lab.'),
         h('div', { role: 'tablist', 'aria-label': 'Schematic diagrams',
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
-          DIAGRAM_TABS.map(function(t) {
+          DIAGRAM_TABS.map(function(t, tabIndex) {
             var picked = current === t.id;
             return h('button', { key: t.id, role: 'tab',
+              id: 'pets-diagram-tab-' + t.id,
+              'aria-controls': 'pets-diagram-panel-' + t.id,
               'aria-selected': picked ? 'true' : 'false',
+              tabIndex: picked ? 0 : -1,
+              onKeyDown: function(e) { petsDiagramTabKeyDown(e, tabIndex); },
               'data-pets-focusable': true,
               onClick: function() { upd('diagramView', t.id); petsAnnounce(t.label + ' diagram'); },
               style: btn({
@@ -5071,7 +5088,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               })
             }, t.icon + ' ' + t.label);
           })),
-        h('div', { role: 'tabpanel',
+        h('div', { role: 'tabpanel', id: 'pets-diagram-panel-' + current,
+          'aria-labelledby': 'pets-diagram-tab-' + current, tabIndex: 0,
           style: { padding: 12, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('div', { style: { width: '100%', maxWidth: 920, margin: '0 auto', aspectRatio: '600 / 360' } }, svg),
           h('p', { style: { margin: '12px 4px 0', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, caption)),
