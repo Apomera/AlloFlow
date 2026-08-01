@@ -1335,6 +1335,23 @@
           { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' },
           { id: 'decompHunt', label: '\u23F1\uFE0F Decompose', color: 'lime' }
         ];
+        var decomposerTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + TABS.length - 1) % TABS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = TABS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
 
 
         /* ═══════════════════════════════════════════════════
@@ -1401,11 +1418,15 @@
 
           /* ── Tab bar ── */
           h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
-            TABS.map(function(t) {
+            TABS.map(function(t, tabIndex) {
               var active = tab === t.id;
               return h('button', { key: t.id,
+                id: 'stem-decomposer-tab-' + t.id,
                 onClick: function() { upd('tab', t.id); },
                 role: 'tab', 'aria-selected': active,
+                'aria-controls': 'stem-decomposer-panel-' + t.id,
+                tabIndex: active ? 0 : -1,
+                onKeyDown: function(e) { decomposerTabKeyDown(e, tabIndex); },
                 className: 'flex-1 py-2 rounded-lg text-xs font-bold transition-all '
                   + (active
                     ? 'bg-white text-slate-800 shadow-sm'
@@ -1427,6 +1448,8 @@
             };
             var meta = TAB_META[tab] || TAB_META.explore;
             return h('div', {
+              role: 'tabpanel', id: 'stem-decomposer-panel-' + tab,
+              'aria-labelledby': 'stem-decomposer-tab-' + tab, tabIndex: 0,
               className: 'mb-4',
               style: {
                 padding: '12px 14px',
