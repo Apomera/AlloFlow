@@ -3665,6 +3665,21 @@ window.StemLab = window.StemLab || {
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       }
 
+      var PLAYLAB_WORKSPACE_TABS = ['field', 'scout'];
+      function playLabWorkspaceTabKeyDown(e, index) {
+        var key = e.key;
+        if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+        e.preventDefault();
+        var nextIndex = index;
+        if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % PLAYLAB_WORKSPACE_TABS.length;
+        if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + PLAYLAB_WORKSPACE_TABS.length) % PLAYLAB_WORKSPACE_TABS.length;
+        if (key === 'Home') nextIndex = 0;
+        if (key === 'End') nextIndex = PLAYLAB_WORKSPACE_TABS.length - 1;
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      }
+
       function pillBtn(label, sel, onClick, opts) {
         opts = opts || {};
         return h('button', {
@@ -3838,7 +3853,6 @@ window.StemLab = window.StemLab || {
                 upd('sport', sp.id);
                 plAnnounce('Switched to ' + sp.label.replace(/^\S+\s/, '') + ' mode.');
               },
-              'aria-selected': sel,
               'data-pl-focusable': 'true',
               style: playLabChoiceButtonStyle(sel)
             }, sp.label);
@@ -3863,7 +3877,12 @@ window.StemLab = window.StemLab || {
             var sel = workspaceTab === wt.id;
             return h('button', {
               key: 'pl-workspace-' + wt.id,
+              id: 'playlab-workspace-tab-' + wt.id,
               role: 'tab',
+              'aria-controls': 'playlab-workspace-panel-' + wt.id,
+              'aria-selected': sel ? 'true' : 'false',
+              tabIndex: sel ? 0 : -1,
+              onKeyDown: function(e) { playLabWorkspaceTabKeyDown(e, PLAYLAB_WORKSPACE_TABS.indexOf(wt.id)); },
               onClick: function() {
                 upd('workspaceTab', wt.id);
                 plAnnounce(wt.label + ' workspace.');
@@ -3875,6 +3894,13 @@ window.StemLab = window.StemLab || {
             }, wt.label);
           })
         ),
+
+        h('div', {
+          role: 'tabpanel',
+          id: 'playlab-workspace-panel-' + (workspaceTab || 'field'),
+          'aria-labelledby': 'playlab-workspace-tab-' + (workspaceTab || 'field'),
+          tabIndex: 0
+        },
 
         workspaceTab === 'scout' && (function() {
           var SPORT_META = {
@@ -4931,6 +4957,7 @@ window.StemLab = window.StemLab || {
               h('span', null, 'Coverages seen: ' + Object.keys(d.coveragesViewed || {}).length + ' / ' + COVERAGES.length)
             )
           )
+        )
         )
         )
       );
