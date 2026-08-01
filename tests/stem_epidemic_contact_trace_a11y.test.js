@@ -70,7 +70,7 @@ describe('Contact Tracing keyboard access', () => {
     const html = renderTrace();
     // Exactly one person (B) is traceable from the seeded state, so exactly one
     // tabbable node should exist.
-    expect((html.match(/tabindex="0"/g) || []).length).toBe(1);
+    expect((html.match(/role="button"[^>]*tabindex="0"/g) || []).length).toBe(1);
   });
 
   it('the graph itself is announced with its progress', () => {
@@ -80,7 +80,7 @@ describe('Contact Tracing keyboard access', () => {
 
   it('a completed trace exposes no stale button affordances', () => {
     const html = renderTrace({ ctRevealed: [0, 1], ctComplete: true });
-    expect((html.match(/tabindex="0"/g) || []).length).toBe(0);
+    expect((html.match(/role="button"[^>]*tabindex="0"/g) || []).length).toBe(0);
   });
 });
 

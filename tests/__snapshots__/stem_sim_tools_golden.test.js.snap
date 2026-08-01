@@ -161,10 +161,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for epide
   "buttons": 21,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 448,
+  "lengthBucket": 452,
   "paths": 6,
   "selects": 0,
-  "sha": "0586337d3c2ee78e",
+  "sha": "fb8f9bdc2423e824",
   "svgs": 1,
 }
 `;

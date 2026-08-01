@@ -1796,6 +1796,20 @@ window.StemLab = window.StemLab || {
       // ═══════════════════════════════════════════════════════
 
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
+      var epiTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % visibleSubtools.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + visibleSubtools.length - 1) % visibleSubtools.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = visibleSubtools.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
 
       return h('div', { className: 'space-y-4', 'data-epidemic-tool': 'true' },
 
@@ -1882,7 +1896,7 @@ window.StemLab = window.StemLab || {
         ),
 
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
-          visibleSubtools.map(function(st) {
+          visibleSubtools.map(function(st, tabIndex) {
             var active = tab === st.id;
             // Every one of these 13 tabs carried the same hardcoded aria-label
             // ("Select intervention strategy"), which overrides the visible text — so a
@@ -1890,6 +1904,10 @@ window.StemLab = window.StemLab || {
             // tell SIR from History. The name now matches what is on screen (WCAG 2.5.3).
             return h('button', { 'aria-label': st.label,
               key: st.id,
+              id: 'stem-epidemic-tab-' + st.id,
+              'aria-controls': 'stem-epidemic-panel-' + st.id,
+              tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) { epiTabKeyDown(e, tabIndex); },
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-400'),
               role: 'tab', 'aria-selected': active
@@ -1917,6 +1935,8 @@ window.StemLab = window.StemLab || {
           };
           var meta = TAB_META[tab] || TAB_META.sir;
           return h('div', {
+            role: 'tabpanel', id: 'stem-epidemic-panel-' + tab,
+            'aria-labelledby': 'stem-epidemic-tab-' + tab, tabIndex: 0,
             style: {
               padding: '12px 14px',
               borderRadius: 12,
