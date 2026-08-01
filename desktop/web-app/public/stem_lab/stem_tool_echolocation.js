@@ -4514,6 +4514,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var soundmapLoading = d.soundmapLoading || false;
 
       function renderEcologyTab() {
+        var ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics', 'soundmap'];
+        var ecologyTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECOLOGY_SECTION_IDS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ECOLOGY_SECTION_IDS.length - 1) % ECOLOGY_SECTION_IDS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = ECOLOGY_SECTION_IDS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         return h('div', { className: 'space-y-4' },
           // Sub-tabs
           h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': t('stem.echolocation.ecology_sections', 'Ecology sections') },
@@ -4524,21 +4542,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ].map(function(s, si) {
               var active = ecoSection === s.id;
               return h('button', {
-                key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                key: s.id, id: 'echolocation-ecology-tab-' + s.id, role: 'tab',
+                'aria-selected': active ? 'true' : 'false', 'aria-controls': 'echolocation-ecology-panel-' + s.id,
                 tabIndex: active ? 0 : -1,
                 'aria-label': s.label + ' section',
                 onClick: function() { upd('ecoSection', s.id); },
-                onKeyDown: function(e) {
-                  var sections = ['soundscape', 'bioacoustics', 'soundmap'];
-                  if (e.key === 'ArrowRight') { e.preventDefault(); upd('ecoSection', sections[(si + 1) % 3]); }
-                  if (e.key === 'ArrowLeft') { e.preventDefault(); upd('ecoSection', sections[(si + 2) % 3]); }
-                },
+                onKeyDown: function(e) { ecologyTabKeyDown(e, si); },
                 className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
                   (active ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-indigo-900/40 text-indigo-300 hover:bg-indigo-800/50' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'))
               }, h('span', { 'aria-hidden': 'true' }, s.icon), ' ', s.label);
             })
           ),
 
+          h('div', { role: 'tabpanel', id: 'echolocation-ecology-panel-' + ecoSection,
+            'aria-labelledby': 'echolocation-ecology-tab-' + ecoSection, tabIndex: 0 },
           // SOUNDSCAPE
           ecoSection === 'soundscape' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
@@ -4939,6 +4956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'mt-2 text-[11px] ' + (isDark ? 'text-red-200' : 'text-red-700') },
                 h('strong', null, t('stem.echolocation.how_you_can_help', 'How you can help: ')), t('stem.echolocation.support_quiet_zone_designations_in_nat', 'Support quiet zone designations in natural areas. Advocate for electric vehicles and quieter construction equipment. Even small actions like turning off leaf blowers and reducing nighttime lighting make a difference for nocturnal animals like bats.'))
             )
+          )
           )
         );
       }
