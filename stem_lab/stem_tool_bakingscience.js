@@ -2236,6 +2236,8 @@
                     var active = iq.moisture === m;
                     return h('button', { key: m,
                       onClick: function() { setIQ({ moisture: m }); },
+                      'aria-pressed': active,
+                      'aria-label': m === 'dry' ? __alloT('stem.bakingscience.moisture_dry', 'Dry moisture') : __alloT('stem.bakingscience.moisture_wet', 'Wet moisture'),
                       className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-amber-50') }, m);
                   })))
             ),
@@ -2292,7 +2294,8 @@
               iq.understood && h('textarea', { value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: __alloT('stem.bakingscience.explain_in_your_own_words_how_do_tempe', 'Explain in your own words: how do temperature, time, and moisture interact? What makes perfect caramel hard?'),
-                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4,
+                'aria-label': __alloT('stem.bakingscience.explanation_input', 'Baking science explanation') }),
               iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
                 __alloT('stem.bakingscience.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
             ),
