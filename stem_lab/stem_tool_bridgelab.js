@@ -4822,7 +4822,7 @@
                 h('input', { type: 'checkbox', id: 'iq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
                 h('label', { htmlFor: 'iq-und', style: { fontSize: 12, fontWeight: 700, color: '#10b981', cursor: 'pointer' } },
                   __alloT('stem.bridgelab.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
-              iq.understood && h('textarea', { value: iq.explanation || '',
+              iq.understood && h('textarea', { 'aria-label': __alloT('stem.bridgelab.explanation_input', 'Bridge design explanation'), value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: __alloT('stem.bridgelab.explain_in_your_own_words_how_do_span_', 'Explain in your own words: how do span, cross-section area, and material strength interact to determine load-bearing capacity? Which one matters most? What is the trade-off a real engineer faces?'),
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' }, rows: 4 }),
