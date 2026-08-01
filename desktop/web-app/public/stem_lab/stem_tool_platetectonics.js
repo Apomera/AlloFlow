@@ -22638,7 +22638,7 @@ var d = labToolData.plateTectonics || {};
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ bt: iq.btype, f: iq.force, fr: iq.friction, st: failure }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.platetectonics.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ btype: 'convergent', force: 50, friction: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.platetectonics.reset', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.platetectonics.hypothesis_when_does_friction_make_a_f', 'Hypothesis: When does friction make a fault stable?'),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': __alloT('stem.platetectonics.hypothesis_input', 'Fault stability hypothesis'), placeholder: __alloT('stem.platetectonics.hypothesis_when_does_friction_make_a_f', 'Hypothesis: When does friction make a fault stable?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.platetectonics.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -22649,7 +22649,7 @@ var d = labToolData.plateTectonics || {};
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     __alloT('stem.platetectonics.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.platetectonics.explain_why_each_boundary_type_fails_d', 'Explain why each boundary type fails differently.'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': __alloT('stem.platetectonics.explanation_input', 'Plate boundary explanation'), placeholder: __alloT('stem.platetectonics.explain_why_each_boundary_type_fails_d', 'Explain why each boundary type fails differently.'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.platetectonics.design_note_discrete_4_state_outcome_n', 'Design note: discrete 4-state outcome; no Richter score; no reveal — by design.'))
               );
