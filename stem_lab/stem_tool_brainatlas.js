@@ -8708,7 +8708,7 @@ var d = labToolData.brainAtlas || {};
                     );
                   })
                 ),
-                React.createElement('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                React.createElement('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', role: 'img', 'aria-label': t('stem.brainatlas.neurotransmitter_levels_chart', 'Neurotransmitter levels chart'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                   React.createElement('line', { x1: 30, y1: 110, x2: 310, y2: 110, stroke: '#1e293b' }),
                   nts.map(function(nt, i) {
                     var x = 50 + i * 55;
@@ -8740,8 +8740,8 @@ var d = labToolData.brainAtlas || {};
                 iq.log.length > 0 && React.createElement('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return React.createElement('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 DA' + e.da + ' 5HT' + e.sh + ' GABA' + e.ga + ' Glu' + e.glu + ' NE' + e.ne); })
                 ),
-                React.createElement('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.brainatlas.your_hypothesis_which_two_neurotransmi', 'Your hypothesis (which two neurotransmitters most strongly trade off in shaping affect?)')),
-                React.createElement('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.e_g_gaba_and_glutamate_are_functional_', 'e.g., GABA and glutamate are functional opposites (inhibitory vs excitatory)...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement('label', { htmlFor: 'brainatlas-nt-hypothesis', className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.brainatlas.your_hypothesis_which_two_neurotransmi', 'Your hypothesis (which two neurotransmitters most strongly trade off in shaping affect?)')),
+                React.createElement('textarea', { id: 'brainatlas-nt-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.e_g_gaba_and_glutamate_are_functional_', 'e.g., GABA and glutamate are functional opposites (inhibitory vs excitatory)...'), className: 'w-full p-1.5 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
                 !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[10px] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.brainatlas.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded text-[10px] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   React.createElement('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.brainatlas.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -8756,7 +8756,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   React.createElement('span', null, t('stem.brainatlas.i_can_explain_why_this_nt_profile_is_a', 'I can explain why this NT profile is associated with this functional state.'))
                 ),
-                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                iq.understood && React.createElement(React.Fragment, null, React.createElement('label', { htmlFor: 'brainatlas-nt-explanation', className: 'block text-[10px] font-bold opacity-85 mb-1' }, t('stem.brainatlas.explanation_label', 'Explain your prediction')), React.createElement('textarea', { id: 'brainatlas-nt-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.brainatlas.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })),
                 React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.brainatlas.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Mapping from neurotransmitter levels to felt states is a teaching heuristic, NOT a clinical model. The "chemical imbalance" theory of mood disorders is contested; receptor sensitivity, network dynamics, and lifecycle/context matter at least as much.'))
               );
             })(),
