@@ -1877,10 +1877,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', { role: 'tablist', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_sections', 'Kitchen Lab sections'),
           style: { display: 'flex', flexWrap: 'wrap', gap: 0, padding: '0 16px',
             borderBottom: '1px solid rgba(251,146,60,0.25)', position: 'relative', zIndex: 1 } },
-          TABS.map(function(t) {
+          TABS.map(function(t, tabIndex) {
             var active = section === t.id;
             return h('button', {
               key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              id: 'stem-kitchen-tab-' + t.id,
+              'aria-controls': 'stem-kitchen-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) {
+                var nextIndex = -1;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (tabIndex + 1) % TABS.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (tabIndex + TABS.length - 1) % TABS.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = TABS.length - 1;
+                if (nextIndex < 0) return;
+                e.preventDefault();
+                var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+                var nextTab = tabs[nextIndex];
+                if (nextTab) { nextTab.focus(); nextTab.click(); }
+              },
               onClick: function() { setSection(t.id); awardXP(2); },
               style: {
                 padding: '10px 16px',
@@ -4052,16 +4067,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           { id: 'troubleshoot', label: __alloT('stem.kitchenlab.troubleshooter', 'Troubleshooter'), icon: '🩺', count: TROUBLESHOOTING.length },
           { id: 'sources', label: __alloT('stem.kitchenlab.sources', 'Sources'), icon: '📜' }
         ];
-        return h('div', null,
+        var resourceTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % SUBS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + SUBS.length - 1) % SUBS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = SUBS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        };
+        return h('div', { role: 'tabpanel', id: 'stem-kitchen-resources-panel-' + sub, 'aria-labelledby': 'stem-kitchen-tab-resources', tabIndex: 0 },
           panelHeader('📚 Resources & Glossary',
             'Reference material — terms, conversions, smoke points, substitutions, troubleshooting. The "lookup" half of Kitchen Lab. Bookmark this section.'),
 
           // Sub-tab strip
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.kitchenlab.resources_sub_sections', 'Resources sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
-            SUBS.map(function(s) {
+            SUBS.map(function(s, subIndex) {
               var active = sub === s.id;
               return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                id: 'stem-kitchen-resource-tab-' + s.id,
+                'aria-controls': 'stem-kitchen-resources-panel-' + s.id,
+                tabIndex: active ? 0 : -1,
+                onKeyDown: function(e) { resourceTabKeyDown(e, subIndex); },
                 onClick: function() { setKL({ resourcesSub: s.id }); awardXP(1); },
                 style: { padding: '8px 12px',
                   background: active ? 'rgba(251,146,60,0.25)' : 'rgba(15,23,42,0.5)',
@@ -4303,7 +4334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       return h('div', { id: 'kitchen-lab-region', tabIndex: -1, style: rootStyle, role: 'region', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_2', 'Kitchen Lab') },
         renderHeader(),
         renderTabs(),
-        h('div', { style: { padding: 20 } }, content),
+        h('div', { role: 'tabpanel', id: 'stem-kitchen-panel-' + section, 'aria-labelledby': 'stem-kitchen-tab-' + section, tabIndex: 0, style: { padding: 20 } }, content),
         d.pendingConfirmation ? renderConfirmationDialog() : null
       );
     }
