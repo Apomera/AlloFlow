@@ -2289,6 +2289,14 @@
             try { var el = document.getElementById('allo-live-lumen'); if (el) el.textContent = msg; } catch (e2) { }
             try { if (ctx.announceToSR) ctx.announceToSR(msg); } catch (e3) { }
           };
+          var requestLumenConfirm = function (message, options, unavailable) {
+            var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+            var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+            if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') { announce(unavailable); return Promise.resolve(false); }
+            try {
+              return Promise.resolve(confirmApi(message, options || {})).then(function (ok) { return !!ok; }).catch(function () { announce(unavailable); return false; });
+            } catch (e) { announce(unavailable); return Promise.resolve(false); }
+          };
           var mode = d.mode || 'home';
           var modeButton = function (target, title, description, accent, icon) {
             return h('button', {
@@ -2456,24 +2464,22 @@
               setTimeout(function () { try { URL.revokeObjectURL(url); } catch (eR) { } }, 1000);
             } catch (eD) { upd('exportMsg', 'Export failed: ' + (eD && eD.message)); }
           };
-          var exportHtml = function () {
+          var exportHtml = async function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
             var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             // Same FERPA consent as the CSV: the brief embeds the per-row table ONLY on explicit opt-in.
-            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
-              !window.confirm('This brief will embed the full identifiable per-student data table. Export it?')) return;
+            if (d.includePII && !(await requestLumenConfirm('This brief will embed the full identifiable per-student data table. Export it?', { title: 'Confirm identifiable brief export', detail: 'The export includes the full per-student table.', confirmText: 'Export brief', cancelText: 'Cancel', tone: 'warning' }, 'Brief export cancelled because confirmation is unavailable.'))) return;
             var out = buildExportHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII });
             download(out.filename, out.html, 'text/html');
             upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
           };
-          var exportCsv = function () {
+          var exportCsv = async function () {
             if (!claim) return;
             var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
-            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
-              !window.confirm('This CSV contains identifiable student data. Export it?')) return;
+            if (d.includePII && !(await requestLumenConfirm('This CSV contains identifiable student data. Export it?', { title: 'Confirm identifiable CSV export', detail: 'The CSV includes the full per-student table.', confirmText: 'Export CSV', cancelText: 'Cancel', tone: 'warning' }, 'CSV export cancelled because confirmation is unavailable.'))) return;
             var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
             download(out.filename, out.csv, 'text/csv');
             upd('exportMsg', 'Exported ' + out.filename + '.');
@@ -2482,13 +2488,12 @@
           // rendered DOM — byte-faithful band/glyphs/watermark, no re-draw). Same
           // export gate + FERPA opt-in as the brief. Falls back to an honest "open
           // Present mode to capture the chart" note if no SVG node is reachable.
-          var exportPresentation = function () {
+          var exportPresentation = async function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
             var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
-            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
-              !window.confirm('This presentation will embed the full identifiable per-student data table. Export it?')) return;
+            if (d.includePII && !(await requestLumenConfirm('This presentation will embed the full identifiable per-student data table. Export it?', { title: 'Confirm identifiable presentation export', detail: 'The presentation includes the full per-student table.', confirmText: 'Export presentation', cancelText: 'Cancel', tone: 'warning' }, 'Presentation export cancelled because confirmation is unavailable.'))) return;
             var svgStr = '';
             try {
               var node = (typeof document !== 'undefined' && document.getElementById)
@@ -2741,8 +2746,8 @@
             (obs.length ? h('button', {
               key: 'clearBtn', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
               title: __alloT('stem.lumen.clear_all_tooltip', 'Remove every data point and start fresh.'),
-              onClick: function () {
-                if (typeof window !== 'undefined' && window.confirm && !window.confirm('Remove all ' + obs.length + ' data points? This cannot be undone.')) return;
+              onClick: async function () {
+                if (!(await requestLumenConfirm('Remove all ' + obs.length + ' data points? This cannot be undone.', { title: 'Clear all data points', detail: 'Every observation in this Lumen workspace will be removed.', confirmText: 'Clear all data', cancelText: 'Keep data', tone: 'warning' }, 'Data clearing is unavailable because confirmation could not open.'))) return;
                 setObservations([], 'All data cleared.');
               }
             }, __alloT('stem.lumen.clear_all', '🗑 Clear all')) : null),
