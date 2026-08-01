@@ -5549,10 +5549,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function renderCareer() {
         var carView = d.carView || 'overview';
+        var CAREER_TAB_IDS = ['overview', 'ase', 'pathway'];
+        function careerTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % CAREER_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + CAREER_TAB_IDS.length) % CAREER_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = CAREER_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
         function tabBtn(id, label) {
           var active = carView === id;
           return h('button', { 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-career-tab-' + id,
+            'aria-controls': 'autorepair-career-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { careerTabKeyDown(e, CAREER_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('carView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
         }
@@ -5633,10 +5651,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tabBtn('ase', 'ASE areas'),
             tabBtn('pathway', 'Pathway')
           ),
-          carView === 'overview' && overview(),
-          carView === 'ase' && ase(),
-          carView === 'pathway' && pathway(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'autorepair-career-panel-' + carView,
+            'aria-labelledby': 'autorepair-career-tab-' + carView,
+            tabIndex: 0
+          },
+            carView === 'overview' && overview(),
+            carView === 'ase' && ase(),
+            carView === 'pathway' && pathway(),
+            disclaimerFooter()
+          )
         );
       }
 
