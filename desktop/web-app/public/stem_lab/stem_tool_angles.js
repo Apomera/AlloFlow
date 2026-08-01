@@ -641,10 +641,27 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Tab Button Helper ──
       // ══════════════════════════════════════════════════════════════
+      var ANGLE_TAB_ORDER = ['explore', 'challenges', 'reference', 'tools'];
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
+        var tabIndex = ANGLE_TAB_ORDER.indexOf(id);
+        return h('button', { id: 'stem-angles-tab-' + id,
+          onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
+          onKeyDown: function(e) {
+            var next = tabIndex;
+            if (e.key === 'ArrowRight') next = (tabIndex + 1) % ANGLE_TAB_ORDER.length;
+            else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + ANGLE_TAB_ORDER.length) % ANGLE_TAB_ORDER.length;
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = ANGLE_TAB_ORDER.length - 1;
+            else return;
+            e.preventDefault();
+            var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+            if (tabs[next]) tabs[next].focus();
+            upd('activeTab', ANGLE_TAB_ORDER[next]);
+          },
           role: 'tab', 'aria-selected': active,
+          'aria-controls': 'stem-angles-panel-' + id,
+          tabIndex: active ? 0 : -1,
           className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
             (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-600')
         }, icon + ' ' + label);
@@ -792,7 +809,9 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Explore ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'explore' && h('div', { className: 'space-y-3' },
+        h('div', { id: 'stem-angles-panel-' + activeTab, role: 'tabpanel',
+          'aria-labelledby': 'stem-angles-tab-' + activeTab, tabIndex: 0 },
+          activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
             h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', 'data-protractor-svg': true },
@@ -1318,6 +1337,8 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Coach tip (always visible) ──
+        ),
+
         h('div', { className: 'bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-700 leading-relaxed' },
           streak >= 10 ? '\uD83D\uDD25 Incredible ' + streak + '-streak! You\u2019re an angle genius!'
             : streak >= 5 ? '\u26A1 ' + streak + ' in a row! Keep the streak alive!'
