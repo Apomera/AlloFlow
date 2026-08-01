@@ -1975,6 +1975,19 @@ window.StemLab = window.StemLab || {
             );
           };
 
+          var numberlineTabKeyDown = function(e, index) {
+            var nextIndex = -1;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + tabs.length - 1) % tabs.length;
+            else if (e.key === 'Home') nextIndex = 0;
+            else if (e.key === 'End') nextIndex = tabs.length - 1;
+            if (nextIndex < 0) return;
+            e.preventDefault();
+            var tabNodes = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+            var nextTab = tabNodes[nextIndex];
+            if (nextTab) { nextTab.focus(); nextTab.click(); }
+          };
+
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -2005,10 +2018,12 @@ window.StemLab = window.StemLab || {
 
             // Tab bar
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections') },
-              tabs.map(function(t2) {
-                return h('button', { key: t2.id,
+              tabs.map(function(t2, tabIndex) {
+                return h('button', { key: t2.id, id: 'numberline-tab-' + t2.id,
+                  'aria-controls': 'numberline-panel-' + t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
-                  role: 'tab', 'aria-selected': tab === t2.id,
+                  onKeyDown: function(e) { numberlineTabKeyDown(e, tabIndex); },
+                  role: 'tab', 'aria-selected': tab === t2.id, tabIndex: tab === t2.id ? 0 : -1,
                   className: 'min-h-[42px] py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
                     (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-500 hover:text-blue-700')
                 }, t2.icon + ' ' + t2.label);
@@ -2025,7 +2040,8 @@ window.StemLab = window.StemLab || {
                 magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
-              return h('div', {
+              return h('div', { role: 'tabpanel', id: 'numberline-panel-' + tab,
+                'aria-labelledby': 'numberline-tab-' + tab, tabIndex: 0,
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
