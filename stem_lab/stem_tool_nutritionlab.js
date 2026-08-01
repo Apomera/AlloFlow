@@ -101,6 +101,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     try { var lr = document.getElementById('allo-live-nutritionlab'); if (lr) lr.textContent = msg; } catch (_) {}
   };
 
+  function nutritionDialogNotice(message) {
+    announce(message);
+    try { if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'warning'); } catch (e) {}
+  }
+  function requestNutritionText(message, defaultValue, options, unavailable) {
+    var promptModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+    var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+    if (typeof promptModule !== 'function' || typeof promptApi !== 'function') { nutritionDialogNotice(unavailable); return Promise.resolve(null); }
+    try {
+      return Promise.resolve(promptApi(message, defaultValue == null ? '' : String(defaultValue), options || {})).catch(function() { nutritionDialogNotice(unavailable); return null; });
+    } catch (e) { nutritionDialogNotice(unavailable); return Promise.resolve(null); }
+  }
   // localStorage helpers
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
@@ -5593,7 +5605,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   nlH('strong', { style: { fontSize: 12, color: q.status === 'asked' ? '#166534' : '#7f1d1d' } }, (q.status === 'asked' ? '✓ ' : '⌛ ') + (q.topic ? '[' + q.topic + '] ' : '') + q.question),
                   nlH('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                 ),
-                q.status === 'asked' && q.answer ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4, fontStyle: 'italic' } }, '💬 ' + q.answer) : nlBtn({ onClick: function() { var ans = prompt('Coach said:'); if (ans) markAsked(q.id, ans); }, variant: 'secondary' }, 'Mark asked + record answer')
+                q.status === 'asked' && q.answer ? nlH('div', { style: { fontSize: 11, color: '#166534', marginTop: 4, fontStyle: 'italic' } }, '💬 ' + q.answer) : nlBtn({ onClick: function() {
+                requestNutritionText('Coach said:', '', {
+                  title: 'Record coach answer',
+                  placeholder: 'What did the coach say?',
+                  confirmText: 'Record answer',
+                  cancelText: 'Cancel',
+                  multiline: true,
+                  maxLength: 500
+                }, 'Answer entry is unavailable, so the question was not marked asked.').then(function(ans) {
+                  if (ans !== null && String(ans).trim()) markAsked(q.id, String(ans).trim());
+                });
+              }, variant: 'secondary' }, 'Mark asked + record answer')
               );
             })
           ),
@@ -10835,8 +10858,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     }
     function remove(id) { setData({ questions: questions.filter(function(q) { return q.id !== id; }) }); }
     function markAnswered(id) {
-      var ans = prompt('Answer:');
-      if (ans) setData({ questions: questions.map(function(q) { return q.id === id ? Object.assign({}, q, { answered: true, answer: ans }) : q; }) });
+      requestNutritionText('Answer:', '', {
+        title: 'Record nutrition answer',
+        placeholder: 'Write the answer you received',
+        confirmText: 'Save answer',
+        cancelText: 'Cancel',
+        multiline: true,
+        maxLength: 500
+      }, 'Answer entry is unavailable, so the question was not marked answered.').then(function(ans) {
+        if (ans !== null && String(ans).trim()) setData({ questions: questions.map(function(q) { return q.id === id ? Object.assign({}, q, { answered: true, answer: String(ans).trim() }) : q; }) });
+      });
     }
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Nutrition Questions', 'Save questions to ask doctors/RDs/parents/teachers', '#0ea5e9'),
