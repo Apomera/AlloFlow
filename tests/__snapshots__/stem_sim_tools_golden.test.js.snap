@@ -148,10 +148,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for echol
   "buttons": 10,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 47,
+  "lengthBucket": 50,
   "paths": 0,
   "selects": 0,
-  "sha": "c5fdcd7f70bddaeb",
+  "sha": "8282eace37f607df",
   "svgs": 0,
 }
 `;

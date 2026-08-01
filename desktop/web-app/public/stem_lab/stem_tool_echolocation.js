@@ -5152,7 +5152,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           TABS.map(function(tb, ti) {
             var active = tab === tb.id;
             return h('button', {
-              key: tb.id, role: 'tab',
+              key: tb.id, role: 'tab', id: 'echolocation-tab-' + tb.id,
+              'aria-controls': 'echolocation-panel-' + tb.id,
               'aria-selected': active ? 'true' : 'false',
               tabIndex: active ? 0 : -1,
               'aria-label': tb.label + ' tab',
@@ -5161,6 +5162,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var nextIdx = ti;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextIdx = (ti + 1) % TABS.length; }
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); nextIdx = (ti - 1 + TABS.length) % TABS.length; }
+                else if (e.key === 'Home') { e.preventDefault(); nextIdx = 0; }
+                else if (e.key === 'End') { e.preventDefault(); nextIdx = TABS.length - 1; }
                 else return;
                 upd('tab', TABS[nextIdx].id);
               },
@@ -5184,7 +5187,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             sweepHunt: { accent: '#22d3ee', soft: 'rgba(34,211,238,0.10)', icon: '🎯', title: t('stem.echolocation.sweep_discovery_tune_the_chirp', 'Sweep Discovery — tune the chirp'), hint: t('stem.echolocation.adjust_call_frequency_duration_and_ban', 'Adjust call frequency, duration, and bandwidth and watch how detection range trades off against resolution. An open exploration — no score, no single right answer.') }
           };
           var meta = TAB_META[tab] || TAB_META.sonar;
-          return h('div', {
+          return h('div', { role: 'tabpanel', id: 'echolocation-panel-' + tab,
+            'aria-labelledby': 'echolocation-tab-' + tab, tabIndex: 0,
             style: {
               margin: '0 0 12px',
               padding: '12px 14px',
