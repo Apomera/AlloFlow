@@ -13903,8 +13903,9 @@ Keep it encouraging and professional. Under 300 words.`;
 
                 // User response area
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 block' }, tt('behavior_lens.ui.your_response', 'Your Response')),
+                    h('label', { htmlFor: 'behavior-lens-case-response-' + phase.id, className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 block' }, tt('behavior_lens.ui.your_response', 'Your Response')),
                     h('textarea', {
+                        id: 'behavior-lens-case-response-' + phase.id,
                         value: userResponses[phase.id] || '',
                         onChange: (e) => setUserResponses(prev => ({ ...prev, [phase.id]: e.target.value })),
                         placeholder: tt('behavior_lens.ph.type_your_response_here_be_thorough_and_use_profes', 'Type your response here. Be thorough and use professional language...'),
@@ -14020,6 +14021,7 @@ Keep it encouraging and professional. Under 300 words.`;
                     value: customPrompt,
                     onChange: (e) => setCustomPrompt(e.target.value),
                     placeholder: tt('behavior_lens.ph.describe_the_scenario_you_want_to_practice_with', 'Describe the scenario you want to practice with...'),
+                    'aria-label': tt('behavior_lens.ui.custom_case_scenario', 'Custom case scenario'),
                     rows: 3,
                     className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300'
                 })
