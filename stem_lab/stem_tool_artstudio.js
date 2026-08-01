@@ -121,6 +121,24 @@ const d = labToolData.artStudio || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
 
           const tab = d.tab || 'colorWheel';
+          const ART_STUDIO_TAB_ORDER = ['colorWheel', 'mixer', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
+          const artStudioTabKeyDown = function (e, index) {
+            let nextIndex = -1;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ART_STUDIO_TAB_ORDER.length;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ART_STUDIO_TAB_ORDER.length - 1) % ART_STUDIO_TAB_ORDER.length;
+            else if (e.key === 'Home') nextIndex = 0;
+            else if (e.key === 'End') nextIndex = ART_STUDIO_TAB_ORDER.length - 1;
+            if (nextIndex < 0) return;
+            e.preventDefault();
+            const tabs = e.currentTarget && e.currentTarget.parentNode
+              ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+              : [];
+            const nextTab = tabs[nextIndex];
+            if (nextTab) {
+              nextTab.focus();
+              nextTab.click();
+            }
+          };
           const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1563,9 +1581,9 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections') },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb, tabIndex) {
 
-                return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
+                return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
               })
 
@@ -1593,6 +1611,8 @@ const d = labToolData.artStudio || {};
               };
               var meta = TAB_META[tab] || TAB_META.colorWheel;
               return React.createElement('div', {
+                role: 'tabpanel', id: 'artstudio-panel-' + tab,
+                'aria-labelledby': 'artstudio-tab-' + tab, tabIndex: 0,
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
