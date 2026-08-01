@@ -2435,7 +2435,7 @@ window.StemLab = window.StemLab || {
             if (!def || !def.deepDive) return null;
             var dd = def.deepDive;
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Demographic deep-dive: ' + def.name,
+              role: 'region', 'aria-labelledby': 'epidemic-deep-dive-title-' + def.id, tabIndex: 0,
               style: {
                 background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
                 border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
@@ -2446,7 +2446,7 @@ window.StemLab = window.StemLab || {
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, __alloT('stem.epidemic.demographic_deep_dive', 'Demographic deep-dive')),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('h3', { id: 'epidemic-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', { onClick: closeOutbreakDeepDive,
