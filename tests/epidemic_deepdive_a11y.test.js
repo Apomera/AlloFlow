@@ -16,5 +16,6 @@ describe('Epidemic Lab inline deep-dive accessibility', () => {
     expect(source).toContain("id: 'epidemic-deep-dive-title-' + def.id");
     expect(source).toContain('tabIndex: 0');
     expect(source).not.toContain("role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Demographic deep-dive: ' + def.name");
+    expect(source).toContain("'aria-label': __alloT('stem.epidemic.explanation_input', 'Epidemic regime explanation')");
   });
 });

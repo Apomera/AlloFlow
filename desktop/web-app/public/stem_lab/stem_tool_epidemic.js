@@ -3946,6 +3946,7 @@ window.StemLab = window.StemLab || {
                     __alloT('stem.epidemic.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  'aria-label': __alloT('stem.epidemic.explanation_input', 'Epidemic regime explanation'),
                   placeholder: __alloT('stem.epidemic.explain_in_your_own_words_what_is_the_', 'Explain in your own words: what is the relationship between contact frequency, intervention adoption, transmissibility, and outbreak regime? What single equation could capture it? Why is the threshold at R_eff = 1?'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                 iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
