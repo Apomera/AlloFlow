@@ -1997,15 +1997,33 @@ window.StemLab = window.StemLab || {
       // play / concept + matchup grade + earned badges. Mirrors the
       // ThrowLab trading-card pattern. Player name prompted on first use,
       // cached in toolData.playerName.
-      function exportPlayLabTradingCard() {
+      async function exportPlayLabTradingCard() {
         var name = d.playerName;
         if (!name) {
-          name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
-            ? window.prompt('What\'s your player name? (Saved for next time)', isSoccer ? 'Lab Striker' : 'Lab QB')
-            : 'Lab Player';
-          if (!name) return;
+          var promptModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+          var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+          var unavailable = 'Trading card export is unavailable, so no card was created.';
+          if (typeof promptModule !== 'function' || typeof promptApi !== 'function') {
+            if (typeof addToast === 'function') addToast(unavailable, 'warning');
+            plAnnounce(unavailable);
+            return;
+          }
+          try {
+            name = await promptApi('What\'s your player name? (Saved for next time)', isSoccer ? 'Lab Striker' : 'Lab QB', {
+              title: 'Name your trading card',
+              placeholder: 'Enter your player name',
+              confirmText: 'Create card',
+              cancelText: 'Cancel',
+              maxLength: 30
+            });
+          } catch (e) {
+            if (typeof addToast === 'function') addToast(unavailable, 'warning');
+            plAnnounce(unavailable);
+            return;
+          }
+          if (name === null) { plAnnounce('Trading card export cancelled.'); return; }
           name = String(name).trim().slice(0, 30);
-          if (!name) return;
+          if (!name) { plAnnounce('Enter a player name to create the trading card.'); return; }
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playerName: name })});
           });
@@ -4854,8 +4872,26 @@ window.StemLab = window.StemLab || {
                         color: '#f8fafc', fontSize: 12, textAlign: 'left' }
                     }, entry.name),
                     h('button', {
-                      onClick: function() { if (confirm('Delete saved play "' + entry.name + '"?')) deleteSavedPlay(entry.id); },
-                      'aria-label': 'Delete saved play ' + entry.name,
+                      onClick: async function() {
+                        var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                        var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                        var unavailable = 'Saved-play deletion is unavailable right now, so the play was kept.';
+                        if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+                          if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                          plAnnounce(unavailable);
+                          return;
+                        }
+                        var confirmed = false;
+                        try {
+                          confirmed = await confirmApi('Delete saved play "' + entry.name + '"?', { title: 'Delete saved play', confirmText: 'Delete play', cancelText: 'Keep play', tone: 'warning' });
+                        } catch (e) {
+                          if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                          plAnnounce(unavailable);
+                          return;
+                        }
+                        if (confirmed) deleteSavedPlay(entry.id);
+                        else plAnnounce('Saved play kept.');
+                      },                      'aria-label': 'Delete saved play ' + entry.name,
                       'data-pl-focusable': 'true',
                       style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, minWidth: 28, borderRadius: 4, fontSize: 12 })
                     }, '✕')
