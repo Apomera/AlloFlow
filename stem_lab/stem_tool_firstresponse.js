@@ -3064,10 +3064,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var aiLoadingCritique = !!d.aiLoadingCritique;
         var callGemini = ctx.callGemini || null;
 
+        var AI_TAB_IDS = ['overview', 'practice'];
+        function aiTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % AI_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + AI_TAB_IDS.length) % AI_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = AI_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
         function tabBtn(id, label) {
           var active = aiView === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-ai-tab-' + id,
+            'aria-controls': 'firstresponse-ai-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { aiTabKeyDown(e, AI_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('aiView', id); frAnnounce(label); },
             style: btn({
               padding: '6px 12px', fontSize: 12,
@@ -3277,9 +3296,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('overview', 'How it works'),
             tabBtn('practice', 'Practice')
           ),
-          aiView === 'overview' && aiOverview(),
-          aiView === 'practice' && aiPractice(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-ai-panel-' + aiView,
+            'aria-labelledby': 'firstresponse-ai-tab-' + aiView,
+            tabIndex: 0
+          },
+            aiView === 'overview' && aiOverview(),
+            aiView === 'practice' && aiPractice(),
+            disclaimerFooter()
+          )
         );
       }
 
