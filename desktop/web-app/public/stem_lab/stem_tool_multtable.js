@@ -1535,6 +1535,7 @@ window.StemLab = window.StemLab || {
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
                   : 'border-pink-600 focus:border-pink-500'),
               placeholder: '?',
+              'aria-label': t('stem.multtable.answer', 'Multiplication or division answer'),
               autoFocus: true,
               disabled: inputDisabled,
               id: 'multtable-input'
@@ -1545,7 +1546,7 @@ window.StemLab = window.StemLab || {
               className: 'px-4 py-2 bg-pink-700 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
             }, t('stem.multtable.check_2', '\u2714 Check')),
             // AI hint button during challenge
-            h('button', { onClick: askAI,
+            h('button', { 'aria-label': t('stem.multtable.get_a_hint_from_ai', 'Get a hint from AI'), onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: t('stem.multtable.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
@@ -1639,6 +1640,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.multtable.reset_5', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.multtable.hypothesis_how_does_threshold_change_f', 'Hypothesis: How does threshold change feedback for struggling learners?'),
+              'aria-label': t('stem.multtable.mastery_hypothesis', 'Mastery threshold hypothesis'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.multtable.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
@@ -1649,6 +1651,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               t('stem.multtable.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.multtable.explain_mastery_learning_thresholds', 'Explain mastery learning thresholds.'),
+              'aria-label': t('stem.multtable.mastery_explanation', 'Explain mastery learning thresholds'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.design_note_discrete_3_state_mastery_m', 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.'))
           );
