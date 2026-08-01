@@ -1421,6 +1421,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           // Help shortcuts
           '?': 1, '/': 1
         };
+        function requestAtcNumber(sel, kind, game) {
+          var isHeading = kind === 'heading';
+          var promptModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+          var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+          var unavailable = isHeading ? 'Heading entry is unavailable, so the aircraft heading was unchanged.' : 'Speed entry is unavailable, so the aircraft speed was unchanged.';
+          if (typeof promptModule !== 'function' || typeof promptApi !== 'function') {
+            if (typeof addToast === 'function') addToast(unavailable, 'warning');
+            announce(unavailable);
+            return;
+          }
+          var message = isHeading ? 'Heading for ' + sel.callsign + '? (0-360)' : 'Speed for ' + sel.callsign + '? (knots)';
+          var defaultValue = isHeading ? Math.round(sel.targetHeading == null ? sel.heading : sel.targetHeading) : Math.round(sel.targetSpeed);
+          promptApi(message, String(defaultValue), {
+            title: isHeading ? 'Assign aircraft heading' : 'Assign aircraft speed',
+            placeholder: isHeading ? '0 to 360 degrees' : 'Speed in knots',
+            confirmText: isHeading ? 'Set heading' : 'Set speed',
+            cancelText: 'Cancel',
+            inputType: 'number',
+            maxLength: isHeading ? 3 : 4
+          }).then(function(value) {
+            if (value === null) { announce((isHeading ? 'Heading' : 'Speed') + ' unchanged.'); return; }
+            var parsed = parseInt(String(value).trim(), 10);
+            if (isNaN(parsed) || (isHeading && (parsed < 0 || parsed > 360)) || (!isHeading && parsed < 0)) {
+              var invalid = isHeading ? 'Enter a heading from 0 to 360 degrees.' : 'Enter a speed of zero or more knots.';
+              if (typeof addToast === 'function') addToast(invalid, 'warning');
+              announce(invalid);
+              return;
+            }
+            if (isHeading) {
+              sel.targetHeading = ((parsed % 360) + 360) % 360;
+              game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' });
+              playATCSound('select');
+              announce(sel.callsign + ' heading set to ' + sel.targetHeading + ' degrees.');
+              if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3;
+            } else {
+              sel.targetSpeed = Math.max(0, parsed);
+              game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' });
+              announce(sel.callsign + ' speed set to ' + sel.targetSpeed + ' knots.');
+            }
+          }).catch(function() {
+            var failed = isHeading ? 'The heading dialog could not open, so the aircraft heading was unchanged.' : 'The speed dialog could not open, so the aircraft speed was unchanged.';
+            if (typeof addToast === 'function') addToast(failed, 'warning');
+            announce(failed);
+          });
+        }
+
         var onKey = function(e) {
           var game = gameRef.current;
           var key = e.key.toLowerCase();
@@ -1509,14 +1555,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           var sel = game.aircraft.find(function(a) { return a.id === game.selected; });
           if (!sel) return;
 
-          if (key === 'h') {
-            var hdgStr = prompt('Heading for ' + sel.callsign + '? (0-360)');
-            if (hdgStr) { var hVal = parseInt(hdgStr, 10); if (!isNaN(hVal)) { sel.targetHeading = ((hVal % 360) + 360) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; } }
-          }
-          if (key === 's') {
-            var spdStr = prompt('Speed for ' + sel.callsign + '? (knots)');
-            if (spdStr) { var sVal = parseInt(spdStr, 10); if (!isNaN(sVal)) { sel.targetSpeed = Math.max(0, sVal); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); } }
-          }
+          if (key === 'h') requestAtcNumber(sel, 'heading', game);
+          if (key === 's') requestAtcNumber(sel, 'speed', game);
           if (key === 'c') {
             if (sel.assignedRunway) {
               sel.state = 'approach';
