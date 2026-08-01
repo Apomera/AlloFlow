@@ -587,6 +587,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_a', 'Factor A')),
               h('input', {
                 type: 'number', min: '10', max: '99', value: a,
+                'aria-label': t('stem.areamodel.factor_a', 'Factor A'),
                 onChange: function(e) { upd({ multiDims: { a: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)), b: b } }); },
                 className: 'w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-lg text-center font-bold text-lg'
               })
@@ -595,6 +596,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_b', 'Factor B')),
               h('input', {
                 type: 'number', min: '10', max: '99', value: b,
+                'aria-label': t('stem.areamodel.factor_b', 'Factor B'),
                 onChange: function(e) { upd({ multiDims: { a: a, b: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)) } }); },
                 className: 'w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-lg text-center font-bold text-lg'
               })
@@ -1304,6 +1306,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.areamodel.reset_2', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.areamodel.hypothesis_when_does_area_rows_cols', 'Hypothesis: When does area = rows + cols?'),
+              'aria-label': t('stem.areamodel.area_hypothesis', 'Area relationship hypothesis'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.areamodel.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
@@ -1314,6 +1317,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               t('stem.areamodel.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.areamodel.explain_commutative_property_area_leng', 'Explain commutative property + area = length × width.'),
+              'aria-label': t('stem.areamodel.area_explanation', 'Explain the area multiplication relationship'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
           );
