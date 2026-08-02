@@ -1103,6 +1103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // read as rendering glitches rather than as drifting smell.
   function _petsScentTexture(THREE) {
     var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
     c.width = 64; c.height = 64;
     var g = c.getContext('2d');
     var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -2045,7 +2046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sp.label + ' — ' + sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 10, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' } },
-              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', style: { flex: '0 0 160px' } },
+              h('svg', { width: 160, height: 160, viewBox: '0 0 160 160', role: 'img', 'aria-label': sm.label + ' pet needs radar chart', style: { flex: '0 0 160px' } },
                 [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
                   var rr = s * radius;
                   var poly = '';
@@ -2079,7 +2080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     h('span', null, s.label),
                     h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, s.provided)
                   ),
-                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: s.provided, onChange: function(e) { setKey(s.k, parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: s.provided, 'aria-label': s.label + ' provided level', onChange: function(e) { setKey(s.k, parseInt(e.target.value, 10)); }, style: { width: '100%' } })
                 );
               })
             ),
@@ -3114,9 +3115,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 'aria-label': 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes' },
                 h('thead', null,
                   h('tr', null,
-                    h('th', { style: { padding: 6, color: T.dim, fontSize: 10 } }, ''),
+                    h('th', { scope: 'col', style: { padding: 6, color: T.dim, fontSize: 10 } }, ''),
                     g2.map(function(gam, i) {
-                      return h('th', { key: i, style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border } }, gam);
+                      return h('th', { key: i, scope: 'col', style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border } }, gam);
                     })
                   )
                 ),
