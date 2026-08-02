@@ -2208,7 +2208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.allobotsage.set_ai_assistance_level_learner_effort', 'Set AI assistance level, learner effort, task novelty, and error cost. Predict the learning state. No score, no reveal.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · learn ' + learnGain.toFixed(1) + ' · risk ' + risk.toFixed(1)),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+          h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': t('stem.allobotsage.workload_learning_risk_chart', 'Workload, learning, and risk chart'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
             h('line', { x1: 160, y1: 10, x2: 160, y2: 110, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
             h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
             h('text', { x: 160, y: 8, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'high learning')),
