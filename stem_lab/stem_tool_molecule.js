@@ -1920,6 +1920,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         tabIndex: 0,
                         'aria-label': (a.el || 'atom') + ' at x ' + Math.round(a.x) + ', y ' + Math.round(a.y) + '. Arrow keys to move.',
                         onMouseDown: e => { e.preventDefault(); upd('dragging', i); },
+                        'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown',
                         onKeyDown: e => {
                           var dx = 0, dy = 0;
                           if (e.key === 'ArrowLeft') dx = -10;
