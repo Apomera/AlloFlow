@@ -2450,6 +2450,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p1g1_' + i,
+                            'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
                             value: diParent1Gene1[i],
                             onChange: function(e) {
                               var na = diParent1Gene1.slice();
@@ -2457,7 +2458,6 @@ window.StemLab = window.StemLab || {
                               upd('_diP1G1', na);
                               punnettSound('allele');
                             },
-                            'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
                             className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -2469,6 +2469,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p1g2_' + i,
+                            'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
                             value: diParent1Gene2[i],
                             onChange: function(e) {
                               var na = diParent1Gene2.slice();
@@ -2476,7 +2477,6 @@ window.StemLab = window.StemLab || {
                               upd('_diP1G2', na);
                               punnettSound('allele');
                             },
-                            'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
                             className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -2492,6 +2492,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p2g1_' + i,
+                            'aria-label': 'Parent 2 Gene 1 allele ' + (i + 1),
                             value: diParent2Gene1[i],
                             onChange: function(e) {
                               var na = diParent2Gene1.slice();
@@ -2499,7 +2500,6 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G1', na);
                               punnettSound('allele');
                             },
-                            'aria-label': 'Parent 2 Gene 1 allele ' + (i + 1),
                             className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -2511,6 +2511,7 @@ window.StemLab = window.StemLab || {
                         [0, 1].map(function(i) {
                           return h('select', {
                             key: 'p2g2_' + i,
+                            'aria-label': 'Parent 2 Gene 2 allele ' + (i + 1),
                             value: diParent2Gene2[i],
                             onChange: function(e) {
                               var na = diParent2Gene2.slice();
@@ -2518,7 +2519,6 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G2', na);
                               punnettSound('allele');
                             },
-                            'aria-label': 'Parent 2 Gene 2 allele ' + (i + 1),
                             className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
@@ -3339,7 +3339,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
                 h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
                 h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 Streak: ' + chalStreak),
-                chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, '\u2B50 BONUS!')
+                chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse motion-reduce:animate-none' }, '\u2B50 BONUS!')
               ),
 
               // Question
@@ -3710,7 +3710,7 @@ window.StemLab = window.StemLab || {
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['p %', 's %', 'μ', 'Δp %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['p %', 's %', 'μ', 'Δp %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     return h('tr', { key: 'lr' + idx },
                       h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
