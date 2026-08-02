@@ -177,7 +177,7 @@ function SocraticChat({
         {isSocraticThinking && (
           <div className="flex items-start" role="status" aria-live="polite">
             <div className={`${_thinkingBubble} p-2 rounded-xl rounded-bl-none text-xs italic flex items-center gap-1 shadow-sm`}>
-              <RefreshCw size={10} className="animate-spin" aria-hidden="true"/> {t('socratic.thinking')}
+              <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('socratic.thinking')}
             </div>
           </div>
         )}
@@ -199,7 +199,7 @@ function SocraticChat({
             }
           }}
           disabled={isSocraticThinking}
-          className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse' : _secondaryButton}`}
+          className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none' : _secondaryButton}`}
           title={t('socratic.mic_tooltip')}
           aria-label={t('socratic.mic_tooltip')}
           aria-pressed={isSocraticDictating}
@@ -223,7 +223,7 @@ function SocraticChat({
           disabled={!socraticInput.trim() || isSocraticThinking}
           className={`p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`}
         >
-          {isSocraticThinking ? <RefreshCw size={16} className="animate-spin" aria-hidden="true"/> : <Send size={16} aria-hidden="true"/>}
+          {isSocraticThinking ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={16} aria-hidden="true"/>}
         </button>
       </form>
     </div>

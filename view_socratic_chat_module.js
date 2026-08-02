@@ -172,7 +172,7 @@ function SocraticChat({
           }
         },
         disabled: isSocraticThinking,
-        className: `p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? "bg-red-700 text-white animate-pulse" : _secondaryButton}`,
+        className: `p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none" : _secondaryButton}`,
         title: t("socratic.mic_tooltip"),
         "aria-label": t("socratic.mic_tooltip"),
         "aria-pressed": isSocraticDictating
