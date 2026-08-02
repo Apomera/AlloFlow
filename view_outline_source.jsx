@@ -174,7 +174,7 @@ function OutlineView(props) {
                                 disabled={isProcessing} aria-busy={isProcessing}
                                 className={`flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`}
                             >
-                                <RefreshCw size={14} className={isProcessing ? "animate-spin" : ""} /> {t('common.regenerate')}
+                                <RefreshCw size={14} className={isProcessing ? "animate-spin motion-reduce:animate-none" : ""} /> {t('common.regenerate')}
                             </button>
                             )}
                         </div>
@@ -224,7 +224,7 @@ function OutlineView(props) {
                                     disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isProcessing ? <RefreshCw size={24} className="animate-spin"/> : <Sparkles size={24} className="text-yellow-700 fill-current"/>}
+                                    {isProcessing ? <RefreshCw size={24} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={24} className="text-yellow-700 fill-current"/>}
                                     {isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram')}
                                 </button>
                             </div>

@@ -204,7 +204,7 @@
     className: `flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: isProcessing ? "animate-spin" : ""
+    className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
   }), " ", t('common.regenerate')))), isInteractiveMap ? !isConceptMapReady && !isChallengeActive ? /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto bg-white p-10 rounded-2xl border-2 border-indigo-100 shadow-lg text-center flex flex-col items-center justify-center min-h-[400px]"
   }, /*#__PURE__*/React.createElement("div", {
@@ -255,7 +255,7 @@
     className: "w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 24,
     className: "text-yellow-700 fill-current"
