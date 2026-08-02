@@ -894,7 +894,7 @@
                   ),
                   (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '8px' } },
                     h('thead', null, h('tr', { style: { background: gcCard } },
-                      ['a', 'h', 'k', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '3px', borderBottom: '1px solid rgba(99,102,241,0.2)', textAlign: 'left' } }, c); }))),
+                      ['a', 'h', 'k', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', style: { padding: '3px', borderBottom: '1px solid rgba(99,102,241,0.2)', textAlign: 'left' } }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
                         h('td', { style: { padding: '3px', fontFamily: 'monospace' } }, o.a.toFixed(2)),
