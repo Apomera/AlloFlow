@@ -596,6 +596,234 @@
   }
 
 
+  var STORY_FRAME_LIMIT = 12;
+
+  function normalizeStoryFrame(value, index) {
+    value = value || {};
+    return {
+      id: String(value.id || 'story-frame-' + (Number(index) + 1)).slice(0, 80),
+      title: String(value.title || 'Untitled evidence frame').slice(0, 200),
+      narrative: String(value.narrative || '').slice(0, 2500),
+      evidence: String(value.evidence || '').slice(0, 2500),
+      limitation: String(value.limitation || '').slice(0, 1800),
+      view: String(value.view || 'GIS Studio').slice(0, 120),
+      metric: String(value.metric || '').slice(0, 120),
+      basemap: String(value.basemap || '').slice(0, 120),
+      source: String(value.source || '').slice(0, 500),
+      createdAt: String(value.createdAt || '').slice(0, 80)
+    };
+  }
+
+  function normalizeStoryMap(value) {
+    value = value || {};
+    var frames = Array.isArray(value.slides) ? value.slides.slice(0, STORY_FRAME_LIMIT).map(normalizeStoryFrame) : [];
+    var checks = value.checks && typeof value.checks === 'object' ? value.checks : {};
+    return {
+      title: String(value.title || 'Maine spatial investigation').slice(0, 200),
+      subtitle: String(value.subtitle || 'Claim \u2192 evidence \u2192 limitation').slice(0, 300),
+      slides: frames,
+      checks: { claim: !!checks.claim, evidence: !!checks.evidence, limitation: !!checks.limitation }
+    };
+  }
+
+  function createStoryFrame(value, index) {
+    value = value || {};
+    return normalizeStoryFrame(Object.assign({
+      id: 'story-frame-' + Date.now() + '-' + (Number(index) || 0),
+      title: 'Evidence frame',
+      narrative: '', evidence: '', limitation: '', view: 'GIS Studio', metric: '', basemap: '', source: '',
+      createdAt: new Date().toISOString()
+    }, value), index || 0);
+  }
+
+  function storyMapProgress(value) {
+    var story = normalizeStoryMap(value);
+    var keys = ['claim', 'evidence', 'limitation'];
+    var complete = keys.filter(function (key) { return story.checks[key]; }).length;
+    return { complete: complete, total: keys.length, percent: Math.round(complete / keys.length * 100), frames: story.slides.length };
+  }
+
+  function buildStoryMapReport(model) {
+    model = model || {};
+    var story = normalizeStoryMap(model.story || model);
+    var generated = String(model.generated || new Date().toLocaleString());
+    var rows = Array.isArray(model.rows) ? model.rows.slice(0, 120) : [];
+    var frameMarkup = story.slides.length ? story.slides.map(function (frame, index) {
+      var metadata = [frame.view, frame.metric && 'Metric: ' + frame.metric, frame.basemap && 'Basemap: ' + frame.basemap, frame.source && 'Source: ' + frame.source]
+        .filter(Boolean).join(' • ');
+      return '<li><article><p class="kicker">FRAME ' + (index + 1) + '</p><h2>' + escapeHTML(frame.title) + '</h2>' +
+        (metadata ? '<p class="meta">' + escapeHTML(metadata) + '</p>' : '') +
+        '<h3>Observation</h3><p>' + escapeHTML(frame.narrative || 'No observation recorded yet.') + '</p>' +
+        '<h3>Evidence</h3><p>' + escapeHTML(frame.evidence || 'No evidence note recorded yet.') + '</p>' +
+        '<h3>Limitation or next question</h3><p>' + escapeHTML(frame.limitation || 'No limitation recorded yet.') + '</p></article></li>';
+    }).join('') : '<li><article><p>No frames have been added yet. Return to GIS Studio and capture a view.</p></article></li>';
+    var tableRows = rows.map(function (row) {
+      return '<tr><th scope="row">' + escapeHTML(row.name || 'Record') + '</th><td>' + escapeHTML(row.geometry || 'Point') + '</td><td>' +
+        escapeHTML(row.value == null ? '' : String(row.value)) + '</td></tr>';
+    }).join('');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>' + escapeHTML(story.title) + '</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:30px}' +
+      'header,section,article{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}' +
+      'h1{margin:.15rem 0}h2{color:#0f5f5a}h3{font-size:1rem;color:#172033;margin-bottom:3px}.kicker{color:#0f766e;font-weight:900;letter-spacing:.1em;font-size:.75rem}.meta{color:#52636f;font-size:.9rem}.trail{padding-left:24px}.status{background:#ecfeff;border-left:5px solid #0f766e;padding:12px}' +
+      'table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.table-wrap{overflow-x:auto}.actions button{padding:10px 14px}@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section,article{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p class="kicker">GIS STUDIO STORY MAP</p><h1>' + escapeHTML(story.title) + '</h1><p>' + escapeHTML(story.subtitle) + '</p>' +
+      '<p class="meta">Generated ' + escapeHTML(generated) + '. The sequence is an accessible evidence trail; each frame keeps its observation, evidence, and limitation together.</p></header>' +
+      '<div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div>' +
+      '<section class="status"><h2>Claim \u2192 evidence \u2192 limitation</h2><p>' + storyMapProgress(story).complete + ' of 3 reflection checks complete. Claim: ' +
+      (story.checks.claim ? 'complete' : 'not yet') + '; evidence: ' + (story.checks.evidence ? 'complete' : 'not yet') + '; limitation: ' +
+      (story.checks.limitation ? 'complete' : 'not yet') + '.</p></section>' +
+      '<section><h2>Accessible evidence trail</h2><ol class="trail">' + frameMarkup + '</ol></section>' +
+      (rows.length ? '<section><h2>Data-table twin</h2><div class="table-wrap"><table><caption>Sample records referenced by the story map</caption><thead><tr><th scope="col">Record</th><th scope="col">Geometry</th><th scope="col">Value</th></tr></thead><tbody>' + tableRows + '</tbody></table></div></section>' : '') +
+      '<section><h2>Method and limitations</h2><p>This story map sequences views from GIS Studio; it does not turn a spatial association into causation. Verify data provenance, coordinate privacy, map projection, measurement units, and any cloud or missing-data masks before sharing decisions.</p></section>' +
+      '</main></body></html>';
+  }
+
+  function normalizeQualityReviewState(value) {
+    value = value || {};
+    return {
+      privacy: !!value.privacy,
+      missingness: !!value.missingness,
+      provenance: !!value.provenance,
+      interpretation: !!value.interpretation
+    };
+  }
+
+  function buildDataQualityReview(model) {
+    model = model || {};
+    var rows = Array.isArray(model.importedRows) ? model.importedRows : [];
+    var timeRows = Array.isArray(model.timeRows) ? model.timeRows : [];
+    var provenance = normalizeProvenance(model.provenance);
+    var privacy = model.privacyAssessment || assessCoordinatePrivacy(rows, timeRows);
+    var composer = model.composerAudit || { errors: 0, warnings: 0 };
+    var remote = model.remoteSummary || summarizeRemoteChange(REMOTE_SCENE, 'ndvi', REMOTE_SCENE.resolutionMeters);
+    var story = model.storyProgress || storyMapProgress(model.storyMap || {});
+    var checks = [];
+    function add(id, label, status, message, recommendation, points) {
+      checks.push({ id: id, label: label, status: status, message: message, recommendation: recommendation, points: points });
+    }
+    var provenanceMissing = ['datasetTitle', 'source', 'method', 'limitations'].filter(function (key) { return !String(provenance[key] || '').trim(); });
+    add('provenance', 'Provenance manifest', provenanceMissing.length === 0 ? 'pass' : provenanceMissing.length >= 3 ? 'error' : 'warning',
+      provenanceMissing.length ? provenanceMissing.length + ' provenance field' + (provenanceMissing.length === 1 ? ' is' : 's are') + ' still blank.' : 'Dataset source, method, and limitations are recorded.',
+      provenanceMissing.length ? 'Complete: ' + provenanceMissing.join(', ') + '.' : 'Keep the source and method attached when you share the map.',
+      provenanceMissing.length === 0 ? 1 : provenanceMissing.length >= 3 ? 0 : 0.55);
+    var missingRows = rows.filter(function (row) { return !Number.isFinite(Number(row.lat)) || !Number.isFinite(Number(row.lon)) || !Number.isFinite(Number(row.value)); }).length;
+    var missingTime = timeRows.filter(function (row) { return !String(row.name || '').trim() || !Number.isFinite(Number(row.year)) || !Number.isFinite(Number(row.value)); }).length;
+    var missingTotal = missingRows + missingTime;
+    add('missingness', 'Missing and invalid values', missingTotal === 0 ? 'pass' : 'warning',
+      missingTotal ? missingTotal + ' point or time-series row' + (missingTotal === 1 ? ' needs' : 's need') + ' review.' : 'All imported and time-series rows have the expected numeric fields.',
+      missingTotal ? 'Remove, repair, or explain missing values before comparing locations or years.' : 'Still check whether zero and blank mean different things in the source.',
+      missingTotal === 0 ? 1 : 0.45);
+    var units = timeRows.map(function (row) { return String(row.unit || '').trim(); }).filter(function (value, index, all) { return value && all.indexOf(value) === index; });
+    var unitStatus = units.length > 1 ? 'warning' : 'pass';
+    add('units', 'Units and definitions', unitStatus,
+      units.length > 1 ? 'The time-series rows use multiple units: ' + units.join(', ') + '.' : units.length === 1 ? 'Time-series rows use ' + units[0] + '.' : 'No conflicting time-series units detected.',
+      units.length > 1 ? 'Do not compare values until the units and definitions are aligned.' : 'Record the unit explicitly in the provenance manifest.', units.length > 1 ? 0.45 : 1);
+    var privacyStatus = privacy.highPrecision || privacy.identifierWarnings ? 'warning' : 'pass';
+    add('privacy', 'Coordinate privacy', privacyStatus,
+      privacy.highPrecision || privacy.identifierWarnings ? privacy.highPrecision + ' high-precision row' + (privacy.highPrecision === 1 ? '' : 's') + ' and ' + privacy.identifierWarnings + ' identifier-like label' + (privacy.identifierWarnings === 1 ? '' : 's') + ' need review.' : 'No high-precision or identifier-like coordinate risks detected.',
+      privacyStatus === 'warning' ? 'Round or aggregate sensitive locations, then review labels separately.' : 'Keep student or household locations aggregated.', privacyStatus === 'warning' ? 0.45 : 1);
+    var remoteStatus = remote.masked > 0 ? 'warning' : 'pass';
+    add('imagery', 'Imagery quality', remoteStatus,
+      remote.masked > 0 ? remote.masked + ' of ' + remote.total + ' illustrative pixels are cloud-masked.' : 'No masked pixels are affecting the current illustrative scene.',
+      remoteStatus === 'warning' ? 'Keep masked pixels out of statistics and avoid explaining their surface class.' : 'Record dates, resolution, and sensor before interpreting imagery.', remoteStatus === 'warning' ? 0.55 : 1);
+    var composerStatus = Number(composer.errors || 0) > 0 ? 'error' : Number(composer.warnings || 0) > 0 ? 'warning' : 'pass';
+    add('cartography', 'Map communication', composerStatus,
+      composerStatus === 'pass' ? 'Composer checks pass.' : composer.errors + ' required map fix' + (composer.errors === 1 ? '' : 'es') + ' and ' + composer.warnings + ' recommendation' + (composer.warnings === 1 ? '' : 's') + ' remain.',
+      composerStatus === 'pass' ? 'Keep the table twin and map description with the export.' : 'Resolve required map checks before sharing a polished map.', composerStatus === 'pass' ? 1 : composerStatus === 'error' ? 0 : 0.6);
+    var storyStatus = story.frames === 0 ? 'warning' : story.percent === 100 ? 'pass' : 'warning';
+    add('interpretation', 'Interpretation trail', storyStatus,
+      story.frames === 0 ? 'No Story Map frames have been captured yet.' : story.frames + ' Story Map frame' + (story.frames === 1 ? '' : 's') + '; ' + story.complete + ' of ' + story.total + ' reflection checks complete.',
+      storyStatus === 'pass' ? 'Keep the claim, evidence, and limitation visible together.' : 'Add an observation, evidence note, and limitation before treating a pattern as a conclusion.', storyStatus === 'pass' ? 1 : 0.5);
+    var points = checks.reduce(function (sum, item) { return sum + item.points; }, 0);
+    var score = Math.round(points / checks.length * 100);
+    var errors = checks.filter(function (item) { return item.status === 'error'; }).length;
+    var warnings = checks.filter(function (item) { return item.status === 'warning'; }).length;
+    return { score: score, checks: checks, errors: errors, warnings: warnings, ready: errors === 0, reviewed: normalizeQualityReviewState(model.reviewState), summary: errors ? 'Resolve required checks before sharing.' : warnings ? 'Ready for a careful review of the highlighted limitations.' : 'Evidence package is ready for sharing.' };
+  }
+
+  function buildDataQualityReport(model) {
+    model = model || {};
+    var review = model.review || buildDataQualityReview(model);
+    var checked = normalizeQualityReviewState(model.reviewState || review.reviewed);
+    var checklist = [['privacy', 'Coordinate privacy reviewed'], ['missingness', 'Missing values reviewed'], ['provenance', 'Provenance completed'], ['interpretation', 'Interpretation limits recorded']].map(function (item) {
+      return '<li>' + (checked[item[0]] ? 'Complete: ' : 'Not yet: ') + escapeHTML(item[1]) + '</li>';
+    }).join('');
+    var rows = review.checks.map(function (item) {
+      return '<tr><th scope="row">' + escapeHTML(item.label) + '</th><td>' + escapeHTML(item.status.toUpperCase()) + '</td><td>' + escapeHTML(item.message) + '</td><td>' + escapeHTML(item.recommendation) + '</td></tr>';
+    }).join('');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GIS Studio Data Quality Review</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:30px}header,section{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}h1{margin:.15rem 0}h2{color:#0f5f5a}.score{font-size:2.1rem;font-weight:900;color:#0f766e}.callout{border-left:5px solid #d97706;background:#fff7ed;padding:14px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.actions button{padding:10px 14px}@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p>GIS STUDIO</p><h1>Data Quality and Uncertainty Review</h1><p>Use this review before treating a mapped pattern as a conclusion. It separates data readiness from interpretation confidence.</p><p class="score">' + review.score + '/100</p><p>' + escapeHTML(review.summary) + ' ' + review.errors + ' required check' + (review.errors === 1 ? '' : 's') + '; ' + review.warnings + ' highlighted limitation' + (review.warnings === 1 ? '' : 's') + '.</p></header>' +
+      '<div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div><section><h2>Review checklist</h2><ul>' + checklist + '</ul></section><section class="callout"><h2>Evidence readiness</h2><p>This score is a teaching aid, not a statistical confidence interval. A passing check means the project records a safeguard; it does not prove that the data are accurate or representative.</p></section><section><h2>Accessible quality table</h2><div class="table-wrap"><table><caption>Quality checks, messages, and next actions</caption><thead><tr><th scope="col">Check</th><th scope="col">Status</th><th scope="col">What GIS Studio found</th><th scope="col">Next action</th></tr></thead><tbody>' + rows + '</tbody></table></div></section><section><h2>Method and limitations</h2><p>Review the original source, collection method, units, coordinate precision, missing records, map projection, imagery dates, and any cloud mask. Spatial association remains descriptive until additional evidence supports an explanation.</p></section></main></body></html>';
+  }
+
+  function buildInvestigationPacketReport(model) {
+    model = model || {};
+    var story = normalizeStoryMap(model.storyMap || model.story || {});
+    var review = model.qualityReview || buildDataQualityReview(model);
+    var provenance = normalizeProvenance(model.provenance);
+    var generated = String(model.generated || new Date().toLocaleString());
+    var rows = Array.isArray(model.rows) ? model.rows.slice(0, 120) : [];
+    var firstFrame = story.slides[0] || {};
+    var claim = String(model.claim || firstFrame.narrative || story.subtitle || 'Add a claim after reviewing the evidence sequence.');
+    var frameMarkup = story.slides.length ? story.slides.map(function (frame, index) {
+      return '<li><article><p class="kicker">EVIDENCE ' + (index + 1) + '</p><h3>' + escapeHTML(frame.title) + '</h3>' +
+        '<p class="meta">' + escapeHTML(frame.view + (frame.metric ? ' • ' + frame.metric : '')) + '</p>' +
+        '<p><strong>Observation:</strong> ' + escapeHTML(frame.narrative || 'Not recorded.') + '</p>' +
+        '<p><strong>Evidence:</strong> ' + escapeHTML(frame.evidence || 'Not recorded.') + '</p>' +
+        '<p><strong>Limitation:</strong> ' + escapeHTML(frame.limitation || 'Not recorded.') + '</p></article></li>';
+    }).join('') : '<li><article><p>No Story Map frames have been captured yet.</p></article></li>';
+    var qualityRows = review.checks.map(function (item) {
+      return '<tr><th scope="row">' + escapeHTML(item.label) + '</th><td>' + escapeHTML(item.status.toUpperCase()) + '</td><td>' + escapeHTML(item.message) + '</td><td>' + escapeHTML(item.recommendation) + '</td></tr>';
+    }).join('');
+    var dataRows = rows.map(function (row) {
+      return '<tr><th scope="row">' + escapeHTML(row.name || 'Record') + '</th><td>' + escapeHTML(row.geometry || 'Point') + '</td><td>' + escapeHTML(row.value == null ? '' : String(row.value)) + '</td></tr>';
+    }).join('');
+    var progress = storyMapProgress(story);
+    var plan = normalizeInquiryPlan(model.inquiryPlan || {});
+    var planProgress = inquiryPlanProgress(plan);
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GIS Studio Investigation Packet</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:30px}header,section,article{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}h1{margin:.15rem 0}h2{color:#0f5f5a}h3{margin-bottom:4px}.kicker{color:#0f766e;font-weight:900;letter-spacing:.1em;font-size:.75rem}.meta{color:#52636f;font-size:.9rem}.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{background:#ecfeff;border-radius:10px;padding:12px}.trail{padding-left:24px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.callout{border-left:5px solid #d97706;background:#fff7ed;padding:14px}.actions button{padding:10px 14px}@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section,article{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p class="kicker">GIS STUDIO INVESTIGATION PACKET</p><h1>' + escapeHTML(model.title || 'Untitled GIS investigation') + '</h1><p>' + escapeHTML(story.subtitle) + '</p><p class="meta">Generated ' + escapeHTML(generated) + '. Teacher handoff format: claim, evidence sequence, quality review, and next questions in one accessible document.</p></header>' +
+      '<div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div><section><h2>Investigation at a glance</h2><div class="hero"><div class="stat"><strong>' + escapeHTML(String(review.score)) + '/100</strong><br>evidence readiness</div><div class="stat"><strong>' + progress.frames + '</strong><br>evidence frames</div><div class="stat"><strong>' + progress.complete + '/' + progress.total + '</strong><br>reflection checks</div><div class="stat"><strong>' + escapeHTML(provenance.source || 'Not specified') + '</strong><br>source</div></div><div class="callout"><strong>Working claim:</strong> ' + escapeHTML(claim) + '</div></section>' +
+      '<section><h2>Accessible evidence sequence</h2><ol class="trail">' + frameMarkup + '</ol></section>' +
+      '<section><h2>Quality and uncertainty review</h2><p>' + escapeHTML(review.summary) + ' ' + review.errors + ' required check' + (review.errors === 1 ? '' : 's') + '; ' + review.warnings + ' highlighted limitation' + (review.warnings === 1 ? '' : 's') + '.</p><div class="table-wrap"><table><caption>Quality checks and next actions</caption><thead><tr><th scope="col">Check</th><th scope="col">Status</th><th scope="col">Finding</th><th scope="col">Next action</th></tr></thead><tbody>' + qualityRows + '</tbody></table></div></section>' +
+      (rows.length ? '<section><h2>Data-table twin</h2><div class="table-wrap"><table><caption>Mapped records referenced by this packet</caption><thead><tr><th scope="col">Record</th><th scope="col">Geometry</th><th scope="col">Value</th></tr></thead><tbody>' + dataRows + '</tbody></table></div></section>' : '') +
+      '<section><h2>Investigation plan</h2><p><strong>Question:</strong> ' + escapeHTML(plan.question) + '</p><p><strong>Working claim:</strong> ' + escapeHTML(plan.claim || 'Not written yet.') + '</p><p><strong>Evidence plan:</strong> ' + escapeHTML(plan.evidencePlan) + '</p><p><strong>Alternative explanation:</strong> ' + escapeHTML(plan.alternative) + '</p><p><strong>Next step:</strong> ' + escapeHTML(plan.nextStep) + '</p><p>' + planProgress.complete + ' of ' + planProgress.total + ' planning checks complete.</p></section>' +
++      '<section><h2>Sources, method, and handoff questions</h2><dl><dt><strong>Dataset</strong></dt><dd>' + escapeHTML(provenance.datasetTitle || 'Not specified') + '</dd><dt><strong>Source</strong></dt><dd>' + escapeHTML(provenance.source || 'Not specified') + '</dd><dt><strong>Method</strong></dt><dd>' + escapeHTML(provenance.method || 'Not specified') + '</dd><dt><strong>Limitations</strong></dt><dd>' + escapeHTML(provenance.limitations || 'Not specified') + '</dd></dl><p><strong>Next questions:</strong> What additional date, field observation, comparison group, or source would make the working claim more trustworthy?</p><p>This packet organizes evidence; it does not turn spatial association into causation.</p></section></main></body></html>';
+  }
+
+  var GIS_INQUIRY_TEMPLATES = {
+    distribution: { label: 'Distribution', question: 'Where is this metric clustered, and where is it sparse?', claim: '', evidencePlan: 'Map the metric, compare high and low locations, and describe the spatial pattern.', alternative: 'Could a different boundary, unit, or sampling method create this pattern?', nextStep: 'Compare the same metric with a second source or a nearby year.' },
+    comparison: { label: 'Comparison', question: 'How do two mapped measures differ across the same places?', claim: '', evidencePlan: 'Use synchronized maps and a table twin to compare the same locations and units.', alternative: 'Could the measures use different definitions, scales, or collection methods?', nextStep: 'Align units and definitions, then test the strongest contrast.' },
+    change: { label: 'Change over time', question: 'Which places changed most between the baseline and focus years?', claim: '', evidencePlan: 'Compare paired years, inspect missing locations, and report absolute and percent change.', alternative: 'Could a policy, seasonal effect, or data-definition change explain the difference?', nextStep: 'Add an intermediate year or an independent time-series source.' },
+    impact: { label: 'Human-environment impact', question: 'What spatial relationship might connect people, infrastructure, and the environment?', claim: '', evidencePlan: 'Layer a human measure with an environmental measure and identify overlap without claiming causation.', alternative: 'Could access, exposure, or boundary placement explain the relationship instead?', nextStep: 'Add field observations or a comparison area with similar conditions.' },
+    remote: { label: 'Remote sensing', question: 'What land-cover or spectral change is visible between matched scenes?', claim: '', evidencePlan: 'Check dates, clouds, resolution, index formula, and the accessible pixel table before interpreting change.', alternative: 'Could clouds, mixed pixels, phenology, or sensor conditions explain the signal?', nextStep: 'Verify with another date, field evidence, or a higher-resolution source.' }
+  };
+
+  function normalizeInquiryPlan(value) {
+    value = value || {};
+    var template = Object.prototype.hasOwnProperty.call(GIS_INQUIRY_TEMPLATES, value.template) ? value.template : 'distribution';
+    var defaults = GIS_INQUIRY_TEMPLATES[template];
+    var checklist = value.checklist && typeof value.checklist === 'object' ? value.checklist : {};
+    return {
+      template: template,
+      question: String(value.question == null ? defaults.question : value.question).slice(0, 500),
+      claim: String(value.claim || defaults.claim).slice(0, 1500),
+      evidencePlan: String(value.evidencePlan == null ? defaults.evidencePlan : value.evidencePlan).slice(0, 1500),
+      alternative: String(value.alternative == null ? defaults.alternative : value.alternative).slice(0, 1500),
+      nextStep: String(value.nextStep == null ? defaults.nextStep : value.nextStep).slice(0, 1500),
+      checklist: { question: !!checklist.question, evidence: !!checklist.evidence, alternative: !!checklist.alternative, nextStep: !!checklist.nextStep }
+    };
+  }
+
+  function inquiryPlanProgress(value) {
+    var plan = normalizeInquiryPlan(value), keys = ['question', 'evidence', 'alternative', 'nextStep'];
+    var complete = keys.filter(function (key) { return plan.checklist[key]; }).length;
+    return { complete: complete, total: keys.length, percent: Math.round(complete / keys.length * 100), ready: complete === keys.length };
+  }
+
   function normalizeJoinKey(value) {
     return String(value == null ? '' : value).trim().toLowerCase()
       .replace(/&/g, ' and ')
@@ -1393,10 +1621,10 @@
   window.StemLab.registerTool('gisStudio', {
     icon: '\uD83D\uDDFA\uFE0F',
     label: 'GIS Studio',
-    desc: 'Build, compare, compose, and export accessible GIS and remote-sensing investigations.',
+    desc: 'Build, plan, compare, compose, sequence, review, and export accessible GIS and remote-sensing investigations.',
     color: 'teal',
     category: 'geo',
-    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
+    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'story map', 'evidence storyboard', 'quality review', 'uncertainty review', 'investigation packet', 'teacher handoff', 'inquiry planner', 'research question', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
       joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
@@ -1408,6 +1636,12 @@
       calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
       normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
       buildRemoteSensingReport: buildRemoteSensingReport, remoteScene: REMOTE_SCENE,
+      normalizeStoryMap: normalizeStoryMap, createStoryFrame: createStoryFrame, storyMapProgress: storyMapProgress,
+      buildStoryMapReport: buildStoryMapReport,
+      normalizeQualityReviewState: normalizeQualityReviewState, buildDataQualityReview: buildDataQualityReview,
+      buildDataQualityReport: buildDataQualityReport,
+      buildInvestigationPacketReport: buildInvestigationPacketReport,
+      normalizeInquiryPlan: normalizeInquiryPlan, inquiryPlanProgress: inquiryPlanProgress, inquiryTemplates: GIS_INQUIRY_TEMPLATES,
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
@@ -1426,6 +1660,10 @@
       { id: 'project_portability', label: 'Save a privacy-reviewed GIS project', icon: '\uD83D\uDCBE', check: function (d) { return !!d.gisProjectSaved; }, progress: function (d) { return d.gisProjectSaved ? 'Saved' : d.gisProjectLoaded ? 'Opened' : 'Not yet'; } },
       { id: 'map_composer', label: 'Compose and export an accessible evidence map', icon: '\uD83D\uDDBC\uFE0F', check: function (d) { return !!d.gisMapComposed; }, progress: function (d) { return d.gisMapComposed ? 'Exported' : 'Not yet'; } },
       { id: 'remote_sensing', label: 'Analyze a remote-sensing change scene', icon: '\uD83D\uDEF0\uFE0F', check: function (d) { return !!d.gisRemoteSensingCompleted; }, progress: function (d) { return d.gisRemoteSensingCompleted ? 'Evidence exported' : d.gisRemoteSensingStarted ? 'In progress' : 'Not yet'; } },
+      { id: 'story_map', label: 'Sequence a claim-evidence story map', icon: '\uD83D\uDCDA', check: function (d) { return !!d.gisStoryMapExported; }, progress: function (d) { return d.gisStoryMapExported ? 'Exported' : d.gisStoryMapStarted ? 'In progress' : 'Not yet'; } },
+      { id: 'quality_review', label: 'Complete a GIS data-quality review', icon: '\u2705', check: function (d) { return !!d.gisQualityReviewed; }, progress: function (d) { return d.gisQualityReviewed ? 'Reviewed' : 'Not yet'; } },
+      { id: 'inquiry_planner', label: 'Plan a testable spatial investigation', icon: '\uD83E\uDDED', check: function (d) { return !!d.gisInquiryPlanCompleted; }, progress: function (d) { return d.gisInquiryPlanCompleted ? 'Planned' : d.gisInquiryPlanStarted ? 'In progress' : 'Not yet'; } },
+      { id: 'investigation_packet', label: 'Build a teacher-ready investigation packet', icon: '\uD83D\uDCC4', check: function (d) { return !!d.gisInvestigationPacketExported; }, progress: function (d) { return d.gisInvestigationPacketExported ? 'Exported' : d.gisInvestigationPacketStarted ? 'In progress' : 'Not yet'; } },
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
     ],
     render: function (ctx) {
@@ -1506,6 +1744,14 @@
         var s64 = React.useState({ label: '', lat: '', lon: '' }), annotationDraft = s64[0], setAnnotationDraft = s64[1];
         var s65 = React.useState('Composer ready. Complete the cartography review before sharing.'), composerStatus = s65[0], setComposerStatus = s65[1];
         var s66 = React.useState(normalizeRemoteSensingState(initial.gisRemoteSensing || {})), remoteSensing = s66[0], setRemoteSensing = s66[1];
+        var s67 = React.useState(normalizeStoryMap(initial.gisStoryMap || {})), storyMap = s67[0], setStoryMap = s67[1];
+        var s68 = React.useState({ title: '', narrative: '', evidence: '', limitation: '' }), storyDraft = s68[0], setStoryDraft = s68[1];
+        var s69 = React.useState('Story Map ready. Capture a view, then add your claim, evidence, and limitation.'), storyStatus = s69[0], setStoryStatus = s69[1];
+        var s70 = React.useState(normalizeQualityReviewState(initial.gisQualityReview || {})), qualityReviewState = s70[0], setQualityReviewState = s70[1];
+        var s71 = React.useState('Quality review ready. Check the safeguards before sharing.'), qualityStatus = s71[0], setQualityStatus = s71[1];
+        var s72 = React.useState('Investigation Packet ready. Combine your evidence before handing it off.'), packetStatus = s72[0], setPacketStatus = s72[1];
+        var s73 = React.useState(normalizeInquiryPlan(initial.gisInquiryPlan || {})), inquiryPlan = s73[0], setInquiryPlan = s73[1];
+        var s74 = React.useState('Investigation Planner ready. Choose a question type and name the evidence you need.'), plannerStatus = s74[0], setPlannerStatus = s74[1];
         var mapNode = React.useRef(null);
         var mapViewState = React.useRef(null);
         var compareLeftNode = React.useRef(null);
@@ -1608,6 +1854,9 @@
         var remoteBeforeIndex = remoteIndexValue(remoteSelectedCell, 'before', remoteSensing.analysisIndex, true);
         var remoteAfterIndex = remoteIndexValue(remoteSelectedCell, 'after', remoteSensing.analysisIndex, remoteSensing.cloudMask);
         var remoteBeforeClass = classifySpectralPixel(remoteSelectedCell.beforeBands);
+        var storyProgress = storyMapProgress(storyMap);
+        var qualityReview = buildDataQualityReview({ importedRows: importedRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
+        var inquiryProgress = inquiryPlanProgress(inquiryPlan);
         var remoteAfterClass = remoteSelectedCell.quality === 'cloud'
           ? { label: remoteSensing.cloudMask ? 'Masked cloud' : 'Cloud-contaminated signal', evidence: remoteSensing.cloudMask ? 'No surface classification is made through cloud cover' : 'Raw reflectance is dominated by cloud, not surface cover' }
           : classifySpectralPixel(remoteSelectedCell.afterBands);
@@ -1702,7 +1951,7 @@
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
-        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing]);
+        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan]);
 
         React.useEffect(function () {
           if (tab !== 'map' || !mapNode.current) return undefined;
@@ -2355,7 +2604,7 @@
             analysisMode === 'buffer' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 9 } },
               h('span', { style: { fontWeight: 700 } }, 'Buffer radius'),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                h('input', { type: 'number', min: 1, max: 500, step: 1, value: bufferRadiusKm, onChange: function (event) { setBufferRadiusKm(Math.max(1, Math.min(500, Number(event.target.value) || 1))); }, style: Object.assign({}, control, { width: 78 }) }),
+                h('input', { type: 'number', 'aria-label': 'Buffer radius in kilometers', min: 1, max: 500, step: 1, value: bufferRadiusKm, onChange: function (event) { setBufferRadiusKm(Math.max(1, Math.min(500, Number(event.target.value) || 1))); }, style: Object.assign({}, control, { width: 78 }) }),
                 h('span', null, analysisUnit === 'imperial' ? 'km (' + formatDistance(bufferRadiusKm) + ')' : 'km'))),
             h('p', { style: { margin: '5px 0 9px', color: '#a7c7d8', fontSize: 10, lineHeight: 1.45 } },
               analysisMode === 'distance' ? 'Click two or more map locations. Each click adds a path segment.' :
@@ -2597,7 +2846,10 @@
               activeMissionId: activeMissionId, missionProgress: missionProgress, missionResponses: missionResponses,
               timeObservation: timeObservation, transformations: projectTransformations,
               composer: composer,
-              remoteSensing: remoteSensing
+              remoteSensing: remoteSensing,
+              storyMap: storyMap,
+              qualityReview: qualityReviewState,
+              inquiryPlan: inquiryPlan
             }
           }, new Date().toISOString());
         }
@@ -2658,7 +2910,10 @@
           setTimeObservation(String(work.timeObservation || ''));
           setComposer(normalizeMapComposition(work.composer || {}));
           setRemoteSensing(normalizeRemoteSensingState(work.remoteSensing || {}));
-          var allowedTabs = ['project', 'composer', 'remote', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
+          setStoryMap(normalizeStoryMap(work.storyMap || {}));
+          setQualityReviewState(normalizeQualityReviewState(work.qualityReview || {}));
+          setInquiryPlan(normalizeInquiryPlan(work.inquiryPlan || {}));
+          var allowedTabs = ['project', 'composer', 'remote', 'story', 'quality', 'planner', 'packet', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
           setTab(allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project');
           setTimePlaying(false);
           setProjectError('');
@@ -3109,6 +3364,164 @@
           announce('Print-ready accessible map package opened.');
         }
 
+        function updateStoryDraft(field, value) {
+          var next = Object.assign({}, storyDraft);
+          next[field] = value;
+          setStoryDraft(next);
+        }
+
+        function updateStoryMapField(field, value) {
+          var next = Object.assign({}, storyMap);
+          if (field === 'claim' || field === 'evidence' || field === 'limitation') {
+            next.checks = Object.assign({}, storyMap.checks, (function () { var item = {}; item[field] = !!value; return item; })());
+          } else next[field] = value;
+          next = normalizeStoryMap(next);
+          setStoryMap(next);
+          persist('gisStoryMap', next);
+        }
+
+        function storyViewLabel() {
+          if (tab === 'remote') return 'Remote Sensing — ' + remoteSensing.analysisIndex.toUpperCase() + ' comparison';
+          if (tab === 'composer') return 'Map Composer — ' + (composer.title || 'accessible map');
+          if (tab === 'compare') return 'Comparison — ' + comparisonLabel(leftChoice) + ' vs ' + comparisonLabel(rightChoice);
+          if (tab === 'timeline') return 'Timeline — ' + effectiveBaseline + ' to ' + effectiveFocusYear;
+          if (tab === 'map') return 'Map — ' + metricLabel;
+          if (tab === 'projection') return 'Projection Lab — ' + projection;
+          if (tab === 'missions') return 'Maine mission — ' + activeMission.title;
+          return 'GIS Studio — ' + tab;
+        }
+
+        function storyFrameForCurrentView() {
+          var view = storyViewLabel();
+          var narrative = tab === 'remote' ? (remoteSensing.evidence || ('The matched scene contains ' + remoteSummary.changed + ' changed clear pixels and ' + remoteSummary.masked + ' cloud-masked pixel.')) :
+            tab === 'composer' ? (composer.claim || composer.altText || summary) :
+            tab === 'compare' ? (comparisonObservation || 'Compare the two synchronized map layers and describe the strongest visible difference.') :
+            tab === 'timeline' ? (timeObservation || temporalSummary) : summary;
+          var evidence = tab === 'remote' ? (remoteSummary.changed + ' changed pixels; ' + remoteSummary.changedAreaHa.toFixed(2) + ' hectares mapped; mean ' + remoteSensing.analysisIndex.toUpperCase() + ' change ' + (remoteSummary.meanChange == null ? 'masked' : remoteSummary.meanChange.toFixed(3)) + '.') :
+            tab === 'timeline' ? temporalSummary :
+            tab === 'compare' ? (leftSeries.rows.length + ' left records and ' + rightSeries.rows.length + ' right records are synchronized for comparison.') :
+            (selectedRecords.length ? selectedRecords.length + ' records are selected for spatial evidence.' : records.length + ' mapped records support this frame.');
+          var limitation = tab === 'remote' ? 'The scene is illustrative, one after-date pixel is cloud masked, and spectral change does not establish its cause.' :
+            'Spatial patterns are descriptive. Check source, units, projection, missing records, and coordinate privacy before claiming causation.';
+          return createStoryFrame({ title: view, narrative: narrative, evidence: evidence, limitation: limitation, view: view,
+            metric: metricLabel, basemap: tab === 'remote' ? 'Illustrative Landsat-style scene' : basemap === 'satellite' ? 'Esri World Imagery' : basemap === 'none' ? 'Offline schematic' : 'OpenStreetMap',
+            source: provenance.source || 'Classroom learning data' }, storyMap.slides.length);
+        }
+
+        function addCurrentViewToStory() {
+          if (storyMap.slides.length >= STORY_FRAME_LIMIT) {
+            setStoryStatus('A story map can contain up to ' + STORY_FRAME_LIMIT + ' frames. Remove one before adding another.');
+            return;
+          }
+          var frame = storyFrameForCurrentView();
+          var next = normalizeStoryMap(Object.assign({}, storyMap, { slides: storyMap.slides.concat([frame]) }));
+          setStoryMap(next);
+          persist('gisStoryMap', next);
+          persist('gisStoryMapStarted', true);
+          setStoryStatus('Added “' + frame.title + '” to the story map.');
+          announce('Current GIS view added to the story map.');
+        }
+
+        function addCustomStoryFrame() {
+          if (storyMap.slides.length >= STORY_FRAME_LIMIT) { setStoryStatus('A story map can contain up to ' + STORY_FRAME_LIMIT + ' frames.'); return; }
+          if (!String(storyDraft.title || '').trim() || !String(storyDraft.narrative || '').trim()) {
+            setStoryStatus('Add a frame title and observation before saving the custom frame.');
+            announce('Story frame needs a title and observation.');
+            return;
+          }
+          var frame = createStoryFrame(Object.assign({}, storyDraft, { view: 'Custom evidence frame', source: provenance.source || 'Classroom learning data' }), storyMap.slides.length);
+          var next = normalizeStoryMap(Object.assign({}, storyMap, { slides: storyMap.slides.concat([frame]) }));
+          setStoryMap(next); persist('gisStoryMap', next); persist('gisStoryMapStarted', true);
+          setStoryDraft({ title: '', narrative: '', evidence: '', limitation: '' });
+          setStoryStatus('Custom story frame added.');
+        }
+
+        function removeStoryFrame(index) {
+          var next = normalizeStoryMap(Object.assign({}, storyMap, { slides: storyMap.slides.filter(function (_, itemIndex) { return itemIndex !== index; }) }));
+          setStoryMap(next); persist('gisStoryMap', next); setStoryStatus('Story frame removed.');
+        }
+
+        function moveStoryFrame(index, direction) {
+          var nextSlides = storyMap.slides.slice();
+          var target = index + direction;
+          if (target < 0 || target >= nextSlides.length) return;
+          var item = nextSlides[index]; nextSlides[index] = nextSlides[target]; nextSlides[target] = item;
+          var next = normalizeStoryMap(Object.assign({}, storyMap, { slides: nextSlides }));
+          setStoryMap(next); persist('gisStoryMap', next); setStoryStatus('Story frame order updated.');
+        }
+
+        function downloadStoryMapReport() {
+          var html = buildStoryMapReport({ story: storyMap, rows: composerRows, generated: new Date().toLocaleString() });
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = (String(storyMap.title || 'gis-story-map').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-story-map') + '.html';
+          document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisStoryMapExported', true); persist('gisStoryMapStarted', true); setStoryStatus('Accessible story-map report downloaded.'); announce('Accessible story map report downloaded.');
+        }
+
+        function printStoryMapReport() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) { setStoryStatus('The print window was blocked. Download the story-map report instead.'); return; }
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildStoryMapReport({ story: storyMap, rows: composerRows, generated: new Date().toLocaleString() })); reportWindow.document.close(); reportWindow.focus();
+          window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisStoryMapExported', true); announce('Print-ready story map opened.');
+        }
+
+        function updateQualityReviewCheck(field, value) {
+          var next = normalizeQualityReviewState(Object.assign({}, qualityReviewState, (function () { var item = {}; item[field] = !!value; return item; })()));
+          setQualityReviewState(next); persist('gisQualityReview', next); persist('gisQualityReviewed', Object.keys(next).every(function (key) { return next[key]; }));
+          setQualityStatus(next[field] ? 'Marked ' + field + ' as reviewed.' : 'Marked ' + field + ' as not yet reviewed.');
+        }
+
+        function downloadDataQualityReport() {
+          var html = buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState });
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = 'gis-studio-data-quality-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisQualityReviewed', true); setQualityStatus('Data quality review downloaded.'); announce('Data quality review downloaded.');
+        }
+
+        function printDataQualityReport() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) { setQualityStatus('The print window was blocked. Download the quality review instead.'); return; }
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState })); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisQualityReviewed', true); announce('Print-ready data quality review opened.');
+        }
+
+        function investigationPacketModel() {
+          return { title: projectTitle, claim: inquiryPlan.claim || composer.claim || comparisonObservation || timeObservation || (storyMap.slides[0] && storyMap.slides[0].narrative) || '', storyMap: storyMap, inquiryPlan: inquiryPlan, qualityReview: qualityReview, reviewState: qualityReviewState, provenance: provenance, rows: composerRows, generated: new Date().toLocaleString() };
+        }
+
+        function downloadInvestigationPacket() {
+          var html = buildInvestigationPacketReport(investigationPacketModel());
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = (String(projectTitle || 'gis-investigation').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-investigation') + '-packet.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); setPacketStatus('Investigation Packet downloaded.'); announce('Investigation Packet downloaded.');
+        }
+
+        function printInvestigationPacket() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) { setPacketStatus('The print window was blocked. Download the packet instead.'); return; }
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildInvestigationPacketReport(investigationPacketModel())); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); announce('Print-ready Investigation Packet opened.');
+        }
+
+        function updateInquiryPlanField(field, value) {
+          var next = normalizeInquiryPlan(Object.assign({}, inquiryPlan, (function () { var item = {}; item[field] = value; return item; })()));
+          setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true);
+          setPlannerStatus('Plan updated.');
+        }
+
+        function chooseInquiryTemplate(template) {
+          var defaults = GIS_INQUIRY_TEMPLATES[template] || GIS_INQUIRY_TEMPLATES.distribution;
+          var next = normalizeInquiryPlan({ template: template, question: defaults.question, claim: '', evidencePlan: defaults.evidencePlan, alternative: defaults.alternative, nextStep: defaults.nextStep, checklist: {} });
+          setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true); setPlannerStatus(defaults.label + ' investigation template loaded.'); announce(defaults.label + ' investigation template loaded.');
+        }
+
+        function updateInquiryChecklist(field, value) {
+          var checks = Object.assign({}, inquiryPlan.checklist); checks[field] = !!value;
+          var next = normalizeInquiryPlan(Object.assign({}, inquiryPlan, { checklist: checks }));
+          setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true);
+          if (inquiryPlanProgress(next).ready) persist('gisInquiryPlanCompleted', true);
+          setPlannerStatus(inquiryPlanProgress(next).complete + '/' + inquiryPlanProgress(next).total + ' planning checks complete.');
+        }
+
         function comparisonTable(series, side) {
           var stats = seriesStats(series);
           return h('section', { 'aria-labelledby': 'gis-compare-' + side + '-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
@@ -3480,13 +3893,115 @@
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, composerStatus)));
         }
 
+        function storyMapView() {
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-story-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'SEQUENCE • EXPLAIN • SHARE'),
+              h('h2', { id: 'gis-story-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Story Map Studio'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Sequence views from GIS Studio into an accessible claim → evidence → limitation narrative. Every frame keeps its text, source, and limitation beside the visual view.'),
+              h('label', { style: { display: 'grid', gap: 5, marginTop: 12, fontSize: 12, fontWeight: 700 } }, 'Story title', h('input', { type: 'text', value: storyMap.title, maxLength: 200, onChange: function (event) { updateStoryMapField('title', event.target.value); }, style: control })),
+              h('label', { style: { display: 'grid', gap: 5, marginTop: 9, fontSize: 12, fontWeight: 700 } }, 'Guiding question or subtitle', h('input', { type: 'text', value: storyMap.subtitle, maxLength: 300, onChange: function (event) { updateStoryMapField('subtitle', event.target.value); }, style: control })),
+              h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 } },
+                ['claim', 'evidence', 'limitation'].map(function (key) { return h('label', { key: key, style: { display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: storyMap.checks[key], onChange: function (event) { updateStoryMapField(key, event.target.checked); } }), key.charAt(0).toUpperCase() + key.slice(1) + ' check'); })),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } },
+                h('progress', { max: storyProgress.total, value: storyProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': 'Story Map reflection progress' }),
+                h('strong', { style: { color: storyProgress.complete === storyProgress.total ? '#86efac' : '#fde68a' } }, storyProgress.complete + '/' + storyProgress.total + ' reflection checks complete'),
+                h('span', { style: { color: '#a7c7d8', fontSize: 11 } }, storyProgress.frames + '/' + STORY_FRAME_LIMIT + ' frames')),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, storyStatus)),
+            h('section', { 'aria-labelledby': 'gis-story-capture-heading', style: panel },
+              h('h2', { id: 'gis-story-capture-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Capture evidence frames'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'Open a map, comparison, timeline, Composer, or Remote Sensing view, then use “Add current view to story.” You can also add a frame from scratch here.'),
+              h('button', { type: 'button', onClick: addCurrentViewToStory, style: primary }, 'Add current view to story'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, marginTop: 12 } },
+                [['title', 'Frame title', 200], ['narrative', 'Observation', 2500], ['evidence', 'Evidence note', 2500], ['limitation', 'Limitation or next question', 1800]].map(function (field) {
+                  return h('label', { key: field[0], style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 700 } }, field[1], field[0] === 'title' ? h('input', { type: 'text', value: storyDraft[field[0]], maxLength: field[2], onChange: function (event) { updateStoryDraft(field[0], event.target.value); }, style: control }) : h('textarea', { value: storyDraft[field[0]], maxLength: field[2], rows: field[0] === 'narrative' ? 3 : 2, onChange: function (event) { updateStoryDraft(field[0], event.target.value); }, style: Object.assign({}, control, { resize: 'vertical' }) }));
+                })),
+              h('button', { type: 'button', onClick: addCustomStoryFrame, style: Object.assign({}, control, { cursor: 'pointer', marginTop: 10 }) }, 'Add custom evidence frame')),
+            h('section', { 'aria-labelledby': 'gis-story-trail-heading', style: panel },
+              h('h2', { id: 'gis-story-trail-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Accessible evidence trail'),
+              storyMap.slides.length ? h('ol', { style: { margin: 0, paddingLeft: 22, display: 'grid', gap: 10 } }, storyMap.slides.map(function (frame, index) {
+                return h('li', { key: frame.id }, h('article', { style: { background: '#071827', border: '1px solid #36586b', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'start' } }, h('div', null, h('strong', { style: { color: '#67e8f9' } }, frame.title), h('p', { style: { margin: '3px 0 0', color: '#8fb4c4', fontSize: 10 } }, frame.view + (frame.metric ? ' • ' + frame.metric : ''))), h('div', { style: { display: 'flex', gap: 5 } }, h('button', { type: 'button', disabled: index === 0, onClick: function () { moveStoryFrame(index, -1); }, 'aria-label': 'Move ' + frame.title + ' earlier', style: Object.assign({}, control, { cursor: index === 0 ? 'not-allowed' : 'pointer', padding: '5px 8px' }) }, '↑'), h('button', { type: 'button', disabled: index === storyMap.slides.length - 1, onClick: function () { moveStoryFrame(index, 1); }, 'aria-label': 'Move ' + frame.title + ' later', style: Object.assign({}, control, { cursor: index === storyMap.slides.length - 1 ? 'not-allowed' : 'pointer', padding: '5px 8px' }) }, '↓'), h('button', { type: 'button', onClick: function () { removeStoryFrame(index); }, 'aria-label': 'Remove ' + frame.title, style: Object.assign({}, control, { cursor: 'pointer', padding: '5px 8px' }) }, 'Remove'))),
+                  h('p', { style: { margin: '9px 0 0', fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: '#fde68a' } }, 'Observation: '), frame.narrative || 'Not recorded.'),
+                  h('p', { style: { margin: '5px 0 0', fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: '#86efac' } }, 'Evidence: '), frame.evidence || 'Not recorded.'),
+                  h('p', { style: { margin: '5px 0 0', fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: '#fca5a5' } }, 'Limitation: '), frame.limitation || 'Not recorded.')));
+              })) : h('p', { style: { padding: 12, borderRadius: 9, background: '#071827', color: '#a7c7d8' } }, 'No frames yet. Capture the current GIS view or add a custom frame above.')),
+            h('section', { 'aria-labelledby': 'gis-story-export-heading', style: panel },
+              h('h2', { id: 'gis-story-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Export the story map'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'The self-contained HTML report includes an ordered, screen-reader-friendly evidence trail, reflection checks, a data-table twin, and method limitations. It prints cleanly to PDF.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: downloadStoryMapReport, style: primary }, 'Download story map report'), h('button', { type: 'button', onClick: printStoryMapReport, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'))));
+        }
+
+        function qualityReviewView() {
+          var statusColor = qualityReview.errors ? '#fca5a5' : qualityReview.warnings ? '#fde68a' : '#86efac';
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-quality-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'CHECK • EXPLAIN • SHARE'),
+              h('h2', { id: 'gis-quality-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Data Quality and Uncertainty Review'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Use the project’s existing safeguards to decide what the evidence can support. A score is a teaching aid, not a statistical confidence interval.'),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 15, flexWrap: 'wrap', marginTop: 14 } }, h('span', { style: { color: '#a7c7d8', fontSize: 11, fontWeight: 800 } }, 'Evidence readiness'), h('strong', { style: { fontSize: 34, color: statusColor } }, qualityReview.score + '/100'), h('p', { role: 'status', style: { margin: 0, color: statusColor, fontSize: 12, fontWeight: 800 } }, qualityReview.summary)),
+              h('p', { style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11 } }, qualityReview.errors + ' required check' + (qualityReview.errors === 1 ? '' : 's') + '; ' + qualityReview.warnings + ' highlighted limitation' + (qualityReview.warnings === 1 ? '' : 's') + '.')),
+            h('section', { 'aria-labelledby': 'gis-quality-checklist-heading', style: panel },
+              h('h2', { id: 'gis-quality-checklist-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Learner review checklist'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11 } }, 'These acknowledgements are saved with the project so a teacher or collaborator can see which safeguards were reviewed.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9 } }, [['privacy', 'Coordinate privacy reviewed'], ['missingness', 'Missing values reviewed'], ['provenance', 'Provenance completed'], ['interpretation', 'Interpretation limits recorded']].map(function (item) { return h('label', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 9, background: '#071827', fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: qualityReviewState[item[0]], onChange: function (event) { updateQualityReviewCheck(item[0], event.target.checked); } }), item[1]); })),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, qualityStatus)),
+            h('section', { 'aria-labelledby': 'gis-quality-table-heading', style: panel },
+              h('h2', { id: 'gis-quality-table-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Accessible quality table'),
+              h('div', { style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } }, h('caption', { style: { textAlign: 'left', padding: '6px 0', color: '#67e8f9', fontWeight: 800 } }, 'Quality checks, findings, and next actions'), h('thead', null, h('tr', null, ['Check', 'Status', 'Finding', 'Next action'].map(function (item) { return h('th', { key: item, scope: 'col', style: { textAlign: 'left', padding: 7, borderBottom: '1px solid #3f6b82', color: '#a7c7d8' } }, item); }))), h('tbody', null, qualityReview.checks.map(function (item) { var color = item.status === 'error' ? '#fca5a5' : item.status === 'warning' ? '#fde68a' : '#86efac'; return h('tr', { key: item.id }, h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, borderBottom: '1px solid #234456' } }, item.label), h('td', { style: { padding: 7, borderBottom: '1px solid #234456', color: color, fontWeight: 900 } }, item.status.toUpperCase()), h('td', { style: { padding: 7, borderBottom: '1px solid #234456' } }, item.message), h('td', { style: { padding: 7, borderBottom: '1px solid #234456', color: '#b7d2df' } }, item.recommendation)); }))))),
+            h('section', { 'aria-labelledby': 'gis-quality-export-heading', style: panel },
+              h('h2', { id: 'gis-quality-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Export the quality review'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'The report preserves the score, review checklist, quality table, and plain-language limits for a teacher handoff or story-map appendix.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: downloadDataQualityReport, style: primary }, 'Download quality review'), h('button', { type: 'button', onClick: printDataQualityReport, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'))));
+        }
+
+        function investigationPacketView() {
+          var ready = qualityReview.ready && storyProgress.frames > 0;
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-packet-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'ASSEMBLE • HAND OFF • REFLECT'),
+              h('h2', { id: 'gis-packet-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Investigation Packet'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Combine the Story Map, Quality Review, mapped table, and provenance into one accessible teacher handoff. This is the natural final artifact for a GIS investigation.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 10, marginTop: 14 } }, [['Evidence readiness', qualityReview.score + '/100'], ['Story frames', storyProgress.frames], ['Reflection checks', storyProgress.complete + '/' + storyProgress.total], ['Mapped records', composerRows.length]].map(function (item) { return h('div', { key: item[0], style: { padding: 12, borderRadius: 9, background: '#071827' } }, h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, item[1]), h('span', { style: { color: '#a7c7d8', fontSize: 10 } }, item[0])); })),
+              h('p', { role: 'status', style: { margin: '12px 0 0', color: ready ? '#86efac' : '#fde68a', fontSize: 12, fontWeight: 800 } }, ready ? 'Packet contents are ready for a careful handoff.' : 'Add at least one Story Map frame and resolve required quality checks before calling this packet ready.')),
+            h('section', { 'aria-labelledby': 'gis-packet-contents-heading', style: panel },
+              h('h2', { id: 'gis-packet-contents-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Packet contents'),
+              h('ul', { style: { margin: 0, paddingLeft: 21, color: '#dbeafe', fontSize: 12, lineHeight: 1.8 } }, h('li', null, 'Working claim and investigation question'), h('li', null, storyProgress.frames + ' ordered Story Map evidence frame' + (storyProgress.frames === 1 ? '' : 's')), h('li', null, 'Quality and uncertainty table with next actions'), h('li', null, composerRows.length + ' mapped records in a data-table twin'), h('li', null, 'Provenance, method, limitations, and handoff questions')),
+              h('p', { style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, 'Source: ' + (provenance.source || 'Not specified') + '. Project: ' + (projectTitle || 'Untitled GIS project') + '.')),
+            h('section', { 'aria-labelledby': 'gis-packet-export-heading', style: panel },
+              h('h2', { id: 'gis-packet-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Export the teacher handoff'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'The self-contained report is screen-reader friendly and print-ready. It preserves evidence sequence and limitations instead of presenting a map without context.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: downloadInvestigationPacket, style: primary }, 'Download Investigation Packet'), h('button', { type: 'button', onClick: printInvestigationPacket, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF')),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, packetStatus)));
+        }
+
+        function investigationPlannerView() {
+          var templateOptions = Object.keys(GIS_INQUIRY_TEMPLATES).map(function (key) { return h('option', { key: key, value: key }, GIS_INQUIRY_TEMPLATES[key].label); });
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-planner-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'ASK • TEST • REVISE'),
+              h('h2', { id: 'gis-planner-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Investigation Planner'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Plan the reasoning before you interpret the map. A strong spatial investigation names a question, a claim, the evidence needed, an alternative explanation, and a next step.'),
+              h('label', { style: { display: 'grid', gap: 5, marginTop: 13, fontSize: 12, fontWeight: 800 } }, 'Question type', h('select', { value: inquiryPlan.template, onChange: function (event) { chooseInquiryTemplate(event.target.value); }, style: control }, templateOptions)),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 10, marginTop: 12 } }, [['question', 'Testable spatial question', 500], ['claim', 'Working claim (revise as evidence changes)', 1500], ['evidencePlan', 'Evidence plan: what will you map or compare?', 1500], ['alternative', 'Alternative explanation or confounder', 1500], ['nextStep', 'Next step or additional evidence', 1500]].map(function (field) { return h('label', { key: field[0], style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 700 } }, field[1], field[0] === 'question' ? h('input', { type: 'text', value: inquiryPlan[field[0]], maxLength: field[2], onChange: function (event) { updateInquiryPlanField(field[0], event.target.value); }, style: control }) : h('textarea', { value: inquiryPlan[field[0]], maxLength: field[2], rows: field[0] === 'claim' ? 4 : 3, onChange: function (event) { updateInquiryPlanField(field[0], event.target.value); }, style: Object.assign({}, control, { resize: 'vertical' }) })); })),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } }, h('progress', { max: inquiryProgress.total, value: inquiryProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': 'Investigation planning progress' }), h('strong', { style: { color: inquiryProgress.ready ? '#86efac' : '#fde68a' } }, inquiryProgress.complete + '/' + inquiryProgress.total + ' planning checks complete')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 11 } }, [['question', 'Question is specific'], ['evidence', 'Evidence is mapped or compared'], ['alternative', 'Alternative explanation named'], ['nextStep', 'Next evidence step named']].map(function (item) { return h('label', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 9, background: '#071827', fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: inquiryPlan.checklist[item[0]], onChange: function (event) { updateInquiryChecklist(item[0], event.target.checked); } }), item[1]); })),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, plannerStatus)),
+            h('section', { 'aria-labelledby': 'gis-planner-next-heading', style: panel },
+              h('h2', { id: 'gis-planner-next-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Continue the investigation'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'Your plan is saved with the project and included in the Investigation Packet. Move between workspaces without losing the reasoning trail.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: function () { setTab('map'); persist('gisTab', 'map'); }, style: primary }, 'Open Map Workspace'), h('button', { type: 'button', onClick: function () { setTab('story'); persist('gisTab', 'story'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Build Story Map'), h('button', { type: 'button', onClick: function () { setTab('packet'); persist('gisTab', 'packet'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Review Investigation Packet'))));
+        }
+
         function projectView() {
           var inventory = [
             importedRows.length + ' imported point records',
             geoFeatures.length + ' GeoJSON features',
             timeDataset.rows.length + ' time-series records across ' + timeDataset.years.length + ' years',
             Object.keys(missionProgress).length + ' missions with saved progress',
-            remoteSensing.evidence ? 'Remote-sensing interpretation and quality checklist saved' : 'Remote-sensing lab ready for investigation'
+            remoteSensing.evidence ? 'Remote-sensing interpretation and quality checklist saved' : 'Remote-sensing lab ready for investigation',
+            storyMap.slides.length + ' story-map frames',
+            qualityReview.ready ? 'Data-quality review has no required blockers' : 'Data-quality review: ' + qualityReview.score + '/100 with ' + qualityReview.errors + ' required blocker' + (qualityReview.errors === 1 ? '' : 's')
           ];
           var provenanceFields = [
             ['datasetTitle', 'Dataset title', 'Example: Maine broadband access study'],
@@ -3734,19 +4249,20 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
+        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['story', 'Story Map'], ['quality', 'Quality Review'], ['planner', 'Investigation Planner'], ['packet', 'Investigation Packet'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
         return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
               h('p', { style: { margin: 0, color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '.11em' } }, 'SPATIAL DATA LABORATORY'),
               h('h1', { style: { margin: '4px 0 3px', color: '#f0fdfa', fontSize: 26 } }, 'GIS Studio'),
-              h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 12 } }, 'Layer it. Map it. Question the pattern.')),
+              h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 12 } }, 'Layer it. Map it. Question the pattern.'),
+              h('button', { type: 'button', onClick: addCurrentViewToStory, style: Object.assign({}, control, { cursor: 'pointer', marginTop: 9 }) }, 'Add current view to story')),
             h('nav', { 'aria-label': 'GIS Studio sections', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               tabs.map(function (item) {
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
-          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
+          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'story' ? storyMapView() : tab === 'quality' ? qualityReviewView() : tab === 'planner' ? investigationPlannerView() : tab === 'packet' ? investigationPacketView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },
             'Learning data: density values are rounded approximations; the access index, practice polygons, coastal guide, and remote-sensing raster are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }
