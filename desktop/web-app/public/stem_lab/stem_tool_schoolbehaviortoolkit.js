@@ -1403,7 +1403,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         minHeight: '70vh',
         padding: 0,
         boxShadow: '0 0 40px rgba(20,184,166,0.15)',
-        outline: 'none',
         // ── Theme self-containment (2026-07-02, Aaron: "light mode … is not right") ──
         // This tool's background is a FIXED dark teal atmosphere (above), and its
         // content is built for a dark substrate: 46 hardcoded light-text colors,
@@ -2084,7 +2083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, environment stability. Predict whether the plan is ready to implement. No score, no reveal.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
             [1, 2, 3].map(function(tier) {
               var x = 20 + (tier - 1) * 100;
               var w = 80;
