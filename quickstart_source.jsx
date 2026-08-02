@@ -589,11 +589,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     <div
         ref={wizardRef}
         tabIndex={-1}
+        className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
         role="dialog"
         aria-modal="true"
         aria-labelledby="quickstart-wizard-title"
         aria-describedby="quickstart-step-status"
-        className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
     >
       <div className={`bg-white w-full ${localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl'} rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in motion-reduce:animate-none zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]`}>
           <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
