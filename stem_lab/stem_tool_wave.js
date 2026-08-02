@@ -124,6 +124,7 @@ const d = labToolData.wave;
           var displayMediumSpeed = d.waveSpeed || 343;
           var displayWavelength = displayMediumSpeed / displayFreq;
           var displayPeriod = 1 / displayFreq;
+          var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           var activeWaveType = d.waveType || 'sine';
           var WAVE_VIEW_META = {
             free: { label: __alloT('stem.wave.mode_free_label', 'Free wave'), accent: '#22d3ee', chip: __alloT('stem.wave.mode_free_chip', 'Waveform lab') },
@@ -1896,7 +1897,7 @@ const d = labToolData.wave;
 
                 onClick: toggleSound,
 
-                className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + ((_waveAudio.ctx && d.soundPlaying) ? 'bg-emerald-700 text-white animate-pulse shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
+                className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + ((_waveAudio.ctx && d.soundPlaying) ? ('bg-emerald-700 text-white ' + (reducedMotion ? '' : 'animate-pulse ') + 'shadow-sm') : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
 
               }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A ' + __alloT('stem.wave.btn_stop_sound', 'Stop Sound') : '\uD83D\uDD08 ' + __alloT('stem.wave.btn_play_sound', 'Play Sound') + ' (' + (d.frequency * 100) + 'Hz)')
 
@@ -1945,12 +1946,10 @@ const d = labToolData.wave;
             },
 
               React.createElement("canvas", {
-
+                role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
                 ref: canvasRef,
                 className: "focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-inset",
                 "data-wave-canvas": "true",
-
-                tabIndex: 0, role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
 
                 "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
 
@@ -3129,7 +3128,7 @@ const d = labToolData.wave;
           React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.wave.sec_harmonics_intro', 'A vibrating string supports an infinite series of modes called harmonics. Each has a specific number of nodes (zero-amplitude points) + antinodes (max-amplitude points). The mix of harmonics = timbre.')),
           React.createElement('div', { className: 'space-y-1.5' },
             HARMONICS.map(function(h, i) {
-              return React.createElement('div', { key: 'h'+i, className: 'flex items-baseline gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
+              return React.createElement('div', { key: 'h' + i, scope: 'col', className: 'flex items-baseline gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'min-w-[140px]' },
                   React.createElement('div', { className: 'text-[12px] font-black text-slate-800' }, h.mode),
                   React.createElement('div', { className: 'text-[10px] text-slate-500 font-mono' }, h.nodes + __alloT('stem.wave.label_nodes_f', ' nodes · f = ') + h.f)
@@ -3221,7 +3220,7 @@ const d = labToolData.wave;
         }
         var pathStr = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
         // Animated phase using time for visual interest (gentle wobble at user freq)
-        var anim = 'animate-pulse'; // CSS-only; full animation handled by canvas tools elsewhere
+        var anim = reducedMotion ? '' : 'animate-pulse'; // CSS-only; full animation handled by canvas tools elsewhere
 
         function logObservation() {
           var obs = { f: lab.freq, T: lab.tension, lambda: parseFloat(wavelength.toFixed(3)), v: parseFloat(v.toFixed(2)) };
@@ -3281,7 +3280,7 @@ const d = labToolData.wave;
                 h('div', { className: 'overflow-x-auto' },
                   h('table', { className: 'text-[10px] border-collapse w-full' },
                     h('thead', null, h('tr', { className: 'bg-slate-200' },
-                      ['f (Hz)', 'T (N)', 'λ (m)', 'v (m/s)', 'f·λ'].map(function(c) { return h('th', { key: c, className: 'px-1 py-0.5 text-left' }, c); })
+                      ['f (Hz)', 'T (N)', 'λ (m)', 'v (m/s)', 'f·λ'].map(function(c) { return h('th', { key: c, scope: 'col', className: 'px-1 py-0.5 text-left' }, c); })
                     )),
                     h('tbody', null,
                       lab.observationsLogged.map(function(o, i) {
@@ -3363,7 +3362,7 @@ const d = labToolData.wave;
             __alloT('stem.wave.sec_standinghunt_intro', 'A string fixed at both ends. You control the tension and the driving frequency. There is no "right answer" — and no answer dump. Sweep the sliders. Look for the rare frequencies where the string locks into a clean standing pattern. Type what you discover in your own words.')),
           // Live SVG
           h('div', { className: 'mb-2 rounded border border-slate-200 bg-slate-50 p-2' },
-            h('svg', { viewBox: '0 0 320 120', className: 'w-full h-32' },
+            h('svg', { viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.wave.standing_wave_snapshot', 'Standing wave snapshot showing nodes and antinodes for the selected frequency and tension.'), className: 'w-full h-32' },
               // String fixation posts
               h('rect', { x: 18, y: 70, width: 4, height: 30, fill: '#475569' }),
               h('rect', { x: 298, y: 70, width: 4, height: 30, fill: '#475569' }),
@@ -3421,7 +3420,7 @@ const d = labToolData.wave;
               h('thead', null,
                 h('tr', { className: 'bg-slate-100 text-slate-700' },
                   ['T (N)', 'f (Hz)', 'v (m/s)', 'λ (m)', 'n', __alloT('stem.wave.sh_col_locked', 'locked')].map(function(h2, i) {
-                    return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, h2);
+                    return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, h2);
                   })
                 )
               ),
@@ -3689,7 +3688,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_material', 'Material'), 'n', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3862,7 +3861,7 @@ const d = labToolData.wave;
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '🕰 ' + __alloT('stem.wave.sec_history_title', 'History of wave science')),
           React.createElement('div', { className: 'space-y-2' },
             WAVE_HISTORY.map(function(h2, i) {
-              return React.createElement('div', { key: 'h'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
+              return React.createElement('div', { key: 'h' + i, scope: 'col', className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-cyan-400 border border-slate-200' },
                 React.createElement('div', { className: 'flex items-baseline gap-2 mb-0.5' },
                   React.createElement('span', { className: 'text-[10px] font-mono text-cyan-700 font-bold' }, h2.year),
                   React.createElement('span', { className: 'text-[12px] font-black text-cyan-900' }, h2.who)
@@ -3962,7 +3961,7 @@ const d = labToolData.wave;
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     [__alloT('stem.wave.col_format', 'Format'), __alloT('stem.wave.col_extension', 'Extension'), __alloT('stem.wave.col_compression', 'Compression'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                      return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
                 ),
@@ -3985,7 +3984,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_quality_level', 'Quality level'), __alloT('stem.wave.col_bitrate', 'Bitrate'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4126,7 +4125,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_wave_medium', 'Wave + medium'), __alloT('stem.wave.col_speed', 'Speed'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4154,7 +4153,7 @@ const d = labToolData.wave;
                 React.createElement('thead', null,
                   React.createElement('tr', { className: 'bg-slate-100' },
                     [__alloT('stem.wave.col_lens', 'Lens'), __alloT('stem.wave.col_fov', 'Field of view'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
-                      return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                      return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                     })
                   )
                 ),
@@ -4254,7 +4253,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Star', 'Type', 'Temp', 'Distance', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4315,7 +4314,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_source', 'Source'), __alloT('stem.wave.col_level', 'Level'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4456,7 +4455,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_animal', 'Animal'), __alloT('stem.wave.col_hearing_range', 'Hearing range'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4482,7 +4481,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_instrument', 'Instrument'), __alloT('stem.wave.col_range', 'Range'), __alloT('stem.wave.col_notes_notation', 'Notes (notation)'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4510,7 +4509,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_band', 'Band'), __alloT('stem.wave.col_frequency', 'Frequency'), __alloT('stem.wave.col_wavelength', 'Wavelength'), __alloT('stem.wave.col_use', 'Use')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4537,7 +4536,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_color', 'Color'), __alloT('stem.wave.col_hex', 'Hex'), 'λ peak', __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4564,7 +4563,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   ['Medium', 'Speed', 'Notes'].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4825,7 +4824,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_standard', 'Standard'), __alloT('stem.wave.col_freq_band', 'Frequency band'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4926,7 +4925,7 @@ const d = labToolData.wave;
               React.createElement('thead', null,
                 React.createElement('tr', { className: 'bg-slate-100' },
                   [__alloT('stem.wave.col_quantity', 'Quantity'), __alloT('stem.wave.col_symbol', 'Symbol'), __alloT('stem.wave.col_unit', 'Unit'), __alloT('stem.wave.col_notes', 'Notes')].map(function(hh, i) {
-                    return React.createElement('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
