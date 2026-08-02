@@ -662,6 +662,7 @@ window.StemLab = window.StemLab || {
       var dnaCleanup = dnaCleanupRef.current;
       var dnaCompletionRef = React.useRef({});
       var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var reducedMotion = prefersReducedMotion;
 
       React.useEffect(function() {
         return function() {
@@ -2859,7 +2860,7 @@ window.StemLab = window.StemLab || {
               h("h4", { className: "text-sm font-bold text-violet-800" }, t('stem.dna.crispr_cas9_gene_editor', "CRISPR-Cas9 Gene Editor")),
               h("span", { className: "px-2 py-0.5 text-[11px] font-bold rounded-full " + (
                 crisprPhase === 'design' ? 'bg-blue-200 text-blue-800' :
-                crisprPhase === 'scanning' ? 'bg-amber-200 text-amber-800 animate-pulse' :
+                crisprPhase === 'scanning' ? 'bg-amber-200 text-amber-800' + (reducedMotion ? '' : ' animate-pulse') :
                 crisprPhase === 'cut' ? 'bg-red-200 text-red-800' :
                 crisprPhase === 'done' ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600'
               ) }, crisprPhase === 'design' ? 'DESIGN' : crisprPhase === 'scanning' ? 'SCANNING...' : crisprPhase === 'cut' ? 'TARGET FOUND' : crisprPhase === 'done' ? 'EDIT COMPLETE' : crisprPhase.toUpperCase())
@@ -3378,7 +3379,7 @@ window.StemLab = window.StemLab || {
               h("h4", { className: "text-sm font-bold text-slate-700" }, t('stem.dna.dna_challenge', "\uD83C\uDFAF DNA Challenge")),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + score + " pts"),
-                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
+                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
               )
             ),
 
@@ -3453,7 +3454,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex items-center gap-2 mb-1" },
               h("span", { className: "text-lg" }, "\u2694\uFE0F"),
               h("h4", { className: "text-sm font-bold text-red-800" }, t('stem.dna.gene_defense_battle', "Gene Defense Battle")),
-              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[11px] font-bold rounded-full animate-pulse" }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
+              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[11px] font-bold rounded-full" + (reducedMotion ? '' : ' animate-pulse') }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
             ),
             h("p", { className: "text-xs text-slate-600" }, gradeText(
               'A virus is attacking the cell! Answer genetics questions to fight it off!',
@@ -3501,7 +3502,7 @@ window.StemLab = window.StemLab || {
               (function() {
                 if (battleUseAI && d.battleAILoading) {
                   return h("div", { className: "text-center py-4" },
-                    h("div", { className: "text-2xl animate-pulse mb-2" }, "\uD83E\uDDE0"),
+                    h("div", { className: "text-2xl mb-2" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83E\uDDE0"),
                     h("p", { className: "text-xs text-purple-600 font-bold" }, t('stem.dna.ai_generating_question', "AI generating question..."))
                   );
                 }
