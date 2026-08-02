@@ -3533,6 +3533,207 @@
     return deck;
   }
 
+  // ── PPTX import ─────────────────────────────────────────────────────────────
+  // A .pptx is a zip of OOXML. The DRIVER (stImportPptxFile) unzips with the
+  // host's JSZip; stImportPptxDoc is PURE over a {path: content} map (strings
+  // for xml, base64 for media), so the parser is testable without the library.
+  // EMU → px: 9525 EMU per px at 96dpi. Fidelity contract (honest v1): text
+  // boxes, pictures (alt text + decorative flag), and rect/ellipse fills come
+  // through; tables, charts, SmartArt, groups, and media are COUNTED and
+  // reported, never silently dropped. Everything lands as actor 'import', and
+  // a picture with no description imports with empty alt ON PURPOSE — the alt
+  // gate then blocks re-export until a human writes it.
+  var ST_EMU_PER_PX = 9525;
+  function stEmuPx(v) { return Math.round(stFiniteNumber(v, 0) / ST_EMU_PER_PX); }
+
+  function stPptxParseXml(text) {
+    if (typeof DOMParser === 'undefined' || !text) return null;
+    try {
+      var xml = new DOMParser().parseFromString(text, 'application/xml');
+      return xml && !xml.querySelector('parsererror') ? xml : null;
+    } catch (_) { return null; }
+  }
+  function stXmlAll(root, localName) {
+    if (!root) return [];
+    var out = [];
+    var walk = function (el) {
+      if (el.nodeType === 1) {
+        if ((el.localName || el.nodeName.split(':').pop()) === localName) out.push(el);
+        for (var i = 0; i < el.children.length; i++) walk(el.children[i]);
+      }
+    };
+    var start = root.documentElement || root;
+    walk(start);
+    return out;
+  }
+  function stXmlFirst(root, localName) { return stXmlAll(root, localName)[0] || null; }
+  function stXmlAttr(el, name) {
+    if (!el) return '';
+    var direct = el.getAttribute(name);
+    if (direct != null && direct !== '') return direct;
+    // namespaced attrs (r:embed) — match by localName suffix
+    for (var i = 0; i < el.attributes.length; i++) {
+      var a = el.attributes[i];
+      if (a.localName === name || a.name.split(':').pop() === name) return a.value;
+    }
+    return '';
+  }
+
+  function stPptxRels(files, relsPath) {
+    var map = {};
+    var xml = stPptxParseXml(files[relsPath]);
+    stXmlAll(xml, 'Relationship').forEach(function (rel) {
+      var id = stXmlAttr(rel, 'Id');
+      var target = stXmlAttr(rel, 'Target').replace(/^\.\.\//, 'ppt/').replace(/^\/+/, '');
+      if (!/^ppt\//.test(target)) target = 'ppt/' + target.replace(/^ppt\//, '');
+      if (id) map[id] = target;
+    });
+    return map;
+  }
+
+  function stPptxMediaDataUri(files, target) {
+    var b64 = files[target];
+    if (!b64 || typeof b64 !== 'string') return '';
+    var ext = (target.split('.').pop() || '').toLowerCase();
+    var mime = ext === 'png' ? 'image/png' : (ext === 'jpg' || ext === 'jpeg') ? 'image/jpeg' : ext === 'gif' ? 'image/gif' : ext === 'webp' ? 'image/webp' : '';
+    if (!mime) return '';
+    return stSafeDataImage('data:' + mime + ';base64,' + b64.replace(/\s+/g, ''), ST_MAX_IMAGE_SRC_LENGTH);
+  }
+
+  function stPptxFrameOf(el, fallback) {
+    var xfrm = stXmlFirst(el, 'xfrm');
+    if (xfrm) {
+      var off = stXmlFirst(xfrm, 'off');
+      var ext = stXmlFirst(xfrm, 'ext');
+      if (off && ext) {
+        return { x: stEmuPx(stXmlAttr(off, 'x')), y: stEmuPx(stXmlAttr(off, 'y')), w: Math.max(ST_MIN_SIZE, stEmuPx(stXmlAttr(ext, 'cx'))), h: Math.max(ST_MIN_SIZE, stEmuPx(stXmlAttr(ext, 'cy'))) };
+      }
+    }
+    return fallback; // placeholder inheriting layout geometry — caller supplies a sane slot
+  }
+
+  function stImportPptxDoc(files, fileName, now) {
+    var presXml = stPptxParseXml(files['ppt/presentation.xml']);
+    if (!presXml) return { error: 'This file does not look like a PowerPoint (.pptx) presentation.' };
+    var sldSz = stXmlFirst(presXml, 'sldSz');
+    var cw = sldSz ? Math.max(ST_MIN_SIZE, Math.min(ST_MAX_CANVAS_DIM, stEmuPx(stXmlAttr(sldSz, 'cx')))) : ST_CANVAS_PRESETS['slide-16x9'].w;
+    var ch = sldSz ? Math.max(ST_MIN_SIZE, Math.min(ST_MAX_CANVAS_DIM, stEmuPx(stXmlAttr(sldSz, 'cy')))) : ST_CANVAS_PRESETS['slide-16x9'].h;
+    var presRels = stPptxRels(files, 'ppt/_rels/presentation.xml.rels');
+    var slidePaths = [];
+    stXmlAll(presXml, 'sldId').forEach(function (sld) {
+      // <p:sldId id="256" r:id="rId2"/> — the slide reference is the NAMESPACED
+      // r:id (localName 'id' with a prefix); the bare id is just a sequence number.
+      var target = '';
+      for (var i = 0; i < sld.attributes.length; i++) {
+        var a = sld.attributes[i];
+        if (a.localName === 'id' && a.name !== 'id' && presRels[a.value]) { target = presRels[a.value]; break; }
+      }
+      if (target && /^ppt\/slides\//.test(target)) slidePaths.push(target);
+    });
+    if (!slidePaths.length) {
+      // Fallback: enumerate by filename order (slide1.xml, slide2.xml …)
+      slidePaths = Object.keys(files).filter(function (p) { return /^ppt\/slides\/slide\d+\.xml$/.test(p); })
+        .sort(function (a, b) { return parseInt(a.match(/(\d+)\.xml$/)[1], 10) - parseInt(b.match(/(\d+)\.xml$/)[1], 10); });
+    }
+    if (!slidePaths.length) return { error: 'No slides found in this presentation.' };
+    if (slidePaths.length > ST_MAX_PAGES) return { error: 'This deck has ' + slidePaths.length + ' slides — the limit is ' + ST_MAX_PAGES + '.' };
+
+    var title = String(fileName || 'Imported deck').replace(/\.pptx$/i, '').trim() || 'Imported deck';
+    var isWide = Math.abs(cw - 1280) <= 2 && Math.abs(ch - 720) <= 2;
+    var d = stCreateDoc('slide-16x9', title, now);
+    stAppend(d, { type: 'doc.template', template: 'pptx-import', file: title }, 'import', now);
+    if (!isWide) stAppend(d, { type: 'canvas.resize', w: cw, h: ch }, 'import', now);
+    var summary = { slides: slidePaths.length, texts: 0, images: 0, shapes: 0, altMissing: 0, skipped: {} };
+    var skip = function (kind) { summary.skipped[kind] = (summary.skipped[kind] || 0) + 1; };
+
+    slidePaths.forEach(function (slidePath, page) {
+      if (page > 0) stAppend(d, { type: 'page.add' }, 'import', now);
+      var slideXml = stPptxParseXml(files[slidePath]);
+      if (!slideXml) { skip('unreadable-slide'); return; }
+      var rels = stPptxRels(files, slidePath.replace(/slides\//, 'slides/_rels/') + '.rels');
+      var spTree = stXmlFirst(slideXml, 'spTree');
+      if (!spTree) { skip('empty-slide'); return; }
+      var slotY = { next: 48 }; // stacked fallback slots for placeholder shapes with inherited geometry
+      var fallbackFrame = function (isTitle) {
+        var f = isTitle ? { x: 96, y: 48, w: cw - 192, h: 110 } : { x: 96, y: slotY.next < 190 ? 190 : slotY.next, w: cw - 192, h: Math.max(ST_MIN_SIZE, Math.round(ch * 0.45)) };
+        slotY.next = f.y + f.h + 16;
+        return f;
+      };
+      var addObj = function (obj) {
+        if (obj.type === 'text') summary.texts++; else if (obj.type === 'image') summary.images++; else summary.shapes++;
+        if (page > 0) obj.page = page;
+        stAppend(d, { type: 'object.add', object: obj }, 'import', now);
+      };
+      for (var ci = 0; ci < spTree.children.length; ci++) {
+        var node = spTree.children[ci];
+        var kind = node.localName || node.nodeName.split(':').pop();
+        if (kind === 'sp') {
+          var txBody = stXmlFirst(node, 'txBody');
+          var ph = stXmlFirst(node, 'ph');
+          var phType = ph ? (stXmlAttr(ph, 'type') || 'body') : '';
+          var isTitle = phType === 'title' || phType === 'ctrTitle';
+          if (txBody) {
+            var paras = stXmlAll(txBody, 'p').map(function (p) {
+              return stXmlAll(p, 't').map(function (t) { return t.textContent || ''; }).join('');
+            });
+            var text = paras.join('\n').replace(/\n+$/, '');
+            if (!text.trim()) { continue; } // empty placeholder — nothing to keep
+            var rPr = stXmlFirst(txBody, 'rPr');
+            var szHundredthsPt = stFiniteNumber(rPr ? stXmlAttr(rPr, 'sz') : '', 0);
+            var sizePx = szHundredthsPt ? Math.max(8, Math.min(160, Math.round(szHundredthsPt / 75))) : (isTitle ? 40 : 18);
+            var role = isTitle ? (page === 0 ? 'heading1' : 'heading2') : 'body';
+            addObj({ type: 'text', role: role, frame: stPptxFrameOf(node, fallbackFrame(isTitle)), z: 10,
+              runs: [{ text: text, style: { size: sizePx, color: '#111827', bold: isTitle || (rPr ? stXmlAttr(rPr, 'b') === '1' : false), align: 'left' } }] });
+          } else {
+            var geom = stXmlFirst(node, 'prstGeom');
+            var prst = geom ? stXmlAttr(geom, 'prst') : '';
+            if (prst === 'rect' || prst === 'roundRect' || prst === 'ellipse') {
+              var clr = stXmlFirst(node, 'srgbClr');
+              addObj({ type: 'shape', shape: prst === 'ellipse' ? 'ellipse' : 'rect', frame: stPptxFrameOf(node, fallbackFrame(false)), z: 1,
+                fill: clr ? stSafeCssColor('#' + stXmlAttr(clr, 'val'), '#e2e8f0') : '#e2e8f0', decorative: true });
+            } else if (prst) skip('shape:' + prst);
+          }
+        } else if (kind === 'pic') {
+          var blip = stXmlFirst(node, 'blip');
+          var target = blip ? rels[stXmlAttr(blip, 'embed')] : '';
+          var src = target ? stPptxMediaDataUri(files, target) : '';
+          if (!src) { skip(target ? 'image-too-large-or-type' : 'image-unresolved'); continue; }
+          var cNvPr = stXmlFirst(node, 'cNvPr');
+          var alt = cNvPr ? String(stXmlAttr(cNvPr, 'descr') || '').trim() : '';
+          var decorative = cNvPr ? /decorative[^>]*val="1"/.test(cNvPr.innerHTML || '') : false;
+          if (!alt && !decorative) summary.altMissing++;
+          addObj({ type: 'image', src: src, alt: alt, decorative: decorative, frame: stPptxFrameOf(node, fallbackFrame(false)), z: 5, fit: 'contain',
+            provenance: { origin: 'pptx-import', file: title } });
+        } else if (kind === 'graphicFrame') skip('table-or-chart');
+        else if (kind === 'grpSp') skip('group');
+        else if (kind === 'nvGrpSpPr' || kind === 'grpSpPr') { /* structural chrome */ }
+        else skip(kind);
+      }
+    });
+    if (d.objects.length > ST_MAX_OBJECTS) return { error: 'This deck has more objects (' + d.objects.length + ') than the editor supports (' + ST_MAX_OBJECTS + ').' };
+    var errs = stValidateDoc(d);
+    if (errs.length) return { error: errs[0] };
+    return { doc: d, summary: summary };
+  }
+
+  // Driver: unzip with the host's JSZip (dependency-injected), build the pure
+  // file map, and hand off. xml/rels come out as strings, media as base64.
+  function stImportPptxFile(file, JSZipCtor, now) {
+    if (!JSZipCtor || typeof JSZipCtor.loadAsync !== 'function') {
+      return Promise.reject(new Error('The file-import library (JSZip) is not loaded.'));
+    }
+    return JSZipCtor.loadAsync(file).then(function (zip) {
+      var files = {};
+      var jobs = [];
+      zip.forEach(function (path, entry) {
+        if (entry.dir) return;
+        if (/\.(xml|rels)$/i.test(path)) jobs.push(entry.async('string').then(function (s) { files[path] = s; }));
+        else if (/^ppt\/media\//i.test(path)) jobs.push(entry.async('base64').then(function (s) { files[path] = s; }));
+      });
+      return Promise.all(jobs).then(function () { return stImportPptxDoc(files, file && file.name, now); });
+    });
+  }
+
   // ── Keyboard shortcut reference (pure data; the editor renders + binds it) ──
   // `mod` = the platform command key (Ctrl on Windows/Linux, ⌘ on Mac); the
   // editor prefixes it and localizes each label by id (studio.sc_<id>). Kept as
@@ -4043,6 +4244,7 @@
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
     var fileRef = React.useRef(null);
     var loadRef = React.useRef(null);
+    var pptxRef = React.useRef(null);
     var findInputRef = React.useRef(null);
     var canvasViewportRef = React.useRef(null);
     // Focus management (WCAG 2.4.3): move focus into the dialog on open, restore
@@ -5314,6 +5516,27 @@
       };
       r.readAsText(f);
     };
+    var onImportPptxFile = function (ev) {
+      var f = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!f) return;
+      var Zip = typeof window !== 'undefined' ? window.JSZip : null;
+      if (!Zip) { addToast(TT('studio.pptx_import_nolib', 'The import library is still loading — try again in a moment, or open AlloStudio from the main app.'), 'error'); return; }
+      addToast(TT('studio.pptx_importing', '📽️ Importing the PowerPoint…'), 'info');
+      stImportPptxFile(f, Zip, Date.now()).then(function (res) {
+        if (!res || res.error) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((res && res.error) || 'unknown error'), 'error'); return; }
+        _docRef.current = res.doc;
+        setPageIndex(0);
+        setView('edit'); clearSelection(); bump();
+        var s = res.summary;
+        var skippedTotal = Object.keys(s.skipped).reduce(function (n, k) { return n + s.skipped[k]; }, 0);
+        var parts = [s.slides + ' ' + TT('studio.pptx_slides', 'slides'), s.texts + ' ' + TT('studio.pptx_texts', 'text blocks'), s.images + ' ' + TT('studio.pptx_images', 'images')];
+        if (skippedTotal) parts.push(skippedTotal + ' ' + TT('studio.pptx_skipped', 'not importable') + ' (' + Object.keys(s.skipped).map(function (k) { return k + ' ×' + s.skipped[k]; }).join(', ') + ')');
+        addToast('📽️ ' + TT('studio.pptx_imported', 'Deck imported: ') + parts.join(' · '), skippedTotal ? 'info' : 'success');
+        if (s.altMissing) addToast('♿ ' + s.altMissing + ' ' + TT('studio.pptx_import_alt', 'imported image(s) arrived without alt text — export stays blocked until each gets a description or a decorative mark.'), 'info');
+        stAnnounce(TT('studio.a11y_pptx_imported', 'PowerPoint imported') + ': ' + s.slides + ' ' + TT('studio.pptx_slides', 'slides'));
+      }).catch(function (err) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((err && err.message) || 'unknown'), 'error'); });
+    };
 
     // ── styles ──
     var S = {
@@ -5401,6 +5624,7 @@
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
             h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
+            h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring an existing deck in: text, pictures, and alt text import; tables, charts, and SmartArt are reported, not silently dropped.') }, '📽️ ' + TT('studio.import_pptx', 'Import PowerPoint (.pptx)')),
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
           (function () {
             var saved = stReadAutosave();
@@ -5506,7 +5730,8 @@
               h('button', { type: 'button', style: Object.assign({}, S.tool, { marginTop: '10px', textAlign: 'center' }), onClick: function () { setTemplateFilter('all'); setTemplateUseCase('all'); setTemplateSearch(''); } }, TT('studio.clear_filters', 'Clear filters')))),
           h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
             TT('studio.privacy_note', 'Everything stays on this device. Your document — including its full process history — lives in a local save file.')),
-          h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
+          h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile }),
+          h('input', { ref: pptxRef, type: 'file', accept: '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation', style: { display: 'none' }, onChange: onImportPptxFile })));
     }
 
     var ops = doc.ledger.ops;
@@ -6846,6 +7071,9 @@
   AlloStudio.stSavePortfolioArtifact = stSavePortfolioArtifact;
   AlloStudio.stExportPptxSpec = stExportPptxSpec;
   AlloStudio.stRenderPptx = stRenderPptx;
+  AlloStudio.stImportPptxDoc = stImportPptxDoc;
+  AlloStudio.stImportPptxFile = stImportPptxFile;
+  AlloStudio.stEmuPx = stEmuPx;
   AlloStudio.stPptxInches = stPptxInches;
   AlloStudio.stPptxLayout = stPptxLayout;
   AlloStudio.stObjectPage = stObjectPage;
