@@ -119,6 +119,7 @@ function ClozeInteractionPanel(props) {
                                 draggable="true"
                                 onDragStart={(e) => e.dataTransfer.setData("text/plain", bankLang === 'english' ? englishTerm : dragPayload)}
                               >
+                                {/* Keyboard alternative: Cloze blanks are focusable text inputs that accept the same word directly; dragging is optional; keyboard users may type directly. */}
                                   {label}
                               </span>
                           );
