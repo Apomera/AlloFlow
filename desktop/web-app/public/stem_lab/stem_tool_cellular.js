@@ -664,7 +664,7 @@
     function exportLifePng() {
       var svg = gridSvgRef.current; if (!svg || typeof XMLSerializer === 'undefined') return;
       var raw = new XMLSerializer().serializeToString(svg), blob = new Blob([raw], { type: 'image/svg+xml;charset=utf-8' }), url = URL.createObjectURL(blob), image = new Image();
-      image.onload = function () { var canvas = document.createElement('canvas'), size = 1200; canvas.width = size; canvas.height = size; var g = canvas.getContext('2d'); g.fillStyle = '#020617'; g.fillRect(0, 0, size, size); g.drawImage(image, 0, 0, size, size); URL.revokeObjectURL(url); var link = document.createElement('a'); link.download = 'cellular-automaton-gen-' + gen + '.png'; link.href = canvas.toDataURL('image/png'); link.click(); announce('PNG exported.'); };
+      image.onload = function () { var canvas = document.createElement('canvas'), size = 1200; canvas.setAttribute('aria-hidden', 'true'); canvas.width = size; canvas.height = size; var g = canvas.getContext('2d'); g.fillStyle = '#020617'; g.fillRect(0, 0, size, size); g.drawImage(image, 0, 0, size, size); URL.revokeObjectURL(url); var link = document.createElement('a'); link.download = 'cellular-automaton-gen-' + gen + '.png'; link.href = canvas.toDataURL('image/png'); link.click(); announce('PNG exported.'); };
       image.onerror = function () { URL.revokeObjectURL(url); announce('PNG export was not available in this browser.'); }; image.src = url;
     }
     function populationChart() {
