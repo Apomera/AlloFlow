@@ -1235,6 +1235,8 @@
               h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, lineHeight: 1.55 } }, __alloT('stem.astronomy.ask_anything_what_is_that_bright_thing', 'Ask anything: "What is that bright thing in the south right now?" "How do I find the Pleiades?" "Why does the moon look different colors?"')),
               h('textarea', {
                 value: astronomyAskInput,
+                rows: 3, maxLength: 500,
+                'aria-label': 'Question for the sky guide',
                 onChange: function(e) { upd({ askInput: typeof e.target.value === 'string' ? e.target.value.slice(0, 500) : '' }); },
                 onKeyDown: function(e) {
                   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -1243,8 +1245,7 @@
                   }
                 },
                 placeholder: __alloT('stem.astronomy.your_question', 'Your question...'),
-                rows: 3, maxLength: 500,
-                'aria-label': 'Question for the sky guide', 'aria-describedby': 'astronomy-ask-help',
+                'aria-describedby': 'astronomy-ask-help',
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
               }),
               h('div', { id: 'astronomy-ask-help', style: { marginTop: 5, fontSize: 11, color: '#94a3b8' } }, '500 characters maximum. Press Ctrl+Enter or Command+Enter to ask.'),
