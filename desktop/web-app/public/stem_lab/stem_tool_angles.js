@@ -381,6 +381,19 @@ window.StemLab = window.StemLab || {
         window.addEventListener('touchmove', onTouchMove, { passive: false });
         window.addEventListener('touchend', onTouchEnd);
       };
+      // Keyboard equivalent for the pointer-only ray handles (WCAG 2.1.1 / 2.5.7).
+      var handleAngleKey = function(e, current, setter, afterChange) {
+        var step = e.shiftKey ? 15 : 5;
+        var next;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(0, current - step);
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(360, current + step);
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = 360;
+        else return;
+        e.preventDefault();
+        setter(snapAngle(next));
+        if (afterChange) afterChange();
+      };
 
       // ══════════════════════════════════════════════════════════════
       // ── Badge Checker ──
@@ -830,7 +843,7 @@ window.StemLab = window.StemLab || {
           activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
-            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', 'data-protractor-svg': true },
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', role: 'img', 'aria-label': convertedAngle + ' ' + angleClass + ' protractor', 'data-protractor-svg': true },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
               // Filled angle wedge
@@ -851,7 +864,7 @@ window.StemLab = window.StemLab || {
               showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[11px] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
-              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: 12, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2 }),
+              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: 12, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': 'Second angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
               showSecondRay && h('text', { x: cx, y: cy + arcR + 22, textAnchor: 'middle', className: 'text-[11px] fill-cyan-600 font-bold select-none' }, '\u2220 Between: ' + angleBetween + '\u00B0'),
               // Arc
               angleValue > 0 && angleValue < 360 && h('path', {
@@ -865,7 +878,7 @@ window.StemLab = window.StemLab || {
                 estimateActive ? '?' : convertedAngle
               ),
               // Draggable handle
-              h('circle', { cx: rayEndX, cy: rayEndY, r: 14, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag }),
+              h('circle', { cx: rayEndX, cy: rayEndY, r: 14, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': 'Angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
@@ -1285,7 +1298,7 @@ window.StemLab = window.StemLab || {
             ),
             // Mini clock SVG
             h('div', { className: 'flex justify-center mb-3' },
-              h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Clock ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute + ', hands ' + clockAngle.toFixed(1) + ' degrees apart'), h('svg', { width: 120, height: 120 },
+              h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Clock ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute + ', hands ' + clockAngle.toFixed(1) + ' degrees apart'), h('svg', { width: 120, height: 120, role: 'img', 'aria-label': 'Clock showing ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute + '; hands ' + clockAngle.toFixed(1) + ' degrees apart' },
                 h('circle', { cx: 60, cy: 60, r: 55, fill: 'none', stroke: '#bae6fd', strokeWidth: 2 }),
                 // Hour numbers
                 [1,2,3,4,5,6,7,8,9,10,11,12].map(function(n) {
