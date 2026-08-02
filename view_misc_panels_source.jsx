@@ -677,7 +677,7 @@ function PdfDiffViewer(props) {
               >
                 {!diffLibReady && diffLibLoading && (
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <RefreshCw size={14} className="animate-spin" /> Loading diff engine (jsdiff)…
+                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> Loading diff engine (jsdiff)…
                   </div>
                 )}
                 {!diffLibReady && !diffLibLoading && (
@@ -691,7 +691,7 @@ function PdfDiffViewer(props) {
                     perceives as "didn't open." Provides a manual rebuild path. */}
                 {diffLibReady && !_chunks && !diffLibLoading && (
                   <div className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3">
-                    <RefreshCw size={14} className="animate-spin shrink-0" />
+                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none shrink-0" />
                     <div className="flex-1">
                       <div className="font-bold mb-1">{t('diff_view.computing') || 'Computing diff…'}</div>
                       <div className="text-[12px] text-amber-700 leading-relaxed">{t('diff_view.computing_stale_hint') || 'If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).'}</div>
@@ -840,7 +840,7 @@ function PdfDiffViewer(props) {
                     className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
                     title={t('diff_view.apply_export_tooltip') || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."}
                   >
-                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
+                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
                   </button>
                 )}
               </div>
@@ -1155,7 +1155,7 @@ function GroupSessionModal(props) {
                                             {t('groups.assign_resource_label')}
                                             {isPushingResource[gid] === 'pushing' && (
                                                 <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case">
-                                                    <RefreshCw size={11} className="animate-spin" /> {t('groups.pushing') || 'Pushing…'}
+                                                    <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" /> {t('groups.pushing') || 'Pushing…'}
                                                 </span>
                                             )}
                                             {isPushingResource[gid] === 'success' && (
@@ -1198,7 +1198,7 @@ function GroupSessionModal(props) {
                                         {Object.entries(sessionData.roster).map(([uid, student]) => (
                                             <div key={uid} className="flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100">
                                                 <div className="flex items-center gap-2 overflow-hidden">
-                                                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+                                                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? 'bg-green-500 animate-pulse motion-reduce:animate-none' : 'bg-slate-300'}`}></div>
                                                     <span className="truncate font-medium text-slate-700 text-sm" title={student.name}>{student.name}</span>
                                                 </div>
                                                 <select aria-label={t('common.selection')}
@@ -1733,7 +1733,7 @@ function FluencyModePanel(props) {
                 <div className="p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4">
                     {fluencyStatus === 'listening' && fluencyTimeLimit > 0 && fluencyTimerVisibility === 'visible' && (
                         <div className={`text-4xl font-black tabular-nums transition-colors ${
-                            fluencyTimeRemaining <= 10 ? 'text-red-500 animate-pulse' :
+                            fluencyTimeRemaining <= 10 ? 'text-red-500 animate-pulse motion-reduce:animate-none' :
                             fluencyTimeRemaining <= 30 ? 'text-yellow-500' :
                             'text-indigo-600'
                         }`}>
@@ -1742,7 +1742,7 @@ function FluencyModePanel(props) {
                     )}
                     <div className={`text-sm font-bold uppercase tracking-widest transition-colors ${
                         fluencyStatus === 'listening' ? 'text-red-500' :
-                        fluencyStatus === 'processing' ? 'text-indigo-500 animate-pulse' :
+                        fluencyStatus === 'processing' ? 'text-indigo-500 animate-pulse motion-reduce:animate-none' :
                         'text-slate-600'
                     }`}>
                         {fluencyStatus === 'listening' ? t('fluency.listening') :
@@ -1773,7 +1773,7 @@ function FluencyModePanel(props) {
                             data-help-key="fluency_mode_record_btn"
                             className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all transform border-4 ${
                                 fluencyStatus === 'listening'
-                                ? 'bg-red-700 text-white animate-pulse border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95'
+                                ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95'
                                 : fluencyStatus === 'complete'
                                 ? 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:scale-105 active:scale-95'
                                 : fluencyStatus === 'processing'
@@ -1787,7 +1787,7 @@ function FluencyModePanel(props) {
                             }
                         >
                             {fluencyStatus === 'listening' ? <StopCircle size={32} className="fill-current"/> :
-                             fluencyStatus === 'processing' ? <RefreshCw size={32} className="animate-spin"/> :
+                             fluencyStatus === 'processing' ? <RefreshCw size={32} className="animate-spin motion-reduce:animate-none"/> :
                              fluencyStatus === 'complete' ? <RefreshCw size={32}/> :
                              <Mic size={32} className="fill-current"/>}
                         </button>
@@ -1919,7 +1919,7 @@ function SourceGenPanel(props) {
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             title={t('standards.search_button_title')}
                                         >
-                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
+                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
                                         </button>
                                     </div>
                                     {suggestedStandards.length > 0 && (
@@ -2055,7 +2055,7 @@ function SourceGenPanel(props) {
                         disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        {isGeneratingSource ? <RefreshCw className="animate-spin" size={14} /> : <Pencil size={14} />}
+                        {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}
                         {isGeneratingSource ? t('input.writing') : t('input.generate')}
                       </button>
                   </div>
