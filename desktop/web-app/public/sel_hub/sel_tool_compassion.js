@@ -227,6 +227,8 @@ window.SelHub = window.SelHub || {
 
       var PURPLE = '#7c3aed'; var PL = _coC('#f5f3ff'); var PD = _coC('#4c1d95');
 
+      // WCAG 2.2.1 triage: Date.now below timestamps saved letters only; this screen has no countdown or user time limit, so pause controls are not applicable.
+
       var TABS = [
         { id: 'pillars', icon: '\uD83D\uDC9C', label: 'Three Pillars' },
         { id: 'critic',  icon: '\uD83D\uDDE3\uFE0F', label: 'Inner Friend' },
