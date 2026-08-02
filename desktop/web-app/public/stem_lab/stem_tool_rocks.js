@@ -1357,13 +1357,13 @@
     kids.push(h('polygon', { key: 'tMark', points: [tx + ',' + (scaleY + 8), (tx - 4) + ',' + (scaleY + 15), (tx + 4) + ',' + (scaleY + 15)].join(' '), fill: '#0f766e' }));
     kids.push(h('text', { key: 'tTxt', x: capX(tx), y: scaleY + 23, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#115e59' }, 'tool ' + toolH));
 
-    return h('svg', {
+    return h('svg', { role: 'img',
       // 118 tall, not 100: the tool marker's caption was being clipped clean
       // off, so the strip showed the mineral's hardness with an unlabelled
       // triangle opposite it — exactly the comparison the strip exists to make.
       // The extra six units are the clearance that stops the mineral caption
       // printing on top of the specimen.
-      viewBox: '0 0 168 118', width: '100%', role: 'img',
+      viewBox: '0 0 168 118', width: '100%',
       style: { maxWidth: '360px', display: 'block' },
       'aria-label': !done
         ? ('Scratch test in progress: ' + toolLabel + ', hardness ' + toolH + ', drawn across ' + (mineral ? mineral.label : '') + ', hardness ' + mh + '.')
@@ -4355,7 +4355,7 @@ const d = labToolData.rocks || {};
                       },
                       className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
-                    d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
+                    d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse motion-reduce:animate-none" },
                       React.createElement("span", { className: "text-lg" }, "🫧"),
                       React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                     )
@@ -4377,6 +4377,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
+                      'aria-label': __alloT('stem.rocks.ask_petrologist_question', 'Ask the AI Petrologist a question'),
                       placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
@@ -5415,7 +5416,7 @@ const d = labToolData.rocks || {};
                           },
                           className: "px-3 py-1.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-lg text-xs transition-colors shadow-sm disabled:opacity-50 active:scale-[0.97]"
                         }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
-                        d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
+                        d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse motion-reduce:animate-none" },
                           React.createElement("span", { className: "text-lg", "aria-hidden": true }, "🫧"),
                           React.createElement("span", { className: "text-[10px] text-violet-800 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
                         )
@@ -5439,6 +5440,7 @@ const d = labToolData.rocks || {};
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
                       type: "text",
+                      'aria-label': __alloT('stem.rocks.ask_petrologist_question', 'Ask the AI Petrologist a question'),
                       placeholder: __alloT('stem.rocks.ask_question_placeholder', "Ask a question (e.g., How does this form?)..."),
                       value: d.aiQuestion || '',
                       onChange: function(e) { upd("aiQuestion", e.target.value); },
