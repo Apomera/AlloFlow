@@ -76,6 +76,7 @@ window.StemLab = window.StemLab || {
     var out = { supported: false, renderer: '' };
     try {
       var probe = document.createElement('canvas');
+      probe.setAttribute('aria-hidden', 'true');
       var gl = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl');
       if (gl) {
         out.supported = true;
