@@ -1123,7 +1123,7 @@ describe('alt gate (design law 3)', () => {
 describe('templates (doc §11 set)', () => {
   it('ships the classroom template gallery — all valid, all ledger-seeded', () => {
     const tpls = ST.stTemplates();
-    expect(tpls.map(t => t.key)).toEqual(['flyer', 'worksheet', 'poster', 'exitTicket', 'vocabPoster', 'labSafety', 'checklist', 'newsletter', 'bookReport', 'cerOrganizer', 'compareContrast', 'visualSchedule', 'socialStory', 'anchorChart', 'choiceBoard', 'vocabMat', 'rubric', 'labSheet', 'reflectionPage', 'onePageExplainer', 'blank']);
+    expect(tpls.map(t => t.key)).toEqual(['flyer', 'slideDeck', 'worksheet', 'poster', 'exitTicket', 'vocabPoster', 'labSafety', 'checklist', 'newsletter', 'bookReport', 'cerOrganizer', 'compareContrast', 'visualSchedule', 'socialStory', 'anchorChart', 'choiceBoard', 'vocabMat', 'rubric', 'labSheet', 'reflectionPage', 'onePageExplainer', 'blank']);
     for (const tpl of tpls) {
       const d = tpl.make(T0);
       expect(ST.stValidateDoc(d)).toEqual([]);

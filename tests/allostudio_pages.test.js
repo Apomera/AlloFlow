@@ -208,6 +208,34 @@ describe('ledger integrity with pages', () => {
   });
 });
 
+describe('deck creation path (the gap that blocked the deck story)', () => {
+  it('ships a slideDeck template: 16:9 canvas, two slides, valid, replayable', () => {
+    const tpl = ST.stTemplates().find((t) => t.key === 'slideDeck');
+    expect(tpl).toBeTruthy();
+    const d = tpl.make(T0);
+    expect(ST.stValidateDoc(d)).toEqual([]);
+    expect(d.canvas.preset).toBe('slide-16x9');
+    expect(ST.stScenePageCount(d)).toBe(2);
+    // Title slide has the H1; content slide has its own heading + body
+    expect(ST.stObjectsOnPage(d.objects, 0).some((o) => o.type === 'text' && o.role === 'heading1')).toBe(true);
+    expect(ST.stObjectsOnPage(d.objects, 1).filter((o) => o.type === 'text').length).toBe(2);
+    // Every seeded op is 'user' and the ledger replays to the same scene
+    expect(d.ledger.ops.every((op) => op.actor === 'user')).toBe(true);
+    const last = d.ledger.ops[d.ledger.ops.length - 1].seq;
+    expect(JSON.stringify(ST.stReplay(d, last).objects)).toBe(JSON.stringify(d.objects));
+    // Nothing blocks export out of the box
+    expect(ST.stAltGate(d.objects)).toEqual([]);
+  });
+
+  it('exports the template deck to a two-slide PPTX spec on LAYOUT_16x9', () => {
+    const d = ST.stTemplates().find((t) => t.key === 'slideDeck').make(T0);
+    const spec = ST.stExportPptxSpec(d);
+    expect(spec.layout.standard).toBe(true);
+    expect(spec.slideCount).toBe(2);
+    expect(spec.slides[0].notes).toBe('Presentation title');
+  });
+});
+
 describe('validation', () => {
   it('rejects a page index past the document end', () => {
     const doc = ST.stCreateDoc('slide-16x9', 'Deck', T0);

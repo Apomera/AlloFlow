@@ -2910,6 +2910,22 @@
           stAppend(d, { type: 'object.add', object: stMakeText('body', 'Date, time, location, and what to bring. Replace this with your details.', { x: 48, y: 640, w: 720, h: 120 }) }, 'user', now);
           return d;
         } },
+      { key: 'slideDeck', emoji: '📽️', name: 'Slide deck (16:9)', desc: 'Title slide plus a content slide — export to PowerPoint when you are done.',
+        make: function (now) {
+          var d = stCreateDoc('slide-16x9', 'Slide deck', now);
+          stAppend(d, { type: 'doc.template', template: 'slideDeck' }, 'user', now);
+          // Slide 1 — title
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 470, w: 1280, h: 24 }, '#4f46e5') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Presentation title', { x: 96, y: 250, w: 1088, h: 110 }, { align: 'center', size: 54 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Subtitle, class, or presenter name', { x: 96, y: 380, w: 1088, h: 60 }, { align: 'center', size: 24 }) }, 'user', now);
+          // Slide 2 — content (page.add FIRST so the objects' page index is legal)
+          stAppend(d, { type: 'page.add' }, 'user', now);
+          var h2 = stMakeText('heading2', 'First topic', { x: 96, y: 60, w: 1088, h: 70 }, { size: 36 }); h2.page = 1;
+          stAppend(d, { type: 'object.add', object: h2 }, 'user', now);
+          var body = stMakeText('body', '• Main idea\n• Supporting detail\n• Example', { x: 96, y: 170, w: 700, h: 400 }, { size: 24 }); body.page = 1;
+          stAppend(d, { type: 'object.add', object: body }, 'user', now);
+          return d;
+        } },
       { key: 'worksheet', emoji: '📝', name: 'Worksheet', desc: 'Title, instructions, numbered question blocks with answer space.',
         make: function (now) {
           var d = stCreateDoc('letter-portrait', 'Worksheet', now);
@@ -3230,6 +3246,7 @@
     if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport' || tpl.key === 'anchorChart' || tpl.key === 'onePageExplainer') return 'poster';
     if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist' || tpl.key === 'rubric' || tpl.key === 'labSheet' || tpl.key === 'reflectionPage') return 'worksheet';
     if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast' || tpl.key === 'visualSchedule' || tpl.key === 'socialStory' || tpl.key === 'choiceBoard' || tpl.key === 'vocabMat') return 'organizer';
+    if (tpl.key === 'slideDeck') return 'poster'; // visual-display family until decks earn their own chip
     if (tpl.key === 'blank') return 'blank';
     return 'poster';
   }
@@ -3238,6 +3255,7 @@
     var key = stCleanText(tpl && tpl.key, 80);
     var map = {
       flyer: ['event', 'family', 'visual'],
+      slideDeck: ['lesson', 'presentation', 'visual'],
       poster: ['student', 'visual'],
       vocabPoster: ['vocabulary', 'literacy', 'visual'],
       labSafety: ['science', 'safety', 'visual'],
@@ -3875,8 +3893,12 @@
     });
   }
 
-  function stRenderPng(doc, scale) {
+  function stRenderPng(doc, scale, page) {
     scale = scale || 1;
+    // One page per raster. Absent page === 0, so single-page docs (and every
+    // pre-page save) paint exactly what they always did; multi-page docs would
+    // otherwise paint every page's objects overlapping on one canvas.
+    var pageIdx = Math.max(0, Math.round(stFiniteNumber(page, 0)));
     return new Promise(function (resolvePng, rejectPng) {
       try {
         var c = document.createElement('canvas');
@@ -3885,7 +3907,7 @@
         g.scale(scale, scale);
         // Paint order = z, stable within equal z by array order. Background is
         // painted once, after images resolve, right before the real draw pass.
-        var byZ = stOrderedObjects(doc.objects);
+        var byZ = stOrderedObjects(stObjectsOnPage(doc.objects, pageIdx));
         var pending = [];
         byZ.forEach(function (o) {
           if (!o || typeof o !== 'object') return;
@@ -4769,7 +4791,7 @@
         setAiBusy(null);
         addToast(TT('studio.feedback_failed', 'Could not get design feedback.') + (err && err.message ? ' ' + err.message : ''), 'error');
       };
-      stRenderPng(doc, 0.6).then(function (blob) {
+      stRenderPng(doc, 0.6, activePageIndex).then(function (blob) {
         var reader = new FileReader();
         reader.onload = function (e) {
           var context = (doc.title || 'Untitled') + ' — ' + doc.objects.length + ' object(s), ' + preflightTotal + ' open accessibility item(s)';
@@ -4798,7 +4820,7 @@
       if (!liveDoc) return;
       setAiBusy('plan-preview');
       var after = stPreviewScene(liveDoc, opsToPreview);
-      Promise.all([stRenderPng(liveDoc, 0.32), stRenderPng(after, 0.32)]).then(function (blobs) {
+      Promise.all([stRenderPng(liveDoc, 0.32, activePageIndex), stRenderPng(after, 0.32, activePageIndex)]).then(function (blobs) {
         setAiBusy(null);
         setAgentPreview(function (prev) { _revokePreview(prev); return { before: URL.createObjectURL(blobs[0]), after: URL.createObjectURL(blobs[1]) }; });
         stAnnounce(TT('studio.a11y_preview_ready', 'Before and after preview rendered'));
@@ -5182,9 +5204,12 @@
       addToast(TT('studio.exported_html', '📄 Accessible HTML downloaded — reading order and alt text ride along.'), 'success');
     });
     var exportPng = gateOr(function () {
-      stRenderPng(doc, 1.5).then(function (blob) {
-        download(blob, safeName() + '.png');
-        addToast(TT('studio.exported_png', '🖼️ PNG downloaded. Note: PNG is pixels-only — share the HTML or tagged PDF when accessibility matters.'), 'info');
+      stRenderPng(doc, 1.5, activePageIndex).then(function (blob) {
+        var suffix = studioPageCount > 1 ? '-' + (doc.canvas.preset === 'slide-16x9' ? 'slide' : 'page') + (activePageIndex + 1) : '';
+        download(blob, safeName() + suffix + '.png');
+        addToast(studioPageCount > 1
+          ? TT('studio.exported_png_page', '🖼️ PNG of the current page downloaded. PNG is pixels-only — for the whole document use PowerPoint, HTML, or the tagged PDF.')
+          : TT('studio.exported_png', '🖼️ PNG downloaded. Note: PNG is pixels-only — share the HTML or tagged PDF when accessibility matters.'), 'info');
       }).catch(function () { addToast(TT('studio.export_png_failed', 'PNG export failed.'), 'error'); });
     });
     var exportTagged = gateOr(function () {
@@ -5212,6 +5237,20 @@
       document.body.appendChild(frame);
       frame.srcdoc = html;
       addToast(TT('studio.print_opening', '🖨️ Opening the print dialog — choose "Save as PDF" for a pixel-faithful copy. For accessibility, share the Tagged PDF.'), 'info');
+    });
+    var exportPptx = gateOr(function () {
+      // The host loads PptxGenJS globally (the main app's slide export uses it,
+      // including inside Canvas); the studio never bundles it.
+      var Pptx = typeof window !== 'undefined' ? window.PptxGenJS : null;
+      if (typeof Pptx !== 'function') { addToast(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open AlloStudio from the main app.'), 'error'); return; }
+      try {
+        var builtDeck = stRenderPptx(stExportPptxSpec(doc, { lang: 'en' }), Pptx);
+        Promise.resolve(builtDeck.writeFile({ fileName: safeName() + '.pptx' }))
+          .then(function () { addToast(TT('studio.exported_pptx', '📽️ PowerPoint downloaded — one slide per page, with alt text and reading order carried into the deck.'), 'success'); })
+          .catch(function (err) { addToast(TT('studio.pptx_failed', 'PowerPoint export failed: ') + (err && err.message || 'unknown'), 'error'); });
+      } catch (err) {
+        addToast(TT('studio.pptx_failed', 'PowerPoint export failed: ') + (err && err.message || 'unknown'), 'error');
+      }
     });
     var exportWorksheet = function () {
       download(new Blob([JSON.stringify(stExportWorksheetData(doc), null, 2)], { type: 'application/json' }), safeName() + '.worksheet.json');
@@ -5329,7 +5368,7 @@
       var scale = Math.min(124 / previewDoc.canvas.w, 92 / previewDoc.canvas.h);
       return h('div', { 'aria-hidden': true, style: { height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.panelAlt, border: '1px solid ' + C.border, borderRadius: '8px', overflow: 'hidden' } },
         h('div', { style: { position: 'relative', width: previewDoc.canvas.w * scale + 'px', height: previewDoc.canvas.h * scale + 'px', background: (previewDoc.canvas.background && previewDoc.canvas.background.fill) || '#fff', boxShadow: '0 1px 6px rgba(15,23,42,0.22)', overflow: 'hidden' } },
-          stOrderedObjects(previewDoc.objects).slice(0, 18).map(function (o) {
+          stOrderedObjects(stObjectsOnPage(previewDoc.objects, 0)).slice(0, 18).map(function (o) {
             var f = stClampFrame(o.frame, previewDoc.canvas);
             var base = { position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px', width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1, boxSizing: 'border-box' };
             if (o.type === 'shape') return h('div', { key: o.id, style: Object.assign({}, base, { background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '2px' }) });
@@ -5422,7 +5461,8 @@
                 onChange: function (e) { setComposePreset(e.target.value); } },
                 h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait')),
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape')),
-                h('option', { value: 'square' }, TT('studio.orient_square', 'Square'))),
+                h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
+                h('option', { value: 'slide-16x9' }, TT('studio.orient_slide', 'Slide deck (16:9)'))),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '✨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
           h('div', { style: { padding: '14px 18px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
             shownTemplates.length ? shownTemplates.map(function (tpl) {
@@ -5449,7 +5489,7 @@
                   info,
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px', alignItems: 'stretch' } },
                     h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
-                      [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
+                      [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')], ['slide-16x9', TT('studio.orient_slide_short', 'Slide')]].map(function (opt) {
                         return h('button', { key: opt[0], type: 'button', 'aria-label': TT('studio.use_template', 'Use template') + ': ' + tpl.name + ' - ' + opt[1], onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
                       })),
                     favoriteButton));
@@ -6348,6 +6388,7 @@
             })),
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
           h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
+          h('button', { style: S.tool, onClick: exportPptx, title: TT('studio.pptx_hint', 'One slide per page at this document’s size. Alt text, reading order, and speaker-note headings ride along.') }, '📽️ ' + TT('studio.export_pptx', 'PowerPoint (.pptx)')),
           h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
           h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')),
           h('button', { style: Object.assign({}, S.tool, { borderColor: C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')),
@@ -6511,6 +6552,7 @@
                 h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait') + ' (8.5×11)'),
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11×8.5)'),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
+                h('option', { value: 'slide-16x9' }, TT('studio.orient_slide', 'Slide deck (16:9)')),
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             colorField(TT('studio.background', 'Background'), (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', function (hex) { dispatch({ type: 'canvas.background', fill: hex }, 'user'); }),
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
