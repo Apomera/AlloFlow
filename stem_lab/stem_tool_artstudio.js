@@ -173,7 +173,7 @@ const d = labToolData.artStudio || {};
             // this loop instance (wheelRef re-runs with fresh values on slider change),
             // so the ring was rebuilt + 360 hsl-strings allocated EVERY frame purely to
             // pulse the 2px selector dot. Cache it; redraw only the dot/markers live.
-            var _wheelBmp = document.createElement('canvas');
+            var _wheelBmp = document.createElement('canvas'); _wheelBmp.setAttribute('aria-hidden', 'true');
             _wheelBmp.width = W; _wheelBmp.height = H;
             var _wctx = _wheelBmp.getContext('2d');
             for (var wa = 0; wa < 360; wa++) {
@@ -900,7 +900,7 @@ const d = labToolData.artStudio || {};
 
             function _sirdsRenderSync(W, H, dmData, dmW, dmH, pType, pWidth, maxShift, aiPat) {
 
-              var offscreen = document.createElement('canvas'); offscreen.width = W; offscreen.height = H;
+              var offscreen = document.createElement('canvas'); offscreen.setAttribute('aria-hidden', 'true'); offscreen.width = W; offscreen.height = H;
 
               var ctx = offscreen.getContext('2d');
 
@@ -962,7 +962,7 @@ const d = labToolData.artStudio || {};
 
             function _genAnimDepth(presetId, frameIdx, totalFrames, W, H) {
 
-              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = W; c.height = H;
 
               var ctx = c.getContext('2d');
 
@@ -1410,7 +1410,7 @@ const d = labToolData.artStudio || {};
 
             function _genTransformDepth(sourceImgData, W, H, transformType, frameIdx, totalFrames) {
 
-              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = W; c.height = H;
 
               var ctx = c.getContext('2d');
 
@@ -1420,7 +1420,7 @@ const d = labToolData.artStudio || {};
 
               // Put source into a temp canvas so we can drawImage with transforms
 
-              var src = document.createElement('canvas'); src.width = W; src.height = H;
+              var src = document.createElement('canvas'); src.setAttribute('aria-hidden', 'true'); src.width = W; src.height = H;
 
               var sCtx = src.getContext('2d');
 
@@ -1494,7 +1494,7 @@ const d = labToolData.artStudio || {};
 
               var W = m0.width, H = m0.height;
 
-              var c = document.createElement('canvas'); c.width = W; c.height = H;
+              var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = W; c.height = H;
 
               var ctx = c.getContext('2d');
 
@@ -5799,7 +5799,7 @@ const d = labToolData.artStudio || {};
 
                                   // Store in state to use during render logic
 
-                                  var c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+                                  var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = img.width; c.height = img.height;
 
                                   c.getContext('2d').drawImage(img, 0, 0);
 
@@ -6649,7 +6649,7 @@ const d = labToolData.artStudio || {};
 
                         var canvasFrames = [];
 
-                        var tempCanvas = document.createElement('canvas'); tempCanvas.width = kfs[0].width; tempCanvas.height = kfs[0].height;
+                        var tempCanvas = document.createElement('canvas'); tempCanvas.setAttribute('aria-hidden', 'true'); tempCanvas.width = kfs[0].width; tempCanvas.height = kfs[0].height;
 
                         var tempCtx = tempCanvas.getContext('2d');
 
@@ -6695,7 +6695,7 @@ const d = labToolData.artStudio || {};
 
                               for (var i = 0; i < kf.data.length; i++) imgData.data[i] = kf.data[i];
 
-                              var temp = document.createElement('canvas'); temp.width = kf.width; temp.height = kf.height;
+                              var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = kf.width; temp.height = kf.height;
 
                               temp.getContext('2d').putImageData(imgData, 0, 0);
 
@@ -6749,7 +6749,7 @@ const d = labToolData.artStudio || {};
 
                           img.onload = function() {
 
-                            var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                            var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
                             var ctx = c.getContext('2d');
 
@@ -6787,7 +6787,7 @@ const d = labToolData.artStudio || {};
 
                         for (var i = 0; i < ud.data.length; i++) imgData.data[i] = ud.data[i];
 
-                        var temp = document.createElement('canvas'); temp.width = ud.width; temp.height = ud.height;
+                        var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = ud.width; temp.height = ud.height;
 
                         temp.getContext('2d').putImageData(imgData, 0, 0);
 
@@ -6898,7 +6898,7 @@ const d = labToolData.artStudio || {};
 
                               img.onload = function() {
 
-                                var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                                var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
                                 c.getContext('2d').drawImage(img, 0, 0, 400, 400);
 
@@ -6944,7 +6944,7 @@ const d = labToolData.artStudio || {};
 
                           for (var i = 0; i < ad.data.length; i++) imgData.data[i] = ad.data[i];
 
-                          var temp = document.createElement('canvas'); temp.width = ad.width; temp.height = ad.height;
+                          var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = ad.width; temp.height = ad.height;
 
                           temp.getContext('2d').putImageData(imgData, 0, 0);
 
@@ -7183,7 +7183,7 @@ const d = labToolData.artStudio || {};
 
                                 img.onload = function() {
 
-                                  var c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                                  var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
                                   c.getContext('2d').drawImage(img, 0, 0, 400, 400);
 
@@ -7375,7 +7375,7 @@ const d = labToolData.artStudio || {};
 
                               } else {
 
-                                var tc = document.createElement('canvas'); tc.width = kf.width; tc.height = kf.height;
+                                var tc = document.createElement('canvas'); tc.setAttribute('aria-hidden', 'true'); tc.width = kf.width; tc.height = kf.height;
 
                                 var tctx = tc.getContext('2d');
 
@@ -7457,7 +7457,7 @@ const d = labToolData.artStudio || {};
 
                               var maps = kfs.map(function(kf) {
 
-                                var c2 = document.createElement('canvas'); c2.width = kf.width; c2.height = kf.height;
+                                var c2 = document.createElement('canvas'); c2.setAttribute('aria-hidden', 'true'); c2.width = kf.width; c2.height = kf.height;
 
                                 var ctx2 = c2.getContext('2d');
 
@@ -7503,7 +7503,7 @@ const d = labToolData.artStudio || {};
 
                                 if (!srcData) {
 
-                                  var fc = document.createElement('canvas'); fc.width = dmW; fc.height = dmH;
+                                  var fc = document.createElement('canvas'); fc.setAttribute('aria-hidden', 'true'); fc.width = dmW; fc.height = dmH;
 
                                   var fctx = fc.getContext('2d'); fctx.fillStyle = '#000'; fctx.fillRect(0, 0, dmW, dmH);
 
@@ -7523,7 +7523,7 @@ const d = labToolData.artStudio || {};
 
                                 // Convert from Array to ImageData
 
-                                var tc = document.createElement('canvas'); tc.width = srcData.width; tc.height = srcData.height;
+                                var tc = document.createElement('canvas'); tc.setAttribute('aria-hidden', 'true'); tc.width = srcData.width; tc.height = srcData.height;
 
                                 var tctx = tc.getContext('2d');
 
