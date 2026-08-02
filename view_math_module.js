@@ -513,7 +513,7 @@ function MathView(props) {
       "data-help-key": "math_check_work"
     }, checkResult?.checking ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 16,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }), " ", t('math.check.checking') || 'Evaluating your work...') : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sparkles, {
       size: 16
     }), " ", t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
@@ -542,7 +542,7 @@ function MathView(props) {
         className: "flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
       }, hintInfo.loading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
         size: 14,
-        className: "animate-spin"
+        className: "animate-spin motion-reduce:animate-none"
       }), " Thinking...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
         className: "text-sm"
       }, "💡"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
@@ -638,7 +638,7 @@ function MathView(props) {
     "data-help-key": "math_generate_similar"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18
   }), t('math.display.generate_similar'))), isTeacherMode && generatedContent?.data?.problems?.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -670,7 +670,7 @@ function MathView(props) {
     className: "px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
   }, isMathEditingChat ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " Editing...") : "✏️ Apply")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-1 mt-2"
   }, ["Make easier", "Make harder", "Add word problems", "Add more problems", "Change theme", "Simplify steps"].map(suggestion => /*#__PURE__*/React.createElement("button", {
