@@ -1,6 +1,7 @@
 /**
  * AlloFlow ClozeInteractionPanel Module
  * Auto-generated. Source: view_cloze_interaction_panel_source.jsx
+ * Source SHA-256: 5186f5081a25be34
  */
 (function() {
   'use strict';
