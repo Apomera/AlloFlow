@@ -172,6 +172,7 @@
       var img = new Image();
       img.onload = function () {
         var c = document.createElement('canvas');
+        c.setAttribute('aria-hidden', 'true');
         c.width = width; c.height = height;
         c.getContext('2d').drawImage(img, 0, 0, width, height);
         resolve(c);
