@@ -129,7 +129,7 @@ function ImageView(props) {
                                         data-help-key="visuals_regenerate"
                                         className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <RefreshCw size={14}/>}
+                                        {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <RefreshCw size={14}/>}
                                         {t('visuals.regenerate_prompt')}
                                     </button>
                                 </div>
@@ -161,7 +161,7 @@ function ImageView(props) {
                                     title={t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
                                 >
-                                    {isProcessing ? <RefreshCw size={16} className="animate-spin"/> : <Send size={16}/>}
+                                    {isProcessing ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Send size={16}/>}
                                 </button>
                              </div>
                              <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>

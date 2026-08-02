@@ -187,7 +187,7 @@
     className: "flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
   }), t('visuals.regenerate_prompt')))), /*#__PURE__*/React.createElement("div", {
@@ -225,7 +225,7 @@
     "aria-label": t('common.apply_nano_edit')
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 16
   }))), /*#__PURE__*/React.createElement("span", {
