@@ -288,6 +288,7 @@
           var scale = Math.min(1, maxDim / Math.max(w, hgt));
           var cw = Math.max(1, Math.round(w * scale)), chg = Math.max(1, Math.round(hgt * scale));
           var cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
           cv.width = cw; cv.height = chg;
           cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
@@ -344,6 +345,7 @@
       var v = videoRef.current;
       if (!v || !v.videoWidth) return;
       var cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
       cv.width = v.videoWidth; cv.height = v.videoHeight;
       cv.getContext('2d').drawImage(v, 0, 0);
       var url = cv.toDataURL('image/jpeg', 0.9);
