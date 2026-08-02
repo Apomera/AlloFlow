@@ -1210,6 +1210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       function fallbackCopy(text, label) {
         try {
           var ta = document.createElement('textarea');
+          ta.setAttribute('aria-label', label || 'Clipboard copy text');
           ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
           document.body.appendChild(ta); ta.select();
           document.execCommand('copy');
@@ -3194,6 +3195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             ),
             h('input', {
               type: 'range',
+              'aria-label': __alloT('stem.llm_literacy.temperature_slider', 'Temperature slider'),
               min: '0', max: '2', step: '0.05',
               value: playTemp,
               onChange: function(e) { setPlayTemp(parseFloat(e.target.value)); },
@@ -3202,7 +3204,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 accentColor: playColor,
                 marginBottom: '2px'
               },
-              'aria-label': __alloT('stem.llm_literacy.temperature_slider', 'Temperature slider'),
               'aria-valuemin': '0', 'aria-valuemax': '2', 'aria-valuenow': playTemp
             }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: COLORS.muted, marginBottom: '10px' } },
@@ -6104,7 +6105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.llm_literacy.set_task_familiarity_stakes_source_qua', 'Set task familiarity, stakes, source quality, and stated model confidence. Predict where the trust threshold lands. No score, no reveal.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · gap ' + trustGap.toFixed(0)),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
             h('rect', { x: 30, y: 28, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
             h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, trustThreshold * 2.6)), height: 26, fill: '#f87171', opacity: 0.5 }),
             h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, iq.sourceQuality * 26)), height: 26, fill: sm.color, opacity: 0.85 }),
@@ -6175,7 +6176,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           h('main', {
             id: 'llm-literacy-main',
             'aria-label': __alloT('stem.llm_literacy.ai_literacy_lab_main_content', 'AI Literacy Lab main content'),
-            style: { outline: 'none' }
           }, renderSection()),
           renderGlossaryPopover(),
           renderHelpOverlay(),
