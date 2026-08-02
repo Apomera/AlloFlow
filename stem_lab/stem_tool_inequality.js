@@ -669,7 +669,7 @@ window.StemLab = window.StemLab || {
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full motion-reduce:animate-none animate-spin' }),
                 h('span', { className: 'text-xs text-purple-600' }, __alloT('stem.inequality.thinking', 'Thinking...'))
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
@@ -950,6 +950,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2' },
             h('input', {
               type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
+              'aria-label': __alloT('stem.inequality.aria_test_a_value', 'Test a value against the inequality'),
               onChange: function(e) {
                 upd('testVal', e.target.value);
                 if (e.target.value !== '') {
@@ -958,7 +959,6 @@ window.StemLab = window.StemLab || {
                   if (newTC >= 10) checkBadges({ testMaster: true });
                 }
               },
-              'aria-label': __alloT('stem.inequality.aria_test_a_value', 'Test a value against the inequality'),
               className: 'px-3 py-1.5 border-2 border-sky-600 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
             }),
             testResult !== null && h('span', { className: 'text-sm font-bold ' + (testResult ? 'text-emerald-600' : 'text-red-600') },
