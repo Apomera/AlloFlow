@@ -11,6 +11,7 @@
  */
 (function () {
   'use strict';
+  // WCAG 2.2.1 triage: the deadline below is a five-second script-load fallback, not a user-facing task limit; pause controls are not applicable.
   if (window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function') return;
 
   var MATHLIVE_VERSION = '0.110.0';
