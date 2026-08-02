@@ -200,7 +200,10 @@ describe('galaxy visual layout', () => {
     expect(source).toContain('xrayOutflowMaterials');
     expect(source).toContain('xrayOutflowSprites');
     expect(source).toContain('data-galaxy-xray-structure-key');
-    expect(source).toContain('outerDiskLift');
+    expect(source).toContain('outerContextCompression');
+    expect(source).toContain('uZoomPointScale');
+    expect(source).toContain('uZoomOpacity');
+    expect(source).not.toContain('outerDiskLift * 0.07');
     expect(source).toContain('transientGlareCompression');
     expect(source).toContain('adaptiveBloomThreshold');
     expect(source).toContain('edgeOnDustSilhouette');

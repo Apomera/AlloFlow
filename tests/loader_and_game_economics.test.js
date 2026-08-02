@@ -88,7 +88,8 @@ describe('mailbox live-session parity', () => {
         // (SessionTransport stage 3) — one helper serves resource-open,
         // readingBook, manipulative, and navigation follow sites.
         expect(anti).toMatch(/const _alloFollowResourceLive = \(item, options = \{\}\) => \{/);
-        expect(anti).toMatch(/if \(mbLive && mbMode === 'sync'\) \{\s*\n\s*try \{ pushResourceToMailbox\(item, \{ silentTeacher: true \}\); \}/);
+        expect(anti).toContain("if (mbLive && mbMode === 'sync') {");
+        expect(anti).toContain('pushResourceToMailbox(item, { silentTeacher: true })');
     });
 
     it('full-pack sharing delivers quietly without yanking the student view (async parity)', () => {

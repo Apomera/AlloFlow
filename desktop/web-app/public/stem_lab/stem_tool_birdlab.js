@@ -161,6 +161,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-hidden      { animation: birdlab-hidden-rustle 3.5s ease-in-out infinite; }',
       '.birdlab-leaf-sway   { animation: birdlab-leaf-sway 4s ease-in-out infinite; transform-origin: bottom center; }',
       '.birdlab-static      { animation: none !important; }',
+      '.birdlab-bird-found  { opacity: 0.62; filter: saturate(0.72); transition: opacity 180ms ease, filter 180ms ease; }',
+      '.birdlab-picked-ring { fill: none; stroke: #fbbf24; stroke-width: 2; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 4px rgba(251,191,36,0.85)); pointer-events: none; }',
       '.birdlab-pulse-ring  { animation: birdlab-pulse-ring 1.6s ease-out infinite; }',
       '.birdlab-card-lift   { transition: transform 200ms ease, box-shadow 200ms ease; }',
       '.birdlab-card-lift:hover { transform: translateY(-3px); }',
@@ -206,7 +208,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fbbf24, #34d399); transition: width 220ms ease; }',
       '.birdlab-habitat-brief { box-shadow: 0 12px 24px rgba(4, 120, 87, 0.12); }',
       '.birdlab-scene-card { box-shadow: 0 22px 44px rgba(15, 23, 42, 0.18); border-color: rgba(15, 23, 42, 0.2); contain: paint; }',
-      '.birdlab-scene--motion-off .birdlab-leaf-sway { animation: none !important; }',
+      '.birdlab-scope-corners { position: absolute; z-index: 22; inset: 14px; border: 1px solid rgba(253,230,138,0.42); border-radius: 18px; pointer-events: none; opacity: 0.72; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14), 0 0 0 1px rgba(15,23,42,0.08); }',
+      '.birdlab-selected-label { pointer-events: none; filter: drop-shadow(0 3px 7px rgba(15,23,42,0.38)); }',
+      '.birdlab-scene--motion-off .birdlab-leaf-sway, .birdlab-scene--motion-off .birdlab-hint-ring { animation: none !important; }',
+      '.birdlab-scene--motion-off::before { display: none !important; }',
+      '.birdlab-scene--motion-off > [role="img"] { transform: none !important; transition: none !important; }',
       '.birdlab-scene-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), inset 0 -48px 70px rgba(15,23,42,0.10); }',
       '.birdlab-scene-card { isolation: isolate; background: #0f172a; }',
       '.birdlab-scene-card::before { content: ""; position: absolute; z-index: 16; left: 0; right: 0; top: -18%; height: 18%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(186,230,253,0.16), rgba(255,255,255,0.38), transparent); transition: top 800ms ease, opacity 220ms ease; }',
@@ -7985,7 +7991,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (savedRounds && d.blRoundCounts === undefined) upd('blRoundCounts', savedRounds);
         var savedEvidence = lsGet('birdLab.evidence.v1', null);
         var savedReportHistory = lsGet('birdLab.reports.v1', null);
+        var savedFieldSession = lsGet('birdLab.session.v1', null);
+        var savedFieldSessionHistory = lsGet('birdLab.sessions.v1', null);
         if (savedReportHistory && d.blReportHistory === undefined) upd('blReportHistory', savedReportHistory);
+        if (savedFieldSession && d.blFieldSession === undefined) upd('blFieldSession', savedFieldSession);
+        if (savedFieldSessionHistory && d.blFieldSessionHistory === undefined) upd('blFieldSessionHistory', savedFieldSessionHistory);
         if (savedEvidence && d.blEvidenceLog === undefined) upd('blEvidenceLog', savedEvidence);
         // Life list: per-species first-seen log, persists across habitats.
         // Window-slot mirror handles Canvas-session loss (host save/load
@@ -8027,10 +8037,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             roundCounts: d.blRoundCounts || current.roundCounts || {},
             evidenceLog: d.blEvidenceLog || current.evidenceLog || {},
             reportHistory: d.blReportHistory || current.reportHistory || {},
+            fieldSession: d.blFieldSession !== undefined ? d.blFieldSession : (current.fieldSession || null),
+            fieldSessionHistory: Array.isArray(d.blFieldSessionHistory) ? d.blFieldSessionHistory : (current.fieldSessionHistory || []),
             _ts: Date.now()
           });
         } catch (e) {}
-      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog, d.blReportHistory]);
+      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog, d.blReportHistory, d.blFieldSession, d.blFieldSessionHistory]);
 
       // Hot-reload from a project-JSON load mid-session.
       useEffect(function () {
@@ -8044,6 +8056,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             if (w.roundCounts) upd('blRoundCounts', w.roundCounts);
             if (w.evidenceLog) upd('blEvidenceLog', w.evidenceLog);
             if (w.reportHistory) upd('blReportHistory', w.reportHistory);
+            if (Object.prototype.hasOwnProperty.call(w, 'fieldSession')) upd('blFieldSession', w.fieldSession || null);
+            if (Object.prototype.hasOwnProperty.call(w, 'fieldSessionHistory')) upd('blFieldSessionHistory', Array.isArray(w.fieldSessionHistory) ? w.fieldSessionHistory : []);
           } catch (e) {}
         }
         window.addEventListener('alloflow-birdlab-restored', onRestore);
@@ -9745,6 +9759,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var sceneLens = sceneLens_state[0], setSceneLens = sceneLens_state[1];
         var sceneMotion_state = useState(d.blSceneMotion != null ? d.blSceneMotion !== false : !_prefersReducedMotion);
         var sceneMotion = sceneMotion_state[0], setSceneMotion = sceneMotion_state[1];
+        var sceneInView_state = useState(true);
+        var sceneInView = sceneInView_state[0], setSceneInView = sceneInView_state[1];
+        var sceneSweep_state = useState(d.blSceneSweep === true);
+        var sceneSweep = sceneSweep_state[0], setSceneSweep = sceneSweep_state[1];
+        // Adaptive field sessions layer a short investigation arc over free play.
+        // The session is intentionally separate from XP/progression so learners
+        // can opt in, restart, or switch habitats without losing their field log.
+        var fieldSession_state = useState(d.blFieldSession || null);
+        var fieldSession = fieldSession_state[0], setFieldSession = fieldSession_state[1];
+        var fieldSessionHistory_state = useState(Array.isArray(d.blFieldSessionHistory) ? d.blFieldSessionHistory : []);
+        var fieldSessionHistory = fieldSessionHistory_state[0], setFieldSessionHistory = fieldSessionHistory_state[1];
+        useEffect(function() {
+          if (d.blFieldSession !== undefined && d.blFieldSession !== fieldSession) setFieldSession(d.blFieldSession || null);
+        }, [d.blFieldSession]);
+        useEffect(function() {
+          if (Array.isArray(d.blFieldSessionHistory) && d.blFieldSessionHistory !== fieldSessionHistory) setFieldSessionHistory(d.blFieldSessionHistory);
+        }, [d.blFieldSessionHistory]);
         var recordFilter_state = useState(d.blRecordFilter || 'all');
         var recordFilter = recordFilter_state[0], setRecordFilter = recordFilter_state[1];
         // Scene lenses turn one wide habitat into a calm, intentional scan path.
@@ -9762,8 +9793,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         useEffect(function() {
           if (d.blSceneMotion != null && d.blSceneMotion !== sceneMotion) setSceneMotion(d.blSceneMotion !== false);
         }, [d.blSceneMotion]);
+        useEffect(function() {
+          if (d.blSceneSweep != null && d.blSceneSweep !== sceneSweep) setSceneSweep(d.blSceneSweep === true);
+        }, [d.blSceneSweep]);
+        useEffect(function() {
+          if (typeof IntersectionObserver !== 'function' || !habitatSceneRef.current) return;
+          var observer = new IntersectionObserver(function(entries) {
+            if (entries && entries[0]) setSceneInView(entries[0].isIntersecting);
+          }, { threshold: 0.01 });
+          observer.observe(habitatSceneRef.current);
+          return function() { observer.disconnect(); };
+        }, []);
+        var sceneActive = sceneMotion && sceneInView;
         function sceneLensForBird(bird) {
           if (!bird) return 'wide';
+          // Keep edge-of-sky and ground birds in the wide camera so a focused
+          // horizontal sweep never crops the actual target out of view.
+          if (bird.y < 90 || bird.y > 410) return 'wide';
           return bird.x < 300 ? 'left' : bird.x > 600 ? 'right' : 'center';
         }
         function switchSceneLens(nextLens) {
@@ -9780,6 +9826,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setSceneMotion(nextMotion);
           upd('blSceneMotion', nextMotion);
           announce(nextMotion ? 'Scene motion on.' : 'Scene motion paused. Static bird art remains available.');
+        }
+        function stepSceneLens(delta) {
+          var currentIndex = 0;
+          for (var stepLensIndex = 0; stepLensIndex < SCENE_LENSES.length; stepLensIndex++) {
+            if (SCENE_LENSES[stepLensIndex].id === sceneLens) { currentIndex = stepLensIndex; break; }
+          }
+          var nextIndex = (currentIndex + delta + SCENE_LENSES.length) % SCENE_LENSES.length;
+          switchSceneLens(SCENE_LENSES[nextIndex].id);
+        }
+        function toggleSceneSweep() {
+          var nextSweep = !sceneSweep;
+          setSceneSweep(nextSweep);
+          upd('blSceneSweep', nextSweep);
+          if (nextSweep && sceneLens === 'wide') setSceneLens('left');
+          announce(nextSweep ? 'Guided sweep on. Complete a zone to move to the next lens.' : 'Guided sweep off. Lens navigation is manual.');
+        }
+        function nextSceneSweepLensId(currentId) {
+          var currentIndex = 1;
+          for (var sweepLensIndex = 1; sweepLensIndex < SCENE_LENSES.length; sweepLensIndex++) {
+            if (SCENE_LENSES[sweepLensIndex].id === currentId) { currentIndex = sweepLensIndex; break; }
+          }
+          return SCENE_LENSES[(currentIndex % (SCENE_LENSES.length - 1)) + 1].id;
+        }
+        function shouldAdvanceSceneSweep() {
+          if (!sceneSweep || sceneLens === 'wide' || !sceneLensStats) return false;
+          for (var sweepStatIndex = 0; sweepStatIndex < sceneLensStats.length; sweepStatIndex++) {
+            var sweepStat = sceneLensStats[sweepStatIndex];
+            if (sweepStat.id === sceneLens) return sweepStat.total > 0 && sweepStat.found >= sweepStat.total;
+          }
+          return false;
         }
         var revealHeadingRef = useRef(null);
         var habitatSceneRef = useRef(null);
@@ -10077,8 +10153,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         function continueHabitatScanning() {
           setPicked(null);
+          if (sceneSweep && shouldAdvanceSceneSweep()) {
+            var nextSweepId = nextSceneSweepLensId(sceneLens);
+            setSceneLens(nextSweepId);
+            announce('Sweep complete. Moving to the ' + nextSweepId + ' lens.');
+          } else if (!sceneSweep) {
+            setSceneLens('wide');
+          }
           focusBirdLabRefSoon(habitatSceneRef);
           announce('Bird card closed. Continue scanning the habitat scene.');
+        }
+
+        function startFieldSession() {
+          var sessionRound = (roundCounts[habitatId] || 0) + 1;
+          var sessionStamp = new Date().toISOString();
+          var nextSession = {
+            id: 'field-session:' + habitatId + ':' + sessionRound + ':' + Date.now(),
+            habitatId: habitatId,
+            habitatName: habitat.name,
+            round: sessionRound,
+            startedAt: sessionStamp,
+            updatedAt: sessionStamp
+          };
+          setFieldSession(nextSession);
+          upd('blFieldSession', nextSession);
+          lsSet('birdLab.session.v1', nextSession);
+          announce('Adaptive field session started in ' + habitat.name + '.');
+          if (typeof addToast === 'function') addToast('?? Field session started', 'success');
+          focusBirdLabRefSoon(habitatSceneRef);
         }
 
         var bestTimes = bestTimes_state[0], setBestTimes = bestTimes_state[1];
@@ -10380,6 +10482,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var journalEntry = evidenceLog[journalSpeciesKey] || {};
           if (found[journalSpeciesKey] && String(journalEntry.note || '').trim().length >= 20) journalMasteredCount++;
         }
+        var sessionRound = (roundCounts[habitatId] || 0) + 1;
+        var sessionStarted = !!fieldSession && fieldSession.habitatId === habitatId && Number(fieldSession.round) === sessionRound;
+        var sessionSteps = [
+          { id: 'scan', icon: '??', label: 'Scan', complete: sessionStarted && foundCount > 0, detail: foundCount > 0 ? foundCount + '/' + totalBirds + ' spotted' : 'Find one bird in the scene' },
+          { id: 'support', icon: '??', label: 'Support', complete: sessionStarted && foundCount > 0 && evidenceMasteredCount > 0, detail: evidenceMasteredCount > 0 ? evidenceMasteredCount + ' evidence-backed' : 'Log two field cues' },
+          { id: 'reflect', icon: '??', label: 'Reflect', complete: sessionStarted && foundCount > 0 && journalMasteredCount > 0, detail: journalMasteredCount > 0 ? journalMasteredCount + ' field notes' : 'Write a 20-character note' }
+        ];
+        var sessionCompletedCount = sessionSteps.filter(function(step) { return step.complete; }).length;
+        var sessionComplete = sessionStarted && sessionCompletedCount === sessionSteps.length;
+        var sessionNextStep = sessionSteps[sessionSteps.length - 1];
+        for (var sessionStepIndex = 0; sessionStepIndex < sessionSteps.length; sessionStepIndex++) {
+          if (!sessionSteps[sessionStepIndex].complete) {
+            sessionNextStep = sessionSteps[sessionStepIndex];
+            break;
+          }
+        }
+        var sessionCoach = !sessionStarted ? 'Start an adaptive three-step investigation for this habitat.' : sessionComplete ? 'Session complete. Your observation has a scan, support, and reflection.' : sessionNextStep.id === 'scan' ? 'Begin wide, then follow movement before color.' : sessionNextStep.id === 'support' ? 'Open a found bird and log two field cues that support the ID.' : 'Write a concise observation while the details are fresh.';
+        var sessionProgressPct = sessionStarted ? Math.round((sessionCompletedCount / sessionSteps.length) * 100) : 0;
+        var sessionNextHandler = sessionNextStep.id === 'scan' ? continueHabitatScanning : sessionNextStep.id === 'support' || sessionNextStep.id === 'reflect' ? openNextFieldRecord : continueHabitatScanning;
+        var sessionNextCta = sessionNextStep.id === 'scan' ? '?? Open habitat scene' : sessionNextStep.id === 'support' ? '?? Open evidence record' : '?? Open reflection record';
+        var completedFieldSessionCount = Array.isArray(fieldSessionHistory) ? fieldSessionHistory.length : 0;
+        useEffect(function() {
+          if (!sessionStarted || !sessionComplete || !fieldSession || fieldSession.completedAt) return;
+          var sessionCompletedAt = new Date().toISOString();
+          var completedSession = Object.assign({}, fieldSession, { completedAt: sessionCompletedAt, updatedAt: sessionCompletedAt });
+          setFieldSession(completedSession);
+          upd('blFieldSession', completedSession);
+          lsSet('birdLab.session.v1', completedSession);
+          var priorHistory = Array.isArray(fieldSessionHistory) ? fieldSessionHistory : [];
+          var nextHistory = [completedSession].concat(priorHistory.filter(function(item) { return item && item.id !== completedSession.id; })).slice(0, 8);
+          setFieldSessionHistory(nextHistory);
+          upd('blFieldSessionHistory', nextHistory);
+          lsSet('birdLab.sessions.v1', nextHistory);
+          announce('Adaptive field session complete. Scan, support, and reflect all logged.');
+          if (typeof addToast === 'function') addToast('?? Field session complete', 'success');
+        }, [sessionStarted, sessionComplete, fieldSession && fieldSession.id, fieldSession && fieldSession.completedAt]);
         var fieldReportComplete = foundCount === totalBirds && evidenceMasteryComplete && journalMasteredCount === totalBirds;
         var fieldReportPct = totalBirds ? Math.round(((foundCount + evidenceMasteredCount + journalMasteredCount) / (totalBirds * 3)) * 100) : 0;
         var fieldReportRewarded = !!xpLedger['field-report:' + habitatId];
@@ -10482,7 +10620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
 
         function switchHabitat(newId) {
-          setSceneLens('wide');
+          setSceneLens(sceneSweep ? 'left' : 'wide');
           upd('blSceneLens', 'wide');
           setHabitatId(newId);
           setPicked(null);
@@ -10531,8 +10669,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setHabitatHinted(nextHinted);
           upd('blHabitatHinted', nextHinted);
           setPicked(null);
+          setFieldSession(null);
+          upd('blFieldSession', null);
+          lsSet('birdLab.session.v1', null);
           setHintActive(null);
-          setSceneLens('wide');
+          setSceneLens(sceneSweep ? 'left' : 'wide');
           upd('blSceneLens', 'wide');
           setCleanCelebration(null);
           var nextStarts = Object.assign({}, habitatStartTs);
@@ -10574,6 +10715,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // Default 'spotted' so existing call sites work.
           var src = source || 'spotted';
           var species = BIRDS[bird.species];
+          // Turn a successful wide-view spot into a short field-guide close-up.
+          // The wide sweep remains one click away via the lens controls.
+          if (sceneLens === 'wide') setSceneLens(sceneLensForBird(bird));
           var habitatFound = Object.assign({}, found); habitatFound[bird.species] = true;
           var nextByHabitat = Object.assign({}, foundByHabitat); nextByHabitat[habitatId] = habitatFound;
           setFoundByHabitat(nextByHabitat);
@@ -10792,22 +10936,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var sceneScaleX = habitat.width / 900;
         var sceneScaleY = habitat.height / 500;
         var sceneViewBox = (activeSceneLens.x * sceneScaleX) + ' ' + (activeSceneLens.y * sceneScaleY) + ' ' + (activeSceneLens.w * sceneScaleX) + ' ' + (activeSceneLens.h * sceneScaleY);
-        function sceneBirdVisible(bird) {
-          if (activeSceneLens.id === 'wide') return true;
-          var lensLeft = activeSceneLens.x * sceneScaleX;
-          var lensRight = (activeSceneLens.x + activeSceneLens.w) * sceneScaleX;
+        function sceneLensContainsBird(lens, bird) {
+          if (lens.id === 'wide') return true;
+          var lensLeft = lens.x * sceneScaleX;
+          var lensRight = (lens.x + lens.w) * sceneScaleX;
           var lensPadding = 48 * sceneScaleX;
           return bird.x >= lensLeft - lensPadding && bird.x <= lensRight + lensPadding;
         }
+        function sceneBirdVisible(bird) { return sceneLensContainsBird(activeSceneLens, bird); }
+        var sceneLensStats = SCENE_LENSES.map(function(lens) {
+          var lensTotal = 0;
+          var lensFound = 0;
+          for (var lensBirdIndex = 0; lensBirdIndex < habitat.birds.length; lensBirdIndex++) {
+            var lensBird = habitat.birds[lensBirdIndex];
+            if (!sceneLensContainsBird(lens, lensBird)) continue;
+            lensTotal++;
+            if (found[lensBird.species]) lensFound++;
+          }
+          return { id: lens.id, total: lensTotal, found: lensFound };
+        });
         var visibleSceneBirdCount = habitat.birds.filter(sceneBirdVisible).length;
         function renderSceneBirds(layer, keyPrefix) {
           return habitat.birds.filter(function(bird) { return bird.layer === layer && sceneBirdVisible(bird); }).map(function(bird) {
             var species = BIRDS[bird.species];
+            var foundClass = found[bird.species] ? ' birdlab-bird-found' : '';
             return h('g', {
               key: keyPrefix + '-' + bird.species,
               transform: 'translate(' + bird.x + ',' + bird.y + ') scale(' + bird.scale + ')'
             },
-              h('g', { className: sceneMotion ? 'birdlab-' + species.movement : 'birdlab-static' }, species.svg(h))
+              h('g', { className: (sceneActive ? 'birdlab-' + species.movement : 'birdlab-static') + foundClass }, species.svg(h))
             );
           });
         }
@@ -11267,30 +11424,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, '\uD83D\uDD2D Scene lens'),
                   h('div', { className: 'text-xs text-slate-700 mt-1' }, activeSceneLens.note + ' ' + visibleSceneBirdCount + '/' + totalBirds + ' birds in view')
                 ),
+                h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { stepSceneLens(-1); },
+                    'aria-label': 'Previous scene lens',
+                    title: 'Previous scene lens',
+                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
+                  }, '\u2190'),
+                  h('button', {
+                    type: 'button',
+                    onClick: toggleSceneMotion,
+                    'aria-pressed': sceneMotion ? 'true' : 'false',
+                    'aria-label': sceneMotion ? 'Pause scene motion' : 'Play scene motion',
+                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneMotion ? 'bg-sky-100 text-sky-900 border-sky-400 hover:bg-sky-200' : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-700')
+                  }, sceneMotion ? '\u23F8 Motion on' : '\u25B6 Motion paused'),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { stepSceneLens(1); },
+                    'aria-label': 'Next scene lens',
+                    title: 'Next scene lens',
+                    className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
+                  }, '\u2192')
+                )
+              ),
+              h('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
                 h('button', {
                   type: 'button',
-                  onClick: toggleSceneMotion,
-                  'aria-pressed': sceneMotion ? 'true' : 'false',
-                  'aria-label': sceneMotion ? 'Pause scene motion' : 'Play scene motion',
-                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneMotion ? 'bg-sky-100 text-sky-900 border-sky-400 hover:bg-sky-200' : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-700')
-                }, sceneMotion ? '\u23F8 Motion on' : '\u25B6 Motion paused')
+                  onClick: toggleSceneSweep,
+                  'aria-pressed': sceneSweep ? 'true' : 'false',
+                  'aria-label': sceneSweep ? 'Turn guided sweep off' : 'Turn guided sweep on',
+                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneSweep ? 'bg-indigo-700 text-white border-indigo-800 shadow' : 'bg-white text-indigo-900 border-indigo-300 hover:border-indigo-500')
+                }, sceneSweep ? '\uD83E\uDDED Guided sweep on' : '\uD83E\uDDED Guided sweep'),
+                h('span', { className: 'text-[11px] text-slate-600' }, sceneSweep ? 'Finish a zone to move to the next lens.' : 'Manual lens navigation.')
               ),
               h('div', { className: 'mt-2 flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lens' },
                 SCENE_LENSES.map(function(lens) {
                   var selectedLens = activeSceneLens.id === lens.id;
+                  var lensStat = sceneLensStats.filter(function(stat) { return stat.id === lens.id; })[0] || { found: 0, total: 0 };
                   return h('button', {
                     key: lens.id,
                     type: 'button',
                     role: 'radio',
                     'aria-checked': selectedLens ? 'true' : 'false',
+                    title: lens.note + ' ' + lensStat.found + ' of ' + lensStat.total + ' birds spotted in this sweep.',
                     onClick: function() { switchSceneLens(lens.id); },
                     className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (selectedLens ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500')
-                  }, lens.icon + ' ' + lens.label);
+                  },
+                    lens.icon + ' ' + lens.label,
+                    h('span', { className: 'ml-1 text-[10px] font-mono ' + (selectedLens ? 'text-emerald-200' : 'text-slate-500') }, lensStat.found + '/' + lensStat.total)
+                  );
                 })
               )
             ),
             // The habitat scene
-            h('div', { ref: habitatSceneRef, tabIndex: -1, role: 'region', 'aria-label': 'Interactive ' + habitat.name + ' habitat scene', className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneMotion ? '' : 'birdlab-scene--motion-off'), 'data-birdlab-scene-shell': 'true', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+            h('div', { ref: habitatSceneRef, tabIndex: -1, role: 'region', 'aria-label': 'Interactive ' + habitat.name + ' habitat scene', className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneActive ? '' : 'birdlab-scene--motion-off'), 'data-birdlab-scene-shell': 'true', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+              h('div', { className: 'birdlab-scope-corners', 'aria-hidden': 'true' }),
               h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--condition', 'aria-hidden': 'true' },
                 h('span', { className: 'text-lg' }, conditionConfig.icon),
                 h('div', null,
@@ -11432,6 +11621,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
                         fill: '#f59e0b', opacity: 0.85,
                         stroke: '#fef3c7', strokeWidth: 2 })
+                    );
+                  })(),
+                  // Selected-bird reticle keeps the record card visually tied to
+                  // the sprite, without adding another animated effect.
+                  picked && pickedSpeciesKey && (function() {
+                    var selectedBird = null;
+                    for (var selectedBirdIndex = 0; selectedBirdIndex < habitat.birds.length; selectedBirdIndex++) {
+                      if (habitat.birds[selectedBirdIndex].species === pickedSpeciesKey) { selectedBird = habitat.birds[selectedBirdIndex]; break; }
+                    }
+                    if (!selectedBird || !sceneBirdVisible(selectedBird)) return null;
+                    var selectedSpecies = BIRDS[selectedBird.species];
+                    var labelWidth = Math.min(210, Math.max(104, selectedSpecies.name.length * 5.4 + 20));
+                    var labelX = Math.max(labelWidth / 2 + 6, Math.min(habitat.width - labelWidth / 2 - 6, selectedBird.x));
+                    var labelY = selectedBird.y < 72 ? selectedBird.y + 28 : selectedBird.y - 38;
+                    return h('g', { key: 'picked-reticle', 'aria-hidden': 'true' },
+                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 23, className: 'birdlab-picked-ring' }),
+                      h('circle', { cx: selectedBird.x, cy: selectedBird.y, r: 3, fill: '#fbbf24', stroke: '#fff', strokeWidth: 1.5, 'vector-effect': 'non-scaling-stroke' }),
+                      h('g', { className: 'birdlab-selected-label' },
+                        h('rect', { x: labelX - labelWidth / 2, y: labelY, width: labelWidth, height: 22, rx: 8, fill: 'rgba(15,23,42,0.9)', stroke: '#fde68a', strokeWidth: 1.2, 'vector-effect': 'non-scaling-stroke' }),
+                        h('text', { x: labelX, y: labelY + 14, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, selectedSpecies.name)
+                      )
                     );
                   })(),
                   // ── Click hotspots — foreignObject buttons positioned in SVG
@@ -11784,6 +11994,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   className: 'mt-3 w-full rounded-lg border-2 px-3 py-2 text-xs font-black shadow-sm transition focus:outline-none focus:ring-4 ring-indigo-500/25 ' + (fieldActionStage === 'complete' ? 'border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800' : fieldActionStage === 'discover' ? 'border-amber-800 bg-amber-700 text-white hover:bg-amber-800' : 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'),
                   'aria-label': fieldActionCta + '. ' + fieldActionDescription
                 }, fieldActionCta)
+              ),
+              h('section', {
+                className: 'mb-3 rounded-xl border-2 p-3 shadow-sm ' + (!sessionStarted ? 'border-indigo-300 bg-gradient-to-r from-indigo-50 to-sky-50' : sessionComplete ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-teal-50' : 'border-indigo-400 bg-gradient-to-r from-indigo-50 via-white to-violet-50'),
+                'aria-label': 'Adaptive field session',
+                'data-birdlab-field-session': 'true'
+              },
+                h('div', { className: 'flex items-start justify-between gap-3' },
+                  h('div', { className: 'min-w-0' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-indigo-950' }, '\uD83E\uDDED Adaptive field session'),
+                    h('p', { className: 'mt-0.5 text-[11px] font-semibold text-slate-700' }, sessionCoach)
+                  ),
+                  h('button', {
+                    type: 'button',
+                    onClick: startFieldSession,
+                    className: 'flex-shrink-0 rounded-lg border-2 border-indigo-700 bg-indigo-700 px-2.5 py-1.5 text-[10px] font-black text-white shadow-sm transition hover:bg-indigo-800 focus:outline-none focus:ring-4 ring-indigo-500/25',
+                    'aria-label': sessionStarted ? 'Restart adaptive field session' : 'Start adaptive field session'
+                  }, sessionStarted ? (sessionComplete ? '\u21BB New session' : '\u21BB Restart') : 'Start session')
+                ),
+                h('div', {
+                  className: 'mt-3 h-2 overflow-hidden rounded-full border border-indigo-200 bg-white',
+                  role: 'progressbar',
+                  'aria-valuemin': 0,
+                  'aria-valuemax': 100,
+                  'aria-valuenow': sessionProgressPct,
+                  'aria-label': 'Adaptive field session progress'
+                },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-500 to-fuchsia-500 transition-all', style: { width: sessionProgressPct + '%' } })
+                ),
+                h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
+                  sessionSteps.map(function(step) {
+                    return h('div', {
+                      key: step.id,
+                      className: 'rounded-lg border p-2 text-center ' + (step.complete ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 bg-white/90')
+                    },
+                      h('div', { className: 'text-base leading-none', 'aria-hidden': 'true' }, step.icon),
+                      h('div', { className: 'mt-1 text-[10px] font-black text-slate-900' }, (step.complete ? '\u2713 ' : '') + step.label),
+                      h('div', { className: 'mt-0.5 text-[9px] font-semibold text-slate-600' }, step.detail)
+                    );
+                  })
+                ),
+                sessionStarted && !sessionComplete && h('button', {
+                  type: 'button',
+                  onClick: sessionNextHandler,
+                  className: 'mt-3 w-full rounded-lg border-2 border-indigo-600 bg-white px-3 py-2 text-xs font-black text-indigo-800 transition hover:bg-indigo-700 hover:text-white focus:outline-none focus:ring-4 ring-indigo-500/25',
+                  'aria-label': sessionNextCta + '. ' + sessionCoach
+                }, sessionNextCta),
+                h('div', { className: 'mt-2 text-[10px] font-semibold text-slate-600' },
+                  sessionStarted ? sessionCompletedCount + '/3 investigation habits logged' : (completedFieldSessionCount ? completedFieldSessionCount + ' completed session' + (completedFieldSessionCount === 1 ? '' : 's') + ' saved' : 'Optional guidance - start when you want a focused field pass.')
+                )
               ),
               h('section', {
                 className: 'mb-3 rounded-xl border-2 p-3 ' + (evidenceMasteryComplete ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-400' : 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-300'),

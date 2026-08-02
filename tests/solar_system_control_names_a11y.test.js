@@ -88,6 +88,8 @@ describe('Solar System control accessible names', () => {
     expect(panel).not.toBeNull();
     expect(activeTab?.getAttribute('aria-controls')).toBe(panel?.id);
     expect(panel?.getAttribute('aria-labelledby')).toBe(activeTab?.id);
+    expect(tabs[1]?.getAttribute('aria-label')).toBe('Kepler I: ellipses and the Sun at one focus');
+    expect(tabs[2]?.getAttribute('aria-label')).toBe('Kepler II: equal areas in equal times');
   });
   it("surfaces the selected world's live Kepler II speed cue", () => {
     const markup = renderTool('solarSystem', {
@@ -120,6 +122,46 @@ describe('Solar System control accessible names', () => {
     expect(document.querySelector('[data-orrery-timeline-landmark][aria-current="step"]')).not.toBeNull();
     expect(document.querySelector('button[data-orrery-timeline-jump][aria-pressed="true"]')).not.toBeNull();
     expect(document.getElementById('orrery-phase-scrubber')?.getAttribute('aria-valuetext')).toContain('years into Earth');
+    expect(document.getElementById('orrery-body-navigator-help')?.getAttribute('role')).toBe('status');
+    expect(document.querySelector('canvas[aria-label*="Earth is selected"]')).not.toBeNull();
+  });  it('gates guided predictions until the orbital clock is paused', () => {
+    const renderMission = (paused) => renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 0,
+        orr_paused: paused,
+        orr_mission_progress: { earth_distance: { started: true } },
+      },
+    });
+    document.body.innerHTML = renderMission(false);
+    const runningOptions = [...document.querySelectorAll('button[aria-describedby="orrery-guided-objective"]')];
+    expect(runningOptions).toHaveLength(2);
+    expect(runningOptions.every((option) => option.disabled)).toBe(true);
+    expect(runningOptions.every((option) => option.getAttribute('aria-disabled') === 'true')).toBe(true);
+    expect(runningOptions[0]?.getAttribute('aria-label')).toContain('Pause the clock before predicting');
+
+    document.body.innerHTML = renderMission(true);
+    const pausedOptions = [...document.querySelectorAll('button[aria-describedby="orrery-guided-objective"]')];
+    expect(pausedOptions).toHaveLength(2);
+    expect(pausedOptions.every((option) => !option.disabled)).toBe(true);
+  });  it('renders live distance and speed hooks for comparison mode', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 0,
+        orr_sel: 'earth',
+        orr_compare: 'mars',
+      },
+    });
+    expect(document.querySelector('table[aria-label*="Earth"][aria-label*="Mars"]')).not.toBeNull();
+    expect(document.body.textContent).toContain('Current distance');
+    expect(document.getElementById('orrery-live-compare-primary-distance')).not.toBeNull();
+    expect(document.getElementById('orrery-live-compare-secondary-distance')).not.toBeNull();
+    expect(document.getElementById('orrery-live-compare-primary-speed')).not.toBeNull();
+    expect(document.getElementById('orrery-live-compare-secondary-speed')).not.toBeNull();
+    expect(document.getElementById('orrery-compare-interpretation')?.textContent).toContain('Earth is currently');
   });  it('groups Orrery controls for responsive keyboard scanning', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {
@@ -136,7 +178,7 @@ describe('Solar System control accessible names', () => {
     const speed = document.querySelector('#orrery-speed-control');
     expect(speed?.getAttribute('aria-valuetext')).toContain('Earth years per second');
     expect(document.querySelector('label[for="orrery-speed-control"]')?.textContent).toBe('Speed');
-    expect(document.querySelector('button[aria-label="Reset orbit time and clear selection"]')).not.toBeNull();
+    expect(document.querySelector('button[aria-label="Reset orbit time, camera view, and selection"]')).not.toBeNull();
   });
   it('offers an honest three-way orbital speed prediction choice', () => {
     const markup = renderTool('solarSystem', {

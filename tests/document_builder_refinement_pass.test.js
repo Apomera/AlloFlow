@@ -192,16 +192,60 @@ describe('Document Builder refinement pass', () => {
   it('provides selection-anchored comment threads with review navigation and clean exports', () => {
     for (const contract of [
       '_BUILDER_COMMENT_SELECTOR',
+      'function _builderReviewerIdentity',
       'function _builderInsertReviewComment',
+      'data-allo-comment-author',
       'builder-navigation-tab-comments',
       'builder-navigation-panel-comments',
       'alloflow-builder-new-comment',
       'aria-keyshortcuts="Control+Alt+M"',
       'Show resolved',
+      'Reviewer name for comments',
+      'Filter comments by reviewer',
+      'Post reply',
+      'Edit topic',
       'Reply',
       'Resolve',
       'options?.forExport',
       '_builderSuspendReviewComments',
+    ]) expect(view).toContain(contract);
+  });
+
+  it('provides draft-safe Track Changes 2.0 with formatting, structure, filters, comparison, and finalized exports', () => {
+    for (const contract of [
+      '_BUILDER_CHANGE_SELECTOR',
+      '_BUILDER_ADVANCED_CHANGE_SELECTOR',
+      'function _builderHandleTrackedBeforeInput',
+      'function _builderTrackInlineFormatting',
+      'function _builderRecordElementRevision',
+      'function _builderSetTrackedMarkupView',
+      'function _builderCompareDocumentVersions',
+      'function _builderRestoreVersionBlock',
+      'Side-by-side version comparison',
+      'Use saved block',
+      'Restore full version',
+      'data-allo-track-changes',
+      'data-allo-change-author-key',
+      'data-allo-change-kind',
+      'builder-navigation-tab-changes',
+      'builder-navigation-panel-changes',
+      'aria-keyshortcuts="Control+Shift+E"',
+      'Simple Markup',
+      'All Markup',
+      'No Markup',
+      'Original',
+      'Margin detail',
+      'Reviewer name for new tracked changes',
+      'Accept selected',
+      'Reject selected',
+      'Accept visible',
+      'Reject visible',
+      'Revision summary',
+      'Compare',
+      '_builderSuspendTrackedChanges',
+      "_builderFinalizeTrackedChanges(clone, 'accept')",
+      "'pending-changes'",
+      'Tracks text, inline and named formatting, paragraph layout, lists, table shape, and explicit page or section changes.',
     ]) expect(view).toContain(contract);
   });
 
@@ -229,8 +273,25 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('builder-version-history');
     expect(view).toContain('Save snapshot');
     expect(view).toContain('restoreVersionSnapshot');
+    expect(view).toContain('Before version restore');
+    expect(view).toContain('A rollback point was saved.');
     expect(view).toContain('snapshots');
     expect(view).toContain('Version History');
+    expect(view).toContain('Side-by-side version comparison');
+    expect(view).toContain('restoreVersionComparisonBlock');
+  });
+  it('provides a persistent, ordered, and bounded Quick Access toolbar', () => {
+    for (const contract of [
+      '_BUILDER_QUICK_ACCESS_DEFAULT',
+      '_BUILDER_QUICK_ACCESS_OPTIONS',
+      'function _builderNormalizeQuickAccessItems',
+      'builder-quick-access-toolbar',
+      'builder-quick-access-customize',
+      'Customize Quick Access',
+      'Reset Quick Access',
+      'moveQuickAccessItem',
+      'quickAccess: quickAccessItems',
+    ]) expect(view).toContain(contract);
   });
   it('promotes save and editor keyboard shortcuts for classic workflows', () => {
     expect(view).toContain('Save a local version snapshot');
@@ -246,6 +307,7 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('navigationTab: navigationPaneTab');
     expect(view).toContain('navigationWidth: navigationPaneWidth');
     expect(view).toContain('ribbonTab: activeRibbonTab');
+    expect(view).toContain('quickAccess: quickAccessItems');
     expect(view).toContain('navigationPane: showNavigationPane');
   });
   it('uses a compact ribbon and one resizable tabbed navigation pane', () => {
@@ -308,6 +370,39 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('Cancel Format Painter');
     expect(view).toContain('formatPainterRef.current = null');
   });
+  it('adds a live automatic TOC and complete-section outline reordering', () => {
+    for (const contract of [
+      '_BUILDER_TOC_SELECTOR',
+      'function _builderInsertTableOfContents',
+      'function _builderRefreshTableOfContents',
+      'Insert / refresh TOC',
+      'TOC depth',
+      'automatic table of contents',
+      'function _builderMoveHeadingSection',
+      'draggable={heading.movable}',
+      "aria-label={'Move ' + heading.text + ' up'}",
+      'Nested headings stay with their section',
+    ]) expect(view).toContain(contract);
+    expect(view).toContain("_builderRecordElementRevision(wrapper, beforeSnapshot, 'structure', 'Moved section: '");
+    expect(view).toContain("setNavigationPaneTab('headings')");
+  });
+  it('adds persistent custom styles and rollback-safe reusable document templates', () => {
+    for (const contract of [
+      '_BUILDER_CUSTOM_STYLES_KEY',
+      '_builderNormalizeCustomStyles',
+      'builder-styles-manager',
+      'Save selection as style',
+      '_BUILDER_DOCUMENT_TEMPLATES',
+      '_BUILDER_CUSTOM_TEMPLATES_KEY',
+      'builder-document-templates',
+      'Save current as template',
+      "'Before template: ' + templateDefinition.label",
+      'A local rollback point will be saved first',
+      'Applied template: ',
+    ]) expect(view).toContain(contract);
+    expect(view).toContain('customBuilderStyles.length}/12');
+    expect(view).toContain('customDocumentTemplates.length}/8');
+  });
   it('provides export-safe page layout and semantic repeating page elements', () => {
     expect(view).toContain('_BUILDER_PAGE_SIZES');
     expect(view).toContain('_builderPageDimensions(pageSetup).heightPx');
@@ -341,6 +436,13 @@ describe('Document Builder refinement pass', () => {
     expect(viewModule).toContain('builder-navigation-panel-comments');
     expect(viewModule).toContain('alloflow-builder-new-comment');
     expect(viewModule).toContain('data-allo-comment-thread');
+    expect(viewModule).toContain('builder-navigation-panel-changes');
+    expect(viewModule).toContain('alloflow-builder-toggle-track-changes');
+    expect(viewModule).toContain('data-allo-change-id');
+    expect(viewModule).toContain('Insert / refresh TOC');
+    expect(viewModule).toContain('Drag headings');
+    expect(viewModule).toContain('Save selection as style');
+    expect(viewModule).toContain('builder-document-templates');
     expect(pipelineModule).toContain('alloflow-cs-place-btn');
     expect(handlersDeploy).toBe(handlers);
     expect(viewDeploy).toBe(viewModule);

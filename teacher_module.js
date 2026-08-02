@@ -236,7 +236,83 @@ const downloadRosterSessionEvidenceCsv = (session) => {
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
 };
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart }) => {
+const ROSTER_SESSION_FOLLOW_UP_FILTERS = /* @__PURE__ */ new Set(["all", "follow_up", "revision", "celebrate", "planned"]);
+const normalizeRosterSessionTeacherNote = (value) => String(value || "").replace(/\u000d\u000a?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, 1e3);
+const normalizeRosterSessionFollowUpPlan = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const resourceId = String(value.resourceId || "").trim().slice(0, 160);
+  if (!resourceId || resourceId === "__proto__" || resourceId === "prototype" || resourceId === "constructor") return null;
+  const status = value.status === "completed" ? "completed" : "planned";
+  const cohortCode = String(value.cohortCode || "").trim().slice(0, 80);
+  const audience = value.audience === "cohort" && cohortCode ? "cohort" : "class";
+  const plannedAtMs = Date.parse(value.plannedAt || "");
+  return {
+    schemaVersion: 1,
+    resourceId,
+    resourceTitle: String(value.resourceTitle || "Follow-up resource").replace(/\s+/g, " ").trim().slice(0, 140) || "Follow-up resource",
+    resourceType: String(value.resourceType || "").trim().slice(0, 80),
+    audience,
+    cohortCode: audience === "cohort" ? cohortCode : "",
+    cohortLabel: audience === "cohort" ? String(value.cohortLabel || "Evidence cohort").replace(/\s+/g, " ").trim().slice(0, 120) : "Whole class",
+    cohortCount: audience === "cohort" ? Math.max(0, Math.min(250, Math.floor(Number(value.cohortCount) || 0))) : 0,
+    status,
+    plannedAt: Number.isFinite(plannedAtMs) ? new Date(plannedAtMs).toISOString() : ""
+  };
+};
+const normalizeRosterSessionPlanningFields = (session) => {
+  if (!session || typeof session !== "object" || Array.isArray(session)) return session;
+  const next = { ...session };
+  const teacherNote = normalizeRosterSessionTeacherNote(session.teacherNote);
+  const followUpPlan = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
+  if (teacherNote) next.teacherNote = teacherNote;
+  else delete next.teacherNote;
+  if (followUpPlan) next.followUpPlan = followUpPlan;
+  else delete next.followUpPlan;
+  return next;
+};
+const updateRosterSessionFollowUp = (rosterKey, sessionId, patch) => {
+  const sourceRoster = rosterKey && typeof rosterKey === "object" && !Array.isArray(rosterKey) ? rosterKey : { groups: {}, students: {} };
+  const safeId = String(sessionId || "").trim().slice(0, 160);
+  if (!safeId) return sourceRoster;
+  const input = patch && typeof patch === "object" && !Array.isArray(patch) ? patch : {};
+  let found = false;
+  const sessionHistory = (Array.isArray(sourceRoster.sessionHistory) ? sourceRoster.sessionHistory : []).map((rawSession) => {
+    if (!rawSession || String(rawSession.id || "") !== safeId) return rawSession;
+    found = true;
+    const next = { ...rawSession };
+    if (Object.prototype.hasOwnProperty.call(input, "teacherNote")) {
+      const teacherNote = normalizeRosterSessionTeacherNote(input.teacherNote);
+      if (teacherNote) next.teacherNote = teacherNote;
+      else delete next.teacherNote;
+    }
+    if (Object.prototype.hasOwnProperty.call(input, "followUpPlan")) {
+      const followUpPlan = normalizeRosterSessionFollowUpPlan(input.followUpPlan);
+      if (followUpPlan) next.followUpPlan = followUpPlan;
+      else delete next.followUpPlan;
+    }
+    return next;
+  });
+  return found ? { ...sourceRoster, sessionHistory } : sourceRoster;
+};
+const filterRosterSessionHistory = (sessions, focusValue = "all", activityKindValue = "all") => {
+  const focus = ROSTER_SESSION_FOLLOW_UP_FILTERS.has(focusValue) ? focusValue : "all";
+  const activityKind = String(activityKindValue || "all").trim().slice(0, 80) || "all";
+  return (Array.isArray(sessions) ? sessions : []).filter((session) => {
+    if (!session || typeof session !== "object") return false;
+    const brief = session.insightBrief && typeof session.insightBrief === "object" ? session.insightBrief : {};
+    const cohorts = Array.isArray(brief.evidenceCohorts) ? brief.evidenceCohorts : [];
+    const nextMoves = Array.isArray(brief.nextMoves) ? brief.nextMoves : [];
+    const activities = Array.isArray(session.liveActivities) ? session.liveActivities : [];
+    const kindMatches = activityKind === "all" || activities.some((activity) => activity && activity.kind === activityKind);
+    if (!kindMatches) return false;
+    if (focus === "follow_up") return cohorts.some((cohort) => cohort && cohort.intent === "support") || nextMoves.some((move) => move && move.code !== "review-evidence");
+    if (focus === "revision") return nextMoves.some((move) => move && move.code === "revision-opportunity") || Number(brief.feedbackSent || 0) > Number(brief.revisions || 0);
+    if (focus === "celebrate") return cohorts.some((cohort) => cohort && cohort.intent === "celebrate");
+    if (focus === "planned") return !!normalizeRosterSessionFollowUpPlan(session.followUpPlan);
+    return true;
+  });
+};
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart, followUpResources = [], onOpenFollowUpResource, onPrepareFollowUpAssignment, onSendFollowUpToLiveSession }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
   const [newStudentName, setNewStudentName] = useState("");
@@ -261,6 +337,21 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const submissionDialogRef = useRef(null);
   const submissionDialogTriggerRef = useRef(null);
   const [submissionDialog, setSubmissionDialog] = useState(null);
+  const [sessionHistoryFocus, setSessionHistoryFocus] = useState("all");
+  const [sessionHistoryActivityKind, setSessionHistoryActivityKind] = useState("all");
+  const [sessionNoteDrafts, setSessionNoteDrafts] = useState({});
+  const [sessionPlanDrafts, setSessionPlanDrafts] = useState({});
+  const [sessionPlannerStatus, setSessionPlannerStatus] = useState({});
+  const [sessionLiveSendingId, setSessionLiveSendingId] = useState("");
+  const safeFollowUpResources = useMemo(() => (Array.isArray(followUpResources) ? followUpResources : []).filter((item) => item && item.id && item.type).slice(0, 250), [followUpResources]);
+  const sessionActivityKinds = useMemo(() => Array.from(new Set(
+    (Array.isArray(rosterKey?.sessionHistory) ? rosterKey.sessionHistory : []).flatMap((session) => Array.isArray(session?.liveActivities) ? session.liveActivities : []).map((activity) => String(activity?.kind || "").trim()).filter(Boolean)
+  )).sort(), [rosterKey?.sessionHistory]);
+  const filteredSessionHistory = useMemo(() => filterRosterSessionHistory(
+    [...Array.isArray(rosterKey?.sessionHistory) ? rosterKey.sessionHistory : []].reverse(),
+    sessionHistoryFocus,
+    sessionHistoryActivityKind
+  ), [rosterKey?.sessionHistory, sessionHistoryFocus, sessionHistoryActivityKind]);
   useFocusTrap(panelRef, isOpen, onClose);
   useEffect(() => {
     if (!submissionDialog) return;
@@ -278,6 +369,79 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const groupIds = Object.keys(groups);
   const getStudentsInGroup = (gId) => Object.entries(students).filter(([_, g2]) => g2 === gId).map(([name]) => name);
   const getUnassigned = () => Object.entries(students).filter(([_, g2]) => !g2 || !groups[g2]).map(([name]) => name);
+  const updateSessionPlannerStatus = (sessionId, message) => {
+    setSessionPlannerStatus((previous) => ({ ...previous, [sessionId]: String(message || "").slice(0, 180) }));
+  };
+  const noteDraftFor = (session) => Object.prototype.hasOwnProperty.call(sessionNoteDrafts, session.id) ? sessionNoteDrafts[session.id] : normalizeRosterSessionTeacherNote(session.teacherNote);
+  const planDraftFor = (session) => {
+    if (sessionPlanDrafts[session.id]) return sessionPlanDrafts[session.id];
+    const existing = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
+    const existingResourceAvailable = existing && safeFollowUpResources.some((item) => item.id === existing.resourceId);
+    const supportCohorts = (session.insightBrief?.evidenceCohorts || []).filter((cohort) => cohort && cohort.intent === "support");
+    const existingCohortAvailable = existing?.audience === "cohort" && supportCohorts.some((cohort) => cohort.code === existing.cohortCode);
+    return {
+      resourceId: existingResourceAvailable ? existing.resourceId : safeFollowUpResources[0]?.id || "",
+      audienceKey: existingCohortAvailable ? "cohort:" + existing.cohortCode : "class"
+    };
+  };
+  const saveSessionNote = (session) => {
+    const note = normalizeRosterSessionTeacherNote(noteDraftFor(session));
+    setRosterKey((previous) => updateRosterSessionFollowUp(previous, session.id, { teacherNote: note }));
+    setSessionNoteDrafts((previous) => ({ ...previous, [session.id]: note }));
+    updateSessionPlannerStatus(session.id, note ? "Private follow-up note saved." : "Private follow-up note cleared.");
+  };
+  const saveSessionPlan = (session) => {
+    const draft = planDraftFor(session);
+    const resource = safeFollowUpResources.find((item) => item.id === draft.resourceId);
+    if (!resource) {
+      updateSessionPlannerStatus(session.id, "Choose an available student-safe resource first.");
+      return;
+    }
+    const cohortCode = String(draft.audienceKey || "").startsWith("cohort:") ? String(draft.audienceKey).slice(7) : "";
+    const cohort = (session.insightBrief?.evidenceCohorts || []).find((item) => item && item.code === cohortCode);
+    const plan = normalizeRosterSessionFollowUpPlan({
+      resourceId: resource.id,
+      resourceTitle: resource.title || resource.type || "Follow-up resource",
+      resourceType: resource.type,
+      audience: cohort ? "cohort" : "class",
+      cohortCode: cohort?.code || "",
+      cohortLabel: cohort?.label || "Whole class",
+      cohortCount: cohort?.count || 0,
+      status: "planned",
+      plannedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    setRosterKey((previous) => updateRosterSessionFollowUp(previous, session.id, { followUpPlan: plan }));
+    updateSessionPlannerStatus(session.id, "Follow-up plan saved in this session record.");
+  };
+  const setSessionPlanStatus = (session, status) => {
+    const current = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
+    if (!current) return;
+    setRosterKey((previous) => updateRosterSessionFollowUp(previous, session.id, { followUpPlan: { ...current, status } }));
+    updateSessionPlannerStatus(session.id, status === "completed" ? "Follow-up marked complete." : "Follow-up reopened.");
+  };
+  const clearSessionPlan = (session) => {
+    setRosterKey((previous) => updateRosterSessionFollowUp(previous, session.id, { followUpPlan: null }));
+    setSessionPlanDrafts((previous) => {
+      const next = { ...previous };
+      delete next[session.id];
+      return next;
+    });
+    updateSessionPlannerStatus(session.id, "Follow-up plan cleared.");
+  };
+  const sendSessionPlanToLive = async (session) => {
+    if (!session?.id || typeof onSendFollowUpToLiveSession !== "function" || sessionLiveSendingId) return;
+    const sessionId = session.id;
+    setSessionLiveSendingId(sessionId);
+    updateSessionPlannerStatus(sessionId, "Checking the current live session\u2026");
+    try {
+      const result = await onSendFollowUpToLiveSession(sessionId);
+      updateSessionPlannerStatus(sessionId, result?.message || "The live follow-up action finished.");
+    } catch (_) {
+      updateSessionPlannerStatus(sessionId, "The live follow-up action failed. Review the current session and try again.");
+    } finally {
+      setSessionLiveSendingId((previous) => previous === sessionId ? "" : previous);
+    }
+  };
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;
@@ -295,7 +459,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             learnerIds: asRecord(data.learnerIds),
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
-            sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
+            sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : [],
             ...data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {},
             // Seating charts + constraints travel with the roster (the seating
             // module re-validates this blob with normalizeSeating on read).
@@ -304,6 +468,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             ...Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {},
             ...Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {}
           }));
+          setSessionNoteDrafts({});
+          setSessionPlanDrafts({});
+          setSessionPlannerStatus({});
           if (window.AlloFlowUX) window.AlloFlowUX.toast("Roster imported, including class settings and submission setup.", "success");
         }
       } catch (err) {
@@ -713,7 +880,29 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1", "aria-label": "Saved evidence cohorts" }, session.insightBrief.evidenceCohorts.map((cohort) => /* @__PURE__ */ React.createElement("details", { key: cohort.code, className: "rounded border p-1.5 " + (cohort.intent === "celebrate" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, cohort.label, " - ", cohort.count), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, cohort.recommendedAction), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, (cohort.codenames || []).join(", "))))), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-100 bg-white p-2", "aria-label": "Saved session history filters" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Focus", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryFocus, onChange: (event) => setSessionHistoryFocus(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by follow-up focus" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved sessions"), /* @__PURE__ */ React.createElement("option", { value: "follow_up" }, "Needs follow-up"), /* @__PURE__ */ React.createElement("option", { value: "revision" }, "Revision opportunities"), /* @__PURE__ */ React.createElement("option", { value: "celebrate" }, "Celebrate progress"), /* @__PURE__ */ React.createElement("option", { value: "planned" }, "Has follow-up plan"))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Activity", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryActivityKind, onChange: (event) => setSessionHistoryActivityKind(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by activity type" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All activity types"), sessionActivityKinds.map((kind) => /* @__PURE__ */ React.createElement("option", { key: kind, value: kind }, kind.replace(/_/g, " "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, filteredSessionHistory.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-cyan-100 bg-white p-3 text-xs text-slate-600" }, "No saved sessions match these filters."), filteredSessionHistory.slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50/60 p-2", "data-session-follow-up-planner": session.id }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-violet-900" }, "Post-session follow-up"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-700" }, "Private planning only. Nothing is sent or assigned until you choose an action."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-bold text-slate-700" }, "Private note", /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: noteDraftFor(session),
+      onChange: (event) => setSessionNoteDrafts((previous) => ({ ...previous, [session.id]: event.target.value.slice(0, 1e3) })),
+      rows: 2,
+      maxLength: 1e3,
+      "aria-label": "Private follow-up note for session " + session.id,
+      className: "mt-1 w-full rounded-lg border border-violet-200 bg-white p-2 text-xs text-slate-800"
+    }
+  )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => saveSessionNote(session), className: "min-h-9 rounded-lg border border-violet-300 bg-white px-2 text-[11px] font-bold text-violet-900" }, "Save private note"), (() => {
+    const draft = planDraftFor(session);
+    const savedPlan = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
+    const savedResource = savedPlan && safeFollowUpResources.find((item) => item.id === savedPlan.resourceId);
+    const supportCohorts = (session.insightBrief?.evidenceCohorts || []).filter((cohort) => cohort && cohort.intent === "support");
+    const savedAudienceKey = savedPlan?.audience === "cohort" && savedPlan.cohortCode ? "cohort:" + savedPlan.cohortCode : "class";
+    const planDirty = !!savedPlan && (draft.resourceId !== savedPlan.resourceId || draft.audienceKey !== savedAudienceKey);
+    const liveSending = sessionLiveSendingId === session.id;
+    const liveActionInFlight = Boolean(sessionLiveSendingId);
+    const canSendToLive = Boolean(activeSessionCode && savedPlan && savedPlan.status !== "completed" && savedResource && !planDirty && typeof onSendFollowUpToLiveSession === "function");
+    const liveActionLabel = savedPlan?.audience === "cohort" ? "Assign to current live cohort" : "Present to current live class";
+    return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-violet-100 pt-2" }, safeFollowUpResources.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900" }, "Create or restore a student-safe resource in History to prepare this follow-up. Any saved plan remains available to review or clear."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-700" }, "Existing resource", /* @__PURE__ */ React.createElement("select", { value: draft.resourceId, disabled: safeFollowUpResources.length === 0 || liveSending, onChange: (event) => setSessionPlanDrafts((previous) => ({ ...previous, [session.id]: { ...draft, resourceId: event.target.value } })), "aria-label": "Choose follow-up resource for session " + session.id, className: "mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800 disabled:bg-slate-100" }, safeFollowUpResources.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "No student-safe resources in History"), safeFollowUpResources.map((item) => /* @__PURE__ */ React.createElement("option", { key: item.id, value: item.id }, item.title || item.type || "Untitled resource")))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-700" }, "Planned audience", /* @__PURE__ */ React.createElement("select", { value: draft.audienceKey, disabled: liveSending, onChange: (event) => setSessionPlanDrafts((previous) => ({ ...previous, [session.id]: { ...draft, audienceKey: event.target.value } })), "aria-label": "Choose follow-up audience for session " + session.id, className: "mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("option", { value: "class" }, "Whole class"), supportCohorts.map((cohort) => /* @__PURE__ */ React.createElement("option", { key: cohort.code, value: "cohort:" + cohort.code }, cohort.label, " (", cohort.count, ")"))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-slate-600" }, "Planned audience is a private distribution reminder. Prepared links are shareable, not recipient-restricted. When a live session is active, the explicit live action below re-resolves current recipients before using the existing class or individual delivery controls."), planDirty && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-[11px] font-bold text-amber-800" }, "Save your plan changes before opening, assigning, or presenting this resource."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => saveSessionPlan(session), disabled: safeFollowUpResources.length === 0 || liveSending, className: "min-h-9 rounded-lg border border-violet-300 bg-violet-100 px-2 text-[11px] font-bold text-violet-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Save follow-up plan"), savedResource && typeof onOpenFollowUpResource === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenFollowUpResource(savedResource), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-sky-300 bg-sky-50 px-2 text-[11px] font-bold text-sky-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Open planned resource"), savedResource && typeof onPrepareFollowUpAssignment === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onPrepareFollowUpAssignment(savedResource), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-bold text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Prepare assignment link"), canSendToLive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => sendSessionPlanToLive(session), disabled: liveActionInFlight, "aria-label": liveActionLabel + " from saved follow-up plan", className: "min-h-9 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-2 text-[11px] font-bold text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50" }, liveSending ? savedPlan.audience === "cohort" ? "Assigning\u2026" : "Presenting\u2026" : liveActionLabel), savedPlan && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSessionPlanStatus(session, savedPlan.status === "completed" ? "planned" : "completed"), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50" }, savedPlan.status === "completed" ? "Reopen plan" : "Mark complete"), savedPlan && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearSessionPlan(session), disabled: liveSending, className: "min-h-9 rounded-lg border border-rose-200 bg-white px-2 text-[11px] font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50" }, "Clear plan")), savedPlan && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-800" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, savedPlan.status === "completed" ? "Completed" : "Planned", ":"), " ", savedPlan.resourceTitle, " \xB7 ", savedPlan.cohortLabel, !savedResource ? " \xB7 resource no longer available in History" : ""));
+  })(), sessionPlannerStatus[session.id] && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[11px] font-bold text-violet-800" }, sessionPlannerStatus[session.id])), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1", "aria-label": "Saved evidence cohorts" }, session.insightBrief.evidenceCohorts.map((cohort) => /* @__PURE__ */ React.createElement("details", { key: cohort.code, className: "rounded border p-1.5 " + (cohort.intent === "celebrate" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, cohort.label, " - ", cohort.count), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, cohort.recommendedAction), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, (cohort.codenames || []).join(", "))))), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), filteredSessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent matching sessions of ", filteredSessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: submissionDialogRef,
@@ -4843,6 +5032,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 });
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.RosterKeyPanel = RosterKeyPanel;
+window.AlloModules.normalizeRosterSessionFollowUpPlan = normalizeRosterSessionFollowUpPlan;
 window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart = SimpleBarChart;
 window.AlloModules.SimpleDonutChart = SimpleDonutChart;

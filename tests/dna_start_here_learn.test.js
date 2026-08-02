@@ -45,6 +45,12 @@ describe('DNA Lab orientation and progressive disclosure', () => {
     expect(html).toContain('Resume checkpoint');
   });
 
+  it('reopens the learner-selected Learn topic after a render', () => {
+    const html = renderDNA({ tab: 'learn', learnOpenTopic: 'mutate' });
+    expect(html).toMatch(/open="[^"]*"[^>]*data-dna-learn-topic="mutate"/);
+    expect(html).not.toMatch(/open="[^"]*"[^>]*data-dna-learn-topic="build"/);
+    expect(fs.readFileSync(sourcePath, 'utf8')).toContain('learnOpenTopic');
+  });
   it('renders Learn topics as native disclosure sections', () => {
     const html = renderDNA({ tab: 'learn' });
     expect(html).toContain('Choose one topic to reveal a focused explainer');

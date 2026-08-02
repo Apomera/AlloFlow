@@ -21,6 +21,35 @@ beforeAll(() => {
 
 const TEACHER_ONLY = ['lesson-plan', 'analysis', 'udl-advice', 'persona-session'];
 
+const liveFollowStart = anti.indexOf('const _alloFollowResourceLive = (item, options = {}) => {');
+const liveFollowEnd = anti.indexOf('const handleRestoreView', liveFollowStart);
+if (liveFollowStart < 0 || liveFollowEnd < 0) throw new Error('Live follow helper markers are missing');
+
+function makeLiveFollowHarness(overrides = {}) {
+  const deps = {
+    isTeacherMode: true,
+    activeSessionCode: 'LIVE-1',
+    mbLive: null,
+    mbMode: 'sync',
+    TEACHER_ONLY_TYPES: TEACHER_ONLY,
+    addToast: vi.fn(),
+    doc: vi.fn(() => ({ path: 'session' })),
+    db: {},
+    activeSessionAppId: 'host-app',
+    appId: 'default-app',
+    updateDoc: vi.fn(async () => {}),
+    window: { AlloModules: { SessionTransport: ST } },
+    _alloSessionSyncTrace: vi.fn(),
+    warnLog: vi.fn(),
+    pushResourceToMailbox: vi.fn(),
+    _mbPushOneResource: vi.fn(async () => ({ rtcCount: 0 })),
+    ...overrides,
+  };
+  // eslint-disable-next-line no-new-func
+  const follow = new Function(...Object.keys(deps), anti.slice(liveFollowStart, liveFollowEnd) + '\nreturn _alloFollowResourceLive;')(...Object.values(deps));
+  return { follow, deps };
+}
+
 describe('studentSafeResources (the one candidate rule)', () => {
   it('keeps id-bearing student types, drops teacher-only and malformed items', () => {
     const history = [
@@ -70,8 +99,32 @@ describe('firebase adapter', () => {
     const payload = ops.write.mock.calls[0][0];
     expect(payload.resources).toHaveLength(1);
     expect(payload.aiPolicy).toEqual({ studentAi: 'off' });
-    expect(result).toMatchObject({ kind: 'firebase', candidates: 1, kept: 1, dropped: 0 });
+    expect(result).toMatchObject({ kind: 'firebase', candidates: 1, kept: 1, dropped: 0, publishedIds: ['a'] });
     expect(ops.onTrimmed).not.toHaveBeenCalled();
+  });
+
+  it('acknowledges only retained ids after the resource write succeeds', async () => {
+    let releaseWrite;
+    const ops = makeOps({
+      prepareResources: vi.fn(items => ({
+        resources: items.slice(1), keptCount: 1, originalCount: 2,
+        droppedCount: 1, byteLength: 321, overLimit: false,
+      })),
+      write: vi.fn(() => new Promise(resolve => { releaseWrite = resolve; })),
+    });
+    const pending = ST.createFirebaseTransport(ops).publishResources([
+      { id: 'trimmed', type: 'simplified' },
+      { id: 'kept', type: 'quiz' },
+    ]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(ops.write).toHaveBeenCalledTimes(1);
+    let settled = false;
+    pending.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    releaseWrite({ ok: true });
+    await expect(pending).resolves.toMatchObject({ publishedIds: ['kept'] });
   });
 
   it('fires onTrimmed only when preparation dropped or over-limit', async () => {
@@ -238,14 +291,52 @@ describe('followResource (stage 3 — class-follow pointer)', () => {
   });
 });
 
+describe('_alloFollowResourceLive delivery acknowledgement', () => {
+  it('preserves immediate booleans for legacy callers while awaitDelivery waits for the write', async () => {
+    let releaseWrite;
+    const updateDoc = vi.fn(() => new Promise(resolve => { releaseWrite = resolve; }));
+    const { follow } = makeLiveFollowHarness({ updateDoc });
+    expect(follow({ id: 'resource-1', type: 'quiz' })).toBe(true);
+    const awaited = follow({ id: 'resource-2', type: 'quiz' }, { awaitDelivery: true });
+    let settled = false;
+    awaited.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    releaseWrite();
+    await expect(awaited).resolves.toBe(true);
+  });
+
+  it('resolves false when an awaited pointer write fails', async () => {
+    const { follow, deps } = makeLiveFollowHarness({ updateDoc: vi.fn(async () => { throw new Error('write refused'); }) });
+    await expect(follow({ id: 'resource-1', type: 'quiz' }, { awaitDelivery: true })).resolves.toBe(false);
+    expect(deps.warnLog).toHaveBeenCalledWith('Live follow command failed:', 'write refused');
+  });
+
+  it('awaits the canonical mailbox push when no shared pointer is available', async () => {
+    const _mbPushOneResource = vi.fn(async () => ({ rtcCount: 1 }));
+    const { follow } = makeLiveFollowHarness({ activeSessionCode: null, mbLive: { code: 'MAIL-1' }, _mbPushOneResource });
+    await expect(follow({ id: 'resource-1', type: 'quiz' }, { awaitDelivery: true })).resolves.toBe(true);
+    expect(_mbPushOneResource).toHaveBeenCalledWith(expect.objectContaining({ id: 'resource-1' }), { open: true, quiet: true });
+  });
+});
+
 describe('ANTI wiring pins', () => {
   it('all class-follow sites route through the ONE live-follow helper', () => {
-    // 4 call sites (readingBook, manipulative, restore-view tail, navigation)
+    // 6 call sites (reading set, reading book, manipulative, restore-view tail, navigation, confirmed saved-plan presentation)
+    // all continue through the same helper.
     // — the raw currentResourceId write survives ONLY inside the helper.
     const calls = anti.split('_alloFollowResourceLive(').length - 1;
-    expect(calls).toBe(4);
+    expect(calls).toBe(6);
     expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
     expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
+    expect(anti).toContain('options.awaitDelivery === true');
+    expect(anti).toContain('await _alloFollowResourceLive(after.resource, { awaitDelivery: true })');
+    expect(anti).toContain('firebasePublishedResourcesRef.current.sessionKey === publishSessionKey');
+    expect(anti).toContain('enqueueLiveSessionResourcePublish({');
+    expect(anti).toContain('publishedIds: result.publishedIds');
+    expect(anti).toContain('firebasePublication.sessionKey === expectedFirebaseSessionKey');
+    expect(anti).toContain('firebasePublication.fingerprints?.[resource.id] === fingerprint');
+    expect(anti).toContain("publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || ''))");
   });
 
   it('the inline sync fallbacks are retired: transport-unavailable is surfaced, not duplicated', () => {

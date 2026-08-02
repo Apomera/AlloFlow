@@ -2125,7 +2125,7 @@ var GEOGRAPHY_PROFILES = {
     var includeLocation = !options || options.includeLocation !== false;
     var keys = [
       'immersiveAudienceMode', 'immersiveSceneMode', 'immersiveDataSource', 'immersiveExplainerFeature', 'immersiveFocus',
-      'immersiveCameraPreset', 'immersiveInspectorPanel', 'immersiveComparisonFeature', 'immersiveGeography', 'immersiveCaptureClaimPrimaryId', 'immersiveCaptureClaimComparisonId', 'immersiveLessonPresetActiveId', 'immersiveTourStep', 'immersiveTourCompletedSteps', 'immersiveReflection', 'immersiveStageMode',
+      'immersiveCameraPreset', 'immersiveInspectorPanel', 'immersiveComparisonFeature', 'immersiveGeography', 'immersiveCaptureClaimPrimaryId', 'immersiveCaptureClaimComparisonId', 'immersiveLessonPresetActiveId', 'immersiveTourStep', 'immersiveTourCompletedSteps', 'immersiveReflection', 'immersivePresenterMode', 'immersiveCheckpointRunnerOpen', 'immersiveFocusSpotlight', 'immersiveStageMode',
       'geographicCameraPreset', 'geographicWeatherLayer', 'geographicStudyRadius', 'geographicStudyAreaVisible',
       'geographicWindVisible', 'geographicTransectVisible', 'scenario', 'simHour', 'temp', 'humidity', 'pressure',
       'windSpeed', 'windDir', 'terrain'
@@ -3132,7 +3132,7 @@ var GEOGRAPHY_PROFILES = {
 
       function setImmersiveAudienceMode(mode) {
         var next = mode === 'teacher' ? 'teacher' : 'student';
-        update({ immersiveAudienceMode: next });
+        update({ immersiveAudienceMode: next, immersivePresenterMode: next === 'teacher' ? d.immersivePresenterMode === true : false });
         if (announce) announce(next === 'teacher' ? 'Teacher tools opened.' : 'Student focus mode opened.');
       }
 
@@ -3307,6 +3307,51 @@ var GEOGRAPHY_PROFILES = {
         var next = d.immersiveStageMode !== true;
         var status = next ? '3D stage mode opened. The control rail is hidden for projection.' : '3D stage mode closed. Full controls restored.';
         update({ immersiveStageMode: next, immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function toggleImmersivePresenterMode() {
+        var next = d.immersivePresenterMode !== true;
+        var status = next ? 'Presenter mode opened. Guided prompts and evidence context are pinned over the 3D scene.' : 'Presenter mode closed. Stage controls remain available.';
+        update({ immersivePresenterMode: next, immersiveStageMode: next ? true : d.immersiveStageMode, immersiveAudienceMode: 'teacher', immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function toggleImmersiveSceneSummary() {
+        var next = d.immersiveSceneSummaryOpen !== true;
+        var status = next ? 'Text scene summary opened. The 3D evidence is now available as structured text.' : 'Text scene summary closed.';
+        update({ immersiveSceneSummaryOpen: next, immersiveStageMode: next ? true : d.immersiveStageMode, immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function toggleImmersiveCheckpointRunner() {
+        var next = d.immersiveCheckpointRunnerOpen !== true;
+        var current = immersiveTourStep(d.immersiveTourStep);
+        var status = next ? 'Guided checkpoint run opened at ' + current.label + '.' : 'Guided checkpoint run paused.';
+        update({ immersiveCheckpointRunnerOpen: next, immersiveStageMode: next ? true : d.immersiveStageMode, immersivePresenterMode: next, immersiveAudienceMode: 'teacher', immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function advanceImmersiveCheckpointRunner() {
+        if (d.immersiveCheckpointRunnerOpen !== true) return;
+        var current = immersiveTourStep(d.immersiveTourStep);
+        var completed = immersiveTourCompletedStepList(d.immersiveTourCompletedSteps);
+        if (completed.indexOf(current.id) === -1) completed.push(current.id);
+        if (completed.length >= IMMERSIVE_TOUR_STEPS.length) {
+          var completeStatus = 'Guided checkpoint run complete. All investigation steps are marked complete.';
+          update({ immersiveTourCompletedSteps: completed, immersiveTourStatus: completeStatus });
+          if (announce) announce(completeStatus);
+          return;
+        }
+        var next = immersiveTourStep(current.nextId);
+        var status = 'Next checkpoint: ' + next.label + '. ' + next.prompt;
+        update({ immersiveTourCompletedSteps: completed, immersiveTourStep: next.id, immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function resetImmersiveCheckpointRunner() {
+        var status = 'Guided checkpoint run reset. The first investigation step is ready.';
+        update({ immersiveCheckpointRunnerOpen: false, immersiveTourStep: 'scan', immersiveTourCompletedSteps: [], immersiveReflection: '', immersiveTourStatus: status });
         if (announce) announce(status);
       }
 
@@ -3900,6 +3945,14 @@ var GEOGRAPHY_PROFILES = {
         if (announce) announce('Terrain comparison point cleared.');
       }
 
+      function toggleImmersiveFocusSpotlight() {
+        var next = d.immersiveFocusSpotlight === false;
+        var runtime = immersiveRuntimeRef.current;
+        if (runtime && runtime.setFocusSpotlight) runtime.setFocusSpotlight(d.immersiveFocus || 'system', next);
+        update({ immersiveFocusSpotlight: next });
+        if (announce) announce(next ? '3D focus spotlight turned on.' : '3D focus spotlight turned off.');
+      }
+
       function applyImmersiveFocus(focus) {
         var focusState = immersiveFocusProfile(focus);
         var labels = {
@@ -3916,6 +3969,7 @@ var GEOGRAPHY_PROFILES = {
             if (object) object.visible = focusState.layers[key];
           });
         }
+        if (runtime && runtime.setFocusSpotlight) runtime.setFocusSpotlight(nextFocus, d.immersiveFocusSpotlight !== false);
         update({ immersiveFocus: nextFocus });
         if (announce) announce('3D analysis focus changed to ' + labels[nextFocus] + '.');
       }
@@ -4539,10 +4593,74 @@ var geographyGroup = new THREE.Group();
         var selectionHelper = null;
         var hoverHelper = null;
         var comparisonHelper = null;
+        var focusSpotlightGroup = null;
         var selectedVisualFeatureId = '';
         var hoveredVisualFeatureId = '';
         var comparisonVisualFeatureId = '';
         var publishedHoverFeatureId = '';
+
+        function clearFocusSpotlight() {
+          if (!focusSpotlightGroup) return;
+          scene.remove(focusSpotlightGroup);
+          focusSpotlightGroup.traverse(function (object) {
+            if (object.geometry && object.geometry.dispose) object.geometry.dispose();
+            if (object.material) {
+              var materials = Array.isArray(object.material) ? object.material : [object.material];
+              materials.forEach(function (material) { if (material && material.dispose) material.dispose(); });
+            }
+          });
+          focusSpotlightGroup = null;
+          canvas.removeAttribute('data-weather-active-spotlight');
+        }
+
+        function setFocusSpotlight(focusId, enabled) {
+          clearFocusSpotlight();
+          immersiveRuntimeRef.current.focusSpotlightEnabled = enabled !== false;
+          if (enabled === false) return;
+          var id = IMMERSIVE_FOCUS_PROFILES[focusId] ? focusId : 'system';
+          var targetMap = {
+            system: [airMassGroup, frontPlane, cloudGroup, precipitationPoints, windGroup, stationsGroup],
+            front: [airMassGroup, frontPlane, windGroup],
+            moisture: [cloudGroup, precipitationPoints, windGroup],
+            stations: [stationsGroup, windGroup]
+          };
+          var colorMap = { system: 0x22d3ee, front: 0xfbbf24, moisture: 0xa78bfa, stations: 0x34d399 };
+          var targets = (targetMap[id] || targetMap.system).filter(function (object) { return object && object.visible !== false; });
+          if (!targets.length) return;
+          scene.updateMatrixWorld(true);
+          var bounds = new THREE.Box3();
+          targets.forEach(function (object) { bounds.expandByObject(object); });
+          if (bounds.isEmpty()) return;
+          var center = bounds.getCenter(new THREE.Vector3());
+          var size = bounds.getSize(new THREE.Vector3());
+          var radius = clamp(Math.max(size.x, size.z) * 0.34, 2.8, 12);
+          var color = colorMap[id] || colorMap.system;
+          var group = new THREE.Group();
+          group.name = 'Weather focus spotlight';
+          group.position.set(center.x, 0.09, center.z);
+          var ringMaterial = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+          var ring = new THREE.Mesh(new THREE.RingGeometry(radius * 0.72, radius, 64), ringMaterial);
+          ring.rotation.x = -Math.PI / 2;
+          ring.renderOrder = 996;
+          group.add(ring);
+          var coreMaterial = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.055, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+          var core = new THREE.Mesh(new THREE.CircleGeometry(radius * 0.7, 64), coreMaterial);
+          core.rotation.x = -Math.PI / 2;
+          core.position.y = 0.01;
+          core.renderOrder = 995;
+          group.add(core);
+          var focusLight = new THREE.PointLight(color, quality === 'performance' ? 0.34 : 0.62, Math.max(10, radius * 2.3), 2);
+          focusLight.position.set(0, Math.max(4.5, size.y + 2.2), 0);
+          group.add(focusLight);
+          group.userData.focusId = id;
+          group.userData.ringMaterial = ringMaterial;
+          group.userData.coreMaterial = coreMaterial;
+          group.userData.focusLight = focusLight;
+          focusSpotlightGroup = group;
+          scene.add(group);
+          immersiveRuntimeRef.current.focusSpotlightGroup = group;
+          canvas.setAttribute('data-weather-active-spotlight', id);
+        }
 
         function clearFeatureSelectionVisual() {
           if (!selectionHelper) return;
@@ -4706,12 +4824,14 @@ var geographyGroup = new THREE.Group();
         immersiveRuntimeRef.current.selectFeatureVisual = selectFeatureVisual;
         immersiveRuntimeRef.current.setFeatureHoverVisual = setFeatureHoverVisual;
         immersiveRuntimeRef.current.setComparisonVisual = setComparisonVisual;
+        immersiveRuntimeRef.current.setFocusSpotlight = setFocusSpotlight;
         // Only draw the selection box for a feature the learner actually chose. This used to
         // fall back to 'airMasses', so every scene opened with a depth-test-disabled yellow
         // wireframe around the largest object in it — the loudest thing on screen, and a
         // highlight of a selection nobody made.
         selectFeatureVisual(d.immersiveExplainerFeature || '');
         setComparisonVisual(d.immersiveComparisonFeature || '');
+        setFocusSpotlight(d.immersiveFocus || 'system', d.immersiveFocusSpotlight !== false);
         if (d.immersiveHoverFeature) update({ immersiveHoverFeature: '', immersiveHoverInput: '' });
 
         var clock = new THREE.Clock();
@@ -4744,6 +4864,13 @@ var geographyGroup = new THREE.Group();
           if (selectionHelper) selectionHelper.update();
           if (hoverHelper) hoverHelper.update();
           if (comparisonHelper) comparisonHelper.update();
+          if (focusSpotlightGroup && focusSpotlightGroup.userData) {
+            var pulse = reduceMotion ? 0.5 : (Math.sin(Date.now() * 0.0024) + 1) / 2;
+            focusSpotlightGroup.scale.setScalar(reduceMotion ? 1 : 1 + pulse * 0.022);
+            if (focusSpotlightGroup.userData.ringMaterial) focusSpotlightGroup.userData.ringMaterial.opacity = 0.19 + pulse * 0.12;
+            if (focusSpotlightGroup.userData.coreMaterial) focusSpotlightGroup.userData.coreMaterial.opacity = 0.04 + pulse * 0.035;
+            if (focusSpotlightGroup.userData.focusLight) focusSpotlightGroup.userData.focusLight.intensity = (quality === 'performance' ? 0.28 : 0.48) + pulse * 0.2;
+          }
           renderer.render(scene, camera);
         });
         function resizeImmersiveScene() {
@@ -4765,6 +4892,7 @@ var geographyGroup = new THREE.Group();
           canvas.removeEventListener('pointerleave', handleScenePointerLeave);
           if (hoverFrame) window.cancelAnimationFrame(hoverFrame);
           clearFeatureHoverVisual();
+          clearFocusSpotlight();
           clearFeatureComparisonVisual();
           clearFeatureSelectionVisual();
           canvas.style.cursor = '';
@@ -4785,6 +4913,12 @@ var geographyGroup = new THREE.Group();
           immersiveRuntimeRef.current = null;
         };
       }, [d.tab, d.immersiveSceneMode, dataRoot._threeLoaded, d.immersiveDataSource, d.immersiveQuality, d.liveWeather && d.liveWeather.observedAt, d.liveWeatherTimelineIndex, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, d.immersiveGeography, selectedStation]);
+
+      React.useEffect(function () {
+        var runtime = immersiveRuntimeRef.current;
+        if (!runtime || !runtime.setFocusSpotlight) return;
+        runtime.setFocusSpotlight(d.immersiveFocus || 'system', d.immersiveFocusSpotlight !== false);
+      }, [d.immersiveFocus, d.immersiveFocusSpotlight, d.immersiveSceneReady, d.immersiveSceneMode]);
 
       React.useEffect(function () {
         var geographic = geographicViewState(d);
@@ -8453,11 +8587,15 @@ var geographyGroup = new THREE.Group();
         ];
         var engineReady = !!dataRoot._threeLoaded;
         var immersiveStageMode = d.immersiveStageMode === true;
+        var immersivePresenterMode = d.immersivePresenterMode === true && teacherMode;
+        var immersiveSceneSummaryOpen = d.immersiveSceneSummaryOpen === true;
+        var immersiveCheckpointRunnerOpen = d.immersiveCheckpointRunnerOpen === true;
         var engineError = dataRoot._threeLoadError || d.immersiveRenderError;
         var xrAvailable = !!(window.navigator && window.navigator.xr);
         var immersiveQuality = d.immersiveQuality || 'high';
         var immersiveCameraPreset = d.immersiveCameraPreset || 'overview';
         var immersiveFocus = d.immersiveFocus || 'system';
+        var immersiveFocusSpotlight = d.immersiveFocusSpotlight !== false;
         var focusDetails = {
           system: { label: 'Full atmospheric system', detail: 'All analytical layers are visible.' },
           front: { label: 'Front dynamics', detail: 'Air masses, the frontal boundary, wind, and stations are isolated.' },
@@ -8465,6 +8603,13 @@ var geographyGroup = new THREE.Group();
           stations: { label: 'Surface observations', detail: 'Wind vectors and observation stations are isolated.' }
         };
         var focusDetail = focusDetails[immersiveFocus] || focusDetails.system;
+        var focusSpotlightThemes = {
+          system: { color: '#22d3ee', badge: 'border-cyan-300/35 bg-slate-950/85 shadow-cyan-950/40', eyebrow: 'text-cyan-200', state: 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100' },
+          front: { color: '#fbbf24', badge: 'border-amber-300/40 bg-slate-950/85 shadow-amber-950/40', eyebrow: 'text-amber-200', state: 'border-amber-300/35 bg-amber-300/10 text-amber-100' },
+          moisture: { color: '#a78bfa', badge: 'border-violet-300/40 bg-slate-950/85 shadow-violet-950/40', eyebrow: 'text-violet-200', state: 'border-violet-300/35 bg-violet-300/10 text-violet-100' },
+          stations: { color: '#34d399', badge: 'border-emerald-300/40 bg-slate-950/85 shadow-emerald-950/40', eyebrow: 'text-emerald-200', state: 'border-emerald-300/35 bg-emerald-300/10 text-emerald-100' }
+        };
+        var focusSpotlightTheme = focusSpotlightThemes[immersiveFocus] || focusSpotlightThemes.system;
         var geography = geographyProfile(d.immersiveGeography, state.scenario);
         var geographyOptions = ['plains', 'coastal', 'mountain', 'urban'].map(function (id) { return GEOGRAPHY_PROFILES[id]; });
         var geographic = geographicViewState(d);
@@ -8566,6 +8711,12 @@ var geographyGroup = new THREE.Group();
           { id: 'stations', label: 'Surface stations', detail: 'Observation markers', enabled: !!focusLayers.stations, color: '#6ee7b7' },
           { id: 'terrain', label: 'Terrain base', detail: 'Conceptual surface', enabled: true, color: '#f59e0b' }
         ];
+        var stageFocusOptions = [
+          { id: 'system', label: 'Full system' },
+          { id: 'front', label: 'Front dynamics' },
+          { id: 'moisture', label: 'Moisture' },
+          { id: 'stations', label: 'Surface observations' }
+        ];
         var geographicAnalysisLensId = d.geographicAnalysisLens === 'custom' ? 'custom' : geographicAnalysisLens(d.geographicAnalysisLens).id;
         var geographicInvestigationPaused = d.geographicInvestigationPaused === true || geographicAnalysisLensId === 'custom';
         var geographicAnalysisLensDetail = geographicAnalysisLensId === 'custom'
@@ -8625,7 +8776,7 @@ var geographyGroup = new THREE.Group();
         var defaultGeographicFieldStep = geographicAnalysisLensId === 'context' ? 'orient' : geographicAnalysisLensId === 'site' ? 'site' : 'terrain';
         var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
         var tourSource = useLive ? (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'selected forecast hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'selected earlier hour' : 'live observation') : 'teaching model';
-        return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true, 'data-weather-stage-mode': immersiveStageMode ? 'on' : 'off' },
+        return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true, 'data-weather-stage-mode': immersiveStageMode ? 'on' : 'off', 'data-weather-presenter-mode': immersivePresenterMode ? 'on' : 'off', 'data-weather-scene-summary': immersiveSceneSummaryOpen ? 'on' : 'off', 'data-weather-checkpoint-runner': immersiveCheckpointRunnerOpen ? 'on' : 'off', 'data-weather-focus-spotlight': immersiveFocusSpotlight ? 'on' : 'off' },
           h('section', { className: 'overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-cyan-950 text-white shadow-2xl' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5' },
               h('div', { className: 'max-w-2xl' },
@@ -8637,13 +8788,21 @@ var geographyGroup = new THREE.Group();
                 h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[11px] font-black text-cyan-950' }, geographicMode ? (d.geographicMapReady ? '\u25CF Geographic layers ready' : '\u25CB Loading geographic layers') : (engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine')),
                 h('span', { className: 'rounded-full px-3 py-1.5 text-[11px] font-black ' + (geographicMode ? 'bg-emerald-300 text-emerald-950' : (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300')) }, geographicMode ? 'Open geographic data' : (xrAvailable ? 'WebXR detected' : 'Desktop 3D available')),
                 h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode')),
+                h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, 'aria-pressed': immersiveSceneSummaryOpen, 'aria-label': immersiveSceneSummaryOpen ? 'Hide text scene summary' : 'Open text scene summary', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-1.5 text-[10px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, immersiveSceneSummaryOpen ? 'Hide text summary' : 'Text summary'),
+                teacherMode && h('button', { type: 'button', onClick: toggleImmersiveCheckpointRunner, 'aria-pressed': immersiveCheckpointRunnerOpen, 'aria-label': immersiveCheckpointRunnerOpen ? 'Pause guided checkpoint run' : 'Start guided checkpoint run', className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-1.5 text-[10px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, immersiveCheckpointRunnerOpen ? 'Pause run' : 'Start guided run'),
+                teacherMode && h('button', { type: 'button', onClick: toggleImmersivePresenterMode, 'aria-pressed': immersivePresenterMode, 'aria-label': immersivePresenterMode ? 'Exit presenter mode' : 'Open presenter mode', className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-1.5 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, immersivePresenterMode ? 'Exit presenter' : 'Presenter mode'),
                 h('button', { type: 'button', onClick: toggleImmersiveStageMode, 'aria-pressed': immersiveStageMode, 'aria-label': immersiveStageMode ? 'Exit 3D stage mode' : 'Enter 3D stage mode', className: 'min-h-11 rounded-lg border border-amber-300/35 bg-amber-300/10 px-3 py-1.5 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, immersiveStageMode ? 'Exit stage mode' : 'Enter stage mode')
               )
             ),
             h('div', { className: 'grid gap-4 p-3 sm:p-5 ' + (immersiveStageMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1fr)_380px]'), 'data-weather-immersive-layout': immersiveStageMode ? 'stage' : 'control-rail' },
               h('div', { className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' },
                 h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
-                immersiveStageMode && h('div', { className: 'pointer-events-none absolute left-3 top-3 z-30 max-w-[300px] rounded-2xl border border-cyan-300/30 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-legend': true, role: 'region', 'aria-labelledby': 'weather-stage-legend-title' },
+                !geographicMode && immersiveFocusSpotlight && h('div', { className: 'pointer-events-none absolute left-1/2 top-3 z-20 w-[min(320px,46%)] -translate-x-1/2 rounded-2xl border px-3 py-2 text-center shadow-2xl backdrop-blur-md ' + (immersiveStageMode ? 'hidden xl:block ' : '') + focusSpotlightTheme.badge, 'data-weather-focus-spotlight-badge': immersiveFocus, role: 'status', 'aria-live': 'polite', 'aria-label': 'Visual spotlight: ' + focusDetail.label + '. ' + focusDetail.detail },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[0.18em] ' + focusSpotlightTheme.eyebrow }, 'Visual spotlight'),
+                  h('p', { className: 'mt-0.5 flex items-center justify-center gap-1.5 text-xs font-black text-white' }, h('span', { className: 'h-2 w-2 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }), focusDetail.label),
+                  h('p', { className: 'mt-0.5 truncate text-[9px] text-slate-300' }, focusDetail.detail)
+                ),
+                immersiveStageMode && h('div', { className: 'pointer-events-auto absolute left-3 top-3 z-30 max-w-[300px] rounded-2xl border border-cyan-300/30 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-legend': true, role: 'region', 'aria-labelledby': 'weather-stage-legend-title' },
                   h('div', { className: 'flex items-start justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Scene legend'), h('h4', { id: 'weather-stage-legend-title', className: 'mt-0.5 text-xs font-black text-white' }, geographicMode ? 'Map + terrain layers' : 'Visible 3D channels')),
                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100' }, stageLegendItems.filter(function (item) { return item.enabled; }).length + '/' + stageLegendItems.length + ' on')
@@ -8654,7 +8813,41 @@ var geographyGroup = new THREE.Group();
                       h('span', { className: 'truncate' }, item.label)
                     );
                   })),
+                  h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-stage-focus-controls': true, role: 'group', 'aria-label': '3D layer focus presets' },
+                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Quick focus'),
+                    h('div', { className: 'mt-1 grid grid-cols-2 gap-1' }, stageFocusOptions.map(function (option) {
+                      var active = immersiveFocus === option.id;
+                      return h('button', { key: option.id, type: 'button', onClick: function () { applyImmersiveFocus(option.id); }, 'aria-pressed': active, className: 'min-h-11 rounded-lg border px-2 py-1.5 text-left text-[10px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10') }, option.label);
+                    })),
+                    !geographicMode && h('button', { type: 'button', onClick: toggleImmersiveFocusSpotlight, 'aria-pressed': immersiveFocusSpotlight, 'aria-label': (immersiveFocusSpotlight ? 'Turn off' : 'Turn on') + ' the visual focus spotlight', 'data-weather-focus-spotlight-toggle': 'stage', className: 'mt-2 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-[10px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveFocusSpotlight ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100' : 'border-white/10 bg-white/5 text-slate-300') }, h('span', null, 'Visual spotlight'), h('span', { 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off'))
+                  ),
                   h('p', { className: 'mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-slate-300' }, geographicMode ? 'These layers are geographic evidence or derived terrain context.' : 'Colored channels explain what the 3D scene is encoding; teaching layers are simplified, not direct measurements.')
+                ),
+                immersivePresenterMode && h('div', { className: 'pointer-events-auto absolute right-3 top-3 z-30 max-w-[340px] rounded-2xl border border-fuchsia-300/35 bg-slate-950/92 p-3 shadow-2xl backdrop-blur-md', 'data-weather-presenter-overlay': true, role: 'region', 'aria-labelledby': 'weather-presenter-title' },
+                  h('div', { className: 'flex items-start justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Presenter mode'), h('h4', { id: 'weather-presenter-title', className: 'mt-0.5 text-sm font-black text-white' }, geographicMode ? geographicFieldStep.label : tourStep.label)),
+                    h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, geographicMode ? (geographicFieldStep.index + 1) + '/' + geographicFieldStep.total : (tourStep.index + 1) + '/' + tourStep.total)
+                  ),
+                  h('p', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Teacher cue'),
+                  h('p', { className: 'mt-1 text-sm font-black leading-relaxed text-white', 'data-weather-presenter-prompt': true }, geographicMode ? geographicFieldStep.prompt : tourStep.prompt),
+                  h('div', { className: 'mt-3 rounded-xl border border-white/10 bg-white/5 p-2.5' },
+                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Evidence to notice'),
+                    h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200', 'data-weather-presenter-evidence': true }, geographicMode ? geographicFieldStep.evidence : tourStep.evidence)
+                  ),
+                  h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Source: ' + (geographicMode ? (regionalFieldStatus.current ? regionalWeatherLayer.label : 'Mapped observation') : tourSource) + '. Focus: ' + focusDetail.label + '.'),
+                  immersiveCheckpointRunnerOpen && h('div', { className: 'mt-3 rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-2.5', 'data-weather-checkpoint-runner': true, role: 'group', 'aria-labelledby': 'weather-checkpoint-runner-title' },
+                    h('div', { className: 'flex items-start justify-between gap-2' },
+                      h('div', null, h('p', { id: 'weather-checkpoint-runner-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-emerald-200' }, 'Checkpoint runner'), h('p', { className: 'mt-1 text-[11px] font-black text-white' }, currentTourProgress.label)),
+                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
+                    ),
+                    h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-200' }, currentTourProgress.complete ? 'This checkpoint is marked complete. Move forward when the class is ready.' : tourStep.prompt),
+                    h('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-100' }, tourStep.evidence),
+                    h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                      h('button', { type: 'button', disabled: tourRun.completedCount >= tourRun.total, onClick: advanceImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg bg-emerald-300 px-2 py-2 text-[10px] font-black text-emerald-950 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, tourRun.completedCount >= tourRun.total ? 'Run complete' : currentTourProgress.complete ? 'Next checkpoint' : 'Mark + next'),
+                      h('button', { type: 'button', onClick: resetImmersiveCheckpointRunner, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Reset run')
+                    )
+                  ),
+                  h('button', { type: 'button', onClick: toggleImmersivePresenterMode, className: 'mt-3 min-h-11 w-full rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-3 py-2 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Exit presenter mode')
                 ),
                 immersiveStageMode && useLive && liveTimeline.length > 1 && h('div', { className: 'pointer-events-auto absolute bottom-3 left-3 right-3 z-30 rounded-2xl border border-violet-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-timeline': true, role: 'region', 'aria-labelledby': 'weather-stage-timeline-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
@@ -8664,6 +8857,26 @@ var geographyGroup = new THREE.Group();
                   h('div', { className: 'mt-2 grid gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 sm:grid-cols-[minmax(0,1fr)_auto]', 'data-weather-stage-timeline-context': true },
                     h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-violet-200' }, timelineInstrumentLabel + ' · ' + timelineStagePosition), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, timelineStageContext)),
                     h('div', { className: 'self-center rounded-lg border border-violet-300/20 bg-violet-300/10 px-2.5 py-2 text-right' }, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.12em] text-violet-200' }, 'Scene time'), h('p', { className: 'mt-0.5 text-[11px] font-black text-white' }, timelineValidTimeDetail))
+                  ),
+                  h('div', { className: 'mt-2 rounded-xl border border-fuchsia-300/25 bg-fuchsia-300/10 p-2.5', 'data-weather-stage-timeline-comparison': true, role: 'group', 'aria-labelledby': 'weather-stage-timeline-comparison-title' },
+                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                      h('div', null, h('p', { id: 'weather-stage-timeline-comparison-title', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Compare hours'), h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Pin a baseline to make the selected-hour change explicit.')),
+                      timelineComparisonPoint && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, 'Baseline pinned')
+                    ),
+                    h('label', { htmlFor: 'weather-stage-timeline-comparison', className: 'mt-2 block text-[10px] font-black text-fuchsia-100' }, 'Compare selected hour with',
+                      h('select', { id: 'weather-stage-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-[11px] font-bold text-white focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' },
+                        h('option', { value: '' }, 'Choose a baseline hour'),
+                        liveTimeline.map(function (point, index) { return h('option', { key: 'stage-compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
+                      )
+                    ),
+                    timelineDelta ? h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
+                      h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-100' }, 'Change since baseline'),
+                      h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3' }, [
+                        ['Temperature', formatWeatherDelta(timelineDelta.temperature, '\u00B0C', 1)], ['Humidity', formatWeatherDelta(timelineDelta.humidity, '%', 0)], ['Pressure', formatWeatherDelta(timelineDelta.pressure, ' hPa', 1)],
+                        ['Wind speed', formatWeatherDelta(timelineDelta.windSpeed, ' km/h', 1)], ['Wind direction', formatWeatherDelta(timelineDelta.windDirection, '\u00B0', 0)], ['Precipitation', formatWeatherDelta(timelineDelta.precipitation, ' mm', 1)]
+                      ].map(function (metric) { return h('div', { key: 'stage-delta-' + metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
+                      timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
+                    ) : h('p', { className: 'mt-2 text-[10px] text-slate-400', role: 'status' }, 'Choose a different hour to reveal temperature, moisture, pressure, wind, and precipitation changes.')
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Stage timeline playback controls' },
                     h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
@@ -8852,6 +9065,28 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   geographicOverlays && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from the selected-hour wind speed; not a forecast footprint.'),
                   geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
                 )
+              ),
+              immersiveStageMode && immersiveSceneSummaryOpen && h('section', { className: 'rounded-2xl border border-sky-300/25 bg-sky-950/25 p-4 text-slate-100 shadow-xl', 'data-weather-scene-summary-panel': true, role: 'region', 'aria-labelledby': 'weather-scene-summary-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                  h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-sky-300' }, 'Accessible scene view'), h('h4', { id: 'weather-scene-summary-title', className: 'mt-1 text-lg font-black' }, 'Text scene summary')),
+                  h('button', { type: 'button', onClick: toggleImmersiveSceneSummary, className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[10px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Hide text summary')
+                ),
+                h('p', { className: 'mt-2 max-w-3xl text-[11px] leading-relaxed text-slate-300' }, 'A structured, non-visual equivalent of the 3D scene. Values describe the selected hour; layer notes explain what the graphics encode.'),
+                h('dl', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, [
+                  ['Scene', sceneLabel],
+                  ['Condition', sceneCondition],
+                  ['Source', useLive ? tourSource : 'Teaching model'],
+                  ['Selected time', useLive ? timelineSelectionLabel : 'T+' + state.simHour + ' hours'],
+                  ['Focus', focusDetail.label],
+                  ['Location', geographic.label]
+                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-white/10 bg-white/5 p-3' }, h('dt', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-sky-200' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, item[1])); })),
+                h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Selected weather values' }, values.slice(0, 6).map(function (metric) { return h('div', { key: 'summary-' + metric[0], className: 'rounded-xl border border-white/10 bg-slate-950/35 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-base font-black tabular-nums text-white' }, metric[1])); })),
+                h('div', { className: 'mt-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Visible layer meanings'),
+                  h('ul', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3' }, stageLegendItems.map(function (item) { return h('li', { key: 'summary-layer-' + item.id, className: 'flex items-start gap-2 text-[11px] leading-relaxed ' + (item.enabled ? 'text-slate-100' : 'text-slate-500') }, h('span', { className: 'mt-1 h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }), h('span', null, h('strong', { className: 'font-black' }, item.label + ' - ' + (item.enabled ? 'visible' : 'hidden')), h('span', null, ' - ' + item.detail))); }))
+                ),
+                selectedGlossaryFeature && h('p', { className: 'mt-3 rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/5 p-3 text-[11px] leading-relaxed text-fuchsia-100' }, h('strong', { className: 'font-black' }, selectedGlossaryFeature.label + ': '), selectedGlossaryFeature.definition),
+                h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, geographicMode ? 'Geographic layers combine open map data, terrain, and derived weather evidence.' : 'Conceptual layers are teaching representations; they are not direct measurements or literal scale.')
               ),
               h('aside', { hidden: immersiveStageMode, className: 'min-w-0 space-y-3', 'data-weather-immersive-control-rail': true },
                  h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-audience-mode': immersiveAudienceMode },
@@ -9228,6 +9463,13 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     )
                   ),
                   !geographicMode && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-focus-status': true }, focusDetail.detail),
+                  !geographicMode && h('button', { type: 'button', onClick: toggleImmersiveFocusSpotlight, 'aria-pressed': immersiveFocusSpotlight, 'aria-label': (immersiveFocusSpotlight ? 'Turn off' : 'Turn on') + ' the visual focus spotlight', 'data-weather-focus-spotlight-toggle': 'controls', className: 'mt-3 flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveFocusSpotlight ? focusSpotlightTheme.state : 'border-white/10 bg-white/5 text-slate-300') },
+                    h('span', { className: 'flex min-w-0 items-center gap-2' },
+                      h('span', { className: 'h-2.5 w-2.5 shrink-0 rounded-full shadow-[0_0_12px_currentColor]', style: { backgroundColor: focusSpotlightTheme.color }, 'aria-hidden': true }),
+                      h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black' }, 'Visual spotlight'), h('span', { className: 'block truncate text-[9px] font-medium opacity-80' }, 'Ground halo follows analysis focus'))
+                    ),
+                    h('span', { className: 'shrink-0 rounded-full border border-current/30 px-2 py-1 text-[10px] font-black', 'aria-hidden': true }, immersiveFocusSpotlight ? 'On' : 'Off')
+                  ),
                   geographicMode && h('div', { className: 'mt-3 rounded-xl border border-emerald-300/20 bg-slate-950/45 p-3', 'data-weather-geographic-analysis-lenses': true },
                     h('div', { className: 'flex items-center justify-between gap-3' },
                       h('div', null,

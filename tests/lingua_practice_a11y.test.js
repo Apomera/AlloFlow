@@ -323,6 +323,28 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await expectNoAxeViolations('restored review after undo');
   });
 
+  it('has no axe violations in the resumable review prompt', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', nextReviewAt: 0, reviews: 0 },
+      { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', example: 'Adios.', translation: 'Goodbye.', nextReviewAt: 1, reviews: 0 },
+    ] }));
+    localStorage.setItem('allo_lingua_review_v1', JSON.stringify({ Spanish: {
+      language: 'Spanish', tag: 'all', order: 'due', size: '5', skippedIds: ['Spanish::hola'],
+      session: { total: 0, again: 0, hard: 0, learning: 0, know: 0 }, recall: '', updatedAt: Date.now(),
+    } }));
+    await mount();
+    await click('Review (2)');
+    const prompt = host.querySelector('[aria-labelledby="lingua-review-resume-title"]');
+    expect(prompt).toBeTruthy();
+    expect(prompt.querySelector('#lingua-review-resume-title').textContent).toBe('Pick up where you left off');
+    expect(prompt.querySelectorAll('button')).toHaveLength(2);
+    await expectNoAxeViolations('resumable review prompt');
+
+    await click('Start fresh');
+    expect(host.querySelector('[aria-labelledby="lingua-review-resume-title"]')).toBeFalsy();
+    await expectNoAxeViolations('fresh review after dismissing resume prompt');
+  });
+
   it('moves focus to changed phrase and conversation prompts', async () => {
     const multiStepLesson = {
       ...lesson,

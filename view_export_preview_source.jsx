@@ -44,6 +44,77 @@ const _BUILDER_STYLE_GALLERY = Object.freeze([
   { id: 'callout', label: 'Callout', tag: 'blockquote', style: { backgroundColor: '#eef2ff', borderLeft: '4px solid #6366f1', fontStyle: 'normal', padding: '0.75em 1em' } },
 ]);
 const _BUILDER_STYLE_PROPERTIES = Object.freeze(['fontSize', 'lineHeight', 'marginTop', 'marginBottom', 'letterSpacing', 'color', 'fontStyle', 'fontWeight', 'backgroundColor', 'borderLeft', 'padding', 'paddingLeft']);
+const _BUILDER_CUSTOM_STYLES_KEY = 'alloflow-builder-custom-styles-v1';
+const _BUILDER_CUSTOM_TEMPLATES_KEY = 'alloflow-builder-document-templates-v1';
+const _BUILDER_DOCUMENT_TEMPLATES = Object.freeze([
+  {
+    id: 'report',
+    label: 'Professional report',
+    description: 'Title page structure, summary, findings, and recommendations.',
+    html: '<h1 data-allo-style="title">Report title</h1><p data-allo-style="subtitle">Prepared by · Date</p><h2 data-allo-style="heading2">Executive summary</h2><p>Summarize the purpose, major findings, and recommended action.</p><h2 data-allo-style="heading2">Findings</h2><h3 data-allo-style="heading3">Finding one</h3><p>Describe the evidence and its significance.</p><h2 data-allo-style="heading2">Recommendations</h2><ol><li>State a clear next step.</li><li>Assign ownership and timing.</li></ol>',
+  },
+  {
+    id: 'lesson-plan',
+    label: 'Lesson plan',
+    description: 'Objectives, materials, learning sequence, and assessment.',
+    html: '<h1 data-allo-style="title">Lesson title</h1><p data-allo-style="subtitle">Course · Grade · Duration</p><h2 data-allo-style="heading2">Learning objectives</h2><ul><li>Learners will be able to…</li></ul><h2 data-allo-style="heading2">Materials</h2><ul><li>List required materials and accessible alternatives.</li></ul><h2 data-allo-style="heading2">Learning sequence</h2><h3 data-allo-style="heading3">Launch</h3><p>Activate prior knowledge and share the goal.</p><h3 data-allo-style="heading3">Explore</h3><p>Describe learner choices, supports, and activities.</p><h3 data-allo-style="heading3">Reflect and assess</h3><p>Describe evidence of learning and feedback.</p>',
+  },
+  {
+    id: 'meeting-notes',
+    label: 'Meeting notes',
+    description: 'Agenda, decisions, and an accessible action-item table.',
+    html: '<h1 data-allo-style="title">Meeting notes</h1><p data-allo-style="subtitle">Date · Time · Location</p><h2 data-allo-style="heading2">Attendees</h2><p>Add names and roles.</p><h2 data-allo-style="heading2">Agenda</h2><ol><li>Topic and desired outcome</li></ol><h2 data-allo-style="heading2">Decisions</h2><ul><li>Record each decision and rationale.</li></ul><h2 data-allo-style="heading2">Action items</h2><table><caption>Action items</caption><thead><tr><th scope="col">Action</th><th scope="col">Owner</th><th scope="col">Due</th></tr></thead><tbody><tr><td>Next step</td><td>Name</td><td>Date</td></tr></tbody></table>',
+  },
+  {
+    id: 'accessible-handout',
+    label: 'Accessible handout',
+    description: 'A concise heading structure with a callout and checklist.',
+    html: '<h1 data-allo-style="title">Handout title</h1><p data-allo-style="subtitle">A short description of this resource</p><h2 data-allo-style="heading2">Key idea</h2><p>Introduce the central concept in plain language.</p><blockquote data-allo-style="callout" style="background-color:#eef2ff;border-left:4px solid #6366f1;font-style:normal;padding:0.75em 1em">Important information or a helpful example.</blockquote><h2 data-allo-style="heading2">What to remember</h2><ul><li>One clear takeaway</li><li>Another practical takeaway</li></ul><h2 data-allo-style="heading2">Next step</h2><p>Explain what the reader should do next.</p>',
+  },
+]);
+
+function _builderNormalizeCustomStyles(value) {
+  if (!Array.isArray(value)) return [];
+  const allowedTags = new Set(['p', 'h1', 'h2', 'h3', 'blockquote']);
+  return value.map((entry, index) => {
+    if (!entry || typeof entry !== 'object') return null;
+    const rawId = String(entry.id || 'custom-style-' + (index + 1)).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+    const id = rawId.startsWith('custom-') ? rawId : 'custom-' + rawId;
+    const label = String(entry.label || 'Custom style ' + (index + 1)).replace(/\s+/g, ' ').trim().slice(0, 60);
+    const tag = allowedTags.has(String(entry.tag || '').toLowerCase()) ? String(entry.tag).toLowerCase() : 'p';
+    if (!label) return null;
+    const style = {};
+    _BUILDER_STYLE_PROPERTIES.forEach((property) => {
+      const propertyValue = String(entry.style?.[property] || '').trim().slice(0, 160);
+      if (propertyValue && !/url\s*\(|expression\s*\(|javascript:|[<>]/i.test(propertyValue)) style[property] = propertyValue;
+    });
+    return { id, label, tag, style, custom: true, createdAt: Number(entry.createdAt) || 0 };
+  }).filter(Boolean).slice(0, 12);
+}
+
+function _builderNormalizeCustomDocumentTemplates(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((entry, index) => {
+    if (!entry || typeof entry !== 'object') return null;
+    const html = String(entry.html || '').slice(0, 250000);
+    if (html.replace(/<[^>]*>/g, '').trim().length < 3) return null;
+    const rawId = String(entry.id || 'custom-template-' + (index + 1)).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+    const id = rawId.startsWith('custom-') ? rawId : 'custom-' + rawId;
+    const label = String(entry.label || 'Custom template ' + (index + 1)).replace(/\s+/g, ' ').trim().slice(0, 80);
+    const description = String(entry.description || 'Saved on this device').replace(/\s+/g, ' ').trim().slice(0, 160);
+    return label ? { id, label, description, html, custom: true, createdAt: Number(entry.createdAt) || 0 } : null;
+  }).filter(Boolean).slice(0, 8);
+}
+
+function _readBuilderCustomStyles() {
+  if (typeof window === 'undefined') return [];
+  try { return _builderNormalizeCustomStyles(JSON.parse(window.localStorage.getItem(_BUILDER_CUSTOM_STYLES_KEY) || '[]')); } catch (_) { return []; }
+}
+
+function _readBuilderCustomDocumentTemplates() {
+  if (typeof window === 'undefined') return [];
+  try { return _builderNormalizeCustomDocumentTemplates(JSON.parse(window.localStorage.getItem(_BUILDER_CUSTOM_TEMPLATES_KEY) || '[]')); } catch (_) { return []; }
+}
 
 const _BUILDER_PAGE_SIZES = Object.freeze({
   letter: { label: 'Letter', width: 8.5, height: 11, css: 'letter' },
@@ -119,6 +190,13 @@ function _builderStripEditorBreakMetadata(root) {
 }
 function _builderInsertDocumentBreak(doc, kind = 'page', options = {}) {
   if (!doc?.body || !doc.getSelection?.()?.rangeCount) return null;
+  if (doc.body.getAttribute('data-allo-tracked-view') === 'original') {
+    _builderSetTrackedMarkupView(doc, 'all');
+    try {
+      const hostDoc = doc.defaultView?.parent?.document;
+      hostDoc?.dispatchEvent(new doc.defaultView.parent.CustomEvent('alloflow-builder-markup-view', { detail: { view: 'all' } }));
+    } catch (_) {}
+  }
   const marker = doc.createElement('div');
   let result = { kind: 'page' };
   if (kind === 'section') {
@@ -142,6 +220,10 @@ function _builderInsertDocumentBreak(doc, kind = 'page', options = {}) {
     marker.setAttribute('aria-label', 'Page break');
     marker.setAttribute('contenteditable', 'false');
     marker.setAttribute('style', 'break-before:page;page-break-before:always;height:0;margin:0;border:0;');
+  }
+  if (doc.body.getAttribute('data-allo-track-changes') === '1') {
+    const trackedMarker = _builderRecordInsertedStructure(marker, kind === 'section' ? 'Inserted section break' : 'Inserted page break');
+    if (trackedMarker) result.changeId = trackedMarker.getAttribute('data-allo-change-id') || '';
   }
   let inserted = false;
   try { inserted = Boolean(doc.execCommand('insertHTML', false, marker.outerHTML + '<p><br></p>')); } catch (_) {}
@@ -352,7 +434,7 @@ function _builderDocumentText(doc) {
   const parts = [];
   while (walker.nextNode()) {
     const node = walker.currentNode;
-    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]')) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],del[data-allo-change-id]')) continue;
     if (node.nodeValue) parts.push(node.nodeValue);
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim();
@@ -390,7 +472,7 @@ function _builderDocumentStatistics(doc) {
   while (walker.nextNode()) {
     const node = walker.currentNode;
     if (!String(node.nodeValue || '').trim()) continue;
-    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]')) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],[data-allo-toc],del[data-allo-change-id]')) continue;
     const block = node.parentElement?.closest('h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,pre,address,dt,dd,td,th,div');
     if (block && block !== doc.body) blocks.add(block);
   }
@@ -407,14 +489,41 @@ function _builderSelectionStatistics(doc, savedRange) {
     else if (savedRange && !savedRange.collapsed && savedRange.commonAncestorContainer?.ownerDocument === doc) range = savedRange;
     if (!range || range.collapsed) return empty;
     const container = range.commonAncestorContainer?.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer?.parentElement;
-    if (!container || !doc.body.contains(container)) return empty;
-    return { active: true, ..._builderTextStatistics(range.toString()) };
+    if (!container || !doc.body.contains(container) || container.closest?.('del[data-allo-change-id]')) return empty;
+    const fragment = range.cloneContents();
+    fragment.querySelectorAll?.('del[data-allo-change-id]').forEach((node) => node.remove());
+    return { active: true, ..._builderTextStatistics(fragment.textContent || '') };
   } catch (_) {
     return empty;
   }
 }
 
 const _BUILDER_COMMENT_SELECTOR = 'mark[data-allo-comment-id]';
+
+const _BUILDER_REVIEWER_PALETTE = [
+  { accent: '#4f46e5', soft: '#eef2ff', ink: '#312e81' },
+  { accent: '#0f766e', soft: '#f0fdfa', ink: '#134e4a' },
+  { accent: '#b45309', soft: '#fffbeb', ink: '#78350f' },
+  { accent: '#be123c', soft: '#fff1f2', ink: '#881337' },
+  { accent: '#7e22ce', soft: '#faf5ff', ink: '#581c87' },
+  { accent: '#0369a1', soft: '#f0f9ff', ink: '#0c4a6e' },
+  { accent: '#3f6212', soft: '#f7fee7', ink: '#365314' },
+  { accent: '#9f1239', soft: '#fff1f2', ink: '#881337' },
+];
+
+function _builderNormalizeReviewerName(value, fallback = 'Reviewer') {
+  return String(value || fallback).replace(/\s+/g, ' ').trim().slice(0, 80) || fallback;
+}
+
+function _builderReviewerIdentity(value) {
+  const name = _builderNormalizeReviewerName(value);
+  let hash = 0;
+  for (let index = 0; index < name.length; index += 1) hash = ((hash << 5) - hash + name.charCodeAt(index)) | 0;
+  const paletteIndex = Math.abs(hash) % _BUILDER_REVIEWER_PALETTE.length;
+  const words = name.split(/\s+/).filter(Boolean);
+  const initials = (words.length > 1 ? words[0][0] + words[words.length - 1][0] : name.slice(0, 2)).toUpperCase();
+  return { name, initials, key: 'reviewer-' + (paletteIndex + 1), ..._BUILDER_REVIEWER_PALETTE[paletteIndex] };
+}
 
 function _builderNormalizeCommentMessage(value) {
   return String(value || '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
@@ -427,11 +536,13 @@ function _builderCommentThread(marker) {
     if (Array.isArray(parsed)) source = parsed;
   } catch (_) {}
   const fallback = _builderNormalizeCommentMessage(marker?.getAttribute?.('data-allo-comment-text'));
-  if (!source.length && fallback) source = [{ text: fallback, at: marker?.getAttribute?.('data-allo-comment-created-at') || '' }];
+  const fallbackAuthor = _builderNormalizeReviewerName(marker?.getAttribute?.('data-allo-comment-author'));
+  if (!source.length && fallback) source = [{ text: fallback, at: marker?.getAttribute?.('data-allo-comment-created-at') || '', author: fallbackAuthor }];
   return source.map((entry, index) => ({
     id: String(entry?.id || `message-${index + 1}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `message-${index + 1}`,
     text: _builderNormalizeCommentMessage(entry?.text),
     at: String(entry?.at || '').slice(0, 48),
+    author: _builderNormalizeReviewerName(entry?.author || fallbackAuthor),
   })).filter((entry) => entry.text).slice(0, 20);
 }
 
@@ -441,14 +552,20 @@ function _builderSetCommentThread(marker, thread) {
     id: String(entry?.id || `message-${index + 1}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `message-${index + 1}`,
     text: _builderNormalizeCommentMessage(entry?.text),
     at: String(entry?.at || new Date().toISOString()).slice(0, 48),
+    author: _builderNormalizeReviewerName(entry?.author || marker.getAttribute('data-allo-comment-author')),
   })).filter((entry) => entry.text).slice(0, 20);
   marker.setAttribute('data-allo-comment-thread', JSON.stringify(normalized));
   marker.setAttribute('data-allo-comment-text', normalized[0]?.text || '');
+  marker.setAttribute('data-allo-comment-author', normalized[0]?.author || 'Reviewer');
+  const identity = _builderReviewerIdentity(normalized[0]?.author);
+  marker.setAttribute('data-allo-comment-author-key', identity.key);
+  marker.style.setProperty('--allo-reviewer-accent', identity.accent);
+  marker.style.setProperty('--allo-reviewer-soft', identity.soft);
   marker.setAttribute('tabindex', '0');
   const resolved = marker.getAttribute('data-allo-comment-resolved') === '1';
   const summary = (normalized[0]?.text || 'Comment').replace(/\s+/g, ' ').slice(0, 140);
-  marker.setAttribute('aria-label', `${resolved ? 'Resolved comment' : 'Comment'}: ${summary}`);
-  marker.setAttribute('title', `${resolved ? 'Resolved comment' : 'Comment'}: ${summary}`);
+  marker.setAttribute('aria-label', `${resolved ? 'Resolved comment' : 'Comment'} by ${identity.name}: ${summary}`);
+  marker.setAttribute('title', `${resolved ? 'Resolved comment' : 'Comment'} by ${identity.name}: ${summary}`);
   return normalized;
 }
 
@@ -468,12 +585,13 @@ function _builderCommentEntries(doc) {
       resolved: marker.getAttribute('data-allo-comment-resolved') === '1',
       createdAt,
       thread,
+      authors: Array.from(new Set(thread.map((entry) => entry.author))),
       node: marker,
     };
   });
 }
 
-function _builderInsertReviewComment(doc, savedRange, message) {
+function _builderInsertReviewComment(doc, savedRange, message, author = 'You') {
   const text = _builderNormalizeCommentMessage(message);
   if (!doc?.body || !text) return { ok: false, error: 'Write a comment first.' };
   try {
@@ -485,6 +603,7 @@ function _builderInsertReviewComment(doc, savedRange, message) {
     const endElement = range.endContainer?.nodeType === 1 ? range.endContainer : range.endContainer?.parentElement;
     if (!startElement || !endElement || !doc.body.contains(startElement) || !doc.body.contains(endElement)) return { ok: false, error: 'Select text inside the document.' };
     if (startElement.closest(_BUILDER_COMMENT_SELECTOR) || endElement.closest(_BUILDER_COMMENT_SELECTOR)) return { ok: false, error: 'That text already belongs to a comment.' };
+    if (startElement.closest('del[data-allo-change-id]') || endElement.closest('del[data-allo-change-id]')) return { ok: false, error: 'Accept or reject the deletion before commenting on it.' };
     const blockSelector = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,pre,td,th,div';
     if (startElement.closest(blockSelector) !== endElement.closest(blockSelector)) return { ok: false, error: 'Select text within one paragraph or table cell.' };
     const fragment = range.cloneContents();
@@ -498,7 +617,7 @@ function _builderInsertReviewComment(doc, savedRange, message) {
     marker.setAttribute('data-allo-comment-id', id);
     marker.setAttribute('data-allo-comment-created-at', at);
     marker.setAttribute('data-allo-comment-resolved', '0');
-    _builderSetCommentThread(marker, [{ id: `message-${Date.now().toString(36)}`, text, at }]);
+    _builderSetCommentThread(marker, [{ id: `message-${Date.now().toString(36)}`, text, at, author: _builderNormalizeReviewerName(author, 'You') }]);
     try {
       range.surroundContents(marker);
     } catch (_) {
@@ -548,30 +667,175 @@ function _builderSuspendReviewComments(root) {
   };
 }
 
-const _BUILDER_CHANGE_SELECTOR = 'ins[data-allo-change-id],del[data-allo-change-id]';
+const _BUILDER_ADVANCED_CHANGE_SELECTOR = '[data-allo-change-kind][data-allo-change-id]';
+const _BUILDER_CHANGE_SELECTOR = 'ins[data-allo-change-id],del[data-allo-change-id],' + _BUILDER_ADVANCED_CHANGE_SELECTOR;
+const _BUILDER_TRACKED_META_ATTRIBUTES = new Set([
+  'data-allo-change-id', 'data-allo-change-type', 'data-allo-change-kind',
+  'data-allo-change-at', 'data-allo-change-author', 'data-allo-change-author-key', 'data-allo-change-label',
+  'data-allo-change-before', 'data-allo-change-after', 'data-allo-change-scopes',
+  'data-allo-change-action', 'data-allo-change-active',
+  'data-allo-change-tabindex-added', 'data-allo-change-title-added',
+  'data-allo-change-aria-added', 'data-allo-change-preview-state',
+]);
+const _BUILDER_REVISION_PRESENTATION_ATTRIBUTES = Object.freeze([
+  'style', 'class', 'align', 'data-allo-style', 'data-allo-paragraph-layout',
+  'data-allo-tab-stops', 'data-allo-keep-with-next', 'data-allo-keep-lines',
+  'data-allo-widow-orphan',
+]);
 
 function _builderTrackedChangeType(marker) {
+  const explicit = String(marker?.getAttribute?.('data-allo-change-type') || '').toLowerCase();
+  if (['insert', 'delete', 'format', 'paragraph', 'structure'].includes(explicit)) return explicit;
   return String(marker?.tagName || '').toLowerCase() === 'del' ? 'delete' : 'insert';
+}
+
+function _builderCurrentReviewer(doc) {
+  return _builderNormalizeReviewerName(doc?.body?.getAttribute?.('data-allo-reviewer-name'), 'You');
+}
+
+function _builderRevisionSnapshotDecode(value) {
+  try {
+    const parsed = JSON.parse(String(value || 'null'));
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _builderCaptureElementRevision(element, options = {}) {
+  if (!element?.attributes) return null;
+  const attributeMode = options.attributeMode === 'all' ? 'all' : options.attributeMode === 'none' ? 'none' : 'presentation';
+  const allowed = new Set(_BUILDER_REVISION_PRESENTATION_ATTRIBUTES);
+  const attributes = {};
+  Array.from(element.attributes).sort((left, right) => left.name.localeCompare(right.name)).forEach((attribute) => {
+    const name = attribute.name;
+    if (_BUILDER_TRACKED_META_ATTRIBUTES.has(name)) return;
+    if (name === 'tabindex' && element.getAttribute('data-allo-change-tabindex-added') === '1') return;
+    if (name === 'title' && element.getAttribute('data-allo-change-title-added') === '1') return;
+    if ((name === 'aria-label' || name === 'aria-description') && element.getAttribute('data-allo-change-aria-added') === '1') return;
+    if (attributeMode === 'none' || (attributeMode === 'presentation' && !allowed.has(name))) return;
+    attributes[name] = attribute.value;
+  });
+  const snapshot = {
+    tag: String(element.tagName || 'span').toLowerCase(),
+    attributeMode,
+    attributes,
+  };
+  if (options.includeContent) snapshot.html = element.innerHTML;
+  return snapshot;
+}
+
+function _builderRevisionSnapshotsEqual(left, right) {
+  try { return JSON.stringify(left || null) === JSON.stringify(right || null); } catch (_) { return false; }
+}
+
+function _builderApplyElementRevisionSnapshot(element, snapshot, options = {}) {
+  if (!element || !snapshot) return element;
+  const attributeMode = snapshot.attributeMode === 'all' ? 'all' : snapshot.attributeMode === 'none' ? 'none' : 'presentation';
+  const allowed = new Set(_BUILDER_REVISION_PRESENTATION_ATTRIBUTES);
+  Array.from(element.attributes || []).forEach((attribute) => {
+    const name = attribute.name;
+    if (_BUILDER_TRACKED_META_ATTRIBUTES.has(name)) return;
+    if (attributeMode === 'all' || (attributeMode === 'presentation' && allowed.has(name))) element.removeAttribute(name);
+  });
+  Object.entries(snapshot.attributes || {}).forEach(([name, value]) => {
+    if (!_BUILDER_TRACKED_META_ATTRIBUTES.has(name)) element.setAttribute(name, String(value));
+  });
+  if (Object.prototype.hasOwnProperty.call(snapshot, 'html') && options.content !== false) element.innerHTML = String(snapshot.html || '');
+  if (!element.getAttribute('style')) element.removeAttribute('style');
+  return element;
+}
+
+function _builderReplaceElementTagForRevision(element, snapshot) {
+  const tag = String(snapshot?.tag || '').toLowerCase();
+  if (!element?.ownerDocument || !/^(p|h1|h2|h3|h4|h5|h6|blockquote|li|div|span|table)$/.test(tag) || String(element.tagName || '').toLowerCase() === tag) {
+    return element;
+  }
+  const replacement = element.ownerDocument.createElement(tag);
+  Array.from(element.attributes || []).forEach((attribute) => {
+    if (_BUILDER_TRACKED_META_ATTRIBUTES.has(attribute.name)) replacement.setAttribute(attribute.name, attribute.value);
+  });
+  while (element.firstChild) replacement.appendChild(element.firstChild);
+  element.replaceWith(replacement);
+  return replacement;
+}
+
+function _builderStripAdvancedTrackedMetadata(marker) {
+  if (!marker?.removeAttribute) return marker;
+  const removeTabindex = marker.getAttribute('data-allo-change-tabindex-added') === '1';
+  const removeTitle = marker.getAttribute('data-allo-change-title-added') === '1';
+  const removeAria = marker.getAttribute('data-allo-change-aria-added') === '1';
+  _BUILDER_TRACKED_META_ATTRIBUTES.forEach((name) => marker.removeAttribute(name));
+  if (removeTabindex) marker.removeAttribute('tabindex');
+  if (removeTitle) marker.removeAttribute('title');
+  if (removeAria) {
+    marker.removeAttribute('aria-label');
+    marker.removeAttribute('aria-description');
+  }
+  marker.style?.removeProperty('--allo-reviewer-accent');
+  marker.style?.removeProperty('--allo-reviewer-soft');
+  marker.style?.removeProperty('--allo-reviewer-ink');
+  if (!marker.getAttribute('style')) marker.removeAttribute('style');
+  return marker;
+}
+
+function _builderUnwrapTrackedContainer(marker) {
+  if (!marker?.parentNode) return false;
+  marker.replaceWith(...Array.from(marker.childNodes));
+  return true;
 }
 
 function _builderPrepareTrackedChangeMarker(marker, type, metadata = {}) {
   if (!marker) return null;
-  const normalizedType = type === 'delete' ? 'delete' : 'insert';
-  const fallbackId = `change-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const advanced = marker.hasAttribute?.('data-allo-change-kind');
+  const requestedType = String(type || marker.getAttribute?.('data-allo-change-type') || '').toLowerCase();
+  const normalizedType = advanced && ['format', 'paragraph', 'structure'].includes(requestedType)
+    ? requestedType
+    : requestedType === 'delete' ? 'delete' : 'insert';
+  const fallbackId = 'change-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
   const id = String(metadata.id || marker.getAttribute('data-allo-change-id') || fallbackId)
     .replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || fallbackId;
   const at = String(metadata.at || marker.getAttribute('data-allo-change-at') || marker.getAttribute('datetime') || new Date().toISOString()).slice(0, 48);
-  const author = String(metadata.author || marker.getAttribute('data-allo-change-author') || 'You').replace(/\s+/g, ' ').trim().slice(0, 80) || 'You';
+  const author = String(metadata.author || marker.getAttribute('data-allo-change-author') || _builderCurrentReviewer(marker.ownerDocument)).replace(/\s+/g, ' ').trim().slice(0, 80) || 'You';
+  const defaultLabel = normalizedType === 'delete' ? 'Deletion'
+    : normalizedType === 'insert' ? 'Insertion'
+    : normalizedType === 'paragraph' ? 'Paragraph formatting'
+    : normalizedType === 'structure' ? 'Structural change'
+    : 'Formatting change';
+  const label = String(metadata.label || marker.getAttribute('data-allo-change-label') || defaultLabel).replace(/\s+/g, ' ').trim().slice(0, 160) || defaultLabel;
   marker.setAttribute('data-allo-change-id', id);
   marker.setAttribute('data-allo-change-type', normalizedType);
   marker.setAttribute('data-allo-change-at', at);
   marker.setAttribute('data-allo-change-author', author);
-  marker.setAttribute('datetime', at);
-  marker.setAttribute('tabindex', '0');
-  if (normalizedType === 'delete') marker.setAttribute('contenteditable', 'false');
-  const summary = String(marker.textContent || (normalizedType === 'delete' ? 'Deleted content' : 'Inserted content')).replace(/\s+/g, ' ').trim().slice(0, 140);
-  marker.setAttribute('aria-label', `${normalizedType === 'delete' ? 'Deletion' : 'Insertion'} by ${author}: ${summary}`);
-  marker.setAttribute('title', `${normalizedType === 'delete' ? 'Deleted' : 'Inserted'} by ${author}: ${summary}`);
+  const reviewerIdentity = _builderReviewerIdentity(author);
+  marker.setAttribute('data-allo-change-author-key', reviewerIdentity.key);
+  marker.style.setProperty('--allo-reviewer-accent', reviewerIdentity.accent);
+  marker.style.setProperty('--allo-reviewer-soft', reviewerIdentity.soft);
+  marker.style.setProperty('--allo-reviewer-ink', reviewerIdentity.ink);
+  marker.setAttribute('data-allo-change-label', label);
+  if (!marker.hasAttribute('tabindex')) {
+    marker.setAttribute('tabindex', '0');
+    marker.setAttribute('data-allo-change-tabindex-added', '1');
+  }
+  const summary = String(marker.textContent || label).replace(/\s+/g, ' ').trim().slice(0, 140) || label;
+  if (!marker.hasAttribute('title')) {
+    marker.setAttribute('title', label + ' by ' + author + ': ' + summary);
+    marker.setAttribute('data-allo-change-title-added', '1');
+  }
+  if (advanced) {
+    const reviewDescription = label + ' by ' + author;
+    if (!marker.hasAttribute('aria-description') && String(marker.textContent || '').trim()) {
+      marker.setAttribute('aria-description', reviewDescription);
+      marker.setAttribute('data-allo-change-aria-added', '1');
+    } else if (!marker.hasAttribute('aria-label')) {
+      marker.setAttribute('aria-label', reviewDescription);
+      marker.setAttribute('data-allo-change-aria-added', '1');
+    }
+  } else {
+    marker.setAttribute('datetime', at);
+    if (normalizedType === 'delete') marker.setAttribute('contenteditable', 'false');
+    marker.setAttribute('aria-label', (normalizedType === 'delete' ? 'Deletion' : 'Insertion') + ' by ' + author + ': ' + summary);
+  }
   return marker;
 }
 
@@ -590,28 +854,243 @@ function _builderCreateTrackedChange(doc, type, content, metadata = {}) {
   return marker;
 }
 
+function _builderRecordElementRevision(element, beforeSnapshot, type, label, options = {}) {
+  if (!element) return { ok: false, error: 'The changed content is no longer available.' };
+  const existing = element.matches?.(_BUILDER_ADVANCED_CHANGE_SELECTOR);
+  const storedBefore = existing ? _builderRevisionSnapshotDecode(element.getAttribute('data-allo-change-before')) : null;
+  const originalBefore = storedBefore || beforeSnapshot || _builderCaptureElementRevision(element, options);
+  const afterSnapshot = options.afterSnapshot || _builderCaptureElementRevision(element, options);
+  if (!originalBefore || !afterSnapshot) return { ok: false, error: 'The change could not be recorded.' };
+  if (_builderRevisionSnapshotsEqual(originalBefore, afterSnapshot)) {
+    if (existing) _builderStripAdvancedTrackedMetadata(element);
+    return { ok: false, noChange: true, marker: element };
+  }
+  const kind = String(options.kind || element.getAttribute('data-allo-change-kind') || (type === 'paragraph' ? 'block-format' : 'inline-format'));
+  const scopes = new Set(String(element.getAttribute('data-allo-change-scopes') || '').split(',').filter(Boolean));
+  scopes.add(type);
+  element.setAttribute('data-allo-change-kind', kind);
+  element.setAttribute('data-allo-change-scopes', Array.from(scopes).join(','));
+  if (options.action) element.setAttribute('data-allo-change-action', String(options.action));
+  element.setAttribute('data-allo-change-before', JSON.stringify(originalBefore));
+  element.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
+  _builderPrepareTrackedChangeMarker(element, type, { label });
+  return { ok: true, id: element.getAttribute('data-allo-change-id'), marker: element };
+}
+
+function _builderRecordInsertedStructure(marker, label) {
+  if (!marker) return null;
+  const afterSnapshot = _builderCaptureElementRevision(marker, { attributeMode: 'all', includeContent: true });
+  marker.setAttribute('data-allo-change-kind', 'structure-insert');
+  marker.setAttribute('data-allo-change-action', 'insert');
+  marker.setAttribute('data-allo-change-before', 'null');
+  marker.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
+  _builderPrepareTrackedChangeMarker(marker, 'structure', { label: label || 'Inserted structure' });
+  return marker;
+}
+
+function _builderRecordDeletedStructure(marker, label) {
+  if (!marker) return null;
+  const beforeSnapshot = _builderCaptureElementRevision(marker, { attributeMode: 'all', includeContent: true });
+  Array.from(marker.attributes || []).forEach((attribute) => marker.removeAttribute(attribute.name));
+  marker.innerHTML = '';
+  const result = _builderRecordElementRevision(marker, beforeSnapshot, 'structure', label || 'Deleted structure', {
+    kind: 'structure-delete', action: 'delete', attributeMode: 'all', includeContent: true,
+  });
+  return result.ok ? result.marker : null;
+}
+
+function _builderTrackInlineFormatting(doc, command, value, label, executor) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const selection = doc.getSelection?.();
+  const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+  if (!range) return { ok: false, error: 'Select text to format first.' };
+  if (range.collapsed || _builderRangeTrackedChange(range, 'insert')) return { ok: false, direct: true };
+  if (!_builderTrackedRangeBlock(range)) return { ok: false, blocked: true, error: 'Formatting revisions must stay within one paragraph or table cell.' };
+  if (_builderRangeContainsTrackedChange(range)) return { ok: false, blocked: true, error: 'Accept or reject the selected revision before changing its formatting.' };
+  const marker = doc.createElement('span');
+  try {
+    try { range.surroundContents(marker); }
+    catch (_) {
+      marker.appendChild(range.extractContents());
+      range.insertNode(marker);
+    }
+    const beforeSnapshot = _builderCaptureElementRevision(marker, { attributeMode: 'presentation', includeContent: true });
+    marker.setAttribute('data-allo-change-kind', 'inline-format');
+    _builderPrepareTrackedChangeMarker(marker, 'format', { label });
+    const markerRange = doc.createRange();
+    markerRange.selectNodeContents(marker);
+    _builderSetTrackedSelection(doc, markerRange);
+    const applied = typeof executor === 'function'
+      ? executor()
+      : typeof doc.execCommand === 'function' ? doc.execCommand(command, false, value) : false;
+    const live = doc.querySelector('[data-allo-change-id="' + marker.getAttribute('data-allo-change-id') + '"]');
+    if (!live) return { ok: false, error: 'The formatting was applied but could not be recorded.' };
+    const result = _builderRecordElementRevision(live, beforeSnapshot, 'format', label, {
+      kind: 'inline-format', attributeMode: 'presentation', includeContent: true,
+    });
+    if (!result.ok) {
+      _builderStripAdvancedTrackedMetadata(live);
+      _builderUnwrapTrackedContainer(live);
+      return { ok: false, noChange: true, direct: Boolean(applied) };
+    }
+    const nextRange = doc.createRange();
+    nextRange.selectNodeContents(result.marker);
+    _builderSetTrackedSelection(doc, nextRange);
+    _builderDispatchTrackedInput(doc, 'formatTrackedChange');
+    return result;
+  } catch (_) {
+    if (marker.isConnected) _builderUnwrapTrackedContainer(marker);
+    return { ok: false, error: 'The formatting change could not be recorded.' };
+  }
+}
+
+function _builderTrackBlockFormattingCommand(doc, command, value, label, executor) {
+  const blocksBefore = _builderSelectedParagraphBlocks(doc);
+  if (!blocksBefore.length) return { ok: false, direct: true };
+  const snapshots = blocksBefore.map((block) => _builderCaptureElementRevision(block, { attributeMode: 'presentation' }));
+  const applied = typeof executor === 'function'
+    ? executor()
+    : typeof doc.execCommand === 'function' ? doc.execCommand(command, false, value) : false;
+  const blocksAfter = _builderSelectedParagraphBlocks(doc);
+  const ids = [];
+  blocksAfter.forEach((block, index) => {
+    const before = snapshots[Math.min(index, snapshots.length - 1)];
+    const result = _builderRecordElementRevision(block, before, 'format', label, {
+      kind: 'block-format', attributeMode: 'presentation',
+    });
+    if (result.ok) ids.push(result.id);
+  });
+  if (ids.length) _builderDispatchTrackedInput(doc, 'formatTrackedChange');
+  return { ok: ids.length > 0, ids, applied };
+}
+
+function _builderTrackStructureReplacementCommand(doc, command, value, label, executor) {
+  const blocks = _builderSelectedParagraphBlocks(doc);
+  if (!blocks.length) return { ok: false, direct: true };
+  const listRoots = Array.from(new Set(blocks.map((block) => block.closest?.('ul,ol')).filter(Boolean)));
+  const roots = listRoots.length === 1 && blocks.every((block) => listRoots[0].contains(block))
+    ? [listRoots[0]]
+    : blocks.filter((block) => !blocks.some((other) => other !== block && other.contains(block)));
+  const parent = roots[0]?.parentNode;
+  if (!parent || roots.some((root) => root.parentNode !== parent)) return { ok: false, direct: true };
+  const start = doc.createComment('allo-change-start');
+  const end = doc.createComment('allo-change-end');
+  const beforeHtml = roots.map((root) => root.outerHTML).join('');
+  parent.insertBefore(start, roots[0]);
+  parent.insertBefore(end, roots[roots.length - 1].nextSibling);
+  const applied = typeof executor === 'function'
+    ? executor()
+    : typeof doc.execCommand === 'function' ? doc.execCommand(command, false, value) : false;
+  if (!start.parentNode || start.parentNode !== end.parentNode) {
+    start.remove();
+    end.remove();
+    return { ok: false, direct: true, applied };
+  }
+  const wrapper = doc.createElement('div');
+  wrapper.setAttribute('style', 'display:contents;');
+  start.parentNode.insertBefore(wrapper, start.nextSibling);
+  let current = wrapper.nextSibling;
+  while (current && current !== end) {
+    const next = current.nextSibling;
+    wrapper.appendChild(current);
+    current = next;
+  }
+  start.remove();
+  end.remove();
+  if (!wrapper.childNodes.length) {
+    wrapper.remove();
+    return { ok: false, direct: true, applied };
+  }
+  const beforeSnapshot = {
+    tag: 'div',
+    attributeMode: 'presentation',
+    attributes: { style: 'display:contents;' },
+    html: beforeHtml,
+  };
+  const result = _builderRecordElementRevision(wrapper, beforeSnapshot, 'structure', label, {
+    kind: 'structure-replace', action: 'replace', attributeMode: 'presentation', includeContent: true,
+  });
+  if (!result.ok) {
+    _builderStripAdvancedTrackedMetadata(wrapper);
+    _builderUnwrapTrackedContainer(wrapper);
+    return { ok: false, noChange: true, direct: Boolean(applied) };
+  }
+  _builderDispatchTrackedInput(doc, 'structureTrackedChange');
+  return result;
+}
+
+function _builderRefreshAdvancedAfterSnapshots(root) {
+  const body = root?.body || root?.querySelector?.('body') || (String(root?.tagName || '').toLowerCase() === 'body' ? root : null);
+  if (body?.getAttribute('data-allo-tracked-view') === 'original') return;
+  const markers = Array.from(root?.querySelectorAll?.(_BUILDER_ADVANCED_CHANGE_SELECTOR) || []);
+  markers.reverse().forEach((marker) => {
+    const kind = marker.getAttribute('data-allo-change-kind') || '';
+    if (kind === 'structure-delete') return;
+    const before = _builderRevisionSnapshotDecode(marker.getAttribute('data-allo-change-before'));
+    if (!before) return;
+    const after = _builderCaptureElementRevision(marker, {
+      attributeMode: before.attributeMode,
+      includeContent: Object.prototype.hasOwnProperty.call(before, 'html'),
+    });
+    if (after) marker.setAttribute('data-allo-change-after', JSON.stringify(after));
+  });
+}
+
+function _builderSetTrackedMarkupView(root, requestedView = 'all') {
+  const view = ['all', 'simple', 'none', 'original'].includes(requestedView) ? requestedView : 'all';
+  const body = root?.body || root?.querySelector?.('body') || (String(root?.tagName || '').toLowerCase() === 'body' ? root : null);
+  if (!body) return view;
+  if (body.getAttribute('data-allo-tracked-view') !== 'original') _builderRefreshAdvancedAfterSnapshots(root);
+  body.setAttribute('data-allo-tracked-view', view);
+  body.removeAttribute('data-allo-show-tracked-markup');
+  for (let pass = 0; pass < 2; pass += 1) {
+    Array.from(root?.querySelectorAll?.(_BUILDER_ADVANCED_CHANGE_SELECTOR) || []).forEach((marker) => {
+      const kind = marker.getAttribute('data-allo-change-kind') || '';
+      if (kind === 'structure-insert' && view === 'original') return;
+      const snapshot = _builderRevisionSnapshotDecode(marker.getAttribute(view === 'original' ? 'data-allo-change-before' : 'data-allo-change-after'));
+      if (snapshot) _builderApplyElementRevisionSnapshot(marker, snapshot, { content: true });
+      marker.setAttribute('data-allo-change-preview-state', view === 'original' ? 'before' : 'after');
+    });
+  }
+  return view;
+}
+
 function _builderTrackedChangeEntries(doc) {
   if (!doc?.querySelectorAll) return [];
   const seen = new Set();
-  return Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR)).map((marker, index) => {
-    const type = _builderTrackedChangeType(marker);
-    _builderPrepareTrackedChangeMarker(marker, type);
-    let id = marker.getAttribute('data-allo-change-id') || `change-${index + 1}`;
-    if (seen.has(id)) {
-      id = `${id}-${index + 1}`.slice(0, 80);
-      marker.setAttribute('data-allo-change-id', id);
-    }
-    seen.add(id);
-    return {
-      id,
-      index,
-      type,
-      text: String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220) || (type === 'delete' ? 'Deleted content' : 'Inserted content'),
-      at: marker.getAttribute('data-allo-change-at') || '',
-      author: marker.getAttribute('data-allo-change-author') || 'You',
-      node: marker,
-    };
-  });
+  return Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR))
+    .filter((marker) => {
+      const type = _builderTrackedChangeType(marker);
+      return marker.matches?.(_BUILDER_ADVANCED_CHANGE_SELECTOR)
+        || type === 'delete'
+        || String(marker.textContent || '').length
+        || marker.querySelector?.('br,img,svg,math,table');
+    })
+    .map((marker, index) => {
+      const type = _builderTrackedChangeType(marker);
+      _builderPrepareTrackedChangeMarker(marker, type);
+      let id = marker.getAttribute('data-allo-change-id') || 'change-' + (index + 1);
+      if (seen.has(id)) {
+        id = (id + '-' + (index + 1)).slice(0, 80);
+        marker.setAttribute('data-allo-change-id', id);
+      }
+      seen.add(id);
+      const label = marker.getAttribute('data-allo-change-label')
+        || (type === 'delete' ? 'Deletion' : type === 'insert' ? 'Insertion' : type === 'paragraph' ? 'Paragraph formatting' : type === 'structure' ? 'Structural change' : 'Formatting change');
+      return {
+        id,
+        index,
+        type,
+        kind: marker.getAttribute('data-allo-change-kind') || (type === 'delete' ? 'text-delete' : 'text-insert'),
+        label,
+        scopes: String(marker.getAttribute('data-allo-change-scopes') || type).split(',').filter(Boolean),
+        action: marker.getAttribute('data-allo-change-action') || '',
+        text: String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220) || label,
+        at: marker.getAttribute('data-allo-change-at') || '',
+        author: marker.getAttribute('data-allo-change-author') || 'You',
+        node: marker,
+      };
+    });
 }
 
 function _builderTrackedRangeBoundaryElement(node) {
@@ -796,16 +1275,666 @@ function _builderTrackTextInsertion(doc, text, suppliedRange) {
   return marker ? { ok: true, id: marker.getAttribute('data-allo-change-id'), marker } : { ok: false, error: 'The insertion could not be tracked.' };
 }
 
-function _builderHeadingOutline(doc) {
-  if (!doc) return [];
-  return Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')).map((heading, index) => ({
-    index,
-    level: Number(heading.tagName.substring(1)) || 1,
-    text: (heading.textContent || '').replace(/\s+/g, ' ').trim() || `Untitled heading ${index + 1}`,
-    node: heading,
-  }));
+function _builderTrackTextDeletion(doc, direction = 'backward', suppliedRange) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const selection = doc.getSelection?.();
+  let range = suppliedRange?.cloneRange ? suppliedRange.cloneRange() : (selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null);
+  if (!range) return { ok: false, error: 'Place the caret in the document first.' };
+  if (range.collapsed) range = _builderAdjacentTrackedTextRange(doc, range, direction);
+  if (!range || range.collapsed) return { ok: false, structural: true };
+  const existingInsertion = _builderRangeTrackedChange(range, 'insert');
+  if (existingInsertion) {
+    try {
+      range.deleteContents();
+      _builderSetTrackedSelection(doc, range);
+      _builderDispatchTrackedInput(doc, 'deleteTrackedInsertion');
+      return { ok: true, revertedInsertion: true, id: existingInsertion.getAttribute('data-allo-change-id') || '' };
+    } catch (_) { return { ok: false, error: 'The inserted text could not be removed.' }; }
+  }
+  if (!_builderTrackedRangeBlock(range)) return { ok: false, blocked: true, error: 'Track Changes handles deletions within one paragraph at a time.' };
+  if (_builderRangeContainsTrackedChange(range)) return { ok: false, blocked: true, error: 'Accept or reject the selected revision before deleting it.' };
+  const deletion = _builderCreateTrackedChange(doc, 'delete', range.cloneContents());
+  const live = _builderReplaceRangeWithTrackedNodes(doc, range, [deletion], 'delete');
+  const marker = live[0] || null;
+  return marker ? { ok: true, id: marker.getAttribute('data-allo-change-id'), marker } : { ok: false, error: 'The deletion could not be tracked.' };
 }
 
+function _builderHandleTrackedBeforeInput(doc, event) {
+  if (!doc?.body || doc.body.getAttribute('data-allo-track-changes') !== '1' || event?.defaultPrevented || event?.isComposing) return { handled: false };
+  const inputType = String(event?.inputType || '');
+  const selection = doc.getSelection?.();
+  const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+  if (!range) return { handled: false };
+  const insertTypes = ['insertText', 'insertReplacementText', 'insertFromPaste', 'insertFromDrop', 'insertFromYank'];
+  if (insertTypes.includes(inputType)) {
+    const value = event?.data ?? event?.dataTransfer?.getData?.('text/plain') ?? '';
+    if (!value) return { handled: false };
+    if (_builderRangeTrackedChange(range, 'insert')) return { handled: false, tracked: true };
+    const result = _builderTrackTextInsertion(doc, value, range);
+    if (result.ok || result.blocked) event.preventDefault?.();
+    return { handled: Boolean(result.ok || result.blocked), ...result };
+  }
+  const deleteTypes = ['deleteContentBackward', 'deleteContentForward', 'deleteByCut', 'deleteByDrag'];
+  if (deleteTypes.includes(inputType)) {
+    const direction = inputType === 'deleteContentForward' ? 'forward' : 'backward';
+    const targetRange = range.collapsed ? _builderAdjacentTrackedTextRange(doc, range, direction) : range;
+    if (!targetRange) return { handled: false, structural: true };
+    if (_builderRangeTrackedChange(targetRange, 'insert')) {
+      if (range.collapsed) _builderSetTrackedSelection(doc, targetRange);
+      return { handled: false, tracked: true };
+    }
+    const result = _builderTrackTextDeletion(doc, direction, targetRange);
+    if (result.ok || result.blocked) event.preventDefault?.();
+    return { handled: Boolean(result.ok || result.blocked), ...result };
+  }
+  return { handled: false, structural: true };
+}
+
+function _builderApplyTrackedChange(marker, decision = 'accept') {
+  if (!marker?.parentNode) return false;
+  const type = _builderTrackedChangeType(marker);
+  const advanced = marker.matches?.(_BUILDER_ADVANCED_CHANGE_SELECTOR);
+  if (!advanced) {
+    const keepContent = (type === 'insert' && decision === 'accept') || (type === 'delete' && decision === 'reject');
+    if (keepContent) marker.replaceWith(...Array.from(marker.childNodes));
+    else marker.remove();
+    return true;
+  }
+  const kind = marker.getAttribute('data-allo-change-kind') || '';
+  const accepting = decision === 'accept';
+  if (kind === 'structure-insert') {
+    if (!accepting) {
+      marker.remove();
+      return true;
+    }
+    const unwrapAfterAccept = marker.getAttribute('data-allo-unwrap-on-accept') === '1';
+    const after = _builderRevisionSnapshotDecode(marker.getAttribute('data-allo-change-after'));
+    if (after) _builderApplyElementRevisionSnapshot(marker, after, { content: true });
+    _builderStripAdvancedTrackedMetadata(marker);
+    if (unwrapAfterAccept) {
+      marker.removeAttribute('data-allo-unwrap-on-accept');
+      return _builderUnwrapTrackedContainer(marker);
+    }
+    return true;
+  }
+  if (kind === 'structure-delete') {
+    if (accepting) {
+      marker.remove();
+      return true;
+    }
+    const before = _builderRevisionSnapshotDecode(marker.getAttribute('data-allo-change-before'));
+    let restored = _builderReplaceElementTagForRevision(marker, before);
+    if (before) _builderApplyElementRevisionSnapshot(restored, before, { content: true });
+    _builderStripAdvancedTrackedMetadata(restored);
+    return true;
+  }
+  const snapshot = _builderRevisionSnapshotDecode(marker.getAttribute(accepting ? 'data-allo-change-after' : 'data-allo-change-before'));
+  let resolved = marker;
+  if (snapshot && !accepting && kind === 'block-format') resolved = _builderReplaceElementTagForRevision(marker, snapshot);
+  if (snapshot) _builderApplyElementRevisionSnapshot(resolved, snapshot, { content: true });
+  _builderStripAdvancedTrackedMetadata(resolved);
+  if (kind === 'structure-replace') return _builderUnwrapTrackedContainer(resolved);
+  if (kind === 'inline-format' && String(resolved.tagName || '').toLowerCase() === 'span' && !resolved.attributes.length) {
+    return _builderUnwrapTrackedContainer(resolved);
+  }
+  return true;
+}
+
+function _builderFinalizeTrackedChanges(root, decision = 'accept') {
+  if (!root?.querySelectorAll) return root;
+  Array.from(root.querySelectorAll(_BUILDER_CHANGE_SELECTOR)).reverse().forEach((marker) => {
+    if (marker?.isConnected || marker?.parentNode) _builderApplyTrackedChange(marker, decision);
+  });
+  const body = root?.body || root?.querySelector?.('body') || (String(root?.tagName || '').toLowerCase() === 'body' ? root : null);
+  root.removeAttribute?.('data-allo-track-changes');
+  body?.removeAttribute('data-allo-track-changes');
+  body?.removeAttribute('data-allo-tracked-view');
+  body?.removeAttribute('data-allo-review-balloons');
+  body?.removeAttribute('data-allo-reviewer-name');
+  return root;
+}
+
+function _builderClearTrackedChangeTransientState(root) {
+  _builderSetTrackedMarkupView(root, 'all');
+  root?.querySelectorAll?.(_BUILDER_CHANGE_SELECTOR).forEach((marker) => {
+    marker.removeAttribute('data-allo-change-active');
+    marker.removeAttribute('data-allo-change-preview-state');
+  });
+  const body = root?.body || root?.querySelector?.('body') || (String(root?.tagName || '').toLowerCase() === 'body' ? root : null);
+  root?.removeAttribute?.('data-allo-show-tracked-markup');
+  body?.removeAttribute('data-allo-show-tracked-markup');
+  body?.removeAttribute('data-allo-tracked-view');
+  body?.removeAttribute('data-allo-review-balloons');
+  body?.removeAttribute('data-allo-reviewer-name');
+  return root;
+}
+
+function _builderSuspendTrackedChanges(root) {
+  if (!root?.querySelectorAll) return () => {};
+  const doc = root.ownerDocument || (root.nodeType === 9 ? root : null);
+  const advancedRecords = [];
+  const topLevelAdvanced = Array.from(root.querySelectorAll(_BUILDER_ADVANCED_CHANGE_SELECTOR))
+    .filter((marker) => !marker.parentElement?.closest?.(_BUILDER_ADVANCED_CHANGE_SELECTOR));
+  topLevelAdvanced.forEach((marker, index) => {
+    const parent = marker.parentNode;
+    if (!parent || !doc?.createComment) return;
+    const start = doc.createComment('allo-advanced-change-start-' + index);
+    const end = doc.createComment('allo-advanced-change-end-' + index);
+    const saved = marker.cloneNode(true);
+    parent.insertBefore(start, marker);
+    parent.insertBefore(end, marker.nextSibling);
+    _builderApplyTrackedChange(marker, 'accept');
+    const nested = [];
+    let current = start.nextSibling;
+    while (current && current !== end) {
+      if (current.nodeType === 1) {
+        if (current.matches?.(_BUILDER_CHANGE_SELECTOR)) nested.push(current);
+        nested.push(...Array.from(current.querySelectorAll?.(_BUILDER_CHANGE_SELECTOR) || []));
+      }
+      current = current.nextSibling;
+    }
+    nested.reverse().forEach((nestedMarker) => {
+      if (nestedMarker.parentNode) _builderApplyTrackedChange(nestedMarker, 'accept');
+    });
+    advancedRecords.push({ start, end, saved });
+  });
+
+  const records = [];
+  Array.from(root.querySelectorAll('ins[data-allo-change-id],del[data-allo-change-id]')).forEach((marker) => {
+    if (!marker.parentNode) return;
+    const type = _builderTrackedChangeType(marker);
+    if (type === 'insert') {
+      const children = Array.from(marker.childNodes);
+      marker.replaceWith(...children);
+      records.push({ type, marker, children });
+    } else {
+      const parent = marker.parentNode;
+      const nextSibling = marker.nextSibling;
+      marker.remove();
+      records.push({ type, marker, parent, nextSibling });
+    }
+  });
+  return () => {
+    records.reverse().forEach((record) => {
+      if (record.type === 'insert') {
+        const first = record.children.find((node) => node.parentNode);
+        const parent = first?.parentNode;
+        if (!parent) return;
+        parent.insertBefore(record.marker, first);
+        record.children.forEach((node) => { if (node.parentNode === parent) record.marker.appendChild(node); });
+      } else if (record.parent?.isConnected) {
+        const reference = record.nextSibling?.parentNode === record.parent ? record.nextSibling : null;
+        record.parent.insertBefore(record.marker, reference);
+      }
+    });
+    advancedRecords.reverse().forEach((record) => {
+      const parent = record.start?.parentNode;
+      if (!parent || record.end?.parentNode !== parent) return;
+      let current = record.start.nextSibling;
+      while (current && current !== record.end) {
+        const next = current.nextSibling;
+        current.remove();
+        current = next;
+      }
+      parent.insertBefore(record.saved, record.end);
+      record.start.remove();
+      record.end.remove();
+    });
+  };
+}
+
+const _BUILDER_TOC_SELECTOR = 'nav[data-allo-toc]';
+const _BUILDER_HEADING_SELECTOR = 'h1,h2,h3,h4,h5,h6';
+
+function _builderHeadingLevel(node) {
+  return Number(String(node?.tagName || '').substring(1)) || 1;
+}
+
+function _builderHeadingNodes(doc) {
+  if (!doc?.querySelectorAll) return [];
+  return Array.from(doc.querySelectorAll(_BUILDER_HEADING_SELECTOR))
+    .filter((heading) => !heading.closest(_BUILDER_TOC_SELECTOR + ',del[data-allo-change-id],[data-allo-page-element]'));
+}
+
+function _builderHeadingOutline(doc) {
+  const nodes = _builderHeadingNodes(doc);
+  const records = nodes.map((heading, index) => ({
+    index,
+    level: _builderHeadingLevel(heading),
+    text: (heading.textContent || '').replace(/\s+/g, ' ').trim() || `Untitled heading ${index + 1}`,
+    node: heading,
+    parentIndex: -1,
+    previousIndex: null,
+    nextIndex: null,
+    movable: heading.getAttribute('data-allo-style') !== 'title',
+  }));
+  const stack = [];
+  records.forEach((record) => {
+    while (stack.length && stack[stack.length - 1].level >= record.level) stack.pop();
+    record.parentIndex = stack.length ? stack[stack.length - 1].index : -1;
+    stack.push(record);
+  });
+  records.forEach((record) => {
+    if (!record.movable) return;
+    const siblings = records.filter((candidate) => candidate.movable && candidate.level === record.level && candidate.parentIndex === record.parentIndex && candidate.node.parentNode === record.node.parentNode);
+    const position = siblings.findIndex((candidate) => candidate.index === record.index);
+    record.previousIndex = position > 0 ? siblings[position - 1].index : null;
+    record.nextIndex = position >= 0 && position < siblings.length - 1 ? siblings[position + 1].index : null;
+  });
+  return records;
+}
+
+function _builderEnsureHeadingAnchor(doc, heading, index = 0) {
+  if (!doc || !heading) return '';
+  const existing = String(heading.id || '').trim();
+  if (existing && (!doc.getElementById(existing) || doc.getElementById(existing) === heading)) return existing;
+  const text = String(heading.textContent || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const base = text.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 56) || 'heading-' + (index + 1);
+  let candidate = base;
+  let suffix = 2;
+  while (doc.getElementById(candidate) && doc.getElementById(candidate) !== heading) {
+    candidate = base + '-' + suffix;
+    suffix += 1;
+  }
+  heading.id = candidate;
+  return candidate;
+}
+
+function _builderTableOfContentsEntries(doc, maxLevel = 3) {
+  const depth = Math.max(1, Math.min(6, Number(maxLevel) || 3));
+  return _builderHeadingNodes(doc)
+    .map((heading, index) => ({ heading, index, level: _builderHeadingLevel(heading), text: String(heading.textContent || '').replace(/\s+/g, ' ').trim() || `Untitled heading ${index + 1}` }))
+    .filter((entry) => entry.level <= depth)
+    .map((entry) => ({ id: _builderEnsureHeadingAnchor(doc, entry.heading, entry.index), level: entry.level, text: entry.text, node: entry.heading }));
+}
+
+function _builderRefreshTableOfContents(doc, target) {
+  const nav = target || doc?.querySelector?.(_BUILDER_TOC_SELECTOR);
+  if (!doc || !nav) return { ok: false, count: 0, updated: false };
+  const maxLevel = Math.max(1, Math.min(6, Number(nav.getAttribute('data-allo-toc-depth')) || 3));
+  const entries = _builderTableOfContentsEntries(doc, maxLevel);
+  const title = String(nav.getAttribute('data-allo-toc-title') || 'Table of contents').replace(/\s+/g, ' ').trim().slice(0, 80) || 'Table of contents';
+  const shell = doc.createElement('div');
+  const titleNode = doc.createElement('p');
+  titleNode.setAttribute('style', 'margin:0 0 .5em;font-weight:700;');
+  titleNode.textContent = title;
+  shell.appendChild(titleNode);
+  if (entries.length) {
+    const list = doc.createElement('ol');
+    list.setAttribute('style', 'margin:.25em 0 0;padding-left:1.5em;');
+    const minimumLevel = Math.min(...entries.map((entry) => entry.level));
+    entries.forEach((entry) => {
+      const item = doc.createElement('li');
+      item.setAttribute('style', 'margin:.2em 0 0 ' + Math.max(0, entry.level - minimumLevel) * 1.1 + 'em;');
+      const link = doc.createElement('a');
+      link.href = '#' + entry.id;
+      link.textContent = entry.text;
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    shell.appendChild(list);
+  } else {
+    const empty = doc.createElement('p');
+    empty.setAttribute('style', 'margin:.25em 0;color:#64748b;font-style:italic;');
+    empty.textContent = 'Add headings to populate this table of contents.';
+    shell.appendChild(empty);
+  }
+  const nextHtml = shell.innerHTML;
+  const updated = nav.innerHTML !== nextHtml;
+  if (updated) nav.innerHTML = nextHtml;
+  nav.setAttribute('data-allo-toc', '1');
+  nav.setAttribute('data-allo-toc-depth', String(maxLevel));
+  nav.setAttribute('data-allo-toc-title', title);
+  nav.setAttribute('data-allo-toc-count', String(entries.length));
+  nav.setAttribute('aria-label', title);
+  nav.setAttribute('contenteditable', 'false');
+  if (!nav.getAttribute('style')) nav.setAttribute('style', 'margin:1em 0;padding:1em;border:1px solid #cbd5e1;border-radius:.5em;background:#f8fafc;');
+  const trackedInsert = nav.closest?.('[data-allo-change-kind="structure-insert"][data-allo-change-id]');
+  if (trackedInsert) {
+    const afterSnapshot = _builderCaptureElementRevision(trackedInsert, { attributeMode: 'all', includeContent: true });
+    if (afterSnapshot) trackedInsert.setAttribute('data-allo-change-after', JSON.stringify(afterSnapshot));
+  }
+  return { ok: true, count: entries.length, updated, nav, entries };
+}
+
+function _builderInsertTableOfContents(doc, options = {}) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const existing = doc.querySelector(_BUILDER_TOC_SELECTOR);
+  if (existing) {
+    if (options.maxLevel != null) existing.setAttribute('data-allo-toc-depth', String(Math.max(1, Math.min(6, Number(options.maxLevel) || 3))));
+    if (options.title != null) existing.setAttribute('data-allo-toc-title', String(options.title || 'Table of contents').slice(0, 80));
+    return { ..._builderRefreshTableOfContents(doc, existing), existing: true };
+  }
+  const nav = doc.createElement('nav');
+  nav.id = doc.getElementById('table-of-contents') ? 'table-of-contents-' + Date.now().toString(36) : 'table-of-contents';
+  nav.setAttribute('data-allo-toc', '1');
+  nav.setAttribute('data-allo-toc-depth', String(Math.max(1, Math.min(6, Number(options.maxLevel) || 3))));
+  nav.setAttribute('data-allo-toc-title', String(options.title || 'Table of contents').slice(0, 80));
+  _builderRefreshTableOfContents(doc, nav);
+  const spacer = doc.createElement('p');
+  spacer.appendChild(doc.createElement('br'));
+  let anchor = null;
+  try {
+    let selected = doc.getSelection?.()?.anchorNode;
+    if (selected?.nodeType === 3) selected = selected.parentElement;
+    if (selected && doc.body.contains(selected) && !selected.closest(_BUILDER_TOC_SELECTOR)) {
+      anchor = selected;
+      while (anchor.parentElement && anchor.parentElement !== doc.body) anchor = anchor.parentElement;
+    }
+  } catch (_) {}
+  if (!anchor) {
+    const titleHeading = _builderHeadingNodes(doc).find((heading) => heading.getAttribute('data-allo-style') === 'title') || doc.body.querySelector(':scope > h1');
+    anchor = titleHeading || null;
+  }
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  let marker = nav;
+  if (tracking) {
+    const container = doc.createElement('div');
+    container.setAttribute('style', 'display:contents;');
+    container.setAttribute('data-allo-unwrap-on-accept', '1');
+    container.append(nav, spacer);
+    if (anchor?.parentNode === doc.body) anchor.after(container);
+    else doc.body.prepend(container);
+    marker = _builderRecordInsertedStructure(container, 'Inserted automatic table of contents') || container;
+  } else if (anchor?.parentNode === doc.body) anchor.after(nav, spacer);
+  else doc.body.prepend(nav, spacer);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  return { ok: true, existing: false, count: Number(nav.getAttribute('data-allo-toc-count')) || 0, nav, marker, entries: _builderTableOfContentsEntries(doc, options.maxLevel) };
+}
+
+function _builderHeadingSectionNodes(record) {
+  const heading = record?.node;
+  const parent = heading?.parentNode;
+  if (!parent) return [];
+  const children = Array.from(parent.childNodes);
+  const start = children.indexOf(heading);
+  if (start < 0) return [];
+  let end = children.length;
+  for (let index = start + 1; index < children.length; index += 1) {
+    const candidate = children[index];
+    if (candidate.nodeType === 1 && candidate.matches?.(_BUILDER_HEADING_SELECTOR) && _builderHeadingLevel(candidate) <= record.level) {
+      end = index;
+      break;
+    }
+  }
+  return children.slice(start, end);
+}
+
+function _builderMoveHeadingSection(doc, headingIndex, targetIndex) {
+  if (!doc?.body) return { ok: false, error: 'The editable document is not ready.' };
+  const outline = _builderHeadingOutline(doc);
+  const current = outline[Number(headingIndex)];
+  const target = outline[Number(targetIndex)];
+  if (!current || !target || !current.movable || !target.movable) return { ok: false, error: 'That outline section cannot be moved.' };
+  if (current.level !== target.level || current.parentIndex !== target.parentIndex || current.node.parentNode !== target.node.parentNode) return { ok: false, error: 'Sections can only be reordered within the same heading level.' };
+  const parent = current.node.parentNode;
+  const currentNodes = _builderHeadingSectionNodes(current);
+  const targetNodes = _builderHeadingSectionNodes(target);
+  if (!currentNodes.length || !targetNodes.length) return { ok: false, error: 'That outline section cannot be moved.' };
+  const childNodes = Array.from(parent.childNodes);
+  const currentStart = childNodes.indexOf(currentNodes[0]);
+  const targetStart = childNodes.indexOf(targetNodes[0]);
+  const movingDown = currentStart < targetStart;
+  const affectedStart = Math.min(currentStart, targetStart);
+  const affectedEnd = Math.max(currentStart + currentNodes.length, targetStart + targetNodes.length);
+  const affectedNodes = childNodes.slice(affectedStart, affectedEnd);
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  if (tracking && affectedNodes.some((node) => node.nodeType === 1 && (node.matches?.(_BUILDER_CHANGE_SELECTOR) || node.querySelector?.(_BUILDER_CHANGE_SELECTOR)))) {
+    return { ok: false, error: 'Accept or reject pending changes in these sections before reordering them.' };
+  }
+  const beforeContainer = doc.createElement('div');
+  affectedNodes.forEach((node) => beforeContainer.appendChild(node.cloneNode(true)));
+  const beforeHtml = beforeContainer.innerHTML;
+  const fragment = doc.createDocumentFragment();
+  currentNodes.forEach((node) => fragment.appendChild(node));
+  if (movingDown) parent.insertBefore(fragment, targetNodes[targetNodes.length - 1].nextSibling);
+  else parent.insertBefore(fragment, targetNodes[0]);
+  let marker = current.node;
+  if (tracking) {
+    const afterChildren = Array.from(parent.childNodes);
+    const positions = affectedNodes.map((node) => afterChildren.indexOf(node)).filter((index) => index >= 0);
+    const first = Math.min(...positions);
+    const last = Math.max(...positions);
+    const wrapper = doc.createElement('div');
+    wrapper.setAttribute('style', 'display:contents;');
+    parent.insertBefore(wrapper, afterChildren[first]);
+    afterChildren.slice(first, last + 1).forEach((node) => wrapper.appendChild(node));
+    const beforeSnapshot = { tag: 'div', attributeMode: 'presentation', attributes: { style: 'display:contents;' }, html: beforeHtml };
+    const recorded = _builderRecordElementRevision(wrapper, beforeSnapshot, 'structure', 'Moved section: ' + current.text, {
+      kind: 'structure-replace', action: 'reorder', attributeMode: 'presentation', includeContent: true,
+    });
+    if (!recorded.ok) {
+      _builderUnwrapTrackedContainer(wrapper);
+      return { ok: false, error: 'That section order is already current.' };
+    }
+    marker = recorded.marker;
+  }
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  _builderRefreshTableOfContents(doc);
+  return { ok: true, tracked: tracking, marker, moved: current.text, before: movingDown ? target.text : current.text, after: movingDown ? current.text : target.text };
+}
+
+function _builderSanitizeTemplateHtml(doc, html) {
+  if (!doc?.createElement) return '';
+  const template = doc.createElement('template');
+  template.innerHTML = String(html || '').slice(0, 250000);
+  template.content.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form').forEach((node) => node.remove());
+  template.content.querySelectorAll('*').forEach((node) => {
+    Array.from(node.attributes || []).forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value || '';
+      if (/^on/.test(name) || name === 'srcdoc' || /^data-allo-(change|comment)-/.test(name)) node.removeAttribute(attribute.name);
+      else if ((name === 'href' || name === 'src') && /^\s*(javascript|vbscript):/i.test(value)) node.removeAttribute(attribute.name);
+    });
+    node.removeAttribute('contenteditable');
+  });
+  return template.innerHTML;
+}
+
+function _builderApplyDocumentTemplate(doc, templateDefinition) {
+  if (!doc?.body || !templateDefinition) return { ok: false, error: 'The editable document is not ready.' };
+  const html = _builderSanitizeTemplateHtml(doc, templateDefinition.html);
+  if (!html.replace(/<[^>]*>/g, '').trim()) return { ok: false, error: 'That template has no usable content.' };
+  const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+  if (tracking && doc.body.querySelector(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject pending changes before applying a full document template.' };
+  const beforeHtml = doc.body.innerHTML;
+  let marker = null;
+  if (tracking) {
+    const wrapper = doc.createElement('div');
+    wrapper.setAttribute('style', 'display:contents;');
+    wrapper.innerHTML = html;
+    doc.body.replaceChildren(wrapper);
+    const beforeSnapshot = { tag: 'div', attributeMode: 'presentation', attributes: { style: 'display:contents;' }, html: beforeHtml };
+    const recorded = _builderRecordElementRevision(wrapper, beforeSnapshot, 'structure', 'Applied template: ' + String(templateDefinition.label || 'Document template'), {
+      kind: 'structure-replace', action: 'template', attributeMode: 'presentation', includeContent: true,
+    });
+    if (!recorded.ok) {
+      _builderUnwrapTrackedContainer(wrapper);
+      return { ok: false, error: 'This document already matches that template.' };
+    }
+    marker = recorded.marker;
+  } else {
+    doc.body.innerHTML = html;
+  }
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  _builderRefreshTableOfContents(doc);
+  return { ok: true, tracked: tracking, marker };
+}
+
+const _BUILDER_COMPARABLE_BLOCK_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,pre,address,dt,dd,td,th';
+
+function _builderPrepareComparableDocument(source, ownerDocument) {
+  try {
+    const Parser = ownerDocument?.defaultView?.DOMParser || (typeof DOMParser !== 'undefined' ? DOMParser : null);
+    if (!Parser) return null;
+    const html = typeof source === 'string'
+      ? source
+      : source?.documentElement?.outerHTML
+        ? '<!DOCTYPE html>' + source.documentElement.outerHTML
+        : source?.outerHTML || '';
+    if (!html) return null;
+    const doc = new Parser().parseFromString(html, 'text/html');
+    _builderStripReviewComments(doc.documentElement);
+    _builderFinalizeTrackedChanges(doc.documentElement, 'accept');
+    doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach((node) => node.remove());
+    return doc;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _builderComparableBlockElements(doc) {
+  return Array.from(doc?.body?.querySelectorAll?.(_BUILDER_COMPARABLE_BLOCK_SELECTOR) || [])
+    .filter((block) => !block.querySelector(_BUILDER_COMPARABLE_BLOCK_SELECTOR))
+    .filter((block) => !block.closest('.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-toc]'))
+    .filter((block) => String(block.textContent || '').replace(/\s+/g, ' ').trim());
+}
+
+function _builderComparableDocument(source, ownerDocument) {
+  const doc = _builderPrepareComparableDocument(source, ownerDocument);
+  if (!doc) return null;
+  const entries = _builderComparableBlockElements(doc).map((block, index) => ({
+    index,
+    tag: String(block.tagName || '').toLowerCase(),
+    text: String(block.textContent || '').replace(/\s+/g, ' ').trim(),
+    html: block.outerHTML,
+  }));
+  const blocks = entries.map((entry) => entry.text);
+  const text = blocks.join(' ').replace(/\s+/g, ' ').trim();
+  return {
+    blocks,
+    entries,
+    headings: _builderHeadingNodes(doc).map((heading) => String(heading.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean),
+    statistics: _builderTextStatistics(text),
+  };
+}
+
+function _builderCompareBlockSequences(beforeBlocks, afterBlocks, limit = 400) {
+  const before = (Array.isArray(beforeBlocks) ? beforeBlocks : []).slice(0, limit);
+  const after = (Array.isArray(afterBlocks) ? afterBlocks : []).slice(0, limit);
+  const rows = before.length;
+  const columns = after.length;
+  const table = Array.from({ length: rows + 1 }, () => new Uint16Array(columns + 1));
+  for (let row = rows - 1; row >= 0; row -= 1) {
+    for (let column = columns - 1; column >= 0; column -= 1) {
+      table[row][column] = before[row] === after[column]
+        ? table[row + 1][column + 1] + 1
+        : Math.max(table[row + 1][column], table[row][column + 1]);
+    }
+  }
+  const operations = [];
+  let row = 0;
+  let column = 0;
+  while (row < rows || column < columns) {
+    if (row < rows && column < columns && before[row] === after[column]) {
+      operations.push({ kind: 'same', before: before[row], after: after[column], beforeIndex: row, afterIndex: column });
+      row += 1;
+      column += 1;
+    } else if (column < columns && (row >= rows || table[row][column + 1] > table[row + 1][column])) {
+      operations.push({ kind: 'add', after: after[column], beforeIndex: row, afterIndex: column });
+      column += 1;
+    } else {
+      operations.push({ kind: 'remove', before: before[row], beforeIndex: row, afterIndex: column });
+      row += 1;
+    }
+  }
+  const excerpts = [];
+  let added = 0;
+  let removed = 0;
+  let modified = 0;
+  let unchanged = 0;
+  let index = 0;
+  while (index < operations.length) {
+    if (operations[index].kind === 'same') {
+      unchanged += 1;
+      index += 1;
+      continue;
+    }
+    const deleted = [];
+    const inserted = [];
+    while (index < operations.length && operations[index].kind !== 'same') {
+      if (operations[index].kind === 'remove') deleted.push(operations[index]);
+      else inserted.push(operations[index]);
+      index += 1;
+    }
+    const paired = Math.min(deleted.length, inserted.length);
+    modified += paired;
+    added += inserted.length - paired;
+    removed += deleted.length - paired;
+    for (let pair = 0; pair < paired && excerpts.length < 24; pair += 1) {
+      excerpts.push({ kind: 'modified', before: deleted[pair].before, after: inserted[pair].after, beforeIndex: deleted[pair].beforeIndex, afterIndex: inserted[pair].afterIndex });
+    }
+    for (let item = paired; item < deleted.length && excerpts.length < 24; item += 1) {
+      excerpts.push({ kind: 'removed', before: deleted[item].before, after: '', beforeIndex: deleted[item].beforeIndex, afterIndex: deleted[item].afterIndex });
+    }
+    for (let item = paired; item < inserted.length && excerpts.length < 24; item += 1) {
+      excerpts.push({ kind: 'added', before: '', after: inserted[item].after, beforeIndex: inserted[item].beforeIndex, afterIndex: inserted[item].afterIndex });
+    }
+  }
+  return {
+    added,
+    removed,
+    modified,
+    unchanged,
+    changed: added + removed + modified,
+    excerpts,
+    truncated: beforeBlocks.length > limit || afterBlocks.length > limit || added + removed + modified > excerpts.length,
+  };
+}
+
+function _builderCompareDocumentVersions(currentDocument, snapshotHtml) {
+  const before = _builderComparableDocument(snapshotHtml, currentDocument);
+  const after = _builderComparableDocument(currentDocument, currentDocument);
+  if (!before || !after) return { ok: false, error: 'That version could not be compared.' };
+  const blocks = _builderCompareBlockSequences(before.blocks, after.blocks);
+  const excerpts = blocks.excerpts.map((excerpt) => ({
+    ...excerpt,
+    beforeTag: Number.isInteger(excerpt.beforeIndex) ? before.entries[excerpt.beforeIndex]?.tag || '' : '',
+    afterTag: Number.isInteger(excerpt.afterIndex) ? after.entries[excerpt.afterIndex]?.tag || '' : '',
+  }));
+  return {
+    ok: true,
+    ...blocks,
+    excerpts,
+    beforeWords: before.statistics.words,
+    afterWords: after.statistics.words,
+    wordDelta: after.statistics.words - before.statistics.words,
+    beforeHeadings: before.headings.length,
+    afterHeadings: after.headings.length,
+    headingDelta: after.headings.length - before.headings.length,
+  };
+}
+
+function _builderRestoreVersionBlock(currentDocument, snapshotHtml, excerpt) {
+  if (!currentDocument?.body || !snapshotHtml || excerpt?.kind !== 'modified') return { ok: false, error: 'Only modified blocks can be restored individually.' };
+  const beforeIndex = Number(excerpt.beforeIndex);
+  const afterIndex = Number(excerpt.afterIndex);
+  if (!Number.isInteger(beforeIndex) || !Number.isInteger(afterIndex)) return { ok: false, error: 'That comparison block is no longer available.' };
+  const snapshotDocument = _builderPrepareComparableDocument(snapshotHtml, currentDocument);
+  const sourceBlock = _builderComparableBlockElements(snapshotDocument)[beforeIndex];
+  const targetBlock = _builderComparableBlockElements(currentDocument)[afterIndex];
+  if (!sourceBlock || !targetBlock || !targetBlock.parentNode) return { ok: false, error: 'That comparison block is no longer available.' };
+  if (String(sourceBlock.tagName || '').toLowerCase() !== String(targetBlock.tagName || '').toLowerCase()) return { ok: false, error: 'Restore the full version to change this block type safely.' };
+  if (targetBlock.matches(_BUILDER_CHANGE_SELECTOR) || targetBlock.querySelector(_BUILDER_CHANGE_SELECTOR)) return { ok: false, error: 'Accept or reject the pending changes in this block before restoring it.' };
+  const replacement = currentDocument.importNode(sourceBlock, true);
+  Array.from(replacement.querySelectorAll('[id]')).concat(replacement.hasAttribute('id') ? [replacement] : []).forEach((node) => {
+    const duplicate = currentDocument.getElementById(node.id);
+    if (duplicate && !targetBlock.contains(duplicate) && duplicate !== targetBlock) node.removeAttribute('id');
+  });
+  const tracking = currentDocument.body.getAttribute('data-allo-track-changes') === '1';
+  const beforeSnapshot = tracking ? _builderCaptureElementRevision(targetBlock, { attributeMode: 'all', includeContent: true }) : null;
+  targetBlock.replaceWith(replacement);
+  let marker = replacement;
+  if (tracking) {
+    const recorded = _builderRecordElementRevision(replacement, beforeSnapshot, 'structure', 'Restored block from version history', {
+      kind: 'version-block-restore', action: 'replace', attributeMode: 'all', includeContent: true,
+    });
+    if (!recorded.ok) return { ok: false, error: 'The block matched the saved version already.' };
+    marker = recorded.marker;
+  }
+  currentDocument.body.setAttribute('data-allo-user-edited', '1');
+  return { ok: true, tracked: tracking, marker };
+}
 function _normalizeBuilderLocalDraft(candidate) {
   if (!candidate || typeof candidate !== 'object' || typeof candidate.html !== 'string' || candidate.html.length < 100) return null;
   const currentAt = Number(candidate.at) || Date.now();
@@ -824,9 +1953,26 @@ function _normalizeBuilderLocalDraft(candidate) {
 }
 
 const _BUILDER_VIEW_PREFS_KEY = 'alloflow-builder-view-prefs-v1';
+const _BUILDER_QUICK_ACCESS_DEFAULT = ['save', 'undo', 'redo'];
+const _BUILDER_QUICK_ACCESS_OPTIONS = [
+  { id: 'save', label: 'Save a local version snapshot', shortLabel: 'Save' },
+  { id: 'undo', label: 'Undo', shortLabel: 'Undo' },
+  { id: 'redo', label: 'Redo', shortLabel: 'Redo' },
+  { id: 'comments', label: 'Open comments', shortLabel: 'Comments' },
+  { id: 'trackChanges', label: 'Toggle Track Changes', shortLabel: 'Track' },
+  { id: 'wordCount', label: 'Open word count', shortLabel: 'Words' },
+  { id: 'navigation', label: 'Toggle document navigation', shortLabel: 'Navigate' },
+  { id: 'focus', label: 'Toggle focus mode', shortLabel: 'Focus' },
+];
+
+function _builderNormalizeQuickAccessItems(value) {
+  if (!Array.isArray(value)) return [..._BUILDER_QUICK_ACCESS_DEFAULT];
+  const allowed = new Set(_BUILDER_QUICK_ACCESS_OPTIONS.map((option) => option.id));
+  return Array.from(new Set(value.map(String).filter((id) => allowed.has(id)))).slice(0, 6);
+}
 
 function _readBuilderViewPreferences() {
-  const defaults = { zoom: 100, zoomMode: 'custom', pageView: true, pageSize: 'letter', pageOrientation: 'portrait', pageMargin: '1in', navigationPane: false, navigationTab: 'headings', navigationWidth: 248, ribbonTab: 'home', ribbonCollapsed: false };
+  const defaults = { zoom: 100, zoomMode: 'custom', pageView: true, pageSize: 'letter', pageOrientation: 'portrait', pageMargin: '1in', navigationPane: false, navigationTab: 'headings', navigationWidth: 248, ribbonTab: 'home', ribbonCollapsed: false, trackedMarkupView: 'all', revisionBalloons: false, reviewerName: 'You', quickAccess: [..._BUILDER_QUICK_ACCESS_DEFAULT] };
   if (typeof window === 'undefined') return defaults;
   try {
     const stored = JSON.parse(window.localStorage.getItem(_BUILDER_VIEW_PREFS_KEY) || 'null') || {};
@@ -838,10 +1984,14 @@ function _readBuilderViewPreferences() {
       pageOrientation: ['portrait', 'landscape'].includes(stored.pageOrientation) ? stored.pageOrientation : defaults.pageOrientation,
       pageMargin: ['0.5in', '1in', '1.5in'].includes(stored.pageMargin) ? stored.pageMargin : defaults.pageMargin,
       navigationPane: typeof stored.navigationPane === 'boolean' ? stored.navigationPane : Boolean(stored.pageThumbnails),
-      navigationTab: ['headings', 'pages', 'sections', 'comments'].includes(stored.navigationTab) ? stored.navigationTab : (stored.pageThumbnails ? 'pages' : defaults.navigationTab),
+      navigationTab: ['headings', 'pages', 'sections', 'comments', 'changes'].includes(stored.navigationTab) ? stored.navigationTab : (stored.pageThumbnails ? 'pages' : defaults.navigationTab),
       navigationWidth: Math.max(180, Math.min(420, Number(stored.navigationWidth) || defaults.navigationWidth)),
       ribbonTab: ['home', 'insert', 'layout', 'review', 'view', 'expert'].includes(stored.ribbonTab) ? stored.ribbonTab : defaults.ribbonTab,
       ribbonCollapsed: typeof stored.ribbonCollapsed === 'boolean' ? stored.ribbonCollapsed : defaults.ribbonCollapsed,
+      trackedMarkupView: ['all', 'simple', 'none', 'original'].includes(stored.trackedMarkupView) ? stored.trackedMarkupView : defaults.trackedMarkupView,
+      revisionBalloons: typeof stored.revisionBalloons === 'boolean' ? stored.revisionBalloons : defaults.revisionBalloons,
+      reviewerName: _builderNormalizeReviewerName(stored.reviewerName, defaults.reviewerName),
+      quickAccess: _builderNormalizeQuickAccessItems(stored.quickAccess),
     };
   } catch (_) {
     return defaults;
@@ -855,7 +2005,7 @@ function _builderExportPreflight(doc, mode) {
     return { issues, errors: 1, warnings: 0, passed: 0 };
   }
   if (doc.body.getAttribute('data-allo-preview-error') === '1') add('error', 'preview-error', 'The preview contains a render error.');
-  const meaningful = (doc.body.textContent || '').trim() || doc.body.querySelector('img,svg,math,table,form,input,textarea,select');
+  const meaningful = _builderDocumentText(doc) || Array.from(doc.body.querySelectorAll('img,svg,math,table,form,input,textarea,select')).some((node) => !node.closest('del[data-allo-change-id]'));
   if (!meaningful) add('error', 'empty-document', 'The document has no exportable content.');
   if (!(doc.documentElement.getAttribute('lang') || '').trim()) add('warning', 'language', 'Set the document language for screen readers and spell-checkers.');
   if (!(doc.title || '').trim()) add('warning', 'title', 'Add a descriptive document title.');
@@ -888,6 +2038,8 @@ function _builderExportPreflight(doc, mode) {
   if (duplicateIds) add('error', 'duplicate-ids', `${duplicateIds} duplicate element ID${duplicateIds === 1 ? '' : 's'} can break links and labels.`, duplicateIds);
   const chrome = doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]').length;
   if (chrome) add('warning', 'editor-chrome', 'Editor-only controls will be removed from the exported file.', chrome);
+  const pendingChanges = _builderTrackedChangeEntries(doc).length;
+  if (pendingChanges) add('warning', 'pending-changes', pendingChanges + ' pending revision' + (pendingChanges === 1 ? ' will' : 's will') + ' export using the final accepted view.', pendingChanges);
   if (mode === 'slides' && headings.length < 2) add('warning', 'slide-structure', 'Add section headings so the slide deck can split content into meaningful slides.');
   if (mode === 'epub') {
     const remoteImages = Array.from(doc.images || []).filter((img) => !/^data:image\//i.test(img.getAttribute('src') || '')).length;
@@ -1037,12 +2189,32 @@ function ExportPreviewView(props) {
   const [showWordCountDetails, setShowWordCountDetails] = React.useState(false);
   const [headingOutline, setHeadingOutline] = React.useState([]);
   const [activeHeadingIndex, setActiveHeadingIndex] = React.useState(null);
+  const [tocDepth, setTocDepth] = React.useState(3);
+  const [draggedHeadingIndex, setDraggedHeadingIndex] = React.useState(null);
+  const [customBuilderStyles, setCustomBuilderStyles] = React.useState(() => _readBuilderCustomStyles());
+  const [customDocumentTemplates, setCustomDocumentTemplates] = React.useState(() => _readBuilderCustomDocumentTemplates());
+  const builderStyleGallery = React.useMemo(() => [..._BUILDER_STYLE_GALLERY, ...customBuilderStyles], [customBuilderStyles]);
+  const documentTemplateGallery = React.useMemo(() => [..._BUILDER_DOCUMENT_TEMPLATES, ...customDocumentTemplates], [customDocumentTemplates]);
   const [reviewComments, setReviewComments] = React.useState([]);
   const [activeCommentId, setActiveCommentId] = React.useState('');
   const [showResolvedComments, setShowResolvedComments] = React.useState(false);
+  const [commentAuthorFilter, setCommentAuthorFilter] = React.useState('all');
+  const [replyingCommentId, setReplyingCommentId] = React.useState('');
+  const [commentReplyDraft, setCommentReplyDraft] = React.useState('');
+  const [trackedChanges, setTrackedChanges] = React.useState([]);
+  const [activeTrackedChangeId, setActiveTrackedChangeId] = React.useState('');
+  const [trackChangesEnabled, setTrackChangesEnabled] = React.useState(false);
+  const [trackedMarkupView, setTrackedMarkupView] = React.useState(() => _readBuilderViewPreferences().trackedMarkupView);
+  const [showRevisionBalloons, setShowRevisionBalloons] = React.useState(() => _readBuilderViewPreferences().revisionBalloons);
+  const [reviewerName, setReviewerName] = React.useState(() => _readBuilderViewPreferences().reviewerName);
+  const [trackedChangeTypeFilter, setTrackedChangeTypeFilter] = React.useState('all');
+  const [trackedChangeAuthorFilter, setTrackedChangeAuthorFilter] = React.useState('all');
+  const [trackedChangeDateFilter, setTrackedChangeDateFilter] = React.useState('all');
+  const [selectedTrackedChangeIds, setSelectedTrackedChangeIds] = React.useState([]);
   const [findMatchState, setFindMatchState] = React.useState({ count: 0, current: 0 });
   const [draftRecovery, setDraftRecovery] = React.useState(null);
   const [versionHistory, setVersionHistory] = React.useState([]);
+  const [versionComparison, setVersionComparison] = React.useState(null);
   const [preflightResult, setPreflightResult] = React.useState(null);
   const [isFocusMode, setIsFocusMode] = React.useState(false);
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
@@ -1053,6 +2225,7 @@ function ExportPreviewView(props) {
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
   const [activeRibbonTab, setActiveRibbonTab] = React.useState(() => _readBuilderViewPreferences().ribbonTab);
   const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => _readBuilderViewPreferences().ribbonCollapsed);
+  const [quickAccessItems, setQuickAccessItems] = React.useState(() => _readBuilderViewPreferences().quickAccess);
   const [pageMetrics, setPageMetrics] = React.useState({ count: 1, active: 0, sections: [], documentSections: [{ id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 }], activeSection: 0 });
   const [sectionNameDraft, setSectionNameDraft] = React.useState('Section 1');
   const [draftCaptureState, setDraftCaptureState] = React.useState('ready');
@@ -1077,7 +2250,28 @@ function ExportPreviewView(props) {
   const [paragraphLayout, setParagraphLayout] = React.useState(() => ({ ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] }));
   const [rulerTabAlignment, setRulerTabAlignment] = React.useState('left');
   const unresolvedReviewCommentCount = reviewComments.filter((comment) => !comment.resolved).length;
-  const visibleReviewComments = reviewComments.filter((comment) => showResolvedComments || !comment.resolved);
+  const reviewCommentAuthors = Array.from(new Set(reviewComments.flatMap((comment) => comment.authors || comment.thread.map((message) => message.author)).filter(Boolean))).sort((left, right) => left.localeCompare(right));
+  const visibleReviewComments = reviewComments.filter((comment) => (showResolvedComments || !comment.resolved) && (commentAuthorFilter === 'all' || (comment.authors || []).includes(commentAuthorFilter)));
+  const pendingTrackedChangeCount = trackedChanges.length;
+  const activeTrackedChange = trackedChanges.find((change) => change.id === activeTrackedChangeId) || null;
+  const trackedChangeAuthors = Array.from(new Set(trackedChanges.map((change) => change.author).filter(Boolean))).sort((left, right) => left.localeCompare(right));
+  const trackedChangeCutoff = trackedChangeDateFilter === 'today' ? Date.now() - 86400000 : trackedChangeDateFilter === 'week' ? Date.now() - 604800000 : 0;
+  const visibleTrackedChanges = trackedChanges.filter((change) => {
+    const typeMatch = trackedChangeTypeFilter === 'all'
+      || (trackedChangeTypeFilter === 'text' && (change.type === 'insert' || change.type === 'delete'))
+      || change.type === trackedChangeTypeFilter
+      || change.scopes?.includes(trackedChangeTypeFilter);
+    const authorMatch = trackedChangeAuthorFilter === 'all' || change.author === trackedChangeAuthorFilter;
+    const parsedAt = Date.parse(change.at || '');
+    const dateMatch = !trackedChangeCutoff || (!Number.isNaN(parsedAt) && parsedAt >= trackedChangeCutoff);
+    return typeMatch && authorMatch && dateMatch;
+  });
+  const selectedVisibleTrackedChanges = visibleTrackedChanges.filter((change) => selectedTrackedChangeIds.includes(change.id));
+  const trackedChangeSummary = trackedChanges.reduce((summary, change) => {
+    const key = change.type === 'insert' || change.type === 'delete' ? change.type : change.type || 'format';
+    summary[key] = (summary[key] || 0) + 1;
+    return summary;
+  }, { insert: 0, delete: 0, format: 0, paragraph: 0, structure: 0 });
   const activeDocumentSection = pageMetrics.documentSections?.[pageMetrics.activeSection] || pageMetrics.documentSections?.[0] || { id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 };
   React.useEffect(() => {
     setSectionNameDraft(activeDocumentSection.name);
@@ -1181,6 +2375,13 @@ function ExportPreviewView(props) {
     setNavigationPaneWidth(248);
     setActiveRibbonTab('home');
     setRibbonCollapsed(false);
+    setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT]);
+    setTrackedMarkupView('all');
+    setShowRevisionBalloons(false);
+    setTrackedChangeTypeFilter('all');
+    setTrackedChangeAuthorFilter('all');
+    setTrackedChangeDateFilter('all');
+    setSelectedTrackedChangeIds([]);
     addToast && addToast('Builder view reset.', 'info');
   }, [addToast]);
   const setBuilderFocusMode = React.useCallback(async (nextValue) => {
@@ -1568,7 +2769,7 @@ function ExportPreviewView(props) {
       if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
       const selectedBlock = selectedNode?.closest?.(_BUILDER_PARAGRAPH_BLOCK_SELECTOR);
       const explicitStyle = selectedBlock?.getAttribute?.('data-allo-style');
-      if (_BUILDER_STYLE_GALLERY.some((item) => item.id === explicitStyle)) namedStyle = explicitStyle;
+      if (builderStyleGallery.some((item) => item.id === explicitStyle)) namedStyle = explicitStyle;
       const inlineMargin = selectedBlock?.style?.marginBottom || '';
       const spacingPoints = _builderCssLengthPoints(inlineMargin, selectedBlock);
       paragraphSpacing = !inlineMargin ? 'normal' : spacingPoints <= 6 ? 'compact' : spacingPoints >= 20 ? 'double' : 'relaxed';
@@ -1592,7 +2793,7 @@ function ExportPreviewView(props) {
       && previous.paragraphSpacing === next.paragraphSpacing
     ) ? previous : next);
     setParagraphLayout((previous) => _builderParagraphLayoutsEqual(previous, nextParagraphLayout) ? previous : nextParagraphLayout);
-  }, [exportPreviewRef, paragraphContentWidth]);
+  }, [exportPreviewRef, paragraphContentWidth, builderStyleGallery]);
 
 
   React.useEffect(() => {
@@ -1610,9 +2811,19 @@ function ExportPreviewView(props) {
         navigationWidth: navigationPaneWidth,
         ribbonTab: activeRibbonTab,
         ribbonCollapsed,
+        quickAccess: quickAccessItems,
+        trackedMarkupView,
+        revisionBalloons: showRevisionBalloons,
+        reviewerName,
       }));
     } catch (_) {}
-  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed]);
+  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed, quickAccessItems, trackedMarkupView, showRevisionBalloons, reviewerName]);
+  React.useEffect(() => {
+    try { window.localStorage.setItem(_BUILDER_CUSTOM_STYLES_KEY, JSON.stringify(_builderNormalizeCustomStyles(customBuilderStyles))); } catch (_) {}
+  }, [customBuilderStyles]);
+  React.useEffect(() => {
+    try { window.localStorage.setItem(_BUILDER_CUSTOM_TEMPLATES_KEY, JSON.stringify(_builderNormalizeCustomDocumentTemplates(customDocumentTemplates))); } catch (_) {}
+  }, [customDocumentTemplates]);
   React.useEffect(() => {
     const goal = Number.isFinite(wordGoal) && wordGoal > 0 ? wordGoal : 0;
     setWordGoalProgress({
@@ -1638,6 +2849,7 @@ function ExportPreviewView(props) {
 
   const refreshDocumentStats = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
+    _builderRefreshTableOfContents(doc);
     const statistics = _builderDocumentStatistics(doc);
     setWordCount(statistics.words);
     setDocumentStatistics(statistics);
@@ -1665,6 +2877,18 @@ function ExportPreviewView(props) {
     return comments;
   }, [exportPreviewRef]);
 
+  const refreshTrackedChanges = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const changes = _builderTrackedChangeEntries(doc);
+    setTrackedChanges(changes);
+    setSelectedTrackedChangeIds((selected) => selected.filter((id) => changes.some((change) => change.id === id)));
+    setTrackChangesEnabled(doc?.body?.getAttribute('data-allo-track-changes') === '1');
+    setActiveTrackedChangeId((current) => (
+      changes.some((change) => change.id === current) ? current : (changes[0]?.id || '')
+    ));
+    return changes;
+  }, [exportPreviewRef]);
+
   const refreshActiveReviewComment = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     try {
@@ -1688,9 +2912,29 @@ function ExportPreviewView(props) {
     setShowNavigationPane(true);
   }, [reviewComments]);
 
+  const openTrackedChanges = React.useCallback((changeId = '') => {
+    if (changeId) setActiveTrackedChangeId(changeId);
+    setActiveRibbonTab('review');
+    setRibbonCollapsed(false);
+    setNavigationPaneTab('changes');
+    setShowNavigationPane(true);
+  }, []);
+
+  const refreshActiveTrackedChange = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    try {
+      const selection = doc?.getSelection?.();
+      let node = selection?.rangeCount ? selection.anchorNode : null;
+      if (node?.nodeType === 3) node = node.parentElement;
+      const marker = node?.closest?.(_BUILDER_CHANGE_SELECTOR);
+      const id = marker?.getAttribute?.('data-allo-change-id') || '';
+      if (id) setActiveTrackedChangeId(id);
+    } catch (_) {}
+  }, [exportPreviewRef]);
+
   const handleNavigationTabKeyDown = React.useCallback((event, currentTab) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const tabs = ['headings', 'pages', 'sections', 'comments'];
+    const tabs = ['headings', 'pages', 'sections', 'comments', 'changes'];
     const currentIndex = Math.max(0, tabs.indexOf(currentTab));
     const nextIndex = event.key === 'Home' ? 0
       : event.key === 'End' ? tabs.length - 1
@@ -1710,6 +2954,39 @@ function ExportPreviewView(props) {
       else marker.removeAttribute('data-allo-comment-active');
     });
   }, [activeCommentId, reviewComments, exportPreviewRef]);
+
+  React.useEffect(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.querySelectorAll) return;
+    doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR).forEach((marker) => {
+      if (activeTrackedChangeId && marker.getAttribute('data-allo-change-id') === activeTrackedChangeId) marker.setAttribute('data-allo-change-active', '1');
+      else marker.removeAttribute('data-allo-change-active');
+    });
+  }, [activeTrackedChangeId, trackedChanges, exportPreviewRef]);
+
+  React.useEffect(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const body = doc?.body;
+    if (!body) return;
+    _builderSetTrackedMarkupView(doc, trackedMarkupView);
+    const normalizedReviewer = String(reviewerName || 'You').replace(/\s+/g, ' ').trim().slice(0, 80) || 'You';
+    body.setAttribute('data-allo-reviewer-name', normalizedReviewer);
+    if (showRevisionBalloons) body.setAttribute('data-allo-review-balloons', '1');
+    else body.removeAttribute('data-allo-review-balloons');
+  }, [trackedMarkupView, showRevisionBalloons, reviewerName, trackedChanges, exportPreviewRef]);
+
+  React.useEffect(() => {
+    if (trackedChangeAuthorFilter !== 'all' && !trackedChangeAuthors.includes(trackedChangeAuthorFilter)) setTrackedChangeAuthorFilter('all');
+  }, [trackedChangeAuthorFilter, trackedChangeAuthors.join('|')]);
+
+  const resumeTrackedEditingView = React.useCallback((announce = false) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body || doc.body.getAttribute('data-allo-tracked-view') !== 'original') return false;
+    _builderSetTrackedMarkupView(doc, 'all');
+    setTrackedMarkupView('all');
+    if (announce && addToast) addToast('Switched from Original to All Markup so editing can continue safely.', 'info');
+    return true;
+  }, [exportPreviewRef, addToast]);
 
   const closeWordCountDetails = React.useCallback((returnFocus = true) => {
     setShowWordCountDetails(false);
@@ -1785,21 +3062,59 @@ function ExportPreviewView(props) {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return;
     try {
+      resumeTrackedEditingView(true);
       restoreEditorSelection();
-      doc.execCommand(command, false, value);
+      const tracking = doc.body?.getAttribute('data-allo-track-changes') === '1';
+      const inlineCommands = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'fontSize', 'fontName', 'foreColor', 'hiliteColor', 'removeFormat']);
+      const blockCommands = new Set(['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull']);
+      const structureCommands = new Set(['insertUnorderedList', 'insertOrderedList']);
+      const labels = {
+        bold: 'Bold formatting', italic: 'Italic formatting', underline: 'Underline formatting',
+        strikeThrough: 'Strikethrough formatting', subscript: 'Subscript formatting', superscript: 'Superscript formatting',
+        fontSize: 'Font size changed', fontName: 'Font family changed', foreColor: 'Text color changed',
+        hiliteColor: 'Highlight color changed', removeFormat: 'Formatting cleared',
+        justifyLeft: 'Paragraph aligned left', justifyCenter: 'Paragraph centered',
+        justifyRight: 'Paragraph aligned right', justifyFull: 'Paragraph justified',
+        insertUnorderedList: 'Bulleted list structure changed', insertOrderedList: 'Numbered list structure changed',
+      };
+      if (command === 'insertText' && tracking) {
+        const result = _builderTrackTextInsertion(doc, String(value ?? ''));
+        if (!result.ok && result.error) addToast && addToast(result.error, result.blocked ? 'info' : 'error');
+      } else if (tracking && inlineCommands.has(command)) {
+        const result = _builderTrackInlineFormatting(doc, command, value, labels[command], () => doc.execCommand(command, false, value));
+        if (result.direct) doc.execCommand(command, false, value);
+        else if (!result.ok && result.error) addToast && addToast(result.error, result.blocked ? 'info' : 'error');
+      } else if (tracking && blockCommands.has(command)) {
+        const result = _builderTrackBlockFormattingCommand(doc, command, value, labels[command], () => doc.execCommand(command, false, value));
+        if (result.direct && !result.applied) doc.execCommand(command, false, value);
+      } else if (tracking && structureCommands.has(command)) {
+        const result = _builderTrackStructureReplacementCommand(doc, command, value, labels[command], () => doc.execCommand(command, false, value));
+        if (result.direct && !result.applied) doc.execCommand(command, false, value);
+      } else if (tracking && command === 'insertHorizontalRule') {
+        const rule = doc.createElement('hr');
+        _builderRecordInsertedStructure(rule, 'Inserted horizontal rule');
+        doc.execCommand('insertHTML', false, rule.outerHTML);
+        _builderDispatchTrackedInput(doc, 'structureTrackedChange');
+      } else doc.execCommand(command, false, value);
       exportPreviewRef.current?.contentWindow?.focus();
       refreshFormattingState();
       refreshDocumentStats();
+      refreshTrackedChanges();
     } catch (_) {}
-  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats]);
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
 
   const applyBuilderStyle = React.useCallback((styleId) => {
-    const definition = _BUILDER_STYLE_GALLERY.find((item) => item.id === styleId) || _BUILDER_STYLE_GALLERY[0];
+    const definition = builderStyleGallery.find((item) => item.id === styleId) || builderStyleGallery[0];
     const doc = exportPreviewRef.current?.contentDocument;
     const win = exportPreviewRef.current?.contentWindow;
     if (!doc || !win) return;
     try {
+      resumeTrackedEditingView(true);
       restoreEditorSelection();
+      let beforeNode = win.getSelection?.()?.anchorNode;
+      if (beforeNode?.nodeType === 3) beforeNode = beforeNode.parentElement;
+      const beforeBlock = beforeNode?.closest?.('p,h1,h2,h3,blockquote');
+      const beforeSnapshot = beforeBlock ? _builderCaptureElementRevision(beforeBlock, { attributeMode: 'presentation' }) : null;
       doc.execCommand('formatBlock', false, '<' + definition.tag + '>');
       let selectedNode = win.getSelection?.()?.anchorNode;
       if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
@@ -1809,23 +3124,78 @@ function ExportPreviewView(props) {
           block.style.removeProperty(property.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase()));
         });
         block.removeAttribute('data-allo-style');
-        Object.entries(definition.style).forEach(([property, value]) => { block.style[property] = value; });
+        Object.entries(definition.style).forEach(([property, propertyValue]) => { block.style[property] = propertyValue; });
         if (definition.id !== 'normal') block.setAttribute('data-allo-style', definition.id);
         if (!block.getAttribute('style')) block.removeAttribute('style');
+        if (doc.body?.getAttribute('data-allo-track-changes') === '1' && beforeSnapshot) {
+          _builderRecordElementRevision(block, beforeSnapshot, 'format', 'Style changed to ' + definition.label, {
+            kind: 'block-format', attributeMode: 'presentation',
+          });
+        }
       }
-      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true, inputType: 'formatTrackedChange' }));
       refreshFormattingState();
       refreshDocumentStats();
+      refreshTrackedChanges();
     } catch (_) {
       addToast && addToast('The selected style could not be applied.', 'error');
     }
-  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, addToast]);
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, builderStyleGallery, addToast]);
+
+  const saveSelectionAsCustomStyle = React.useCallback(async () => {
+    if (customBuilderStyles.length >= 12) {
+      addToast && addToast('You can keep up to 12 custom styles on this device. Remove one before saving another.', 'info');
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    restoreEditorSelection();
+    let selectedNode = win.getSelection?.()?.anchorNode;
+    if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+    const block = selectedNode?.closest?.('p,h1,h2,h3,blockquote');
+    if (!block) {
+      addToast && addToast('Place the caret in a paragraph, heading, quote, or callout first.', 'info');
+      return;
+    }
+    const tag = String(block.tagName || 'P').toLowerCase();
+    const namedStyle = block.getAttribute('data-allo-style') || 'normal';
+    const baseDefinition = builderStyleGallery.find((item) => item.id === namedStyle) || _BUILDER_STYLE_GALLERY[0];
+    const style = { ...(baseDefinition?.style || {}) };
+    _BUILDER_STYLE_PROPERTIES.forEach((property) => {
+      const inlineValue = String(block.style?.[property] || '').trim();
+      if (inlineValue) style[property] = inlineValue;
+    });
+    const name = await promptForBuilderText('Name this reusable paragraph style.', baseDefinition?.custom ? baseDefinition.label : '', {
+      title: 'Save custom style', confirmText: 'Save style', cancelText: 'Cancel',
+      placeholder: 'Style name', maxLength: 60,
+      validate: (value) => value.trim() ? null : 'Enter a style name.',
+    });
+    if (name == null || !String(name).trim()) return;
+    const definition = {
+      id: 'custom-style-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
+      label: String(name).replace(/\s+/g, ' ').trim(), tag, style, custom: true, createdAt: Date.now(),
+    };
+    setCustomBuilderStyles((current) => _builderNormalizeCustomStyles([...current, definition]));
+    addToast && addToast('Custom style saved on this device.', 'success');
+  }, [customBuilderStyles.length, exportPreviewRef, restoreEditorSelection, builderStyleGallery, promptForBuilderText, addToast]);
+
+  const deleteCustomBuilderStyle = React.useCallback((styleId) => {
+    const definition = customBuilderStyles.find((item) => item.id === styleId);
+    if (!definition) return;
+    setCustomBuilderStyles((current) => current.filter((item) => item.id !== styleId));
+    addToast && addToast('Removed “' + definition.label + '” from your custom styles. Existing document formatting was kept.', 'success');
+  }, [customBuilderStyles, addToast]);
 
   const useFormatPainter = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     const win = exportPreviewRef.current?.contentWindow;
     if (!doc || !win) return;
     try {
+      resumeTrackedEditingView(true);
       restoreEditorSelection();
       const selection = win.getSelection?.();
       let selectedNode = selection?.anchorNode;
@@ -1854,6 +3224,7 @@ function ExportPreviewView(props) {
         return;
       }
       const snapshot = formatPainterRef.current;
+      const destinationBefore = block ? _builderCaptureElementRevision(block, { attributeMode: 'presentation' }) : null;
       doc.execCommand('formatBlock', false, '<' + snapshot.blockTag + '>');
       Object.entries(snapshot.states).forEach(([command, enabled]) => {
         if (state(command) !== enabled) doc.execCommand(command, false, null);
@@ -1871,19 +3242,25 @@ function ExportPreviewView(props) {
         else targetBlock.removeAttribute('style');
         if (snapshot.namedStyle) targetBlock.setAttribute('data-allo-style', snapshot.namedStyle);
         else targetBlock.removeAttribute('data-allo-style');
+        if (doc.body?.getAttribute('data-allo-track-changes') === '1' && destinationBefore) {
+          _builderRecordElementRevision(targetBlock, destinationBefore, 'format', 'Format Painter applied', {
+            kind: 'block-format', attributeMode: 'presentation',
+          });
+        }
       }
-      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true, inputType: 'formatTrackedChange' }));
       formatPainterRef.current = null;
       setFormatPainterActive(false);
       refreshFormattingState();
       refreshDocumentStats();
+      refreshTrackedChanges();
       addToast && addToast('Formatting applied.', 'success');
     } catch (_) {
       formatPainterRef.current = null;
       setFormatPainterActive(false);
       addToast && addToast('Format Painter could not apply that formatting.', 'error');
     }
-  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, addToast]);
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, addToast]);
 
   const cancelFormatPainter = React.useCallback(() => {
     formatPainterRef.current = null;
@@ -2000,6 +3377,7 @@ function ExportPreviewView(props) {
   const commitSectionName = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.body) return false;
+    resumeTrackedEditingView(true);
     const index = activeDocumentSection.index || 0;
     const normalized = _builderNormalizeSectionName(sectionNameDraft, index);
     const markers = _builderSectionBreaks(doc);
@@ -2009,17 +3387,22 @@ function ExportPreviewView(props) {
       : _builderNormalizeSectionName(marker?.getAttribute('data-allo-section-name'), index);
     setSectionNameDraft(normalized);
     if (normalized === currentName) return true;
+    const markerBefore = marker && doc.body.getAttribute('data-allo-track-changes') === '1'
+      ? _builderCaptureElementRevision(marker, { attributeMode: 'all' })
+      : null;
     if (index === 0) doc.body.setAttribute('data-allo-section-name', normalized);
     else if (marker) {
       marker.setAttribute('data-allo-section-name', normalized);
       marker.setAttribute('aria-label', `${marker.getAttribute('data-allo-section-break') === 'continuous' ? 'Continuous' : 'Next page'} section break. Starts ${normalized}.`);
     } else return false;
+    if (markerBefore) _builderRecordElementRevision(marker, markerBefore, 'structure', 'Section renamed to ' + normalized, { kind: 'section-format', attributeMode: 'all' });
     doc.body.setAttribute('data-allo-user-edited', '1');
     doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'formatSection' }));
+    refreshTrackedChanges();
     refreshPageMetrics();
     addToast && addToast(`Section renamed to “${normalized}”.`, 'success');
     return true;
-  }, [exportPreviewRef, activeDocumentSection.index, sectionNameDraft, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, activeDocumentSection.index, sectionNameDraft, resumeTrackedEditingView, refreshTrackedChanges, refreshPageMetrics, addToast]);
 
   const setActiveSectionStartType = React.useCallback((startType) => {
     const doc = exportPreviewRef.current?.contentDocument;
@@ -2027,23 +3410,30 @@ function ExportPreviewView(props) {
     if (!doc?.body || index === 0) return false;
     const marker = _builderSectionBreaks(doc)[index - 1];
     if (!marker) return false;
+    resumeTrackedEditingView(true);
     const normalized = startType === 'continuous' ? 'continuous' : 'next-page';
     if (marker.getAttribute('data-allo-section-break') === normalized) return true;
+    const markerBefore = doc.body.getAttribute('data-allo-track-changes') === '1'
+      ? _builderCaptureElementRevision(marker, { attributeMode: 'all' })
+      : null;
     marker.setAttribute('data-allo-section-break', normalized);
     marker.style.breakBefore = normalized === 'continuous' ? 'auto' : 'page';
     marker.style.pageBreakBefore = normalized === 'continuous' ? 'auto' : 'always';
     const name = _builderNormalizeSectionName(marker.getAttribute('data-allo-section-name'), index);
+    if (markerBefore) _builderRecordElementRevision(marker, markerBefore, 'structure', normalized === 'continuous' ? 'Section changed to continuous' : 'Section changed to next page', { kind: 'section-format', attributeMode: 'all' });
     marker.setAttribute('aria-label', `${normalized === 'continuous' ? 'Continuous' : 'Next page'} section break. Starts ${name}.`);
     doc.body.setAttribute('data-allo-user-edited', '1');
     doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'formatSection' }));
+    refreshTrackedChanges();
     refreshPageMetrics();
     addToast && addToast(normalized === 'continuous' ? 'Section now continues on the same page.' : 'Section now starts on the next page.', 'success');
     return true;
-  }, [exportPreviewRef, activeDocumentSection.index, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, activeDocumentSection.index, resumeTrackedEditingView, refreshTrackedChanges, refreshPageMetrics, addToast]);
 
   const insertSectionBreak = React.useCallback((startType = 'next-page') => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return false;
+    resumeTrackedEditingView(true);
     restoreEditorSelection();
     exportPreviewRef.current?.contentWindow?.focus();
     const inserted = _builderInsertDocumentBreak(doc, 'section', { startType });
@@ -2052,10 +3442,11 @@ function ExportPreviewView(props) {
       return false;
     }
     refreshDocumentStats();
+    refreshTrackedChanges();
     window.setTimeout(refreshPageMetrics, 0);
     addToast && addToast(`${inserted.name} inserted${inserted.startType === 'continuous' ? ' on the same page' : ' on the next page'}.`, 'success');
     return true;
-  }, [exportPreviewRef, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, addToast]);
 
   const removeActiveSectionBreak = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
@@ -2064,29 +3455,37 @@ function ExportPreviewView(props) {
     const marker = _builderSectionBreaks(doc)[index - 1];
     if (!marker) return false;
     try {
-      const selection = doc.getSelection();
-      const range = doc.createRange();
-      range.selectNode(marker);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      const deleted = Boolean(doc.execCommand('delete', false, null));
-      if (!deleted && marker.isConnected) marker.remove();
+      resumeTrackedEditingView(true);
+      const tracking = doc.body.getAttribute('data-allo-track-changes') === '1';
+      if (tracking) {
+        if (!_builderRecordDeletedStructure(marker, 'Deleted section break')) return false;
+      } else {
+        const selection = doc.getSelection();
+        const range = doc.createRange();
+        range.selectNode(marker);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const deleted = Boolean(doc.execCommand('delete', false, null));
+        if (!deleted && marker.isConnected) marker.remove();
+      }
       doc.body.setAttribute('data-allo-user-edited', '1');
-      doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'deleteSectionBreak' }));
+      doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: tracking ? 'structureTrackedChange' : 'deleteSectionBreak' }));
       refreshDocumentStats();
+      refreshTrackedChanges();
       window.setTimeout(refreshPageMetrics, 0);
-      addToast && addToast('Section break removed; its content was merged with the previous section.', 'success');
+      addToast && addToast(tracking ? 'Section break deletion recorded for review.' : 'Section break removed; its content was merged with the previous section.', 'success');
       return true;
     } catch (_) {
       addToast && addToast('The section break could not be removed.', 'error');
       return false;
     }
-  }, [exportPreviewRef, activeDocumentSection.index, refreshDocumentStats, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, activeDocumentSection.index, resumeTrackedEditingView, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, addToast]);
 
   const insertPageBreak = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return false;
     try {
+      resumeTrackedEditingView(true);
       exportPreviewRef.current?.contentWindow?.focus();
       const inserted = _builderInsertDocumentBreak(doc, 'page');
       if (!inserted) {
@@ -2094,13 +3493,14 @@ function ExportPreviewView(props) {
         return false;
       }
       refreshDocumentStats();
+      refreshTrackedChanges();
       window.setTimeout(refreshPageMetrics, 0);
       addToast && addToast('Page break inserted.', 'success');
       return true;
     } catch (_) {
       return false;
     }
-  }, [exportPreviewRef, refreshDocumentStats, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, resumeTrackedEditingView, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, addToast]);
 
   const syncPageSetupFromDocument = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
@@ -2240,6 +3640,7 @@ function ExportPreviewView(props) {
     const bodyRows = Math.max(1, Math.min(20, Number(tableInsertConfig.rows) || 1));
     const columns = Math.max(1, Math.min(10, Number(tableInsertConfig.columns) || 1));
     try {
+      resumeTrackedEditingView(true);
       restoreEditorSelection();
       const marker = 'allo-builder-table-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
       const table = doc.createElement('table');
@@ -2282,6 +3683,7 @@ function ExportPreviewView(props) {
       const inserted = doc.querySelector('table[data-allo-insert-id="' + marker + '"]');
       if (inserted) {
         inserted.removeAttribute('data-allo-insert-id');
+        if (doc.body?.getAttribute('data-allo-track-changes') === '1') _builderRecordInsertedStructure(inserted, 'Inserted accessible table');
         const firstCell = inserted.querySelector('th,td');
         if (firstCell) {
           const range = doc.createRange();
@@ -2295,19 +3697,21 @@ function ExportPreviewView(props) {
       }
       doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
       refreshDocumentStats();
+      refreshTrackedChanges();
       refreshPageMetrics();
       window.setTimeout(refreshTableContext, 0);
-      addToast && addToast('Accessible table inserted.', 'success');
+      addToast && addToast(doc.body?.getAttribute('data-allo-track-changes') === '1' ? 'Accessible table inserted as a tracked structural change.' : 'Accessible table inserted.', 'success');
     } catch (_) {
       addToast && addToast('The table could not be inserted.', 'error');
     }
-  }, [exportPreviewRef, tableInsertConfig, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, refreshTableContext, addToast]);
+  }, [exportPreviewRef, tableInsertConfig, resumeTrackedEditingView, restoreEditorSelection, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, refreshTableContext, addToast]);
 
   const editSelectedTable = React.useCallback((action) => {
     const doc = exportPreviewRef.current?.contentDocument;
     const win = exportPreviewRef.current?.contentWindow;
     if (!doc || !win) return;
     try {
+      resumeTrackedEditingView(true);
       restoreEditorSelection();
       let selectedNode = win.getSelection?.()?.anchorNode;
       if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
@@ -2320,6 +3724,8 @@ function ExportPreviewView(props) {
       }
       const cellStyle = 'border:1px solid #94a3b8;padding:.5em;vertical-align:top;';
       const columnIndex = cell.cellIndex;
+      const trackingTable = doc.body?.getAttribute('data-allo-track-changes') === '1';
+      const tableBefore = trackingTable ? _builderCaptureElementRevision(table, { attributeMode: 'all', includeContent: true }) : null;
       let targetCell = cell;
       if (action === 'add-row') {
         const newRow = doc.createElement('tr');
@@ -2372,6 +3778,15 @@ function ExportPreviewView(props) {
         });
         targetCell = row.cells[Math.min(columnIndex, Math.max(0, row.cells.length - 1))] || null;
       } else return;
+      if (trackingTable && tableBefore) {
+        const tableLabels = {
+          'add-row': 'Table row inserted', 'add-column': 'Table column inserted',
+          'remove-row': 'Table row deleted', 'remove-column': 'Table column deleted',
+        };
+        _builderRecordElementRevision(table, tableBefore, 'structure', tableLabels[action] || 'Table structure changed', {
+          kind: 'table-structure', action, attributeMode: 'all', includeContent: true,
+        });
+      }
       if (targetCell?.isConnected) {
         const range = doc.createRange();
         range.selectNodeContents(targetCell);
@@ -2383,12 +3798,13 @@ function ExportPreviewView(props) {
       }
       doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
       refreshDocumentStats();
+      refreshTrackedChanges();
       refreshPageMetrics();
       refreshTableContext();
     } catch (_) {
       addToast && addToast('The table could not be updated.', 'error');
     }
-  }, [exportPreviewRef, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, refreshTableContext, addToast]);
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, refreshTableContext, addToast]);
 
   const openImagePicker = React.useCallback((event) => {
     imageOpenerRef.current = event?.currentTarget || imageAddButtonRef.current;
@@ -2404,6 +3820,7 @@ function ExportPreviewView(props) {
     if (!doc || !win) return false;
     const contentWidth = _builderPageContentWidth(pageSetup);
     try {
+      resumeTrackedEditingView(true);
       if (options.restoreFocus === false) {
         const savedRange = editorSelectionRangeRef.current;
         if (savedRange && doc.contains(savedRange.commonAncestorContainer)) {
@@ -2418,10 +3835,15 @@ function ExportPreviewView(props) {
         return false;
       }
       const fields = new Set(options.replace ? Object.keys(_BUILDER_PARAGRAPH_DEFAULTS) : Object.keys(patch));
+      const trackingParagraph = doc.body.getAttribute('data-allo-track-changes') === '1';
+      const paragraphChangeLabel = options.replace
+        ? 'Paragraph layout reset'
+        : 'Paragraph layout changed: ' + Array.from(fields).map((field) => field.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', ');
       blocks.forEach((block) => {
+        const beforeRevision = trackingParagraph ? _builderCaptureElementRevision(block, { attributeMode: 'presentation' }) : null;
         const current = _builderParagraphLayoutFromBlock(block);
         const next = _normalizeBuilderParagraphLayout(options.replace ? { ..._BUILDER_PARAGRAPH_DEFAULTS, ...patch } : { ...current, ...patch }, contentWidth);
-        const namedStyle = _BUILDER_STYLE_GALLERY.find((item) => item.id === block.getAttribute('data-allo-style'));
+        const namedStyle = builderStyleGallery.find((item) => item.id === block.getAttribute('data-allo-style'));
         const restoreNamedStyle = (property, cssName) => {
           const namedValue = namedStyle?.style?.[property];
           if (namedValue != null && namedValue !== '') block.style[property] = namedValue;
@@ -2491,6 +3913,11 @@ function ExportPreviewView(props) {
         if (options.replace && _builderParagraphLayoutsEqual(next, { ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] })) block.removeAttribute('data-allo-paragraph-layout');
         else block.setAttribute('data-allo-paragraph-layout', '1');
         if (!block.getAttribute('style')) block.removeAttribute('style');
+        if (trackingParagraph && beforeRevision) {
+          _builderRecordElementRevision(block, beforeRevision, 'paragraph', paragraphChangeLabel, {
+            kind: 'block-format', attributeMode: 'presentation',
+          });
+        }
       });
       const nextUi = _normalizeBuilderParagraphLayout(options.replace ? { ..._BUILDER_PARAGRAPH_DEFAULTS, ...patch } : { ...paragraphLayout, ...patch }, contentWidth);
       setParagraphLayout(nextUi);
@@ -2498,6 +3925,7 @@ function ExportPreviewView(props) {
       doc.body.dispatchEvent(new win.Event('input', { bubbles: true, inputType: 'formatParagraph' }));
       refreshFormattingState();
       refreshDocumentStats();
+      refreshTrackedChanges();
       refreshPageMetrics();
       if (options.restoreFocus !== false) win.focus();
       if (typeof options.announce === 'string' && addToast) addToast(options.announce, 'success');
@@ -2506,7 +3934,7 @@ function ExportPreviewView(props) {
       if (options.announce !== false && addToast) addToast('The paragraph layout could not be updated.', 'error');
       return false;
     }
-  }, [exportPreviewRef, pageSetup, paragraphLayout, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshPageMetrics, addToast]);
+  }, [exportPreviewRef, pageSetup, paragraphLayout, resumeTrackedEditingView, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshTrackedChanges, refreshPageMetrics, builderStyleGallery, addToast]);
 
   const nudgeParagraphIndent = React.useCallback((delta) => {
     applyParagraphLayout({ leftIndent: paragraphLayout.leftIndent + Number(delta || 0) }, { restoreFocus: true, announce: false });
@@ -2787,7 +4215,7 @@ function ExportPreviewView(props) {
       validate: (value) => _builderNormalizeCommentMessage(value) ? null : 'Write a comment first.',
     });
     if (commentText == null) return;
-    const result = _builderInsertReviewComment(doc, savedRange, commentText);
+    const result = _builderInsertReviewComment(doc, savedRange, commentText, reviewerName);
     if (!result.ok) {
       addToast && addToast(result.error || 'The comment could not be added.', 'error');
       exportPreviewRef.current?.focus();
@@ -2800,12 +4228,31 @@ function ExportPreviewView(props) {
     setActiveCommentId(result.id);
     openReviewComments(result.id);
     commitReviewCommentMutation('Comment added.', 'success', false);
-  }, [exportPreviewRef, promptForBuilderText, openReviewComments, commitReviewCommentMutation, addToast]);
+  }, [exportPreviewRef, promptForBuilderText, openReviewComments, commitReviewCommentMutation, reviewerName, addToast]);
 
-  const replyReviewComment = React.useCallback(async (commentId) => {
+  const replyReviewComment = React.useCallback((commentId) => {
     const marker = findLiveReviewMarker(commentId);
     if (!marker) {
       refreshReviewComments();
+      return;
+    }
+    if (_builderCommentThread(marker).length >= 20) {
+      addToast && addToast('This comment thread has reached its 20-message limit.', 'info');
+      return;
+    }
+    setActiveCommentId(commentId);
+    setReplyingCommentId((current) => current === commentId ? '' : commentId);
+    setCommentReplyDraft('');
+    openReviewComments(commentId);
+    window.setTimeout(() => document.getElementById('builder-comment-reply-' + commentId)?.focus(), 0);
+  }, [findLiveReviewMarker, refreshReviewComments, openReviewComments, addToast]);
+
+  const submitReviewCommentReply = React.useCallback((commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    const reply = _builderNormalizeCommentMessage(commentReplyDraft);
+    if (!marker || !reply) {
+      if (!marker) refreshReviewComments();
+      else addToast && addToast('Write a reply first.', 'info');
       return;
     }
     const thread = _builderCommentThread(marker);
@@ -2813,22 +4260,16 @@ function ExportPreviewView(props) {
       addToast && addToast('This comment thread has reached its 20-message limit.', 'info');
       return;
     }
-    const reply = await promptForBuilderText('Add a reply to this comment thread.', '', {
-      title: 'Reply to comment',
-      confirmText: 'Reply',
-      multiline: true,
-      maxLength: 1200,
-      validate: (value) => _builderNormalizeCommentMessage(value) ? null : 'Write a reply first.',
-    });
-    if (reply == null) return;
     const at = new Date().toISOString();
-    _builderSetCommentThread(marker, [...thread, { id: `message-${Date.now().toString(36)}`, text: reply, at }]);
+    _builderSetCommentThread(marker, [...thread, { id: `message-${Date.now().toString(36)}`, text: reply, at, author: _builderNormalizeReviewerName(reviewerName, 'You') }]);
     marker.setAttribute('data-allo-comment-resolved', '0');
     _builderSetCommentThread(marker, _builderCommentThread(marker));
     setShowResolvedComments(false);
     setActiveCommentId(commentId);
+    setReplyingCommentId('');
+    setCommentReplyDraft('');
     commitReviewCommentMutation('Reply added and comment reopened.');
-  }, [findLiveReviewMarker, refreshReviewComments, promptForBuilderText, commitReviewCommentMutation, addToast]);
+  }, [findLiveReviewMarker, refreshReviewComments, commentReplyDraft, reviewerName, commitReviewCommentMutation, addToast]);
 
   const editReviewComment = React.useCallback(async (commentId) => {
     const marker = findLiveReviewMarker(commentId);
@@ -2860,10 +4301,11 @@ function ExportPreviewView(props) {
     }
     const resolved = marker.getAttribute('data-allo-comment-resolved') === '1';
     marker.setAttribute('data-allo-comment-resolved', resolved ? '0' : '1');
+    if (!resolved && replyingCommentId === commentId) { setReplyingCommentId(''); setCommentReplyDraft(''); }
     _builderSetCommentThread(marker, _builderCommentThread(marker));
     setActiveCommentId(commentId);
     commitReviewCommentMutation(resolved ? 'Comment reopened.' : 'Comment resolved.');
-  }, [findLiveReviewMarker, refreshReviewComments, commitReviewCommentMutation]);
+  }, [findLiveReviewMarker, refreshReviewComments, replyingCommentId, commitReviewCommentMutation]);
 
   const deleteReviewComment = React.useCallback(async (commentId) => {
     const marker = findLiveReviewMarker(commentId);
@@ -2918,6 +4360,262 @@ function ExportPreviewView(props) {
     };
   }, [showExportPreview, addReviewComment, openReviewComments]);
 
+  const findLiveTrackedChange = React.useCallback((changeId) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.querySelectorAll || !changeId) return null;
+    return Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR))
+      .find((marker) => marker.getAttribute('data-allo-change-id') === changeId) || null;
+  }, [exportPreviewRef]);
+
+  const commitTrackedChangeMutation = React.useCallback((message, tone = 'success', dispatchInput = true) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (doc?.body) {
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      if (dispatchInput) _builderDispatchTrackedInput(doc, 'reviewTrackedChange');
+    }
+    refreshTrackedChanges();
+    refreshDocumentStats();
+    refreshPageMetrics();
+    refreshSelectionStatistics();
+    setFindDocumentRevision((value) => value + 1);
+    if (message) addToast && addToast(message, tone);
+  }, [exportPreviewRef, refreshTrackedChanges, refreshDocumentStats, refreshPageMetrics, refreshSelectionStatistics, addToast]);
+
+  const insertOrRefreshTableOfContents = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    restoreEditorSelection();
+    const result = _builderInsertTableOfContents(doc, { maxLevel: tocDepth });
+    if (!result.ok) {
+      addToast && addToast(result.error || 'The table of contents could not be updated.', 'error');
+      return;
+    }
+    const changeId = (result.marker || result.nav)?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    setActiveRibbonTab('insert');
+    setRibbonCollapsed(false);
+    setNavigationPaneTab('headings');
+    setShowNavigationPane(true);
+    commitTrackedChangeMutation((result.existing ? 'Table of contents refreshed with ' : 'Automatic table of contents inserted with ') + result.count + ' heading' + (result.count === 1 ? '.' : 's.'));
+    exportPreviewRef.current?.focus();
+  }, [exportPreviewRef, resumeTrackedEditingView, restoreEditorSelection, tocDepth, commitTrackedChangeMutation, addToast]);
+
+  const moveOutlineSection = React.useCallback((headingIndex, targetIndex) => {
+    if (headingIndex == null || targetIndex == null || Number(headingIndex) === Number(targetIndex)) {
+      setDraggedHeadingIndex(null);
+      return;
+    }
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      setDraggedHeadingIndex(null);
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const result = _builderMoveHeadingSection(doc, headingIndex, targetIndex);
+    setDraggedHeadingIndex(null);
+    if (!result.ok) {
+      addToast && addToast(result.error || 'That document section could not be moved.', 'info');
+      return;
+    }
+    const changeId = result.marker?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    setNavigationPaneTab('headings');
+    setShowNavigationPane(true);
+    commitTrackedChangeMutation('Moved “' + result.moved + '” with its section content' + (result.tracked ? ' as a tracked change.' : '.'));
+    exportPreviewRef.current?.focus();
+  }, [exportPreviewRef, resumeTrackedEditingView, commitTrackedChangeMutation, addToast]);
+
+  const toggleTrackChanges = React.useCallback((nextValue) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    const enabled = typeof nextValue === 'boolean' ? nextValue : doc.body.getAttribute('data-allo-track-changes') !== '1';
+    if (enabled) doc.body.setAttribute('data-allo-track-changes', '1');
+    else doc.body.removeAttribute('data-allo-track-changes');
+    setTrackChangesEnabled(enabled);
+    setActiveRibbonTab('review');
+    setRibbonCollapsed(false);
+    _builderDispatchTrackedInput(doc, 'toggleTrackChanges');
+    addToast && addToast(enabled
+      ? 'Track Changes is on. Text, formatting, paragraph layout, list, table, and explicit break changes will be marked.'
+      : 'Track Changes is off. Existing revisions remain available for review.', 'info');
+    exportPreviewRef.current?.focus();
+  }, [exportPreviewRef, addToast]);
+
+  const filterTrackedChangeSet = React.useCallback((changes) => {
+    const cutoff = trackedChangeDateFilter === 'today' ? Date.now() - 86400000 : trackedChangeDateFilter === 'week' ? Date.now() - 604800000 : 0;
+    return (Array.isArray(changes) ? changes : []).filter((change) => {
+      const typeMatch = trackedChangeTypeFilter === 'all'
+        || (trackedChangeTypeFilter === 'text' && (change.type === 'insert' || change.type === 'delete'))
+        || change.type === trackedChangeTypeFilter
+        || change.scopes?.includes(trackedChangeTypeFilter);
+      const authorMatch = trackedChangeAuthorFilter === 'all' || change.author === trackedChangeAuthorFilter;
+      const parsedAt = Date.parse(change.at || '');
+      return typeMatch && authorMatch && (!cutoff || (!Number.isNaN(parsedAt) && parsedAt >= cutoff));
+    });
+  }, [trackedChangeTypeFilter, trackedChangeAuthorFilter, trackedChangeDateFilter]);
+
+  const jumpToTrackedChange = React.useCallback((changeId) => {
+    const marker = findLiveTrackedChange(changeId);
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!marker || !doc) {
+      refreshTrackedChanges();
+      addToast && addToast('That revision is no longer in the document.', 'info');
+      return;
+    }
+    try {
+      _builderSetTrackedMarkupView(doc, 'all');
+      setTrackedMarkupView('all');
+      const liveMarker = findLiveTrackedChange(changeId) || marker;
+      const range = doc.createRange();
+      range.selectNodeContents(liveMarker);
+      _builderSetTrackedSelection(doc, range);
+      editorSelectionRangeRef.current = range.cloneRange();
+      liveMarker.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      setActiveTrackedChangeId(changeId);
+      openTrackedChanges(changeId);
+      exportPreviewRef.current?.focus();
+      refreshFormattingState();
+      refreshSelectionStatistics();
+    } catch (_) {
+      addToast && addToast('Could not move to that revision.', 'error');
+    }
+  }, [findLiveTrackedChange, exportPreviewRef, refreshTrackedChanges, openTrackedChanges, refreshFormattingState, refreshSelectionStatistics, addToast]);
+
+  const navigateTrackedChange = React.useCallback((direction = 1) => {
+    const changes = filterTrackedChangeSet(_builderTrackedChangeEntries(exportPreviewRef.current?.contentDocument));
+    if (!changes.length) {
+      addToast && addToast('There are no changes matching the current filters.', 'info');
+      return;
+    }
+    const currentIndex = Math.max(0, changes.findIndex((change) => change.id === activeTrackedChangeId));
+    const nextIndex = (currentIndex + (direction < 0 ? -1 : 1) + changes.length) % changes.length;
+    jumpToTrackedChange(changes[nextIndex].id);
+  }, [exportPreviewRef, activeTrackedChangeId, filterTrackedChangeSet, jumpToTrackedChange, addToast]);
+
+  const applyTrackedChangeDecision = React.useCallback((changeId, decision) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    let marker = findLiveTrackedChange(changeId);
+    if (!marker || !doc) {
+      refreshTrackedChanges();
+      return;
+    }
+    const priorView = trackedMarkupView;
+    _builderSetTrackedMarkupView(doc, 'all');
+    marker = findLiveTrackedChange(changeId);
+    if (!marker) {
+      refreshTrackedChanges();
+      return;
+    }
+    const changes = filterTrackedChangeSet(_builderTrackedChangeEntries(doc));
+    const currentIndex = Math.max(0, changes.findIndex((change) => change.id === changeId));
+    const nextId = changes[currentIndex + 1]?.id || changes[currentIndex - 1]?.id || '';
+    const entry = changes.find((change) => change.id === changeId) || _builderTrackedChangeEntries(doc).find((change) => change.id === changeId);
+    if (!_builderApplyTrackedChange(marker, decision)) return;
+    if (priorView === 'original') _builderSetTrackedMarkupView(doc, 'original');
+    setSelectedTrackedChangeIds((selected) => selected.filter((id) => id !== changeId));
+    setActiveTrackedChangeId(nextId);
+    commitTrackedChangeMutation((decision === 'accept' ? 'Accepted ' : 'Rejected ') + String(entry?.label || 'change').toLowerCase() + '.');
+  }, [findLiveTrackedChange, refreshTrackedChanges, exportPreviewRef, filterTrackedChangeSet, trackedMarkupView, commitTrackedChangeMutation]);
+
+  const applyTrackedChangeSet = React.useCallback(async (decision, requestedIds, scopeLabel) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const allChanges = _builderTrackedChangeEntries(doc);
+    const ids = Array.isArray(requestedIds) ? new Set(requestedIds) : null;
+    const changes = (ids ? allChanges.filter((change) => ids.has(change.id)) : filterTrackedChangeSet(allChanges));
+    if (!changes.length) {
+      addToast && addToast('There are no changes in that review scope.', 'info');
+      return;
+    }
+    const confirmReviewDecision = window.AlloFlowUX?.confirm;
+    if (typeof confirmReviewDecision !== 'function') {
+      addToast && addToast('The confirmation dialog is still loading. Please try again.', 'info');
+      return;
+    }
+    const accepting = decision === 'accept';
+    const scope = scopeLabel || (ids ? 'selected' : 'visible');
+    let confirmed = false;
+    try {
+      confirmed = await Promise.resolve(confirmReviewDecision.call(window.AlloFlowUX,
+        (accepting ? 'Accept ' : 'Reject ') + changes.length + ' ' + scope + ' change' + (changes.length === 1 ? '' : 's') + '?',
+        {
+          title: (accepting ? 'Accept ' : 'Reject ') + scope + ' changes?',
+          detail: accepting
+            ? 'Final text, formatting, paragraph layout, and structures will be kept.'
+            : 'The original text, formatting, paragraph layout, and structures will be restored.',
+          confirmText: (accepting ? 'Accept ' : 'Reject ') + scope,
+          cancelText: 'Keep reviewing',
+          tone: accepting ? 'default' : 'danger',
+        }
+      )).then(Boolean, () => false);
+    } catch (_) {}
+    if (!confirmed) return;
+    const priorView = trackedMarkupView;
+    _builderSetTrackedMarkupView(doc, 'all');
+    const liveById = new Map(_builderTrackedChangeEntries(doc).map((change) => [change.id, change]));
+    changes.slice().reverse().forEach((change) => {
+      const live = liveById.get(change.id)?.node;
+      if (live?.parentNode) _builderApplyTrackedChange(live, decision);
+    });
+    if (priorView === 'original') _builderSetTrackedMarkupView(doc, 'original');
+    setSelectedTrackedChangeIds((selected) => selected.filter((id) => !changes.some((change) => change.id === id)));
+    setActiveTrackedChangeId('');
+    commitTrackedChangeMutation((accepting ? 'Accepted ' : 'Rejected ') + changes.length + ' ' + scope + ' change' + (changes.length === 1 ? '' : 's') + '.');
+  }, [exportPreviewRef, filterTrackedChangeSet, trackedMarkupView, commitTrackedChangeMutation, addToast]);
+
+  const applyAllTrackedChanges = React.useCallback((decision) => {
+    return applyTrackedChangeSet(decision, null, 'visible');
+  }, [applyTrackedChangeSet]);
+
+  const applySelectedTrackedChanges = React.useCallback((decision) => {
+    return applyTrackedChangeSet(decision, selectedVisibleTrackedChanges.map((change) => change.id), 'selected');
+  }, [applyTrackedChangeSet, selectedVisibleTrackedChanges]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onToggleTrackChanges = () => toggleTrackChanges();
+    const onActivateTrackedChange = (event) => {
+      const changeId = String(event?.detail?.id || '');
+      if (changeId) openTrackedChanges(changeId);
+    };
+    const onTrackChangesInfo = (event) => {
+      const message = String(event?.detail?.message || '');
+      if (message) addToast && addToast(message, 'info');
+    };
+    const onMarkupViewChange = (event) => {
+      const view = String(event?.detail?.view || '');
+      if (['all', 'simple', 'none', 'original'].includes(view)) setTrackedMarkupView(view);
+    };
+    const onTrackChangesShortcut = (event) => {
+      const target = event.target;
+      const tag = String(target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && !event.altKey && (event.key === 'e' || event.key === 'E')) {
+        event.preventDefault();
+        toggleTrackChanges();
+      }
+    };
+    document.addEventListener('alloflow-builder-toggle-track-changes', onToggleTrackChanges);
+    document.addEventListener('alloflow-builder-activate-change', onActivateTrackedChange);
+    document.addEventListener('alloflow-builder-track-changes-info', onTrackChangesInfo);
+    document.addEventListener('alloflow-builder-markup-view', onMarkupViewChange);
+    document.addEventListener('keydown', onTrackChangesShortcut);
+    return () => {
+      document.removeEventListener('alloflow-builder-toggle-track-changes', onToggleTrackChanges);
+      document.removeEventListener('alloflow-builder-activate-change', onActivateTrackedChange);
+      document.removeEventListener('alloflow-builder-track-changes-info', onTrackChangesInfo);
+      document.removeEventListener('alloflow-builder-markup-view', onMarkupViewChange);
+      document.removeEventListener('keydown', onTrackChangesShortcut);
+    };
+  }, [showExportPreview, toggleTrackChanges, openTrackedChanges, addToast]);
+
   const runBuilderPreflight = React.useCallback((modeOverride, announce = true) => {
     const result = _builderExportPreflight(exportPreviewRef.current?.contentDocument, modeOverride || exportPreviewMode);
     setPreflightResult(result);
@@ -2936,7 +4634,7 @@ function ExportPreviewView(props) {
     const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT, {
       acceptNode(node) {
         const parent = node.parentElement;
-        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]') && node.nodeValue
+        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element],del[data-allo-change-id]') && node.nodeValue
           ? NF.FILTER_ACCEPT : NF.FILTER_REJECT;
       }
     });
@@ -3064,6 +4762,7 @@ function ExportPreviewView(props) {
     const doc = exportPreviewRef.current?.contentDocument;
     const win = doc?.defaultView;
     if (!doc || !needle || !win) return;
+    resumeTrackedEditingView(true);
     let selection = win.getSelection();
     const selectionIsMatch = () => {
       if (!selection || selection.rangeCount !== 1 || selection.isCollapsed) return false;
@@ -3077,53 +4776,94 @@ function ExportPreviewView(props) {
       selection = win.getSelection();
     }
     if (!selectionIsMatch()) return;
-    const replaced = doc.execCommand('insertText', false, replaceQuery);
-    if (!replaced) {
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-      const replacementNode = doc.createTextNode(replaceQuery);
-      range.insertNode(replacementNode);
-      range.setStartAfter(replacementNode);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
+    const tracking = doc.body?.getAttribute('data-allo-track-changes') === '1';
+    let replaced = false;
+    if (tracking) {
+      const selectedRange = selection.getRangeAt(0).cloneRange();
+      const result = replaceQuery
+        ? _builderTrackTextInsertion(doc, replaceQuery, selectedRange)
+        : _builderTrackTextDeletion(doc, 'backward', selectedRange);
+      if (!result.ok) {
+        if (result.error) addToast && addToast(result.error, result.blocked ? 'info' : 'error');
+        return;
+      }
+      replaced = true;
+      refreshTrackedChanges();
+    } else {
+      replaced = doc.execCommand('insertText', false, replaceQuery);
+      if (!replaced) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const replacementNode = doc.createTextNode(replaceQuery);
+        range.insertNode(replacementNode);
+        range.setStartAfter(replacementNode);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        replaced = true;
+      }
+      try { doc.body.dispatchEvent(new win.Event('input', { bubbles: true })); } catch (_) {}
     }
-    try { doc.body.dispatchEvent(new win.Event('input', { bubbles: true })); } catch (_) {}
-    findCursorRef.current = { node: selection.anchorNode, offset: selection.anchorOffset };
+    if (!replaced) return;
+    selection = win.getSelection();
+    findCursorRef.current = { node: selection?.anchorNode || null, offset: selection?.anchorOffset || 0 };
     setFindDocumentRevision((value) => value + 1);
-    addToast && addToast('Replaced the current match.', 'success');
-  }, [findQuery, replaceQuery, exportPreviewRef, addToast, findInPreview, findMatchesInText]);
+    addToast && addToast(tracking ? 'Replacement recorded as a tracked change.' : 'Replaced the current match.', 'success');
+  }, [findQuery, replaceQuery, exportPreviewRef, resumeTrackedEditingView, addToast, findInPreview, findMatchesInText, refreshTrackedChanges]);
 
   const replaceAllInPreview = React.useCallback(() => {
     const needle = findQuery.trim();
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc || !needle) return;
+    resumeTrackedEditingView(true);
     const win = doc.defaultView;
+    const tracking = doc.body?.getAttribute('data-allo-track-changes') === '1';
     let count = 0;
     collectFindTextNodes(doc).forEach((node) => {
       const before = node.nodeValue || '';
       const matches = findMatchesInText(before, needle);
       if (!matches.length) return;
-      let after = before;
-      matches.slice().reverse().forEach((at) => {
-        after = after.slice(0, at) + replaceQuery + after.slice(at + needle.length);
-        count += 1;
-      });
-      node.nodeValue = after;
+      if (tracking) {
+        matches.slice().reverse().forEach((at) => {
+          if (!node.isConnected || at + needle.length > String(node.nodeValue || '').length) return;
+          const range = doc.createRange();
+          range.setStart(node, at);
+          range.setEnd(node, at + needle.length);
+          const result = replaceQuery
+            ? _builderTrackTextInsertion(doc, replaceQuery, range)
+            : _builderTrackTextDeletion(doc, 'backward', range);
+          if (result.ok) count += 1;
+        });
+      } else {
+        let after = before;
+        matches.slice().reverse().forEach((at) => {
+          after = after.slice(0, at) + replaceQuery + after.slice(at + needle.length);
+          count += 1;
+        });
+        node.nodeValue = after;
+      }
     });
     if (count) {
-      try { doc.body.dispatchEvent(new (win?.Event || Event)('input', { bubbles: true })); } catch (_) {}
+      if (!tracking) {
+        try { doc.body.dispatchEvent(new (win?.Event || Event)('input', { bubbles: true })); } catch (_) {}
+      } else refreshTrackedChanges();
       setFindDocumentRevision((value) => value + 1);
       setFindMatchState({ count: countFindMatches(doc, needle), current: 0 });
-      addToast && addToast('Replaced ' + count + ' occurrence' + (count === 1 ? '' : 's') + '.', 'success');
+      addToast && addToast(tracking
+        ? 'Recorded ' + count + ' replacement' + (count === 1 ? '' : 's') + ' as tracked changes.'
+        : 'Replaced ' + count + ' occurrence' + (count === 1 ? '' : 's') + '.', 'success');
     } else addToast && addToast('“' + needle + '” was not found.', 'info');
-  }, [findQuery, replaceQuery, exportPreviewRef, addToast, collectFindTextNodes, countFindMatches, findMatchesInText]);
+  }, [findQuery, replaceQuery, exportPreviewRef, resumeTrackedEditingView, addToast, collectFindTextNodes, countFindMatches, findMatchesInText, refreshTrackedChanges]);
   const getCleanBuilderDocument = React.useCallback((options = {}) => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.documentElement) return null;
     const clone = doc.documentElement.cloneNode(true);
     _builderClearReviewCommentTransientState(clone);
-    if (options?.forExport) _builderStripReviewComments(clone);
+    _builderClearTrackedChangeTransientState(clone);
+    if (options?.forExport) {
+      _builderStripReviewComments(clone);
+      _builderFinalizeTrackedChanges(clone, 'accept');
+    }
     clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script').forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
     _builderStripEditorBreakMetadata(clone);
@@ -3163,6 +4903,91 @@ function ExportPreviewView(props) {
     }
   }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle]);
 
+  const saveCurrentAsDocumentTemplate = React.useCallback(async () => {
+    if (customDocumentTemplates.length >= 8) {
+      addToast && addToast('You can keep up to 8 custom templates on this device. Remove one before saving another.', 'info');
+      return;
+    }
+    const clean = getCleanBuilderDocument({ forExport: true });
+    const bodyHtml = clean?.clone?.querySelector?.('body')?.innerHTML || '';
+    const sanitizedHtml = clean?.doc ? _builderSanitizeTemplateHtml(clean.doc, bodyHtml) : '';
+    if (!sanitizedHtml.replace(/<[^>]*>/g, '').trim()) {
+      addToast && addToast('Add some document content before saving a template.', 'info');
+      return;
+    }
+    const name = await promptForBuilderText('Name this reusable document template.', clean?.title || '', {
+      title: 'Save document template', confirmText: 'Save template', cancelText: 'Cancel',
+      placeholder: 'Template name', maxLength: 80,
+      validate: (value) => value.trim() ? null : 'Enter a template name.',
+    });
+    if (name == null || !String(name).trim()) return;
+    const definition = {
+      id: 'custom-template-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
+      label: String(name).replace(/\s+/g, ' ').trim(),
+      description: 'Saved from the current document on this device.',
+      html: sanitizedHtml, custom: true, createdAt: Date.now(),
+    };
+    setCustomDocumentTemplates((current) => _builderNormalizeCustomDocumentTemplates([...current, definition]));
+    addToast && addToast('Document template saved on this device.', 'success');
+  }, [customDocumentTemplates.length, getCleanBuilderDocument, promptForBuilderText, addToast]);
+
+  const deleteCustomDocumentTemplate = React.useCallback((templateId) => {
+    const definition = customDocumentTemplates.find((item) => item.id === templateId);
+    if (!definition) return;
+    setCustomDocumentTemplates((current) => current.filter((item) => item.id !== templateId));
+    addToast && addToast('Removed “' + definition.label + '” from your templates.', 'success');
+  }, [customDocumentTemplates, addToast]);
+
+  const applyDocumentTemplate = React.useCallback(async (templateDefinition) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body || !templateDefinition) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    if (doc.body.getAttribute('data-allo-track-changes') === '1' && doc.body.querySelector(_BUILDER_CHANGE_SELECTOR)) {
+      addToast && addToast('Accept or reject pending changes before applying a full document template.', 'info');
+      return;
+    }
+    const confirmTemplate = window.AlloFlowUX?.confirm;
+    if (typeof confirmTemplate !== 'function') {
+      addToast && addToast('The confirmation dialog is still loading. Please try again.', 'info');
+      return;
+    }
+    let confirmed = false;
+    try {
+      confirmed = await Promise.resolve(confirmTemplate.call(window.AlloFlowUX,
+        'Apply “' + templateDefinition.label + '” and replace the current document body?', {
+          title: 'Apply document template?',
+          detail: 'A local rollback point will be saved first. Page setup and Builder review preferences will be kept.',
+          confirmText: 'Apply template', cancelText: 'Keep document', tone: 'danger',
+        })).then(Boolean, () => false);
+    } catch (_) {}
+    if (!confirmed) return;
+    const current = getCleanBuilderDocument();
+    if (!current?.html) {
+      addToast && addToast('The current document could not be saved before applying the template.', 'error');
+      return;
+    }
+    const rollbackSaved = persistLocalDraft(current.html, Date.now(), 'Before template: ' + templateDefinition.label);
+    resumeTrackedEditingView(true);
+    const result = _builderApplyDocumentTemplate(doc, templateDefinition);
+    if (!result.ok) {
+      addToast && addToast(result.error || 'The document template could not be applied.', 'error');
+      return;
+    }
+    const changeId = result.marker?.getAttribute?.('data-allo-change-id') || '';
+    if (changeId) setActiveTrackedChangeId(changeId);
+    setVersionComparison(null);
+    setNavigationPaneTab('headings');
+    setShowNavigationPane(true);
+    setActiveRibbonTab('insert');
+    setRibbonCollapsed(false);
+    commitTrackedChangeMutation(result.tracked
+      ? 'Applied “' + templateDefinition.label + '” as a tracked structural change.'
+      : 'Applied “' + templateDefinition.label + '”.' + (rollbackSaved ? ' A rollback point was saved.' : ''));
+    exportPreviewRef.current?.focus();
+  }, [exportPreviewRef, getCleanBuilderDocument, persistLocalDraft, resumeTrackedEditingView, commitTrackedChangeMutation, addToast]);
+
   React.useEffect(() => {
     if (!showExportPreview) {
       setDraftRecovery(null);
@@ -3193,6 +5018,7 @@ function ExportPreviewView(props) {
         window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML, at: Date.now() };
         refreshDocumentStats();
         refreshReviewComments();
+        refreshTrackedChanges();
         refreshActiveHeading();
         refreshPageMetrics();
         refreshFormattingState();
@@ -3204,7 +5030,7 @@ function ExportPreviewView(props) {
       addToast && addToast('Could not restore that version.', 'error');
       return false;
     }
-  }, [exportPreviewRef, refreshDocumentStats, refreshReviewComments, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
+  }, [exportPreviewRef, refreshDocumentStats, refreshReviewComments, refreshTrackedChanges, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
 
   const restoreLocalDraft = React.useCallback(() => {
     if (restoreDraftHtml(draftRecovery?.html, 'Local draft restored.')) setDraftRecovery(null);
@@ -3212,9 +5038,49 @@ function ExportPreviewView(props) {
 
   const restoreVersionSnapshot = React.useCallback((snapshot) => {
     if (!snapshot?.html) return;
-    persistLocalDraft(snapshot.html, Date.now(), 'Restored version');
-    restoreDraftHtml(snapshot.html, 'Version restored.');
-  }, [persistLocalDraft, restoreDraftHtml]);
+    const current = getCleanBuilderDocument();
+    const now = Date.now();
+    const rollbackSaved = Boolean(current?.html && current.html !== snapshot.html && persistLocalDraft(current.html, now, 'Before version restore'));
+    setVersionComparison(null);
+    persistLocalDraft(snapshot.html, now + 1, 'Restored version');
+    restoreDraftHtml(snapshot.html, rollbackSaved ? 'Version restored. A rollback point was saved.' : 'Version restored.');
+  }, [getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml]);
+
+  const compareVersionSnapshot = React.useCallback((snapshot) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!snapshot?.html || !doc) {
+      addToast && addToast('That local version is not available to compare.', 'info');
+      return;
+    }
+    const comparison = _builderCompareDocumentVersions(doc, snapshot.html);
+    if (!comparison.ok) {
+      addToast && addToast(comparison.error || 'That version could not be compared.', 'error');
+      return;
+    }
+    setVersionComparison({ ...comparison, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
+    addToast && addToast(comparison.changed
+      ? 'Version comparison ready: ' + comparison.changed + ' changed block' + (comparison.changed === 1 ? '' : 's') + '.'
+      : 'The current document matches that version.', comparison.changed ? 'info' : 'success');
+  }, [exportPreviewRef, addToast]);
+
+  const restoreVersionComparisonBlock = React.useCallback((excerpt) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const snapshot = versionHistory.find((item) => item.id === versionComparison?.snapshotId);
+    if (!doc || !snapshot) {
+      addToast && addToast('That comparison is no longer available.', 'info');
+      return;
+    }
+    const restored = _builderRestoreVersionBlock(doc, snapshot.html, excerpt);
+    if (!restored.ok) {
+      addToast && addToast(restored.error || 'That block could not be restored.', 'info');
+      return;
+    }
+    if (restored.tracked) setActiveTrackedChangeId(restored.marker?.getAttribute?.('data-allo-change-id') || '');
+    restored.marker?.scrollIntoView?.({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+    commitTrackedChangeMutation(restored.tracked ? 'Saved block applied as a tracked structural change.' : 'Saved block restored from version history.');
+    const refreshed = _builderCompareDocumentVersions(doc, snapshot.html);
+    if (refreshed.ok) setVersionComparison({ ...refreshed, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
+  }, [exportPreviewRef, versionHistory, versionComparison, commitTrackedChangeMutation, addToast]);
 
   const saveVersionSnapshot = React.useCallback(() => {
     const clean = getCleanBuilderDocument();
@@ -3226,6 +5092,43 @@ function ExportPreviewView(props) {
     addToast && addToast('Version snapshot saved on this device.', 'success');
   }, [getCleanBuilderDocument, persistLocalDraft, addToast]);
 
+  const toggleQuickAccessItem = React.useCallback((itemId) => {
+    setQuickAccessItems((items) => {
+      if (items.includes(itemId)) return items.filter((id) => id !== itemId);
+      if (items.length >= 6) {
+        addToast && addToast('Quick Access can hold up to six commands.', 'info');
+        return items;
+      }
+      return [...items, itemId];
+    });
+  }, [addToast]);
+
+  const moveQuickAccessItem = React.useCallback((itemId, direction) => {
+    setQuickAccessItems((items) => {
+      const index = items.indexOf(itemId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= items.length) return items;
+      const next = [...items];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  }, []);
+
+  const quickAccessActions = {
+    save: { action: saveVersionSnapshot },
+    undo: { action: () => runEditorCommand('undo') },
+    redo: { action: () => runEditorCommand('redo') },
+    comments: { action: () => openReviewComments(activeCommentId), pressed: showNavigationPane && navigationPaneTab === 'comments' },
+    trackChanges: { action: () => toggleTrackChanges(), pressed: trackChangesEnabled },
+    wordCount: { action: openWordCountDetails, pressed: showWordCountDetails },
+    navigation: { action: () => {
+      const active = showNavigationPane && navigationPaneTab === 'headings';
+      if (active) setShowNavigationPane(false);
+      else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
+    }, pressed: showNavigationPane && navigationPaneTab === 'headings' },
+    focus: { action: () => setBuilderFocusMode(), pressed: isFocusMode },
+  };
+
   React.useEffect(() => {
     if (!showExportPreview) return undefined;
     const onSaveSnapshotRequest = () => saveVersionSnapshot();
@@ -3236,6 +5139,7 @@ function ExportPreviewView(props) {
     try { window.localStorage.removeItem(draftStorageKey); } catch (_) {}
     setDraftRecovery(null);
     setVersionHistory([]);
+    setVersionComparison(null);
   }, [draftStorageKey]);
 
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
@@ -3307,18 +5211,25 @@ function ExportPreviewView(props) {
     exportActionLockRef.current = true;
     setExportActionBusy(true);
     let resumeReviewComments = () => {};
+    let resumeTrackedChanges = () => {};
     try {
-      resumeReviewComments = _builderSuspendReviewComments(exportPreviewRef.current?.contentDocument?.documentElement);
+      const liveRoot = exportPreviewRef.current?.contentDocument?.documentElement;
+      resumeTrackedChanges = _builderSuspendTrackedChanges(liveRoot);
+      resumeReviewComments = _builderSuspendReviewComments(liveRoot);
       await executeExportFromPreview();
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'builder', format: exportPreviewMode }); } catch (_) {}
     } catch (error) {
       if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
     } finally {
       try { resumeReviewComments(); } catch (_) {}
+      try { resumeTrackedChanges(); } catch (_) {}
+      refreshTrackedChanges();
+      refreshReviewComments();
+      refreshDocumentStats();
       exportActionLockRef.current = false;
       if (mountedRef.current) setExportActionBusy(false);
     }
-  }, [executeExportFromPreview, exportPreviewRef, runBuilderPreflight, exportPreviewMode, addToast, onExportSuccess]);
+  }, [executeExportFromPreview, exportPreviewRef, runBuilderPreflight, exportPreviewMode, refreshTrackedChanges, refreshReviewComments, refreshDocumentStats, addToast, onExportSuccess]);
 
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
@@ -4272,9 +6183,34 @@ function ExportPreviewView(props) {
                     <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={saveVersionSnapshot} className="text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100" aria-label="Save a local version snapshot" title="Save a local restore point (Ctrl+S)">
-                      <span aria-hidden="true">▣</span> Save
-                    </button>
+                    <div id="builder-quick-access-toolbar" role="toolbar" aria-label="Quick Access" className="flex min-h-8 items-center gap-0.5 rounded-lg border border-slate-300 bg-slate-50 p-0.5 shadow-sm">
+                      {quickAccessItems.map((itemId) => {
+                        const option = _BUILDER_QUICK_ACCESS_OPTIONS.find((item) => item.id === itemId);
+                        const command = quickAccessActions[itemId];
+                        if (!option || !command) return null;
+                        const pressed = typeof command.pressed === 'boolean' ? command.pressed : undefined;
+                        return <button key={itemId} type="button" onMouseDown={(event) => event.preventDefault()} onClick={command.action} aria-pressed={pressed} aria-label={option.label} title={option.label} className={'h-7 rounded px-2 text-[10px] font-bold transition-colors ' + (pressed ? 'bg-indigo-700 text-white shadow-inner' : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-800')}>{option.shortLabel}</button>;
+                      })}
+                      <details id="builder-quick-access-customize" className="relative">
+                        <summary className="flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200" aria-label="Customize Quick Access toolbar" title="Customize Quick Access toolbar">+</summary>
+                        <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl">
+                          <div className="mb-2 flex items-center justify-between gap-2"><strong className="text-[11px] text-slate-800">Customize Quick Access</strong><span className="text-[9px] text-slate-500">Up to 6</span></div>
+                          <div className="space-y-1">
+                            {_BUILDER_QUICK_ACCESS_OPTIONS.map((option) => {
+                              const selected = quickAccessItems.includes(option.id);
+                              const position = quickAccessItems.indexOf(option.id);
+                              return (
+                                <div key={option.id} className="flex min-h-7 items-center gap-1 rounded px-1 hover:bg-slate-50">
+                                  <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-[10px] font-semibold text-slate-700"><input type="checkbox" checked={selected} onChange={() => toggleQuickAccessItem(option.id)} className="accent-indigo-700" /> <span className="truncate">{option.label}</span></label>
+                                  {selected && <><button type="button" disabled={position === 0} onClick={() => moveQuickAccessItem(option.id, -1)} className="h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30" aria-label={'Move ' + option.shortLabel + ' left'}>←</button><button type="button" disabled={position === quickAccessItems.length - 1} onClick={() => moveQuickAccessItem(option.id, 1)} className="h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30" aria-label={'Move ' + option.shortLabel + ' right'}>→</button></>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <button type="button" onClick={() => setQuickAccessItems([..._BUILDER_QUICK_ACCESS_DEFAULT])} className="mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100">Reset Quick Access</button>
+                        </div>
+                      </details>
+                    </div>
                     <button type="button" onClick={() => {
                       const active = showNavigationPane && navigationPaneTab === 'headings';
                       if (active) setShowNavigationPane(false);
@@ -4413,6 +6349,7 @@ function ExportPreviewView(props) {
                           try {
                             const _tClone = doc.body.cloneNode(true);
                             _builderStripReviewComments(_tClone);
+                            _builderFinalizeTrackedChanges(_tClone, 'accept');
                             _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -4431,6 +6368,7 @@ function ExportPreviewView(props) {
                             _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                             _builderStripEditorBreakMetadata(_mClone);
                             _builderStripReviewComments(_mClone);
+                            _builderFinalizeTrackedChanges(_mClone, 'accept');
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
                           // Spoken-math captions (2026-07-05): the ```mathml fence below is
@@ -4552,6 +6490,7 @@ function ExportPreviewView(props) {
                                 _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                                 _builderStripEditorBreakMetadata(_mdClone);
                                 _builderStripReviewComments(_mdClone);
+                                _builderFinalizeTrackedChanges(_mdClone, 'accept');
                                 html = _mdClone.outerHTML;
                               } catch (_) { html = doc.documentElement.outerHTML; }
                               // #6: preserve tables (pipe tables) + image alts before the tag-strip.
@@ -4596,6 +6535,7 @@ function ExportPreviewView(props) {
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
                             _builderStripEditorBreakMetadata(_clone);
                             _builderStripReviewComments(_clone);
+                            _builderFinalizeTrackedChanges(_clone, 'accept');
                           } catch (_) {}
                           const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                           const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
@@ -4894,11 +6834,23 @@ const _downloadBRF = (brf) => {
                 {!ribbonCollapsed && activeRibbonTab === 'review' && (
                   <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
                     <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5" role="group" aria-label="Review tools">
+                      <button id="builder-track-changes" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => toggleTrackChanges()} aria-pressed={trackChangesEnabled} aria-keyshortcuts="Control+Shift+E" className={`h-8 rounded px-2.5 text-[11px] font-bold shadow-sm ${trackChangesEnabled ? 'bg-violet-700 text-white hover:bg-violet-800' : 'border border-violet-500 bg-white text-violet-800 hover:bg-violet-50'}`} title="Toggle Track Changes (Ctrl+Shift+E)">Track Changes: {trackChangesEnabled ? 'On' : 'Off'}</button>
+                      <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-pressed={showNavigationPane && navigationPaneTab === 'changes'} aria-controls="document-builder-navigation" className="h-8 rounded border border-violet-500 bg-white px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-50">Changes ({pendingTrackedChangeCount})</button>
+                      <label className="sr-only" htmlFor="builder-ribbon-markup-view">Markup view</label>
+                      <select id="builder-ribbon-markup-view" value={trackedMarkupView} onChange={(event) => setTrackedMarkupView(event.target.value)} className="h-8 rounded border border-violet-400 bg-white px-1.5 text-[11px] font-bold text-violet-800" title="Choose how revisions appear">
+                        <option value="simple">Simple Markup</option>
+                        <option value="all">All Markup</option>
+                        <option value="none">No Markup</option>
+                        <option value="original">Original</option>
+                      </select>
+                      <button type="button" disabled={!activeTrackedChange} onClick={() => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, 'accept')} className="h-8 rounded border border-emerald-500 bg-white px-2 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40">Accept</button>
+                      <button type="button" disabled={!activeTrackedChange} onClick={() => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, 'reject')} className="h-8 rounded border border-red-400 bg-white px-2 text-[11px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40">Reject</button>
+                      <span className="mx-0.5 h-6 w-px bg-slate-300" aria-hidden="true"></span>
                       <button id="builder-new-comment" type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-700" title="Comment on the selected text (Ctrl+Alt+M)">New Comment</button>
                       <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls="document-builder-navigation" className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
                       <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50">Word Count</button>
-                      <span className="text-[10px] font-medium text-slate-600">{selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
-                      <span className="ml-auto text-[10px] text-slate-500">Ctrl+Alt+M comment &middot; Ctrl+Shift+G word count</span>
+                      <span className="text-[10px] font-medium text-slate-600">{pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
+                      <span className="ml-auto text-[10px] text-slate-500">Ctrl+Shift+E track &middot; Ctrl+Alt+M comment &middot; Ctrl+Shift+G word count</span>
                     </div>
                 <details id="builder-find-tools" className="bg-white border-b border-slate-200 shrink-0">
                   <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Find / Replace | Heading Outline ({headingOutline.length}) <span className="font-normal text-slate-500">{findMatchState.count ? `${findMatchState.current || 0}/${findMatchState.count} matches` : 'No matches'} | Ctrl+F / Ctrl+H</span></summary>
@@ -4946,10 +6898,57 @@ const _downloadBRF = (brf) => {
                             <div className="truncate text-[11px] font-semibold text-slate-700">{snapshot.label}</div>
                             <time className="text-[10px] text-slate-500" dateTime={new Date(snapshot.at).toISOString()}>{new Date(snapshot.at).toLocaleString()}</time>
                           </div>
+                          <button type="button" onClick={() => compareVersionSnapshot(snapshot)} aria-pressed={versionComparison?.snapshotId === snapshot.id} className="rounded border border-violet-400 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-50">Compare</button>
                           <button type="button" onClick={() => restoreVersionSnapshot(snapshot)} className="rounded border border-indigo-500 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Restore</button>
                         </div>
                       )) : <p className="text-[11px] text-slate-500">No snapshots yet. Editing will save recent versions automatically.</p>}
                     </div>
+                    {versionComparison && (
+                      <section aria-label={'Version comparison with ' + versionComparison.label} className="mt-2 rounded-lg border border-violet-300 bg-violet-50 p-2 text-[10px] text-violet-950">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div role="status" aria-live="polite">
+                            <h4 className="font-black">Compared with {versionComparison.label}</h4>
+                            <p className="text-violet-700">{new Date(versionComparison.at).toLocaleString()} · {versionComparison.changed} changed block{versionComparison.changed === 1 ? '' : 's'}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => { const snapshot = versionHistory.find((item) => item.id === versionComparison.snapshotId); if (snapshot) restoreVersionSnapshot(snapshot); }} className="rounded border border-indigo-400 bg-white px-2 py-1 font-bold text-indigo-800 hover:bg-indigo-50">Restore full version</button>
+                            <button type="button" onClick={() => setVersionComparison(null)} className="rounded px-1.5 py-1 font-bold text-violet-700 hover:bg-violet-100" aria-label="Close version comparison">Close</button>
+                          </div>
+                        </div>
+                        <div className="mt-2 grid grid-cols-4 gap-1 text-center">
+                          <span className="rounded bg-white px-1 py-1"><strong className="block text-emerald-700">{versionComparison.added}</strong>Added</span>
+                          <span className="rounded bg-white px-1 py-1"><strong className="block text-red-700">{versionComparison.removed}</strong>Removed</span>
+                          <span className="rounded bg-white px-1 py-1"><strong className="block text-amber-700">{versionComparison.modified}</strong>Modified</span>
+                          <span className="rounded bg-white px-1 py-1"><strong className="block text-slate-700">{versionComparison.unchanged}</strong>Unchanged</span>
+                        </div>
+                        <p className="mt-2 font-semibold">Words: {versionComparison.beforeWords.toLocaleString()} → {versionComparison.afterWords.toLocaleString()} ({versionComparison.wordDelta >= 0 ? '+' : ''}{versionComparison.wordDelta}) · Headings: {versionComparison.beforeHeadings} → {versionComparison.afterHeadings}</p>
+                        {versionComparison.excerpts.length > 0 ? (
+                          <div className="mt-2 overflow-hidden rounded border border-violet-200 bg-white" aria-label="Side-by-side version comparison">
+                            <div className="grid grid-cols-2 border-b border-violet-200 bg-violet-100 font-black uppercase tracking-wide text-violet-800"><span className="px-2 py-1">Saved version</span><span className="border-l border-violet-200 px-2 py-1">Current document</span></div>
+                            <ol className="max-h-72 divide-y divide-violet-100 overflow-y-auto">
+                              {versionComparison.excerpts.map((excerpt, index) => {
+                                const restorable = excerpt.kind === 'modified' && excerpt.beforeTag && excerpt.beforeTag === excerpt.afterTag;
+                                return (
+                                  <li key={excerpt.kind + '-' + excerpt.beforeIndex + '-' + excerpt.afterIndex + '-' + index} className="p-1.5">
+                                    <div className="mb-1 flex items-center justify-between gap-2">
+                                      <span className={'rounded px-1.5 py-0.5 text-[8px] font-black uppercase ' + (excerpt.kind === 'modified' ? 'bg-amber-100 text-amber-800' : excerpt.kind === 'removed' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800')}>{excerpt.kind}</span>
+                                      {restorable && <button type="button" onClick={() => restoreVersionComparisonBlock(excerpt)} className="rounded border border-indigo-400 bg-white px-2 py-1 text-[9px] font-bold text-indigo-800 hover:bg-indigo-50">Use saved block</button>}
+                                    </div>
+                                    <div className="grid grid-cols-2">
+                                      <div className="min-h-12 break-words rounded-l bg-red-50 px-2 py-1.5 text-red-950">{excerpt.before ? <p className="whitespace-pre-wrap">{excerpt.before}</p> : <em className="text-red-500">Not present in saved version</em>}</div>
+                                      <div className="min-h-12 break-words rounded-r border-l border-violet-200 bg-emerald-50 px-2 py-1.5 text-emerald-950">{excerpt.after ? <p className="whitespace-pre-wrap">{excerpt.after}</p> : <em className="text-emerald-600">Not present in current document</em>}</div>
+                                    </div>
+                                    {excerpt.kind === 'modified' && !restorable && <p className="mt-1 text-[9px] text-slate-500">This block changed type; restore the full version to apply it safely.</p>}
+                                  </li>
+                                );
+                              })}
+                            </ol>
+                          </div>
+                        ) : <p className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-2 font-bold text-emerald-800">The current document matches this saved version.</p>}
+                        {versionComparison.truncated && <p className="mt-1 text-violet-700">Showing the first 24 changed blocks. The summary counts include the full comparison window.</p>}
+                        <p className="mt-1 text-slate-600">Using a saved block preserves the rest of the document. If Track Changes is on, the restore becomes a reviewable structural change.</p>
+                      </section>
+                    )}
                   </div>
                 </details>
                   </div>
@@ -4959,7 +6958,7 @@ const _downloadBRF = (brf) => {
                 <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label="Styles and Format Painter">
                   <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500">Styles</span>
                   <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5" role="toolbar" aria-label="Document styles">
-                    {_BUILDER_STYLE_GALLERY.map((styleOption) => {
+                    {builderStyleGallery.map((styleOption) => {
                       const selected = formatState.namedStyle === styleOption.id;
                       const previewClass = styleOption.id === 'title' ? 'text-sm font-black' : styleOption.id.startsWith('heading') ? 'font-black' : styleOption.id === 'subtitle' ? 'text-slate-500' : styleOption.id === 'quote' ? 'italic' : styleOption.id === 'caption' ? 'text-[9px] italic' : styleOption.id === 'callout' ? 'text-indigo-800' : '';
                       return <button key={styleOption.id} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyBuilderStyle(styleOption.id)} aria-pressed={selected}
@@ -4977,6 +6976,23 @@ const _downloadBRF = (brf) => {
                       <button type="button" onClick={cancelFormatPainter} className="min-h-8 rounded px-2 text-[10px] font-bold text-slate-600 hover:bg-slate-200" aria-label="Cancel Format Painter">Cancel</button>
                     </>
                   )}
+                  <details id="builder-styles-manager" className="relative shrink-0">
+                    <summary className="flex min-h-8 cursor-pointer list-none items-center rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:border-indigo-500 hover:bg-indigo-50">Manage styles</summary>
+                    <div className="absolute right-0 top-full z-[80] mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-300 bg-white p-2 shadow-2xl">
+                      <div className="flex items-start justify-between gap-2">
+                        <div><p className="text-[11px] font-black text-slate-800">Custom styles</p><p className="text-[9px] text-slate-500">Saved on this device · {customBuilderStyles.length}/12</p></div>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={saveSelectionAsCustomStyle} className="rounded bg-indigo-700 px-2 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800">Save selection as style</button>
+                      </div>
+                      <div className="mt-2 max-h-56 space-y-1 overflow-y-auto" aria-label="Saved custom styles">
+                        {customBuilderStyles.length ? customBuilderStyles.map((styleOption) => (
+                          <div key={styleOption.id} className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 p-1">
+                            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyBuilderStyle(styleOption.id)} className="min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-[10px] font-bold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title={'Apply ' + styleOption.label}>{styleOption.label}</button>
+                            <button type="button" onClick={() => deleteCustomBuilderStyle(styleOption.id)} className="rounded px-1.5 py-1 text-[9px] font-bold text-rose-700 hover:bg-rose-100" aria-label={'Delete custom style ' + styleOption.label}>Delete</button>
+                          </div>
+                        )) : <p className="rounded border border-dashed border-slate-300 p-2 text-[10px] text-slate-500">Place the caret in a styled paragraph or heading, then save it for reuse.</p>}
+                      </div>
+                    </div>
+                  </details>
                 </div>                {/* Formatting toolbar */}
                 <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t("a11y.text_formatting")}>
                   {[
@@ -5124,6 +7140,38 @@ const _downloadBRF = (brf) => {
                 {!ribbonCollapsed && activeRibbonTab === 'insert' && (
                   <div id="builder-ribbon-panel-insert" role="tabpanel" aria-labelledby="builder-ribbon-tab-insert" className="shrink-0 border-b border-slate-200 bg-white">
                     <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" aria-label="Insert tools">
+                      <fieldset className="flex min-w-[22rem] flex-[1.1] flex-wrap items-center gap-1.5 rounded border border-indigo-200 bg-indigo-50/60 px-2 py-1" aria-describedby="builder-structure-help">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-indigo-800">Document structure</legend>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-700">TOC depth
+                          <select value={tocDepth} onChange={(event) => setTocDepth(Math.max(1, Math.min(6, Number(event.target.value) || 3)))} className="h-7 rounded border border-indigo-300 bg-white px-1.5 text-[10px] text-slate-700" aria-label="Table of contents heading depth">
+                            {[1, 2, 3, 4, 5, 6].map((level) => <option key={level} value={level}>H1–H{level}</option>)}
+                          </select>
+                        </label>
+                        <button type="button" onClick={insertOrRefreshTableOfContents} className="h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800">Insert / refresh TOC</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('headings'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation" className="h-7 rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">Open outline</button>
+                        <details id="builder-document-templates" className="relative">
+                          <summary className="flex h-7 cursor-pointer list-none items-center rounded border border-indigo-400 bg-white px-2 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100">Templates</summary>
+                          <div className="absolute left-0 top-full z-[85] mt-1 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-300 bg-white p-2 shadow-2xl">
+                            <div className="flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
+                              <div><p className="text-[11px] font-black text-slate-800">Document templates</p><p className="text-[9px] text-slate-500">Applying one replaces the document after confirmation.</p></div>
+                              <button type="button" onClick={saveCurrentAsDocumentTemplate} className="rounded bg-indigo-700 px-2 py-1.5 text-[9px] font-bold text-white hover:bg-indigo-800">Save current as template</button>
+                            </div>
+                            <div className="mt-2 max-h-72 space-y-1.5 overflow-y-auto" aria-label="Available document templates">
+                              {documentTemplateGallery.map((templateOption) => (
+                                <div key={templateOption.id} className="rounded border border-slate-200 bg-slate-50 p-2">
+                                  <div className="flex items-start gap-2">
+                                    <div className="min-w-0 flex-1"><p className="truncate text-[10px] font-black text-slate-800">{templateOption.label}{templateOption.custom ? <span className="ml-1 rounded bg-indigo-100 px-1 py-0.5 text-[8px] font-bold uppercase text-indigo-700">Custom</span> : null}</p><p className="mt-0.5 text-[9px] leading-snug text-slate-500">{templateOption.description}</p></div>
+                                    <button type="button" onClick={() => applyDocumentTemplate(templateOption)} className="rounded bg-white px-2 py-1 text-[9px] font-bold text-indigo-800 ring-1 ring-indigo-300 hover:bg-indigo-100">Apply</button>
+                                  </div>
+                                  {templateOption.custom ? <button type="button" onClick={() => deleteCustomDocumentTemplate(templateOption.id)} className="mt-1 rounded px-1 py-0.5 text-[8px] font-bold text-rose-700 hover:bg-rose-100" aria-label={'Delete template ' + templateOption.label}>Delete saved template</button> : null}
+                                </div>
+                              ))}
+                            </div>
+                            <p className="mt-2 text-[9px] text-slate-500">Custom templates are saved on this device · {customDocumentTemplates.length}/8</p>
+                          </div>
+                        </details>
+                        <span id="builder-structure-help" className="w-full text-[9px] text-slate-500">The automatic table of contents follows live headings. Reorder full sections from the outline pane.</span>
+                      </fieldset>
                       <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-table-help">
                         <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Table</legend>
                         <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Body rows
@@ -5445,68 +7493,247 @@ const _downloadBRF = (brf) => {
                       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
                         <div>
                           <div className="text-[11px] font-black uppercase tracking-wider text-slate-700">Navigation</div>
-                          <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? `${headingOutline.length} heading${headingOutline.length === 1 ? '' : 's'}` : navigationPaneTab === 'sections' ? `${pageMetrics.documentSections.length} section${pageMetrics.documentSections.length === 1 ? '' : 's'}` : navigationPaneTab === 'comments' ? `${unresolvedReviewCommentCount} open / ${reviewComments.length} total` : `${pageMetrics.count} page${pageMetrics.count === 1 ? '' : 's'}`}</div>
+                          <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? `${headingOutline.length} heading${headingOutline.length === 1 ? '' : 's'}` : navigationPaneTab === 'sections' ? `${pageMetrics.documentSections.length} section${pageMetrics.documentSections.length === 1 ? '' : 's'}` : navigationPaneTab === 'comments' ? `${unresolvedReviewCommentCount} open / ${reviewComments.length} total` : navigationPaneTab === 'changes' ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : `${pageMetrics.count} page${pageMetrics.count === 1 ? '' : 's'}`}</div>
                         </div>
                         <button type="button" onClick={() => setShowNavigationPane(false)} aria-label="Close document navigation" className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800">×</button>
                       </div>
-                      <div className="grid grid-cols-4 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Navigation view">
-                        <button id="builder-navigation-tab-headings" type="button" role="tab" aria-selected={navigationPaneTab === 'headings'} aria-controls="builder-navigation-panel-headings" tabIndex={navigationPaneTab === 'headings' ? 0 : -1} onClick={() => setNavigationPaneTab('headings')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'headings')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'headings' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Headings</button>
-                        <button id="builder-navigation-tab-pages" type="button" role="tab" aria-selected={navigationPaneTab === 'pages'} aria-controls="builder-navigation-panel-pages" tabIndex={navigationPaneTab === 'pages' ? 0 : -1} onClick={() => setNavigationPaneTab('pages')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'pages')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'pages' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Pages</button>
-                        <button id="builder-navigation-tab-sections" type="button" role="tab" aria-selected={navigationPaneTab === 'sections'} aria-controls="builder-navigation-panel-sections" tabIndex={navigationPaneTab === 'sections' ? 0 : -1} onClick={() => setNavigationPaneTab('sections')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'sections')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'sections' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Sections</button>
-                        <button id="builder-navigation-tab-comments" type="button" role="tab" aria-selected={navigationPaneTab === 'comments'} aria-controls="builder-navigation-panel-comments" tabIndex={navigationPaneTab === 'comments' ? 0 : -1} onClick={() => setNavigationPaneTab('comments')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'comments')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'comments' ? 'bg-white text-amber-800 shadow-sm ring-1 ring-amber-300' : 'text-slate-600 hover:bg-white'}`}>Comments</button>
+                      <div className="grid grid-cols-5 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Navigation view">
+                        <button id="builder-navigation-tab-headings" type="button" role="tab" aria-selected={navigationPaneTab === 'headings'} aria-controls="builder-navigation-panel-headings" tabIndex={navigationPaneTab === 'headings' ? 0 : -1} onClick={() => setNavigationPaneTab('headings')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'headings')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'headings' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Headings</button>
+                        <button id="builder-navigation-tab-pages" type="button" role="tab" aria-selected={navigationPaneTab === 'pages'} aria-controls="builder-navigation-panel-pages" tabIndex={navigationPaneTab === 'pages' ? 0 : -1} onClick={() => setNavigationPaneTab('pages')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'pages')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'pages' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Pages</button>
+                        <button id="builder-navigation-tab-sections" type="button" role="tab" aria-selected={navigationPaneTab === 'sections'} aria-controls="builder-navigation-panel-sections" tabIndex={navigationPaneTab === 'sections' ? 0 : -1} onClick={() => setNavigationPaneTab('sections')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'sections')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'sections' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Sections</button>
+                        <button id="builder-navigation-tab-comments" type="button" role="tab" aria-selected={navigationPaneTab === 'comments'} aria-controls="builder-navigation-panel-comments" tabIndex={navigationPaneTab === 'comments' ? 0 : -1} onClick={() => setNavigationPaneTab('comments')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'comments')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'comments' ? 'bg-white text-amber-800 shadow-sm ring-1 ring-amber-300' : 'text-slate-600 hover:bg-white'}`}>Comments</button>
+                        <button id="builder-navigation-tab-changes" type="button" role="tab" aria-selected={navigationPaneTab === 'changes'} aria-controls="builder-navigation-panel-changes" tabIndex={navigationPaneTab === 'changes' ? 0 : -1} onClick={() => setNavigationPaneTab('changes')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'changes')} className={`rounded px-0.5 py-1.5 text-[9px] font-bold ${navigationPaneTab === 'changes' ? 'bg-white text-violet-800 shadow-sm ring-1 ring-violet-300' : 'text-slate-600 hover:bg-white'}`}>Changes</button>
                       </div>
                       {navigationPaneTab === 'headings' ? (
                         <nav id="builder-navigation-panel-headings" role="tabpanel" aria-labelledby="builder-navigation-tab-headings" aria-label="Document heading navigation" className="min-h-0 flex-1 overflow-y-auto p-2">
-                          {headingOutline.length ? headingOutline.map((heading) => (
-                            <button key={heading.index + '-' + heading.text} type="button" onClick={() => jumpToHeading(heading)} aria-current={activeHeadingIndex === heading.index ? 'location' : undefined}
-                              className={`block w-full truncate rounded-md px-2 py-1.5 text-left text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ${activeHeadingIndex === heading.index ? 'bg-indigo-100 font-bold text-indigo-800 ring-1 ring-indigo-200' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}
-                              style={{ paddingLeft: Math.min(30, 8 + (heading.level - 1) * 8) }} title={heading.text}>
-                              <span className="mr-1 text-[10px] font-bold text-slate-400">H{heading.level}</span>{heading.text}
-                            </button>
-                          )) : <p className="px-2 py-3 text-[11px] text-slate-500">Add headings to build a navigable document map.</p>}
+                          {headingOutline.length ? (
+                            <>
+                              <p className="mb-2 rounded bg-indigo-50 px-2 py-1.5 text-[9px] leading-snug text-indigo-800">Drag headings, or use the arrow buttons, to move a heading and all content beneath it. Nested headings stay with their section.</p>
+                              {headingOutline.map((heading) => (
+                                <div key={heading.index + '-' + heading.text} draggable={heading.movable}
+                                  onDragStart={(event) => {
+                                    if (!heading.movable) { event.preventDefault(); return; }
+                                    setDraggedHeadingIndex(heading.index);
+                                    if (event.dataTransfer) { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(heading.index)); }
+                                  }}
+                                  onDragEnd={() => setDraggedHeadingIndex(null)}
+                                  onDragOver={(event) => { if (draggedHeadingIndex != null && heading.movable) { event.preventDefault(); if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'; } }}
+                                  onDrop={(event) => {
+                                    event.preventDefault();
+                                    const transferred = event.dataTransfer?.getData('text/plain') || '';
+                                    const sourceIndex = draggedHeadingIndex != null ? draggedHeadingIndex : transferred ? Number(transferred) : null;
+                                    moveOutlineSection(sourceIndex, heading.index);
+                                  }}
+                                  className={`group mb-1 flex items-center gap-1 rounded-md border p-0.5 ${draggedHeadingIndex === heading.index ? 'border-indigo-500 bg-indigo-100 opacity-70' : activeHeadingIndex === heading.index ? 'border-indigo-300 bg-indigo-50' : 'border-transparent hover:border-slate-200 hover:bg-slate-50'} ${heading.movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                                  title={heading.movable ? 'Drag to reorder this heading section' : 'The document title is pinned'}>
+                                  <button type="button" onClick={() => jumpToHeading(heading)} aria-current={activeHeadingIndex === heading.index ? 'location' : undefined}
+                                    className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ${activeHeadingIndex === heading.index ? 'font-bold text-indigo-800' : 'text-slate-700 hover:text-indigo-700'}`}
+                                    style={{ paddingLeft: Math.min(30, 6 + (heading.level - 1) * 8) }}>
+                                    <span className="mr-1 text-[9px] font-bold text-slate-400">H{heading.level}</span>{heading.text}
+                                  </button>
+                                  {heading.movable ? (
+                                    <div className="flex shrink-0 items-center" role="group" aria-label={'Reorder ' + heading.text}>
+                                      <button type="button" onClick={() => moveOutlineSection(heading.index, heading.previousIndex)} disabled={heading.previousIndex == null} className="h-6 w-6 rounded text-[11px] font-black text-slate-600 hover:bg-indigo-100 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-25" aria-label={'Move ' + heading.text + ' up'} title="Move section up">↑</button>
+                                      <button type="button" onClick={() => moveOutlineSection(heading.index, heading.nextIndex)} disabled={heading.nextIndex == null} className="h-6 w-6 rounded text-[11px] font-black text-slate-600 hover:bg-indigo-100 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-25" aria-label={'Move ' + heading.text + ' down'} title="Move section down">↓</button>
+                                    </div>
+                                  ) : <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[8px] font-bold uppercase text-slate-500">Pinned</span>}
+                                </div>
+                              ))}
+                            </>
+                          ) : <p className="px-2 py-3 text-[11px] text-slate-500">Add headings to build a navigable document map.</p>}
                         </nav>
+                      ) : navigationPaneTab === 'changes' ? (
+                        <section id="builder-navigation-panel-changes" role="tabpanel" aria-labelledby="builder-navigation-tab-changes" aria-label="Tracked changes review" className="flex min-h-0 flex-1 flex-col">
+                          <div className="space-y-2 border-b border-violet-200 bg-violet-50 px-2 py-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button type="button" onClick={() => toggleTrackChanges()} aria-pressed={trackChangesEnabled} aria-keyshortcuts="Control+Shift+E" className={'h-8 rounded px-2.5 text-[11px] font-bold ' + (trackChangesEnabled ? 'bg-violet-700 text-white hover:bg-violet-800' : 'border border-violet-500 bg-white text-violet-800 hover:bg-violet-100')}>Tracking {trackChangesEnabled ? 'on' : 'off'}</button>
+                              <label className="ml-auto flex items-center gap-1 text-[10px] font-semibold text-violet-900">
+                                View
+                                <select value={trackedMarkupView} onChange={(event) => setTrackedMarkupView(event.target.value)} className="h-8 rounded border border-violet-400 bg-white px-1.5 text-[10px] font-bold text-violet-900" aria-label="Tracked changes markup view">
+                                  <option value="simple">Simple Markup</option>
+                                  <option value="all">All Markup</option>
+                                  <option value="none">No Markup</option>
+                                  <option value="original">Original</option>
+                                </select>
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-violet-800">
+                                Reviewer
+                                <input value={reviewerName} maxLength={80} onChange={(event) => setReviewerName(event.target.value.slice(0, 80))} onBlur={() => setReviewerName((value) => String(value || 'You').replace(/\s+/g, ' ').trim().slice(0, 80) || 'You')} className="mt-0.5 h-8 w-full rounded border border-violet-300 bg-white px-2 text-[11px] font-medium normal-case tracking-normal text-slate-800" aria-label="Reviewer name for new tracked changes" />
+                              </label>
+                              <label className="inline-flex h-8 cursor-pointer items-center gap-1 rounded border border-violet-300 bg-white px-2 text-[9px] font-bold text-violet-900">
+                                <input type="checkbox" checked={showRevisionBalloons} onChange={(event) => setShowRevisionBalloons(event.target.checked)} className="accent-violet-700" />
+                                Margin detail
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1" aria-label="Tracked change filters">
+                              <label className="text-[9px] font-bold text-violet-800">Type
+                                <select value={trackedChangeTypeFilter} onChange={(event) => setTrackedChangeTypeFilter(event.target.value)} className="mt-0.5 h-7 w-full rounded border border-violet-300 bg-white px-1 text-[9px] font-semibold text-slate-700">
+                                  <option value="all">All types</option>
+                                  <option value="text">Text</option>
+                                  <option value="format">Formatting</option>
+                                  <option value="paragraph">Paragraph</option>
+                                  <option value="structure">Structure</option>
+                                </select>
+                              </label>
+                              <label className="text-[9px] font-bold text-violet-800">Reviewer
+                                <select value={trackedChangeAuthorFilter} onChange={(event) => setTrackedChangeAuthorFilter(event.target.value)} className="mt-0.5 h-7 w-full rounded border border-violet-300 bg-white px-1 text-[9px] font-semibold text-slate-700">
+                                  <option value="all">Everyone</option>
+                                  {trackedChangeAuthors.map((author) => <option key={author} value={author}>{author}</option>)}
+                                </select>
+                              </label>
+                              <label className="text-[9px] font-bold text-violet-800">When
+                                <select value={trackedChangeDateFilter} onChange={(event) => setTrackedChangeDateFilter(event.target.value)} className="mt-0.5 h-7 w-full rounded border border-violet-300 bg-white px-1 text-[9px] font-semibold text-slate-700">
+                                  <option value="all">Any time</option>
+                                  <option value="today">Last 24 hours</option>
+                                  <option value="week">Last 7 days</option>
+                                </select>
+                              </label>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1">
+                              <button type="button" disabled={!visibleTrackedChanges.length} onClick={() => navigateTrackedChange(-1)} className="h-7 rounded border border-violet-300 bg-white px-2 text-[10px] font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-40" aria-label="Previous filtered tracked change">Previous</button>
+                              <button type="button" disabled={!visibleTrackedChanges.length} onClick={() => navigateTrackedChange(1)} className="h-7 rounded border border-violet-300 bg-white px-2 text-[10px] font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-40" aria-label="Next filtered tracked change">Next</button>
+                              <button type="button" disabled={!visibleTrackedChanges.length} onClick={() => setSelectedTrackedChangeIds((selected) => visibleTrackedChanges.every((change) => selected.includes(change.id)) ? selected.filter((id) => !visibleTrackedChanges.some((change) => change.id === id)) : Array.from(new Set([...selected, ...visibleTrackedChanges.map((change) => change.id)])))} className="h-7 rounded border border-violet-300 bg-white px-2 text-[9px] font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-40">{visibleTrackedChanges.length > 0 && visibleTrackedChanges.every((change) => selectedTrackedChangeIds.includes(change.id)) ? 'Clear visible' : 'Select visible'}</button>
+                              <span className="ml-auto text-[10px] font-semibold text-violet-800">{visibleTrackedChanges.length} of {pendingTrackedChangeCount}</span>
+                            </div>
+                            <details className="rounded border border-violet-200 bg-white px-2 py-1">
+                              <summary className="cursor-pointer text-[9px] font-black uppercase tracking-wide text-violet-800">Revision summary</summary>
+                              <div className="mt-1 grid grid-cols-5 gap-1 text-center text-[8px] text-slate-600">
+                                <span><strong className="block text-emerald-700">{trackedChangeSummary.insert}</strong>Insert</span>
+                                <span><strong className="block text-red-700">{trackedChangeSummary.delete}</strong>Delete</span>
+                                <span><strong className="block text-sky-700">{trackedChangeSummary.format}</strong>Format</span>
+                                <span><strong className="block text-amber-700">{trackedChangeSummary.paragraph}</strong>Paragraph</span>
+                                <span><strong className="block text-violet-700">{trackedChangeSummary.structure}</strong>Structure</span>
+                              </div>
+                              <p className="mt-1 text-[9px] leading-relaxed text-slate-600">{trackedChangeAuthors.length || 0} reviewer{trackedChangeAuthors.length === 1 ? '' : 's'} · Final exports use the accepted view and omit review markup.</p>
+                            </details>
+                            <p className="text-[9px] leading-relaxed text-violet-800">Tracks text, inline and named formatting, paragraph layout, lists, table shape, and explicit page or section changes. Original view restores the prior revision state and returns to All Markup when editing resumes.</p>
+                          </div>
+                          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2" aria-live="polite">
+                            {visibleTrackedChanges.length ? visibleTrackedChanges.map((change) => {
+                              const active = activeTrackedChangeId === change.id;
+                              const selected = selectedTrackedChangeIds.includes(change.id);
+                              const insertion = change.type === 'insert';
+                              const deletion = change.type === 'delete';
+                              const category = insertion ? 'Insertion' : deletion ? 'Deletion' : change.type === 'paragraph' ? 'Paragraph' : change.type === 'structure' ? 'Structure' : 'Formatting';
+                              const tone = insertion ? 'emerald' : deletion ? 'red' : change.type === 'paragraph' ? 'amber' : change.type === 'structure' ? 'violet' : 'sky';
+                              const borderClass = active ? 'border-violet-500 bg-violet-50 ring-2 ring-violet-200' : tone === 'emerald' ? 'border-emerald-200 bg-white' : tone === 'red' ? 'border-red-200 bg-white' : tone === 'amber' ? 'border-amber-200 bg-white' : tone === 'sky' ? 'border-sky-200 bg-white' : 'border-violet-200 bg-white';
+                              const headingClass = tone === 'emerald' ? 'text-emerald-700' : tone === 'red' ? 'text-red-700' : tone === 'amber' ? 'text-amber-700' : tone === 'sky' ? 'text-sky-700' : 'text-violet-700';
+                              const quoteClass = tone === 'emerald' ? 'bg-emerald-50 text-emerald-900' : tone === 'red' ? 'bg-red-50 text-red-900 line-through' : tone === 'amber' ? 'bg-amber-50 text-amber-950' : tone === 'sky' ? 'bg-sky-50 text-sky-950' : 'bg-violet-50 text-violet-950';
+                              const reviewerIdentity = _builderReviewerIdentity(change.author);
+                              return (
+                                <article key={change.id} id={'builder-change-' + change.id} aria-labelledby={'builder-change-title-' + change.id} className={'rounded-lg border p-2 shadow-sm ' + borderClass} style={{ borderLeftColor: reviewerIdentity.accent, borderLeftWidth: 4 }}>
+                                  <div className="flex items-start gap-1">
+                                    <input type="checkbox" checked={selected} onChange={(event) => setSelectedTrackedChangeIds((ids) => event.target.checked ? Array.from(new Set([...ids, change.id])) : ids.filter((id) => id !== change.id))} className="mt-2 accent-violet-700" aria-label={'Select ' + change.label} />
+                                    <button type="button" onClick={() => jumpToTrackedChange(change.id)} aria-current={active ? 'location' : undefined} aria-label={'Go to ' + category.toLowerCase() + ': ' + change.text} className="min-w-0 flex-1 rounded px-1 py-1 text-left hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600">
+                                      <span className="flex items-center justify-between gap-2">
+                                        <h3 id={'builder-change-title-' + change.id} className={'text-[9px] font-black uppercase tracking-wider ' + headingClass}>{category} {change.index + 1}</h3>
+                                        <time className="text-[9px] font-medium text-slate-500" dateTime={change.at || undefined}>{change.at && !Number.isNaN(Date.parse(change.at)) ? new Date(change.at).toLocaleString() : 'Recently'}</time>
+                                      </span>
+                                      <p className="mt-1 text-[10px] font-bold text-slate-700">{change.label}</p>
+                                      <blockquote className={'mt-1 line-clamp-4 break-words rounded px-2 py-1.5 text-[11px] leading-relaxed ' + quoteClass}>"{change.text}"</blockquote>
+                                      <span className="mt-1 flex items-center gap-1 text-[9px] font-semibold" style={{ color: reviewerIdentity.ink }}><span className="flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-black" style={{ backgroundColor: reviewerIdentity.soft, border: '1px solid ' + reviewerIdentity.accent }} aria-hidden="true">{reviewerIdentity.initials}</span>By {reviewerIdentity.name}</span>
+                                    </button>
+                                  </div>
+                                  <div className="mt-2 flex gap-1">
+                                    <button type="button" onClick={() => applyTrackedChangeDecision(change.id, 'accept')} className="flex-1 rounded border border-emerald-400 bg-white px-2 py-1 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50">Accept</button>
+                                    <button type="button" onClick={() => applyTrackedChangeDecision(change.id, 'reject')} className="flex-1 rounded border border-red-300 bg-white px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50">Reject</button>
+                                  </div>
+                                </article>
+                              );
+                            }) : (
+                              <div className="rounded border border-dashed border-violet-300 bg-violet-50 px-3 py-4 text-center text-[11px] text-violet-900">
+                                <p>{trackedChanges.length ? 'No changes match the current filters.' : 'No pending changes.'}</p>
+                                {trackedChanges.length > 0 && <button type="button" onClick={() => { setTrackedChangeTypeFilter('all'); setTrackedChangeAuthorFilter('all'); setTrackedChangeDateFilter('all'); }} className="mt-2 rounded border border-violet-400 bg-white px-2.5 py-1.5 font-bold text-violet-800 hover:bg-violet-100">Clear filters</button>}
+                                {!trackChangesEnabled && !trackedChanges.length && <button type="button" onClick={() => toggleTrackChanges(true)} className="mt-2 rounded bg-violet-700 px-2.5 py-1.5 font-bold text-white hover:bg-violet-800">Turn on Track Changes</button>}
+                              </div>
+                            )}
+                          </div>
+                          {!!trackedChanges.length && (
+                            <div className="grid grid-cols-2 gap-1 border-t border-slate-200 bg-slate-50 p-2">
+                              <button type="button" disabled={!selectedVisibleTrackedChanges.length} onClick={() => applySelectedTrackedChanges('accept')} className="rounded border border-emerald-500 bg-white px-2 py-1.5 text-[9px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40">Accept selected ({selectedVisibleTrackedChanges.length})</button>
+                              <button type="button" disabled={!selectedVisibleTrackedChanges.length} onClick={() => applySelectedTrackedChanges('reject')} className="rounded border border-red-400 bg-white px-2 py-1.5 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40">Reject selected ({selectedVisibleTrackedChanges.length})</button>
+                              <button type="button" disabled={!visibleTrackedChanges.length} onClick={() => applyAllTrackedChanges('accept')} className="rounded border border-emerald-500 bg-white px-2 py-1.5 text-[9px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40">Accept visible ({visibleTrackedChanges.length})</button>
+                              <button type="button" disabled={!visibleTrackedChanges.length} onClick={() => applyAllTrackedChanges('reject')} className="rounded border border-red-400 bg-white px-2 py-1.5 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40">Reject visible ({visibleTrackedChanges.length})</button>
+                            </div>
+                          )}
+                        </section>
                       ) : navigationPaneTab === 'comments' ? (
                         <section id="builder-navigation-panel-comments" role="tabpanel" aria-labelledby="builder-navigation-tab-comments" aria-label="Document comments" className="flex min-h-0 flex-1 flex-col">
-                          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-amber-50 px-2 py-2">
-                            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white hover:bg-amber-700">New comment</button>
-                            <label className="ml-auto inline-flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-amber-900">
-                              <input type="checkbox" checked={showResolvedComments} onChange={(event) => setShowResolvedComments(event.target.checked)} className="accent-amber-700" />
-                              Show resolved
-                            </label>
+                          <div className="space-y-2 border-b border-slate-200 bg-amber-50 px-2 py-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white hover:bg-amber-700">New comment</button>
+                              <label className="ml-auto inline-flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-amber-900">
+                                <input type="checkbox" checked={showResolvedComments} onChange={(event) => setShowResolvedComments(event.target.checked)} className="accent-amber-700" />
+                                Show resolved
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1">
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-amber-900">Posting as
+                                <input value={reviewerName} maxLength={80} onChange={(event) => setReviewerName(event.target.value.slice(0, 80))} onBlur={() => setReviewerName((value) => _builderNormalizeReviewerName(value, 'You'))} className="mt-0.5 h-7 w-full rounded border border-amber-300 bg-white px-2 text-[10px] font-medium normal-case tracking-normal text-slate-800" aria-label="Reviewer name for comments" />
+                              </label>
+                              <label className="text-[9px] font-bold uppercase tracking-wide text-amber-900">Reviewer
+                                <select value={commentAuthorFilter} onChange={(event) => setCommentAuthorFilter(event.target.value)} className="mt-0.5 h-7 w-full rounded border border-amber-300 bg-white px-1 text-[10px] font-semibold normal-case tracking-normal text-slate-700" aria-label="Filter comments by reviewer">
+                                  <option value="all">Everyone</option>
+                                  {reviewCommentAuthors.map((author) => <option key={author} value={author}>{author}</option>)}
+                                </select>
+                              </label>
+                            </div>
+                            <p className="text-[9px] text-amber-800">{visibleReviewComments.length} shown · {unresolvedReviewCommentCount} open · replies automatically reopen resolved threads</p>
                           </div>
                           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2" aria-live="polite">
                             {reviewComments.length ? (
                               visibleReviewComments.length ? visibleReviewComments.map((comment) => {
                                 const active = activeCommentId === comment.id;
+                                const topicIdentity = _builderReviewerIdentity(comment.thread[0]?.author);
                                 return (
-                                  <article key={comment.id} id={`builder-comment-${comment.id}`} aria-labelledby={`builder-comment-title-${comment.id}`} className={`rounded-lg border p-2 shadow-sm ${active ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200' : comment.resolved ? 'border-slate-200 bg-slate-50' : 'border-amber-200 bg-white'}`}>
+                                  <article key={comment.id} id={`builder-comment-${comment.id}`} aria-labelledby={`builder-comment-title-${comment.id}`} className={`rounded-lg border p-2 shadow-sm ${active ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200' : comment.resolved ? 'border-slate-200 bg-slate-50' : 'border-amber-200 bg-white'}`} style={{ borderLeftColor: topicIdentity.accent, borderLeftWidth: 4 }}>
                                     <div className="flex items-start gap-2">
+                                      <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[9px] font-black" style={{ backgroundColor: topicIdentity.soft, color: topicIdentity.ink, border: '1px solid ' + topicIdentity.accent }} aria-hidden="true">{topicIdentity.initials}</span>
                                       <button type="button" onClick={() => jumpToReviewComment(comment.id)} aria-current={active ? 'location' : undefined} aria-label={`Go to commented text: ${comment.quote}`} className="min-w-0 flex-1 rounded px-1 py-1 text-left hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
-                                        <h3 id={`builder-comment-title-${comment.id}`} className="text-[9px] font-black uppercase tracking-wider text-amber-800">{comment.resolved ? 'Resolved comment' : `Comment ${comment.index + 1}`}</h3>
+                                        <h3 id={`builder-comment-title-${comment.id}`} className="text-[9px] font-black uppercase tracking-wider text-amber-800">{comment.resolved ? 'Resolved comment' : `Comment ${comment.index + 1}`} · {comment.thread.length} message{comment.thread.length === 1 ? '' : 's'}</h3>
                                         <blockquote className="mt-0.5 line-clamp-3 break-words text-[11px] font-semibold text-slate-700">"{comment.quote}"</blockquote>
                                       </button>
                                       <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${comment.resolved ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-800'}`}>{comment.resolved ? 'Resolved' : 'Open'}</span>
                                     </div>
                                     <ol className="mt-2 space-y-1.5">
-                                      {comment.thread.map((message, messageIndex) => (
-                                        <li key={message.id + '-' + messageIndex} className="rounded border border-slate-200 bg-white px-2 py-1.5">
-                                          <div className="flex items-center justify-between gap-2 text-[9px] font-bold uppercase tracking-wide text-slate-500">
-                                            <span>{messageIndex === 0 ? 'Comment' : `Reply ${messageIndex}`}</span>
-                                            <time dateTime={message.at || undefined}>{message.at && !Number.isNaN(Date.parse(message.at)) ? new Date(message.at).toLocaleString() : 'Recently'}</time>
-                                          </div>
-                                          <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-700">{message.text}</p>
-                                        </li>
-                                      ))}
+                                      {comment.thread.map((message, messageIndex) => {
+                                        const identity = _builderReviewerIdentity(message.author);
+                                        return (
+                                          <li key={message.id + '-' + messageIndex} className="rounded border border-slate-200 bg-white px-2 py-1.5" style={{ borderLeftColor: identity.accent, borderLeftWidth: 3 }}>
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[8px] font-black" style={{ backgroundColor: identity.soft, color: identity.ink, border: '1px solid ' + identity.accent }} aria-hidden="true">{identity.initials}</span>
+                                              <strong className="min-w-0 flex-1 truncate text-[10px]" style={{ color: identity.ink }}>{identity.name}</strong>
+                                              <span className="text-[8px] font-black uppercase tracking-wide text-slate-400">{messageIndex === 0 ? 'Topic' : `Reply ${messageIndex}`}</span>
+                                            </div>
+                                            <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-700">{message.text}</p>
+                                            <time className="mt-1 block text-right text-[8px] font-medium text-slate-400" dateTime={message.at || undefined}>{message.at && !Number.isNaN(Date.parse(message.at)) ? new Date(message.at).toLocaleString() : 'Recently'}</time>
+                                          </li>
+                                        );
+                                      })}
                                     </ol>
+                                    {replyingCommentId === comment.id && (
+                                      <form className="mt-2 rounded border border-amber-300 bg-amber-50 p-2" onSubmit={(event) => { event.preventDefault(); submitReviewCommentReply(comment.id); }}>
+                                        <label className="text-[9px] font-black uppercase tracking-wide text-amber-900" htmlFor={`builder-comment-reply-${comment.id}`}>Reply as {_builderNormalizeReviewerName(reviewerName, 'You')}</label>
+                                        <textarea id={`builder-comment-reply-${comment.id}`} value={commentReplyDraft} maxLength={1200} rows={3} onChange={(event) => setCommentReplyDraft(event.target.value.slice(0, 1200))} className="mt-1 w-full resize-y rounded border border-amber-300 bg-white p-2 text-[11px] leading-relaxed text-slate-800" placeholder="Write a reply…" />
+                                        <div className="mt-1 flex items-center gap-1"><span className="text-[8px] text-slate-500">{commentReplyDraft.length}/1200</span><button type="button" onClick={() => { setReplyingCommentId(''); setCommentReplyDraft(''); }} className="ml-auto rounded px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-200">Cancel</button><button type="submit" disabled={!_builderNormalizeCommentMessage(commentReplyDraft)} className="rounded bg-amber-700 px-2 py-1 text-[10px] font-bold text-white hover:bg-amber-800 disabled:opacity-40">Post reply</button></div>
+                                      </form>
+                                    )}
                                     <div className="mt-2 flex flex-wrap gap-1">
-                                      <button type="button" onClick={() => replyReviewComment(comment.id)} className="rounded border border-amber-400 bg-white px-2 py-1 text-[10px] font-bold text-amber-800 hover:bg-amber-50">Reply</button>
-                                      <button type="button" onClick={() => editReviewComment(comment.id)} className="rounded border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Edit</button>
+                                      <button type="button" onClick={() => replyReviewComment(comment.id)} aria-expanded={replyingCommentId === comment.id} aria-controls={`builder-comment-reply-${comment.id}`} className="rounded border border-amber-400 bg-white px-2 py-1 text-[10px] font-bold text-amber-800 hover:bg-amber-50">{replyingCommentId === comment.id ? 'Cancel reply' : 'Reply'}</button>
+                                      <button type="button" onClick={() => editReviewComment(comment.id)} className="rounded border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Edit topic</button>
                                       <button type="button" onClick={() => toggleReviewCommentResolved(comment.id)} className="rounded border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">{comment.resolved ? 'Reopen' : 'Resolve'}</button>
                                       <button type="button" onClick={() => deleteReviewComment(comment.id)} className="ml-auto rounded px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50">Delete</button>
                                     </div>
                                   </article>
                                 );
-                              }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-[11px] text-slate-600">All comments are resolved. Turn on <strong>Show resolved</strong> to review them.</p>
+                              }) : (
+                                <div className="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-[11px] text-slate-600">
+                                  <p>{commentAuthorFilter !== 'all' ? 'No comments match this reviewer.' : 'All comments are resolved.'}</p>
+                                  <button type="button" onClick={() => { setCommentAuthorFilter('all'); setShowResolvedComments(true); }} className="mt-2 rounded border border-amber-400 bg-white px-2 py-1 font-bold text-amber-800 hover:bg-amber-50">Show all comments</button>
+                                </div>
+                              )
                             ) : <p className="rounded border border-dashed border-amber-300 bg-amber-50 px-3 py-4 text-center text-[11px] text-amber-900">Select text in the document, then choose <strong>New comment</strong> or press Ctrl+Alt+M.</p>}
                           </div>
                         </section>
@@ -5586,6 +7813,7 @@ const _downloadBRF = (brf) => {
                         syncPageElementsFromDocument();
                         refreshDocumentStats();
                         refreshReviewComments();
+                        refreshTrackedChanges();
                         refreshActiveHeading();
                         refreshPageMetrics();
                         applyEditorZoom(editorZoom);
@@ -5603,22 +7831,30 @@ const _downloadBRF = (brf) => {
                           refreshPageMetrics();
                           refreshSelectionStatistics();
                           refreshActiveReviewComment();
+                          refreshActiveTrackedChange();
                         };
                         const _syncFormatting = () => refreshFormattingState();
                         const _syncActiveHeading = () => refreshActiveHeading();
                         const _syncPageMetrics = () => { refreshActiveHeading(); refreshPageMetrics(); };
-                        const _activateReviewComment = (event) => {
+                        const _activateReviewMarker = (event) => {
                           try {
-                            const marker = event.target?.closest?.(_BUILDER_COMMENT_SELECTOR);
-                            const id = marker?.getAttribute?.('data-allo-comment-id') || '';
-                            if (!id) return;
-                            setActiveCommentId(id);
                             const hostDoc = window.parent && window.parent.document;
-                            hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-comment', { detail: { id } }));
+                            const commentMarker = event.target?.closest?.(_BUILDER_COMMENT_SELECTOR);
+                            const commentId = commentMarker?.getAttribute?.('data-allo-comment-id') || '';
+                            if (commentId) {
+                              setActiveCommentId(commentId);
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-comment', { detail: { id: commentId } }));
+                            }
+                            const changeMarker = event.target?.closest?.(_BUILDER_CHANGE_SELECTOR);
+                            const changeId = changeMarker?.getAttribute?.('data-allo-change-id') || '';
+                            if (changeId) {
+                              setActiveTrackedChangeId(changeId);
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-change', { detail: { id: changeId } }));
+                            }
                           } catch (_) {}
                         };
                         doc.addEventListener('selectionchange', _rememberSelection);
-                        doc.addEventListener('click', _activateReviewComment);
+                        doc.addEventListener('click', _activateReviewMarker);
                         doc.addEventListener('keyup', _syncFormatting);
                         doc.addEventListener('mouseup', _syncFormatting);
                         doc.addEventListener('scroll', _syncPageMetrics, true);
@@ -5642,12 +7878,47 @@ const _downloadBRF = (brf) => {
                         };
                         const _insertSanitized = (e, dt) => {
                           const html = dt && dt.getData && dt.getData('text/html');
+                          const plain = dt && dt.getData && dt.getData('text/plain');
+                          if (doc.body?.getAttribute('data-allo-track-changes') === '1') {
+                            let value = String(plain || '');
+                            if (!value && html) {
+                              try { value = new DOMParser().parseFromString('<body>' + _sanitizeFragment(html) + '</body>', 'text/html').body.textContent || ''; } catch (_) {}
+                            }
+                            if (!value) {
+                              if (html) {
+                                e.preventDefault();
+                                try { doc.execCommand('insertHTML', false, _sanitizeFragment(html)); } catch (_) {}
+                              }
+                              return;
+                            }
+                            e.preventDefault();
+                            const result = _builderTrackTextInsertion(doc, value);
+                            if (!result.ok && result.error) {
+                              const hostDoc = window.parent && window.parent.document;
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-track-changes-info', { detail: { message: result.error } }));
+                            }
+                            return;
+                          }
                           if (!html) return; // plain-text paste/drop is safe — native handling
                           e.preventDefault();
                           try { doc.execCommand('insertHTML', false, _sanitizeFragment(html)); } catch (_) {}
                         };
                         doc.addEventListener('paste', (e) => { try { _insertSanitized(e, e.clipboardData); } catch (_) {} }, true);
                         doc.addEventListener('drop', (e) => { try { _insertSanitized(e, e.dataTransfer); } catch (_) {} }, true);
+                        doc.addEventListener('beforeinput', (event) => {
+                          try {
+                            if (doc.body?.getAttribute('data-allo-tracked-view') === 'original') {
+                              _builderSetTrackedMarkupView(doc, 'all');
+                              const hostDoc = window.parent && window.parent.document;
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-markup-view', { detail: { view: 'all' } }));
+                            }
+                            const result = _builderHandleTrackedBeforeInput(doc, event);
+                            if (result.blocked && result.error) {
+                              const hostDoc = window.parent && window.parent.document;
+                              hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-track-changes-info', { detail: { message: result.error } }));
+                            }
+                          } catch (_) {}
+                        }, true);
                         // WYSIWYG edit capture (builder-review A1, capture half, 2026-07-01).
                         // designMode edits previously lived ONLY in this iframe's DOM — Save
                         // Project / export-from-history regenerated from history and silently
@@ -5659,10 +7930,11 @@ const _downloadBRF = (brf) => {
                         const _captureEdits = () => {
                           try {
                             const capturedAt = Date.now();
-                            const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-                            window.__alloBuilderEditedPack = { html: fullHtml, at: capturedAt };
+                            const liveHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
                             const clean = getCleanBuilderDocument();
-                            const savedLocally = persistLocalDraft(clean?.html || fullHtml, capturedAt, 'Auto-save');
+                            const fullHtml = clean?.html || liveHtml;
+                            window.__alloBuilderEditedPack = { html: fullHtml, at: capturedAt };
+                            const savedLocally = persistLocalDraft(fullHtml, capturedAt, 'Auto-save');
                             if (mountedRef.current) {
                               setDraftCaptureState(savedLocally ? 'saved' : 'captured');
                             }
@@ -5670,6 +7942,7 @@ const _downloadBRF = (brf) => {
                         };
                         doc.addEventListener('input', () => {
                           try {
+                            _builderRefreshAdvancedAfterSnapshots(doc);
                             if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
                             if (mountedRef.current) setDraftCaptureState('capturing');
                             refreshFormattingState();
@@ -5683,6 +7956,7 @@ const _downloadBRF = (brf) => {
                             }
                               refreshDocumentStats();
                             refreshReviewComments();
+                            refreshTrackedChanges();
                             refreshActiveHeading();
                             refreshPageMetrics();
                             refreshTableContext();
@@ -5703,6 +7977,7 @@ const _downloadBRF = (brf) => {
                       <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
                       {draftCaptureState === 'capturing' ? 'Capturing changes…' : draftCaptureState === 'saved' ? 'Saved on this device' : draftCaptureState === 'restored' ? 'Local draft restored' : draftCaptureState === 'captured' ? 'Draft captured in this session' : 'Ready'}
                     </span>
+                    <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls="document-builder-navigation" className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title="Open tracked changes review">Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
                     <div className="relative">
                       <button ref={wordCountButtonRef} type="button" onClick={(event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event)} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
                       {showWordCountDetails && (
@@ -5768,7 +8043,7 @@ const _downloadBRF = (brf) => {
                       <input type="range" min="50" max="200" step="5" value={editorZoom} onChange={(event) => setCustomEditorZoom(Number(event.target.value))} className="w-24 accent-indigo-600" aria-label="Editor zoom" aria-valuetext={`${editorZoomMode === 'custom' ? '' : editorZoomMode === 'fit-width' ? 'Fit width, ' : 'Fit page, '}${editorZoom} percent`} />
                       <button type="button" onClick={() => setCustomEditorZoom((value) => value + 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom in" title="Zoom in">+</button>
                       <button type="button" onClick={() => setCustomEditorZoom(100)} className="min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100" aria-label="Reset editor zoom to 100 percent" title="Reset editor zoom">{editorZoom}%</button>
-                      <button type="button" onClick={resetBuilderViewPreferences} className="rounded px-1.5 py-1 font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700" aria-label="Reset Builder view preferences" title="Reset zoom, page view, ribbon, and navigation">Reset view</button>
+                      <button type="button" onClick={resetBuilderViewPreferences} className="rounded px-1.5 py-1 font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700" aria-label="Reset Builder view preferences" title="Reset zoom, page view, ribbon, navigation, and review display">Reset view</button>
                     </div>
                   </div>
                 </div>
@@ -5905,10 +8180,28 @@ async function updateExportPreview(deps) {
         [data-allo-tab-field] { min-width:.25in; }
         ::selection { background: #c7d2fe; }
         ::highlight(allo-builder-find) { background: #fde68a; color: #713f12; }
-        mark[data-allo-comment-id] { padding:0;background:#fef3c7;color:inherit;border-bottom:2px solid #d97706;border-radius:2px;cursor:pointer; }
-        mark[data-allo-comment-resolved="1"] { background:#f1f5f9;border-bottom:1px dotted #64748b; }
-        mark[data-allo-comment-active="1"] { background:#fde68a;box-shadow:0 0 0 2px #f59e0b; }
-        @media print { mark[data-allo-comment-id] { padding:0 !important;background:transparent !important;color:inherit !important;border:0 !important;box-shadow:none !important; } }
+        mark[data-allo-comment-id] { padding:0;background:var(--allo-reviewer-soft,#fef3c7);color:inherit;border-bottom:2px solid var(--allo-reviewer-accent,#d97706);border-radius:2px;cursor:pointer; }
+        mark[data-allo-comment-resolved="1"] { background:#f1f5f9;border-bottom:1px dotted var(--allo-reviewer-accent,#64748b); }
+        mark[data-allo-comment-active="1"] { background:var(--allo-reviewer-soft,#fde68a);box-shadow:0 0 0 2px var(--allo-reviewer-accent,#f59e0b); }
+        ins[data-allo-change-id] { padding:0 .05em;background:#dcfce7;color:#166534;border-bottom:2px solid var(--allo-reviewer-accent,#16a34a);text-decoration:none;border-radius:2px;cursor:pointer; }
+        del[data-allo-change-id] { padding:0 .05em;background:#fee2e2;color:#b91c1c;text-decoration:line-through 2px;border-bottom:2px dotted var(--allo-reviewer-accent,#dc2626);border-radius:2px;cursor:pointer; }
+        [data-allo-change-kind][data-allo-change-id] { position:relative;cursor:pointer;border-radius:2px; }
+        [data-allo-change-type="format"],[data-allo-change-type="paragraph"],[data-allo-change-type="structure"] { outline:2px dashed var(--allo-reviewer-accent,#7c3aed);outline-offset:2px; }
+        body:not([data-allo-tracked-view="original"]) [data-allo-change-kind="structure-delete"] { display:block !important;min-height:1.4em !important;height:1.4em !important;margin:.35em 0 !important;border:2px dashed #dc2626 !important;background:#fee2e2 !important;break-before:auto !important;page-break-before:auto !important; }
+        body:not([data-allo-tracked-view="original"]) [data-allo-change-kind="structure-delete"]::before { content:attr(data-allo-change-label);display:block;padding:0 .35em;color:#991b1b;font:700 9px/1.4em system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em; }
+        [data-allo-change-active="1"] { box-shadow:0 0 0 3px var(--allo-reviewer-accent,#7c3aed) !important;position:relative;z-index:2; }
+        body[data-allo-review-balloons="1"] [data-allo-change-active="1"]::after { content:attr(data-allo-change-label) ' · ' attr(data-allo-change-author);position:absolute;left:calc(100% + .75rem);top:0;z-index:10;width:9rem;max-width:9rem;padding:.35rem .45rem;border:1px solid var(--allo-reviewer-accent,#c4b5fd);border-radius:.4rem;background:var(--allo-reviewer-soft,#f5f3ff);color:var(--allo-reviewer-ink,#4c1d95);box-shadow:0 4px 12px rgba(76,29,149,.18);font:700 9px/1.25 system-ui,sans-serif;text-decoration:none;white-space:normal; }
+        body[data-allo-tracked-view="simple"] ins[data-allo-change-id] { padding:0;background:transparent;color:inherit;border-bottom:1px dotted #7c3aed;box-shadow:none; }
+        body[data-allo-tracked-view="simple"] del[data-allo-change-id] { display:none; }
+        body[data-allo-tracked-view="simple"] [data-allo-change-kind][data-allo-change-id] { outline:0;box-shadow:inset 3px 0 0 #7c3aed; }
+        body[data-allo-tracked-view="none"] ins[data-allo-change-id] { padding:0;background:transparent;color:inherit;border:0;box-shadow:none;text-decoration:none; }
+        body[data-allo-tracked-view="none"] del[data-allo-change-id] { display:none; }
+        body[data-allo-tracked-view="none"] [data-allo-change-kind][data-allo-change-id] { outline:0;box-shadow:none;cursor:inherit; }
+        body[data-allo-tracked-view="none"] [data-allo-change-kind][data-allo-change-id]::before,body[data-allo-tracked-view="none"] [data-allo-change-kind][data-allo-change-id]::after { display:none; }
+        body[data-allo-tracked-view="original"] ins[data-allo-change-id],body[data-allo-tracked-view="original"] [data-allo-change-kind="structure-insert"] { display:none; }
+        body[data-allo-tracked-view="original"] del[data-allo-change-id] { padding:0;background:transparent;color:inherit;border:0;box-shadow:none;text-decoration:none; }
+        body[data-allo-tracked-view="original"] [data-allo-change-kind][data-allo-change-id] { outline:1px dotted #94a3b8;outline-offset:2px;box-shadow:none; }
+        @media print { mark[data-allo-comment-id],ins[data-allo-change-id],[data-allo-change-kind][data-allo-change-id] { padding:0 !important;background:transparent !important;color:inherit !important;border:0 !important;outline:0 !important;box-shadow:none !important;text-decoration:none !important; } del[data-allo-change-id],[data-allo-change-kind="structure-delete"] { display:none !important; } [data-allo-change-kind][data-allo-change-id]::before,[data-allo-change-kind][data-allo-change-id]::after { display:none !important; } }
       `;
       editStyle.setAttribute('data-allo-base-css', _baseEditCss);
       const _editorZoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
@@ -6003,6 +8296,14 @@ async function updateExportPreview(deps) {
           const insertedBreak = _builderInsertDocumentBreak(doc, 'page');
           if (insertedBreak) { e.preventDefault(); e.stopPropagation(); return; }
         }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && (e.key === 'e' || e.key === 'E')) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-toggle-track-changes'));
+          } catch (_) {}
+          return;
+        }
         if ((e.ctrlKey || e.metaKey) && e.altKey && !e.shiftKey && (e.key === 'm' || e.key === 'M')) {
           try {
             e.preventDefault();
@@ -6019,6 +8320,17 @@ async function updateExportPreview(deps) {
             const _hostDoc = window.parent && window.parent.document;
             const _commentId = _focusedComment.getAttribute('data-allo-comment-id') || '';
             if (_hostDoc && _commentId) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-comment', { detail: { id: _commentId } }));
+          } catch (_) {}
+          return;
+        }
+        const _focusedChange = e.target?.closest?.(_BUILDER_CHANGE_SELECTOR);
+        if ((e.key === 'Enter' || e.key === ' ') && _focusedChange) {
+          try {
+            e.preventDefault();
+            e.stopPropagation();
+            const _hostDoc = window.parent && window.parent.document;
+            const _changeId = _focusedChange.getAttribute('data-allo-change-id') || '';
+            if (_hostDoc && _changeId) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-change', { detail: { id: _changeId } }));
           } catch (_) {}
           return;
         }
@@ -6042,19 +8354,46 @@ async function updateExportPreview(deps) {
           return;
         }
         if (e.ctrlKey || e.metaKey) {
+          const _resumeKeyboardReviewView = () => {
+            if (doc.body?.getAttribute('data-allo-tracked-view') !== 'original') return;
+            _builderSetTrackedMarkupView(doc, 'all');
+            try {
+              const _hostDoc = window.parent && window.parent.document;
+              _hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-markup-view', { detail: { view: 'all' } }));
+            } catch (_) {}
+          };
+          const _runKeyboardFormat = (command, value, label, mode) => {
+            _resumeKeyboardReviewView();
+            const tracking = doc.body?.getAttribute('data-allo-track-changes') === '1';
+            if (!tracking) return doc.execCommand(command, false, value);
+            const result = mode === 'structure'
+              ? _builderTrackStructureReplacementCommand(doc, command, value, label, () => doc.execCommand(command, false, value))
+              : mode === 'block'
+                ? _builderTrackBlockFormattingCommand(doc, command, value, label, () => doc.execCommand(command, false, value))
+                : _builderTrackInlineFormatting(doc, command, value, label, () => doc.execCommand(command, false, value));
+            if (result.direct && !result.applied) return doc.execCommand(command, false, value);
+            return result.ok;
+          };
           if (!e.altKey && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
             try { window.parent.document.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-save-snapshot')); } catch (_) {}
           }
           else if (!e.altKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); doc.execCommand(e.shiftKey ? 'redo' : 'undo'); }
           else if (!e.altKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); doc.execCommand('redo'); }
-          else if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
-          else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
-          else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
-          else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
-          else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt(t('toasts.link_url_prompt') || 'Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
-          else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
-          else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+          else if (!e.altKey && !e.shiftKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); _runKeyboardFormat('bold', null, 'Bold formatting', 'inline'); }
+          else if (!e.altKey && !e.shiftKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); _runKeyboardFormat('italic', null, 'Italic formatting', 'inline'); }
+          else if (!e.altKey && !e.shiftKey && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); _runKeyboardFormat('underline', null, 'Underline formatting', 'inline'); }
+          else if (e.key === '1') { e.preventDefault(); _runKeyboardFormat('formatBlock', '<h1>', 'Style changed to Heading 1', 'block'); }
+          else if (e.key === '2') { e.preventDefault(); _runKeyboardFormat('formatBlock', '<h2>', 'Style changed to Heading 2', 'block'); }
+          else if (e.key === '3') { e.preventDefault(); _runKeyboardFormat('formatBlock', '<h3>', 'Style changed to Heading 3', 'block'); }
+          else if (e.key === '0') { e.preventDefault(); _runKeyboardFormat('formatBlock', '<p>', 'Style changed to Normal', 'block'); }
+          else if (e.key === 'k' || e.key === 'K') {
+            e.preventDefault();
+            var url = prompt(t('toasts.link_url_prompt') || 'Enter link URL:');
+            if (url) _runKeyboardFormat('createLink', url, 'Hyperlink changed', 'inline');
+          }
+          else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); _runKeyboardFormat('insertUnorderedList', null, 'Bulleted list structure changed', 'structure'); }
+          else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); _runKeyboardFormat('insertOrderedList', null, 'Numbered list structure changed', 'structure'); }
         }
       });
       // ── Image crop (Tier 1, 2026-07-02) ── Click any image in the preview →

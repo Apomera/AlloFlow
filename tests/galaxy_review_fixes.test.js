@@ -270,6 +270,31 @@ describe('galaxy visuals', () => {
     expect(html).not.toContain('absorbs visible starlight');
     expect(html).not.toContain('trace recent star formation');
   });
+  it('explains pressure-supported elliptical motion in the Motion panel', () => {
+    const html = renderTool('galaxy', { galaxy: { galaxyType: 'elliptical', galaxyControlPanel: 'motion' } });
+    expect(html).toContain('data-galaxy-elliptical-kinematics');
+    expect(html).toContain('velocity dispersion');
+    expect(html).toContain('many orbital planes');
+  });
+
+  it.each(GALAXY_PATHS)('%s compresses particles and bloom as the camera zooms out', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    expect(source).toContain('uZoomPointScale: { value: 1 }');
+    expect(source).toContain('uZoomOpacity: { value: 1 }');
+    expect(source).toContain('outerContextCompression');
+    expect(source).toContain('zoomPointTarget = 1 - outerContextCompression * 0.34');
+    expect(source).toContain('zoomOpacityTarget = 1 - outerContextCompression * 0.26');
+    expect(source).not.toContain('outerDiskLift * 0.07');
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps the Real Sky callback stable across status renders', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    expect(source).toContain('var realSkyRefCb = React.useCallback(function (el) {');
+    expect(source).toContain("if (el._galaxyAladinLoading) return;");
+    expect(source).toContain('[activeRealSkyTarget.key, activeRealSkySurvey.id, activeRealSkyCatalog.id, realSkyRetry]');
+    expect(source.indexOf('el._galaxyAladinLoading = true;')).toBeLessThan(source.indexOf("setRealSkyStatus('loading'"));
+  });
+
 
   it.each(GALAXY_PATHS)('%s gives ellipticals a restrained, gas-poor visual profile', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
@@ -286,6 +311,15 @@ describe('galaxy visuals', () => {
     expect(source).toContain("atmosphereGroup.visible = galaxyType !== 'elliptical'");
     expect(source).toContain("coreFlare.visible = galaxyType !== 'elliptical'");
     expect(source).toContain("(galaxyType === 'elliptical' ? [] : [0, 1]).forEach");
+    expect(source).toContain('var ellipticalEnvelope = Math.random() < 0.72');
+    expect(source).toContain("uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }");
+    expect(source).toContain('vec3 orbitAxis = normalize');
+    expect(source).toContain('data-galaxy-elliptical-kinematics');
+    expect(source).toContain("var irCount = galaxyType === 'elliptical' ? 1100 : 1400");
+    expect(source).toContain("var thermalCloudCount = galaxyType === 'elliptical' ? 0");
+    expect(source).toContain("var thermalLaneCount = galaxyType === 'elliptical' ? 0");
+    expect(source).toContain("dopplerVelocityFieldGroup.visible = galaxyType !== 'elliptical'");
+    expect(source).toContain("radioPolarizationGroup.visible = galaxyType !== 'elliptical'");
 
     const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
     expect(diffuse).toContain("if (galaxyType !== 'elliptical')");

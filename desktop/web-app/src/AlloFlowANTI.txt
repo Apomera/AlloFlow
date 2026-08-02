@@ -7933,7 +7933,55 @@ const countWords = (text) => {
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
 const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-const resolveRosterCodenamesToLiveUids = ({ codenames, rosterStudents, liveRoster, maxRecipients = 250 } = {}) => {
+const LIVE_ROSTER_PRESENCE_CONNECTED_MS = 95000;
+const LIVE_ROSTER_PRESENCE_STALE_MS = 200000;
+const classifyLiveRosterPresence = ({ entry, now = Date.now() } = {}) => {
+    const rawLastSeen = entry?.lastSeen;
+    const lastSeen = typeof rawLastSeen === 'number' ? rawLastSeen : Number(rawLastSeen);
+    const referenceNow = Number(now);
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry) || !Number.isFinite(lastSeen) || lastSeen <= 0 || !Number.isFinite(referenceNow)) {
+        return { status: 'unknown', ageMs: null, isRecentlyActive: false };
+    }
+    const signedAgeMs = referenceNow - lastSeen;
+    if (signedAgeMs < -LIVE_ROSTER_PRESENCE_STALE_MS) return { status: 'unknown', ageMs: null, isRecentlyActive: false };
+    const ageMs = Math.max(0, signedAgeMs);
+    if (ageMs < LIVE_ROSTER_PRESENCE_CONNECTED_MS) return { status: 'connected', ageMs, isRecentlyActive: true };
+    if (ageMs < LIVE_ROSTER_PRESENCE_STALE_MS) return { status: 'quiet', ageMs, isRecentlyActive: true };
+    return { status: 'disconnected', ageMs, isRecentlyActive: false };
+};
+const buildPublishedResourceFingerprintMap = ({ resources, publishedIds, getFingerprint, maxResources = 1000 } = {}) => {
+    if (typeof getFingerprint !== 'function') return {};
+    const resourceLimit = Math.max(1, Math.min(1000, Number(maxResources) || 1000));
+    const safeResources = Array.isArray(resources) ? resources : [];
+    const published = new Set((Array.isArray(publishedIds) ? publishedIds : []).map(id => String(id || '')).filter(Boolean).slice(0, resourceLimit));
+    const counts = safeResources.reduce((result, resource) => {
+        const id = String(resource?.id || '');
+        if (id && published.has(id)) result.set(id, (result.get(id) || 0) + 1);
+        return result;
+    }, new Map());
+    const entries = [];
+    safeResources.forEach(resource => {
+        const id = String(resource?.id || '');
+        if (!id || !published.has(id) || counts.get(id) !== 1) return;
+        let fingerprint = '';
+        try { fingerprint = String(getFingerprint(resource) || ''); } catch (_) { fingerprint = ''; }
+        if (fingerprint) entries.push([id, fingerprint]);
+    });
+    return Object.fromEntries(entries);
+};
+const enqueueLiveSessionResourcePublish = ({ queues, sessionKey, publish } = {}) => {
+    const safeQueues = queues && typeof queues === 'object' && !Array.isArray(queues) ? queues : null;
+    const safeSessionKey = String(sessionKey || '');
+    if (!safeQueues || !safeSessionKey || typeof publish !== 'function') return Promise.resolve(null);
+    const previous = safeQueues[safeSessionKey] || Promise.resolve();
+    const queued = Promise.resolve(previous).catch(() => {}).then(() => publish());
+    const tail = queued.catch(() => {});
+    safeQueues[safeSessionKey] = tail;
+    return queued.finally(() => {
+        if (safeQueues[safeSessionKey] === tail) delete safeQueues[safeSessionKey];
+    });
+};
+const resolveRosterCodenamesToLiveUids = ({ codenames, rosterStudents, liveRoster, maxRecipients = 250, now = Date.now() } = {}) => {
     const safeRosterStudents = rosterStudents && typeof rosterStudents === 'object' && !Array.isArray(rosterStudents) ? rosterStudents : {};
     const safeLiveRoster = liveRoster && typeof liveRoster === 'object' && !Array.isArray(liveRoster) ? liveRoster : {};
     const rosterNameCounts = Object.keys(safeRosterStudents).reduce((counts, codename) => {
@@ -7948,7 +7996,8 @@ const resolveRosterCodenamesToLiveUids = ({ codenames, rosterStudents, liveRoste
     );
     const buckets = Object.entries(safeLiveRoster).reduce((out, [uid, entry]) => {
         const normalized = normalizeRosterSessionCodename(entry?.name);
-        if (!uid || !normalized || !wanted.has(normalized)) return out;
+        const presence = classifyLiveRosterPresence({ entry, now });
+        if (!uid || !normalized || !wanted.has(normalized) || !presence.isRecentlyActive) return out;
         const existing = out.get(normalized) || [];
         existing.push(uid);
         out.set(normalized, existing);
@@ -7973,10 +8022,12 @@ const resolveSavedFollowUpLivePlanTarget = ({
     activeSessionAppId,
     sessionMode = 'sync',
     transportKind = 'firebase',
+    sessionIsActive = true,
     maxRecipients = 250,
+    now = Date.now(),
 } = {}) => {
     const sessionCode = String(activeSessionCode || '').trim().slice(0, 24);
-    if (!sessionCode) return { ok: false, reason: 'inactive-session' };
+    if (!sessionCode || sessionIsActive !== true) return { ok: false, reason: 'inactive-session' };
     const wantedSessionId = String(sessionId || '').trim();
     const savedSession = (Array.isArray(sessionHistory) ? sessionHistory : [])
         .find(entry => entry && String(entry.id || '') === wantedSessionId);
@@ -8005,11 +8056,12 @@ const resolveSavedFollowUpLivePlanTarget = ({
     }
     if (!published) return { ok: false, reason: 'resource-syncing' };
     const safeLiveRoster = liveRoster && typeof liveRoster === 'object' && !Array.isArray(liveRoster) ? liveRoster : {};
-    const connectedUids = Object.entries(safeLiveRoster)
-        .filter(([uid, entry]) => uid && entry && typeof entry === 'object' && !Array.isArray(entry))
+    const rosterNow = Number.isFinite(Number(now)) ? Number(now) : Date.now();
+    const recentlyActiveUids = Object.entries(safeLiveRoster)
+        .filter(([uid, entry]) => uid && classifyLiveRosterPresence({ entry, now: rosterNow }).isRecentlyActive)
         .map(([uid]) => uid)
         .slice(0, 1000);
-    if (connectedUids.length === 0) return { ok: false, reason: 'no-live-learners' };
+    if (recentlyActiveUids.length === 0) return { ok: false, reason: 'no-live-learners' };
     const normalizedMode = sessionMode === 'sync' ? 'sync' : 'async';
     const base = {
         ok: true,
@@ -8019,26 +8071,31 @@ const resolveSavedFollowUpLivePlanTarget = ({
         transportKind: transportKind === 'mailbox' ? 'mailbox' : 'firebase',
         resource,
         resourceFingerprint,
-        planSignature: [wantedSessionId, plan.resourceId, plan.audience, plan.cohortCode, plan.status, plan.plannedAt].join('|'),
+        planSignature: JSON.stringify([wantedSessionId, plan.resourceId, plan.audience, plan.cohortCode, plan.status, plan.plannedAt]),
     };
     if (plan.audience === 'cohort') {
         const cohort = (Array.isArray(savedSession?.insightBrief?.evidenceCohorts) ? savedSession.insightBrief.evidenceCohorts : [])
             .find(entry => entry && entry.intent === 'support' && String(entry.code || '') === String(plan.cohortCode || ''));
         if (!cohort) return { ok: false, reason: 'cohort-unavailable' };
+        const audienceLabel = String(cohort.label || 'Evidence cohort').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Evidence cohort';
+        const cohortDefinition = (Array.isArray(cohort.codenames) ? cohort.codenames : [])
+            .map(normalizeRosterSessionCodename).filter(Boolean).sort().slice(0, 250);
         const uids = resolveRosterCodenamesToLiveUids({
             codenames: cohort.codenames,
             rosterStudents,
             liveRoster: safeLiveRoster,
             maxRecipients,
+            now: rosterNow,
         });
         if (uids.length === 0) return { ok: false, reason: 'no-cohort-learners' };
         return {
             ...base,
             audience: 'cohort',
-            audienceLabel: String(cohort.label || 'Evidence cohort').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Evidence cohort',
+            audienceLabel,
             connectedCount: uids.length,
             uids,
-            targetSignature: uids.slice().sort().join('|'),
+            planSignature: JSON.stringify([base.planSignature, audienceLabel, cohortDefinition]),
+            targetSignature: JSON.stringify(uids.slice().sort()),
         };
     }
     if (normalizedMode !== 'sync') return { ok: false, reason: 'teacher-paced-required' };
@@ -8046,9 +8103,9 @@ const resolveSavedFollowUpLivePlanTarget = ({
         ...base,
         audience: 'class',
         audienceLabel: 'Whole class',
-        connectedCount: connectedUids.length,
+        connectedCount: recentlyActiveUids.length,
         uids: [],
-        targetSignature: connectedUids.slice().sort().join('|'),
+        targetSignature: JSON.stringify(recentlyActiveUids.slice().sort()),
     };
 };
 const buildStudentResourcePatchBatches = ({ uids, roster, resourceId, resourceAt, maxRecipients = 250 } = {}) => {
@@ -11655,7 +11712,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1785692038449';
+    var pluginCdnVersion = '1785695094437';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -20291,6 +20348,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbPackItemsRef = useRef([]);
   const mbLivePackRef = useRef(null);
   const mbHostedPackFpRef = useRef('');
+  const firebasePublishedResourcesRef = useRef({ sessionKey: '', fingerprints: {} });
+  const firebaseResourcePublishQueuesRef = useRef({});
+  const currentFirebasePublishSessionKey = activeSessionCode && !mbLive
+      ? ['firebase', activeSessionAppId || appId, activeSessionCode].join('|')
+      : '';
+  if (firebasePublishedResourcesRef.current.sessionKey !== currentFirebasePublishSessionKey) {
+      firebasePublishedResourcesRef.current = { sessionKey: currentFirebasePublishSessionKey, fingerprints: {} };
+  }
   const liveSessionCommandStateRef = useRef(null);
   const savedFollowUpLiveSendLockRef = useRef(false);
   liveSessionCommandStateRef.current = {
@@ -20747,6 +20812,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       mbLivePackRef.current = null;
       mbHostedPackFpRef.current = '';
+      mbSentPacksRef.current = {};
       _alloMbTeardownBridge();
       if (live && activeSessionCode === live.code) {
           setActiveSessionCode(null);
@@ -20776,11 +20842,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           followUpStatus: '',
       });
   };
-  const resolveEndSessionCohortUids = (codenames) => resolveRosterCodenamesToLiveUids({
+  const resolveEndSessionCohortUids = (codenames, now = Date.now()) => resolveRosterCodenamesToLiveUids({
       codenames,
       rosterStudents: rosterKey?.students,
       liveRoster: sessionData?.roster,
       maxRecipients: 250,
+      now,
   });
   const sendEndSessionEvidenceCohort = async (cohort) => {
       if (!endSessionPreview || endSessionPreview.busy || endSessionPreview.followUpBusy) return;
@@ -20967,17 +21034,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (reason === 'resource-unavailable') return 'The planned resource is no longer available in student-safe History. Nothing was sent.';
       if (reason === 'resource-syncing') return 'This resource is still syncing to the live session. Wait a moment and try again.';
       if (reason === 'cohort-unavailable') return 'The saved evidence cohort is no longer available. Review the plan; nothing was sent.';
-      if (reason === 'no-cohort-learners') return 'No uniquely matched learners from this cohort are currently connected. Nothing was sent.';
-      if (reason === 'no-live-learners') return 'No learners are currently connected to this live session.';
+      if (reason === 'no-cohort-learners') return 'No uniquely matched learners from this cohort have a recent live heartbeat. Nothing was sent.';
+      if (reason === 'no-live-learners') return 'No learner devices have checked in recently to this live session.';
       if (reason === 'teacher-paced-required') return 'Switch the current session to Teacher-Paced to present a whole-class follow-up, or use Prepare assignment link for asynchronous work.';
       return 'This saved follow-up plan is no longer available. Review and save it again.';
   };
+  const readSavedFollowUpLiveSessionIdentity = () => {
+      const current = liveSessionCommandStateRef.current || {};
+      const isMailbox = Boolean(current.mbLive);
+      const sessionCode = String(current.activeSessionCode || current.mbLive?.code || '').trim().slice(0, 24);
+      const sessionAppId = String(current.activeSessionAppId || appId).trim().slice(0, 160);
+      const sessionMode = isMailbox ? (current.mbMode === 'sync' ? 'sync' : 'async') : (current.sessionData?.mode === 'sync' ? 'sync' : 'async');
+      return {
+          isActive: Boolean(sessionCode && current.sessionData && current.sessionData.isActive !== false && current.sessionData.status !== 'ended'),
+          sessionCode,
+          sessionAppId,
+          sessionMode,
+          transportKind: isMailbox ? 'mailbox' : 'firebase',
+      };
+  };
+  const isSavedFollowUpLiveSessionCurrent = (expected) => {
+      const current = readSavedFollowUpLiveSessionIdentity();
+      return Boolean(expected && current.isActive
+          && current.sessionCode === expected.sessionCode
+          && current.sessionAppId === expected.sessionAppId
+          && current.sessionMode === expected.sessionMode
+          && current.transportKind === expected.transportKind);
+  };
   const resolveSavedFollowUpLiveDeliverySnapshot = (sessionId) => {
       const current = liveSessionCommandStateRef.current || {};
+      const liveIdentity = readSavedFollowUpLiveSessionIdentity();
       const moduleApi = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules : {};
       const normalizePlan = moduleApi.normalizeRosterSessionFollowUpPlan;
       const isMailbox = Boolean(current.mbLive);
       const publishedSessionResources = Array.isArray(current.sessionData?.resources) ? current.sessionData.resources : [];
+      const firebasePublication = firebasePublishedResourcesRef.current || { sessionKey: '', fingerprints: {} };
+      const expectedFirebaseSessionKey = ['firebase', current.activeSessionAppId || appId, current.activeSessionCode || ''].join('|');
       return resolveSavedFollowUpLivePlanTarget({
           sessionId,
           sessionHistory: current.rosterKey?.sessionHistory,
@@ -20991,11 +21083,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           },
           isResourcePublished: (resource, fingerprint) => isMailbox
               ? current.mailboxPublishedFingerprints?.[resource.id] === fingerprint
-              : publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || '')),
-          activeSessionCode: current.activeSessionCode || current.mbLive?.code,
-          activeSessionAppId: current.activeSessionAppId,
-          sessionMode: isMailbox ? current.mbMode : current.sessionData?.mode,
-          transportKind: isMailbox ? 'mailbox' : 'firebase',
+              : firebasePublication.sessionKey === expectedFirebaseSessionKey
+                  && firebasePublication.fingerprints?.[resource.id] === fingerprint
+                  && publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || '')),
+          activeSessionCode: liveIdentity.sessionCode,
+          activeSessionAppId: liveIdentity.sessionAppId,
+          sessionMode: liveIdentity.sessionMode,
+          transportKind: liveIdentity.transportKind,
+          sessionIsActive: liveIdentity.isActive,
       });
   };
   const sendSavedFollowUpPlanToLiveSession = async (sessionId) => {
@@ -21014,8 +21109,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const confirmed = await new Promise(resolve => setConfirmDialog({
               title: isCohort ? 'Assign saved follow-up to live cohort?' : 'Present saved follow-up to live class?',
               message: isCohort
-                  ? `Assign "${before.resource.title || before.resource.type || 'Follow-up resource'}" to ${before.connectedCount} currently connected learner${before.connectedCount === 1 ? '' : 's'} in "${before.audienceLabel}"? This replaces their current individual live resource and takes precedence over group/class resources. Unmatched or disconnected learners will not receive it. The saved plan will remain open.`
-                  : `Present "${before.resource.title || before.resource.type || 'Follow-up resource'}" to the ${before.connectedCount} connected device${before.connectedCount === 1 ? '' : 's'} in the current Teacher-Paced class? This moves the existing class-follow pointer for everyone in the live session. The saved plan will remain open.`,
+                  ? `Assign "${before.resource.title || before.resource.type || 'Follow-up resource'}" to ${before.connectedCount} matched learner${before.connectedCount === 1 ? '' : 's'} with a recent live heartbeat in "${before.audienceLabel}"? This replaces their current individual live resource and takes precedence over group/class resources. Unmatched learners and devices without a recent heartbeat will not receive this individual override. The saved plan will remain open.`
+                  : `Present "${before.resource.title || before.resource.type || 'Follow-up resource'}" to the current Teacher-Paced class? ${before.connectedCount} learner device${before.connectedCount === 1 ? ' has' : 's have'} checked in recently. This moves the existing class-follow pointer for the entire live session; devices that reconnect while it remains current may also follow. The saved plan will remain open.`,
               confirmText: isCohort ? 'Assign live follow-up' : 'Present to live class',
               cancelText: 'Cancel',
               tone: 'info',
@@ -21041,6 +21136,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               const result = await handleSetStudentsResource(after.uids, after.resource.id);
               const sent = Math.max(0, Number(result?.sent) || 0);
               const failed = Math.max(0, Number(result?.failed) || 0);
+              if (!isSavedFollowUpLiveSessionCurrent(after)) {
+                  return { status: 'session-changed', sent, failed, message: 'The assignment command finished against the session that was active when you confirmed, but that session changed or ended before completion. The saved plan remains open; verify the prior session before retrying.' };
+              }
+              if (sent === 0 && failed === 0) {
+                  return { status: 'failed', sent: 0, failed: 0, message: 'The live session did not acknowledge any cohort assignments. The plan remains open; check the session and try again.' };
+              }
               if (failed > 0) {
                   return {
                       status: sent > 0 ? 'partial' : 'failed',
@@ -21053,9 +21154,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               }
               return { status: 'assigned', sent, failed: 0, message: `Assigned the live follow-up to ${sent} learner${sent === 1 ? '' : 's'}. The plan remains open until you mark it complete.` };
           }
-          const followed = _alloFollowResourceLive(after.resource);
+          const followed = await _alloFollowResourceLive(after.resource, { awaitDelivery: true });
           if (!followed) {
               return { status: 'failed', sent: 0, failed: 0, message: 'The current class could not be moved to this resource. Nothing was marked complete.' };
+          }
+          if (!isSavedFollowUpLiveSessionCurrent(after)) {
+              return { status: 'session-changed', sent: 0, failed: 0, message: 'The presentation command finished against the session that was active when you confirmed, but that session changed or ended before completion. The saved plan remains open; verify the prior session before retrying.' };
           }
           setIsRosterKeyOpen(false);
           handleRestoreView(after.resource, { suppressLiveFollow: true });
@@ -21063,7 +21167,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               status: 'presenting',
               sent: 0,
               failed: 0,
-              message: `Presentation started for the current live class (${after.connectedCount} connected). Student devices will follow as the session syncs; the saved plan remains open.`,
+              message: `The presentation command was published for the current live class (${after.connectedCount} recently active). Student devices will follow as the session syncs, including devices that reconnect while this resource remains current; the saved plan remains open.`,
           };
       } catch (error) {
           warnLog('Saved follow-up live handoff failed:', error);
@@ -30908,36 +31012,55 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   useEffect(() => {
       if (!activeSessionCode || !isTeacherMode || history.length === 0) return;
+      const publishSessionKey = ['firebase', activeSessionAppId || appId, activeSessionCode].join('|');
+      const historySnapshot = history;
       const syncResourcesToSession = async () => {
-          try {
-              // Unified content channel (SessionTransport stage 1): the SAME
-              // student-safe candidate rule as the mailbox pack. Teacher-only
-              // types (lesson plans, analyses, persona records) no longer sync
-              // to the session doc AT ALL — they used to ride along hidden.
-              const ST = window.AlloModules && window.AlloModules.SessionTransport;
-              if (ST && typeof ST.createFirebaseTransport === 'function') {
-                  const transport = ST.createFirebaseTransport({
-                      teacherOnlyTypes: TEACHER_ONLY_TYPES,
-                      uploadAssets: (items) => uploadSessionAssets(activeSessionAppId || appId, items, activeSessionCode),
-                      prepareResources: (items) => prepareSessionResourcesForWrite(items),
-                      write: (payload) => writeToSession(doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode), payload),
-                      policy: () => ({ studentAi: studentAiPolicyForShare }),
-                      onTrimmed: () => addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info'),
-                  });
-                  const result = await transport.publishResources(history);
-                  debugLog("Session resources synced:", result.kept, "of", result.candidates, "bytes", result.bytes);
-                  return;
-              }
-              // Stage 3: the inline fallback is retired — SessionTransport is
-              // CONTENT_HASH_PINNED in the loader cascade, and this effect
-              // re-fires on every history change, so a not-yet-loaded module
-              // self-heals on the next tick. Surface the miss instead of
-              // silently duplicating the algorithm.
-              _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' });
-              warnLog('SessionTransport module not loaded yet; resource sync deferred to the next history change.');
-          } catch (e) {
-              warnLog("Failed to sync resources to session:", e);
-          }
+          await enqueueLiveSessionResourcePublish({
+              queues: firebaseResourcePublishQueuesRef.current,
+              sessionKey: publishSessionKey,
+              publish: async () => {
+                  if (firebasePublishedResourcesRef.current.sessionKey !== publishSessionKey) return;
+                  try {
+                      // Unified content channel (SessionTransport stage 1): the SAME
+                      // student-safe candidate rule as the mailbox pack. Teacher-only
+                      // types (lesson plans, analyses, persona records) no longer sync
+                      // to the session doc AT ALL — they used to ride along hidden.
+                      const ST = window.AlloModules && window.AlloModules.SessionTransport;
+                      if (ST && typeof ST.createFirebaseTransport === 'function') {
+                          const transport = ST.createFirebaseTransport({
+                              teacherOnlyTypes: TEACHER_ONLY_TYPES,
+                              uploadAssets: (items) => uploadSessionAssets(activeSessionAppId || appId, items, activeSessionCode),
+                              prepareResources: (items) => prepareSessionResourcesForWrite(items),
+                              write: (payload) => writeToSession(doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode), payload),
+                              policy: () => ({ studentAi: studentAiPolicyForShare }),
+                              onTrimmed: () => addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info'),
+                          });
+                          const result = await transport.publishResources(historySnapshot);
+                          if (firebasePublishedResourcesRef.current.sessionKey === publishSessionKey) {
+                              firebasePublishedResourcesRef.current = {
+                                  sessionKey: publishSessionKey,
+                                  fingerprints: buildPublishedResourceFingerprintMap({
+                                      resources: _alloStudentSafeResources(historySnapshot),
+                                      publishedIds: result.publishedIds,
+                                      getFingerprint: item => _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || ''),
+                                  }),
+                              };
+                          }
+                          debugLog("Session resources synced:", result.kept, "of", result.candidates, "bytes", result.bytes);
+                          return;
+                      }
+                      // Stage 3: the inline fallback is retired — SessionTransport is
+                      // CONTENT_HASH_PINNED in the loader cascade, and this effect
+                      // re-fires on every history change, so a not-yet-loaded module
+                      // self-heals on the next tick. Surface the miss instead of
+                      // silently duplicating the algorithm.
+                      _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' });
+                      warnLog('SessionTransport module not loaded yet; resource sync deferred to the next history change.');
+                  } catch (e) {
+                      warnLog("Failed to sync resources to session:", e);
+                  }
+              },
+          });
       };
       const timeoutId = setTimeout(syncResourcesToSession, 1500);
       return () => clearTimeout(timeoutId);
@@ -30946,7 +31069,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!activeSessionCode || !isTeacherMode) return;
       const syncStudentAiPolicy = async () => {
           try {
-              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+              const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
               await writeToSession(sessionRef, {
                   aiPolicy: { studentAi: studentAiPolicyForShare },
               });
@@ -30956,7 +31079,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       };
       const timeoutId = setTimeout(syncStudentAiPolicy, 250);
       return () => clearTimeout(timeoutId);
-  }, [activeSessionCode, isTeacherMode, appId, studentAiPolicyForShare]);
+  }, [activeSessionCode, activeSessionAppId, isTeacherMode, appId, studentAiPolicyForShare]);
   const joinClassSession = async (code, hostOverride = '') => {
       const cleanCode = _alloCleanLiveSessionCode(code);
       if (!cleanCode) {
@@ -32844,6 +32967,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (options.blockedToast) addToast(options.blockedToast, 'info');
           return false;
       }
+      const awaitDelivery = options.awaitDelivery === true;
+      let authoritativeTask = null;
       if (activeSessionCode) {
           try {
               const followWrite = () => {
@@ -32851,17 +32976,35 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   return updateDoc(sessionRef, { currentResourceId: item.id });
               };
               const ST = window.AlloModules && window.AlloModules.SessionTransport;
-              if (ST && typeof ST.followResource === 'function') {
-                  ST.followResource(item, { write: followWrite, trace: (event, detail) => _alloSessionSyncTrace(event, detail) }).catch(e => warnLog('Sync error:', e));
-              } else {
-                  followWrite().catch(e => warnLog('Sync error:', e));
-              }
-          } catch (e) { warnLog('Sync error:', e); }
+              authoritativeTask = ST && typeof ST.followResource === 'function'
+                  ? ST.followResource(item, { write: followWrite, trace: (event, detail) => _alloSessionSyncTrace(event, detail) })
+                  : Promise.resolve(followWrite()).then(() => true);
+              if (!awaitDelivery) Promise.resolve(authoritativeTask).catch(e => warnLog('Sync error:', e));
+          } catch (e) {
+              if (awaitDelivery) authoritativeTask = Promise.reject(e);
+              else warnLog('Sync error:', e);
+          }
       }
       if (mbLive && mbMode === 'sync') {
-          try { pushResourceToMailbox(item, { silentTeacher: true }); } catch (e) { warnLog('Mailbox follow error:', e?.message); }
+          if (awaitDelivery && !authoritativeTask) {
+              try {
+                  authoritativeTask = Promise.resolve(_mbPushOneResource(item, { open: true, quiet: true })).then(() => true);
+              } catch (e) {
+                  authoritativeTask = Promise.reject(e);
+              }
+          } else {
+              try { pushResourceToMailbox(item, { silentTeacher: true }); } catch (e) { warnLog('Mailbox follow error:', e?.message); }
+          }
       }
-      return true;
+      if (!awaitDelivery) return true;
+      if (!authoritativeTask) return Promise.resolve(false);
+      // This acknowledges command persistence, not a learner open/read receipt.
+      return Promise.resolve(authoritativeTask)
+          .then(result => result === true)
+          .catch(e => {
+              warnLog('Live follow command failed:', e?.message || e);
+              return false;
+          });
   };
   const handleRestoreView = (item, options = {}) => {
       // Reading Library book pinned to the lesson (2026-07-05): open the reader
@@ -39809,7 +39952,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
  * color utilities). Contrast matrix + drift enforced by
  * tests/docsuite_theme_contrast.test.js.
  * Scope class .allo-docsuite covers: docsuite (PDF remediation + Document Hub modals); selsuite (4 Tailwind SEL tools); appsuite (main-content artifact views + sidebar);
- * plus the main-content JSX region of ANTI. Union 1065 tokens. */
+ * plus the main-content JSX region of ANTI. Union 1066 tokens. */
 .theme-dark .allo-docsuite { color-scheme: dark; }
 .theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .theme-dark .allo-docsuite textarea,
@@ -39947,7 +40090,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .text-black, .theme-dark .allo-docsuite .text-slate-800 { color:#f1f5f9 !important; }
 .theme-dark .allo-docsuite .text-slate-900, .theme-dark .allo-docsuite [class~="text-slate-900/95"] { color:#f8fafc !important; }
 .theme-dark .allo-docsuite .text-pink-600, .theme-dark .allo-docsuite .text-pink-700, .theme-dark .allo-docsuite .text-pink-800, .theme-dark .allo-docsuite .text-pink-900 { color:#f9a8d4 !important; }
-.theme-dark .allo-docsuite .text-red-400, .theme-dark .allo-docsuite .text-red-500, .theme-dark .allo-docsuite .text-red-600, .theme-dark .allo-docsuite .text-red-700, .theme-dark .allo-docsuite [class~="text-red-700/70"], .theme-dark .allo-docsuite [class~="text-red-700/80"], .theme-dark .allo-docsuite .text-red-800, .theme-dark .allo-docsuite .text-red-900 { color:#fca5a5 !important; }
+.theme-dark .allo-docsuite .text-red-400, .theme-dark .allo-docsuite .text-red-500, .theme-dark .allo-docsuite .text-red-600, .theme-dark .allo-docsuite .text-red-700, .theme-dark .allo-docsuite [class~="text-red-700/70"], .theme-dark .allo-docsuite [class~="text-red-700/80"], .theme-dark .allo-docsuite .text-red-800, .theme-dark .allo-docsuite .text-red-900, .theme-dark .allo-docsuite .text-red-950 { color:#fca5a5 !important; }
 .theme-dark .allo-docsuite .text-amber-400, .theme-dark .allo-docsuite [class~="text-amber-400/70"], .theme-dark .allo-docsuite .text-amber-500, .theme-dark .allo-docsuite .text-amber-600, .theme-dark .allo-docsuite .text-amber-700, .theme-dark .allo-docsuite [class~="text-amber-700/90"], .theme-dark .allo-docsuite .text-amber-800, .theme-dark .allo-docsuite .text-amber-900, .theme-dark .allo-docsuite .text-amber-950 { color:#fcd34d !important; }
 .theme-dark .allo-docsuite .text-rose-400, .theme-dark .allo-docsuite .text-rose-500, .theme-dark .allo-docsuite .text-rose-600, .theme-dark .allo-docsuite .text-rose-700, .theme-dark .allo-docsuite .text-rose-800, .theme-dark .allo-docsuite .text-rose-900 { color:#fda4af !important; }
 .theme-dark .allo-docsuite .text-orange-400, .theme-dark .allo-docsuite .text-orange-500, .theme-dark .allo-docsuite .text-orange-600, .theme-dark .allo-docsuite .text-orange-700, .theme-dark .allo-docsuite .text-orange-800, .theme-dark .allo-docsuite .text-orange-900 { color:#fdba74 !important; }
@@ -39956,7 +40099,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite [class~="bg-amber-400/10"], .theme-contrast .allo-docsuite [class~="bg-amber-400/20"], .theme-contrast .allo-docsuite [class~="bg-amber-400/30"], .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite [class~="bg-amber-50/80"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/60"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-400, .theme-contrast .allo-docsuite [class~="bg-cyan-400/20"], .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite [class~="bg-cyan-50/60"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite [class~="bg-cyan-900/60"], .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite [class~="bg-emerald-400/20"], .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite [class~="bg-emerald-950/70"], .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite [class~="bg-indigo-700/80"], .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-orange-800, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite .bg-red-800, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite [class~="bg-red-950/70"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite .bg-rose-800, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-sky-700, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/60"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite [class~="bg-slate-500/20"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/55"], .theme-contrast .allo-docsuite [class~="bg-slate-950/60"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/75"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite [class~="bg-slate-950/95"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite [class~="bg-teal-500/15"], .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite .bg-violet-800, .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
 .theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-300, .theme-contrast .allo-docsuite .from-amber-400, .theme-contrast .allo-docsuite [class~="from-amber-400/20"], .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite [class~="from-amber-600/80"], .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-amber-800, .theme-contrast .allo-docsuite .from-amber-900, .theme-contrast .allo-docsuite [class~="from-amber-900/40"], .theme-contrast .allo-docsuite .from-black, .theme-contrast .allo-docsuite .from-blue-100, .theme-contrast .allo-docsuite .from-blue-400, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite [class~="from-blue-50/60"], .theme-contrast .allo-docsuite .from-blue-500, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite [class~="from-blue-900/40"], .theme-contrast .allo-docsuite .from-cyan-400, .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite [class~="from-cyan-50/60"], .theme-contrast .allo-docsuite .from-cyan-500, .theme-contrast .allo-docsuite .from-cyan-600, .theme-contrast .allo-docsuite [class~="from-cyan-900/40"], .theme-contrast .allo-docsuite [class~="from-emerald-400/20"], .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-emerald-500, .theme-contrast .allo-docsuite .from-emerald-600, .theme-contrast .allo-docsuite .from-emerald-700, .theme-contrast .allo-docsuite [class~="from-emerald-900/40"], .theme-contrast .allo-docsuite .from-fuchsia-50, .theme-contrast .allo-docsuite .from-fuchsia-600, .theme-contrast .allo-docsuite .from-green-400, .theme-contrast .allo-docsuite .from-green-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-green-800, .theme-contrast .allo-docsuite .from-indigo-400, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite [class~="from-indigo-50/60"], .theme-contrast .allo-docsuite [class~="from-indigo-50/80"], .theme-contrast .allo-docsuite [class~="from-indigo-50/95"], .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite [class~="from-indigo-900/40"], .theme-contrast .allo-docsuite [class~="from-indigo-900/50"], .theme-contrast .allo-docsuite .from-lime-600, .theme-contrast .allo-docsuite [class~="from-orange-50/80"], .theme-contrast .allo-docsuite .from-orange-500, .theme-contrast .allo-docsuite .from-pink-100, .theme-contrast .allo-docsuite .from-pink-500, .theme-contrast .allo-docsuite .from-pink-600, .theme-contrast .allo-docsuite [class~="from-pink-900/40"], .theme-contrast .allo-docsuite .from-purple-50, .theme-contrast .allo-docsuite .from-purple-600, .theme-contrast .allo-docsuite .from-purple-900, .theme-contrast .allo-docsuite [class~="from-purple-900/40"], .theme-contrast .allo-docsuite [class~="from-red-50/70"], .theme-contrast .allo-docsuite .from-red-800, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-rose-500, .theme-contrast .allo-docsuite .from-rose-600, .theme-contrast .allo-docsuite [class~="from-rose-900/40"], .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite [class~="from-sky-50/80"], .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-sky-600, .theme-contrast .allo-docsuite [class~="from-sky-900/40"], .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-slate-900, .theme-contrast .allo-docsuite .from-stone-600, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite [class~="from-teal-50/80"], .theme-contrast .allo-docsuite .from-teal-500, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-100, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-500, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite [class~="from-violet-900/40"], .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite [class~="from-white/0"], .theme-contrast .allo-docsuite .from-yellow-300, .theme-contrast .allo-docsuite .from-yellow-400, .theme-contrast .allo-docsuite .from-yellow-50, .theme-contrast .allo-docsuite .from-yellow-600, .theme-contrast .allo-docsuite .from-zinc-600, .theme-contrast .allo-docsuite .to-amber-50, .theme-contrast .allo-docsuite [class~="to-amber-50/40"], .theme-contrast .allo-docsuite .to-amber-500, .theme-contrast .allo-docsuite .to-amber-600, .theme-contrast .allo-docsuite .to-amber-800, .theme-contrast .allo-docsuite [class~="to-amber-800/20"], .theme-contrast .allo-docsuite [class~="to-amber-800/80"], .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-500, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-blue-700, .theme-contrast .allo-docsuite [class~="to-blue-900/40"], .theme-contrast .allo-docsuite [class~="to-cyan-400/10"], .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-500, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-400, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-emerald-800, .theme-contrast .allo-docsuite .to-emerald-900, .theme-contrast .allo-docsuite .to-fuchsia-100, .theme-contrast .allo-docsuite .to-fuchsia-500, .theme-contrast .allo-docsuite .to-fuchsia-600, .theme-contrast .allo-docsuite [class~="to-fuchsia-900/40"], .theme-contrast .allo-docsuite .to-gray-700, .theme-contrast .allo-docsuite .to-green-700, .theme-contrast .allo-docsuite .to-indigo-100, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-500, .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite [class~="to-indigo-900/40"], .theme-contrast .allo-docsuite .to-lime-50, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite [class~="to-orange-100/40"], .theme-contrast .allo-docsuite .to-orange-400, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite [class~="to-orange-500/20"], .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-orange-800, .theme-contrast .allo-docsuite .to-orange-900, .theme-contrast .allo-docsuite [class~="to-orange-900/40"], .theme-contrast .allo-docsuite .to-pink-50, .theme-contrast .allo-docsuite .to-pink-500, .theme-contrast .allo-docsuite .to-pink-600, .theme-contrast .allo-docsuite [class~="to-pink-900/40"], .theme-contrast .allo-docsuite .to-purple-50, .theme-contrast .allo-docsuite [class~="to-purple-50/80"], .theme-contrast .allo-docsuite [class~="to-purple-50/95"], .theme-contrast .allo-docsuite .to-purple-500, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite .to-purple-800, .theme-contrast .allo-docsuite [class~="to-purple-900/40"], .theme-contrast .allo-docsuite .to-red-600, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-rose-700, .theme-contrast .allo-docsuite .to-rose-800, .theme-contrast .allo-docsuite .to-rose-900, .theme-contrast .allo-docsuite [class~="to-rose-900/40"], .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-sky-600, .theme-contrast .allo-docsuite [class~="to-sky-900/40"], .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-stone-600, .theme-contrast .allo-docsuite .to-stone-700, .theme-contrast .allo-docsuite [class~="to-teal-100/40"], .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-teal-500, .theme-contrast .allo-docsuite .to-teal-600, .theme-contrast .allo-docsuite .to-teal-700, .theme-contrast .allo-docsuite .to-violet-100, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite [class~="to-violet-900/50"], .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite [class~="to-white/20"], .theme-contrast .allo-docsuite .to-yellow-300, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite .to-yellow-500, .theme-contrast .allo-docsuite .to-yellow-600, .theme-contrast .allo-docsuite .to-zinc-700, .theme-contrast .allo-docsuite .via-amber-400, .theme-contrast .allo-docsuite [class~="via-black/40"], .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-green-50/30"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite .via-indigo-950, .theme-contrast .allo-docsuite .via-orange-300, .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite .via-white, .theme-contrast .allo-docsuite [class~="via-white/20"], .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
 .theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite [class~="border-amber-300/40"], .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite .border-amber-700, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite [class~="border-cyan-300/25"], .theme-contrast .allo-docsuite [class~="border-cyan-300/80"], .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite [class~="border-emerald-200/60"], .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite [class~="border-emerald-300/40"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-fuchsia-700, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite [class~="border-indigo-700/70"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-sky-700, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite [class~="border-slate-200/80"], .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite [class~="border-teal-300/40"], .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-teal-900, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite .border-violet-700, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-violet-800, .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/40"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite [class~="border-white/90"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/60"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-violet-100 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
-.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite [class~="text-amber-100/70"], .theme-contrast .allo-docsuite [class~="text-amber-100/80"], .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite .text-amber-50, .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-100, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-100, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-cyan-950, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-green-950, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite [class~="text-indigo-700/80"], .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-indigo-950, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-sky-950, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-50, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-100, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite [class~="text-violet-700/70"], .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-violet-950, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/60"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite [class~="text-amber-100/70"], .theme-contrast .allo-docsuite [class~="text-amber-100/80"], .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite .text-amber-50, .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-100, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-100, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-cyan-950, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-green-950, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite [class~="text-indigo-700/80"], .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-indigo-950, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-red-950, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-sky-950, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-50, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-100, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite [class~="text-violet-700/70"], .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-violet-950, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/60"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
       `}</style>
       <a
         href="#main-content"
@@ -45568,14 +45711,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           // generous vs the ~60s beat (>=2 missed = quiet, >=3 = likely gone).
                           // Freshness re-evaluates whenever any snapshot re-renders the dock —
                           // heartbeats themselves arrive as snapshots, so it stays current.
-                          const seenAge = entry.lastSeen ? (dockNow - entry.lastSeen) : null;
-                          const presence = seenAge == null
-                            ? { color: '#94a3b8', label: t('live_dock.presence_unknown') || 'presence unknown (older app version)' }
-                            : seenAge < 95000
-                              ? { color: '#16a34a', label: t('live_dock.presence_here') || 'connected' }
-                              : seenAge < 200000
-                                ? { color: '#b45309', label: t('live_dock.presence_quiet') || 'quiet for 2+ min' }
-                                : { color: '#dc2626', label: t('live_dock.presence_gone') || 'disconnected?' };
+                          const presenceState = classifyLiveRosterPresence({ entry, now: dockNow });
+                          const presence = presenceState.status === 'connected'
+                            ? { color: '#16a34a', label: t('live_dock.presence_here') || 'connected' }
+                            : presenceState.status === 'quiet'
+                              ? { color: '#b45309', label: t('live_dock.presence_quiet') || 'quiet for 2+ min' }
+                              : presenceState.status === 'disconnected'
+                                ? { color: '#dc2626', label: t('live_dock.presence_gone') || 'disconnected?' }
+                                : { color: '#94a3b8', label: t('live_dock.presence_unknown') || 'presence unknown (older app version)' };
                           const rewardTokensUsed = getAlloHavenSessionRecognitionTokens(entry, havenRewardDraftsRef.current[uid]);
                           const rewardTokensRemaining = Math.max(0, havenRecognitionConfig.perStudentTokenCap - rewardTokensUsed);
                           const canRecognizeStudent = havenRecognitionConfig.enabled && rewardTokensRemaining >= havenRewardAmount && !havenConfigBusy && !havenRewardBusy;

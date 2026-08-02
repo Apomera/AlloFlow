@@ -143,8 +143,6 @@ window.StemLab = window.StemLab || {
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
-      var setStemLabTab = ctx.setStemLabTab;
-      var stemLabTab = ctx.stemLabTab || 'explore';
       var stemLabTool = ctx.stemLabTool;
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
@@ -180,6 +178,7 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { semiconductor: {
             // sub-tool selection
             subtool: 'bandgap',
+            mode: 'explore',
             // Band Gap
             material: 'silicon',
             temperature: 300,
@@ -300,6 +299,7 @@ window.StemLab = window.StemLab || {
             // AI
             aiExplain: null,
             aiLoading: false,
+            guidedSetupSubtool: null,
             // XP tracking
             xpAwardedKeys: {}
           }});
@@ -421,7 +421,7 @@ window.StemLab = window.StemLab || {
 
       function sliderRow(label, value, min, max, step, onChange, unit) {
         return h('div', { className: 'flex items-center gap-2 mt-1' },
-          h('span', { className: 'text-xs text-slate-600 w-20 shrink-0' }, label),
+          h('span', { className: 'text-xs text-slate-400 w-20 shrink-0' }, label),
           h('input', {
             type: 'range', min: min, max: max, step: step, value: value,
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
@@ -442,9 +442,68 @@ window.StemLab = window.StemLab || {
 
       function statBadge(label, value, color, key) {
         return h('div', { key: key != null ? key : label, className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
-          h('span', { className: 'text-[11px] text-slate-600 uppercase tracking-wider' }, label),
+          h('span', { className: 'text-[11px] text-slate-400 uppercase tracking-wider font-semibold' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
+      }
+
+      // Keep a stable logical coordinate space while matching the backing bitmap
+      // to the canvas's real CSS size and the display's device pixel ratio.
+      function prepareCanvas(canvasEl, logicalWidth, logicalHeight) {
+        // Explicit CSS constraints keep the high-DPI bitmap dimensions from
+        // becoming the canvas's flex-item minimum size and causing resize loops.
+        canvasEl.style.display = 'block';
+        canvasEl.style.width = '100%';
+        canvasEl.style.maxWidth = '1024px';
+        canvasEl.style.minWidth = '0';
+        canvasEl.style.height = 'auto';
+        canvasEl.style.aspectRatio = logicalWidth + ' / ' + logicalHeight;
+        var rect = canvasEl.getBoundingClientRect();
+        var cssWidth = Math.max(1, rect.width || logicalWidth);
+        var cssHeight = cssWidth * logicalHeight / logicalWidth;
+        var dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+        var pixelWidth = Math.max(1, Math.round(cssWidth * dpr));
+        var pixelHeight = Math.max(1, Math.round(cssHeight * dpr));
+        if (canvasEl.width !== pixelWidth || canvasEl.height !== pixelHeight) {
+          canvasEl.width = pixelWidth;
+          canvasEl.height = pixelHeight;
+        }
+        var cx = canvasEl.getContext('2d');
+        cx.setTransform(pixelWidth / logicalWidth, 0, 0, pixelHeight / logicalHeight, 0, 0);
+        cx.imageSmoothingEnabled = true;
+        if ('imageSmoothingQuality' in cx) cx.imageSmoothingQuality = 'high';
+        return { cx: cx, W: logicalWidth, H: logicalHeight };
+      }
+
+      function bindStaticCanvas(canvasEl, draw) {
+        var frame = null;
+        function paint() {
+          if (canvasEl.isConnected) draw(canvasEl);
+        }
+        paint();
+        if (typeof ResizeObserver === 'undefined') return function() {};
+        var observer = new ResizeObserver(function() {
+          if (frame != null) cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(paint);
+        });
+        observer.observe(canvasEl);
+        return function() {
+          observer.disconnect();
+          if (frame != null) cancelAnimationFrame(frame);
+        };
+      }
+
+      function canvasInkFor(background) {
+        var hex = String(background || '').replace('#', '');
+        if (hex.length !== 6) return '#FFFFFF';
+        var rgb = [0, 2, 4].map(function(i) {
+          var channel = parseInt(hex.slice(i, i + 2), 16) / 255;
+          return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+        });
+        var luminance = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+        var whiteContrast = 1.05 / (luminance + 0.05);
+        var darkContrast = (luminance + 0.05) / 0.055;
+        return darkContrast > whiteContrast ? '#020617' : '#FFFFFF';
       }
 
       // ═══ AI EXPLAIN (grade-aware) ═══
@@ -517,8 +576,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 240);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.clearRect(0, 0, W, H);
 
           var midY = H / 2;
@@ -540,7 +599,7 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = vGrad;
           cx.fillRect(30, valenceTop, W - 60, H - valenceTop - 15);
           cx.fillStyle = '#E2E8F0';
-          cx.font = 'bold 11px sans-serif';
+          cx.font = 'bold 13px sans-serif';
           cx.textAlign = 'center';
           cx.fillText('Valence Band (E\u1D65)', W / 2, valenceTop + 22);
 
@@ -563,7 +622,7 @@ window.StemLab = window.StemLab || {
             cx.shadowBlur = 8;
             cx.fillStyle = '#FCD34D';
             cx.font = 'bold 14px sans-serif';
-            cx.fillText('E\u2097 = ' + Eg.toFixed(2) + ' eV', W / 2, midY + 5);
+            cx.fillText('E_g = ' + Eg.toFixed(2) + ' eV', W / 2, midY + 5);
             cx.shadowBlur = 0;
 
             // Arrow
@@ -595,7 +654,7 @@ window.StemLab = window.StemLab || {
             cx.stroke();
             cx.setLineDash([]);
             cx.fillStyle = '#F97316';
-            cx.font = '10px sans-serif';
+            cx.font = '12px sans-serif';
             cx.textAlign = 'right';
             cx.fillText('E\u1DA0 (Fermi)', W - 10, fermiY - 4);
           }
@@ -645,7 +704,7 @@ window.StemLab = window.StemLab || {
             cx.stroke();
             // Photon label
             cx.fillStyle = '#FBBF24';
-            cx.font = '9px sans-serif';
+            cx.font = '11px sans-serif';
             cx.textAlign = 'center';
             cx.fillText('h\u03BD \u2265 ' + Eg.toFixed(2) + ' eV', px, valenceTop + 45);
             // Excited electron
@@ -668,12 +727,12 @@ window.StemLab = window.StemLab || {
           if (gradeBand === '9-12' || gradeBand === '6-8') {
             var niLog = mat.ni > 0 ? Math.log10(mat.ni) : 0;
             var barW = Math.max(5, Math.min(80, niLog * 3.5));
-            cx.fillStyle = '#475569';
+            cx.fillStyle = '#94A3B8';
             cx.fillRect(W - 95, H - 35, 85, 12);
             cx.fillStyle = '#22D3EE';
             cx.fillRect(W - 95, H - 35, barW, 12);
             cx.fillStyle = '#94A3B8';
-            cx.font = '8px sans-serif';
+            cx.font = '10px sans-serif';
             cx.textAlign = 'right';
             cx.fillText('n\u1D62 carrier conc.', W - 10, H - 40);
           }
@@ -697,28 +756,38 @@ window.StemLab = window.StemLab || {
         }, [d.material, d.temperature, d.showPhoton, d.showFermi]);
 
         return h('div', null,
-          // Material selector
-          h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
-            Object.keys(MATERIALS).map(function(key) {
-              var m = MATERIALS[key];
-              return pill(m.name, d.material === key, function() {
+          // A single named selector keeps all eight comparison materials available
+          // without placing eight focus stops between the learner and the diagram.
+          h('div', { className: 'flex flex-wrap items-center gap-2 mb-3 rounded-lg border border-slate-600 bg-slate-900/60 p-2' },
+            h('label', { htmlFor: 'semiconductor-material-select', className: 'text-sm font-bold text-slate-100' }, t('stem.semiconductor.material', 'Material')),
+            h('select', {
+              id: 'semiconductor-material-select',
+              value: d.material || 'silicon',
+              onChange: function(e) {
+                var key = e.target.value;
+                var selected = MATERIALS[key] || MATERIALS.silicon;
                 upd('material', key);
-                tryAwardXP('mat-' + key, 5, 'Explored ' + m.name);
-                if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'materialSelect', 'Selected ' + m.name + '. Band gap: ' + m.bandGap + ' electron volts. Lattice: ' + m.lattice + '.', { debounce: 500 });
-                if (announceToSR) announceToSR('Selected ' + m.name + ', band gap ' + m.bandGap + ' eV');
-              }, 'mat-' + key);
-            })
+                tryAwardXP('mat-' + key, 5, 'Explored ' + selected.name);
+                if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'materialSelect', 'Selected ' + selected.name + '. Band gap: ' + selected.bandGap + ' electron volts. Lattice: ' + selected.lattice + '.', { debounce: 500 });
+                if (announceToSR) announceToSR('Selected ' + selected.name + ', band gap ' + selected.bandGap + ' eV');
+              },
+              className: 'min-h-10 flex-1 min-w-[220px] rounded-lg bg-slate-950 text-slate-100 border border-slate-500 px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-cyan-400',
+              'aria-describedby': 'semiconductor-material-help'
+            }, Object.keys(MATERIALS).map(function(key) {
+              return h('option', { key: key, value: key }, MATERIALS[key].name + ' — ' + MATERIALS[key].bandGap.toFixed(2) + ' eV');
+            })),
+            h('span', { id: 'semiconductor-material-help', className: 'w-full text-xs text-slate-300' }, t('stem.semiconductor.material_help', 'Choose a material, then compare its band gap and classification in the diagram.'))
           ),
           h('canvas', { 
             id: 'semi-bandgap-canvas', width: 440, height: 240,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             tabIndex: 0,
             role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + ' kelvin. '
               + 'Band gap ' + Eg.toFixed(2) + ' electron volts. '
               + (isConductor ? 'Conductor: the bands overlap, so electrons move freely.'
                  : isInsulator ? 'Insulator: the gap is far too wide for thermal energy to bridge.'
                  : 'Semiconductor: thermal energy lifts some electrons across the gap.')
-              + ' Use the material buttons and temperature slider to change this visualization.'
+              + ' Use the material selector and temperature slider to change this visualization.'
           }),
           sliderRow('Temperature', tempK, 50, 800, 10, function(v) { upd('temperature', v); }, ' K'),
           h('div', { className: 'flex flex-wrap items-center gap-3 mt-2' },
@@ -744,8 +813,8 @@ window.StemLab = window.StemLab || {
           infoBox(gradeText(
             mat.name + ' \u2014 ' + (isConductor ? 'Electricity flows through it easily, like water in a pipe!' : isInsulator ? 'Electricity cannot flow through it \u2014 it blocks like a wall.' : 'A special material! Sometimes it conducts, sometimes it doesn\'t. We can control it like a switch!'),
             mat.name + ' \u2014 Band Gap: ' + Eg.toFixed(2) + ' eV. ' + (isConductor ? 'Conductor: free electrons flow easily.' : isInsulator ? 'Insulator: electrons are stuck.' : 'Semiconductor: moderate gap \u2014 we can control conduction with heat, light, or doping.'),
-            mat.name + ' \u2014 E\u2097 = ' + Eg.toFixed(2) + ' eV at ' + tempK + 'K. Lattice: ' + mat.lattice + '. ' + (isConductor ? 'Conductor: overlapping bands, metallic bonding.' : isInsulator ? 'Insulator: very large gap, covalent/ionic bonding.' : 'Semiconductor: moderate gap. Conductivity \u221D exp(-E\u2097/2kT).'),
-            mat.name + ' \u2014 E\u2097(' + tempK + 'K) = ' + Eg.toFixed(3) + ' eV (linear fit near 300K: E\u2097(T) \u2248 E\u2097(300) + (dE\u2097/dT)(T\u2212300); exact form is Varshni E\u2097(T) = E\u2097(0) \u2212 \u03B1T\u00B2/(T+\u03B2)). Lattice: ' + mat.lattice + '. \u03BC\u2099 = ' + mat.mobility + ' cm\u00B2/Vs. n\u1D62(' + tempK + 'K) \u2248 ' + (mat.ni > 0 ? mat.ni.toExponential(1) : '0') + ' cm\u207B\u00B3. ' + (isConductor ? 'Metal: E\u1DA0 in conduction band.' : isInsulator ? 'E\u2097 >> kT, negligible intrinsic carriers.' : 'Intrinsic: E\u1DA0 \u2248 mid-gap. \u03C3 = n\u1D62\u00B7q\u00B7(\u03BC\u2099+\u03BC\u209A).')
+            mat.name + ' \u2014 E_g = ' + Eg.toFixed(2) + ' eV at ' + tempK + 'K. Lattice: ' + mat.lattice + '. ' + (isConductor ? 'Conductor: overlapping bands, metallic bonding.' : isInsulator ? 'Insulator: very large gap, covalent/ionic bonding.' : 'Semiconductor: moderate gap. Conductivity \u221D exp(-E_g/2kT).'),
+            mat.name + ' \u2014 E_g(' + tempK + 'K) = ' + Eg.toFixed(3) + ' eV (linear fit near 300K: E_g(T) \u2248 E_g(300) + (dE_g/dT)(T\u2212300); exact form is Varshni E_g(T) = E_g(0) \u2212 \u03B1T\u00B2/(T+\u03B2)). Lattice: ' + mat.lattice + '. \u03BC\u2099 = ' + mat.mobility + ' cm\u00B2/Vs. n\u1D62(' + tempK + 'K) \u2248 ' + (mat.ni > 0 ? mat.ni.toExponential(1) : '0') + ' cm\u207B\u00B3. ' + (isConductor ? 'Metal: E\u1DA0 in conduction band.' : isInsulator ? 'E_g >> kT, negligible intrinsic carriers.' : 'Intrinsic: E\u1DA0 \u2248 mid-gap. \u03C3 = n\u1D62\u00B7q\u00B7(\u03BC\u2099+\u03BC\u209A).')
           )),
           aiBox()
         );
@@ -772,8 +841,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 300);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.clearRect(0, 0, W, H);
 
           // Background
@@ -799,7 +868,7 @@ window.StemLab = window.StemLab || {
               var isDopant = dopantPositions[idx] && dopantKey !== 'none';
 
               // Bonds
-              cx.strokeStyle = '#334155';
+              cx.strokeStyle = '#64748B';
               cx.lineWidth = 1;
               if (col < gridSize - 1) { cx.beginPath(); cx.moveTo(cx1, cy1); cx.lineTo(cx1 + cellW, cy1); cx.stroke(); }
               if (row < gridSize - 1) { cx.beginPath(); cx.moveTo(cx1, cy1); cx.lineTo(cx1, cy1 + cellH); cx.stroke(); }
@@ -818,8 +887,8 @@ window.StemLab = window.StemLab || {
                 cx.strokeStyle = '#FCD34D';
                 cx.lineWidth = 2;
                 cx.stroke();
-                cx.fillStyle = '#FFF';
-                cx.font = 'bold ' + Math.max(8, radius * 0.8) + 'px sans-serif';
+                cx.fillStyle = canvasInkFor(dopant.color);
+                cx.font = 'bold ' + Math.max(11, radius * 0.8) + 'px Inter, system-ui, sans-serif';
                 cx.textAlign = 'center';
                 cx.textBaseline = 'middle';
                 cx.fillText(dopant.symbol, cx1, cy1);
@@ -833,14 +902,14 @@ window.StemLab = window.StemLab || {
                   cx.beginPath();
                   cx.arc(cx1 + carrierDx, cy1 + carrierDy, 3, 0, Math.PI * 2);
                   cx.fill();
-                  if (radius > 10) { cx.fillStyle = '#93C5FD'; cx.font = '7px sans-serif'; cx.fillText('e\u207B', cx1 + carrierDx, cy1 + carrierDy - 7); }
+                  if (radius > 10) { cx.fillStyle = '#93C5FD'; cx.font = '10px sans-serif'; cx.fillText('e\u207B', cx1 + carrierDx, cy1 + carrierDy - 7); }
                 } else if (dopant.type === 'p') {
                   cx.strokeStyle = '#F87171';
                   cx.lineWidth = 1.5;
                   cx.beginPath();
                   cx.arc(cx1 + carrierDx, cy1 + carrierDy, 3, 0, Math.PI * 2);
                   cx.stroke();
-                  if (radius > 10) { cx.fillStyle = '#FCA5A5'; cx.font = '7px sans-serif'; cx.fillText('h\u207A', cx1 + carrierDx, cy1 + carrierDy - 7); }
+                  if (radius > 10) { cx.fillStyle = '#FCA5A5'; cx.font = '10px sans-serif'; cx.fillText('h\u207A', cx1 + carrierDx, cy1 + carrierDy - 7); }
                 }
               } else {
                 cx.fillStyle = '#4F46E5';
@@ -849,7 +918,7 @@ window.StemLab = window.StemLab || {
                 cx.lineWidth = 1;
                 cx.stroke();
                 cx.fillStyle = '#C7D2FE';
-                cx.font = Math.max(7, radius * 0.65) + 'px sans-serif';
+                cx.font = Math.max(10, radius * 0.65) + 'px sans-serif';
                 cx.textAlign = 'center';
                 cx.textBaseline = 'middle';
                 cx.fillText('Si', cx1, cy1);
@@ -859,7 +928,7 @@ window.StemLab = window.StemLab || {
 
           // Legend
           cx.fillStyle = '#94A3B8';
-          cx.font = '10px sans-serif';
+          cx.font = '12px sans-serif';
           cx.textAlign = 'left';
           cx.textBaseline = 'alphabetic';
           cx.fillText('Si lattice' + (dopantKey !== 'none' ? ' + ' + dopant.name + ' (' + dopant.type + '-type)' : ' (intrinsic)'), 10, H - 5);
@@ -868,7 +937,7 @@ window.StemLab = window.StemLab || {
           if (gradeBand !== 'K-2' && gradeBand !== '3-5' && dopantKey !== 'none') {
             var concExp = 14 + count;
             cx.fillStyle = '#22D3EE';
-            cx.font = '9px sans-serif';
+            cx.font = '11px sans-serif';
             cx.textAlign = 'right';
             cx.fillText('N\u2093 \u2248 10^' + concExp + ' cm\u207B\u00B3', W - 10, H - 5);
           }
@@ -900,7 +969,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-doping-canvas', width: 440, height: 300,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': dopantKey !== 'none'
               ? 'Silicon crystal lattice with ' + count + ' ' + dopant.name + ' atoms substituted in. '
                 + dopant.name + ' has ' + dopant.valence + ' valence electrons against silicon\u2019s 4, making this '
@@ -974,8 +1043,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 280);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.clearRect(0, 0, W, H);
 
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
@@ -994,7 +1063,7 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = '#FFF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
           cx.fillText('P-type', (10 + midX - depletionW / 2) / 2, junctionY + 18);
           // Fixed ions (-)
-          cx.fillStyle = '#93C5FD'; cx.font = '10px sans-serif';
+          cx.fillStyle = '#93C5FD'; cx.font = '12px sans-serif';
           for (var pi = 0; pi < 3; pi++) {
             var pix = midX - depletionW / 2 - 15 - pi * 18;
             cx.fillText('\u2296', pix, junctionY + junctionH / 2 + 5);
@@ -1008,7 +1077,7 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = '#FFF';
           cx.fillText('N-type', (midX + depletionW / 2 + W - 10) / 2, junctionY + 18);
           // Fixed ions (+)
-          cx.fillStyle = '#FCA5A5'; cx.font = '10px sans-serif';
+          cx.fillStyle = '#FCA5A5'; cx.font = '12px sans-serif';
           for (var ni = 0; ni < 3; ni++) {
             cx.fillText('\u2295', midX + depletionW / 2 + 10 + ni * 18, junctionY + junctionH / 2 + 5);
           }
@@ -1020,7 +1089,7 @@ window.StemLab = window.StemLab || {
             cx.strokeStyle = '#CBD5E1'; cx.setLineDash([4, 3]); cx.lineWidth = 1;
             cx.strokeRect(midX - depletionW / 2, junctionY, depletionW, junctionH);
             cx.setLineDash([]);
-            cx.fillStyle = '#CBD5E1'; cx.font = '9px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#CBD5E1'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
             // Plain glyphs on purpose: at this label size the Latin modifier-letter
             // subscripts used elsewhere in the tool shrink to 2-3px and read as
             // punctuation. Verified on a rendered canvas, not assumed.
@@ -1041,7 +1110,7 @@ window.StemLab = window.StemLab || {
               cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
               cx.beginPath(); cx.moveTo(ax1 + 5, ay - 4); cx.lineTo(ax1, ay); cx.lineTo(ax1 + 5, ay + 4); cx.stroke();
             }
-            cx.fillStyle = '#FBBF24'; cx.font = '9px sans-serif'; cx.fillText('\u2190 E field', midX, junctionY + junctionH - 8);
+            cx.fillStyle = '#FBBF24'; cx.font = '11px sans-serif'; cx.fillText('\u2190 E field', midX, junctionY + junctionH - 8);
           }
 
           // Carrier animation
@@ -1076,15 +1145,15 @@ window.StemLab = window.StemLab || {
                 cx.shadowColor = '#FBBF24'; cx.shadowBlur = 20 * glowIntensity;
                 cx.fill();
                 cx.shadowBlur = 0;
-                cx.fillStyle = '#FCD34D'; cx.font = '8px sans-serif';
+                cx.fillStyle = '#FCD34D'; cx.font = '10px sans-serif';
                 cx.fillText('LED \u2728', midX, junctionY - 38);
               }
             } else if (bias < -0.3) {
-              cx.fillStyle = '#F87171'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#F87171'; cx.font = '13px sans-serif'; cx.textAlign = 'center';
               cx.fillText('\u26A0 Reverse bias \u2014 no current (depletion widens)', midX, junctionY - 10);
               // Breakdown warning at high reverse bias
               if (bias < -2.5) {
-                cx.fillStyle = '#EF4444'; cx.font = 'bold 11px sans-serif';
+                cx.fillStyle = '#EF4444'; cx.font = 'bold 13px sans-serif';
                 cx.fillText('\u26A1 Approaching BREAKDOWN!', midX, junctionY - 25);
               }
             } else {
@@ -1108,7 +1177,7 @@ window.StemLab = window.StemLab || {
             var ivX = W - 110, ivY = H - 65, ivW = 100, ivH = 55;
             cx.fillStyle = 'rgba(15, 23, 42, 0.85)';
             cx.fillRect(ivX, ivY, ivW, ivH);
-            cx.strokeStyle = '#475569'; cx.lineWidth = 1; cx.strokeRect(ivX, ivY, ivW, ivH);
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 1; cx.strokeRect(ivX, ivY, ivW, ivH);
             // Axes
             cx.strokeStyle = '#64748B'; cx.lineWidth = 0.5;
             cx.beginPath(); cx.moveTo(ivX + ivW / 3, ivY + 2); cx.lineTo(ivX + ivW / 3, ivY + ivH - 2); cx.stroke();
@@ -1127,12 +1196,12 @@ window.StemLab = window.StemLab || {
             var bpI = bias > 0 ? (Math.exp(bias * 15) - 1) * 0.0001 : -0.00001;
             var bpy = ivY + ivH * 0.7 - Math.min(ivH * 0.65, Math.max(-ivH * 0.2, bpI * ivH * 500));
             cx.fillStyle = '#F59E0B'; cx.beginPath(); cx.arc(bpx, bpy, 3, 0, Math.PI * 2); cx.fill();
-            cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText('I-V Curve', ivX + ivW / 2, ivY + ivH + 8);
           }
 
           // Battery / bias
-          cx.fillStyle = '#E2E8F0'; cx.font = '11px sans-serif'; cx.textAlign = 'left';
+          cx.fillStyle = '#E2E8F0'; cx.font = '13px sans-serif'; cx.textAlign = 'left';
           cx.fillText('V\u2090\u209A\u209A = ' + (bias >= 0 ? '+' : '') + bias.toFixed(1) + ' V', 10, H - 5);
         };
 
@@ -1147,7 +1216,7 @@ window.StemLab = window.StemLab || {
         return h('div', null,
           h('canvas', { 
             id: 'semi-pn-canvas', width: 440, height: 280,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             // The depletion width is the quantity this view exists to show, so the
             // non-visual label carries it too rather than just the bias.
             role: 'img', 'aria-label': 'P-N junction diagram. Bias ' + bias.toFixed(1)
@@ -1179,7 +1248,7 @@ window.StemLab = window.StemLab || {
             bias > 0.5 ? 'Push the positive side \u2014 electricity flows through like opening a gate!' : bias < -0.3 ? 'Push the wrong way \u2014 the gate closes tighter!' : 'The gate is balanced \u2014 no electricity flows yet.',
             bias > 0.5 ? 'Forward Bias: voltage pushes carriers across the junction. Current flows!' : bias < -0.3 ? 'Reverse Bias: voltage pulls carriers apart. Depletion widens, blocking current.' : 'Equilibrium: internal electric field balances diffusion. No net current.',
             bias > 0.5 ? 'Forward Bias (V > 0.6V): depletion narrows, diffusion current dominates. I = I\u2080(e^(V/V\u209C) \u2212 1). This is how diodes and LEDs work.' : bias < -0.3 ? 'Reverse Bias: depletion widens \u221D \u221A(V\u2091\u1D62 + |V\u1D63|). Only leakage current I\u2080 flows. Breakdown at V\u2091\u1D63.' : 'Equilibrium: built-in potential V\u2091\u1D62 \u2248 0.6-0.7V (Si). Drift and diffusion currents balance.',
-            bias > 0.5 ? 'Forward: I = I\u2080(e^(qV/nkT) \u2212 1), n\u22481-2. Depletion width W \u221D \u221A(V\u2091\u1D62\u2212V\u1DA0). Minority carrier injection dominates. At V >> V\u209C: I \u2248 I\u2080\u00B7e^(qV/kT).' : bias < -0.3 ? 'Reverse: W = \u221A(2\u03B5(V\u2091\u1D62+|V\u1D63|)/q \u00B7 (1/N\u2090+1/N\u2093)). C\u2C7C = \u03B5A/W (junction capacitance). Breakdown: Zener (E\u2097<5V) or Avalanche (E\u2097>5V).' : 'Equilibrium: V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2). Built-in field \u2248 10\u2074-10\u2075 V/cm. Depletion: no mobile carriers, only fixed ions.'
+            bias > 0.5 ? 'Forward: I = I\u2080(e^(qV/nkT) \u2212 1), n\u22481-2. Depletion width W \u221D \u221A(V\u2091\u1D62\u2212V\u1DA0). Minority carrier injection dominates. At V >> V\u209C: I \u2248 I\u2080\u00B7e^(qV/kT).' : bias < -0.3 ? 'Reverse: W = \u221A(2\u03B5(V\u2091\u1D62+|V\u1D63|)/q \u00B7 (1/N\u2090+1/N\u2093)). C\u2C7C = \u03B5A/W (junction capacitance). Breakdown: Zener (E_g<5V) or Avalanche (E_g>5V).' : 'Equilibrium: V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2). Built-in field \u2248 10\u2074-10\u2075 V/cm. Depletion: no mobile carriers, only fixed ions.'
           )),
           aiBox()
         );
@@ -1211,8 +1280,9 @@ window.StemLab = window.StemLab || {
         var animRef = React.useRef(null);
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var logicalHeight = showCMOS ? 200 : 220;
+          var surface = prepareCanvas(canvasEl, 440, logicalHeight);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.clearRect(0, 0, W, H);
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
@@ -1224,16 +1294,16 @@ window.StemLab = window.StemLab || {
             // VDD rail
             cx.strokeStyle = '#EF4444'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, 15); cx.lineTo(midX, 35); cx.stroke();
-            cx.fillStyle = '#EF4444'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#EF4444'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText('VDD = ' + vdd + 'V', midX, 12);
 
             // PMOS (top)
             cx.fillStyle = '#1E3A5F'; cx.fillRect(midX - 30, 35, 60, 40);
             cx.strokeStyle = '#3B82F6'; cx.lineWidth = 1.5; cx.strokeRect(midX - 30, 35, 60, 40);
-            cx.fillStyle = '#93C5FD'; cx.font = 'bold 10px sans-serif';
+            cx.fillStyle = '#93C5FD'; cx.font = 'bold 12px sans-serif';
             cx.fillText('PMOS', midX, 58);
             var pmosOn = Vg < (vdd - 1.5);
-            cx.fillStyle = pmosOn ? '#34D399' : '#64748B'; cx.font = '9px sans-serif';
+            cx.fillStyle = pmosOn ? '#34D399' : '#94A3B8'; cx.font = '11px sans-serif';
             cx.fillText(pmosOn ? 'ON' : 'OFF', midX + 40, 55);
 
             // Connection
@@ -1244,22 +1314,22 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = cmosOut ? '#34D399' : '#EF4444';
             cx.beginPath(); cx.arc(midX, 95, 6, 0, Math.PI * 2); cx.fill();
             cx.strokeStyle = '#64748B'; cx.beginPath(); cx.moveTo(midX + 6, 95); cx.lineTo(midX + 50, 95); cx.stroke();
-            cx.fillStyle = cmosOut ? '#34D399' : '#EF4444'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = cmosOut ? '#34D399' : '#EF4444'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
             cx.fillText('OUT = ' + (cmosOut ? '1 (HIGH)' : '0 (LOW)'), midX + 55, 98);
 
             // NMOS (bottom)
             cx.fillStyle = '#3B1212'; cx.fillRect(midX - 30, 105, 60, 40);
             cx.strokeStyle = '#EF4444'; cx.lineWidth = 1.5; cx.strokeRect(midX - 30, 105, 60, 40);
-            cx.fillStyle = '#FCA5A5'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#FCA5A5'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText('NMOS', midX, 128);
             var nmosOn = Vg > 1.5;
-            cx.fillStyle = nmosOn ? '#34D399' : '#64748B'; cx.font = '9px sans-serif';
+            cx.fillStyle = nmosOn ? '#34D399' : '#94A3B8'; cx.font = '11px sans-serif';
             cx.fillText(nmosOn ? 'ON' : 'OFF', midX + 40, 125);
 
             // GND rail
             cx.strokeStyle = '#64748B'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, 145); cx.lineTo(midX, 165); cx.stroke();
-            cx.fillStyle = '#64748B'; cx.font = 'bold 10px sans-serif';
+            cx.fillStyle = '#94A3B8'; cx.font = 'bold 12px sans-serif';
             cx.fillText('GND', midX, 178);
 
             // Gate input
@@ -1270,7 +1340,7 @@ window.StemLab = window.StemLab || {
             cx.beginPath(); cx.moveTo(midX - 35, 125); cx.lineTo(midX - 30, 125); cx.stroke();
             cx.beginPath(); cx.moveTo(midX - 35, 55); cx.lineTo(midX - 35, 125); cx.stroke();
             cx.beginPath(); cx.moveTo(midX - 35, 95); cx.lineTo(30, 95); cx.stroke();
-            cx.fillStyle = '#FBBF24'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'right';
+            cx.fillStyle = '#FBBF24'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'right';
             cx.fillText('IN = ' + Vg.toFixed(1) + 'V', 28, 92);
 
             // Current flow animation
@@ -1286,25 +1356,25 @@ window.StemLab = window.StemLab || {
             }
 
             // Truth table
-            cx.fillStyle = '#94A3B8'; cx.font = '9px monospace'; cx.textAlign = 'left';
+            cx.fillStyle = '#94A3B8'; cx.font = '11px monospace'; cx.textAlign = 'left';
             cx.fillText('IN\u2502OUT', W - 55, 30);
             cx.fillText(' 0 \u2502 1', W - 55, 42);
             cx.fillText(' 1 \u2502 0', W - 55, 54);
           } else if (type.startsWith('mosfet')) {
             // ═══ SINGLE MOSFET ═══
             cx.fillStyle = '#1E293B'; cx.fillRect(midX - 60, midY - 30, 120, 60);
-            cx.strokeStyle = '#475569'; cx.lineWidth = 2; cx.strokeRect(midX - 60, midY - 30, 120, 60);
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 2; cx.strokeRect(midX - 60, midY - 30, 120, 60);
             // Gate
             cx.fillStyle = '#FBBF24'; cx.fillRect(midX - 40, midY - 55, 80, 18);
-            cx.fillStyle = '#FFF'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#FFF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
             cx.fillText('Gate', midX, midY - 42);
             // Oxide
             cx.fillStyle = '#94A3B8'; cx.fillRect(midX - 40, midY - 37, 80, 7);
-            cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.fillText('SiO\u2082', midX, midY - 32);
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.fillText('SiO\u2082', midX, midY - 32);
             // Source
             cx.fillStyle = type === 'mosfet-n' ? '#EF4444' : '#3B82F6';
             cx.fillRect(midX - 80, midY - 15, 25, 30);
-            cx.fillStyle = '#FFF'; cx.font = 'bold 10px sans-serif'; cx.fillText('S', midX - 67, midY + 4);
+            cx.fillStyle = '#FFF'; cx.font = 'bold 12px sans-serif'; cx.fillText('S', midX - 67, midY + 4);
             // Drain
             cx.fillStyle = type === 'mosfet-n' ? '#EF4444' : '#3B82F6';
             cx.fillRect(midX + 55, midY - 15, 25, 30);
@@ -1315,7 +1385,7 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = '#FFF';
             cx.fillText('D', midX + 68, midY + 4);
             // Substrate label
-            cx.fillStyle = '#64748B'; cx.font = '8px sans-serif';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(type === 'mosfet-n' ? 'p-substrate' : 'n-substrate', midX, midY + 25);
 
             // Channel
@@ -1333,32 +1403,32 @@ window.StemLab = window.StemLab || {
             }
 
             // Labels
-            cx.fillStyle = '#E2E8F0'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#E2E8F0'; cx.font = '12px sans-serif'; cx.textAlign = 'left';
             cx.fillText('V\u2097\u209B = ' + Vg.toFixed(1) + 'V', 10, 20);
             cx.fillText('V\u2093\u209B = ' + Vd.toFixed(1) + 'V', 10, 35);
             cx.fillText('V\u209C\u2095 = ' + Math.abs(threshold).toFixed(1) + 'V', 10, 50);
             cx.fillStyle = isOn ? '#34D399' : '#F87171'; cx.font = 'bold 14px sans-serif';
             cx.fillText(isOn ? '\u2713 ON' : '\u2717 OFF', W - 50, 25);
-            cx.fillStyle = '#60A5FA'; cx.font = '10px sans-serif';
+            cx.fillStyle = '#60A5FA'; cx.font = '12px sans-serif';
             cx.fillText('I\u2093 \u2248 ' + currentPct + '%', W - 60, 45);
 
             // Operating region (9-12)
             if (gradeBand === '9-12' && isOn) {
               var region = (Vd - Vg + threshold) < 0 ? 'Saturation' : 'Linear';
-              cx.fillStyle = '#A78BFA'; cx.font = '9px sans-serif';
+              cx.fillStyle = '#A78BFA'; cx.font = '11px sans-serif';
               cx.fillText('Region: ' + region, W - 90, 60);
             }
 
             // Wires
             cx.strokeStyle = '#64748B'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, midY - 55); cx.lineTo(midX, midY - 75); cx.stroke();
-            cx.fillStyle = '#FBBF24'; cx.font = '10px sans-serif'; cx.textAlign = 'center'; cx.fillText('G', midX, midY - 78);
+            cx.fillStyle = '#FBBF24'; cx.font = '12px sans-serif'; cx.textAlign = 'center'; cx.fillText('G', midX, midY - 78);
             cx.strokeStyle = '#64748B';
             cx.beginPath(); cx.moveTo(midX - 80, midY); cx.lineTo(midX - 100, midY); cx.stroke();
             cx.beginPath(); cx.moveTo(midX + 80, midY); cx.lineTo(midX + 100, midY); cx.stroke();
           } else {
             // ═══ BJT ═══
-            cx.fillStyle = '#475569'; cx.fillRect(midX - 4, midY - 40, 8, 80);
+            cx.fillStyle = '#94A3B8'; cx.fillRect(midX - 4, midY - 40, 8, 80);
             cx.strokeStyle = '#EF4444'; cx.lineWidth = 3;
             cx.beginPath(); cx.moveTo(midX + 4, midY + 10); cx.lineTo(midX + 50, midY + 40); cx.stroke();
             // Emitter arrow
@@ -1375,7 +1445,7 @@ window.StemLab = window.StemLab || {
 
             // Beta/gain for 9-12
             if (gradeBand === '9-12' && isOn) {
-              cx.fillStyle = '#A78BFA'; cx.font = '10px sans-serif';
+              cx.fillStyle = '#A78BFA'; cx.font = '12px sans-serif';
               cx.fillText('\u03B2 \u2248 100 (I\u1D9C = \u03B2\u00B7I\u1D47)', midX, midY + 65);
             }
 
@@ -1387,7 +1457,7 @@ window.StemLab = window.StemLab || {
               cx.beginPath(); cx.arc(midX + 4 + bft * 46, midY - 10 - bft * 30, 3, 0, Math.PI * 2); cx.fill();
             }
 
-            cx.fillStyle = '#E2E8F0'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#E2E8F0'; cx.font = '12px sans-serif'; cx.textAlign = 'left';
             cx.fillText('V\u2091\u2091 = ' + Vg.toFixed(1) + 'V (turn on > ' + threshold.toFixed(1) + 'V)', 10, H - 10);
           }
         };
@@ -1409,7 +1479,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-transistor-canvas', width: 440, height: showCMOS ? 200 : 220,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': (showCMOS ? 'CMOS inverter' : type + ' transistor') + ', Vg=' + Vg.toFixed(1) + 'V'
           }),
           sliderRow(showCMOS ? 'Input V' : 'Gate V', Vg, type === 'mosfet-p' && !showCMOS ? -5 : 0, type === 'mosfet-p' && !showCMOS ? 0 : 5, 0.1, function(v) {
@@ -1419,7 +1489,7 @@ window.StemLab = window.StemLab || {
           !showCMOS && sliderRow('Drain V', Vd, 0, 10, 0.5, function(v) { upd('drainVoltage', v); }, ' V'),
           // Current bar
           h('div', { className: 'mt-2 flex items-center gap-2' },
-            h('span', { className: 'text-xs text-slate-600 w-20' }, showCMOS ? 'Output' : 'Current'),
+            h('span', { className: 'text-xs text-slate-400 w-20' }, showCMOS ? 'Output' : 'Current'),
             h('div', { className: 'flex-1 h-3 bg-slate-800 rounded-full overflow-hidden' },
               h('div', { className: 'h-full rounded-full transition-all duration-300 ' + (showCMOS ? (cmosOut ? 'bg-emerald-500' : 'bg-red-500') : isOn ? 'bg-emerald-500' : 'bg-slate-700'),
                 style: { width: (showCMOS ? (cmosOut ? 100 : 0) : currentPct) + '%' }
@@ -1466,8 +1536,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 180);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.clearRect(0, 0, W, H);
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
@@ -1483,7 +1553,7 @@ window.StemLab = window.StemLab || {
           cx.lineTo(midX - gateW / 2, gate.inputs === 1 ? midY : midY - 15);
           cx.stroke(); cx.shadowBlur = 0;
 
-          cx.fillStyle = inA ? '#34D399' : '#64748B';
+          cx.fillStyle = inA ? '#34D399' : '#94A3B8';
           cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
           cx.fillText('A=' + (inA ? '1' : '0'), 18, (gate.inputs === 1 ? midY : midY - 15) - 10);
 
@@ -1492,7 +1562,7 @@ window.StemLab = window.StemLab || {
             if (inB) { cx.shadowColor = '#34D399'; cx.shadowBlur = 6; }
             cx.beginPath(); cx.moveTo(30, midY + 15); cx.lineTo(midX - gateW / 2, midY + 15); cx.stroke();
             cx.shadowBlur = 0;
-            cx.fillStyle = inB ? '#34D399' : '#64748B';
+            cx.fillStyle = inB ? '#34D399' : '#94A3B8';
             cx.fillText('B=' + (inB ? '1' : '0'), 18, midY + 15 - 10);
           }
 
@@ -1530,17 +1600,18 @@ window.StemLab = window.StemLab || {
           cx.beginPath(); cx.arc(W - 18, midY, 10, 0, Math.PI * 2); cx.fill();
           cx.shadowBlur = 0;
           cx.fillStyle = '#FFF'; cx.font = 'bold 12px sans-serif'; cx.fillText(output ? '1' : '0', W - 18, midY + 4);
-          cx.fillStyle = output ? '#34D399' : '#F87171'; cx.font = 'bold 10px sans-serif';
+          cx.fillStyle = output ? '#34D399' : '#F87171'; cx.font = 'bold 12px sans-serif';
           cx.fillText('Q=' + (output ? '1' : '0'), W - 18, midY - 16);
 
           // Transistor count label
-          cx.fillStyle = '#64748B'; cx.font = '9px sans-serif'; cx.textAlign = 'left';
+          cx.fillStyle = '#94A3B8'; cx.font = '11px sans-serif'; cx.textAlign = 'left';
           cx.fillText(gate.transistors + ' transistors', 10, H - 5);
         };
 
         React.useEffect(function() {
           var canvas = document.getElementById('semi-gates-canvas');
-          if (canvas) canvasRef(canvas);
+          if (!canvas) return;
+          return bindStaticCanvas(canvas, canvasRef);
         }, [d.gateType, d.inputA, d.inputB]);
 
         // Full truth table grid
@@ -1552,8 +1623,8 @@ window.StemLab = window.StemLab || {
           truthTableGrid = h('div', { className: 'mt-2 rounded-lg bg-slate-800/60 border border-slate-700 p-2 overflow-x-auto' },
             h('table', { className: 'w-full text-xs' },
               h('caption', { className: 'sr-only' }, t('stem.semiconductor.data_table_a_b_q', 'Data table: A, B, Q')), h('thead', null, h('tr', null,
-                h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'A'),
-                gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-600 px-2 py-1' }, 'B'),
+                h('th', { scope: 'col', className: 'text-left text-slate-400 px-2 py-1' }, 'A'),
+                gate.inputs === 2 && h('th', { scope: 'col', className: 'text-left text-slate-400 px-2 py-1' }, 'B'),
                 h('th', { scope: 'col', className: 'text-left text-cyan-400 px-2 py-1' }, 'Q')
               )),
               h('tbody', null, rows.map(function(r, ri) {
@@ -1580,7 +1651,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-gates-canvas', width: 440, height: 180,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': gateType + ' gate: A=' + (inA ? 1 : 0) + (gate.inputs === 2 ? ' B=' + (inB ? 1 : 0) : '') + ' Q=' + (output ? 1 : 0)
           }),
           // Input toggles
@@ -1598,7 +1669,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex items-center gap-3 mt-2' },
-            h('span', { className: 'text-xs text-slate-600' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
+            h('span', { className: 'text-xs text-slate-400' }, h('span', { className: 'font-bold text-slate-300' }, 'Truth: '), gate.truth),
             pill(d.showTruthGrid ? 'Hide Table' : 'Full Table', d.showTruthGrid, function() { upd('showTruthGrid', !d.showTruthGrid); })
           ),
           truthTableGrid,
@@ -1658,8 +1729,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 260);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           // Zener breakdown current runs to about -25 mA in this model, so it needs
@@ -1692,7 +1763,7 @@ window.StemLab = window.StemLab || {
           for (var gv = IV_V_MIN; gv <= IV_V_MAX; gv++) {
             var gx = originX + gv * scaleX;
             cx.beginPath(); cx.moveTo(gx, 10); cx.lineTo(gx, H - 10); cx.stroke();
-            cx.fillStyle = '#475569'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText(gv + 'V', gx, H - 3);
           }
 
@@ -1704,7 +1775,7 @@ window.StemLab = window.StemLab || {
             var ty = originY - ma * scaleY;
             cx.strokeStyle = '#1E293B';
             cx.beginPath(); cx.moveTo(originX - 3, ty); cx.lineTo(W - 5, ty); cx.stroke();
-            cx.fillStyle = '#475569'; cx.font = '8px sans-serif';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(ma.toFixed(0), originX - 5, ty + 3);
           }
           // One negative tick so reverse/breakdown current is readable too.
@@ -1713,14 +1784,14 @@ window.StemLab = window.StemLab || {
           if (negY < H - 16) {
             cx.strokeStyle = '#1E293B';
             cx.beginPath(); cx.moveTo(originX - 3, negY); cx.lineTo(W - 5, negY); cx.stroke();
-            cx.fillStyle = '#475569'; cx.fillText(negMa.toFixed(0), originX - 5, negY + 3);
+            cx.fillStyle = '#94A3B8'; cx.fillText(negMa.toFixed(0), originX - 5, negY + 3);
           }
 
           // Axes
           cx.strokeStyle = '#64748B'; cx.lineWidth = 1.5;
           cx.beginPath(); cx.moveTo(15, originY); cx.lineTo(W - 5, originY); cx.stroke(); // V axis
           cx.beginPath(); cx.moveTo(originX, 5); cx.lineTo(originX, H - 15); cx.stroke(); // I axis
-          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#94A3B8'; cx.font = '12px sans-serif'; cx.textAlign = 'center';
           cx.fillText('V (Volts)', W / 2, H - 12);
           cx.save(); cx.translate(8, H / 2); cx.rotate(-Math.PI / 2);
           cx.fillText('I (mA)', 0, 0); cx.restore();
@@ -1747,7 +1818,7 @@ window.StemLab = window.StemLab || {
             cx.moveTo(originX - 3 * scaleX, originY + 3 * scaleY);
             cx.lineTo(originX + 5 * scaleX, originY - 5 * scaleY * 0.005);
             cx.stroke(); cx.setLineDash([]);
-            cx.fillStyle = '#475569'; cx.font = '8px sans-serif'; cx.textAlign = 'right';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
             cx.fillText('Ohm ref.', W - 10, originY - 5);
           }
 
@@ -1770,13 +1841,13 @@ window.StemLab = window.StemLab || {
           cx.setLineDash([]);
 
           // Readout
-          cx.fillStyle = '#FCD34D'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'left';
+          cx.fillStyle = '#FCD34D'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
           var iDisplay = Math.abs(currentI) < 0.001 ? (currentI * 1e6).toFixed(1) + ' \u03BCA' : (currentI * 1000).toFixed(2) + ' mA';
           cx.fillText('V = ' + sweepV.toFixed(2) + 'V', markerX + 8, markerY - 8);
           cx.fillText('I = ' + iDisplay, markerX + 8, markerY + 8);
 
           // Device icon
-          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
+          cx.fillStyle = '#94A3B8'; cx.font = '12px sans-serif'; cx.textAlign = 'right';
           cx.fillText(device.charAt(0).toUpperCase() + device.slice(1) + ' @ ' + ivTemp + 'K', W - 10, 15);
 
           // LED glow for LED device
@@ -1790,7 +1861,8 @@ window.StemLab = window.StemLab || {
 
         React.useEffect(function() {
           var canvas = document.getElementById('semi-iv-canvas');
-          if (canvas) canvasRef(canvas);
+          if (!canvas) return;
+          return bindStaticCanvas(canvas, canvasRef);
         }, [d.ivDevice, d.ivSweepV, d.ivShowIdeal, d.ivTemp]);
 
         var iDisplay = Math.abs(currentI) < 0.001 ? (currentI * 1e6).toFixed(1) + ' \u03BCA' : (currentI * 1000).toFixed(2) + ' mA';
@@ -1804,7 +1876,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-iv-canvas', width: 440, height: 260,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': 'I-V curve for ' + device + ' at V=' + sweepV.toFixed(2) + 'V, I=' + iDisplay
           }),
           sliderRow('Sweep V', sweepV, IV_V_MIN, IV_V_MAX, 0.05, function(v) { upd('ivSweepV', v); }, ' V'),
@@ -1824,7 +1896,7 @@ window.StemLab = window.StemLab || {
           infoBox(gradeText(
             device === 'diode' ? 'A diode is like a one-way door for electricity!' : device === 'led' ? 'An LED makes light when electricity goes through it the right way!' : device === 'zener' ? 'A Zener diode lets electricity go backwards at a certain voltage!' : 'A resistor slows down electricity evenly in both directions.',
             device === 'diode' ? 'Diodes only conduct in one direction. Forward: current grows exponentially past ~0.6V. Reverse: almost no current.' : device === 'led' ? 'LEDs emit light when forward biased (>1.5V). Different colors = different voltage drops.' : device === 'zener' ? 'Zener diodes break down at a specific reverse voltage (5.1V here). Used for voltage regulation.' : 'Resistors follow Ohm\'s Law: V = IR. Linear I-V curve.',
-            device === 'diode' ? 'Shockley equation: I = I\u2080(e^(V/nV\u209C) \u2212 1). V\u209C = kT/q = ' + (Vt * 1000).toFixed(1) + 'mV at ' + ivTemp + 'K. n \u2248 1-2 (ideality factor).' : device === 'led' ? 'LED: E\u2097 determines color (\u03BB = hc/E\u2097). Red ~1.8eV, Blue ~2.8eV, UV ~3.4eV. I \u221D V\u00B2 above threshold.' : device === 'zener' ? 'Zener breakdown (E\u2097<5V): quantum tunneling. Avalanche (E\u2097>5V): impact ionization. V\u2093 has negative temp coefficient for Zener, positive for avalanche.' : 'Ohm\'s law: V = IR. R = \u03C1L/A where \u03C1 is resistivity. Power: P = IV = I\u00B2R = V\u00B2/R.',
+            device === 'diode' ? 'Shockley equation: I = I\u2080(e^(V/nV\u209C) \u2212 1). V\u209C = kT/q = ' + (Vt * 1000).toFixed(1) + 'mV at ' + ivTemp + 'K. n \u2248 1-2 (ideality factor).' : device === 'led' ? 'LED: E_g determines color (\u03BB = hc/E_g). Red ~1.8eV, Blue ~2.8eV, UV ~3.4eV. I \u221D V\u00B2 above threshold.' : device === 'zener' ? 'Zener breakdown (E_g<5V): quantum tunneling. Avalanche (E_g>5V): impact ionization. V\u2093 has negative temp coefficient for Zener, positive for avalanche.' : 'Ohm\'s law: V = IR. R = \u03C1L/A where \u03C1 is resistivity. Power: P = IV = I\u00B2R = V\u00B2/R.',
             device === 'diode' ? 'Shockley: I = I\u2080(e^(qV/nkT) \u2212 1). I\u2080 = qAn\u1D62\u00B2(D\u2099/L\u2099N\u2090 + D\u209A/L\u209AN\u2093). At ' + ivTemp + 'K: V\u209C = ' + (Vt * 1000).toFixed(2) + 'mV. Small-signal: r\u2093 = nV\u209C/I\u2093, C\u2093 = \u03C4\u2093\u00B7g\u2093.' : device === 'led' ? 'LED internal quantum efficiency \u03B7\u1D62 = B\u00B7n/(A + B\u00B7n + C\u00B7n\u00B2). Wall-plug efficiency = P\u2092\u209A\u209C/P\u2091\u2097\u2091\u209C. Spectral emission: \u0394\u03BB \u2248 1.8kT\u03BB\u00B2/hc.' : device === 'zener' ? 'Zener: V\u2093(T) = V\u2093\u2080 + \u03B1\u209C\u00B7(T\u2212T\u2080). \u03B1\u209C < 0 for V\u2093<5V (tunneling), \u03B1\u209C > 0 for V\u2093>5V (avalanche). Dynamic impedance: Z\u2093 = \u0394V\u2093/\u0394I\u2093.' : 'Ohm: J = \u03C3E. \u03C3 = nq\u03BC. Temperature: R(T) = R\u2080(1+\u03B1\u0394T). Noise: V\u2099 = \u221A(4kTRB).'
           )),
           aiBox()
@@ -1897,7 +1969,7 @@ window.StemLab = window.StemLab || {
         }
 
         return h('div', null,
-          h('div', { className: 'text-xs text-slate-600 mb-2' }, t('stem.semiconductor.build_a_circuit_from_components_add_pa', 'Build a circuit from components. Add parts, then simulate!')),
+          h('div', { className: 'text-xs text-slate-400 mb-2' }, t('stem.semiconductor.build_a_circuit_from_components_add_pa', 'Build a circuit from components. Add parts, then simulate!')),
           // Palette
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             COMP_PALETTE.map(function(comp) {
@@ -1907,7 +1979,7 @@ window.StemLab = window.StemLab || {
           // Circuit board
           h('div', { className: 'rounded-lg bg-slate-900 border border-slate-700 p-3 min-h-[120px] mb-3' },
             components.length === 0
-              ? h('div', { className: 'text-center text-slate-600 py-8' }, t('stem.semiconductor.click_components_above_to_add_them', 'Click components above to add them'))
+              ? h('div', { className: 'text-center text-slate-400 py-8' }, t('stem.semiconductor.click_components_above_to_add_them', 'Click components above to add them'))
               : h('div', { className: 'flex flex-wrap gap-2' },
                   // Supply
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
@@ -1915,13 +1987,13 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-[11px] text-red-400' }, supplyV + 'V')
                   ),
                   // Wire
-                  h('span', { className: 'self-center text-slate-600' }, '\u2014'),
+                  h('span', { className: 'self-center text-slate-400' }, '\u2014'),
                   // Components
                   components.map(function(comp, ci) {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
                     return h('div', { key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
                       h('span', { className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { className: 'text-[11px] text-slate-600' }, comp.value),
+                      h('span', { className: 'text-[11px] text-slate-400' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
                         className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[11px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
@@ -1931,10 +2003,10 @@ window.StemLab = window.StemLab || {
                     );
                   }),
                   // Wire to ground
-                  h('span', { className: 'self-center text-slate-600' }, '\u2014'),
+                  h('span', { className: 'self-center text-slate-400' }, '\u2014'),
                   h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600' },
                     h('span', { className: 'text-lg' }, '\u23DA'),
-                    h('span', { className: 'text-[11px] text-slate-600' }, 'GND')
+                    h('span', { className: 'text-[11px] text-slate-400' }, 'GND')
                   )
                 )
           ),
@@ -2013,8 +2085,8 @@ window.StemLab = window.StemLab || {
         // Canvas: wafer cross-section that builds up layers
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 240);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           var waferY = H * 0.55, waferH = 40;
@@ -2025,7 +2097,7 @@ window.StemLab = window.StemLab || {
           subGrad.addColorStop(0, '#4338CA'); subGrad.addColorStop(1, '#312E81');
           cx.fillStyle = subGrad;
           cx.fillRect(40, waferY, W - 80, waferH);
-          cx.fillStyle = '#C7D2FE'; cx.font = '9px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#C7D2FE'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
           cx.fillText('Si Substrate', W / 2, waferY + waferH / 2 + 3);
 
           // Build up layers based on stage progress
@@ -2056,7 +2128,7 @@ window.StemLab = window.StemLab || {
               } else {
                 cx.fillRect(40, yOff, W - 80, layer.h);
               }
-              cx.fillStyle = '#FFF'; cx.font = '7px sans-serif'; cx.textAlign = 'left';
+              cx.fillStyle = '#FFF'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
               cx.fillText(layer.name, 45, yOff + layer.h - 1);
             }
           });
@@ -2070,7 +2142,7 @@ window.StemLab = window.StemLab || {
               cx.fillStyle = '#818CF8';
               cx.beginPath(); cx.arc(W / 2 + Math.cos(angle) * 30, H * 0.3 + Math.sin(angle) * 10, 3, 0, Math.PI * 2); cx.fill();
             }
-            cx.fillStyle = '#A78BFA'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#A78BFA'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText('\uD83E\uDDCA Pulling crystal...', W / 2, H * 0.2);
           } else if (stage === 2) {
             // Oxidation — oxygen particles
@@ -2106,7 +2178,7 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = '#1E293B'; cx.fillRect(40, H - 18, W - 80, 8);
           cx.fillStyle = currentStage.color;
           cx.fillRect(40, H - 18, (W - 80) * ((stage + 1) / FAB_STAGES.length), 8);
-          cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif';
+          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
           cx.fillText((stage + 1) + '/' + FAB_STAGES.length, W / 2, H - 4);
         };
 
@@ -2122,7 +2194,7 @@ window.StemLab = window.StemLab || {
         return h('div', null,
           h('canvas', { 
             id: 'semi-fab-canvas', width: 440, height: 240,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': 'Wafer fabrication stage ' + (stage + 1) + ': ' + currentStage.name
           }),
           // Stage navigation
@@ -2159,7 +2231,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-sm font-bold text-white' }, currentStage.name)
             ),
             h('p', { className: 'text-xs text-slate-300 mb-2' }, currentStage.desc),
-            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, currentStage.detail)
+            h('p', { className: 'text-xs text-slate-400 leading-relaxed' }, currentStage.detail)
           ),
           // Process parameters (6-8+)
           (gradeBand === '6-8' || gradeBand === '9-12') && (stage === 2 || stage === 5) && h('div', { className: 'mt-2' },
@@ -2199,8 +2271,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 220);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           if (mixMode) {
@@ -2221,7 +2293,7 @@ window.StemLab = window.StemLab || {
             cx.shadowColor = mixColor; cx.shadowBlur = 20;
             cx.beginPath(); cx.arc(W / 2, H / 2, 25, 0, Math.PI * 2); cx.fill();
             cx.shadowBlur = 0;
-            cx.fillStyle = '#FFF'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#FFF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
             cx.fillText('RGB(' + r + ',' + g + ',' + b + ')', W / 2, H - 10);
           } else {
             // Single LED mode
@@ -2234,9 +2306,9 @@ window.StemLab = window.StemLab || {
             specGrad.addColorStop(0.9, '#EF4444'); specGrad.addColorStop(1, '#7F1D1D');
             cx.fillStyle = specGrad;
             cx.fillRect(30, specY, W - 60, 15);
-            cx.strokeStyle = '#475569'; cx.lineWidth = 1; cx.strokeRect(30, specY, W - 60, 15);
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 1; cx.strokeRect(30, specY, W - 60, 15);
             // Wavelength labels
-            cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             var nmLabels = [380, 450, 500, 550, 600, 650, 700, 780];
             nmLabels.forEach(function(nm) {
               var frac = (nm - 350) / 450;
@@ -2247,7 +2319,7 @@ window.StemLab = window.StemLab || {
             var markerX = 30 + markerFrac * (W - 60);
             cx.fillStyle = '#FFF';
             cx.beginPath(); cx.moveTo(markerX - 4, specY); cx.lineTo(markerX, specY - 6); cx.lineTo(markerX + 4, specY); cx.fill();
-            cx.font = 'bold 9px sans-serif'; cx.fillText(mat.wavelength + 'nm', markerX, specY - 10);
+            cx.font = 'bold 11px sans-serif'; cx.fillText(mat.wavelength + 'nm', markerX, specY - 10);
 
             // LED glow
             var brightness = Math.min(1, current / 30);
@@ -2274,10 +2346,10 @@ window.StemLab = window.StemLab || {
             cx.globalAlpha = 1;
 
             // Labels
-            cx.fillStyle = '#E2E8F0'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#E2E8F0'; cx.font = '12px sans-serif'; cx.textAlign = 'left';
             cx.fillText('E = ' + photonE.toFixed(2) + ' eV', 10, 20);
             cx.fillText('\u03BB = ' + mat.wavelength + ' nm', 10, 35);
-            cx.fillText('E\u2097 = ' + mat.bandGap + ' eV', 10, 50);
+            cx.fillText('E_g = ' + mat.bandGap + ' eV', 10, 50);
             cx.fillText('I = ' + current + ' mA', 10, 65);
           }
         };
@@ -2310,7 +2382,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-led-canvas', width: 440, height: 220,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': mixMode ? 'RGB color mixing' : mat.name + ' LED at ' + mat.wavelength + 'nm'
           }),
           !mixMode && sliderRow('Current', current, 1, 50, 1, function(v) { upd('ledCurrent', v); }, ' mA'),
@@ -2328,7 +2400,7 @@ window.StemLab = window.StemLab || {
           infoBox(gradeText(
             'LEDs make light when electricity flows through them! Different materials make different colors.',
             'LEDs emit light when electrons jump across the band gap. The color depends on the band gap energy: bigger gap = shorter wavelength = bluer light.',
-            'LED emission: \u03BB = hc/E\u2097 = 1240/E\u2097(eV) nm. Efficiency = photons out / electrons in (\u03B7\u2091\u2093\u209C \u00D7 \u03B7\u1D62\u2099\u209C). InGaN covers blue\u2192green, AlGaInP covers red\u2192yellow.',
+            'LED emission: \u03BB = hc/E_g = 1240/E_g(eV) nm. Efficiency = photons out / electrons in (\u03B7\u2091\u2093\u209C \u00D7 \u03B7\u1D62\u2099\u209C). InGaN covers blue\u2192green, AlGaInP covers red\u2192yellow.',
             'Spectral width: \u0394\u03BB \u2248 1.8kT\u03BB\u00B2\u209A/hc. Internal quantum efficiency: \u03B7\u1D62 = B\u00B7n/(A + B\u00B7n + C\u00B7n\u00B2) where A=SRH, B=radiative, C=Auger. Green gap problem: InGaN efficiency drops 50-60% around 530nm due to piezoelectric fields in c-plane QWs.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
@@ -2373,8 +2445,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 230);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           // Sun
@@ -2382,7 +2454,7 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = '#FBBF24'; cx.shadowColor = '#FBBF24'; cx.shadowBlur = 20 * irradianceFactor;
           cx.beginPath(); cx.arc(60, 30, 18 * sunPulse, 0, Math.PI * 2); cx.fill();
           cx.shadowBlur = 0;
-          cx.fillStyle = '#FCD34D'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#FCD34D'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
           cx.fillText(irradiance + ' W/m\u00B2', 60, 58);
 
           // Photon rays
@@ -2404,7 +2476,7 @@ window.StemLab = window.StemLab || {
             cx.beginPath(); cx.moveTo(panelX + gr * panelW / 4, panelY); cx.lineTo(panelX + gr * panelW / 4, panelY + panelH); cx.stroke();
             cx.beginPath(); cx.moveTo(panelX, panelY + gr * panelH / 4); cx.lineTo(panelX + panelW, panelY + gr * panelH / 4); cx.stroke();
           }
-          cx.fillStyle = '#FFF'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#FFF'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
           cx.fillText(sMat.name, panelX + panelW / 2, panelY + panelH / 2 + 4);
 
           // Electron-hole pairs generated inside
@@ -2427,7 +2499,7 @@ window.StemLab = window.StemLab || {
           cx.beginPath(); cx.moveTo(panelX + panelW, panelY + panelH - 15); cx.lineTo(panelX + panelW + 30, panelY + panelH - 15); cx.lineTo(panelX + panelW + 30, panelY + panelH + 30); cx.stroke();
           // Load resistor
           cx.fillStyle = '#334155'; cx.fillRect(panelX + panelW + 25, panelY + panelH + 30, 30, 20);
-          cx.fillStyle = '#CBD5E1'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#CBD5E1'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
           cx.fillText('Load', panelX + panelW + 40, panelY + panelH + 43);
 
           // Power output with glow
@@ -2435,14 +2507,14 @@ window.StemLab = window.StemLab || {
           cx.font = 'bold 14px sans-serif'; cx.textAlign = 'center';
           cx.fillText(Pmax.toFixed(1) + ' W', W / 2, H - 25);
           cx.shadowBlur = 0;
-          cx.fillStyle = '#94A3B8'; cx.font = '9px sans-serif';
+          cx.fillStyle = '#94A3B8'; cx.font = '11px sans-serif';
           cx.fillText('\u03B7 = ' + (effActual * 100).toFixed(1) + '%', W / 2, H - 10);
 
           // Mini I-V curve
           if (d.solarShowPV) {
             var ivX = W - 115, ivY = 15, ivW = 105, ivH = 65;
             cx.fillStyle = 'rgba(15, 23, 42, 0.85)'; cx.fillRect(ivX, ivY, ivW, ivH);
-            cx.strokeStyle = '#334155'; cx.lineWidth = 1; cx.strokeRect(ivX, ivY, ivW, ivH);
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 1; cx.strokeRect(ivX, ivY, ivW, ivH);
             // I-V curve
             cx.strokeStyle = '#22D3EE'; cx.lineWidth = 1.5; cx.beginPath();
             for (var sv = 0; sv <= 1; sv += 0.02) {
@@ -2471,13 +2543,13 @@ window.StemLab = window.StemLab || {
             var mppFrac = Vmp / (Voc * 1.1);
             cx.fillStyle = '#F59E0B';
             cx.beginPath(); cx.arc(ivX + 5 + mppFrac * (ivW - 10), ivY + ivH - 5 - (Pmax / (Pmax * 1.3)) * (ivH - 10), 3, 0, Math.PI * 2); cx.fill();
-            cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText('I-V (cyan) / P-V (gold)', ivX + ivW / 2, ivY + ivH + 10);
           }
 
           // Temperature indicator
           cx.fillStyle = temp > 320 ? '#EF4444' : temp > 300 ? '#F59E0B' : '#34D399';
-          cx.font = '9px sans-serif'; cx.textAlign = 'left';
+          cx.font = '11px sans-serif'; cx.textAlign = 'left';
           cx.fillText(temp + 'K' + (temp > 320 ? ' \u26A0 Hot!' : ''), 10, H - 5);
         };
 
@@ -2502,7 +2574,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-solar-canvas', width: 440, height: 230,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': sMat.name + ' solar cell producing ' + Pmax.toFixed(1) + ' watts'
           }),
           sliderRow('Irradiance', irradiance, 100, 1200, 50, function(v) { upd('solarIrradiance', v); }, ' W/m\u00B2'),
@@ -2525,8 +2597,8 @@ window.StemLab = window.StemLab || {
           infoBox(gradeText(
             'Solar cells turn sunlight into electricity! Brighter sun = more power. They work because light knocks electrons free inside the material.',
             'Solar cells are P-N junctions that absorb photons. Each photon with enough energy creates an electron-hole pair. The junction\'s electric field separates them, creating current. More sun = more pairs = more power!',
-            'Photovoltaic effect: photons with h\u03BD > E\u2097 generate e-h pairs separated by junction field. V\u2092\u1D9C = (kT/q)ln(I\u2097/I\u2080 + 1). Shockley-Queisser limit: ~33.7% for single-junction at 1.34 eV. FF = P\u2098\u2090\u2093/(V\u2092\u1D9CI\u209B\u1D9C).',
-            'Detailed balance: \u03B7\u2098\u2090\u2093 = 33.7% at E\u2097 = 1.34eV (Shockley-Queisser). Losses: thermalization (' + ((1 - sMat.eff / 0.337) * 50).toFixed(0) + '%), sub-bandgap transparency, Carnot, recombination. V\u2092\u1D9C = (nkT/q)ln(J\u2097/J\u2080). Temperature coefficient: dP/dT \u2248 -0.4%/K (Si). Tandem cells bypass SQ via multiple junctions: 47.1% record (6-junction III-V).'
+            'Photovoltaic effect: photons with h\u03BD > E_g generate e-h pairs separated by junction field. V\u2092\u1D9C = (kT/q)ln(I\u2097/I\u2080 + 1). Shockley-Queisser limit: ~33.7% for single-junction at 1.34 eV. FF = P\u2098\u2090\u2093/(V\u2092\u1D9CI\u209B\u1D9C).',
+            'Detailed balance: \u03B7\u2098\u2090\u2093 = 33.7% at E_g = 1.34eV (Shockley-Queisser). Losses: thermalization (' + ((1 - sMat.eff / 0.337) * 50).toFixed(0) + '%), sub-bandgap transparency, Carnot, recombination. V\u2092\u1D9C = (nkT/q)ln(J\u2097/J\u2080). Temperature coefficient: dP/dT \u2248 -0.4%/K (Si). Tandem cells bypass SQ via multiple junctions: 47.1% record (6-junction III-V).'
           )),
           aiBox()
         );
@@ -2567,8 +2639,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 240);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           var padL = 55, padR = 15, padT = 20, padB = 35;
@@ -2580,13 +2652,13 @@ window.StemLab = window.StemLab || {
           for (var gy = yearMin; gy <= yearMax; gy += 5) {
             var gx = padL + (gy - yearMin) / (yearMax - yearMin) * gW;
             cx.beginPath(); cx.moveTo(gx, padT); cx.lineTo(gx, padT + gH); cx.stroke();
-            cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText(String(gy), gx, H - 5);
           }
 
           // Y-axis (log scale)
           var yMin = 1, yMax = 15; // log10 scale
-          cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.textAlign = 'right';
+          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
           for (var yy = 2; yy <= 14; yy += 2) {
             var gYy = padT + gH - (yy - yMin) / (yMax - yMin) * gH;
             cx.beginPath(); cx.moveTo(padL, gYy); cx.lineTo(W - padR, gYy); cx.stroke();
@@ -2604,7 +2676,7 @@ window.StemLab = window.StemLab || {
               if (my === yearMin) cx.moveTo(mpx, mpy); else cx.lineTo(mpx, mpy);
             }
             cx.stroke(); cx.setLineDash([]);
-            cx.fillStyle = '#F59E0B'; cx.font = '7px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#F59E0B'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
             cx.fillText('Moore\'s Law (2x/2yr)', padL + 5, padT + 12);
           }
 
@@ -2621,9 +2693,9 @@ window.StemLab = window.StemLab || {
             cx.fill(); cx.shadowBlur = 0;
 
             if (isHighlight) {
-              cx.fillStyle = '#FFF'; cx.font = 'bold 8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#FFF'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
               cx.fillText(m.name, mx, my - 10);
-              cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
               cx.fillText(m.transistors.toLocaleString() + ' trans.', mx, my - 2);
             }
           });
@@ -2642,11 +2714,11 @@ window.StemLab = window.StemLab || {
           cx.strokeStyle = '#F87171'; cx.lineWidth = 1; cx.setLineDash([3, 2]);
           cx.beginPath(); cx.moveTo(selX, padT); cx.lineTo(selX, padT + gH); cx.stroke();
           cx.setLineDash([]);
-          cx.fillStyle = '#F87171'; cx.font = 'bold 9px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#F87171'; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'center';
           cx.fillText(String(year), selX, padT - 5);
 
           // Axis labels
-          cx.fillStyle = '#94A3B8'; cx.font = '9px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#94A3B8'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
           cx.fillText('Year', W / 2, H - 18);
           cx.save(); cx.translate(10, H / 2); cx.rotate(-Math.PI / 2);
           cx.fillText('Transistors (log scale)', 0, 0); cx.restore();
@@ -2654,13 +2726,14 @@ window.StemLab = window.StemLab || {
 
         React.useEffect(function() {
           var canvas = document.getElementById('semi-moore-canvas');
-          if (canvas) canvasRef(canvas);
+          if (!canvas) return;
+          return bindStaticCanvas(canvas, canvasRef);
         }, [d.mooreYear, d.mooreShowPred, d.mooreLogScale]);
 
         return h('div', null,
           h('canvas', { 
             id: 'semi-moore-canvas', width: 440, height: 240,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': 'Moore\'s Law graph, log scale, 1965 to 2030. '
               + 'Selected year ' + year + '. '
               + 'Nearest milestone: ' + nearest.name + ' in ' + nearest.year + ', '
@@ -2751,8 +2824,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 260);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           var padL = 50, padR = 20, padT = 25, padB = 25;
@@ -2792,7 +2865,7 @@ window.StemLab = window.StemLab || {
             cx.moveTo(wellLeft, wellBottom + tiltPx);
             cx.lineTo(wellRight, wellBottom - tiltPx);
             cx.stroke(); cx.setLineDash([]);
-            cx.fillStyle = '#F59E0B'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#F59E0B'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText('E-field: ' + efield + ' kV/cm', wellCenterX, wellBottom + 18);
           }
 
@@ -2810,8 +2883,8 @@ window.StemLab = window.StemLab || {
             cx.setLineDash([]);
 
             // Label
-            cx.fillStyle = lev.bound ? colors[idx % colors.length] : '#64748B';
-            cx.font = 'bold 9px sans-serif'; cx.textAlign = 'right';
+            cx.fillStyle = lev.bound ? colors[idx % colors.length] : '#94A3B8';
+            cx.font = 'bold 11px sans-serif'; cx.textAlign = 'right';
             cx.fillText('E' + lev.n + ' = ' + lev.E.toFixed(3) + ' eV', wellLeft - 5, ePx + 3);
 
             // Wavefunction ψ_n(x)
@@ -2834,13 +2907,13 @@ window.StemLab = window.StemLab || {
           });
 
           // Axes
-          cx.fillStyle = '#94A3B8'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
           cx.fillText('Position (x)', wellCenterX, H - 3);
           cx.save(); cx.translate(10, H / 2); cx.rotate(-Math.PI / 2);
           cx.fillText('Energy (eV)', 0, 0); cx.restore();
 
           // Material labels
-          cx.fillStyle = qmat.barrierColor; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = qmat.barrierColor; cx.font = '10px sans-serif'; cx.textAlign = 'center';
           cx.fillText(qmat.barrier, padL + (wellLeft - padL) / 2, padT + 12);
           cx.fillText(qmat.barrier, wellRight + (padL + gW - wellRight) / 2, padT + 12);
           cx.fillStyle = qmat.color;
@@ -2849,13 +2922,14 @@ window.StemLab = window.StemLab || {
           // Well width label
           cx.strokeStyle = '#CBD5E1'; cx.lineWidth = 0.5;
           cx.beginPath(); cx.moveTo(wellLeft, wellBottom + 8); cx.lineTo(wellRight, wellBottom + 8); cx.stroke();
-          cx.fillStyle = '#CBD5E1'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#CBD5E1'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
           cx.fillText(wellWidth + ' nm', wellCenterX, wellBottom + 16);
         };
 
         React.useEffect(function() {
           var canvas = document.getElementById('semi-qw-canvas');
-          if (canvas) canvasRef(canvas);
+          if (!canvas) return;
+          return bindStaticCanvas(canvas, canvasRef);
         }, [d.qwWidth, d.qwDepth, d.qwMaterial, d.qwLevels, d.qwShowWave, d.qwShowProb, d.qwElectricField]);
 
         return h('div', null,
@@ -2870,7 +2944,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-qw-canvas', width: 440, height: 260,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': 'Quantum well potential for ' + qmat.name + ', '
               + wellWidth + ' nanometres wide and ' + wellDepth + ' electron volts deep. '
               + (levels.length
@@ -2896,7 +2970,7 @@ window.StemLab = window.StemLab || {
           ),
           // Transition energies
           transitions.length > 0 && h('div', { className: 'mt-2 p-2 rounded-lg bg-slate-800/60 border border-slate-700' },
-            h('div', { className: 'text-[11px] text-slate-600 uppercase tracking-wider mb-1' }, t('stem.semiconductor.optical_transitions', 'Optical Transitions')),
+            h('div', { className: 'text-[11px] text-slate-400 uppercase tracking-wider mb-1' }, t('stem.semiconductor.optical_transitions', 'Optical Transitions')),
             h('div', { className: 'flex flex-wrap gap-2' },
               transitions.filter(function(tr) { return tr.dE > 0; }).slice(0, 4).map(function(tr) {
                 return h('div', { key: tr.from + '-' + tr.to, className: 'text-xs text-slate-300' },
@@ -2942,21 +3016,21 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 240);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           if (showArray) {
             // Memory array view
             var rows = 4, cols = 8;
             var cellW = (W - 80) / cols, cellH = (H - 60) / rows;
-            cx.fillStyle = mt.color; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = mt.color; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText(mt.name + ' Array (' + rows + '\u00D7' + cols + ')', W / 2, 15);
 
             // Word lines (rows)
             for (var r = 0; r < rows; r++) {
               var ry = 30 + r * cellH;
-              cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.textAlign = 'right';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
               cx.fillText('WL' + r, 35, ry + cellH / 2 + 3);
               cx.strokeStyle = r === 0 && writeEn ? '#F59E0B' : '#334155';
               cx.lineWidth = r === 0 && writeEn ? 2 : 0.5;
@@ -2973,7 +3047,7 @@ window.StemLab = window.StemLab || {
                 cx.strokeRect(cx2, ry + 3, cellW - 4, cellH - 6);
                 // Bit value
                 cx.fillStyle = randomBit ? '#FFF' : '#475569';
-                cx.font = 'bold 9px monospace'; cx.textAlign = 'center';
+                cx.font = 'bold 11px monospace'; cx.textAlign = 'center';
                 cx.fillText(String(randomBit), cx2 + (cellW - 4) / 2, ry + cellH / 2 + 3);
               }
             }
@@ -2983,19 +3057,19 @@ window.StemLab = window.StemLab || {
               cx.strokeStyle = bl === 0 && writeEn ? '#F59E0B' : '#334155';
               cx.lineWidth = bl === 0 && writeEn ? 2 : 0.5;
               cx.beginPath(); cx.moveTo(bx, 25); cx.lineTo(bx, H - 15); cx.stroke();
-              cx.fillStyle = '#475569'; cx.font = '6px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('BL' + bl, bx, H - 5);
             }
             // Highlight selected cell
             if (writeEn) {
               cx.strokeStyle = '#F59E0B'; cx.lineWidth = 2;
               cx.strokeRect(45, 33, cellW - 4, cellH - 6);
-              cx.fillStyle = '#F59E0B'; cx.font = '7px sans-serif'; cx.textAlign = 'left';
+              cx.fillStyle = '#F59E0B'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
               cx.fillText('\u25C0 Selected', 45 + cellW + 2, 33 + cellH / 2);
             }
           } else {
             // Single cell detail view
-            cx.fillStyle = mt.color; cx.font = 'bold 11px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = mt.color; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
             cx.fillText(mt.name + ' Cell', W / 2, 18);
 
             if (memType === 'sram') {
@@ -3005,7 +3079,7 @@ window.StemLab = window.StemLab || {
               // Inverter 1 (left)
               cx.strokeStyle = '#60A5FA'; cx.lineWidth = 1.5;
               cx.strokeRect(W / 2 - 80, mcy - 25, 35, 50); // PMOS+NMOS box 1
-              cx.fillStyle = '#60A5FA'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#60A5FA'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('INV1', W / 2 - 62, mcy + 3);
               // Inverter 2 (right)
               cx.strokeStyle = '#F87171';
@@ -3022,7 +3096,7 @@ window.StemLab = window.StemLab || {
               cx.strokeStyle = '#34D399'; cx.lineWidth = 1.5;
               cx.strokeRect(W / 2 - 115, mcy - 12, 25, 24); // Access T1
               cx.strokeRect(W / 2 + 90, mcy - 12, 25, 24); // Access T2
-              cx.fillStyle = '#34D399'; cx.font = '7px sans-serif';
+              cx.fillStyle = '#34D399'; cx.font = '10px sans-serif';
               cx.fillText('M5', W / 2 - 103, mcy + 3);
               cx.fillText('M6', W / 2 + 103, mcy + 3);
               // Word line
@@ -3030,13 +3104,13 @@ window.StemLab = window.StemLab || {
               cx.beginPath(); cx.moveTo(W / 2 - 103, mcy - 20); cx.lineTo(W / 2 - 103, mcy - 35);
               cx.lineTo(W / 2 + 103, mcy - 35); cx.lineTo(W / 2 + 103, mcy - 20); cx.stroke();
               cx.setLineDash([]);
-              cx.fillStyle = '#F59E0B'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#F59E0B'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('Word Line' + (writeEn ? ' (ACTIVE)' : ''), W / 2, mcy - 42);
               // Bit lines
               cx.strokeStyle = '#94A3B8'; cx.lineWidth = 1;
               cx.beginPath(); cx.moveTo(W / 2 - 103, mcy + 12); cx.lineTo(W / 2 - 103, mcy + 50); cx.stroke();
               cx.beginPath(); cx.moveTo(W / 2 + 103, mcy + 12); cx.lineTo(W / 2 + 103, mcy + 50); cx.stroke();
-              cx.fillStyle = '#94A3B8'; cx.font = '8px sans-serif';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
               cx.fillText('BL', W / 2 - 103, mcy + 62);
               cx.fillText('BL\u0305', W / 2 + 103, mcy + 62);
               // Stored value
@@ -3047,9 +3121,9 @@ window.StemLab = window.StemLab || {
               cx.fillStyle = !bitVal ? '#34D399' : '#EF4444';
               cx.fillText('Q\u0305 = ' + (!bitVal ? 'HIGH' : 'LOW'), W / 2, mcy + 60);
               // VDD / GND
-              cx.fillStyle = '#EF4444'; cx.font = '7px sans-serif';
+              cx.fillStyle = '#EF4444'; cx.font = '10px sans-serif';
               cx.fillText('VDD', W / 2, mcy - 55);
-              cx.fillStyle = '#64748B';
+              cx.fillStyle = '#94A3B8';
               cx.fillText('GND', W / 2, mcy + 75);
             } else if (memType === 'dram') {
               // 1T1C DRAM cell
@@ -3060,31 +3134,31 @@ window.StemLab = window.StemLab || {
               cx.beginPath(); cx.moveTo(W / 2 - 15, dy + 22); cx.lineTo(W / 2 + 15, dy + 22); cx.stroke();
               cx.fillStyle = bitVal ? mt.color + '80' : '#1E293B';
               cx.fillRect(W / 2 - 12, dy + 16, 24, 5);
-              cx.fillStyle = '#FFF'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#FFF'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('C\u209B = ' + (bitVal ? 'Charged' : 'Empty'), W / 2, dy + 42);
               // Transistor
               cx.strokeStyle = '#64748B'; cx.lineWidth = 1.5;
               cx.strokeRect(W / 2 - 15, dy - 25, 30, 30);
-              cx.fillStyle = '#94A3B8'; cx.font = '9px sans-serif';
+              cx.fillStyle = '#94A3B8'; cx.font = '11px sans-serif';
               cx.fillText('NMOS', W / 2, dy - 8);
               // Wire to cap
-              cx.strokeStyle = '#475569'; cx.lineWidth = 1;
+              cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
               cx.beginPath(); cx.moveTo(W / 2, dy + 5); cx.lineTo(W / 2, dy + 15); cx.stroke();
               // BL
               cx.strokeStyle = '#94A3B8'; cx.lineWidth = 1;
               cx.beginPath(); cx.moveTo(W / 2 - 30, dy - 10); cx.lineTo(W / 2 - 15, dy - 10); cx.stroke();
-              cx.fillStyle = '#94A3B8'; cx.font = '8px sans-serif'; cx.textAlign = 'right';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
               cx.fillText('Bit Line', W / 2 - 35, dy - 7);
               // WL
               cx.strokeStyle = writeEn ? '#F59E0B' : '#64748B'; cx.lineWidth = writeEn ? 2 : 1;
               cx.beginPath(); cx.moveTo(W / 2, dy - 25); cx.lineTo(W / 2, dy - 45); cx.stroke();
-              cx.fillStyle = writeEn ? '#F59E0B' : '#64748B'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = writeEn ? '#F59E0B' : '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('Word Line' + (writeEn ? ' (ON)' : ''), W / 2, dy - 50);
               // Refresh indicator
               var tick = Date.now();
               var refreshPhase = (tick % 3000) / 3000;
               cx.fillStyle = '#F59E0B'; cx.globalAlpha = 0.4 + refreshPhase * 0.5;
-              cx.font = '8px sans-serif';
+              cx.font = '10px sans-serif';
               cx.fillText('\u21BB Refresh every 64ms', W / 2, dy + 60);
               cx.globalAlpha = 1;
               // Charge leaking animation
@@ -3108,7 +3182,7 @@ window.StemLab = window.StemLab || {
               cx.fillStyle = '#94A3B880'; cx.fillRect(W / 2 - 30, fy + 5, 60, 3);
               cx.fillRect(W / 2 - 30, fy - 22, 60, 2);
               // Labels
-              cx.fillStyle = '#FFF'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#FFF'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('Control Gate', W / 2, fy + 2);
               cx.fillText('Floating Gate', W / 2, fy - 10);
               cx.fillStyle = '#94A3B8';
@@ -3125,10 +3199,10 @@ window.StemLab = window.StemLab || {
                 }
               }
               cx.fillStyle = bitVal ? '#EF4444' : '#34D399';
-              cx.font = 'bold 11px sans-serif';
+              cx.font = 'bold 13px sans-serif';
               cx.fillText('Stored: ' + (bitVal ? '1 (charged)' : '0 (erased)'), W / 2, fy + 55);
               if (memType === 'nand') {
-                cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif';
+                cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
                 cx.fillText('NAND: cells in series \u2192 ultra-dense', W / 2, fy - 45);
               }
             }
@@ -3156,7 +3230,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-mem-canvas', width: 440, height: 240,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': mt.name + ' memory cell storing bit ' + bitVal
           }),
           h('div', { className: 'flex items-center gap-3 mt-3' },
@@ -3221,8 +3295,8 @@ window.StemLab = window.StemLab || {
 
         var canvasRef = function(canvasEl) {
           if (!canvasEl) return;
-          var cx = canvasEl.getContext('2d');
-          var W = canvasEl.width, H = canvasEl.height;
+          var surface = prepareCanvas(canvasEl, 440, 240);
+          var cx = surface.cx, W = surface.W, H = surface.H;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           if (showBode) {
@@ -3235,13 +3309,13 @@ window.StemLab = window.StemLab || {
             for (var bx = 0; bx <= 6; bx++) {
               var x = padL + bx * gW / 6;
               cx.beginPath(); cx.moveTo(x, padT); cx.lineTo(x, padT + gH); cx.stroke();
-              cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.textAlign = 'center';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('10^' + bx, x, H - 5);
             }
             for (var by = 0; by <= 4; by++) {
               var y = padT + by * gH / 4;
               cx.beginPath(); cx.moveTo(padL, y); cx.lineTo(padL + gW, y); cx.stroke();
-              cx.fillStyle = '#475569'; cx.font = '7px sans-serif'; cx.textAlign = 'right';
+              cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
               var dbVal = gainDB + 10 - by * 10;
               cx.fillText(dbVal.toFixed(0) + 'dB', padL - 3, y + 3);
             }
@@ -3269,7 +3343,7 @@ window.StemLab = window.StemLab || {
             var m3dBY = padT + gH / 2 - (gainDB - 3 - gainDB + 20) / 40 * gH;
             cx.beginPath(); cx.moveTo(padL, m3dBY); cx.lineTo(padL + gW, m3dBY); cx.stroke();
             cx.setLineDash([]);
-            cx.fillStyle = '#F87171'; cx.font = '7px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#F87171'; cx.font = '10px sans-serif'; cx.textAlign = 'left';
             cx.fillText('-3dB', padL + 3, m3dBY - 3);
 
             // Freq marker
@@ -3278,11 +3352,11 @@ window.StemLab = window.StemLab || {
             cx.strokeStyle = '#F59E0B'; cx.lineWidth = 1; cx.setLineDash([3, 2]);
             cx.beginPath(); cx.moveTo(markerX, padT); cx.lineTo(markerX, padT + gH); cx.stroke();
             cx.setLineDash([]);
-            cx.fillStyle = '#F59E0B'; cx.font = 'bold 8px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#F59E0B'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
             cx.fillText(freq >= 1000 ? (freq / 1000) + 'kHz' : freq + 'Hz', markerX, padT - 5);
 
             // Axes
-            cx.fillStyle = '#94A3B8'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
             cx.fillText('Frequency (Hz)', W / 2, H - 15);
           } else {
             // Time-domain waveforms
@@ -3301,9 +3375,9 @@ window.StemLab = window.StemLab || {
             }
             cx.stroke();
             // Zero line
-            cx.strokeStyle = '#475569'; cx.lineWidth = 0.5;
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 0.5;
             cx.beginPath(); cx.moveTo(padL, padT + halfH / 2); cx.lineTo(padL + gW, padT + halfH / 2); cx.stroke();
-            cx.fillStyle = '#22D3EE'; cx.font = '9px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#22D3EE'; cx.font = '11px sans-serif'; cx.textAlign = 'left';
             cx.fillText('V\u1D62\u2099 = ' + (Vin * 1000).toFixed(0) + ' mV peak', padL + 5, padT + 12);
 
             // Output waveform (bottom half)
@@ -3320,13 +3394,13 @@ window.StemLab = window.StemLab || {
             }
             cx.stroke();
             // Zero line
-            cx.strokeStyle = '#475569'; cx.lineWidth = 0.5;
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 0.5;
             cx.beginPath(); cx.moveTo(padL, outTop + halfH / 2); cx.lineTo(padL + gW, outTop + halfH / 2); cx.stroke();
-            cx.fillStyle = '#34D399'; cx.font = '9px sans-serif'; cx.textAlign = 'left';
+            cx.fillStyle = '#34D399'; cx.font = '11px sans-serif'; cx.textAlign = 'left';
             cx.fillText('V\u2092\u1D64\u209C = ' + (VoutPeak * 1000).toFixed(0) + ' mV peak' + (inverts ? ' (inverted)' : ''), padL + 5, outTop + 12);
 
             // Gain label
-            cx.fillStyle = '#F59E0B'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'center';
+            cx.fillStyle = '#F59E0B'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText('A\u1D65 = ' + amp.gain + ' (' + gainDB.toFixed(1) + ' dB)', W / 2, padT + halfH + 7);
           }
         };
@@ -3352,7 +3426,7 @@ window.StemLab = window.StemLab || {
           ),
           h('canvas', { 
             id: 'semi-amp-canvas', width: 440, height: 240,
-            className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
+            className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': amp.name + ' amplifier with gain ' + amp.gain
           }),
           sliderRow('V\u1D62\u2099', Vin * 1000, 1, 200, 1, function(v) { upd('ampVin', v / 1000); }, ' mV'),
@@ -3413,7 +3487,7 @@ window.StemLab = window.StemLab || {
         { q: 'In CMOS, static power dissipation is ideally:', a: 'Zero', opts: ['Zero', 'Proportional to frequency', 'Constant', 'Proportional to VDD'], xp: 30, tier: 4, hint: t('stem.semiconductor.in_cmos_one_transistor_is_always_off_b', 'In CMOS, one transistor is always OFF blocking current.'), topic: 'transistor' },
         // Tier 5+ — Grandmaster
         { q: 'The Shockley diode equation ideality factor n equals 1 when:', a: 'Diffusion current dominates', opts: ['Recombination dominates', 'Diffusion current dominates', 'Tunneling occurs', 'Avalanche breakdown'], xp: 40, tier: 5, hint: t('stem.semiconductor.n_1_for_ideal_junction_n_2_for_recombi', 'n=1 for ideal junction, n=2 for recombination in depletion region.'), topic: 'ivcurve' },
-        { q: 'GaN is preferred for power electronics because of its:', a: 'Wide band gap and high breakdown field', opts: ['Lower manufacturing cost than silicon devices', 'Wide band gap and high breakdown field', 'Higher electron mobility than any semiconductor', 'Ability to run without any heat sinking'], xp: 35, tier: 5, hint: t('stem.semiconductor.e_3_4_ev_allows_higher_voltage_operati', 'E\u2097 = 3.4 eV allows higher voltage operation.'), topic: 'bandgap' },
+        { q: 'GaN is preferred for power electronics because of its:', a: 'Wide band gap and high breakdown field', opts: ['Lower manufacturing cost than silicon devices', 'Wide band gap and high breakdown field', 'Higher electron mobility than any semiconductor', 'Ability to run without any heat sinking'], xp: 35, tier: 5, hint: t('stem.semiconductor.e_3_4_ev_allows_higher_voltage_operati', 'E_g = 3.4 eV allows higher voltage operation.'), topic: 'bandgap' },
         { q: 'A half-adder circuit requires which gates?', a: 'XOR + AND', opts: ['OR + NOT', 'XOR + AND', 'NAND + NAND', 'NOR + OR'], xp: 35, tier: 5, hint: t('stem.semiconductor.sum_a_xor_b_carry_a_and_b', 'Sum = A XOR B, Carry = A AND B.'), topic: 'gates' },
         { q: 'The Early effect in BJTs causes:', a: 'Output current to increase with V_CE', opts: ['Output current to decrease as V_CE rises', 'Output current to increase with V_CE', 'Base current to double for every extra volt', 'Thermal runaway at high collector current'], xp: 40, tier: 5, hint: t('stem.semiconductor.higher_v_ce_widens_the_depletion_regio', 'Higher V_CE widens the depletion region into the base.'), topic: 'transistor' },
         // Quantum Wells
@@ -3458,7 +3532,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[11px] text-slate-600 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
+              h('div', { className: 'text-[11px] text-slate-400 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -3534,8 +3608,7 @@ window.StemLab = window.StemLab || {
                 updMulti({ challengeScore: newScore, challengeTier: newTier, challengeFeedback: null, challengeAnswer: null, challengeIdx: Math.floor(Math.random() * newAvailable.length), challengeShowHint: false });
               }),
               current.topic && btn('Open ' + getSubtoolLabel(current.topic), function() {
-                setStemLabTab('explore');
-                updMulti({ subtool: current.topic, challengeActive: false, challengeFeedback: null, challengeAnswer: null, challengeShowHint: false, aiExplain: null });
+                updMulti({ mode: 'explore', subtool: current.topic, challengeActive: false, challengeFeedback: null, challengeAnswer: null, challengeShowHint: false, aiExplain: null });
                 if (announceToSR) announceToSR('Opened ' + getSubtoolLabel(current.topic) + ' simulator');
               }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
             )
@@ -3613,15 +3686,15 @@ window.StemLab = window.StemLab || {
           // HP bars
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[11px] text-slate-600 mb-0.5' }, t('stem.semiconductor.your_chip', '\uD83D\uDEE1\uFE0F Your Chip')),
+              h('div', { className: 'text-[11px] text-slate-400 mb-0.5' }, t('stem.semiconductor.your_chip', '\uD83D\uDEE1\uFE0F Your Chip')),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-emerald-500 rounded-full transition-all', style: { width: (playerHP / 5 * 100) + '%' } })
               ),
               h('div', { className: 'text-[11px] text-emerald-400 mt-0.5' }, playerHP + '/5 HP')
             ),
-            h('div', { className: 'text-sm font-bold text-slate-600' }, 'VS'),
+            h('div', { className: 'text-sm font-bold text-slate-400' }, 'VS'),
             h('div', { className: 'flex-1' },
-              h('div', { className: 'text-[11px] text-slate-600 mb-0.5 text-right' }, currentRound.enemy),
+              h('div', { className: 'text-[11px] text-slate-400 mb-0.5 text-right' }, currentRound.enemy),
               h('div', { className: 'h-3 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-red-500 rounded-full transition-all', style: { width: (enemyHP / 5 * 100) + '%' } })
               ),
@@ -3702,7 +3775,7 @@ window.StemLab = window.StemLab || {
               'Some materials let electricity flow (like metal wires), and some don\'t (like rubber). Semiconductors are special \u2014 they\'re in between! We can control when they let electricity through.',
               'Semiconductors have conductivity between metals and insulators. Silicon is the most common. We control their behavior by adding tiny amounts of other elements (doping) or by applying voltage.',
               'Semiconductors have band gaps of 0.5-3.5 eV. At 0K they\'re insulators, but at room temperature thermal energy promotes some electrons across the gap. Conductivity: \u03C3 = nq\u03BC.',
-              'Intrinsic carrier concentration: n\u1D62 = \u221A(N\u1D9CN\u1D65)\u00B7exp(-E\u2097/2kT). Fermi-Dirac distribution: f(E) = 1/(1+exp((E-E\u1DA0)/kT)). Effective mass accounts for band curvature: m* = \u0127\u00B2(d\u00B2E/dk\u00B2)\u207B\u00B9.'
+              'Intrinsic carrier concentration: n\u1D62 = \u221A(N\u1D9CN\u1D65)\u00B7exp(-E_g/2kT). Fermi-Dirac distribution: f(E) = 1/(1+exp((E-E\u1DA0)/kT)). Effective mass accounts for band curvature: m* = \u0127\u00B2(d\u00B2E/dk\u00B2)\u207B\u00B9.'
             )
           },
           {
@@ -3710,8 +3783,8 @@ window.StemLab = window.StemLab || {
             body: gradeText(
               'Think of it like a wall. Electricity needs to jump over the wall. Small wall = easy (conductor). Huge wall = impossible (insulator). Medium wall = controllable (semiconductor)!',
               'The band gap is the energy electrons need to become free. Conductors: no gap. Insulators: very large gap (>4 eV). Semiconductors: moderate gap that can be overcome with heat or light.',
-              'E\u2097 is the energy between valence band maximum and conduction band minimum. Direct gap (GaAs): efficient photon emission. Indirect gap (Si): requires phonon assistance for optical transitions.',
-              'Band structure from Bloch theorem: \u03C8(r) = u\u2096(r)\u00B7e^(ik\u00B7r). Direct gap: optical transitions at k\u2080. Indirect gap: requires phonon (momentum change). Varshni: E\u2097(T) = E\u2097(0) - \u03B1T\u00B2/(T+\u03B2).'
+              'E_g is the energy between valence band maximum and conduction band minimum. Direct gap (GaAs): efficient photon emission. Indirect gap (Si): requires phonon assistance for optical transitions.',
+              'Band structure from Bloch theorem: \u03C8(r) = u\u2096(r)\u00B7e^(ik\u00B7r). Direct gap: optical transitions at k\u2080. Indirect gap: requires phonon (momentum change). Varshni: E_g(T) = E_g(0) - \u03B1T\u00B2/(T+\u03B2).'
             )
           },
           {
@@ -3729,7 +3802,7 @@ window.StemLab = window.StemLab || {
               'When P-type meets N-type, magic happens! A barrier forms that only lets electricity through one way \u2014 like a one-way door. This is called a diode!',
               'At the P-N junction, electrons and holes combine near the boundary creating a depletion region with an electric field. Forward bias: current flows. Reverse bias: current blocked.',
               'Built-in potential V\u2091\u1D62 \u2248 0.6-0.7V for Si. Depletion width W \u221D \u221A(V\u2091\u1D62+V\u1D63). Shockley equation: I = I\u2080(e^(V/nV\u209C)-1). Applications: rectifiers, LEDs, solar cells, Zener regulators.',
-              'V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2). Junction capacitance: C\u2C7C = \u03B5A/W = C\u2C7C\u2080/\u221A(1+V\u1D63/V\u2091\u1D62). Diffusion capacitance: C\u2093 = \u03C4\u1DA0\u00B7g\u2093 = \u03C4\u1DA0\u00B7I/(nV\u209C). Breakdown: V\u2091\u1D63 \u221D E\u2097\u00B3\u00B2/(N\u2093).'
+              'V\u2091\u1D62 = (kT/q)ln(N\u2090N\u2093/n\u1D62\u00B2). Junction capacitance: C\u2C7C = \u03B5A/W = C\u2C7C\u2080/\u221A(1+V\u1D63/V\u2091\u1D62). Diffusion capacitance: C\u2093 = \u03C4\u1DA0\u00B7g\u2093 = \u03C4\u1DA0\u00B7I/(nV\u209C). Breakdown: V\u2091\u1D63 \u221D E_g\u00B3\u00B2/(N\u2093).'
             )
           },
           {
@@ -3787,7 +3860,7 @@ window.StemLab = window.StemLab || {
           TOPICS.map(function(item) {
             return h('details', { className: 'group', key: item.title },
               h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-expanded': 'false' },
-                h('span', { className: 'text-[11px] text-slate-600 group-open:rotate-90 transition-transform' }, '\u25B6'),
+                h('span', { className: 'text-[11px] text-slate-400 group-open:rotate-90 transition-transform' }, '\u25B6'),
                 item.title
               ),
               h('div', { className: 'mt-1 pl-4 text-xs text-slate-300 leading-relaxed' }, item.body)
@@ -3802,37 +3875,10 @@ window.StemLab = window.StemLab || {
       }
 
       // ════════════════════════════════════════════
-      // KEYBOARD HANDLER
-      // ════════════════════════════════════════════
-      React.useEffect(function() {
-        function handleKey(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          var subtoolIds = SUBTOOLS.map(function(s) { return s.id; });
-          var currentIdx = subtoolIds.indexOf(d.subtool);
-
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            var nextIdx = (currentIdx + 1) % subtoolIds.length;
-            updMulti({ subtool: subtoolIds[nextIdx], aiExplain: null });
-            if (announceToSR) announceToSR('Switched to ' + SUBTOOLS[nextIdx].label);
-          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            var prevIdx = (currentIdx - 1 + subtoolIds.length) % subtoolIds.length;
-            updMulti({ subtool: subtoolIds[prevIdx], aiExplain: null });
-            if (announceToSR) announceToSR('Switched to ' + SUBTOOLS[prevIdx].label);
-          } else if (e.key === 'Escape') {
-            setStemLabTool(null);
-          }
-        }
-        document.addEventListener('keydown', handleKey);
-        return function() { document.removeEventListener('keydown', handleKey); };
-      }, [d.subtool]);
-
-      // ════════════════════════════════════════════
       // MAIN RENDER
       // ════════════════════════════════════════════
       var subtool = d.subtool || 'bandgap';
-      var tab = stemLabTab || 'explore';
+      var tab = d.mode || 'explore';
 
       var backBtn = h('button', Object.assign({
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
@@ -3854,7 +3900,7 @@ window.StemLab = window.StemLab || {
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       };
 
-      var tabBar = h('div', { className: 'flex gap-1 mb-3 border-b border-slate-700 pb-2', role: 'tablist', 'aria-label': t('stem.semiconductor.semiconductor_lab_navigation', 'Semiconductor Lab navigation') },
+      var tabBar = h('div', { className: 'flex flex-wrap gap-2 mb-3 border-b border-slate-600 pb-3', role: 'tablist', 'aria-label': t('stem.semiconductor.semiconductor_lab_navigation', 'Semiconductor Lab navigation') },
         ['explore', 'challenge', 'battle', 'learn'].map(function(tb, tabIndex) {
           var labels = { explore: '\uD83D\uDD2C Explore', challenge: '\uD83C\uDFC6 Challenge', battle: '\u2694\uFE0F Battle', learn: '\uD83D\uDCDA Learn' };
           var active = tab === tb;
@@ -3862,8 +3908,8 @@ window.StemLab = window.StemLab || {
             id: 'semiconductor-tab-' + tb, 'aria-controls': 'semiconductor-panel-' + tb,
             'aria-selected': active, tabIndex: active ? 0 : -1,
             onKeyDown: function(e) { semiconductorTabKeyDown(e, tabIndex); },
-            onClick: function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); },
-            className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
+            onClick: function() { updMulti({ mode: tb, aiExplain: null }); if (announceToSR) announceToSR(tb + ' tab selected'); },
+            className: 'px-3 py-2 min-h-10 text-sm font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' +
               (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
           }, labels[tb]);
         })
@@ -3871,7 +3917,7 @@ window.StemLab = window.StemLab || {
 
       // Topic-accent hero band per tab
       var TAB_META = {
-        explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore \u2014 diodes, transistors, doping'),     hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Doping silicon with phosphorus (n-type) or boron (p-type) is the foundation of every chip ever made. The PN junction is the building block of every diode + LED + solar cell + transistor.') },
+        explore:   { accent: '#38bdf8', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore semiconductor behavior'), hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Begin with one observable change. Compare materials, add a dopant, or bias a junction, then explain what changed and why.') },
         challenge: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
         battle:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
         learn:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.bardeen_brattain_shockley_invented_the', 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.') }
@@ -3891,19 +3937,29 @@ window.StemLab = window.StemLab || {
         h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
         h('div', { style: { flex: 1, minWidth: 220 } },
           h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-          h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } }, meta.hint)
         )
       );
 
-      var subtoolNav = tab === 'explore' ? h('div', { className: 'flex flex-wrap gap-1.5 mb-4', role: 'navigation', 'aria-label': t('stem.semiconductor.semiconductor_sub_tools', 'Semiconductor sub-tools') },
-        SUBTOOLS.map(function(st) {
-          return pill(st.icon + ' ' + st.short, subtool === st.id, function() {
-            updMulti({ subtool: st.id, aiExplain: null });
-            if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + st.label + ' simulation.', { debounce: 500 });
-            if (announceToSR) announceToSR('Selected ' + st.label + ' tool');
-          }, 'subtool-' + st.id);
-        }),
-        h('span', { className: 'text-[11px] text-slate-600 self-center ml-1' }, t('stem.semiconductor.keys', '\u2190\u2192 keys'))
+      var subtoolNav = tab === 'explore' ? h('div', {
+        className: 'flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-800/70 border border-slate-600 flex-wrap',
+        role: 'navigation', 'aria-label': t('stem.semiconductor.semiconductor_sub_tools', 'Semiconductor simulations')
+      },
+        h('label', { htmlFor: 'semiconductor-simulation-select', className: 'text-xs font-bold text-slate-200' }, t('stem.semiconductor.simulation', 'Simulation')),
+        h('select', {
+          id: 'semiconductor-simulation-select', value: subtool,
+          onChange: function(e) {
+            var next = e.target.value;
+            updMulti({ subtool: next, aiExplain: null });
+            if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + getSubtoolLabel(next) + ' simulation.', { debounce: 500 });
+            if (announceToSR) announceToSR('Selected ' + getSubtoolLabel(next) + ' simulation');
+          },
+          className: 'min-h-10 flex-1 min-w-[220px] rounded-lg bg-slate-950 text-slate-100 border border-slate-500 px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-cyan-400',
+          'aria-label': t('stem.semiconductor.choose_simulation', 'Choose a semiconductor simulation')
+        }, SUBTOOLS.map(function(st) {
+          return h('option', { key: st.id, value: st.id }, st.label);
+        })),
+        h('span', { className: 'text-xs text-cyan-200 font-semibold' }, getSubtoolLabel(subtool))
       ) : null;
 
       var content;
@@ -3971,7 +4027,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[11px] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.semiconductor.hypothesis_input', 'Semiconductor carrier concentration hypothesis'), placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
-              className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
+              className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug', rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[11px] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-amber-100 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -3981,8 +4037,8 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.semiconductor.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.semiconductor.explanation_input', 'Explain semiconductor carrier concentration'), placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
-              className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
+              className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-400 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            h('div', { className: 'text-[10px] italic text-slate-400' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
         })();
         else content = renderBandGap();
@@ -4022,12 +4078,12 @@ window.StemLab = window.StemLab || {
       var activeTemp = d.temperature || 300;
       var activeBandGap = Math.max(0, activeMaterial.bandGap + activeMaterial.tempCoeff * (activeTemp - 300));
       var chipRoutes = [
-        { label: t('stem.semiconductor.route_band_structure', 'Band structure'), value: activeBandGap.toFixed(2) + ' eV', note: activeMaterial.name, accent: '#38bdf8', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'bandgap', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_doping', 'Doping'), value: (DOPANTS[d.dopant] || DOPANTS.none).name, note: (d.dopantCount || 3) + ' dopants on the lattice', accent: '#f59e0b', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'doping', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: ((d.pnBias || 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'pnjunction', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_chip_logic', 'Chip logic'), value: d.gateType || 'NOT', note: t('stem.semiconductor.route_chip_logic_note', 'Build gates and CMOS flow'), accent: '#34d399', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'gates', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_solar_led', 'Solar + LED'), value: (d.ledCurrent || 20) + ' mA', note: t('stem.semiconductor.route_solar_led_note', 'Turn photons into power and color'), accent: '#fb7185', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'ledspec', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_practice', 'Practice'), value: tab === 'challenge' ? t('stem.semiconductor.active', 'Active') : t('stem.semiconductor.ready', 'Ready'), note: t('stem.semiconductor.route_practice_note', 'Challenge or Chip Defense'), accent: '#22d3ee', onClick: function() { setStemLabTab('challenge'); } }
+        { label: t('stem.semiconductor.route_band_structure', 'Band structure'), value: activeBandGap.toFixed(2) + ' eV', note: activeMaterial.name, accent: '#38bdf8', onClick: function() { updMulti({ mode: 'explore', subtool: 'bandgap', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_doping', 'Doping'), value: (DOPANTS[d.dopant] || DOPANTS.none).name, note: (d.dopantCount || 3) + ' dopants on the lattice', accent: '#f59e0b', onClick: function() { updMulti({ mode: 'explore', subtool: 'doping', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: ((d.pnBias || 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { updMulti({ mode: 'explore', subtool: 'pnjunction', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_chip_logic', 'Chip logic'), value: d.gateType || 'NOT', note: t('stem.semiconductor.route_chip_logic_note', 'Build gates and CMOS flow'), accent: '#34d399', onClick: function() { updMulti({ mode: 'explore', subtool: 'gates', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_solar_led', 'Solar + LED'), value: (d.ledCurrent || 20) + ' mA', note: t('stem.semiconductor.route_solar_led_note', 'Turn photons into power and color'), accent: '#fb7185', onClick: function() { updMulti({ mode: 'explore', subtool: 'ledspec', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_practice', 'Practice'), value: tab === 'challenge' ? t('stem.semiconductor.active', 'Active') : t('stem.semiconductor.ready', 'Ready'), note: t('stem.semiconductor.route_practice_note', 'Challenge or Chip Defense'), accent: '#22d3ee', onClick: function() { updMulti({ mode: 'challenge', aiExplain: null }); } }
       ];
       var commandPanel = h('section', {
         'data-semiconductor-command': 'true',
@@ -4041,11 +4097,11 @@ window.StemLab = window.StemLab || {
           boxShadow: '0 18px 40px rgba(2,8,23,0.28)'
         }
       },
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(260px, 0.85fr)', gap: 12, alignItems: 'stretch' } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 12, alignItems: 'stretch' } },
           h('div', null,
             h('div', { style: { fontSize: 10, fontWeight: 900, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 4 } }, t('stem.semiconductor.command_kicker', 'Chip lab bench')),
             h('h3', { id: 'semiconductor-command-title', style: { margin: 0, color: '#f8fafc', fontSize: 20, lineHeight: 1.15, fontWeight: 900 } }, currentSubtool.label),
-            h('p', { style: { margin: '6px 0 12px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, maxWidth: '68ch' } }, t('stem.semiconductor.command_copy', 'Start with a physical idea, then jump into the exact simulation: energy bands, dopants, P-N junctions, logic gates, LEDs, solar cells, or a practice challenge.')),
+            h('p', { style: { margin: '6px 0 12px', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55, maxWidth: '68ch' } }, t('stem.semiconductor.command_copy', 'Choose a question, change one variable, and use the diagram plus the live values to explain what happened.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } },
               chipRoutes.map(function(route) {
                 return h('button', {
@@ -4101,21 +4157,90 @@ window.StemLab = window.StemLab || {
         )
       );
 
+      var QUICK_STARTS = {
+        bandgap: { action: 'Load a room-temperature silicon baseline.', change: 'Turn on Photon Excitation, then switch the material to Glass.', notice: 'Which material lets an electron cross the gap, and why?' },
+        doping: { action: 'Load silicon with a small phosphorus dose.', change: 'Increase the dopant count one step at a time.', notice: 'What new majority carrier appears as doping increases?' },
+        pnjunction: { action: 'Load an unbiased P-N junction with its field and carriers visible.', change: 'Move the bias to +0.7 V, then to -1.0 V.', notice: 'How do current and depletion width respond?' },
+        transistor: { action: 'Load an N-channel MOSFET in its off state.', change: 'Raise the gate voltage slowly until the channel turns on.', notice: 'At what voltage does current begin to flow?' },
+        gates: { action: 'Load a NOT gate with input A set to 0.', change: 'Predict the output, then toggle A.', notice: 'Does the output match your prediction?' },
+        ivcurve: { action: 'Load a diode at 0 V and room temperature.', change: 'Sweep through reverse and forward bias.', notice: 'Where does current begin increasing sharply?' },
+        sandbox: { action: 'Clear the circuit board and load a 5 V supply.', change: 'Build one complete path before adding another component.', notice: 'Which change makes current flow through the load?' },
+        waferfab: { action: 'Reset the wafer to the first fabrication stage.', change: 'Advance one stage at a time.', notice: 'What new layer or pattern does each stage add?' },
+        ledspec: { action: 'Load a red LED at 20 mA.', change: 'Change current, then compare another LED material.', notice: 'What controls brightness, wavelength, and perceived color?' },
+        solarcell: { action: 'Load silicon at standard sunlight and room temperature.', change: 'Lower irradiance, then raise temperature.', notice: 'Which variable changes maximum power most strongly?' },
+        moorelaw: { action: 'Load the current-year Moore\'s Law view.', change: 'Move backward through processor milestones.', notice: 'Where does the measured trend begin to depart from the projection?' },
+        qwell: { action: 'Load a 5 nm GaAs/AlGaAs quantum well.', change: 'Narrow the well, then deepen it.', notice: 'How do the allowed energy levels move?' },
+        memory: { action: 'Load an SRAM cell storing 0.', change: 'Write a 1, then compare another memory type.', notice: 'What physically preserves the bit?' },
+        amplifier: { action: 'Load a common-source amplifier with a 10 mV input.', change: 'Increase the input amplitude, then frequency.', notice: 'When does the output stop being a clean amplified copy?' },
+        dopeHunt: { action: 'Load a moderate silicon doping baseline.', change: 'Change concentration, temperature, and material one at a time.', notice: 'Can two different settings produce the same conductivity regime?' }
+      };
+      var GUIDED_SETUPS = {
+        bandgap: { material: 'silicon', temperature: 300, showPhoton: false, showFermi: true },
+        doping: { dopant: 'phosphorus', dopantCount: 3, crystalSize: 8, dopingTemp: 300, showResistivity: false },
+        pnjunction: { pnBias: 0, pnShowField: true, pnShowCarriers: true, pnShowDepletion: true, pnAnimating: true, pnShowIV: false, pnLedMode: false },
+        transistor: { transistorType: 'mosfet-n', gateVoltage: 0, drainVoltage: 5, showCurrentFlow: true, showCMOS: false },
+        gates: { gateType: 'NOT', inputA: false, inputB: false, gateChain: [], showTruthGrid: false },
+        ivcurve: { ivDevice: 'diode', ivSweepV: 0, ivTracePoints: [], ivShowIdeal: true, ivTemp: 300 },
+        sandbox: { circuitComponents: [], circuitWires: [], circuitSelectedComp: null, circuitVoltage: 5, circuitSimResult: null },
+        waferfab: { fabStage: 0, fabRunning: false, fabTemp: 1000, fabTime: 30, fabDopant: 'phosphorus', fabHistory: [], fabGuided: true },
+        ledspec: { ledMaterial: 'red-gan', ledCurrent: 20, ledShowSpectrum: true, ledMixR: 100, ledMixG: 0, ledMixB: 0, ledMixMode: false },
+        solarcell: { solarIrradiance: 1000, solarTemp: 300, solarArea: 100, solarMaterial: 'silicon', solarShowPV: true, solarLoadR: 100 },
+        moorelaw: { mooreYear: 2024, mooreShowPred: true, mooreLogScale: true, mooreHighlight: null },
+        qwell: { qwWidth: 5, qwDepth: 0.3, qwMaterial: 'gaas-algaas', qwLevels: 3, qwShowWave: true, qwShowProb: false, qwElectricField: 0 },
+        memory: { memType: 'sram', memBitValue: 0, memWriteEnable: false, memShowArray: false, memRefreshing: false, memCellCount: 4, memShowTiming: false },
+        amplifier: { ampType: 'common-source', ampVin: 0.01, ampFreq: 1000, ampVdd: 5, ampRd: 10000, ampShowBode: false, ampShowDC: true, ampBiasPoint: 2.5 },
+        dopeHunt: { dopeHunt: { conc: 5, tempK: 300, material: 'Si', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] } }
+      };
+      var quick = QUICK_STARTS[subtool] || QUICK_STARTS.bandgap;
+      var guidedSetup = GUIDED_SETUPS[subtool] || GUIDED_SETUPS.bandgap;
+      function applyGuidedSetup() {
+        updMulti(Object.assign({}, guidedSetup, { guidedSetupSubtool: subtool }));
+        tryAwardXP('guided-' + subtool, 3, 'Started guided ' + getSubtoolLabel(subtool) + ' experiment');
+        if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'guidedSetup', getSubtoolLabel(subtool) + ' guided baseline loaded. Now change one variable and observe the diagram.', { debounce: 300 });
+        if (announceToSR) announceToSR(getSubtoolLabel(subtool) + ' guided baseline loaded. Continue with step 2.');
+      }
+      var quickStart = tab === 'explore' ? h('section', {
+        className: 'mb-3 rounded-xl border border-cyan-500/60 bg-cyan-950/40 p-3',
+        'aria-labelledby': 'semiconductor-quick-start-title'
+      },
+        h('div', { className: 'flex flex-wrap items-center gap-2' },
+          h('div', { id: 'semiconductor-quick-start-title', className: 'text-sm font-black text-cyan-100' }, t('stem.semiconductor.guided_experiment', 'Guided experiment')),
+          h('span', { className: 'rounded-full bg-cyan-900/70 px-2 py-1 text-[11px] font-bold text-cyan-100' }, t('stem.semiconductor.three_short_steps', '3 short steps'))
+        ),
+        h('ol', { className: 'mt-3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
+          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '1. Set up'), quick.action),
+          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '2. Change'), quick.change),
+          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '3. Explain'), quick.notice)
+        ),
+        h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+          h('button', {
+            type: 'button', onClick: applyGuidedSetup,
+            className: 'min-h-10 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300'
+          }, d.guidedSetupSubtool === subtool ? t('stem.semiconductor.reload_baseline', 'Reload baseline') : t('stem.semiconductor.load_guided_setup', 'Load guided setup')),
+          d.guidedSetupSubtool === subtool && h('span', { className: 'text-sm font-semibold text-emerald-300', role: 'status' }, t('stem.semiconductor.baseline_ready', 'Baseline ready — continue with step 2.'))
+        )
+      ) : null;
+      var commandDrawer = tab === 'explore' ? h('details', { className: 'mt-4 rounded-xl border border-slate-600 bg-slate-900/50' },
+        h('summary', { className: 'cursor-pointer px-4 py-3 text-sm font-bold text-cyan-200 hover:text-white' }, t('stem.semiconductor.open_lab_map', 'Explore more chip-lab activities')),
+        h('div', { className: 'px-3 pb-3' }, commandPanel)
+      ) : null;
+
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
         backBtn,
         h('div', { className: 'flex items-center gap-2 mb-2' },
           h('span', { className: 'text-2xl' }, '\uD83D\uDCA1'),
           h('h2', { className: 'text-lg font-bold text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
-          h('span', { className: 'text-[11px] text-slate-600 ml-1' }, 'v3.0'),
+          h('span', { className: 'text-[11px] text-slate-400 ml-1' }, 'v3.0'),
           h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
         ),
         tabBar,
-        commandPanel,
         h('div', { role: 'tabpanel', id: 'semiconductor-panel-' + tab,
           'aria-labelledby': 'semiconductor-tab-' + tab, tabIndex: 0 },
           tabHero,
           subtoolNav,
-          h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content)),
+          quickStart,
+          h('div', { className: 'flex-1 pr-1' }, content),
+          commandDrawer),
         snapshotBtn
       );
     }

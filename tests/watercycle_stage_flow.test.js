@@ -40,4 +40,32 @@ describe('Water Cycle stage transfer cue', () => {
       expect(source).toContain('Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Water moves from " + currentStageFlow.from');
     });
   });
+
+  it('keeps achievement progress aligned with the six visible stages', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var WATER_CYCLE_STAGE_COUNT = 6;');
+      expect(source).toContain("desc: 'View all ' + WATER_CYCLE_STAGE_COUNT + ' water cycle stages'");
+      expect(source).toContain("var WATER_CYCLE_STAGE_IDS = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];");
+      expect(source).toContain('function countWaterCycleStagesViewed(state)');
+      expect(source).toContain('for (var i = 0; i < WATER_CYCLE_STAGE_IDS.length; i++) if (viewed[WATER_CYCLE_STAGE_IDS[i]]) count++;');
+      expect(source).toContain("check: function(d) { return countWaterCycleStagesViewed(d) >= WATER_CYCLE_STAGE_COUNT; }, progress: function(d) { return countWaterCycleStagesViewed(d) + '/' + WATER_CYCLE_STAGE_COUNT + ' stages'; }");
+      expect(source).toContain('var viewedStageCount = countWaterCycleStagesViewed(d);');
+      expect(source).toContain('met = countWaterCycleStagesViewed(state) >= WATER_CYCLE_STAGE_COUNT;');
+      expect(source).not.toContain('length >= 5;');
+    });
+  });
+
+  it('shows visited progress in the stage navigation', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var isViewed = !!(d.stagesViewed && d.stagesViewed[stage.id]);');
+      expect(source).toContain('"data-stage-viewed": String(isViewed)');
+      expect(source).toContain('(isViewed ? " (visited)" : " (not yet visited)")');
+      expect(source).toContain('className: "wc-stage-viewed-mark"');
+      expect(source).toContain('@media(forced-colors:active){.wc-stage-viewed-mark{color:Highlight}}');
+    });
+  });
 });

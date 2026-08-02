@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
+import { JSDOM } from 'jsdom';
 
 const root = process.cwd();
 
@@ -19,6 +20,18 @@ describe('Life Skills 3D day-in-the-life capstone', () => {
     expect(source).toContain('The 3D scene is unavailable in this browser.');
     expect(source).toContain('id="hintButton"');
     expect(source).toContain('id="challengeButton"');
+    expect(source).toContain('id="missionTitle"');
+    expect(source).toContain('id="missionContext"');
+    expect(source).toContain('id="supportBadge"');
+    expect(source).toContain('var MISSION_BY_FOCUS =');
+    expect(source).toContain("safety: { title: 'Safe morning launch'");
+    expect(source).toContain("transit: { title: 'Safe trip connection'");
+    expect(source).toContain('function runTasks() { return state.order.map');
+    expect(source).toContain("state.support === 'supported'");
+    expect(source).toContain("state.support === 'independent'");
+    expect(source).toContain("panel.setAttribute('data-risk-active'");
+    expect(source).toContain("panel.setAttribute('data-mission-complete'");
+    expect(source).toContain('missionFocus: state.missionFocus');
     expect(source).toContain('function beginChallenge()');
     expect(source).toContain('alloflow-life-capstone-3d-challenge-start');
     expect(source).toContain('Safe-answer styling is intentionally hidden.');
@@ -39,5 +52,31 @@ describe('Life Skills 3D day-in-the-life capstone', () => {
     expect(source).toContain('aria-current', 'step');
     scripts.forEach((match, index) => expect(() => new vm.Script(match[1], { filename: `capstone#script-${index + 1}` })).not.toThrow());
     expect(publicCopy).toBe(source);
+  });
+
+  it('adapts mission order and coaching to Passport signals', () => {
+    const source = readFileSync(resolve(root, 'life_skills_capstone/life_skills_capstone.html'), 'utf8');
+    const scripts = [...source.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)];
+    const dom = new JSDOM(source, {
+      url: 'http://example.test/life_skills_capstone.html?focus=repair&support=supported',
+      runScripts: 'outside-only',
+      pretendToBeVisual: true,
+    });
+
+    dom.window.eval(scripts.at(-1)[1]);
+    const document = dom.window.document;
+    expect(document.getElementById('missionTitle').textContent).toBe('Stop the problem first');
+    expect(document.getElementById('supportBadge').textContent).toBe('Extra coaching');
+    expect(document.getElementById('stationLabel').textContent).toContain('Bathroom');
+
+    document.querySelectorAll('#choices .choice')[1].click();
+    expect(document.getElementById('hintText').hidden).toBe(false);
+    expect(document.getElementById('hintText').textContent).toContain('Stop the water');
+    expect(document.getElementById('scenePanel').getAttribute('data-risk-active')).toBe('true');
+
+    document.querySelectorAll('#choices .choice')[0].click();
+    expect(document.getElementById('scenePanel').getAttribute('data-risk-active')).toBe('false');
+    expect(document.querySelector('#steps .step.done')).not.toBeNull();
+    dom.window.close();
   });
 });

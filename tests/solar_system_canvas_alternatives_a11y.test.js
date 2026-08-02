@@ -35,6 +35,19 @@ describe('Solar System canvas alternatives', () => {
     });
     expect(failures).toEqual([]);
   });
+  it('gives each Orrery teaching canvas a specific accessible description and pauses animated laws for reduced motion', () => {
+    const source = readFileSync(SOURCE, 'utf8');
+
+    expect(source).toContain('ariaLabel: "Kepler I orbit visualization.');
+    expect(source).toContain('ariaLabel: "Kepler II equal-area visualization.');
+    expect(source).toContain('ariaLabel: "Kepler III plot of solar-system bodies');
+    expect(source).toContain('ariaLabel: "Orbit Workshop preview for " + body.name');
+    expect(source).toContain('ariaLabel: "Orbit Workshop energy diagram for " + body.name');
+    expect(source).toContain('ariaLabel: "Hohmann transfer visualization from " + fromBody.name');
+    expect(source).toContain('reduceMotion: reduceMotion,');
+    expect(source).toContain('if (!reduceMotion) animRef.current = (animRef.current + 0.01) % TAU;');
+    expect(source).toContain('if (!reduceMotion) animRef.current = (animRef.current + 0.008) % TAU;');
+  });
 
   it('renders only named or explicitly decorative canvases in representative views', () => {
     const views = [
@@ -57,6 +70,16 @@ describe('Solar System canvas alternatives', () => {
     expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Home');
     expect(canvas.getAttribute('aria-describedby')).toBe('orrery-canvas-help');
     expect(document.getElementById('orrery-canvas-help')?.textContent).toContain('Keyboard: arrows pan');
+  });
+it('keeps static canvases out of the tab order and gives Kepler III a keyboard fallback', () => {
+    const source = readFileSync(SOURCE, 'utf8');
+    expect(source).toContain('var keyboardInteractive = !!props.panZoom || !!props.onKeyboardInteract;');
+    expect(source).toContain('tabIndex: keyboardInteractive ? 0 : undefined');
+    expect(source).toContain('ariaDescribedBy: "orrery-k3-canvas-help"');
+    expect(source).toContain('Keyboard: press Enter or Space to cycle through plotted worlds');
+    expect(source).toContain('id: "orrery-k3-selected"');
+    expect(source).toContain('T²/a³ = " + fmt(k3HoverRatio, 4)');
+expect(source).toContain('onEscape: function() { upd("orr_k3hover", null); }');
   });
   it('names the dynamic vehicle radar and excludes detached texture buffers', () => {
     const source = readFileSync(SOURCE, 'utf8');

@@ -693,14 +693,14 @@ const TEST_SUITES = [
             return { pass: false, message: 'Expected the guided run to finish with 6 editable points and state=tested; got ' + JSON.stringify(info) };
           }
           if (!info.welcomeVisible) return { pass: false, message: 'Guided progress card is not visible after the first run' };
-          if (!info.prediction || !info.prediction.feedback || info.prediction.speed !== 'speedUp' || info.prediction.force !== 'valley') {
+          if (!info.prediction || !info.prediction.feedback || !info.prediction.coach || info.prediction.speed !== 'speedUp' || info.prediction.force !== 'valley') {
             return { pass: false, message: 'Prediction checkpoint did not produce feedback: ' + JSON.stringify(info.prediction) };
           }
           if (!info.notebook || info.notebook.attempts < 1 || info.notebook.revisions !== 0 || !info.notebook.hasPrediction) {
             return { pass: false, message: 'Notebook did not retain the guided attempt: ' + JSON.stringify(info.notebook) };
           }
           if (!info.evidenceVisible) return { pass: false, message: 'Prediction evidence card was not rendered in the report' };
-          if (!info.notebook || info.notebook.historyLength !== 1 || !info.notebook.exportReady || !info.notebook.packetReady || !info.notebook.packetEvidenceReady || !info.notebook.packetControlsVisible || !info.notebook.clearReady || !info.notebook.conditionsLocked || !info.timelineVisible || !info.historyExportVisible || !info.historyTrendVisible || !info.teacherReportVisible || !info.classroomRubricVisible || !info.evidenceQualityVisible || !info.adaptiveVisible || !info.adaptiveProgressVisible || !info.reviewVisible || !info.notebook.conditions || !info.comparisonVisible) return { pass: false, message: 'Guided baseline comparison, controls, or locked conditions were not ready: ' + JSON.stringify(info) };
+          if (!info.notebook || info.notebook.historyLength !== 1 || !info.notebook.exportReady || !info.notebook.packetReady || !info.notebook.packetEvidenceReady || !info.notebook.packetControlsVisible || !info.notebook.clearReady || !info.notebook.conditionsLocked || !info.timelineVisible || !info.historyExportVisible || !info.historyTrendVisible || !info.teacherReportVisible || !info.classroomRubricVisible || !info.evidenceQualityVisible || !info.adaptiveVisible || !info.adaptiveActionVisible || !info.adaptiveFocusVisible || !info.adaptivePlanVisible || !info.adaptivePlan || typeof info.adaptivePlan.change !== 'string' || typeof info.adaptivePlan.why !== 'string' || typeof info.adaptivePlan.test !== 'string' || typeof info.adaptivePlan.success !== 'string' || !info.adaptiveInspectVisible || !info.adaptiveProgressVisible || !info.reflectionPromptVisible || !info.reviewVisible || !info.notebook.conditions || !info.comparisonVisible) return { pass: false, message: 'Guided baseline comparison, controls, or locked conditions were not ready: ' + JSON.stringify(info) };
           if (!state.packetRoundTrip || !state.packetRoundTrip.pass || !state.packetRoundTrip.evidence) return { pass: false, message: 'Lab packet round trip did not restore the guided state: ' + JSON.stringify(state.packetRoundTrip) };
           return { pass: true, message: 'guided first run completed with 6 editable points, a recorded prediction, and a round-trippable lab packet' };
         },

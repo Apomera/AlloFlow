@@ -118,6 +118,104 @@ test.describe('Geology Explorer learning path', () => {
     await expect(page.getByRole('region', { name: 'CER rubric' })).toContainText('0/4');
     await expect(page.getByRole('region', { name: 'CER rubric' })).toContainText('at least two observations');
   });
+  test('shows targeted remediation after an incorrect quiz answer', async ({ page }) => {
+    await mount(page);
+
+    await page.getByRole('button', { name: /Assess/ }).click();
+    const quiz = page.getByRole('region', { name: 'Relative dating quiz' });
+    await quiz.getByRole('button', { name: 'Start' }).click();
+    await quiz.getByRole('button', { name: 'Sandstone' }).click();
+
+    const remediation = page.getByRole('region', { name: 'Targeted remediation' });
+    await expect(remediation).toContainText('Top layers are always oldest');
+    await expect(remediation).toContainText('Read from the surface downward');
+    await remediation.getByRole('button', { name: 'Try again' }).click();
+    await expect(remediation).toHaveCount(0);
+    await expect(quiz.getByRole('button', { name: 'Sandstone' })).toBeEnabled();
+  });
+  test('exposes read-aloud controls for mission, orientation, and remediation text', async ({ page }) => {
+    await mount(page);
+
+    await expect(page.locator('[data-geology-read-aloud="mission-crust"]')).toBeVisible();
+    await expect(page.locator('[data-geology-read-aloud="orientation-crust"]')).toBeVisible();
+
+    await page.getByRole('button', { name: /Assess/ }).click();
+    const quiz = page.getByRole('region', { name: 'Relative dating quiz' });
+    await quiz.getByRole('button', { name: 'Start' }).click();
+    await quiz.getByRole('button', { name: 'Sandstone' }).click();
+    await expect(page.locator('[data-geology-read-aloud^="remediation-"]')).toBeVisible();
+  });
+  test('stops read-aloud state when the learner changes scene', async ({ page }) => {
+    await mount(page);
+    await page.evaluate(() => {
+      if (window.speechSynthesis) {
+        try { window.speechSynthesis.speak = function () {}; } catch (e) {}
+        try { window.speechSynthesis.cancel = function () {}; } catch (e) {}
+      }
+    });
+
+    const missionAudio = page.locator('[data-geology-read-aloud="mission-crust"]');
+    await missionAudio.click();
+    await expect(missionAudio).toHaveAttribute('aria-label', 'Stop reading aloud');
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    await expect(page.locator('[data-geology-read-aloud="mission-geode"]')).toHaveAttribute('aria-label', 'Read mission aloud');
+  });
+  test('supports drag-and-drop sequencing with targeted feedback', async ({ page }) => {
+    await mount(page);
+
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    const panel = page.getByRole('region', { name: 'Sequence challenge' });
+    await expect(panel).toContainText('Relative-dating event order');
+    await panel.getByRole('button', { name: 'Check sequence' }).click();
+    await expect(panel.getByRole('alert')).toContainText('Position');
+
+    await panel.locator('[data-geology-sequence-card="shale"]').dragTo(panel.locator('[data-geology-sequence-card="sandstone"]'));
+    await panel.locator('[data-geology-sequence-card="soil"]').dragTo(panel.locator('[data-geology-sequence-card="pluton"]'));
+    await panel.getByRole('button', { name: 'Check sequence' }).click();
+    await expect(panel.locator('[data-geology-sequence-feedback="correct"]')).toContainText('Correct');
+    await expect(panel).toContainText('Sequence saved');
+  });
+  test('supports tap-to-place sequencing on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await mount(page);
+
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    const panel = page.getByRole('region', { name: 'Sequence challenge' });
+    const touchStatus = panel.locator('[data-geology-sequence-touch-status="true"]');
+    await expect(touchStatus).toContainText('Touch reorder is ready');
+
+    await panel.getByRole('button', { name: 'Select Mud settles into shale for touch reorder' }).click();
+    await expect(touchStatus).toContainText('Selected Mud settles into shale');
+    await expect(panel.getByRole('button', { name: 'Cancel touch reorder for Mud settles into shale' })).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByRole('button', { name: 'Place Mud settles into shale before Sand becomes sandstone' }).click();
+
+    await panel.getByRole('button', { name: 'Select The surface weathers for touch reorder' }).click();
+    await panel.getByRole('button', { name: 'Place The surface weathers before A granite pluton cuts through' }).click();
+    await panel.getByRole('button', { name: 'Check sequence' }).click();
+    await expect(panel.locator('[data-geology-sequence-feedback="correct"]')).toContainText('Correct');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  });
+  test('maps collected evidence into observation, process, and outcome roles', async ({ page }) => {
+    await mount(page);
+
+    await page.getByRole('button', { name: /Investigate/ }).click();
+    await page.getByRole('button', { name: /Soil/ }).click();
+    await page.getByRole('button', { name: 'Sandstone', exact: true }).click();
+    await page.getByRole('button', { name: 'Shale', exact: true }).click();
+    await page.getByRole('button', { name: /Assess/ }).click();
+
+    const map = page.getByRole('region', { name: 'Evidence map' });
+    await expect(map).toBeVisible();
+    await expect(map.getByText('0/3 roles mapped', { exact: true })).toBeVisible();
+    const items = map.locator('[data-geology-evidence-item]');
+    await expect(items).toHaveCount(3);
+    await items.nth(0).getByRole('button', { name: 'Observation' }).click();
+    await items.nth(1).getByRole('button', { name: 'Process' }).click();
+    await items.nth(2).getByRole('button', { name: 'Outcome' }).click();
+    await expect(items.nth(0).getByRole('button', { name: 'Observation' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(map.locator('[data-geology-evidence-map-status="true"]')).toContainText('Map ready');
+  });
   test('shows an all-scene progress summary in the lesson guide', async ({ page }) => {
     await mount(page);
 
@@ -126,6 +224,20 @@ test.describe('Geology Explorer learning path', () => {
     await expect(summary).toContainText('0/6 scene missions complete');
     await expect(summary.getByRole('group', { name: /Layered crust: 0 of 3/ })).toBeVisible();
     await expect(summary.getByRole('button', { name: 'Export progress summary' })).toBeVisible();
+  });
+  test('opens the vocabulary bridge and refreshes for the selected scene', async ({ page }) => {
+    await mount(page);
+
+    const toggle = page.locator('[data-geology-vocabulary-toggle=\"crust\"]');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('region', { name: 'Vocabulary bridge' })).toContainText('Superposition');
+
+    await page.getByRole('tab', { name: /Crystal cavern/ }).click();
+    const geodeToggle = page.locator('[data-geology-vocabulary-toggle=\"geode\"]');
+    await expect(geodeToggle).toHaveAttribute('aria-expanded', 'false');
+    await geodeToggle.click();
+    await expect(page.getByRole('region', { name: 'Vocabulary bridge' })).toContainText('Cavity');
   });
   test('shows an adaptive hint and scene-specific orientation guidance', async ({ page }) => {
     await mount(page);

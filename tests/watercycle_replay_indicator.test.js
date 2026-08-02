@@ -24,6 +24,7 @@ describe('Water Cycle replay handoff', () => {
 
       expect(source).toContain('is-replaying');
       expect(source).toContain('wc-experiment-log-replay-badge');
+      expect(source).toContain('className: "wc-experiment-log-replay-badge", "aria-hidden": "true"');
       expect(source).toContain('Replaying: " + wcReplayedObservation');
       expect(source).toContain('Replay active');
       expect(source).toContain('Adjust a control to branch from this observation.');

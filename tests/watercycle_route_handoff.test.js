@@ -18,6 +18,10 @@ describe('Water Cycle selected-path evidence receipt', () => {
       expect(source).toContain('relativeShare: wcRouteShares.runoff');
       expect(source).toContain('relativeShare: wcRouteShares.infiltration');
       expect(source).toContain('relativeShare: wcRouteShares.plant');
+      expect(source).toContain('journeyChosenRoute.returnPath');
+      expect(source).toContain('journeyChosenRoute.driver');
+      expect(source).toContain("journeyChosenRoute.driver + '. Return path: '");
+      expect(source).toContain("journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath");
     });
   });
 
@@ -28,9 +32,14 @@ describe('Water Cycle selected-path evidence receipt', () => {
       expect(source).toContain('className: "wc-journey-choice-receipt"');
       expect(source).toContain('role: "region"');
       expect(source).toContain('"aria-label": "Selected journey path evidence"');
+      expect(source).toContain('journeyChoiceCopy + wcJourneyPredictionReceipt');
+      expect(source).toContain('"aria-label": "Selected journey path evidence" + wcJourneyPredictionReceipt');
+      expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('className: "wc-journey-choice-receipt-kicker"');
       expect(source).toContain('className: "wc-journey-choice-track"');
       expect(source).toContain('relative route share: " + journeyChosenRoute.relativeShare + " percent');
+      expect(source).toContain('wcRouteShareAria');
+      expect(source).toContain('wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker"');
       expect(source).toContain('Plants can take up water and return some vapor through transpiration; this is not a measured uptake rate.');
       expect(source).toContain('@media(max-width:460px){.wc-journey-choice-receipt');
       expect(source).toContain('@media(forced-colors:active){.wc-journey-choice-receipt');

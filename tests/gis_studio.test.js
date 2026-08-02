@@ -21,6 +21,38 @@ describe('GIS Studio', () => {
     expect(() => tool.testing.parseGeoJSON('{"type":"FeatureCollection","features":[]}')).toThrow();
   });
 
+  it('reports invalid and capped coordinate CSV rows without changing the row contract', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const csv = [
+      'name,latitude,longitude,value',
+      'Good,44,-69,10',
+      'Bad,200,-69,11',
+      ...Array.from({ length: 251 }, (_, index) => 'Valid ' + index + ',44,-69,' + index)
+    ].join('\n');
+    const parsed = tool.testing.parseCSV(csv);
+    expect(parsed).toHaveLength(250);
+    expect(parsed.invalidRows).toBe(1);
+    expect(parsed.truncatedRows).toBe(2);
+    expect(parsed.invalidSamples[0]).toMatchObject({ row: 3, name: 'Bad', latitude: '200', longitude: '-69', value: '11' });
+  });
+
+  it('quotes portable CSV exports without changing values', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    expect(tool.testing.rowsToCSV([['Name', 'Value'], ['A, "quoted"', 1]])).toBe('Name,Value\r\n"A, ""quoted""",1\r\n');
+    expect(tool.testing.safeFileStem('Maine / Access Study!', 'gis')).toBe('maine-access-study');
+  });
+  it('keeps live map surfaces responsive and covered while they initialize', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const mapHtml = renderTool('gisStudio', {});
+    const compareHtml = renderTool('gisStudio', { gisTab: 'compare' });
+    expect(mapHtml).toContain('Preparing interactive map');
+    expect(mapHtml).toContain('aria-busy="true"');
+    expect(compareHtml).toContain('Synchronized comparison maps');
+    expect(compareHtml).toContain('min(330px,100%)');
+    expect(compareHtml).toContain('Retry loading');
+    const timelineHtml = renderTool('gisStudio', { gisTab: 'timeline' });
+    expect(timelineHtml).toContain('Retry loading');
+  });
   it('joins CSV attributes to GeoJSON with mismatch diagnostics', () => {
     const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const geo = {
@@ -50,7 +82,7 @@ describe('GIS Studio', () => {
   it('renders layers, spatial reasoning, sonification, and a table twin', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', {});
-    for (const text of ['Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
+    for (const text of ['Start a first investigation', 'Build evidence packet', 'Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('<table');
@@ -64,6 +96,7 @@ describe('GIS Studio', () => {
     expect(html).toContain('Load official Maine ecoregions');
     expect(html).toContain('Build choropleth');
     expect(html).toContain('Join a CSV to map boundaries');
+    expect(html).toContain('Download import review');
     expect(html).toContain('Read CSV columns');
     expect(html).toContain('Data ethics');
   });
@@ -233,7 +266,7 @@ describe('GIS Studio', () => {
   it('renders project save, recovery, provenance, and privacy controls', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'project' });
-    for (const text of ['Save, reopen, and recover projects', 'Download project file', 'Open GIS Studio project', 'Data provenance manifest', 'Project inventory', 'Recorded transformations', 'Coordinate privacy review', 'Round imported + timeline points', 'Before sharing']) {
+    for (const text of ['Save, reopen, and recover projects', 'Download project file', 'Download mapped CSV', 'Download GeoJSON layer', 'Open GIS Studio project', 'Data provenance manifest', 'Project inventory', 'Recorded transformations', 'Coordinate privacy review', 'Round imported + timeline points', 'Before sharing']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('type="file"');

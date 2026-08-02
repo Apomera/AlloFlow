@@ -141,7 +141,7 @@ describe('privacy-safe roster session summaries', () => {
   });
 
   it('keeps history portable and removes deleted students from saved summaries', () => {
-    expect(teacher).toContain('sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : []');
+    expect(teacher).toContain('sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : []');
     expect(teacher).toContain('delete participants[name]');
     expect(teacher).toContain('Saved session history ({rosterKey.sessionHistory.length})');
     expect(teacher).toContain('session.insightBrief.activityCount');

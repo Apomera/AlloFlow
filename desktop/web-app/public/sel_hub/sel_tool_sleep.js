@@ -214,7 +214,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            var tabIndex = tabs.indexOf(t);            return h('button', {
+              key: t.id,
+              id: 'sleep-tab-' + t.id,
+              'aria-controls': 'sleep-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(event) {
+                var nextIndex = tabIndex;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home') nextIndex = 0;
+                else if (event.key === 'End') nextIndex = tabs.length - 1;
+                else return;
+                event.preventDefault();
+                goto(tabs[nextIndex].id);
+                setTimeout(function() {
+                  var nextTab = document.getElementById('sleep-tab-' + tabs[nextIndex].id);
+                  if (nextTab) nextTab.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#6366f1' : '#334155'),
                 background: active ? 'rgba(99,102,241,0.18)' : _sleBg('#1e293b'),
@@ -416,7 +435,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           var validQuality = diary.filter(function(e) { return !isNaN(e.quality); });
           avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : 0;
           avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : 0;
-        }
+        var experimentGroups = {};
+        diary.forEach(function(e) {
+          var label = (e.experiment || '').trim();
+          if (!label) return;
+          if (!experimentGroups[label]) experimentGroups[label] = [];
+          experimentGroups[label].push(e);
+        });
+        var experimentSummary = Object.keys(experimentGroups).map(function(label) {
+          var rows = experimentGroups[label];
+          var qualityRows = rows.filter(function(e) { return !isNaN(e.quality); });
+          var hourRows = rows.filter(function(e) { return !isNaN(e.hours) && e.hours > 0; });
+          return {
+            label: label,
+            count: rows.length,
+            avgQuality: qualityRows.length ? (qualityRows.reduce(function(sum, e) { return sum + e.quality; }, 0) / qualityRows.length).toFixed(1) : null,
+            avgHours: hourRows.length ? (hourRows.reduce(function(sum, e) { return sum + e.hours; }, 0) / hourRows.length).toFixed(1) : null
+          };
+        });        }
 
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bae6fd'), lineHeight: 1.65 } },
@@ -440,6 +476,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ) : null,
 
+          experimentSummary.length > 0 ? h('div', {
+            role: 'region',
+            'aria-label': 'Sleep experiment review',
+            style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 12 }
+          },
+            h('div', { style: { color: _sleFg('#c7d2fe'), fontSize: 13, fontWeight: 800, marginBottom: 5 } }, 'Small experiment review'),
+            h('p', { style: { margin: '0 0 9px', color: _sleFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+              'Compare your own entries to notice a pattern. This does not prove what caused a change, and it is not a diagnosis.'
+            ),
+            h('div', { role: 'list', 'aria-label': 'Logged sleep experiments', style: { display: 'grid', gap: 6 } },
+              experimentSummary.map(function(experiment) {
+                return h('div', { key: experiment.label, role: 'listitem', style: { padding: 9, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid #1e293b', color: _sleFg('#e2e8f0'), fontSize: 11.5, lineHeight: 1.45 } },
+                  h('strong', { style: { color: _sleFg('#e9d5ff') } }, experiment.label),
+                  ' \u2014 logged ' + experiment.count + (experiment.count === 1 ? ' time' : ' times'),
+                  experiment.avgQuality !== null ? '; average quality ' + experiment.avgQuality + '/10' : '',
+                  experiment.avgHours !== null ? '; average sleep ' + experiment.avgHours + ' hours' : '',
+                  experiment.count === 1 ? '. Try repeating the same change on a few nights if it feels reasonable.' : '. Keep noticing what else was happening on those nights.'
+                );
+              })
+            )
+          ) : null,
           // New entry
           h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#bae6fd'), marginBottom: 10 } }, '+ Add an entry'),
@@ -680,7 +737,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sleep and Rest Lab' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'sleep-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'sleep-tab-' + view, tabIndex: 0 }, body)
       );
     }
   });

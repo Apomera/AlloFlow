@@ -116,6 +116,36 @@
   .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--laundry-line); border-radius: 8px; background: transparent; color: var(--laundry-text); font-size: 11px; font-weight: 800; }
   .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.1); }
   .why-text { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .reflection-panel { margin-top: 10px; padding: 10px; border: 1px solid var(--laundry-line); border-left: 4px solid var(--laundry-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .reflection-kicker { color: var(--laundry-accent); font-size: 9px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+  .reflection-panel h3 { margin: 3px 0 5px; font-size: 13px; }
+  .reflection-prompt, .reflection-hint { margin: 0 0 7px !important; color: var(--laundry-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .reflection-label { display: block; margin-bottom: 4px; color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .reflection-input { width: 100%; box-sizing: border-box; resize: vertical; min-height: 58px; padding: 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: var(--laundry-panel-2); color: var(--laundry-text); font: inherit; font-size: 11px; line-height: 1.4; }
+  .reflection-input:focus { outline: 2px solid var(--laundry-accent); outline-offset: 1px; }
+  .reflection-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 7px; }
+  .reflection-button { padding: 7px 9px; border: 1px solid var(--laundry-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--laundry-text); font-size: 10px; font-weight: 900; }
+  .reflection-button:hover { background: rgba(103,232,249,.2); }
+  .reflection-count { color: var(--laundry-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+  .reflection-feedback { margin: 7px 0 0 !important; color: var(--laundry-good) !important; font-size: 10px !important; line-height: 1.4 !important; }
+  .confidence-check { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--laundry-line); }
+  .confidence-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .confidence-button { padding: 6px 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: transparent; color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .confidence-button:hover, .confidence-button[aria-pressed="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.12); }
+  .confidence-feedback { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 10px !important; line-height: 1.4 !important; }
+  .next-step-check { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--laundry-line); }
+  .next-step-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .next-step-button { padding: 6px 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: transparent; color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .next-step-button:hover, .next-step-button[aria-pressed="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.12); }
+  .next-step-feedback { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 10px !important; line-height: 1.4 !important; }
+  .replay-panel { margin-top: 10px; padding: 10px; border: 1px solid var(--laundry-line); border-left: 4px solid var(--laundry-accent); border-radius: 9px; background: rgba(74,222,128,.06); }
+  .replay-kicker { color: var(--laundry-accent); font-size: 9px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+  .replay-panel h3 { margin: 3px 0 5px; font-size: 13px; }
+  .replay-prompt { margin: 0 0 8px !important; color: var(--laundry-muted) !important; font-size: 11px !important; line-height: 1.45 !important; }
+  .replay-button { padding: 7px 9px; border: 1px solid var(--laundry-accent); border-radius: 7px; background: rgba(74,222,128,.1); color: var(--laundry-text); font-size: 10px; font-weight: 900; }
+  .replay-button:hover { background: rgba(74,222,128,.18); }
+  .replay-button:disabled { cursor: default; opacity: .75; }
+  .replay-feedback { margin: 7px 0 0 !important; color: var(--laundry-good) !important; font-size: 10px !important; line-height: 1.4 !important; }
   .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--laundry-line); font-size: 11px !important; }
   .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--laundry-line); border-radius: 12px; background: var(--laundry-panel); color: var(--laundry-text); }
   .scene-fallback strong { display: block; margin-bottom: 5px; }
@@ -137,6 +167,23 @@
     .coach-top { display: grid; }
     .mode-wrap { width: 100%; }
   }
+
+  .laundry-header { position: relative; isolation: isolate; overflow: hidden; box-shadow: 0 14px 32px rgba(0,0,0,.22); }
+  .laundry-header::before { content: ''; position: absolute; inset: -80% 42% 20% -18%; background: radial-gradient(circle, rgba(255,255,255,.24), transparent 68%); transform: rotate(-12deg); pointer-events: none; }
+  .laundry-header::after { content: ''; position: absolute; width: 220px; height: 220px; right: -92px; top: -142px; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; box-shadow: 0 0 0 18px rgba(255,255,255,.04), 0 0 0 38px rgba(255,255,255,.025); pointer-events: none; }
+  .laundry-header > * { position: relative; z-index: 1; }
+  .scene-panel { background: linear-gradient(145deg, var(--laundry-panel), var(--laundry-panel-2)); box-shadow: 0 18px 48px rgba(0,0,0,.24); }
+  .scene-panel::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.10), transparent 34%, transparent 70%, rgba(0,0,0,.14)); }
+  .scene-panel::after { content: '3D PRACTICE'; position: absolute; top: 12px; right: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(7,18,36,.58); color: var(--laundry-muted); font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; }
+  .scene-panel > a-scene { position: relative; z-index: 1; }
+  .coach-panel { background: linear-gradient(160deg, var(--laundry-panel), var(--laundry-panel-2)); box-shadow: 0 18px 42px rgba(0,0,0,.20); }
+  .progress-line { border: 1px solid var(--laundry-line); border-radius: 11px; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(0,0,0,.10); }
+  .task-button, .scenario-button, .view-button, .reset-button, .help-pause-button, .why-button, .confidence-button, .next-step-button, .reflection-button, .replay-button, .scenario-next { transition: transform .16s ease, border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
+  .task-button:hover, .scenario-button:hover, .view-button:hover, .reset-button:hover, .help-pause-button:hover, .why-button:hover, .confidence-button:hover, .next-step-button:hover, .reflection-button:hover, .replay-button:hover, .scenario-next:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(0,0,0,.12); }
+  .task-button.current { box-shadow: 0 0 0 2px rgba(125,211,252,.14), 0 8px 18px rgba(0,0,0,.12); }
+  .task-button.done { box-shadow: 0 7px 16px rgba(74,222,128,.10); }
+  .scene-help { backdrop-filter: blur(10px); box-shadow: 0 10px 24px rgba(0,0,0,.22); }
+  .reflection-panel, .replay-panel { box-shadow: 0 10px 24px rgba(0,0,0,.12); }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
@@ -271,10 +318,48 @@
       </section>
       <h3>Accessible laundry checklist</h3>
       <div class="task-list" id="taskList" role="list" aria-label="Laundry care targets"></div>
+  <section class="replay-panel" id="replayPanel" aria-labelledby="replayTitle" hidden>
+    <div class="replay-kicker">Replay practice</div>
+    <h3 id="replayTitle">Review one completed target</h3>
+    <p id="replayPrompt" class="replay-prompt"></p>
+    <button class="replay-button" id="replayCheckButton" type="button">I can name the first safe move</button>
+    <p id="replayFeedback" class="replay-feedback" role="status" aria-live="polite">Progress stays complete while you review this target.</p>
+  </section>
       <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
       <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
       <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
       <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+  <section class="reflection-panel" id="reflectionPanel" aria-labelledby="reflectionTitle" hidden>
+    <div class="reflection-kicker">Transfer reflection</div>
+    <h3 id="reflectionTitle">Teach back one safe habit</h3>
+    <p class="reflection-prompt">In your own words, what would you do first?</p>
+    <label class="reflection-label" for="reflectionInput">Write a short teach-back (optional)</label>
+    <textarea id="reflectionInput" class="reflection-input" maxlength="180" rows="3" placeholder="Example: Stop the risk, then ask for help." aria-describedby="reflectionHint reflectionCount"></textarea>
+    <p id="reflectionHint" class="reflection-hint">This is practice, not a scored answer.</p>
+    <div class="confidence-check" role="group" aria-labelledby="confidenceTitle">
+      <p class="reflection-label" id="confidenceTitle">How ready do you feel to use a care label and ask when unsure?</p>
+      <div class="confidence-actions">
+        <button class="confidence-button" type="button" data-confidence="not-yet" aria-pressed="false">Not yet</button>
+        <button class="confidence-button" type="button" data-confidence="getting-there" aria-pressed="false">Getting there</button>
+        <button class="confidence-button" type="button" data-confidence="ready" aria-pressed="false">Ready to try</button>
+      </div>
+      <p id="confidenceFeedback" class="confidence-feedback" role="status" aria-live="polite">Optional: choose a readiness level. It does not change progress.</p>
+    <div class="next-step-check" role="group" aria-labelledby="nextStepTitle">
+      <p class="reflection-label" id="nextStepTitle">What would help you practice laundry care next?</p>
+      <div class="next-step-actions">
+        <button class="next-step-button" type="button" data-next-step="replay" aria-pressed="false">Replay a target</button>
+        <button class="next-step-button" type="button" data-next-step="explain" aria-pressed="false">Explain it to someone</button>
+        <button class="next-step-button" type="button" data-next-step="checklist" aria-pressed="false">Use a checklist</button>
+      </div>
+      <p id="nextStepFeedback" class="next-step-feedback" role="status" aria-live="polite">Optional: choose one small next step.</p>
+    </div>
+    </div>
+    <div class="reflection-actions">
+      <button class="reflection-button" id="saveReflectionButton" type="button">Save reflection</button>
+      <span id="reflectionCount" class="reflection-count" aria-live="polite">0 / 180</span>
+    </div>
+    <p id="reflectionFeedback" class="reflection-feedback" role="status" aria-live="polite">Reflection is optional.</p>
+  </section>
       <button class="reset-button" id="resetButton" type="button">Start over</button>
       <p class="note">Practice only. Read the garment label and product directions for each load. Use appropriate ventilation, keep the dryer lint area clear, and ask for help when a machine, fabric, stain, or chemical is unfamiliar.</p>
       <p class="sr-only" id="srStatus" aria-live="polite"></p>
@@ -305,12 +390,29 @@
       return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
     } catch (_) { return {}; }
   }
+  function loadReflection() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      var reflection = parsed && parsed.reflection;
+      var confidenceOptions = ['not-yet', 'getting-there', 'ready'];
+      var nextStepOptions = ['replay', 'explain', 'checklist'];
+      var confidence = reflection && confidenceOptions.indexOf(reflection.confidence) >= 0 ? reflection.confidence : '';
+      var nextStep = reflection && nextStepOptions.indexOf(reflection.nextStep) >= 0 ? reflection.nextStep : '';
+      return { text: reflection && typeof reflection.text === 'string' ? reflection.text : '', confidence: confidence, nextStep: nextStep };
+    } catch (_) { return { text: '', confidence: '', nextStep: '' }; }
+  }
   function saveProgress() {
-    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, reflection: state.reflection, updatedAt: Date.now() })); } catch (_) {}
   }
   var state = {
     mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
     done: loadDone(),
+    reflection: loadReflection(),
+    reflectionDraft: '',
+    reflectionMessage: '',
+    replayId: null,
+    replayComplete: false,
+    replayMessage: '',
     focused: null,
     feedback: 'Select a highlighted station or use a checklist button.',
     feedbackTone: '',
@@ -324,6 +426,7 @@
     scenarioMissteps: 0,
     scenarioHintsUsed: 0
   };
+  state.reflectionDraft = state.reflection.text;
   var modeSelect = document.getElementById('modeSelect');
   var progressValue = document.getElementById('progressValue');
   var progressMode = document.getElementById('progressMode');
@@ -344,8 +447,123 @@
   var helpPauseText = document.getElementById('helpPauseText');
   var whyButton = document.getElementById('whyButton');
   var whyText = document.getElementById('whyText');
+  var reflectionPanel = document.getElementById('reflectionPanel');
+  var reflectionInput = document.getElementById('reflectionInput');
+  var saveReflectionButton = document.getElementById('saveReflectionButton');
+  var reflectionCount = document.getElementById('reflectionCount');
+  var reflectionFeedback = document.getElementById('reflectionFeedback');
+  var confidenceFeedback = document.getElementById('confidenceFeedback');
+  var confidenceButtons = document.querySelectorAll('[data-confidence]');
+  var nextStepFeedback = document.getElementById('nextStepFeedback');
+  var nextStepButtons = document.querySelectorAll('[data-next-step]');
+  var replayPanel = document.getElementById('replayPanel');
+  var replayPrompt = document.getElementById('replayPrompt');
+  var replayCheckButton = document.getElementById('replayCheckButton');
+  var replayFeedback = document.getElementById('replayFeedback');
   function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
   function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-laundry-3d-why-reveal', task: target.id }); }
+  function renderReflection(isComplete) {
+    reflectionPanel.hidden = !isComplete;
+    if (!isComplete) return;
+    if (document.activeElement !== reflectionInput) reflectionInput.value = state.reflectionDraft;
+    reflectionCount.textContent = state.reflectionDraft.length + ' / 180';
+    reflectionFeedback.textContent = state.reflectionMessage || (state.reflectionDraft && state.reflectionDraft === state.reflection.text ? 'Reflection saved.' : state.reflectionDraft ? 'Draft ready. Save when it says what you would do first.' : 'Reflection is optional.');
+    confidenceButtons.forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-confidence') === state.reflection.confidence)); });
+    var confidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
+    confidenceFeedback.textContent = state.reflection.confidence ? 'Readiness saved: ' + confidenceNames[state.reflection.confidence] + '.' : 'Optional: choose a readiness level. It does not change progress.';
+    nextStepButtons.forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-next-step') === state.reflection.nextStep)); });
+    var nextStepNames = { replay: 'Replay a target', explain: 'Explain it to someone', checklist: 'Use a checklist' };
+    nextStepFeedback.textContent = state.reflection.nextStep ? 'Next step saved: ' + nextStepNames[state.reflection.nextStep] + '.' : 'Optional: choose one small next step.';
+  }
+  function renderReplay() {
+    var task = BY_ID[state.replayId];
+    replayPanel.hidden = !task;
+    if (!task) return;
+    replayPrompt.textContent = task.label + ': ' + task.short + ' Why it matters: ' + task.why;
+    replayCheckButton.disabled = state.replayComplete;
+    replayCheckButton.textContent = state.replayComplete ? 'Replay completed' : 'I can name the first safe move';
+    replayFeedback.textContent = state.replayMessage || 'Progress stays complete while you review this target.';
+  }
+  function completeReplay() {
+    var task = BY_ID[state.replayId];
+    if (!task || state.replayComplete) return;
+    state.replayComplete = true;
+    state.replayMessage = 'Replay noted. Your walkthrough progress stays complete.';
+    setFeedback('Replay complete: ' + task.label + '. Progress stays complete.', 'good');
+    render();
+    postToOpener({ type: 'alloflow-life-laundry-3d-replay-complete', task: task.id });
+    say('Replay complete for ' + task.label + '. Progress stays complete.');
+  }
+  function saveNextStep(value) {
+    var nextStepNames = { replay: 'Replay a target', explain: 'Explain it to someone', checklist: 'Use a checklist' };
+    if (!nextStepNames[value]) return;
+    state.reflection.nextStep = value;
+    state.reflection.savedAt = Date.now();
+    saveProgress();
+    render();
+    postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-next-step', nextStep: value });
+    say('Next step saved: ' + nextStepNames[value] + '.');
+    applyNextStep(value);
+  }
+  function applyNextStep(value) {
+    if (value === 'replay') {
+      var task = BY_ID[state.focused] || TASKS[TASKS.length - 1] || TASKS[0];
+      state.replayId = task.id;
+      state.replayComplete = false;
+      state.replayMessage = '';
+      focusTask(task.id, false);
+      setFeedback('Replay: review ' + task.label + ', then name the first safe move aloud.', 'good');
+      render();
+      replayCheckButton.focus();
+      say('Replay ' + task.label + '. Name the first safe move aloud.');
+      return;
+    }
+    if (value === 'explain') {
+      state.replayId = null;
+      state.replayComplete = false;
+      state.replayMessage = '';
+      setFeedback('Explain: use the teach-back box to name the first safe move.', 'good');
+      render();
+      reflectionInput.focus();
+      say('Use the teach-back box to name the first safe move.');
+      return;
+    }
+    state.replayId = null;
+    state.replayComplete = false;
+    state.replayMessage = '';
+    setFeedback('Checklist: review the six targets and choose one to practice again.', 'good');
+    render();
+    var firstButton = taskList.querySelector('button');
+    if (firstButton) firstButton.focus();
+    say('Review the checklist and choose one target to practice again.');
+  }
+  function saveConfidence(value) {
+    var confidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
+    if (!confidenceNames[value]) return;
+    state.reflection.confidence = value;
+    state.reflection.savedAt = Date.now();
+    state.reflectionMessage = '';
+    saveProgress();
+    render();
+    postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-confidence', confidence: value });
+    say('Readiness saved: ' + confidenceNames[value] + '.');
+  }
+  function saveReflection() {
+    var text = String(state.reflectionDraft || '').trim();
+    if (!text) {
+      state.reflectionMessage = 'Write a sentence before saving, or leave it blank to skip.';
+      renderReflection(true);
+      say('Write a sentence before saving the reflection.');
+      return;
+    }
+    state.reflection = { text: text, confidence: state.reflection.confidence || '', nextStep: state.reflection.nextStep || '', savedAt: Date.now() };
+    state.reflectionDraft = text;
+    state.reflectionMessage = 'Reflection saved.';
+    saveProgress();
+    render();
+    postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-reflection' });
+    say('Reflection saved.');
+  }
   var srStatus = document.getElementById('srStatus');
   var sceneFallback = document.getElementById('sceneFallback');
   var scene = document.getElementById('laundryScene');
@@ -373,6 +591,16 @@
   scenarioNext.addEventListener('click', loadNextScenario);
   helpPauseButton.addEventListener('click', pauseForHelp);
   whyButton.addEventListener('click', revealWhy);
+  reflectionInput.addEventListener('input', function () {
+    state.reflectionDraft = reflectionInput.value.slice(0, 180);
+    state.reflectionMessage = '';
+    reflectionCount.textContent = state.reflectionDraft.length + ' / 180';
+    reflectionFeedback.textContent = state.reflectionDraft ? 'Draft ready. Save when it says what you would do first.' : 'Reflection is optional.';
+  });
+  saveReflectionButton.addEventListener('click', saveReflection);
+  confidenceButtons.forEach(function (button) { button.addEventListener('click', function () { saveConfidence(button.getAttribute('data-confidence')); }); });
+  nextStepButtons.forEach(function (button) { button.addEventListener('click', function () { saveNextStep(button.getAttribute('data-next-step')); }); });
+  replayCheckButton.addEventListener('click', completeReplay);
 
   function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
@@ -394,6 +622,9 @@
     say('Hint: ' + activeScenario.hint);
   });
   function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function postProgressSnapshot() {
+    postToOpener({ type: 'alloflow-life-laundry-3d-progress', completed: doneCount(), total: TASKS.length, confidence: state.reflection.confidence || '', nextStep: state.reflection.nextStep || '' });
+  }
   function guidedTarget() { return TASKS.find(function (task) { return !state.done[task.id]; }) || null; }
   function setFeedback(message, tone) { state.feedback = message; state.feedbackTone = tone || ''; }
   function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-laundry-3d-help-pause' }); }
@@ -430,10 +661,10 @@
     if (next && state.mode === 'guided') setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
     if (!next) {
       setFeedback('Laundry walkthrough complete. You practiced all six clothing-care decisions.', 'good');
-      postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
+      postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
       say('Laundry walkthrough complete. You practiced all six clothing-care decisions.');
     } else {
-      postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
       say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
     }
     render();
@@ -468,6 +699,7 @@
       var current = !!target && target.id === task.id && state.mode === 'guided';
       var button = document.createElement('button');
       button.type = 'button';
+      button.setAttribute('data-task-id', task.id);
       button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
       button.setAttribute('aria-pressed', String(done));
       if (current) button.setAttribute('aria-current', 'step');
@@ -487,10 +719,10 @@
     var next = guidedTarget();
     if (!next) {
       setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
-      postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
+      postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
     } else {
       setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
-      postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+      postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
     }
   }
   function loadNextScenario() {
@@ -562,6 +794,8 @@
     var target = guidedTarget();
     var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
     progressValue.textContent = count + ' / ' + TASKS.length;
+    renderReflection(count === TASKS.length);
+    renderReplay();
     progressMode.textContent = !target ? modeText + ' · complete' : state.mode === 'guided' ? modeText + ' · next target' : state.mode === 'practice' ? modeText + ' · choose any target' : modeText + ' · labels are reduced';
     prompt.textContent = !target ? 'All decisions complete. Name one clothing-care habit you will practice.' : state.mode === 'guided' ? 'Start with: ' + target.label + '.' : state.mode === 'practice' ? 'Choose any item, then explain why the care step matters.' : 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
     feedback.textContent = state.feedback;
@@ -583,6 +817,12 @@
     helpPauseText.textContent = '';
     clearWhy();
     state.done = {};
+    state.reflection = { text: '', confidence: '', nextStep: '' };
+    state.replayId = null;
+    state.replayComplete = false;
+    state.replayMessage = '';
+    state.reflectionDraft = '';
+    state.reflectionMessage = '';
     saveProgress();
     state.focused = null;
     state.missteps = 0;
@@ -598,7 +838,7 @@
     setFeedback('Fresh start. Select the first clothing-care target.', '');
     render();
     say('Walkthrough reset. Select the first clothing-care target.');
-    postToOpener({ type: 'alloflow-life-laundry-3d-reset' });
+    postProgressSnapshot(); postToOpener({ type: 'alloflow-life-laundry-3d-reset' });
   });
   window.addEventListener('message', function (event) {
     var data = event && event.data;
@@ -614,6 +854,7 @@
   }
   render();
   postToOpener({ type: 'alloflow-life-laundry-3d-hello' });
+  postProgressSnapshot();
 }());
 </script>
 </body>

@@ -42,8 +42,18 @@ describe('Water Cycle journey playback controls', () => {
       expect(source).toContain('"aria-label": "Journey animation speed"');
       expect(source).toContain('"aria-label": "Water journey timeline"');
       expect(source).toContain('"aria-current": index === journeyTimelineIndex ? "step" : undefined');
+      expect(source).toContain('var timelineStepState = index < journeyTimelineIndex');
+      expect(source).toContain('var timelineStepLabel = index < journeyTimelineIndex');
+      expect(source).toContain('className: "wc-timeline-step " + timelineStepState');
+      expect(source).toContain('"aria-label": step + ": " + timelineStepLabel');
+      expect(source).toContain('className: "wc-timeline-marker"');
+      expect(source).toContain('.wc-timeline-step.is-complete');
       expect(source).toContain("var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];");
       expect(source).toContain("d.journeyState === 'ground_choice' || d.journeyState === 'complete'");
+      expect(source).toContain('className: "flex flex-wrap items-center gap-3 text-[11px] font-bold", role: "status"');
+      expect(source).toContain('"aria-label": "Journey progress summary"');
+      expect(source).toContain('"aria-live": "polite"');
+      expect(source).toContain('"aria-atomic": "true"');
     });
   });
 
@@ -67,6 +77,47 @@ describe('Water Cycle journey playback controls', () => {
       expect(source).toContain("upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyLastPath', ''); upd('journeyPaused', false);");
       expect(source).toContain("upd('journeyActive', false); upd('journeyState', 'idle'); upd('journeyPaused', false);");
       expect(source).toContain("updMulti({ journeyState: 'ocean', journeyPaused: false, journeyLastPath: '' });");
+    });
+  });
+
+  it('exposes a keyboard exit for Focus Canvas mode', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain("} else if (k === 'Escape' && wcFocusMode) {");
+      expect(source).toContain('toggleWcFocusMode();');
+      expect(source).toContain('"aria-keyshortcuts": "1 2 3 4 5 6 G J R U P Escape"');
+      expect(source).toContain('Escape exits Focus Canvas mode.');
+    });
+  });
+  it('announces walkthrough progress in human-readable steps', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('"aria-labelledby": "wcWalkthroughTitle"');
+      expect(source).toContain('id: "wcWalkthroughTitle"');
+      expect(source).toContain('id: "wcWalkthroughStatus"');
+      expect(source).toContain('role: "status",');
+      expect(source).toContain('"aria-live": "polite",');
+      expect(source).toContain('"aria-atomic": "true"');
+      expect(source).toContain('"aria-describedby": "wcWalkthroughStatus"');
+      expect(source).toContain('"aria-valuetext": "Step " + (wcWalkthroughIndex + 1) + " of " + STAGES.length + ": " + currentStageLabel');
+      expect(source).toContain('className: "wc-stage-focus"');
+    });
+  });
+  it('announces the active Journey state and next action', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var journeyStateLabels = {');
+      expect(source).toContain("evaporating: 'Evaporation'");
+      expect(source).toContain("ground_choice: 'Land pathway choice'");
+      expect(source).toContain("complete: 'Cycle complete'");
+      expect(source).toContain('var journeyTransitionStatus = !d.journeyActive');
+      expect(source).toContain('id: "wcJourneyTransitionStatus"');
+      expect(source).toContain('Land pathway choice. Choose River Runoff, Underground infiltration, or Plant uptake.');
+      expect(source).toContain('journeyChosenRoute.label + " selected" : journeyStateLabel + ". " + journeyStatusLabel');
+      expect(source).toContain('" + journeyStateLabel');
     });
   });
 });

@@ -54,6 +54,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     document.body.appendChild(liveRegion);
   })();
 
+  var ORRERY_GUIDED_MISSION_IDS = ['earth_distance', 'mercury_speed', 'longer_year'];
+  var countCompletedOrreryGuidedMissions = function(d) {
+    var progress = (d && d.orr_mission_progress) || {};
+    return ORRERY_GUIDED_MISSION_IDS.filter(function(id) { return progress[id] && progress[id].correct; }).length;
+  };
+
 
   window.StemLab.registerTool('solarSystem', {
     icon: "🪐",
@@ -76,10 +82,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'poe_5', label: 'Make predictions for 5 planets', icon: '\uD83E\uDD14', field: 'poeSeen', check: function(d) { return (d.poeSeen || []).length >= 5; }, progress: function(d) { return (d.poeSeen || []).length + '/5 predictions'; } },
       { id: 'misconception_5', label: 'Answer 5 misconception checkpoints', icon: '\u2753', field: 'misconceptionsSeen', check: function(d) { return (d.misconceptionsSeen || []).length >= 5; }, progress: function(d) { return (d.misconceptionsSeen || []).length + '/5 checked'; } },
       { id: 'assignment_complete', label: 'Complete any assignment', icon: '\uD83D\uDCCB', field: 'activeAssignment', check: function(d) { if (!d.activeAssignment) return false; var tasks = d['asn_done_' + d.activeAssignment] || []; var asnLen = { inner_planets: 4, gas_giants: 4, habitability: 4, full_survey: 5 }; return tasks.length >= (asnLen[d.activeAssignment] || 4); }, progress: function(d) { if (!d.activeAssignment) return 'Not started'; var tasks = d['asn_done_' + d.activeAssignment] || []; return tasks.length + ' tasks done'; } },
-      { id: 'orrery_explore', label: 'Open the Orrery Lab', icon: '\uD83C\uDF0C', field: 'orreryMode', check: function(d) { return d.orreryMode === true; }, progress: function(d) { return d.orreryMode ? 'Done' : 'Not yet'; } },
+      { id: 'orrery_explore', label: 'Open the Orrery Lab', icon: '\uD83C\uDF0C', field: 'orreryMode', check: function(d) { return d.orreryMode === true || d.orrery_explored_once === true; }, progress: function(d) { return d.orreryMode || d.orrery_explored_once ? 'Done' : 'Not yet'; } },
       { id: 'orrery_kepler_all', label: 'Explore all 3 Kepler Law tabs', icon: '\uD83D\uDCDA', field: 'orreryKeplerSeen', check: function(d) { var s = d.orreryKeplerSeen || []; return s.indexOf('keplerI') !== -1 && s.indexOf('keplerII') !== -1 && s.indexOf('keplerIII') !== -1; }, progress: function(d) { return (d.orreryKeplerSeen || []).length + '/3 laws'; } },
       { id: 'orrery_calc_3', label: 'Solve 3 calculation challenges', icon: '\uD83E\uDDE0', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 3; }, progress: function(d) { return (d._chalScore || 0) + '/3 solved'; } },
-      { id: 'orrery_live_calc', label: 'Solve a live sim challenge', icon: '\u26A1', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).filter(function(k) { return ls[k].correct; }).length + ' solved'; } }
+      { id: 'orrery_live_calc', label: 'Solve a live sim challenge', icon: '\u26A1', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).filter(function(k) { return ls[k].correct; }).length + ' solved'; } },
+      { id: 'orrery_guided_3', label: 'Complete the 3 guided orbital missions', icon: '🧭', field: 'orr_mission_progress', check: function(d) { return countCompletedOrreryGuidedMissions(d) >= ORRERY_GUIDED_MISSION_IDS.length; }, progress: function(d) { return countCompletedOrreryGuidedMissions(d) + '/' + ORRERY_GUIDED_MISSION_IDS.length + ' missions'; } }
     ],
     render: function(ctx) {
       // Aliases â€" maps ctx properties to original variable names
@@ -2151,8 +2158,30 @@ const d = labToolData.solarSystem || {};
           var _orrDisplayTime = React.useRef(d.orr_time || 0);
           var _orrSpeed = d.orr_speed || 1;
           var _orrPaused = d.orr_paused || false;
+          var _activeKeplerLaw = Number(d.orr_tab || 0) === 1 ? "keplerI" : Number(d.orr_tab || 0) === 2 ? "keplerII" : Number(d.orr_tab || 0) === 3 ? "keplerIII" : null;
+          var _challengeScore = Object.keys(d.orr_chc || {}).filter(function(key) { return !!d.orr_chc[key]; }).length;
+          var _liveSolvedKeys = Object.keys(d.orr_clc || {}).filter(function(key) { return !!d.orr_clc[key]; }).sort().join(",");
           // Sync ref when state changes externally (e.g. Reset button)
           React.useEffect(function() { _orrTimeRef.current = d.orr_time || 0; }, [d.orr_time]);
+          // Persist Kepler-law tab visits so the Orrery quest hook reflects actual exploration,
+          // including a restored deep link or a keyboard-driven tab change.
+          React.useEffect(function() {
+            if (!_activeKeplerLaw) return;
+            var seen = Array.isArray(d.orreryKeplerSeen) ? d.orreryKeplerSeen : [];
+            if (seen.indexOf(_activeKeplerLaw) === -1) upd("orreryKeplerSeen", seen.concat([_activeKeplerLaw]));
+          }, [_activeKeplerLaw, d.orreryKeplerSeen]);
+          // Keep quest-facing completion fields derived from the authoritative answer maps,
+          // including progress restored from an earlier session.
+          React.useEffect(function() {
+            if ((d._chalScore || 0) !== _challengeScore) upd("_chalScore", _challengeScore);
+          }, [_challengeScore, d._chalScore]);
+          React.useEffect(function() {
+            var solved = {};
+            _liveSolvedKeys.split(",").filter(Boolean).forEach(function(key) { solved[key] = { correct: true }; });
+            var current = d._liveSolved || {};
+            var currentKeys = Object.keys(current).filter(function(key) { return current[key] && current[key].correct; }).sort().join(",");
+            if (currentKeys !== _liveSolvedKeys) upd("_liveSolved", solved);
+          }, [_liveSolvedKeys, d._liveSolved]);
           // Advance simulation time via rAF — NO React state updates during animation.
           // This prevents 30fps re-renders of the entire component tree.
           // The canvas reads timeRef.current directly in its own rAF draw loop.
@@ -2407,16 +2436,27 @@ const d = labToolData.solarSystem || {};
   function orbitPhaseLabel(body, time) {
     if (!body || !body.T) return null;
     var M = ((TAU * time / body.T) % TAU + TAU) % TAU;
-    if (M < 0.18 || M > TAU - 0.18) return "Near perihelion";
-    if (Math.abs(M - PI) < 0.18) return "Near aphelion";
+    var phasePos = orbitalPos(body.a, body.e, M);
+    var perihelion = body.a * (1 - body.e);
+    var aphelion = body.a * (1 + body.e);
+    var orbitalSpan = aphelion - perihelion;
+    if (orbitalSpan <= 0.000001) return "Mid-orbit";
+    var radialPhase = (phasePos.r - perihelion) / orbitalSpan;
+    if (radialPhase < 0.12) return "Near perihelion";
+    if (radialPhase > 0.88) return "Near aphelion";
     return "Mid-orbit";
   }
   /** Compact Earth-reference date for the elapsed simulation clock */
   function orbitCalendarLabel(time) {
     var safeTime = isFinite(time) ? Math.max(0, time) : 0;
-    var totalDays = Math.floor(safeTime * 365.25);
-    var earthYear = Math.floor(totalDays / 365.25) + 1;
-    var dayOfYear = Math.floor(totalDays % 365.25) + 1;
+    var daysPerYear = 365.25;
+    var wholeYears = Math.floor(safeTime);
+    var yearFraction = safeTime - wholeYears;
+    var earthYear = wholeYears + 1;
+    // Keep the display on the familiar 1–365 day scale; the quarter day in
+    // the orbital period is absorbed into the final day instead of creating
+    // an impossible day 366 immediately before the year rolls over.
+    var dayOfYear = Math.min(364, Math.floor(yearFraction * daysPerYear)) + 1;
     return "Earth year " + earthYear + " \u00b7 day " + dayOfYear;
   }
 
@@ -2561,7 +2601,7 @@ const d = labToolData.solarSystem || {};
       ".orr-stage-key-item{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:" + (isDark ? "rgba(15,23,42,0.72)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.20)" : "rgba(99,102,241,0.13)") + ";font-size:10px;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
       ".orr-stage-key-dot{width:6px;height:6px;border-radius:50%;display:inline-block}",
       ".orr-stage-tip{position:absolute;right:16px;bottom:14px;z-index:3;padding:5px 8px;border-radius:8px;background:" + (isDark ? "rgba(15,23,42,0.72)" : "rgba(255,255,255,0.82)") + ";font-size:10px;color:" + (isDark ? "#94a3b8" : "#64748b") + ";pointer-events:none}",
-      "@media (max-width:640px){.orr-stage-hud{top:10px;left:10px;right:10px}.orr-stage-key{left:10px;top:52px}.orr-stage-tip{right:10px;bottom:10px;max-width:45%;text-align:right}}",
+      "@media (max-width:640px){.orr-stage-hud{top:10px;left:10px;right:10px;flex-direction:column;gap:6px}.orr-stage-hud>div:last-child{justify-content:flex-start!important}.orr-stage-key{left:10px;top:52px;right:10px}.orr-stage-tip{left:10px;right:10px;bottom:10px;max-width:none;text-align:left;line-height:1.35}}",
       ".orr-control-deck{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:" + (isDark ? "linear-gradient(135deg,rgba(30,41,59,0.88),rgba(15,23,42,0.92))" : "linear-gradient(135deg,rgba(248,250,252,0.96),rgba(238,242,255,0.96))") + ";border:1px solid " + (isDark ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.14)") + ";box-shadow:" + (isDark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.82)") + "}",
       ".orr-filter-deck{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-radius:12px;background:" + (isDark ? "rgba(15,23,42,0.58)" : "rgba(241,245,249,0.80)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.14)" : "rgba(148,163,184,0.20)") + "}"
     ].join("\n");
@@ -2680,6 +2720,7 @@ const d = labToolData.solarSystem || {};
   var ch_ans = d.orr_cha || {};
   var ch_hints = d.orr_chh || {};
   var ch_correct = d.orr_chc || {};
+  var ch_feedback = d.orr_chf || {};
 
   // TF
   var tf_idx = d.orr_tfi || 0;
@@ -2706,7 +2747,29 @@ const d = labToolData.solarSystem || {};
     "Kepler Inquiry"
   ];
 
-  function setTab(i) { upd("orr_tab", i); }
+  var TAB_ARIA_LABELS = [
+    "Full Orrery: animated solar system",
+    "Kepler I: ellipses and the Sun at one focus",
+    "Kepler II: equal areas in equal times",
+    "Kepler III: orbital periods and semi-major axis",
+    "Orbit Workshop: build an orbit",
+    "Hohmann Transfers: compare transfer paths",
+    "Challenges: apply Kepler's laws",
+    "True or False: check common orbital ideas",
+    "Kepler Inquiry: orbital mechanics sandbox"
+  ];
+  function keplerLawIdForTab(index) {
+    return index === 1 ? "keplerI" : index === 2 ? "keplerII" : index === 3 ? "keplerIII" : null;
+  }
+  function mergeKeplerLawSeen(current, lawId) {
+    var seen = Array.isArray(current) ? current.slice() : [];
+    if (lawId && seen.indexOf(lawId) === -1) seen.push(lawId);
+    return seen;
+  }
+  function setTab(i) {
+    var lawId = keplerLawIdForTab(i);
+    updMulti({ orr_tab: i, orreryKeplerSeen: mergeKeplerLawSeen(d.orreryKeplerSeen, lawId) });
+  }
 
   /* ====================================================================
    *  HOOKS — aliased from pre-hoisted refs (declared before orrery ternary)
@@ -2748,8 +2811,12 @@ const d = labToolData.solarSystem || {};
     }
   }, TAB_NAMES.map(function(nm, i) {
     var isActive = stab === i;
+    var lawId = keplerLawIdForTab(i);
+    var tabVisited = !!lawId && Array.isArray(d.orreryKeplerSeen) && d.orreryKeplerSeen.indexOf(lawId) !== -1;
     return h("button", {
       key: "tab" + i, id: "orrery-tab-" + i, role: "tab", "aria-selected": isActive, "aria-controls": "orrery-tabpanel", tabIndex: isActive ? 0 : -1,
+      "aria-label": TAB_ARIA_LABELS[i],
+      "data-kepler-visited": tabVisited ? "true" : "false",
       className: "orr-btn" + (isActive ? " orr-btn-active" : ""),
       onClick: function() { setTab(i); },
       style: {
@@ -2774,13 +2841,14 @@ const d = labToolData.solarSystem || {};
         transition: "all 0.2s ease",
         letterSpacing: "0.01em"
       }
-    }, TAB_ICONS[i] + " " + nm);
+    }, (tabVisited ? "\u2713 " : "") + TAB_ICONS[i] + " " + nm);
   }));
 
   /* ====================================================================
    *  SHARED: Canvas hook helper (useRef + useEffect wrapper)
    * ==================================================================== */
   function CanvasPanel(props) {
+    var keyboardInteractive = !!props.panZoom || !!props.onKeyboardInteract;
     var ref = React.useRef(null);
     var raf = React.useRef(null);
     var stateRef = React.useRef({});
@@ -2788,8 +2856,12 @@ const d = labToolData.solarSystem || {};
     // without needing to tear down and rebuild the canvas on every re-render.
     var drawRef = React.useRef(props.draw);
     var clickRef = React.useRef(props.onClick);
+    var keyboardInteractRef = React.useRef(props.onKeyboardInteract);
+    var homeRef = React.useRef(props.onHome);
     drawRef.current = props.draw;
     clickRef.current = props.onClick;
+    keyboardInteractRef.current = props.onKeyboardInteract;
+    homeRef.current = props.onHome;
 
     React.useEffect(function() {
       var cv = ref.current;
@@ -2842,6 +2914,26 @@ const d = labToolData.solarSystem || {};
         st.dragDistance = 0;
         st.suppressClick = false;
       }
+      st.touchPoints = st.touchPoints || {};
+      if (typeof st.pinchActive !== "boolean") st.pinchActive = false;
+      if (typeof st.pinchGesture !== "boolean") st.pinchGesture = false;
+      if (!isFinite(st.pinchDistance)) st.pinchDistance = 0;
+      if (!isFinite(st.pinchScale)) st.pinchScale = st.scale;
+      // Expose the live camera state for lightweight rendered interaction checks.
+      cv.__canvasPanelState = st;
+      // A named view preset owns the camera framing. Preserve free pan/zoom
+      // during ordinary re-renders, but make Inner / Full / Outer deterministic
+      // when the learner explicitly changes the preset.
+      if (props.viewPresetKey != null && st._viewPresetKey !== props.viewPresetKey) {
+        st.cx = props.width / 2;
+        st.cy = props.height / 2;
+        st.scale = props.initScale || 1;
+        st.targetCx = st.cx;
+        st.targetCy = st.cy;
+        st.targetScale = st.scale;
+        st._zoomAnim = false;
+        st._viewPresetKey = props.viewPresetKey;
+      }
 
       function scheduleFrame() {
         if (!running || document.hidden || raf.current) return;
@@ -2879,8 +2971,32 @@ const d = labToolData.solarSystem || {};
         var f = ev.deltaY < 0 ? 1.1 : 0.9;
         st.scale = clamp(st.scale * f, (props.minScale || 0.1), (props.maxScale || 200));
       }
+      function touchDistance(ids) {
+        if (!ids || ids.length < 2) return 0;
+        var first = st.touchPoints[ids[0]];
+        var second = st.touchPoints[ids[1]];
+        if (!first || !second) return 0;
+        var dx = second.x - first.x;
+        var dy = second.y - first.y;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
       function onDown(ev) {
         cancelInertia();
+        if (ev.pointerType === "touch") {
+          st.touchPoints[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+          var touchIds = Object.keys(st.touchPoints);
+          if (touchIds.length >= 2) {
+            st.pinchDistance = touchDistance(touchIds);
+            st.pinchScale = st.scale;
+            st.pinchActive = true;
+            if (st.pinchDistance <= 0) st.pinchActive = false;
+            st.pinchGesture = st.pinchActive;
+            st.dragging = false;
+            st.vx = 0; st.vy = 0;
+            st.suppressClick = true;
+            return;
+          }
+        }
         st.dragging = true;
         st.vx = 0; st.vy = 0;
         st.dragDistance = 0;
@@ -2889,6 +3005,21 @@ const d = labToolData.solarSystem || {};
         st.lastY = ev.clientY;
       }
       function onMove(ev) {
+        if (ev.pointerType === "touch" && st.touchPoints[ev.pointerId]) {
+          st.touchPoints[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+          var pinchIds = Object.keys(st.touchPoints);
+          if (st.pinchActive && pinchIds.length >= 2) {
+            var nextPinchDistance = touchDistance(pinchIds);
+            if (nextPinchDistance > 0 && st.pinchDistance > 0) {
+              st.scale = clamp(st.pinchScale * nextPinchDistance / Math.max(1, st.pinchDistance), (props.minScale || 0.1), (props.maxScale || 200));
+              st.suppressClick = true;
+            }
+            return;
+          }
+          // Once a pinch has started, keep the remaining finger from turning the
+          // end of the gesture into an accidental pan or tap selection.
+          if (st.pinchGesture) return;
+        }
         // Track cursor position in canvas coords for hover tooltips (always, even when not dragging).
         var rect = cv.getBoundingClientRect();
         var insideCanvas = ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom;
@@ -2914,9 +3045,29 @@ const d = labToolData.solarSystem || {};
         // Clear hover position so tooltip disappears when cursor leaves canvas.
         st.hoverX = null; st.hoverY = null;
       }
-      function onUp() {
+      function onUp(ev) {
+        var skipInertia = false;
+        if (ev && ev.pointerType === "touch") {
+          delete st.touchPoints[ev.pointerId];
+          var remainingTouchIds = Object.keys(st.touchPoints);
+          if (st.pinchActive) {
+            st.pinchActive = false;
+            st.pinchGesture = remainingTouchIds.length > 0;
+            st.dragging = false;
+            st.vx = 0; st.vy = 0;
+            if (remainingTouchIds.length > 0) return;
+            skipInertia = true;
+          } else if (st.pinchGesture) {
+            st.dragging = false;
+            st.vx = 0; st.vy = 0;
+            if (remainingTouchIds.length > 0) return;
+            st.pinchGesture = false;
+            skipInertia = true;
+          }
+        }
         st.dragging = false;
         if (props.reduceMotion) { cancelInertia(); return; }
+        if (skipInertia) { cancelInertia(); return; }
         // Apply inertia via rAF
         function inertiaStep() {
           st.inertiaRaf = null;
@@ -2933,6 +3084,9 @@ const d = labToolData.solarSystem || {};
       function onCancel() {
         st.dragging = false;
         cancelInertia();
+        st.touchPoints = {};
+        st.pinchActive = false;
+        st.pinchGesture = false;
         st.dragDistance = 0;
         st.suppressClick = false;
       }
@@ -2956,7 +3110,7 @@ const d = labToolData.solarSystem || {};
         cv.addEventListener("click", clickHandler);
       }
 
-      // Keyboard accessibility (WCAG 2.1.1): arrow-key pan, +/- zoom, Home reset, Enter/Space click at center.
+      // Keyboard accessibility (WCAG 2.1.1): arrow-key pan, +/- zoom, Home reset, Enter/Space interaction.
       function onKey(ev) {
         var key = ev.key;
         if (key === 'Escape' && props.onEscape) {
@@ -2972,12 +3126,21 @@ const d = labToolData.solarSystem || {};
           if (key === 'ArrowDown')  { st.cy -= step; ev.preventDefault(); return; }
           if (key === '+' || key === '=') { st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
           if (key === '-' || key === '_') { st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
-          if (key === 'Home' || key === '0') { st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1); ev.preventDefault(); return; }
+          if (key === 'Home' || key === '0') {
+            st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1);
+            st.targetCx = st.cx; st.targetCy = st.cy; st.targetScale = st.scale;
+            st._zoomAnim = false; st._followBody = null;
+            if (homeRef.current) homeRef.current(st);
+            ev.preventDefault(); return;
+          }
         }
-        if ((key === 'Enter' || key === ' ') && clickRef.current) {
-          var cxLocal = props.width / 2;
-          var cyLocal = props.height / 2;
-          clickRef.current(cxLocal, cyLocal, st);
+        if ((key === 'Enter' || key === ' ') && (keyboardInteractRef.current || clickRef.current)) {
+          if (keyboardInteractRef.current) keyboardInteractRef.current(st);
+          else {
+            var cxLocal = props.width / 2;
+            var cyLocal = props.height / 2;
+            clickRef.current(cxLocal, cyLocal, st);
+          }
           ev.preventDefault();
         }
       }
@@ -2996,22 +3159,26 @@ const d = labToolData.solarSystem || {};
           window.removeEventListener("pointercancel", onCancel);
           cv.removeEventListener("pointerleave", onLeave);
         }
+        st.touchPoints = {};
+        st.pinchActive = false;
+        st.pinchGesture = false;
         if (clickHandler) cv.removeEventListener("click", clickHandler);
         cv.removeEventListener('keydown', onKey);
       };
     }, [props.redrawKey || 0]);
 
     return h("canvas", {
-      role: props.panZoom ? 'application' : 'img',
+      role: keyboardInteractive ? 'application' : 'img',
       'aria-label': props.ariaLabel || (props.panZoom
         ? 'Solar system visualization. Keyboard: arrow keys to pan, plus and minus to zoom, Home to reset, Enter or Space to interact at center.'
         : 'Solar system visualization.'),
-      'aria-keyshortcuts': props.panZoom ? 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home 0 Enter Space Escape' : undefined,
+      'aria-keyshortcuts': keyboardInteractive ? (props.panZoom ? 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home 0 Enter Space Escape' : 'Enter Space Escape') : undefined,
       'aria-describedby': props.ariaDescribedBy || undefined,
+      'data-view-preset': props.viewPresetKey || undefined,
       ref: ref,
       width: props.width,
       height: props.height,
-      tabIndex: 0,
+      tabIndex: keyboardInteractive ? 0 : undefined,
       style: Object.assign({
         border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
         borderRadius: "12px",
@@ -3249,14 +3416,20 @@ const d = labToolData.solarSystem || {};
         var compareBody = compareBodyId && compareBodyId !== sb.id ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
         var comparePos = compareBody ? orbitalPos(compareBody.a, compareBody.e, (TAU * timeRef.current / compareBody.T) % TAU) : null;
         var compareSpeed = compareBody ? visViva(comparePos.r, compareBody.a) : null;
+        var compareDistanceTolerance = compareBody ? Math.max(0.001, Math.max(pos.r, comparePos.r) * 0.01) : 0;
+        var compareSpeedTolerance = compareBody ? Math.max(0.05, Math.max(spd, compareSpeed) * 0.01) : 0;
+        var compareDistancePhrase = compareBody ? Math.abs(pos.r - comparePos.r) <= compareDistanceTolerance ? "about the same distance from the Sun as" : pos.r < comparePos.r ? "closer to the Sun than" : "farther from the Sun than" : "";
+        var compareSpeedPhrase = compareBody ? Math.abs(spd - compareSpeed) <= compareSpeedTolerance ? "moving at about the same speed as" : spd > compareSpeed ? "moving faster than" : "moving slower than" : "";
+        var comparisonInterpretation = compareBody ? sb.name + " is currently " + compareDistancePhrase + " " + compareBody.name + " and is " + compareSpeedPhrase + " " + compareBody.name + "." : "";
         var periodLabel = function(period) { return period < 1 ? fmt(period * 365.25, 0) + " days" : fmt(period, 2) + " yr"; };
         var compareMetric = function(label, left, right) {
           var isSpeedMetric = label === "Current speed";
+          var isDistanceMetric = label === "Current distance";
           return h("tr", { key: label, style: { borderTop: "1px solid " + (isDark ? "#334155" : "#e2e8f0") } },
             h("th", { scope: "row", style: { textAlign: "left", padding: "6px 4px 6px 0", fontSize: "10px", fontWeight: 600, color: mutedFg } }, label),
-            h("td", { id: isSpeedMetric ? "orrery-live-compare-primary-speed" : undefined, style: { textAlign: "right", padding: "6px 4px", fontFamily: "monospace", fontWeight: 700, color: sb.color } }, left),
+            h("td", { id: isSpeedMetric ? "orrery-live-compare-primary-speed" : isDistanceMetric ? "orrery-live-compare-primary-distance" : undefined, style: { textAlign: "right", padding: "6px 4px", fontFamily: "monospace", fontWeight: 700, color: sb.color } }, left),
             h("td", { style: { textAlign: "center", padding: "6px 2px", color: mutedFg } }, "vs"),
-            h("td", { id: isSpeedMetric ? "orrery-live-compare-secondary-speed" : undefined, style: { textAlign: "right", padding: "6px 0 6px 4px", fontFamily: "monospace", fontWeight: 700, color: compareBody ? compareBody.color : fg } }, right)
+            h("td", { id: isSpeedMetric ? "orrery-live-compare-secondary-speed" : isDistanceMetric ? "orrery-live-compare-secondary-distance" : undefined, style: { textAlign: "right", padding: "6px 0 6px 4px", fontFamily: "monospace", fontWeight: 700, color: compareBody ? compareBody.color : fg } }, right)
           );
         };
         var compareOptions = [
@@ -3314,9 +3487,11 @@ const d = labToolData.solarSystem || {};
               compareMetric("Orbit size (a)", fmt(sb.a, 2) + " AU", fmt(compareBody.a, 2) + " AU"),
               compareMetric("Period (T)", periodLabel(sb.T), periodLabel(compareBody.T)),
               compareMetric("Eccentricity (e)", fmt(sb.e, 3), fmt(compareBody.e, 3)),
+              compareMetric("Current distance", fmt(pos.r, 3) + " AU", fmt(comparePos.r, 3) + " AU"),
               compareMetric("Current speed", fmt(spd, 1) + " km/s", fmt(compareSpeed, 1) + " km/s")
             ])
-          ) : h("p", { style: { margin: "8px 0 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Choose a world to compare orbital size, timing, and speed."),
+          ) : h("p", { style: { margin: "8px 0 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Choose a world to compare orbital size, timing, distance, and speed."),
+          compareBody ? h("p", { id: "orrery-compare-interpretation", role: "note", "aria-label": "Plain-language orbital comparison between " + sb.name + " and " + compareBody.name, style: { margin: "8px 0 0", padding: "7px 8px", borderLeft: "3px solid " + compareBody.color, color: fg, fontSize: "11px", lineHeight: "1.4" } }, comparisonInterpretation) : null,
         );
         bodyInfoCard = card([
           // Header with colored left border
@@ -3355,6 +3530,7 @@ const d = labToolData.solarSystem || {};
             sb.m > 0 ? statBadge("mass", fmt(sb.m, 4) + " M\u2295", "\u2696") : null,
             sb.R > 100 ? statBadge("R", fmt(sb.R, 0) + " km", "\u2B55") : null
           ),
+          h("span", { id: "orrery-live-selected-summary", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true", className: "sr-only" }, sb.name + ": distance " + fmt(pos.r, 3) + " AU; speed " + fmt(spd, 2) + " km/s; phase " + selectedPhaseStatus),
           h("div", { key: "kepler-ii-cue", role: "note", "aria-label": "Kepler II speed cue for " + sb.name, style: { marginTop: "10px", padding: "8px 9px", borderRadius: "8px", background: isDark ? "rgba(56,189,248,0.10)" : "rgba(14,165,233,0.07)", border: "1px solid " + (isDark ? "rgba(56,189,248,0.28)" : "rgba(14,165,233,0.20)") } },
             h("div", { style: { fontSize: "11px", fontWeight: 700, color: fg, marginBottom: "3px" } }, "Kepler II cue"),
             h("div", { style: { fontSize: "10px", lineHeight: "1.4", color: mutedFg } }, "Equal areas in equal times mean closer to the Sun \u2192 faster; farther away \u2192 slower."),
@@ -3363,11 +3539,31 @@ const d = labToolData.solarSystem || {};
           ),
           evidenceBlock,
           comparisonBlock,
-          followBodyId === sb.id ? h("button", { key: "release-follow", type: "button", className: "orr-btn", onClick: function() { upd("orr_follow", null); }, style: { marginTop: "8px", width: "100%", justifyContent: "center", borderColor: sb.color + "66", color: fg } }, "Release camera follow") : null
+          h("button", {
+            key: "toggle-follow", type: "button",
+            className: "orr-btn" + (followBodyId === sb.id ? " orr-btn-active" : ""),
+            onClick: function() { upd("orr_follow", followBodyId === sb.id ? null : sb.id); },
+            "aria-pressed": followBodyId === sb.id,
+            "aria-label": followBodyId === sb.id ? "Release camera follow for " + sb.name : "Follow " + sb.name + " with the camera",
+            style: { marginTop: "8px", width: "100%", justifyContent: "center", borderColor: sb.color + "66", color: fg }
+          }, followBodyId === sb.id ? "Release camera follow" : "Follow camera")
         ], { marginTop: "10px", borderLeft: "4px solid " + sb.color });
       }
     }
 
+    var canvasSelectedBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
+    var canvasSelectionCue = canvasSelectedBody ? " " + canvasSelectedBody.name + " is selected." : " No world is selected.";
+    var canvasViewLabel = zoomMode === "inner" ? "inner planets" : zoomMode === "outer" ? "outer planets" : "the full solar system";
+    var keyboardSelectNextBody = function() {
+      var currentIndex = canvasSelectedBody ? OB.indexOf(canvasSelectedBody) : -1;
+      var nextBody = OB[(currentIndex + 1) % OB.length];
+      if (!nextBody) return;
+      var patch = { orr_sel: nextBody.id, orr_follow: null, orr_focus_body: nextBody.id, orr_focus_request: focusRequest + 1 };
+      if (nextBody.id === compareBodyId) patch.orr_compare = null;
+      if (nextBody.type === "comet") patch.orr_showComets = true;
+      if (nextBody.type === "dwarf") patch.orr_showDwarfs = true;
+      updMulti(patch);
+    };
     var cvPanel = h(CanvasPanel, {
       key: "orrery-cv",
       width: W,
@@ -3378,8 +3574,11 @@ const d = labToolData.solarSystem || {};
       minScale: 0.5,
       maxScale: 300,
       redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion"),
+      viewPresetKey: zoomMode,
       ariaDescribedBy: "orrery-canvas-help",
-      ariaLabel: "Interactive solar system orbit map. Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; click it again to follow; press Escape to clear selection.",
+      ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card or click it again to follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
+      onKeyboardInteract: keyboardSelectNextBody,
+      onHome: function() { upd("orr_follow", null); },
       onEscape: function() { updMulti({ orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); },
       onClick: function(mx, my, st) {
         // hit-test bodies — first click selects + kicks off smooth zoom-in animation.
@@ -3708,6 +3907,7 @@ const d = labToolData.solarSystem || {};
               setLiveText("orrery-live-distance", fmt(livePos.r, 3) + " AU");
               setLiveText("orrery-live-speed", fmt(liveSpeed, 2) + " km/s");
               setLiveText("orrery-live-phase", livePhase);
+              setLiveText("orrery-live-selected-summary", liveBody.name + ": distance " + fmt(livePos.r, 3) + " AU; speed " + fmt(liveSpeed, 2) + " km/s; phase " + livePhase);
               var liveAxisTolerance = Math.max(0.001, liveBody.a * 0.01);
               var liveAxisRelation = livePos.r < liveBody.a - liveAxisTolerance ? "inside" : livePos.r > liveBody.a + liveAxisTolerance ? "outside" : "near";
               var liveKeplerCue = liveAxisRelation === "inside"
@@ -3720,13 +3920,15 @@ const d = labToolData.solarSystem || {};
               var liveCompare = compareBodyId && compareBodyId !== liveBody.id ? OB.filter(function(body) { return body.id === compareBodyId; })[0] : null;
               if (liveCompare) {
                 var liveComparePos = orbitalPos(liveCompare.a, liveCompare.e, (TAU * t / liveCompare.T) % TAU);
+                setLiveText("orrery-live-compare-primary-distance", fmt(livePos.r, 3) + " AU");
+                setLiveText("orrery-live-compare-secondary-distance", fmt(liveComparePos.r, 3) + " AU");
                 setLiveText("orrery-live-compare-primary-speed", fmt(liveSpeed, 1) + " km/s");
                 setLiveText("orrery-live-compare-secondary-speed", fmt(visViva(liveComparePos.r, liveCompare.a), 1) + " km/s");
               }
             }
             if (scrubBody) {
               var liveScrubPhase = ((t % scrubBody.T) + scrubBody.T) % scrubBody.T;
-              setLiveText("orrery-live-timeline-value", fmt(liveScrubPhase, scrubPrecision) + " / " + fmt(scrubBody.T, scrubPrecision) + " yr \u00b7 " + orbitCalendarLabel(liveScrubPhase));
+              setLiveText("orrery-live-timeline-value", fmt(liveScrubPhase, scrubPrecision) + " / " + fmt(scrubBody.T, scrubPrecision) + " yr \u00b7 " + orbitCalendarLabel(t));
               setLiveText("orrery-live-timeline-phase", orbitPhaseLabel(scrubBody, t));
               var phaseInput = document.getElementById("orrery-phase-scrubber");
               if (phaseInput) {
@@ -4901,8 +5103,33 @@ const d = labToolData.solarSystem || {};
               tipW = Math.max(tipW, ctx.measureText(lines[li].text).width);
             }
             var padH = 10, padV = 8, lineH = 16, descLineH = 14;
-            var tipH = padV * 2 + lines.length * lineH + 2;
             tipW = Math.min(Math.max(tipW + padH * 2, 160), 260);
+            var tooltipWrapWidth = Math.max(1, tipW - padH * 2);
+            var tooltipContentHeight = 0;
+            // Measure descriptions with the same word wrapping used below so
+            // long planet explanations cannot spill outside the tooltip card.
+            for (var measureIdx = 0; measureIdx < lines.length; measureIdx++) {
+              var measureLine = lines[measureIdx];
+              ctx.font = measureLine.kind === "title" ? "bold 13px sans-serif" : (measureLine.kind === "desc" ? "italic 11px sans-serif" : "11px sans-serif");
+              if (measureLine.kind === "desc") {
+                var measureWords = measureLine.text.split(" ");
+                var measureCurrent = "";
+                var measureLineCount = 1;
+                for (var measureWordIdx = 0; measureWordIdx < measureWords.length; measureWordIdx++) {
+                  var measureTest = measureCurrent ? measureCurrent + " " + measureWords[measureWordIdx] : measureWords[measureWordIdx];
+                  if (ctx.measureText(measureTest).width > tooltipWrapWidth && measureCurrent) {
+                    measureLineCount++;
+                    measureCurrent = measureWords[measureWordIdx];
+                  } else {
+                    measureCurrent = measureTest;
+                  }
+                }
+                tooltipContentHeight += measureLineCount * descLineH;
+              } else {
+                tooltipContentHeight += lineH + (measureLine.kind === "title" ? 2 : 0);
+              }
+            }
+            var tipH = padV * 2 + tooltipContentHeight + 2;
             // Position to avoid clipping the canvas edges
             var tipX = st.hoverX + 18;
             var tipY = st.hoverY + 14;
@@ -4951,12 +5178,12 @@ const d = labToolData.solarSystem || {};
               }
               ctx.textBaseline = "alphabetic";
               // Wrap desc if too long
-              if (ln.kind === "desc" && ctx.measureText(ln.text).width > tipW - padH * 2) {
+              if (ln.kind === "desc" && ctx.measureText(ln.text).width > tooltipWrapWidth) {
                 var words = ln.text.split(" ");
                 var curLine = "";
                 for (var wi = 0; wi < words.length; wi++) {
                   var test = curLine ? curLine + " " + words[wi] : words[wi];
-                  if (ctx.measureText(test).width > tipW - padH * 2 && curLine) {
+                  if (ctx.measureText(test).width > tooltipWrapWidth && curLine) {
                     ctx.fillText(curLine, tipX + padH, lineY);
                     lineY += descLineH;
                     curLine = words[wi];
@@ -4997,17 +5224,19 @@ const d = labToolData.solarSystem || {};
     ] : [];
     var scrubPhaseStatus = scrubBody ? orbitPhaseLabel(scrubBody, scrubPhase) : null;
     var scrubTimelineValue = scrubBody
-      ? fmt(scrubPhase, scrubPrecision) + " / " + fmt(scrubPeriod, scrubPrecision) + " yr \u00b7 " + orbitCalendarLabel(scrubPhase)
+      ? fmt(scrubPhase, scrubPrecision) + " / " + fmt(scrubPeriod, scrubPrecision) + " yr \u00b7 " + orbitCalendarLabel(timeRef.current)
       : "Select a world to map its orbit";
     var timelineJumpLabel = function(mark) {
       return mark.label === "Perihelion" || mark.label === "Next perihelion" ? "\u2600 " + mark.label : mark.label === "Aphelion" ? "\u2744 " + mark.label : mark.label;
     };
     var timelineMarkIsActiveAt = function(mark, phase) {
       if (!scrubBody) return false;
-      var markPhase = mark.phase % scrubPeriod;
-      var distance = Math.abs(phase - markPhase);
       var tolerance = Math.max(scrubStep * 1.5, scrubPeriod * 0.025);
-      return distance <= tolerance || Math.abs(scrubPeriod - distance) <= tolerance;
+      // The endpoint is a navigable action, not a second copy of the start.
+      // Keep the two labels distinct so only one landmark is current at a time.
+      if (mark.phase >= scrubPeriod) return scrubPeriod - phase <= tolerance;
+      if (mark.phase === 0) return phase <= tolerance;
+      return Math.abs(phase - mark.phase) <= tolerance;
     };
     var timelineMarkIsActive = function(mark) {
       return timelineMarkIsActiveAt(mark, scrubPhase);
@@ -5078,7 +5307,7 @@ const d = labToolData.solarSystem || {};
       "aria-label": "Orbit view controls",
       style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", flex: "1 1 100%", minWidth: "0" }
     },
-      btn("Reset view", false, function() { updMulti({ orr_time: 0, orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); }, { "aria-label": "Reset orbit time and clear selection" }),
+      btn("Reset view", false, function() { updMulti({ orr_time: 0, orr_zoom: "full", orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); }, { "aria-label": "Reset orbit time, camera view, and selection" }),
       h("span", { style: { fontSize: "12px", color: mutedFg } }, "Body size:"),
       btn("Teaching", scaleMode === "teaching", function() { upd("orr_scale_mode", "teaching"); }, { "aria-label": "Use teaching body sizes, enlarged for visibility", "aria-pressed": scaleMode === "teaching" }),
       btn("Relative", scaleMode === "relative", function() { upd("orr_scale_mode", "relative"); }, { "aria-label": "Use relative body sizes with a visibility floor", "aria-pressed": scaleMode === "relative" }),
@@ -5130,8 +5359,8 @@ const d = labToolData.solarSystem || {};
         h("option", { value: "" }, "Choose a world..."),
         OB.map(function(body) { return h("option", { key: "nav-" + body.id, value: body.id }, body.emoji + " " + body.name); })
       ),
-      h("span", { id: "orrery-body-navigator-help", style: { flex: "1 1 180px", fontSize: "11px", color: mutedFg } }, stageBody ? "Focused: " + stageBody.name : "Choose a world to focus it on the map"),
-      h("span", { id: "orrery-canvas-help", style: { flex: "1 1 220px", fontSize: "11px", color: mutedFg } }, "Keyboard: arrows pan; + and - zoom; Home reset; Escape clears selection")
+      h("span", { id: "orrery-body-navigator-help", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { flex: "1 1 180px", fontSize: "11px", color: mutedFg } }, stageBody ? "Focused: " + stageBody.name : "Choose a world to focus it on the map"),
+      h("span", { id: "orrery-canvas-help", style: { flex: "1 1 220px", fontSize: "11px", color: mutedFg } }, "Keyboard: arrows pan; + and - zoom; Home reset; Enter/Space select next world; Escape clears selection")
     );
     var followStageTarget = followBodyId ? OB.filter(function(b) { return b.id === followBodyId; })[0] : null;
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
@@ -5157,7 +5386,7 @@ const d = labToolData.solarSystem || {};
         stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
         compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
       ),
-      h("div", { className: "orr-stage-tip" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 click again to release" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 click twice to follow")
+      h("div", { className: "orr-stage-tip" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 use Release camera follow or click again to release" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 use Follow camera to keep it centered \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 select a world, then use Follow camera (or click twice to follow)")
     );
     var guidedMission = GUIDED_MISSIONS[guidedMissionIdx];
     var guidedRecord = guidedMissionProgress[guidedMission.id] || {};
@@ -5191,6 +5420,7 @@ const d = labToolData.solarSystem || {};
       updMulti({ orr_sel: guidedMission.target, orr_compare: guidedMission.compare || null, orr_follow: null, orr_focus_body: guidedMission.target, orr_focus_request: focusRequest + 1, orr_paused: true, orr_mission_progress: nextProgress });
     };
     var submitGuidedMission = function(choice) {
+      if (!paused) { if (addToast) addToast("Pause the clock before predicting."); return; }
       var now = timeRef.current;
       var correct = choice === guidedMission.getAnswer(now);
       var nextProgress = Object.assign({}, guidedMissionProgress);
@@ -5205,7 +5435,7 @@ const d = labToolData.solarSystem || {};
     var guidedOptionButton = function(option) {
       var chosen = guidedRecord.choice === option.id;
       return h("button", {
-        key: "guided-option-" + option.id, type: "button", className: "orr-btn", "aria-pressed": chosen,
+        key: "guided-option-" + option.id, type: "button", className: "orr-btn", "aria-pressed": chosen, "aria-describedby": "orrery-guided-objective" + (guidedRecord.correct === false ? " orrery-guided-feedback" : ""), "aria-disabled": !paused, disabled: !paused, "aria-label": option.label + " for " + guidedMission.title + (paused ? "" : ". Pause the clock before predicting."),
         onClick: function() { submitGuidedMission(option.id); },
         style: { flex: "1 1 150px", textAlign: "left", borderColor: chosen ? guidedAccent : border, background: chosen ? (isDark ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.09)") : "transparent", color: fg }
       }, option.label);
@@ -5219,7 +5449,7 @@ const d = labToolData.solarSystem || {};
         h("span", { style: { fontSize: "11px", fontWeight: 700, color: mutedFg } }, guidedCompleteCount + "/" + GUIDED_MISSIONS.length + " complete")
       ),
       guidedMissionRoadmap,
-      h("p", { key: "gm-objective", style: { margin: "8px 0 10px", color: fg, fontSize: "12px", lineHeight: "1.45" } }, guidedMission.objective),
+      h("p", { key: "gm-objective", id: "orrery-guided-objective", style: { margin: "8px 0 10px", color: fg, fontSize: "12px", lineHeight: "1.45" } }, guidedMission.objective),
       !guidedRecord.started ? h("div", { key: "gm-start", style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" } },
         h("button", { type: "button", className: "orr-btn", onClick: startGuidedMission, style: { background: guidedAccent, borderColor: guidedAccent, color: "#fff", fontWeight: 700 } }, "Focus " + guidedTarget.name + " and pause"),
         h("span", { style: { fontSize: "11px", color: mutedFg } }, "Inspect first, then predict.")
@@ -5229,10 +5459,10 @@ const d = labToolData.solarSystem || {};
           h("span", { style: { fontSize: "11px", color: mutedFg } }, paused ? "Clock paused. Make your prediction." : "Pause the clock before predicting."),
           !paused ? h("button", { type: "button", className: "orr-btn", onClick: function() { upd("orr_paused", true); }, style: { padding: "5px 9px", fontSize: "11px" } }, "Pause clock") : null
         ),
-        guidedRecord.correct === false ? h("div", { style: { marginBottom: "8px", color: isDark ? "#fbbf24" : "#a16207", fontSize: "11px" } }, "Not quite. " + guidedMission.hint) : null,
+        guidedRecord.correct === false ? h("div", { id: "orrery-guided-feedback", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginBottom: "8px", color: isDark ? "#fbbf24" : "#a16207", fontSize: "11px" } }, "Not quite. " + guidedMission.hint) : null,
         h("div", { style: { display: "flex", flexWrap: "wrap", gap: "6px" } }, guidedMission.options.map(guidedOptionButton))
       ) : null,
-      guidedRecord.correct ? h("div", { key: "gm-done", style: { padding: "8px 10px", borderRadius: "8px", background: isDark ? "rgba(34,197,94,0.12)" : "rgba(34,197,94,0.08)", borderLeft: "3px solid #22c55e" } },
+      guidedRecord.correct ? h("div", { key: "gm-done", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { padding: "8px 10px", borderRadius: "8px", background: isDark ? "rgba(34,197,94,0.12)" : "rgba(34,197,94,0.08)", borderLeft: "3px solid #22c55e" } },
         h("div", { style: { color: isDark ? "#86efac" : "#15803d", fontWeight: 700, fontSize: "12px" } }, "Mission complete"),
         h("p", { style: { margin: "4px 0 8px", color: mutedFg, fontSize: "11px", lineHeight: "1.45" } }, guidedRecord.detail || guidedMission.explain(timeRef.current)),
         guidedMissionIdx < GUIDED_MISSIONS.length - 1 ? h("button", { type: "button", className: "orr-btn", onClick: advanceGuidedMission, style: { padding: "5px 10px", fontSize: "11px" } }, "Next mission") : h("span", { style: { fontSize: "11px", color: isDark ? "#86efac" : "#15803d", fontWeight: 700 } }, "All guided missions complete")
@@ -5273,13 +5503,15 @@ const d = labToolData.solarSystem || {};
       width: W,
       height: H,
       panZoom: false,
+      reduceMotion: reduceMotion,
+      ariaLabel: "Kepler I orbit visualization. An ellipse has the Sun at one focus, a second empty focus, and a moving planet; focal distances r1 and r2 add to 2a.",
       redrawKey: ecc,
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
         ctx.fillRect(0, 0, W, H);
 
-        animRef.current = (animRef.current + 0.01) % TAU;
+        if (!reduceMotion) animRef.current = (animRef.current + 0.01) % TAU;
 
         var cx = W / 2;
         var cy = H / 2 - 30;
@@ -5460,13 +5692,15 @@ const d = labToolData.solarSystem || {};
       width: W,
       height: H,
       panZoom: false,
+      reduceMotion: reduceMotion,
+      ariaLabel: "Kepler II equal-area visualization. Equal-time sectors show a planet moving faster near perihelion and slower near aphelion.",
       redrawKey: ecc * 100 + nSectors,
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = isDark ? "#0a0a1a" : "#f0f0ff";
         ctx.fillRect(0, 0, W, H);
 
-        animRef.current = (animRef.current + 0.008) % TAU;
+        if (!reduceMotion) animRef.current = (animRef.current + 0.008) % TAU;
 
         var cx = W / 2;
         var cy = H / 2 - 40;
@@ -5725,12 +5959,25 @@ const d = labToolData.solarSystem || {};
    * ==================================================================== */
   function buildKeplerIIITab() {
     var W = 700, H = 450;
+    var k3HoverBody = d.orr_k3hover ? OB.filter(function(body) { return body.id === d.orr_k3hover; })[0] : null;
+    var k3HoverRatio = k3HoverBody ? (k3HoverBody.T * k3HoverBody.T) / (k3HoverBody.a * k3HoverBody.a * k3HoverBody.a) : null;
+    var k3SelectionText = k3HoverBody
+      ? "Selected " + k3HoverBody.name + ": a = " + fmt(k3HoverBody.a, 3) + " AU; T = " + fmt(k3HoverBody.T, 2) + " yr; T²/a³ = " + fmt(k3HoverRatio, 4)
+      : "Select a plotted world to inspect its Kepler III evidence.";
 
     var cvPanel = h(CanvasPanel, {
       key: "k3-cv",
       width: W,
       height: H,
       panZoom: false,
+      ariaLabel: "Kepler III plot of solar-system bodies on logarithmic axes, showing orbital period growing with semi-major axis.",
+      ariaDescribedBy: "orrery-k3-canvas-help",
+      onKeyboardInteract: function() {
+        var currentIndex = d.orr_k3hover ? OB.findIndex(function(body) { return body.id === d.orr_k3hover; }) : -1;
+        var nextBody = OB[(currentIndex + 1) % OB.length];
+        if (nextBody) upd("orr_k3hover", nextBody.id);
+      },
+      onEscape: function() { upd("orr_k3hover", null); },
       onClick: function(mx, my) {
         // Hit-test data points for tooltip
         var margin = 60, pw = W - 2 * margin, ph = H - 2 * margin;
@@ -5931,6 +6178,8 @@ const d = labToolData.solarSystem || {};
 
     return h("div", { className: "space-y-3" },
       cvPanel,
+      h("div", { id: "orrery-k3-selected", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginTop: "8px", padding: "8px 10px", borderLeft: "3px solid " + accent, background: isDark ? "rgba(245,158,11,0.10)" : "rgba(245,158,11,0.07)", color: fg, fontSize: "11px", lineHeight: "1.4" } }, k3SelectionText),
+      h("span", { id: "orrery-k3-canvas-help", className: "sr-only" }, "Keyboard: press Enter or Space to cycle through plotted worlds and show their Kepler III values; press Escape to clear the selected point."),
       card([
         h("div", { key: "vh", style: {
           fontWeight: 700, fontSize: "14px", color: fg, paddingBottom: "8px", marginBottom: "8px",
@@ -6026,6 +6275,7 @@ const d = labToolData.solarSystem || {};
           width: 350,
           height: 350,
           panZoom: false,
+          ariaLabel: "Orbit Workshop preview for " + body.name + ". Custom orbit with perihelion and aphelion markers; a dashed line shows the real values when edited.",
           redrawKey: ecc * 1000 + sma,
           draw: function(ctx) {
             var WW = 350, HH = 350;
@@ -6083,6 +6333,7 @@ const d = labToolData.solarSystem || {};
           width: 350,
           height: 350,
           panZoom: false,
+          ariaLabel: "Orbit Workshop energy diagram for " + body.name + ". Potential and kinetic energy trade off while total orbital energy remains constant.",
           redrawKey: ecc * 1000 + sma,
           draw: function(ctx) {
             var WW = 350, HH = 350;
@@ -6238,6 +6489,7 @@ const d = labToolData.solarSystem || {};
       width: TW,
       height: TH,
       panZoom: false,
+      ariaLabel: "Hohmann transfer visualization from " + fromBody.name + " to " + toBody.name + ". Two circular orbits and a transfer ellipse show departure and arrival burns.",
       redrawKey: tr_from + "-" + tr_to,
       draw: function(ctx) {
         ctx.clearRect(0, 0, TW, TH);
@@ -6504,20 +6756,33 @@ const d = labToolData.solarSystem || {};
 
     // Live challenge section
     var liveSection = null;
-    // We define live challenges that read from cv._liveState
+    // Live challenges use the same authoritative clock and orbital helpers as
+    // the canvas. This keeps them truthful even while the Challenges tab is
+    // open and no canvas has been mounted to publish cv._liveState.
+    var liveSimulationTime = function() {
+      var refTime = typeof orrTimeRef !== "undefined" && orrTimeRef && isFinite(Number(orrTimeRef.current)) ? Number(orrTimeRef.current) : null;
+      var storedTime = isFinite(Number(d.orr_time)) ? Number(d.orr_time) : 0;
+      return refTime != null ? refTime : storedTime;
+    };
+    var currentOrbitalState = function(bodyId) {
+      var body = OB.filter(function(candidate) { return candidate.id === bodyId; })[0];
+      if (!body || !body.T) return null;
+      var meanAnomaly = ((TAU * liveSimulationTime() / body.T) % TAU + TAU) % TAU;
+      var position = orbitalPos(body.a, body.e, meanAnomaly);
+      return {
+        x: position.x,
+        y: position.y,
+        r: position.r,
+        speed: visViva(position.r, body.a)
+      };
+    };
     var LIVE_CHALLENGES = [
       {
         id: "earth_dist",
         q: "LIVE: What is Earth's current distance from the Sun (in AU)? Check the orrery!",
         getAnswer: function() {
-          // Try to find canvas with _liveState
-          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
-          for (var i = 0; i < cvs.length; i++) {
-            if (cvs[i]._liveState && cvs[i]._liveState.bodies && cvs[i]._liveState.bodies.earth) {
-              return cvs[i]._liveState.bodies.earth.r;
-            }
-          }
-          return 1.0; // fallback
+          var earthState = currentOrbitalState("earth");
+          return earthState ? earthState.r : 1.0;
         },
         tol: 0.02,
         unit: "AU"
@@ -6526,13 +6791,8 @@ const d = labToolData.solarSystem || {};
         id: "body_speed",
         q: "LIVE: What is Mars's current orbital speed (in km/s)? Switch to Full Orrery to see.",
         getAnswer: function() {
-          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
-          for (var i = 0; i < cvs.length; i++) {
-            if (cvs[i]._liveState && cvs[i]._liveState.bodies && cvs[i]._liveState.bodies.mars) {
-              return cvs[i]._liveState.bodies.mars.speed;
-            }
-          }
-          return 24.1;
+          var marsState = currentOrbitalState("mars");
+          return marsState ? marsState.speed : 24.1;
         },
         tol: 0.5,
         unit: "km/s"
@@ -6541,14 +6801,12 @@ const d = labToolData.solarSystem || {};
         id: "planet_dist",
         q: "LIVE: What is the current distance between Earth and Mars in AU?",
         getAnswer: function() {
-          var cvs = typeof document !== "undefined" ? document.querySelectorAll("canvas") : [];
-          for (var i = 0; i < cvs.length; i++) {
-            var ls = cvs[i]._liveState;
-            if (ls && ls.bodies && ls.bodies.earth && ls.bodies.mars) {
-              var dx = ls.bodies.earth.x - ls.bodies.mars.x;
-              var dy = ls.bodies.earth.y - ls.bodies.mars.y;
-              return Math.sqrt(dx * dx + dy * dy);
-            }
+          var earthState = currentOrbitalState("earth");
+          var marsState = currentOrbitalState("mars");
+          if (earthState && marsState) {
+            var dx = earthState.x - marsState.x;
+            var dy = earthState.y - marsState.y;
+            return Math.sqrt(dx * dx + dy * dy);
           }
           return 1.5;
         },
@@ -6560,7 +6818,17 @@ const d = labToolData.solarSystem || {};
     var liveIdx = d.orr_cli || 0;
     var liveAns = d.orr_cla || {};
     var liveCorrect = d.orr_clc || {};
+    var liveFeedback = d.orr_clf || {};
     var liveCh = LIVE_CHALLENGES[clamp(liveIdx, 0, LIVE_CHALLENGES.length - 1)];
+    var liveFocusBodyId = liveIdx === 1 ? "mars" : "earth";
+    var liveFocusBody = OB.filter(function(body) { return body.id === liveFocusBodyId; })[0];
+    var liveClockStatus = paused
+      ? "Clock paused at " + fmt(liveSimulationTime(), 2) + " Earth yr. The answer is stable while you check it."
+      : "Clock is playing. Pause it before checking the live answer.";
+    var toggleLiveClock = function() { upd("orr_paused", !paused); };
+    var openLiveOrrery = function() {
+      updMulti({ orr_tab: 0, orr_paused: true, orr_sel: liveFocusBodyId, orr_follow: null, orr_focus_body: liveFocusBodyId, orr_focus_request: focusRequest + 1 });
+    };
 
     liveSection = card([
       h("div", { key: "lhdr", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: accent } }, __alloT('stem.solarsystem.live_simulation_challenges', "\ud83d\udce1 Live Simulation Challenges")),
@@ -6575,11 +6843,21 @@ const d = labToolData.solarSystem || {};
         })
       ),
       h("p", { key: "lq", style: { fontSize: "13px", color: fg, marginBottom: "8px" } }, liveCh.q),
+      h("div", { key: "lguide", style: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "8px", padding: "8px 9px", borderRadius: "8px", background: isDark ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.07)", border: "1px solid " + (isDark ? "rgba(129,140,248,0.25)" : "rgba(99,102,241,0.16)") } },
+        h("div", { id: "orrery-live-challenge-status", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { flex: "1 1 250px", color: fg, fontSize: "11px", lineHeight: "1.4" } }, liveClockStatus),
+        h("div", { style: { display: "flex", flexWrap: "wrap", gap: "5px" } },
+          h("button", { type: "button", className: "orr-btn", onClick: toggleLiveClock, "aria-pressed": paused, "aria-label": paused ? "Resume simulation clock" : "Pause simulation clock", style: { padding: "5px 9px", fontSize: "11px" } }, paused ? "Resume clock" : "Pause clock"),
+          h("button", { type: "button", className: "orr-btn", onClick: openLiveOrrery, "aria-label": "Open Full Orrery focused on " + liveFocusBody.name, style: { padding: "5px 9px", fontSize: "11px" } }, "Open Full Orrery")
+        )
+      ),
+      liveFeedback[liveIdx] && !liveCorrect[liveIdx] ? h("div", { id: "orrery-live-challenge-feedback", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginBottom: "8px", padding: "7px 9px", borderRadius: "7px", borderLeft: "3px solid #f59e0b", background: isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.09)", color: isDark ? "#fcd34d" : "#92400e", fontSize: "11px", lineHeight: "1.4" } }, liveFeedback[liveIdx]) : null,
       !liveCorrect[liveIdx] ? h("div", { key: "linput", style: { display: "flex", gap: "8px", alignItems: "center" } },
         h("input", {
           type: "number",
           step: "any",
           "aria-label": liveCh.q + " (" + liveCh.unit + ")",
+          "aria-describedby": (liveFeedback[liveIdx] ? "orrery-live-challenge-feedback " : "") + "orrery-live-challenge-status",
+          "aria-invalid": !!liveFeedback[liveIdx],
           className: "orr-input",
           value: liveAns[liveIdx] || "",
           onChange: function(ev) {
@@ -6591,22 +6869,32 @@ const d = labToolData.solarSystem || {};
         }),
         h("span", { style: { fontSize: "12px", color: mutedFg } }, liveCh.unit),
         h("button", {
+          type: "button",
+          disabled: !paused,
+          "aria-disabled": !paused,
+          "aria-describedby": "orrery-live-challenge-status",
           onClick: function() {
+            if (!paused) { if (addToast) addToast("Pause the clock before checking the live answer."); return; }
             var userVal = parseFloat(liveAns[liveIdx]);
             var correctVal = liveCh.getAnswer();
             if (!isNaN(userVal) && Math.abs(userVal - correctVal) <= liveCh.tol) {
               var newCorrect = Object.assign({}, liveCorrect);
               newCorrect[liveIdx] = true;
-              upd("orr_clc", newCorrect);
+              var newFeedback = Object.assign({}, liveFeedback);
+              delete newFeedback[liveIdx];
+              updMulti({ orr_clc: newCorrect, orr_clf: newFeedback });
               if (awardStemXP) awardStemXP(10);
               if (addToast) addToast("\u2705 Correct! +10 XP");
             } else {
-              if (addToast) addToast("\u274c Not quite. The live value is \u2248" + fmt(correctVal, 3) + " " + liveCh.unit);
+              var failedFeedback = Object.assign({}, liveFeedback);
+              failedFeedback[liveIdx] = "Not quite. Check the live readout and try again.";
+              upd("orr_clf", failedFeedback);
+              if (addToast) addToast("\u274c Not quite. Try again.");
             }
           },
-          style: { padding: "6px 16px", borderRadius: "6px", border: "none", background: accent, color: "#fff", cursor: "pointer", fontWeight: 700 }
+          style: { padding: "6px 16px", borderRadius: "6px", border: "none", background: paused ? accent : border, color: "#fff", cursor: paused ? "pointer" : "not-allowed", opacity: paused ? 1 : 0.62, fontWeight: 700 }
         }, __alloT('stem.solarsystem.check', "Check"))
-      ) : h("div", { key: "lcorr", style: { color: "#27ae60", fontWeight: 700, fontSize: "14px" } }, __alloT('stem.solarsystem.correct', "\u2705 Correct!"))
+      ) : h("div", { key: "lcorr", role: "status", "aria-live": "polite", style: { color: "#27ae60", fontWeight: 700, fontSize: "14px" } }, __alloT('stem.solarsystem.correct', "\u2705 Correct!"))
     ], { marginTop: "12px", border: "2px solid " + accent });
 
     // Equation reference card
@@ -6664,6 +6952,7 @@ const d = labToolData.solarSystem || {};
           })
         ) : null,
 
+        ch_feedback[idx] && !answered ? h("div", { id: "orrery-challenge-feedback", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginBottom: "8px", padding: "7px 9px", borderRadius: "7px", borderLeft: "3px solid #f59e0b", background: isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.09)", color: isDark ? "#fcd34d" : "#92400e", fontSize: "11px", lineHeight: "1.4" } }, ch_feedback[idx]) : null,
         !answered ? h("div", { key: "hinbtn", style: { marginBottom: "10px" } },
           hintCount < prob.hints.length ? h("button", {
             className: "orr-btn",
@@ -6691,6 +6980,8 @@ const d = labToolData.solarSystem || {};
             type: "number",
             step: "any",
             "aria-label": prob.q + " (" + prob.unit + ")",
+            "aria-describedby": ch_feedback[idx] ? "orrery-challenge-feedback" : undefined,
+            "aria-invalid": !!ch_feedback[idx],
             className: "orr-input",
             value: ch_ans[idx] || "",
             onChange: function(ev) {
@@ -6703,9 +6994,13 @@ const d = labToolData.solarSystem || {};
                 var userVal = parseFloat(ch_ans[idx]);
                 if (isNaN(userVal)) { if (addToast) addToast("Enter a number."); return; }
                 if (Math.abs(userVal - prob.answer) <= prob.tol) {
-                  var newC = Object.assign({}, ch_correct); newC[idx] = true; upd("orr_chc", newC);
+                  var newC = Object.assign({}, ch_correct); newC[idx] = true;
+                  var newF = Object.assign({}, ch_feedback); delete newF[idx];
+                  updMulti({ orr_chc: newC, orr_chf: newF });
                   if (awardStemXP) awardStemXP(10); if (addToast) addToast("\u2705 Correct! +10 XP");
                 } else {
+                  var enterFeedback = Object.assign({}, ch_feedback); enterFeedback[idx] = "Not quite. Try again or reveal a hint.";
+                  upd("orr_chf", enterFeedback);
                   if (addToast) addToast("\u274c Not quite. Try again or reveal a hint.");
                 }
               }
@@ -6721,19 +7016,24 @@ const d = labToolData.solarSystem || {};
               if (Math.abs(userVal - prob.answer) <= prob.tol) {
                 var newC = Object.assign({}, ch_correct);
                 newC[idx] = true;
-                upd("orr_chc", newC);
+                var newF = Object.assign({}, ch_feedback);
+                delete newF[idx];
+                updMulti({ orr_chc: newC, orr_chf: newF });
                 if (awardStemXP) awardStemXP(10);
                 if (addToast) addToast("\u2705 Correct! +10 XP");
               } else {
                 var diff = Math.abs(userVal - prob.answer);
                 var hint = diff < prob.tol * 3 ? "Very close!" : diff < prob.tol * 10 ? "Getting warm." : "Check your formula.";
-                if (addToast) addToast("\u274c " + hint + " Try again or reveal a hint.");
+                var failedChallengeFeedback = Object.assign({}, ch_feedback);
+                failedChallengeFeedback[idx] = hint + " Try again or reveal a hint.";
+                upd("orr_chf", failedChallengeFeedback);
+                if (addToast) addToast("\u274c " + failedChallengeFeedback[idx]);
               }
             },
             className: "orr-btn",
             style: { padding: "8px 22px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #15803d, #166534)", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", boxShadow: "0 2px 8px rgba(39,174,96,0.3)" }
           }, __alloT('stem.solarsystem.submit', "\u2714 Submit"))
-        ) : h("div", { key: "acorr", style: {
+        ) : h("div", { key: "acorr", role: "status", "aria-live": "polite", style: {
           color: "#27ae60", fontWeight: 700, fontSize: "16px", padding: "12px 16px",
           background: isDark ? "rgba(39,174,96,0.1)" : "rgba(39,174,96,0.08)",
           borderRadius: "8px", borderLeft: "4px solid #27ae60"

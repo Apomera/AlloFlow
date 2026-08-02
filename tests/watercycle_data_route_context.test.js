@@ -13,7 +13,10 @@ describe('Water Cycle semantic route context', () => {
 
       expect(source).toContain('var journeyDataContext = journeyChosenRoute');
       expect(source).toContain("journeyChosenRoute.signalLabel + ': ' + journeyChosenRoute.signalValue + '/100. Relative route share: '");
-      expect(source).toContain('journeyChosenRoute ? journeyChosenRoute.label + " selected" : journeyStatusLabel');
+      expect(source).toContain("journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.'");
+      expect(source).toContain('journeyChosenRoute ? journeyChosenRoute.label + " selected" : journeyStateLabel + ". " + journeyStatusLabel');
+      expect(source).toContain('journeyDataContext += wcJourneyPredictionReceipt;');
+      expect(source).toContain("Saved baseline route shares: runoff ' + wcBaselineRouteShares.runoff");
       expect(source).toContain('journeyDataContext)');
     });
   });
@@ -24,6 +27,7 @@ describe('Water Cycle semantic route context', () => {
 
       expect(source).toContain("'Choose a land pathway. Runoff tendency: '");
       expect(source).toContain('These are qualitative teaching indices, not measured volumes.');
+      expect(source).toContain('Relative teaching shares, not measured water volumes.');
       expect(source).toContain('journeyView === \'3d\' ? \'3D tracked parcel\' : \'2D animated model\'');
       expect(source).toContain("Relative route shares: runoff ' + wcRouteShares.runoff");
       expect(source).toContain("percent; infiltration ' + wcRouteShares.infiltration");

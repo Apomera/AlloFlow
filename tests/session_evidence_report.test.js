@@ -11,7 +11,7 @@ const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 if (helperStart < 0 || helperEnd < 0) throw new Error('Roster session helper markers are missing');
 const helpers = new Function(
   app.slice(helperStart, helperEnd)
-    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, countValidRosterQuizResponses, normalizeQuizReceiptQuestionIndexes, buildRosterSessionInsightBrief, buildRosterSessionSummary };'
+    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, countValidRosterQuizResponses, normalizeQuizReceiptQuestionIndexes, buildRosterSessionInsightBrief, buildRosterSessionSummary, classifyLiveRosterPresence, buildPublishedResourceFingerprintMap, enqueueLiveSessionResourcePublish, resolveRosterCodenamesToLiveUids, resolveSavedFollowUpLivePlanTarget };'
 )();
 
 const csvHelperStart = teacher.indexOf('const rosterSessionCsvCell');
@@ -29,8 +29,9 @@ const makeCohortResolver = (sessionData, rosterKey) => new Function(
   'sessionData',
   'rosterKey',
   'normalizeRosterSessionCodename',
+  'resolveRosterCodenamesToLiveUids',
   app.slice(cohortResolverStart, cohortResolverEnd) + '\nreturn resolveEndSessionCohortUids;'
-)(sessionData, rosterKey, helpers.normalizeRosterSessionCodename);
+)(sessionData, rosterKey, helpers.normalizeRosterSessionCodename, helpers.resolveRosterCodenamesToLiveUids);
 
 const activityOrderStart = app.indexOf('function _alloNextSharedActivitySummaryOrder');
 const activityOrderEnd = app.indexOf('const SharedAssignmentActivityPanel', activityOrderStart);
@@ -246,9 +247,9 @@ describe('session evidence report contract', () => {
     expect(duplicateSerialized).not.toContain('PRIVATE_DUPLICATE');
     const resolveCohortUids = makeCohortResolver({
       roster: {
-        firstPrivateUid: { name: 'Brave Otter' },
-        secondPrivateUid: { name: 'brave-otter' },
-        uniquePrivateUid: { name: 'Calm Fox' },
+        firstPrivateUid: { name: 'Brave Otter', lastSeen: 1_000_000 },
+        secondPrivateUid: { name: 'brave-otter', lastSeen: 1_000_000 },
+        uniquePrivateUid: { name: 'Calm Fox', lastSeen: 1_000_000 },
       },
     }, {
       students: {
@@ -256,11 +257,131 @@ describe('session evidence report contract', () => {
         'Calm Fox': 'green',
       },
     });
-    expect(resolveCohortUids(['Brave Otter'])).toEqual([]);
-    expect(resolveCohortUids(['Calm Fox'])).toEqual(['uniquePrivateUid']);
-    expect(resolveCohortUids(['Brave Otter', 'Calm Fox'])).toEqual(['uniquePrivateUid']);
+    expect(resolveCohortUids(['Brave Otter'], 1_000_000)).toEqual([]);
+    expect(resolveCohortUids(['Calm Fox'], 1_000_000)).toEqual(['uniquePrivateUid']);
+    expect(resolveCohortUids(['Brave Otter', 'Calm Fox'], 1_000_000)).toEqual(['uniquePrivateUid']);
   });
 
+  it('shares one heartbeat classifier across the Live Dock and targeted delivery', () => {
+    const now = 1_000_000;
+    expect(helpers.classifyLiveRosterPresence({ entry: { lastSeen: now - 1_000 }, now })).toMatchObject({ status: 'connected', isRecentlyActive: true });
+    expect(helpers.classifyLiveRosterPresence({ entry: { lastSeen: now - 95_000 }, now })).toMatchObject({ status: 'quiet', isRecentlyActive: true });
+    expect(helpers.classifyLiveRosterPresence({ entry: { lastSeen: now - 199_999 }, now })).toMatchObject({ status: 'quiet', isRecentlyActive: true });
+    expect(helpers.classifyLiveRosterPresence({ entry: { lastSeen: now - 200_000 }, now })).toMatchObject({ status: 'disconnected', isRecentlyActive: false });
+    expect(helpers.classifyLiveRosterPresence({ entry: {}, now })).toMatchObject({ status: 'unknown', isRecentlyActive: false });
+    expect(helpers.classifyLiveRosterPresence({ entry: { lastSeen: now + 200_001 }, now })).toMatchObject({ status: 'unknown', isRecentlyActive: false });
+  });
+
+  it('builds exact successful-source fingerprints and omits duplicate or trimmed ids', () => {
+    const first = helpers.buildPublishedResourceFingerprintMap({
+      resources: [{ id: 'kept', rev: 1 }, { id: 'duplicate', rev: 1 }, { id: 'duplicate', rev: 2 }, { id: 'trimmed', rev: 1 }],
+      publishedIds: ['kept', 'duplicate'],
+      getFingerprint: resource => resource.id + ':' + resource.rev,
+    });
+    expect(first).toEqual({ kept: 'kept:1' });
+    const revised = helpers.buildPublishedResourceFingerprintMap({
+      resources: [{ id: 'kept', rev: 2 }],
+      publishedIds: ['kept'],
+      getFingerprint: resource => resource.id + ':' + resource.rev,
+    });
+    expect(revised).toEqual({ kept: 'kept:2' });
+    const lateResources = Array.from({ length: 301 }, (_, index) => ({ id: index === 300 ? 'late-kept' : 'other-' + index, rev: 1 }));
+    expect(helpers.buildPublishedResourceFingerprintMap({
+      resources: lateResources, publishedIds: ['late-kept'], getFingerprint: resource => resource.id + ':' + resource.rev,
+    })).toEqual({ 'late-kept': 'late-kept:1' });
+  });
+
+  it('serializes Firebase resource publishes per session so the newest queued write finishes last', async () => {
+    const queues = {};
+    const events = [];
+    let releaseFirst;
+    const first = helpers.enqueueLiveSessionResourcePublish({
+      queues, sessionKey: 'firebase|app|LIVE',
+      publish: () => new Promise(resolve => {
+        events.push('old:start');
+        releaseFirst = () => { events.push('old:end'); resolve('old'); };
+      }),
+    });
+    await Promise.resolve();
+    const second = helpers.enqueueLiveSessionResourcePublish({
+      queues, sessionKey: 'firebase|app|LIVE',
+      publish: async () => { events.push('new:start'); events.push('new:end'); return 'new'; },
+    });
+    await Promise.resolve();
+    expect(events).toEqual(['old:start']);
+    releaseFirst();
+    await expect(Promise.all([first, second])).resolves.toEqual(['old', 'new']);
+    expect(events).toEqual(['old:start', 'old:end', 'new:start', 'new:end']);
+    expect(queues).toEqual({});
+  });
+
+  it('re-resolves saved follow-up audiences without class fallback and requires published resources', () => {
+    const now = 1_000_000;
+    const base = {
+      sessionId: 'saved-1',
+      sessionHistory: [{
+        id: 'saved-1',
+        followUpPlan: { resourceId: 'support-resource', audience: 'cohort', cohortCode: 'needs-support', status: 'planned', plannedAt: '2026-08-02T12:00:00.000Z' },
+        insightBrief: { evidenceCohorts: [{ code: 'needs-support', intent: 'support', label: 'Needs support', codenames: ['Brave Otter', 'Calm Fox'] }] },
+      }],
+      rosterStudents: { 'Brave Otter': 'blue', 'Calm Fox': 'green' },
+      liveRoster: { firstPrivateUid: { name: 'Brave Otter', lastSeen: now - 1_000 }, secondPrivateUid: { name: 'Calm Fox', lastSeen: now - 120_000 } },
+      resources: [{ id: 'support-resource', type: 'simplified', title: 'Support' }],
+      normalizePlan: value => value,
+      getResourceFingerprint: () => 'published-fingerprint',
+      isResourcePublished: (_resource, fingerprint) => fingerprint === 'published-fingerprint',
+      activeSessionCode: 'LIVE-1',
+      activeSessionAppId: 'resumed-host-app',
+      sessionMode: 'sync',
+      transportKind: 'firebase',
+      now,
+    };
+    const cohort = helpers.resolveSavedFollowUpLivePlanTarget(base);
+    expect(cohort).toMatchObject({
+      ok: true,
+      audience: 'cohort',
+      audienceLabel: 'Needs support',
+      connectedCount: 2,
+      uids: ['firstPrivateUid', 'secondPrivateUid'],
+      sessionAppId: 'resumed-host-app',
+    });
+
+    const missingCohort = helpers.resolveSavedFollowUpLivePlanTarget({
+      ...base,
+      sessionHistory: [{ ...base.sessionHistory[0], insightBrief: { evidenceCohorts: [] } }],
+    });
+    expect(missingCohort).toEqual({ ok: false, reason: 'cohort-unavailable' });
+    expect(missingCohort).not.toHaveProperty('audience', 'class');
+
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({ ...base, isResourcePublished: () => false }))
+      .toEqual({ ok: false, reason: 'resource-syncing' });
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({ ...base, resources: [] }))
+      .toEqual({ ok: false, reason: 'resource-unavailable' });
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({ ...base, sessionIsActive: false }))
+      .toEqual({ ok: false, reason: 'inactive-session' });
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({
+      ...base,
+      liveRoster: { staleUid: { name: 'Brave Otter', lastSeen: now - 200_000 }, unknownUid: { name: 'Calm Fox' } },
+    })).toEqual({ ok: false, reason: 'no-live-learners' });
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({
+      ...base,
+      liveRoster: { staleUid: { name: 'Brave Otter', lastSeen: now - 200_000 }, freshUnrelatedUid: { name: 'Other Learner', lastSeen: now - 1_000 } },
+    })).toEqual({ ok: false, reason: 'no-cohort-learners' });
+
+    const relabeled = helpers.resolveSavedFollowUpLivePlanTarget({
+      ...base,
+      sessionHistory: [{ ...base.sessionHistory[0], insightBrief: { evidenceCohorts: [{ ...base.sessionHistory[0].insightBrief.evidenceCohorts[0], label: 'Updated support label' }] } }],
+    });
+    expect(relabeled.planSignature).not.toBe(cohort.planSignature);
+
+    const classBase = {
+      ...base,
+      sessionHistory: [{ ...base.sessionHistory[0], followUpPlan: { resourceId: 'support-resource', audience: 'class', status: 'planned' } }],
+    };
+    expect(helpers.resolveSavedFollowUpLivePlanTarget(classBase)).toMatchObject({ ok: true, audience: 'class', connectedCount: 2, uids: [] });
+    expect(helpers.resolveSavedFollowUpLivePlanTarget({ ...classBase, sessionMode: 'async' }))
+      .toEqual({ ok: false, reason: 'teacher-paced-required' });
+  });
 
   it('orders async activity summaries by server version, request sequence, and activity scope', () => {
     const current = { scope: 'pack:A', sequence: 2, version: 5 };
@@ -280,10 +401,11 @@ describe('session evidence report contract', () => {
   it('resolves and sends a 32-learner cohort through bounded canonical patches', async () => {
     const uids = Array.from({ length: 32 }, (_, index) => `uid-${index + 1}`);
     const names = Array.from({ length: 32 }, (_, index) => `Student ${index + 1}`);
-    const roster = Object.fromEntries(uids.map((uid, index) => [uid, { name: names[index] }]));
+    const now = 1_000_000;
+    const roster = Object.fromEntries(uids.map((uid, index) => [uid, { name: names[index], lastSeen: now }]));
     const rosterKey = { students: Object.fromEntries(names.map(name => [name, 'blue'])) };
     const resolveCohortUids = makeCohortResolver({ roster }, rosterKey);
-    expect(resolveCohortUids(names)).toEqual(uids);
+    expect(resolveCohortUids(names, now)).toEqual(uids);
 
     const plan = helpers.buildStudentResourcePatchBatches({
       uids,
@@ -300,12 +422,13 @@ describe('session evidence report contract', () => {
     const senderSource = app.slice(senderStart, senderEnd);
     const patches = [];
     const toasts = [];
+    const docPaths = [];
     const sender = new Function(
-      'activeSessionCode', 'sessionData', 'doc', 'db', 'appId', 'updateDoc',
+      'activeSessionCode', 'sessionData', 'doc', 'db', 'appId', 'activeSessionAppId', 'updateDoc',
       'addToast', 't', 'warnLog', 'buildStudentResourcePatchBatches',
       senderSource + '\nreturn handleSetStudentsResource;'
     )(
-      'SESSION', { roster }, () => ({ path: 'session' }), {}, 'app',
+      'SESSION', { roster }, (...parts) => { docPaths.push(parts); return { path: 'session' }; }, {}, 'default-app', 'resumed-host-app',
       async (_ref, updates) => {
         patches.push(updates);
         if (patches.length === 2) throw new Error('second batch failed');
@@ -316,6 +439,7 @@ describe('session evidence report contract', () => {
 
     await expect(sender(uids, 'support-resource')).resolves.toEqual({ sent: 25, failed: 7 });
     expect(patches.map(updates => Object.keys(updates).length)).toEqual([50, 14]);
+    expect(docPaths[0][2]).toBe('resumed-host-app');
     expect(toasts.at(-1)).toMatchObject({ tone: 'error' });
     expect(toasts.at(-1).message).toContain('assigned to 25 students; 7 could not be assigned');
   });

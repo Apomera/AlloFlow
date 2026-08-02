@@ -818,7 +818,7 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
         expect(anti).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
         // Large homework packs route to the mailbox host instead of dead-ending.
-        expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;');
+        expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
         // The offline-history loader no longer clobbers a joining live student
         // (current guard form @41cc1dd52: entry-param based, two lines).
         expect(anti).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()');

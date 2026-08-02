@@ -1,11 +1,11 @@
-// ═══════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // stem_tool_dna.js - DNA / Genetics Lab  v3.0
 // Enhanced STEM Lab tool - 11 sub-tools
-// Build · Replicate · Transcribe · Translate · Mutate
-// CRISPR · Protein · Forensics · Challenge · Battle · Learn
-// ═══════════════════════════════════════════════════════
+// Build Â· Replicate Â· Transcribe Â· Translate Â· Mutate
+// CRISPR Â· Protein Â· Forensics Â· Challenge Â· Battle Â· Learn
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ═══ Defensive StemLab guard ═══
+// â•â•â• Defensive StemLab guard â•â•â•
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -27,11 +27,11 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
-// ═══ End Guard ═══
+// â•â•â• End Guard â•â•â•
 
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools ──
+  // â”€â”€ Reduced motion CSS (WCAG 2.3.3) - shared across all STEM Lab tools â”€â”€
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -40,7 +40,7 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
-  // ── DNA Lab interface layer: path-first navigation + focused workbench ──
+  // â”€â”€ DNA Lab interface layer: path-first navigation + focused workbench â”€â”€
   (function() {
     if (document.getElementById('allo-dna-interface-css')) return;
     var st = document.createElement('style');
@@ -110,7 +110,7 @@ window.StemLab = window.StemLab || {
       '.dna-achievements summary{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;color:#526174;font-size:10px;font-weight:850;list-style:none}',
       '.dna-achievements summary::-webkit-details-marker{display:none}',
       '.dna-achievements summary:after{content:"+";margin-left:auto;color:#7c3aed;font-size:16px}',
-      '.dna-achievements[open] summary:after{content:"−"}',
+      '.dna-achievements[open] summary:after{content:"âˆ’"}',
       '.dna-achievement-progress{color:#6d28d9;font-weight:950}',
       '.dna-badge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;padding:10px 12px 12px;border-top:1px solid #eef2f1}',
       '.dna-badge{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:8px;min-height:47px;padding:6px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc}',
@@ -123,14 +123,14 @@ window.StemLab = window.StemLab || {
       '[data-dna-sequence]{display:flex!important;flex-wrap:nowrap!important;gap:5px!important;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin}',
       '[data-dna-sequence] button{width:44px!important;height:44px!important;min-width:44px;border:2px solid rgba(255,255,255,.78);border-radius:9px!important;box-shadow:0 3px 8px rgba(15,23,42,.12)}',
       '.dna-preset-picker{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.dna-preset-picker label{color:#64748b;font-size:9px;font-weight:850}.dna-preset-picker select{min-height:36px;max-width:220px;padding:0 30px 0 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:10px;font-weight:750}',
-      '.dna-reference-library{border:1px solid var(--dna-line);border-radius:12px;background:#fff}.dna-reference-library>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;color:#334155;font-size:11px;font-weight:900}.dna-reference-library>summary::-webkit-details-marker{display:none}.dna-reference-library>summary:after{content:"+";margin-left:auto;color:#059669;font-size:17px}.dna-reference-library[open]>summary:after{content:"−"}',
+      '.dna-reference-library{border:1px solid var(--dna-line);border-radius:12px;background:#fff}.dna-reference-library>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;color:#334155;font-size:11px;font-weight:900}.dna-reference-library>summary::-webkit-details-marker{display:none}.dna-reference-library>summary:after{content:"+";margin-left:auto;color:#059669;font-size:17px}.dna-reference-library[open]>summary:after{content:"âˆ’"}',
       '@media (max-width:980px){.dna-mission-body{grid-template-columns:1fr}.dna-route-panel{border-left:0;border-top:1px solid var(--dna-line)}.dna-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dna-tool-rail{position:relative;top:auto}}',
       '@media (max-width:640px){[data-dna-tool]{margin-left:-4px;margin-right:-4px}.dna-command-header{grid-template-columns:auto minmax(0,1fr);padding:13px;gap:10px}.dna-command-actions{grid-column:1/-1;justify-content:flex-start;padding-top:2px}.dna-command-title{font-size:17px}.dna-command-subtitle{font-size:10px}.dna-brand-mark{width:38px;height:38px}.dna-live-status{display:none}.dna-grade-level{display:none}.dna-mission-summary{padding:10px 12px}.dna-mission-desc{display:none}.dna-active-tool{padding:6px 8px}.dna-stat-grid{gap:6px;padding:12px}.dna-stat{padding:9px}.dna-route-grid{grid-template-columns:1fr 1fr}.dna-tool-tab{flex-basis:82px;min-height:48px!important}[data-dna-workspace]{padding:9px}.dna-snapshot-button{margin-left:auto}.dna-preset-picker{width:100%}.dna-preset-picker select{max-width:none;flex:1}}',
       '@media (max-width:430px){.dna-route-grid{grid-template-columns:1fr}.dna-xp-chip{margin-left:auto}.dna-snapshot-button{width:100%}.dna-stat-value{font-size:15px}}'
     ].join('');
     document.head.appendChild(st);
   })();
-  // ── Accessibility live region (WCAG 4.1.3) ──
+  // â”€â”€ Accessibility live region (WCAG 4.1.3) â”€â”€
   (function() {
     if (document.getElementById('allo-live-dna')) return;
     var lr = document.createElement('div');
@@ -144,7 +144,7 @@ window.StemLab = window.StemLab || {
   })();
 
 
-  // ── Audio (auto-injected) ──
+  // â”€â”€ Audio (auto-injected) â”€â”€
   var _dnaAC = null;
   function getDnaAC() { if (!_dnaAC) { try { _dnaAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_dnaAC && _dnaAC.state === "suspended") { try { _dnaAC.resume(); } catch(e) {} } return _dnaAC; }
   function dnaTone(f,d,tp,v) { var ac = getDnaAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
@@ -152,9 +152,9 @@ window.StemLab = window.StemLab || {
   function sfxDnaSuccess() { dnaTone(523, 0.08, "sine", 0.07); setTimeout(function() { dnaTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { dnaTone(784, 0.1, "sine", 0.08); }, 140); }
 
 
-  // ═══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // IIFE-Scope Static Data (shared across renders)
-  // ═══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   var SUBTOOLS = [
     { id: 'build', icon: '\uD83E\uDDEC', label: 'Build' },
@@ -221,9 +221,9 @@ window.StemLab = window.StemLab || {
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
-  var DNA_TO_RNA = { 'A':'U', 'T':'A', 'G':'C', 'C':'G' }; // template-strand → RNA (still used by the CRISPR gRNA readout)
-  // Coding-strand → mRNA (T→U only). The displayed sequence is the CODING strand (every preset starts with
-  // ATG), so transcription must NOT complement it — complementing destroyed the start codon, which left
+  var DNA_TO_RNA = { 'A':'U', 'T':'A', 'G':'C', 'C':'G' }; // template-strand â†’ RNA (still used by the CRISPR gRNA readout)
+  // Coding-strand â†’ mRNA (Tâ†’U only). The displayed sequence is the CODING strand (every preset starts with
+  // ATG), so transcription must NOT complement it â€” complementing destroyed the start codon, which left
   // translation/protein/MW empty for every preset.
   var CODING_TO_RNA = { 'A':'A', 'T':'U', 'G':'G', 'C':'C' };
   var BASE_COLORS = { 'A':'#ef4444', 'T':'#3b82f6', 'G':'#22c55e', 'C':'#f59e0b', 'U':'#a855f7' };
@@ -250,7 +250,7 @@ window.StemLab = window.StemLab || {
     { name: 'Hereditary BRCA1/2 Cancer Risk', gene: 'BRCA1, BRCA2', mutation: 'Multiple pathogenic variant types', type: 'Loss of function', effect: 'Impaired DNA repair increases risk for several cancers; a pathogenic variant raises risk but does not guarantee cancer.' }
   ];
 
-  // ── Badges ──
+  // â”€â”€ Badges â”€â”€
   var DNA_BADGES = [
     { id: 'firstStrand', icon: '\uD83E\uDDEC', label: 'First Strand', desc: 'Load a DNA preset' },
     { id: 'copyMachine', icon: '\uD83D\uDD00', label: 'Copy Machine', desc: 'Complete replication' },
@@ -268,7 +268,7 @@ window.StemLab = window.StemLab || {
     { id: 'dnaMaster', icon: '\uD83D\uDC51', label: 'DNA Master', desc: 'Earn 100 XP' }
   ];
 
-  // ── Forensics Cases ──
+  // â”€â”€ Forensics Cases â”€â”€
   var FORENSIC_CASES = [
     { name: 'Crime Scene Match', desc: 'A robbery occurred. Match the evidence DNA to a suspect using restriction fragment analysis.',
       enzyme: 'EcoRI', samples: [
@@ -300,7 +300,7 @@ window.StemLab = window.StemLab || {
       ], match: 1 }
   ];
 
-  // ── Challenge Questions (3 tiers × 8) ──
+  // â”€â”€ Challenge Questions (3 tiers Ã— 8) â”€â”€
   var CHALLENGE_QS = [
     { q: 'How many strands does DNA have?', a: '2', h: 'Think "double" helix', tier: 0 },
     { q: 'What base pairs with Adenine in DNA?', a: 'Thymine', h: 'A-T, G-C', tier: 0 },
@@ -328,7 +328,7 @@ window.StemLab = window.StemLab || {
     { q: 'A single-base deletion causes what mutation type?', a: 'Frameshift', h: 'Shifts the entire reading frame', tier: 2 }
   ];
 
-  // ── Battle Questions (10) ──
+  // â”€â”€ Battle Questions (10) â”€â”€
   var BATTLE_QS = [
     { q: 'What enzyme reads DNA and builds mRNA?', a: 'RNA Polymerase', h: 'RNA Pol' },
     { q: 'Name one of the three STOP codons.', a: 'UAA,UAG,UGA', h: 'U-A-A, U-A-G, or U-G-A' },
@@ -342,7 +342,7 @@ window.StemLab = window.StemLab || {
     { q: 'What is an anticodon?', a: 'tRNA sequence that pairs with mRNA codon', h: 'Found on transfer RNA' }
   ];
 
-  // ── Learn Topics (4 topics × 4 grade bands) ──
+  // â”€â”€ Learn Topics (4 topics Ã— 4 grade bands) â”€â”€
   var LEARN_TOPICS = [
     { title: 'DNA Structure', icon: '\uD83E\uDDEC', tryIt: 'build', content: {
       'K-2': 'DNA is like a recipe book found in most of your cells. It helps cells grow and work. DNA looks like a twisted ladder called a double helix. Its four base letters are A, T, G, and C; A pairs with T, and G pairs with C.',
@@ -370,16 +370,16 @@ window.StemLab = window.StemLab || {
     }}
   ];
 
-  // ── Module-level cleanup tracker ──
+  // â”€â”€ Module-level cleanup tracker â”€â”€
   if (!window._dnaCleanup) window._dnaCleanup = {};
 
-  // ═══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // Tool Registration
-  // ═══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // B-DNA IN 3D — progressive enhancement over the 2D ladder
-  // ───────────────────────────────────────────────────────────────────────
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // B-DNA IN 3D â€” progressive enhancement over the 2D ladder
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // The 2D view draws two sine waves with rungs between them. That reads as
   // a twisted ladder, but it cannot show the two things this tool's own
   // 9-12 text asserts:
@@ -392,7 +392,7 @@ window.StemLab = window.StemLab || {
   //     a fact they must take on faith.
   //   - The GROOVES come from the two backbones NOT being on opposite sides
   //     of the axis. A symmetric sine wave puts them exactly antiphase, which
-  //     makes both gaps identical — the very asymmetry that names them major
+  //     makes both gaps identical â€” the very asymmetry that names them major
   //     and minor is what the 2D geometry averages away.
   //
   // Geometry here is B-DNA as the tool's own text describes it: ~10.5 base
@@ -487,7 +487,7 @@ window.StemLab = window.StemLab || {
       // Base pairs. Drawn as two half-rods meeting near the axis so each base
       // keeps its own colour and A-T versus G-C stays readable, and so the
       // pair visibly spans the helix off-centre rather than through the middle
-      // — which is the reason the grooves are unequal.
+      // â€” which is the reason the grooves are unequal.
       clearRungs();
       for (var j = 0; j < seqLen; j++) {
         var p0 = strandPoint(j, 0), p1 = strandPoint(j, 1);
@@ -757,7 +757,7 @@ window.StemLab = window.StemLab || {
       var upd = function(key, val) { setLabToolData(function(prev) { var nd = Object.assign({}, prev.dnaLab || {}); nd[key] = val; return Object.assign({}, prev, { dnaLab: nd }); }); };
       var updMulti = function(obj) { setLabToolData(function(prev) { return Object.assign({}, prev, { dnaLab: Object.assign({}, prev.dnaLab || {}, obj) }); }); };
 
-      // ═══ GRADE BAND HELPER ═══
+      // â•â•â• GRADE BAND HELPER â•â•â•
       var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
       function getGradeBand() {
         var ov = d.dnaGradeOverride;
@@ -772,11 +772,15 @@ window.StemLab = window.StemLab || {
       var gradeBand = getGradeBand();
       function gradeText(k2, g35, g68, g912) { return gradeBand === 'K-2' ? k2 : gradeBand === '3-5' ? g35 : gradeBand === '6-8' ? g68 : g912; }
 
-      // ═══ STATE EXTRACTION ═══
+      // â•â•â• STATE EXTRACTION â•â•â•
       var tab = d.tab || 'build';
       var dnaSeq = d.dnaSequence || 'ATGCGTACCTGAAACTGA';
+      var dnaExperimentHistory = Array.isArray(d.dnaExperimentHistory) ? d.dnaExperimentHistory : [];
+      var dnaCompareLeftId = typeof d.dnaCompareLeft === 'string' ? d.dnaCompareLeft : '';
+      var dnaCompareRightId = typeof d.dnaCompareRight === 'string' ? d.dnaCompareRight : '';
+      var dnaCompareReflection = d.dnaCompareReflection || '';
 
-      // ── 3D helix (opt-in; the 2D ladder stays the floor) ──
+      // â”€â”€ 3D helix (opt-in; the 2D ladder stays the floor) â”€â”€
       var dnaShowGl = d.showHelix3d === true;
       var dnaRot = d.helix3dRot || { rotX: -6, rotY: -28, scale: 1 };
       var dnaGlAlt = 'Right-handed B-form DNA double helix, '
@@ -801,8 +805,10 @@ window.StemLab = window.StemLab || {
       var guidedSelectedAnswer = d.guidedSelectedAnswer || '';
       var guidedCurrentResult = guidedAnswers[guidedStep.id] || null;
       var guidedFeedback = d.guidedFeedback || '';
+      var dnaReportOpen = !!d.dnaReportOpen;
+      var dnaReportNote = d.dnaReportNote || '';
 
-      // ═══ DERIVED VALUES ═══
+      // â•â•â• DERIVED VALUES â•â•â•
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
       var dnaStrandView = d.dnaStrandView === 'template' ? 'template' : 'coding';
       var strandSequence = dnaStrandView === 'template' ? complementStrand : dnaSeq;
@@ -862,6 +868,27 @@ window.StemLab = window.StemLab || {
         return '';
       }
 
+      function guidedMisconceptionHint(step, answer) {
+        if (!step || !answer) return step ? step.hint : '';
+        var hints = {
+          pairing: {
+            'G': 'G pairs with C; compare the two DNA pairs: A-T and G-C.',
+            'C': 'C pairs with G; adenine pairs with thymine in DNA.'
+          },
+          orientation: {
+            "5' -> 3'": "5' -> 3' is the direction RNA polymerase builds RNA; it reads the template 3' -> 5'."
+          },
+          centralDogma: {
+            'DNA -> protein -> RNA': 'RNA is made before protein, so protein is not the middle step in the usual flow.',
+            'RNA -> DNA -> protein': 'The usual flow starts with DNA; RNA -> DNA is reverse transcription, not the standard sequence here.'
+          },
+          mutation: {
+            'No possible change': 'Adding one base changes the downstream triplet grouping, so it usually shifts the reading frame.',
+            'Only a change in DNA color': 'Color is only a display cue; the inserted base changes the sequence and can change downstream codons.'
+          }
+        };
+        return (hints[step.id] && hints[step.id][answer]) || step.hint;
+      }
       function proteinSignature(protein) {
         return (protein || []).map(function(p) { return p.aa; }).join('-');
       }
@@ -911,9 +938,10 @@ window.StemLab = window.StemLab || {
         var correct = answer === current.answer;
         var nextAnswers = Object.assign({}, guidedAnswers);
         nextAnswers[current.id] = { attempts: (previous.attempts || 0) + 1, answer: answer, correct: correct };
-        updMulti({ guidedAnswers: nextAnswers, guidedSelectedAnswer: answer, guidedFeedback: correct ? '\u2705 Correct. ' + current.explanation : '\u21BB Not yet. ' + current.hint });
+        var feedbackHint = guidedMisconceptionHint(current, answer);
+        updMulti({ guidedAnswers: nextAnswers, guidedSelectedAnswer: answer, guidedFeedback: correct ? '\u2705 Correct. ' + current.explanation : '\u21BB Not yet. ' + feedbackHint });
         if (correct && !previous.correct) awardStemXP('dnaLab', 5, 'Guided DNA checkpoint');
-        announceToSR(correct ? 'Correct. ' + current.explanation : 'Try again. ' + current.hint);
+        announceToSR(correct ? 'Correct. ' + current.explanation : 'Try again. ' + feedbackHint);
         if (correct && typeof stemCelebrate === 'function') stemCelebrate();
       }
 
@@ -977,10 +1005,22 @@ window.StemLab = window.StemLab || {
           'Exploration',
           'Current activity: ' + activeSubtool.label,
           'Tabs visited: ' + visitedCount + '/' + SUBTOOLS.length,
+          'Saved experiments: ' + dnaExperimentHistory.length,
+          'Experiment comparison: ' + (compareLeft && compareRight ? compareLeft.label + ' vs ' + compareRight.label : 'Not selected'),
+          'Comparison reflection',
+          dnaCompareReflection || 'Not entered',
+          'Reflection / claim',
+          dnaReportNote || 'Not entered',
+          '',
           'XP: ' + getStemXP('dnaLab')
         ].join('\n');
       }
 
+      function toggleDnaReport() {
+        var next = !dnaReportOpen;
+        upd('dnaReportOpen', next);
+        announceToSR(next ? 'Lab report preview opened.' : 'Lab report preview closed.');
+      }
       function exportDnaEvidence() {
         var evidence = buildDnaEvidenceSummary();
         setToolSnapshots(function(prev) { return prev.concat([{ id: 'dna-evidence-' + Date.now(), tool: 'dnaLab', label: 'DNA evidence: ' + dnaSeq.substring(0, 12) + '...', data: Object.assign({}, d, { evidenceSummary: evidence }), timestamp: Date.now() }]); });
@@ -1008,7 +1048,7 @@ window.StemLab = window.StemLab || {
         return seq;
       }
 
-      // ═══ BADGE HELPER ═══
+      // â•â•â• BADGE HELPER â•â•â•
       function checkBadge(id) {
         var badges = d.badges || {};
         if (badges[id]) return;
@@ -1024,9 +1064,9 @@ window.StemLab = window.StemLab || {
       // XP badge check
       if (getStemXP('dnaLab') >= 100) checkBadge('dnaMaster');
 
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // CANVAS: DNA Helix (callback ref)
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       var _dnaCanvasRef = function(cv) {
         if (dnaCleanup.dnaAnim) { dnaCleanup.dnaAnim(); dnaCleanup.dnaAnim = null; }
         if (!cv) return;
@@ -1036,7 +1076,7 @@ window.StemLab = window.StemLab || {
         // React re-fires this inline ref on every re-render; setting cv.width (even to
         // the same value) reallocates + CLEARS the canvas and resets the ctx transform.
         // Only resize when the size actually changed, and persist the animation tick on
-        // the node — otherwise the helix wobble snaps back to 0 on every render (stutter).
+        // the node â€” otherwise the helix wobble snaps back to 0 on every render (stutter).
         var canvasSize = sizeDnaCanvas(cv, ctx2d);
         var w = canvasSize.width, hh = canvasSize.height;
         var _tick = cv._dnaTick || 0;
@@ -1194,7 +1234,7 @@ window.StemLab = window.StemLab || {
             draw3DSphere(ctx2d, x, topY, baseW * 0.38, base);
 
             if (tab === 'transcribe' && i < currentAnimStep) {
-              var rnaBase = CODING_TO_RNA[base] || base; // match the mRNA string (coding strand, T→U) — not the complement
+              var rnaBase = CODING_TO_RNA[base] || base; // match the mRNA string (coding strand, Tâ†’U) â€” not the complement
               draw3DSphere(ctx2d, x, bottomY + 15, baseW * 0.38, rnaBase);
             } else {
               draw3DSphere(ctx2d, x, bottomY, baseW * 0.38, comp);
@@ -1253,7 +1293,7 @@ window.StemLab = window.StemLab || {
         dnaCleanup.dnaAnim = loop.stop;
       };
 
-      // ═══ Transcription timer ═══
+      // â•â•â• Transcription timer â•â•â•
       React.useEffect(function() {
         if (tab !== 'transcribe' || !animPlaying) return;
         if (animStep >= dnaSeq.length) {
@@ -1273,9 +1313,9 @@ window.StemLab = window.StemLab || {
         return function() { clearTimeout(timer); };
       }, [tab, animPlaying, animStep, dnaSeq.length, fullMRNA, speed]);
 
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // CANVAS: Replication Fork (callback ref)
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       var replStep = d.replStep || 0;
       var replPlaying = !!d.replPlaying;
 
@@ -1368,9 +1408,9 @@ window.StemLab = window.StemLab || {
         dnaCleanup.replAnim = loop.stop;
       };
 
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // CANVAS: Translation (callback ref)
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       var _translationCanvasRef = function(cv) {
         if (dnaCleanup.transAnim) { dnaCleanup.transAnim(); dnaCleanup.transAnim = null; }
         if (!cv) return;
@@ -1447,7 +1487,7 @@ window.StemLab = window.StemLab || {
           var midY = hh / 2 + 10;
           var yChannel = midY + 15;
 
-          // ─── 1. DRAW RIBOSOME ENVELOPE ───
+          // â”€â”€â”€ 1. DRAW RIBOSOME ENVELOPE â”€â”€â”€
           ctx2d.shadowColor = 'rgba(16, 185, 129, 0.2)';
           ctx2d.shadowBlur = 10;
 
@@ -1492,7 +1532,7 @@ window.StemLab = window.StemLab || {
           ctx2d.fillText('P', xP, yChannel - 55);
           ctx2d.fillText('A', xA, yChannel - 55);
 
-          // ─── 2. DRAW mRNA STRAND ───
+          // â”€â”€â”€ 2. DRAW mRNA STRAND â”€â”€â”€
           // Draw mRNA backbone
           ctx2d.strokeStyle = '#a855f7';
           ctx2d.lineWidth = 3;
@@ -1543,7 +1583,7 @@ window.StemLab = window.StemLab || {
             ctx2d.fillText(codon, cx, yChannel + 32);
           });
 
-          // ─── 3. DRAW ANIMATING tRNAs & POLYPEPTIDE CHAIN ───
+          // â”€â”€â”€ 3. DRAW ANIMATING tRNAs & POLYPEPTIDE CHAIN â”€â”€â”€
           // tRNA 1: Exiting E-site
           if (transStep > 0) {
             var t1Codon = codons[transStep - 1];
@@ -1584,7 +1624,7 @@ window.StemLab = window.StemLab || {
             drawTRNA(ctx2d, t3X, t3Y, t3Anti, t3AA, true, 1);
           }
 
-          // ─── 4. DRAW GROWING POLYPEPTIDE CHAIN ───
+          // â”€â”€â”€ 4. DRAW GROWING POLYPEPTIDE CHAIN â”€â”€â”€
           if (builtProtein.length > 0) {
             var anchorX, anchorY;
             if (pct < 0.4) {
@@ -1652,7 +1692,7 @@ window.StemLab = window.StemLab || {
         dnaCleanup.transAnim = loop.stop;
       };
 
-      // ═══ Replication timer ═══
+      // â•â•â• Replication timer â•â•â•
       React.useEffect(function() {
       if (tab === 'replicate' && replPlaying) {
         if (replStep >= dnaSeq.length) {
@@ -1676,7 +1716,7 @@ window.StemLab = window.StemLab || {
       }
       }, [tab, replPlaying, replStep, dnaSeq, speed]);
 
-      // ═══ Translation state + timer ═══
+      // â•â•â• Translation state + timer â•â•â•
       var transStep = d.transStep || 0;
       var transPlaying = !!d.transPlaying;
       var builtProtein = d.builtProtein || [];
@@ -1709,7 +1749,7 @@ window.StemLab = window.StemLab || {
       }
       }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed]);
 
-      // ═══ CHALLENGE HELPERS ═══
+      // â•â•â• CHALLENGE HELPERS â•â•â•
       var challengeTier = d.challengeTier || 0;
 
       function generateChallenge() {
@@ -1737,7 +1777,7 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      // ═══ MUTATION HELPERS ═══
+      // â•â•â• MUTATION HELPERS â•â•â•
       function applyMutation(type) {
         var bases = 'ATGC'; var seq = dnaSeq.split('');
         var pos = Math.floor(Math.random() * (seq.length - 6)) + 3;
@@ -1765,7 +1805,53 @@ window.StemLab = window.StemLab || {
         if (newLog.length >= 5) checkBadge('mutantMaker');
       }
 
-      // ═══ CRISPR HELPERS ═══
+      // â•â•â• CRISPR HELPERS â•â•â•
+      function undoLatestMutation() {
+        var log = (d.mutationLog || []).slice();
+        var latest = log.length ? log[log.length - 1] : null;
+        if (!latest) return;
+        var seq = dnaSeq.split('');
+        var pos = Math.max(0, parseInt(latest.pos, 10) || 0);
+        if (latest.type === 'Substitution') {
+          if (seq[pos] !== latest.to) { addToast('This mutation no longer matches the current sequence.', 'info'); return; }
+          seq[pos] = latest.from;
+        } else if (latest.type === 'Insertion') {
+          if (seq[pos] !== latest.to) { addToast('This insertion no longer matches the current sequence.', 'info'); return; }
+          seq.splice(pos, 1);
+        } else if (latest.type === 'Deletion') {
+          seq.splice(pos, 0, latest.from || 'N');
+        } else {
+          return;
+        }
+        updMulti({ dnaSequence: seq.join(''), mRNA: '', protein: [], animStep: 0, mutationLog: log.slice(0, -1) });
+        addToast('↺ Undid the latest ' + latest.type.toLowerCase() + '.', 'success');
+        announceToSR('Undid the latest ' + latest.type.toLowerCase() + ' mutation.');
+      }
+
+      function saveDnaExperiment() {
+        var nextNumber = dnaExperimentHistory.length + 1;
+        var entry = {
+          id: 'dna-experiment-' + Date.now(),
+          label: 'Experiment ' + nextNumber,
+          dnaSequence: dnaSeq,
+          mutationLog: (d.mutationLog || []).slice(),
+          timestamp: Date.now()
+        };
+        var nextHistory = dnaExperimentHistory.concat([entry]).slice(-8);
+        var nextState = { dnaExperimentHistory: nextHistory };
+        if (!dnaCompareLeftId) nextState.dnaCompareLeft = entry.id;
+        else if (!dnaCompareRightId && dnaCompareLeftId !== entry.id) nextState.dnaCompareRight = entry.id;
+        updMulti(nextState);
+        addToast('💾 Saved ' + entry.label + '.', 'success');
+        announceToSR(entry.label + ' saved.');
+      }
+
+      function restoreDnaExperiment(entry) {
+        if (!entry || !entry.dnaSequence) return;
+        updMulti({ dnaSequence: entry.dnaSequence, mRNA: '', protein: [], animStep: 0, mutationLog: Array.isArray(entry.mutationLog) ? entry.mutationLog.slice() : [] });
+        addToast('↺ Restored ' + (entry.label || 'saved experiment') + '.', 'success');
+        announceToSR((entry.label || 'Saved experiment') + ' restored.');
+      }
       var crisprPhase = d.crisprPhase || 'design';
       var crisprScanPos = d.crisprScanPos || 0;
       var crisprGuideLen = 6; // Schematic window; real SpCas9 spacers are typically 20 nt.
@@ -1850,9 +1936,9 @@ window.StemLab = window.StemLab || {
       }
       }, [tab, crisprPhase, crisprScanPos, selectedPAMSite, speed]);
 
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // CANVAS: CRISPR (callback ref)
-      // ═══════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       var _crisprCanvasRef = function(cv) {
         if (dnaCleanup.crisprAnim) { dnaCleanup.crisprAnim(); dnaCleanup.crisprAnim = null; }
         if (!cv) return;
@@ -2023,7 +2109,7 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // ─── GUIDE RNA DOCKING ───
+          // â”€â”€â”€ GUIDE RNA DOCKING â”€â”€â”€
           if (selectedPAMSite && (crisprPhase === 'scanning' || crisprPhase === 'cut')) {
             // Draw Guide RNA backbone
             ctx2d.strokeStyle = 'rgba(59, 130, 246, 0.8)';
@@ -2060,7 +2146,7 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // ─── CAS9 ENVELOPE MOLECULAR GRAPHICS ───
+          // â”€â”€â”€ CAS9 ENVELOPE MOLECULAR GRAPHICS â”€â”€â”€
           var cas9Pos = crisprPhase === 'scanning' ? crisprScanPos : (selectedPAMSite ? selectedPAMSite.cutSite : 0);
           if (crisprPhase === 'scanning' || crisprPhase === 'cut') {
             var cas9X = startX + cas9Pos * baseW + baseW / 2;
@@ -2085,7 +2171,7 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // ─── CLEAVAGE PARTICLE SPRAY ───
+          // â”€â”€â”€ CLEAVAGE PARTICLE SPRAY â”€â”€â”€
           if (crisprPhase === 'cut' && elapsed < 1200) {
             var xL = startX + (cutSite - 1) * baseW + baseW / 2 - displacement;
             var xR = startX + cutSite * baseW + baseW / 2 + displacement;
@@ -2105,7 +2191,7 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // ─── HDR DONOR DNA TEMPLATE FLOATING ───
+          // â”€â”€â”€ HDR DONOR DNA TEMPLATE FLOATING â”€â”€â”€
           if (crisprPhase === 'done' && crisprRepairType === 'hdr') {
             var repairPct = Math.min(1, elapsed / 1200);
             if (repairPct < 0.5) {
@@ -2152,7 +2238,7 @@ window.StemLab = window.StemLab || {
         dnaCleanup.crisprAnim = loop.stop;
       };
 
-      // ═══ FORENSICS HELPERS ═══
+      // â•â•â• FORENSICS HELPERS â•â•â•
       var forensicCase = d.forensicCase || 0;
       var forensicGelRun = !!d.forensicGelRun;
       var forensicGuess = d.forensicGuess;
@@ -2315,7 +2401,7 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      // ═══ BATTLE HELPERS ═══
+      // â•â•â• BATTLE HELPERS â•â•â•
       var battleRound = d.battleRound || 0;
       var battlePlayerHP = d.battlePlayerHP != null ? d.battlePlayerHP : 100;
       var battleEnemyHP = d.battleEnemyHP != null ? d.battleEnemyHP : 100;
@@ -2393,9 +2479,9 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      // ═══════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // RENDER
-      // ═══════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var badges = d.badges || {};
       var earnedBadgeCount = 0;
@@ -2408,6 +2494,73 @@ window.StemLab = window.StemLab || {
       var gcPercent = Math.round((gcCount / Math.max(1, dnaSeq.length)) * 100);
       var latestMutation = (d.mutationLog || []).length ? (d.mutationLog || [])[(d.mutationLog || []).length - 1] : null;
       var latestMutationEffect = classifyMutationEffect(latestMutation);
+      function buildMutationComparison(mutation) {
+        if (!mutation) return null;
+        var afterSeq = dnaSeq || '';
+        var pos = Math.max(0, parseInt(mutation.pos, 10) || 0);
+        var beforeSeq = afterSeq;
+        if (mutation.type === 'Insertion') {
+          beforeSeq = afterSeq.substring(0, pos) + afterSeq.substring(pos + 1);
+        } else if (mutation.type === 'Deletion') {
+          beforeSeq = afterSeq.substring(0, pos) + (mutation.from || '') + afterSeq.substring(pos);
+        } else if (mutation.type === 'Substitution') {
+          beforeSeq = afterSeq.substring(0, pos) + (mutation.from || '') + afterSeq.substring(pos + 1);
+        }
+        var beforeMRNA = beforeSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
+        var afterMRNA = afterSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
+        var beforeProtein = translateMRNA(beforeMRNA);
+        var afterProtein = translateMRNA(afterMRNA);
+        var codons = [];
+        var codonCount = Math.max(Math.ceil(beforeMRNA.length / 3), Math.ceil(afterMRNA.length / 3));
+        for (var ci = 0; ci < codonCount; ci++) {
+          var beforeCodon = beforeMRNA.substring(ci * 3, ci * 3 + 3);
+          var afterCodon = afterMRNA.substring(ci * 3, ci * 3 + 3);
+          var beforeAA = beforeCodon.length === 3 ? (CODON_TABLE[beforeCodon] || 'Unknown') : '\u2014';
+          var afterAA = afterCodon.length === 3 ? (CODON_TABLE[afterCodon] || 'Unknown') : '\u2014';
+          codons.push({ index: ci + 1, beforeCodon: beforeCodon || '\u2014', afterCodon: afterCodon || '\u2014', beforeAA: beforeAA, afterAA: afterAA, changed: beforeCodon !== afterCodon || beforeAA !== afterAA });
+        }
+        return { beforeSeq: beforeSeq, afterSeq: afterSeq, beforeMRNA: beforeMRNA, afterMRNA: afterMRNA, beforeProtein: beforeProtein, afterProtein: afterProtein, codons: codons, pos: pos };
+      }
+      var mutationComparison = buildMutationComparison(latestMutation);
+      function analyzeExperimentSequence(sequence) {
+        var clean = typeof sequence === 'string' ? sequence : '';
+        var mrna = clean.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
+        var protein = translateMRNA(mrna);
+        var codons = [];
+        var codonCount = Math.ceil(mrna.length / 3);
+        for (var ci = 0; ci < codonCount; ci++) {
+          var codon = mrna.substring(ci * 3, ci * 3 + 3);
+          codons.push({ codon: codon || '\u2014', aa: codon.length === 3 ? (CODON_TABLE[codon] || 'Unknown') : '\u2014' });
+        }
+        return { sequence: clean, mrna: mrna, protein: protein, codons: codons };
+      }
+
+      function buildExperimentComparison(left, right) {
+        var leftAnalysis = analyzeExperimentSequence(left.dnaSequence);
+        var rightAnalysis = analyzeExperimentSequence(right.dnaSequence);
+        var rows = [];
+        var codonCount = Math.max(leftAnalysis.codons.length, rightAnalysis.codons.length);
+        for (var ci = 0; ci < codonCount; ci++) {
+          var leftCodon = leftAnalysis.codons[ci] || { codon: '\u2014', aa: '\u2014' };
+          var rightCodon = rightAnalysis.codons[ci] || { codon: '\u2014', aa: '\u2014' };
+          rows.push({ index: ci + 1, leftCodon: leftCodon.codon, rightCodon: rightCodon.codon, leftAA: leftCodon.aa, rightAA: rightCodon.aa, changed: leftCodon.codon !== rightCodon.codon || leftCodon.aa !== rightCodon.aa });
+        }
+        var maxBases = Math.max(leftAnalysis.sequence.length, rightAnalysis.sequence.length);
+        var baseDifferences = 0;
+        var firstDifference = null;
+        for (var bi = 0; bi < maxBases; bi++) {
+          if ((leftAnalysis.sequence[bi] || '') !== (rightAnalysis.sequence[bi] || '')) {
+            baseDifferences++;
+            if (firstDifference === null) firstDifference = bi + 1;
+          }
+        }
+        return { left: leftAnalysis, right: rightAnalysis, codons: rows, baseDifferences: baseDifferences, firstDifference: firstDifference };
+      }
+
+      var compareLeft = dnaExperimentHistory.filter(function(entry) { return entry.id === dnaCompareLeftId; })[0] || null;
+      var compareRight = dnaExperimentHistory.filter(function(entry) { return entry.id === dnaCompareRightId; })[0] || null;
+      var experimentComparison = compareLeft && compareRight && compareLeft.id !== compareRight.id ? buildExperimentComparison(compareLeft, compareRight) : null;
+      var dnaGuidedKnowledgeCount = DNA_GUIDED_STEPS.filter(function(step) { return !!(guidedAnswers[step.id] && guidedAnswers[step.id].correct); }).length;
 
       function renderInheritanceHandoff() {
         var mutationSummary = latestMutation
@@ -2585,9 +2738,10 @@ window.StemLab = window.StemLab || {
         );
       }
 
+      var learnTopicState = typeof d.learnOpenTopic === 'string' ? d.learnOpenTopic : null;
       var __dnaMainView = h("div", { className: "space-y-3 max-w-7xl mx-auto animate-in fade-in duration-200", "data-dna-tool": true, "data-dna-active-tab": tab },
 
-        // ═══ COMMAND HEADER ═══
+        // â•â•â• COMMAND HEADER â•â•â•
         h("div", { className: "dna-command-header" },
           h("button", { onClick: function() { setStemLabTool(null); announceToSR('Returned to tool grid'); }, className: "dna-back-button", 'aria-label': t('stem.dna.back_to_tools', 'Back to tools') },
             h(ArrowLeft, { size: 18 })),
@@ -2601,13 +2755,14 @@ window.StemLab = window.StemLab || {
           ),
           h("div", { className: "dna-command-actions" },
               h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[11px] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
+              h("button", { onClick: toggleDnaReport, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[11px] font-black text-amber-900 hover:bg-amber-100", 'aria-label': 'Open student DNA lab report' }, 'Lab report'),
           h("span", { className: "dna-live-status" }, h("i", { "aria-hidden": "true" }), "Sequence ready"),
             h("span", { className: "dna-xp-chip", 'aria-label': getStemXP('dnaLab') + ' of 100 experience points' }, "\u2B50 " + getStemXP('dnaLab') + "/100"),
             h("button", { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dna-' + Date.now(), tool: 'dnaLab', label: 'DNA: ' + dnaSeq.substring(0, 12) + '...', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "dna-snapshot-button", 'aria-label': t('stem.dna.snapshot', 'Save DNA snapshot') }, t('stem.dna.snapshot', "\uD83D\uDCF8 Snapshot"))
           )
         ),
 
-        // ═══ READING LEVEL ═══
+        // â•â•â• READING LEVEL â•â•â•
         h("div", { className: "dna-grade-bar", role: "group", 'aria-label': "Explanation reading level" },
           h("span", { className: "dna-grade-label" }, t('stem.dna.grade', "Reading level")),
           GRADE_BANDS.map(function(gb) {
@@ -2624,7 +2779,7 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══ TOOL RAIL ═══
+        // â•â•â• TOOL RAIL â•â•â•
         h("div", { className: "dna-tool-rail", role: "tablist", "aria-label": "DNA Lab tools", "data-dna-tabstrip": true },
           SUBTOOLS.map(function(tb, tabIndex) {
             var isActive = tab === tb.id;
@@ -2646,7 +2801,7 @@ window.StemLab = window.StemLab || {
           })
         ),
 
-        // ═══ LEARNING PATHS + LIVE READOUT ═══
+        // â•â•â• LEARNING PATHS + LIVE READOUT â•â•â•
         h("details", { "data-dna-mission": true, className: "dna-mission-shell" },
           h("summary", { className: "dna-mission-summary" },
             h("span", { className: "dna-mission-index", "aria-hidden": "true" }, "0" + (dnaWorkflowRoutes.indexOf(activeRoute) + 1)),
@@ -2659,13 +2814,13 @@ window.StemLab = window.StemLab || {
               h("span", { "aria-hidden": "true" }, activeSubtool.icon),
               h("span", null, activeSubtool.label)
             ),
-            h("span", { className: "dna-mission-chevron", "aria-hidden": "true" }, "⌄")
+            h("span", { className: "dna-mission-chevron", "aria-hidden": "true" }, "âŒ„")
           ),
           h("div", { className: "dna-mission-body" },
             h("div", { className: "dna-stat-grid", "aria-label": "Live sequence summary" },
               [
                 { label: 'Sequence', value: dnaSeq.length + ' bp', sub: gcPercent + '% GC' },
-                { label: 'mRNA', value: fullMRNA.length + ' nt', sub: fullMRNA.substring(0, 9) + (fullMRNA.length > 9 ? '…' : '') },
+                { label: 'mRNA', value: fullMRNA.length + ' nt', sub: fullMRNA.substring(0, 9) + (fullMRNA.length > 9 ? 'â€¦' : '') },
                 { label: 'Protein', value: fullProtein.length + ' aa', sub: fullProtein.length ? fullProtein[0].aa + ' start' : 'No start codon' },
                 { label: 'Explored', value: visitedCount + '/' + SUBTOOLS.length, sub: earnedBadgeCount + ' badges earned' }
               ].map(function(stat) {
@@ -2687,7 +2842,7 @@ window.StemLab = window.StemLab || {
                   var routeNames = route.tools.map(function(toolId) {
                     var routeTool = SUBTOOLS.filter(function(item) { return item.id === toolId; })[0];
                     return routeTool ? routeTool.label : null;
-                  }).filter(Boolean).join(' · ');
+                  }).filter(Boolean).join(' Â· ');
                   return h("button", {
                     key: route.id,
                     onClick: function() { switchDnaTab(route.tools[0]); },
@@ -2708,7 +2863,7 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══ ACHIEVEMENTS ═══
+        // â•â•â• ACHIEVEMENTS â•â•â•
         h("section", { className: "rounded-xl border-2 border-cyan-200 bg-gradient-to-r from-cyan-50 to-sky-50 p-4 shadow-sm", "data-dna-start-here": true, role: "region", "aria-labelledby": "dna-start-here-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
@@ -2776,9 +2931,43 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        h("details", { className: "dna-achievements" },
+        dnaReportOpen && h("section", { className: "rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm", "data-dna-lab-report": true, role: "region", "aria-labelledby": "dna-lab-report-title" },
+          h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+            h("div", null,
+              h("h4", { id: "dna-lab-report-title", className: "text-sm font-black text-amber-950" }, "Student DNA lab report"),
+              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Use the evidence below to make a claim, describe what changed, and explain how the sequence supports your conclusion." )
+            ),
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800" }, gradeBand + " reading level")
+          ),
+          h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
+            h("div", { className: "rounded-lg border border-amber-200 bg-white p-3" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Evidence to cite"),
+              h("p", { className: "mt-2 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Coding DNA: "), dnaSeq),
+              h("p", { className: "mt-1 break-all text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "mRNA: "), fullMRNA || "Not transcribed yet"),
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(fullProtein) || "Not translated yet")
+            ),
+            h("div", { className: "rounded-lg border border-orange-200 bg-white p-3" },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-orange-700" }, "Interpretation"),
+              h("p", { className: "mt-2 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Mutation: "), latestMutation ? latestMutation.type + " at base " + (latestMutation.pos + 1) : "None recorded"),
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Predicted effect: "), latestMutationEffect || "No variant effect calculated yet"),
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Guided knowledge checks: "), dnaGuidedKnowledgeCount + "/" + DNA_GUIDED_STEPS.length),
+              h("p", { className: "mt-1 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Lab stations visited: "), visitedCount + "/" + SUBTOOLS.length)
+            )
+          ),
+          h("label", { className: "mt-3 block rounded-lg border border-amber-200 bg-white p-3" },
+            h("span", { className: "text-[10px] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
+            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-amber-500", 'aria-label': "DNA lab report reflection or claim", placeholder: "What changed? What stayed the same? What evidence supports your claim?" })
+          ),
+          h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
+            h("p", { className: "m-0 max-w-xl text-[10px] leading-relaxed text-slate-600" }, "Tip: connect the sequence change to the codon and protein evidence, then note any uncertainty."),
+            h("div", { className: "flex flex-wrap gap-2" },
+              h("button", { type: "button", onClick: exportDnaEvidence, className: "rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-800" }, "Download report"),
+              h("button", { type: "button", onClick: toggleDnaReport, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50" }, "Hide report")
+            )
+          )
+        ),        h("details", { className: "dna-achievements" },
           h("summary", null,
-            h("span", { "aria-hidden": "true" }, "🏆"),
+            h("span", { "aria-hidden": "true" }, "ðŸ†"),
             h("span", null, "Achievements"),
             h("span", { className: "dna-achievement-progress" }, earnedBadgeCount + "/" + DNA_BADGES.length)
           ),
@@ -2788,14 +2977,14 @@ window.StemLab = window.StemLab || {
               return h("div", { key: b.id, className: "dna-badge", "data-earned": earned ? "true" : "false" },
                 h("span", { className: "dna-badge-icon", "aria-hidden": "true" }, b.icon),
                 h("span", null,
-                  h("strong", null, b.label + (earned ? " · Earned" : " · Locked")),
+                  h("strong", null, b.label + (earned ? " Â· Earned" : " Â· Locked")),
                   h("small", null, b.desc)
                 )
               );
             })
           )
         ),
-        // ═══ TOPIC HERO BAND (per-tab) ═══
+        // â•â•â• TOPIC HERO BAND (per-tab) â•â•â•
         (function() {
           var TAB_META = {
             build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: t('stem.dna.build_a_dna_strand', 'Build a DNA strand'),          hint: t('stem.dna.pick_a_sequence_the_complementary_stra', 'Pick a sequence - the complementary strand fills in via base pairing (A-T, G-C). Real DNA is built like this constantly.') },
@@ -2829,9 +3018,9 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // BUILD TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'build' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-build", "data-dna-workspace": "build" },
           dnaInstrumentFrame(
             "Live Double Helix",
@@ -2855,7 +3044,7 @@ window.StemLab = window.StemLab || {
                     : 'Switched to the 3D double helix. Turn it to see the major and minor grooves.');
                 },
                 className: "px-3 py-1 text-[11px] font-bold rounded-lg border transition-colors " + (dnaShowGl ? "border-violet-400 bg-violet-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
-              }, dnaShowGl ? '\u{1F9EC} 3D helix' : '≡ Flat ladder'),
+              }, dnaShowGl ? '\u{1F9EC} 3D helix' : 'â‰¡ Flat ladder'),
               dnaShowGl && [['Turn left', { rotY: dnaRot.rotY - 25 }], ['Turn right', { rotY: dnaRot.rotY + 25 }],
                             ['Tilt up', { rotX: Math.max(-88, dnaRot.rotX - 12) }], ['Tilt down', { rotX: Math.min(88, dnaRot.rotX + 12) }]]
                 .map(function(b, i) {
@@ -2863,14 +3052,14 @@ window.StemLab = window.StemLab || {
                     key: i, type: 'button', 'aria-label': b[0],
                     onClick: function() { upd('helix3dRot', Object.assign({}, dnaRot, b[1])); },
                     className: "w-7 h-7 text-[11px] rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-                  }, ['◀', '▶', '▲', '▼'][i]);
+                  }, ['â—€', 'â–¶', 'â–²', 'â–¼'][i]);
                 })
             ),
-            // 2D ladder — always rendered, and the guaranteed floor. Hidden
+            // 2D ladder â€” always rendered, and the guaranteed floor. Hidden
             // (not unmounted) while GL is live so its rAF loop, hover/mutate
             // hit-testing and aria-label survive a round trip through 3D.
             // Both views share one 240px box: the 2D ladder in normal flow, the
-            // GL canvas absolutely over it. visibility, never display:none —
+            // GL canvas absolutely over it. visibility, never display:none â€”
             // a display:none canvas reports clientWidth 0, and the 2D draw
             // sizes its bases from (width - 80) / seqLen, which goes negative
             // and throws out of createRadialGradient, taking the whole tool
@@ -2886,10 +3075,10 @@ window.StemLab = window.StemLab || {
                 'data-a11y-static': 'true',
                 style: { position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: dnaGlLive ? 'visible' : 'hidden' }
               }),
-              dnaShowGl && !dnaGlLive && h("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-bold text-violet-300" }, 'Loading 3D helix…')
+              dnaShowGl && !dnaGlLive && h("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-bold text-violet-300" }, 'Loading 3D helixâ€¦')
             ),
             h("p", { id: 'dna-gl-description', className: 'sr-only' },
-              'A right-handed B-form double helix, about 10.5 base pairs per turn. Use the turn buttons to rotate it. Because the two backbones sit about 140 degrees apart rather than opposite each other, the gap between them is wide on one side (the major groove) and narrow on the other (the minor groove) — an asymmetry the flat ladder view cannot show.')
+              'A right-handed B-form double helix, about 10.5 base pairs per turn. Use the turn buttons to rotate it. Because the two backbones sit about 140 degrees apart rather than opposite each other, the gap between them is wide on one side (the major groove) and narrow on the other (the minor groove) â€” an asymmetry the flat ladder view cannot show.')
             ),
             t('stem.dna.dna_helix_visualization', 'DNA helix visualization')
           ),
@@ -2915,7 +3104,7 @@ window.StemLab = window.StemLab || {
                     checkBadge('firstStrand');
                     event.target.value = '';
                   } },
-                    h("option", { value: "" }, "Load an example…"),
+                    h("option", { value: "" }, "Load an exampleâ€¦"),
                     PRESETS.map(function(p, index) { return h("option", { key: p.name, value: index }, p.name); })
                   )
                 )
@@ -2943,9 +3132,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // REPLICATION TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'replicate' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-replicate", "data-dna-workspace": "replicate" },
           dnaInstrumentFrame(
             "Replication Fork",
@@ -2995,9 +3184,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // TRANSCRIPTION TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'transcribe' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-transcribe", "data-dna-workspace": "transcribe" },
           h("div", { className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-[11px] text-slate-700" },
             h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 font-mono" },
@@ -3033,9 +3222,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // TRANSLATION TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'translate' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-translate", "data-dna-workspace": "translate" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, t('stem.dna.ribosome_translation', "\uD83D\uDD2C Ribosome Translation")),
@@ -3071,9 +3260,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // MUTATE TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'mutate' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-mutate", "data-dna-workspace": "mutate" },
           h("div", { className: "bg-gradient-to-br from-rose-50 to-orange-50 rounded-xl border-2 border-rose-200 p-4 space-y-3" },
             h("div", { className: "flex items-center gap-2 mb-1" },
@@ -3093,7 +3282,9 @@ window.StemLab = window.StemLab || {
               h("button", { onClick: function() { applyMutation('substitution'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.substitution', "\uD83D\uDD04 Substitution")),
               h("button", { onClick: function() { applyMutation('insertion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.insertion', "\u2795 Insertion")),
               h("button", { onClick: function() { applyMutation('deletion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
-              h("button", { onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset"))
+              h("button", { onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset")),
+              h("button", { onClick: undoLatestMutation, disabled: !(d.mutationLog && d.mutationLog.length), className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 transition-all active:scale-[0.97]" }, "Undo last"),
+              h("button", { onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all active:scale-[0.97]" }, "Save experiment")
             ),
             h("div", { className: "bg-white rounded-lg p-3 border" },
               h("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Current Sequence (" + dnaSeq.length + " bp):"),
@@ -3104,18 +3295,87 @@ window.StemLab = window.StemLab || {
             ),
             latestMutation && h("div", { className: "grid gap-3 rounded-lg border border-rose-200 bg-white p-3 sm:grid-cols-[auto_1fr]", role: "status" },
               h("div", { className: "flex items-center gap-2 font-mono text-xs font-black" },
-                h("span", { className: "rounded-md bg-slate-100 px-2 py-1 text-slate-700" }, latestMutation.type === 'Insertion' ? '—' : latestMutation.from),
-                h("span", { className: "text-rose-500", "aria-hidden": "true" }, "→"),
-                h("span", { className: "rounded-md bg-rose-100 px-2 py-1 text-rose-800" }, latestMutation.type === 'Deletion' ? '—' : latestMutation.to)
+                h("span", { className: "rounded-md bg-slate-100 px-2 py-1 text-slate-700" }, latestMutation.type === 'Insertion' ? 'â€”' : latestMutation.from),
+                h("span", { className: "text-rose-500", "aria-hidden": "true" }, "â†’"),
+                h("span", { className: "rounded-md bg-rose-100 px-2 py-1 text-rose-800" }, latestMutation.type === 'Deletion' ? 'â€”' : latestMutation.to)
               ),
               h("div", null,
-                h("p", { className: "mb-1 text-[10px] font-black uppercase tracking-wide text-rose-700" }, "Latest change · base " + (latestMutation.pos + 1)),
+                h("p", { className: "mb-1 text-[10px] font-black uppercase tracking-wide text-rose-700" }, "Latest change Â· base " + (latestMutation.pos + 1)),
                 h("p", { className: "mb-1 text-[11px] font-black text-rose-800" }, "Predicted coding effect: " + latestMutationEffect),
                 h("p", { className: "m-0 text-[11px] leading-relaxed text-slate-600" },
                   latestMutation.type === 'Substitution'
                     ? 'One nucleotide changed. Compare the protein readout to determine whether the codon is silent, missense, or nonsense.'
                     : 'A single-base ' + latestMutation.type.toLowerCase() + ' shifts the downstream reading frame and can change every codon that follows.'
                 )
+              )
+            ),
+            latestMutation && mutationComparison && h("section", { className: "mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3", "data-dna-mutation-comparison": true, role: "region", "aria-labelledby": "dna-mutation-comparison-title" },
+              h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                h("div", null,
+                  h("h5", { id: "dna-mutation-comparison-title", className: "text-sm font-black text-amber-950" }, "Before / after mutation"),
+                  h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Compare the sequence change, codons, amino acids, and predicted coding effect in one view." )
+                ),
+                h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-amber-800" }, latestMutationEffect)
+              ),
+              h("div", { className: "mt-3 grid gap-3 lg:grid-cols-2" },
+                [
+                  { label: "Before mutation", sequence: mutationComparison.beforeSeq, mrna: mutationComparison.beforeMRNA, side: "before", protein: mutationComparison.beforeProtein, tone: "border-slate-200 bg-white" },
+                  { label: "After mutation", sequence: mutationComparison.afterSeq, mrna: mutationComparison.afterMRNA, side: "after", protein: mutationComparison.afterProtein, tone: "border-amber-200 bg-white" }
+                ].map(function(view) {
+                  return h("div", { key: view.side, className: "rounded-lg border p-3 " + view.tone },
+                    h("div", { className: "flex items-center justify-between gap-2" },
+                      h("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, view.label),
+                      h("span", { className: "text-[10px] font-bold text-slate-500" }, view.sequence.length + " bp")
+                    ),
+                    h("div", { className: "mt-2 flex flex-wrap gap-1 font-mono text-xs", "aria-label": view.label + " DNA sequence" },
+                      view.sequence.split('').map(function(base, idx) {
+                        var isChanged = latestMutation.type === 'Substitution'
+                          ? idx === mutationComparison.pos
+                          : latestMutation.type === 'Deletion'
+                            ? view.side === 'before' && idx === mutationComparison.pos
+                            : view.side === 'after' && idx === mutationComparison.pos;
+                        return h("span", { key: idx, className: "grid h-6 w-6 place-items-center rounded font-black " + (isChanged ? "bg-amber-500 text-white ring-2 ring-amber-800" : "bg-slate-100 text-slate-700"), title: isChanged ? "Changed position" : undefined }, base);
+                      })
+                    ),
+                    h("div", { className: "mt-2 break-all font-mono text-[10px] text-slate-600" }, "mRNA: " + view.mrna),
+                    h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[11px] text-slate-700" },
+                      h("span", { className: "font-black" }, "Protein: "),
+                      proteinSignature(view.protein) || "No amino acids",
+                      view.protein.stop ? " · STOP " + view.protein.stop.codon : ""
+                    )
+                  );
+                })
+              ),
+              h("div", { className: "mt-3 overflow-x-auto rounded-lg border border-amber-200 bg-white" },
+                h("table", { className: "w-full min-w-[560px] text-left text-[10px]", "aria-label": "Before and after codon comparison" },
+                  h("thead", null,
+                    h("tr", { className: "border-b border-amber-100 bg-amber-50" },
+                      h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Codon"),
+                      h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "mRNA before"),
+                      h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "mRNA after"),
+                      h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Amino acid before"),
+                      h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Amino acid after")
+                    )
+                  ),
+                  h("tbody", null,
+                    mutationComparison.codons.map(function(row) {
+                      return h("tr", { key: row.index, className: row.changed ? "border-b border-amber-100 bg-amber-50/60" : "border-b border-slate-100" },
+                        h("th", { scope: "row", className: "px-2 py-2 font-black text-slate-600" }, String(row.index)),
+                        h("td", { className: "px-2 py-2 font-mono text-slate-700" }, row.beforeCodon),
+                        h("td", { className: "px-2 py-2 font-mono font-black text-amber-800" }, row.afterCodon),
+                        h("td", { className: "px-2 py-2 text-slate-700" }, row.beforeAA),
+                        h("td", { className: "px-2 py-2 font-black text-amber-800" }, row.afterAA)
+                      );
+                    })
+                  )
+                )
+              ),
+              h("p", { className: "mt-2 mb-0 text-[11px] leading-relaxed text-slate-700", role: "status" },
+                latestMutation.type === 'Insertion'
+                  ? "Inserted base: " + latestMutation.to + " at position " + (latestMutation.pos + 1) + "."
+                  : latestMutation.type === 'Deletion'
+                    ? "Deleted base: " + latestMutation.from + " at position " + (latestMutation.pos + 1) + "."
+                    : "Changed base: " + latestMutation.from + " → " + latestMutation.to + " at position " + (latestMutation.pos + 1) + "."
               )
             ),
             (d.mutationLog && d.mutationLog.length > 0) && h("div", { className: "mt-2" },
@@ -3130,6 +3390,97 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
+          ),
+          dnaExperimentHistory.length > 0 && h("section", { className: "rounded-xl border border-amber-200 bg-amber-50/60 p-3", "data-dna-experiment-history": true, role: "region", "aria-labelledby": "dna-experiment-history-title" },
+            h("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+              h("h5", { id: "dna-experiment-history-title", className: "text-[11px] font-black uppercase tracking-wide text-amber-900" }, "Experiment history"),
+              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-bold text-amber-800" }, dnaExperimentHistory.length + "/8 saved")
+            ),
+            h("div", { className: "mt-2 space-y-1" },
+              dnaExperimentHistory.slice().reverse().map(function(entry) {
+                return h("div", { key: entry.id, className: "flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-100 bg-white px-2 py-2" },
+                  h("div", null,
+                    h("div", { className: "text-[11px] font-black text-slate-700" }, entry.label || "Saved experiment"),
+                    h("div", { className: "text-[10px] text-slate-500" }, (entry.dnaSequence || '').length + " bp · " + ((entry.mutationLog || []).length) + " mutation" + ((entry.mutationLog || []).length === 1 ? '' : 's'))
+                  ),
+                  h("button", { type: "button", onClick: function() { restoreDnaExperiment(entry); }, className: "rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-900 hover:bg-amber-100" }, "Restore")
+                );
+              })
+            )
+          ),
+          dnaExperimentHistory.length > 1 && h("section", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3", "data-dna-experiment-compare": true, role: "region", "aria-labelledby": "dna-experiment-compare-title" },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+              h("div", null,
+                h("h5", { id: "dna-experiment-compare-title", className: "text-[11px] font-black uppercase tracking-wide text-indigo-900" }, "Compare saved experiments"),
+                h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Choose two checkpoints to compare their DNA, codons, amino acids, and protein evidence.")
+              ),
+              h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-bold text-indigo-800" }, "A ↔ B")
+            ),
+            h("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
+              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
+                "Experiment A",
+                h("select", { value: dnaCompareLeftId, onChange: function(e) { upd('dnaCompareLeft', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose first saved experiment" },
+                  h("option", { value: "" }, "Choose experiment A"),
+                  dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
+                )
+              ),
+              h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
+                "Experiment B",
+                h("select", { value: dnaCompareRightId, onChange: function(e) { upd('dnaCompareRight', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose second saved experiment" },
+                  h("option", { value: "" }, "Choose experiment B"),
+                  dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
+                )
+              )
+            ),
+            experimentComparison
+              ? h("div", { className: "mt-3 space-y-3", "data-dna-experiment-comparison-result": true },
+                  h("div", { className: "rounded-lg border border-indigo-200 bg-white p-3 text-[11px] text-slate-700" },
+                    h("span", { className: "font-black" }, "Difference summary: "),
+                    experimentComparison.baseDifferences + " aligned base difference" + (experimentComparison.baseDifferences === 1 ? "" : "s") + (experimentComparison.firstDifference ? " · first difference at base " + experimentComparison.firstDifference : "")
+                  ),
+                  h("div", { className: "grid gap-3 md:grid-cols-2" },
+                    [
+                      { label: compareLeft.label || "Experiment A", analysis: experimentComparison.left, tone: "border-slate-200" },
+                      { label: compareRight.label || "Experiment B", analysis: experimentComparison.right, tone: "border-indigo-200" }
+                    ].map(function(view) {
+                      return h("div", { key: view.label, className: "rounded-lg border bg-white p-3 " + view.tone },
+                        h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, view.label),
+                        h("div", { className: "mt-2 break-all font-mono text-[10px] text-slate-700" }, "DNA: " + view.analysis.sequence),
+                        h("div", { className: "mt-1 break-all font-mono text-[10px] text-slate-600" }, "mRNA: " + (view.analysis.mrna || "Not transcribed")),
+                        h("div", { className: "mt-2 rounded-md bg-slate-50 p-2 text-[11px] text-slate-700" }, h("span", { className: "font-black" }, "Protein: "), proteinSignature(view.analysis.protein) || "Not translated")
+                      );
+                    })
+                  ),
+                  h("div", { className: "overflow-x-auto rounded-lg border border-indigo-200 bg-white" },
+                    h("table", { className: "w-full min-w-[560px] text-left text-[10px]", "aria-label": "Saved experiment codon comparison" },
+                      h("thead", null,
+                        h("tr", { className: "border-b border-indigo-100 bg-indigo-50" },
+                          h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Codon"),
+                          h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, compareLeft.label || "Experiment A"),
+                          h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, compareRight.label || "Experiment B"),
+                          h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Amino acid A"),
+                          h("th", { scope: "col", className: "px-2 py-2 font-black text-slate-700" }, "Amino acid B")
+                        )
+                      ),
+                      h("tbody", null,
+                        experimentComparison.codons.map(function(row) {
+                          return h("tr", { key: row.index, className: row.changed ? "border-b border-indigo-100 bg-indigo-50/60" : "border-b border-slate-100" },
+                            h("th", { scope: "row", className: "px-2 py-2 font-black text-slate-600" }, String(row.index)),
+                            h("td", { className: "px-2 py-2 font-mono text-slate-700" }, row.leftCodon),
+                            h("td", { className: "px-2 py-2 font-mono font-black text-indigo-800" }, row.rightCodon),
+                            h("td", { className: "px-2 py-2 text-slate-700" }, row.leftAA),
+                            h("td", { className: "px-2 py-2 font-black text-indigo-800" }, row.rightAA)
+                          );
+                        })
+                      )
+                    )
+                  ),
+                  h("label", { className: "block rounded-lg border border-indigo-200 bg-white p-3" },
+                    h("span", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-800" }, "Comparison reflection"),
+                    h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': "Saved experiment comparison reflection", placeholder: "What changed between A and B, and which codon or protein evidence supports your conclusion?" })
+                  )
+                )
+              : h("p", { className: "mt-3 mb-0 rounded-lg border border-dashed border-indigo-200 bg-white/70 p-3 text-[11px] text-slate-600" }, "Choose two different saved experiments to open the side-by-side comparison.")
           ),
           callGemini && h("div", { className: "mt-2" },
             h("button", { onClick: function() {
@@ -3153,9 +3504,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // CRISPR TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'crispr' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-crispr", "data-dna-workspace": "crispr" },
           (function() {
             var currentStage = crisprPhase === 'design' ? 0 : crisprPhase === 'scanning' ? 1 : crisprPhase === 'cut' ? 2 : 3;
@@ -3308,9 +3659,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // PROTEIN TAB
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'protein' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-protein", "data-dna-workspace": "protein" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex items-center justify-between mb-3" },
@@ -3593,9 +3944,9 @@ window.StemLab = window.StemLab || {
           })()
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // FORENSICS TAB (NEW)
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'forensics' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-forensics", "data-dna-workspace": "forensics" },
           h("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-200 p-4 space-y-3" },
             h("div", { className: "flex items-center gap-2 mb-1" },
@@ -3702,9 +4053,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // CHALLENGE TAB (Enhanced)
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'challenge' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-challenge", "data-dna-workspace": "challenge" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-4" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
@@ -3778,9 +4129,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // BATTLE TAB (NEW - Gene Defense)
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'battle' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-battle", "data-dna-workspace": "battle" },
           h("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border-2 border-red-200 p-4 space-y-4" },
             h("div", { className: "flex items-center gap-2 mb-1" },
@@ -3855,9 +4206,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // LEARN TAB (NEW)
-        // ═══════════════════════════════════════════
+        // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         tab === 'learn' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-learn", "data-dna-workspace": "learn" },
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, t('stem.dna.learn_genetics_concepts', "\uD83D\uDCDA Learn - Genetics Concepts")),
@@ -3866,7 +4217,7 @@ window.StemLab = window.StemLab || {
           renderInheritanceHandoff(),
           LEARN_TOPICS.map(function(topic, topicIndex) {
             var content = topic.content[gradeBand] || topic.content['3-5'];
-            return h("details", { key: topic.title, className: "overflow-hidden rounded-xl border border-slate-400 bg-white", open: topicIndex === 0, "data-dna-learn-topic": topic.tryIt },
+            return h("details", { key: topic.title, className: "overflow-hidden rounded-xl border border-slate-400 bg-white", open: learnTopicState !== null ? learnTopicState === topic.tryIt : topicIndex === 0, onToggle: function(event) { if (event && event.target && event.target.open) upd("learnOpenTopic", topic.tryIt); else if (learnTopicState === topic.tryIt || (learnTopicState === null && topicIndex === 0)) upd("learnOpenTopic", ""); }, "data-dna-learn-topic": topic.tryIt },
               h("summary", { className: "flex cursor-pointer items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700" },
                 h("span", { className: "text-lg", "aria-hidden": "true" }, topic.icon),
                 h("span", { className: "flex-1" }, topic.title),
@@ -3887,9 +4238,9 @@ window.StemLab = window.StemLab || {
         h("div", { className: "sr-only", role: "status", 'aria-live': "polite" }, "DNA Lab: " + tab + " view")
       );
 
-      // ═══════════════════════════════════════════════════════════════════
-      // DNA EXPANSION SECTIONS — interactive genetics reference (2026-05-31)
-      // ═══════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // DNA EXPANSION SECTIONS â€” interactive genetics reference (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       var d2 = (labToolData && labToolData.dna) || {};
       var expSection = d2.expSection || null;
       function setExp(patch) {
@@ -3899,20 +4250,20 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // ── Reference data ──
+      // â”€â”€ Reference data â”€â”€
       var BASE_PAIRS = [
-        { base: 'Adenine (A)', cat: 'Purine (2-ring)', pairs: 'Thymine (T) in DNA · Uracil (U) in RNA', bonds: '2 hydrogen bonds', icon: 'A', color: '#ef4444', notes: 'One of the four DNA bases. Paired with T via 2 H-bonds — weaker than G-C.' },
-        { base: 'Thymine (T)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A)', bonds: '2 hydrogen bonds', icon: 'T', color: '#3b82f6', notes: 'DNA only — replaced by uracil in RNA. Methyl group at C5 distinguishes it from U.' },
+        { base: 'Adenine (A)', cat: 'Purine (2-ring)', pairs: 'Thymine (T) in DNA Â· Uracil (U) in RNA', bonds: '2 hydrogen bonds', icon: 'A', color: '#ef4444', notes: 'One of the four DNA bases. Paired with T via 2 H-bonds â€” weaker than G-C.' },
+        { base: 'Thymine (T)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A)', bonds: '2 hydrogen bonds', icon: 'T', color: '#3b82f6', notes: 'DNA only â€” replaced by uracil in RNA. Methyl group at C5 distinguishes it from U.' },
         { base: 'Guanine (G)', cat: 'Purine (2-ring)', pairs: 'Cytosine (C)', bonds: '3 hydrogen bonds', icon: 'G', color: '#22c55e', notes: 'Stronger pairing than A-T due to 3 H-bonds. G-C rich regions are more thermally stable.' },
-        { base: 'Cytosine (C)', cat: 'Pyrimidine (1-ring)', pairs: 'Guanine (G)', bonds: '3 hydrogen bonds', icon: 'C', color: '#f59e0b', notes: 'Pyrimidine. Subject to deamination → uracil (a major source of DNA damage).' },
+        { base: 'Cytosine (C)', cat: 'Pyrimidine (1-ring)', pairs: 'Guanine (G)', bonds: '3 hydrogen bonds', icon: 'C', color: '#f59e0b', notes: 'Pyrimidine. Subject to deamination â†’ uracil (a major source of DNA damage).' },
         { base: 'Uracil (U)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A) in RNA', bonds: '2 hydrogen bonds', icon: 'U', color: '#a855f7', notes: 'RNA-only. Cheaper for cell to make than T; T more stable for genetic-info storage.' }
       ];
 
       var GENETIC_CODE = [
         { codon: 'AUG', aa: 'Met', name: t('stem.dna.methionine', 'Methionine'), note: t('stem.dna.start_codon', 'START codon') },
-        { codon: 'UAA', aa: '—', name: 'STOP', note: 'ochre' },
-        { codon: 'UAG', aa: '—', name: 'STOP', note: 'amber' },
-        { codon: 'UGA', aa: '—', name: 'STOP', note: t('stem.dna.opal_sometimes_selenocysteine', 'opal (sometimes selenocysteine)') },
+        { codon: 'UAA', aa: 'â€”', name: 'STOP', note: 'ochre' },
+        { codon: 'UAG', aa: 'â€”', name: 'STOP', note: 'amber' },
+        { codon: 'UGA', aa: 'â€”', name: 'STOP', note: t('stem.dna.opal_sometimes_selenocysteine', 'opal (sometimes selenocysteine)') },
         { codon: 'UUU/UUC', aa: 'Phe', name: t('stem.dna.phenylalanine', 'Phenylalanine'), note: t('stem.dna.aromatic_hydrophobic', 'Aromatic, hydrophobic') },
         { codon: 'UUA/UUG/CUx', aa: 'Leu', name: t('stem.dna.leucine', 'Leucine'), note: t('stem.dna.6_codons_branched_hydrophobic', '6 codons. Branched, hydrophobic.') },
         { codon: 'AUU/AUC/AUA', aa: 'Ile', name: t('stem.dna.isoleucine', 'Isoleucine'), note: t('stem.dna.branched_hydrophobic', 'Branched, hydrophobic') },
@@ -3922,52 +4273,52 @@ window.StemLab = window.StemLab || {
         { codon: 'UAU/UAC', aa: 'Tyr', name: t('stem.dna.tyrosine', 'Tyrosine'), note: t('stem.dna.aromatic_polar', 'Aromatic, polar') },
         { codon: 'UGU/UGC', aa: 'Cys', name: t('stem.dna.cysteine', 'Cysteine'), note: t('stem.dna.forms_disulfide_bonds_s_s_critical_for', 'Forms disulfide bonds (S-S). Critical for protein folding.') },
         { codon: 'UGG', aa: 'Trp', name: t('stem.dna.tryptophan', 'Tryptophan'), note: t('stem.dna.aromatic_hydrophobic_largest_amino_aci', 'Aromatic, hydrophobic. Largest amino acid.') },
-        { codon: 'CCx', aa: 'Pro', name: t('stem.dna.proline', 'Proline'), note: t('stem.dna.rigid_ring_disrupts_helices', 'Rigid (ring). Disrupts α-helices.') },
+        { codon: 'CCx', aa: 'Pro', name: t('stem.dna.proline', 'Proline'), note: t('stem.dna.rigid_ring_disrupts_helices', 'Rigid (ring). Disrupts Î±-helices.') },
         { codon: 'CAU/CAC', aa: 'His', name: t('stem.dna.histidine', 'Histidine'), note: t('stem.dna.basic_side_chain_active_site_of_many_e', 'Basic side chain. Active site of many enzymes (pKa near 7).') },
         { codon: 'CAA/CAG', aa: 'Gln', name: t('stem.dna.glutamine', 'Glutamine'), note: t('stem.dna.polar_amide_often_surface_exposed', 'Polar amide. Often surface-exposed.') },
         { codon: 'AAU/AAC', aa: 'Asn', name: t('stem.dna.asparagine', 'Asparagine'), note: t('stem.dna.polar_amide_common_n_glycosylation_sit', 'Polar amide. Common N-glycosylation site.') },
         { codon: 'AAA/AAG', aa: 'Lys', name: t('stem.dna.lysine', 'Lysine'), note: t('stem.dna.basic_long_side_chain_often_acetylated', 'Basic, long side chain. Often acetylated/methylated.') },
-        { codon: 'CGx/AGA/AGG', aa: 'Arg', name: t('stem.dna.arginine', 'Arginine'), note: t('stem.dna.basic_guanidinium_group_6_codons_most_', 'Basic, guanidinium group. 6 codons — most degenerate.') },
+        { codon: 'CGx/AGA/AGG', aa: 'Arg', name: t('stem.dna.arginine', 'Arginine'), note: t('stem.dna.basic_guanidinium_group_6_codons_most_', 'Basic, guanidinium group. 6 codons â€” most degenerate.') },
         { codon: 'GAU/GAC', aa: 'Asp', name: t('stem.dna.aspartate', 'Aspartate'), note: t('stem.dna.acidic_often_active_site_nucleophile', 'Acidic. Often active-site nucleophile.') },
         { codon: 'GAA/GAG', aa: 'Glu', name: t('stem.dna.glutamate', 'Glutamate'), note: t('stem.dna.acidic_most_abundant_in_proteins', 'Acidic. Most abundant in proteins.') },
-        { codon: 'GGx', aa: 'Gly', name: t('stem.dna.glycine', 'Glycine'), note: t('stem.dna.smallest_no_side_chain_high_flexibilit', 'Smallest. No side chain — high flexibility.') },
+        { codon: 'GGx', aa: 'Gly', name: t('stem.dna.glycine', 'Glycine'), note: t('stem.dna.smallest_no_side_chain_high_flexibilit', 'Smallest. No side chain â€” high flexibility.') },
         { codon: 'GCx', aa: 'Ala', name: t('stem.dna.alanine', 'Alanine'), note: t('stem.dna.small_hydrophobic_generic_residue', 'Small, hydrophobic. "Generic" residue.') }
       ];
 
       var DNA_REPLICATION_STEPS = [
         { step: 1, name: t('stem.dna.initiation', 'Initiation'), enzymes: 'Helicase, SSBs, Topoisomerase', detail: t('stem.dna.helicase_unwinds_the_double_helix_at_o', 'Helicase unwinds the double helix at origins of replication. Single-strand binding proteins prevent re-annealing. Topoisomerase relieves the supercoiling tension ahead of the fork.') },
-        { step: 2, name: t('stem.dna.primer_synthesis', 'Primer synthesis'), enzymes: 'Primase (RNA polymerase)', detail: t('stem.dna.primase_lays_down_short_10_nt_rna_prim', 'Primase lays down short (~10 nt) RNA primers — DNA polymerase needs a 3\'-OH to extend from, so it cannot start a new strand alone.') },
-        { step: 3, name: t('stem.dna.leading_strand', 'Leading strand'), enzymes: 'DNA polymerase III (prokaryotes) / Pol δ (eukaryotes)', detail: t('stem.dna.synthesized_continuously_5_3_in_the_sa', 'Synthesized continuously 5\'→3\' in the same direction as the replication fork moves. One primer per origin.') },
-        { step: 4, name: t('stem.dna.lagging_strand_okazaki_fragments', 'Lagging strand (Okazaki fragments)'), enzymes: 'DNA polymerase III / Pol δ + Pol α', detail: t('stem.dna.synthesized_in_short_100_1000_nt_fragm', 'Synthesized in short 100–1000 nt fragments (Okazaki fragments) because polymerase can only extend 5\'→3\'. Each fragment needs its own primer.') },
-        { step: 5, name: t('stem.dna.primer_removal_gap_filling', 'Primer removal + gap filling'), enzymes: 'DNA polymerase I (prokaryotes) / RNase H + Pol δ (eukaryotes)', detail: t('stem.dna.rna_primers_are_excised_and_replaced_w', 'RNA primers are excised and replaced with DNA nucleotides.') },
+        { step: 2, name: t('stem.dna.primer_synthesis', 'Primer synthesis'), enzymes: 'Primase (RNA polymerase)', detail: t('stem.dna.primase_lays_down_short_10_nt_rna_prim', 'Primase lays down short (~10 nt) RNA primers â€” DNA polymerase needs a 3\'-OH to extend from, so it cannot start a new strand alone.') },
+        { step: 3, name: t('stem.dna.leading_strand', 'Leading strand'), enzymes: 'DNA polymerase III (prokaryotes) / Pol Î´ (eukaryotes)', detail: t('stem.dna.synthesized_continuously_5_3_in_the_sa', 'Synthesized continuously 5\'â†’3\' in the same direction as the replication fork moves. One primer per origin.') },
+        { step: 4, name: t('stem.dna.lagging_strand_okazaki_fragments', 'Lagging strand (Okazaki fragments)'), enzymes: 'DNA polymerase III / Pol Î´ + Pol Î±', detail: t('stem.dna.synthesized_in_short_100_1000_nt_fragm', 'Synthesized in short 100â€“1000 nt fragments (Okazaki fragments) because polymerase can only extend 5\'â†’3\'. Each fragment needs its own primer.') },
+        { step: 5, name: t('stem.dna.primer_removal_gap_filling', 'Primer removal + gap filling'), enzymes: 'DNA polymerase I (prokaryotes) / RNase H + Pol Î´ (eukaryotes)', detail: t('stem.dna.rna_primers_are_excised_and_replaced_w', 'RNA primers are excised and replaced with DNA nucleotides.') },
         { step: 6, name: t('stem.dna.ligation', 'Ligation'), enzymes: 'DNA ligase', detail: t('stem.dna.joins_okazaki_fragments_by_forming_the', 'Joins Okazaki fragments by forming the final phosphodiester bond.') },
-        { step: 7, name: t('stem.dna.proofreading', 'Proofreading'), enzymes: 'DNA Pol III 3\'→5\' exonuclease', detail: t('stem.dna.polymerase_checks_each_base_mismatches', 'Polymerase checks each base; mismatches removed and replaced. Lowers error rate from ~10⁻⁵ to ~10⁻⁷.') },
-        { step: 8, name: t('stem.dna.mismatch_repair', 'Mismatch repair'), enzymes: 'MutS, MutL, MutH (prokaryotes); MSH, MLH (eukaryotes)', detail: t('stem.dna.catches_the_few_mismatches_that_escape', 'Catches the few mismatches that escape proofreading. Final error rate: ~10⁻¹⁰ per base pair.') }
+        { step: 7, name: t('stem.dna.proofreading', 'Proofreading'), enzymes: 'DNA Pol III 3\'â†’5\' exonuclease', detail: t('stem.dna.polymerase_checks_each_base_mismatches', 'Polymerase checks each base; mismatches removed and replaced. Lowers error rate from ~10â»âµ to ~10â»â·.') },
+        { step: 8, name: t('stem.dna.mismatch_repair', 'Mismatch repair'), enzymes: 'MutS, MutL, MutH (prokaryotes); MSH, MLH (eukaryotes)', detail: t('stem.dna.catches_the_few_mismatches_that_escape', 'Catches the few mismatches that escape proofreading. Final error rate: ~10â»Â¹â° per base pair.') }
       ];
 
       var TRANSCRIPTION_STEPS = [
         { step: 1, name: t('stem.dna.initiation_2', 'Initiation'), detail: t('stem.dna.rna_polymerase_binds_the_promoter_e_g_', 'RNA polymerase binds the promoter (e.g., TATA box ~25 bp upstream of transcription start). Helps melt the DNA double helix.') },
-        { step: 2, name: t('stem.dna.elongation', 'Elongation'), detail: t('stem.dna.polymerase_reads_template_strand_3_5_s', 'Polymerase reads template strand 3\'→5\', synthesizing mRNA 5\'→3\'. Adds ~30 nucleotides per second in bacteria; ~10-50 in eukaryotes.') },
+        { step: 2, name: t('stem.dna.elongation', 'Elongation'), detail: t('stem.dna.polymerase_reads_template_strand_3_5_s', 'Polymerase reads template strand 3\'â†’5\', synthesizing mRNA 5\'â†’3\'. Adds ~30 nucleotides per second in bacteria; ~10-50 in eukaryotes.') },
         { step: 3, name: t('stem.dna.termination', 'Termination'), detail: t('stem.dna.bacteria_rho_dependent_or_intrinsic_te', 'Bacteria: rho-dependent or intrinsic termination (hairpin loop). Eukaryotes: cleavage and polyadenylation signals.') },
         { step: 4, name: t('stem.dna.5_capping_eukaryotes', '5\' capping (eukaryotes)'), detail: t('stem.dna.7_methylguanosine_cap_added_to_5_end_h', '7-methylguanosine cap added to 5\' end. Helps ribosome recognize mRNA + protects from degradation.') },
-        { step: 5, name: t('stem.dna.splicing_eukaryotes', 'Splicing (eukaryotes)'), detail: t('stem.dna.introns_removed_exons_joined_by_the_sp', 'Introns removed, exons joined by the spliceosome. Alternative splicing → multiple proteins from one gene.') },
+        { step: 5, name: t('stem.dna.splicing_eukaryotes', 'Splicing (eukaryotes)'), detail: t('stem.dna.introns_removed_exons_joined_by_the_sp', 'Introns removed, exons joined by the spliceosome. Alternative splicing â†’ multiple proteins from one gene.') },
         { step: 6, name: t('stem.dna.polyadenylation_eukaryotes', 'Polyadenylation (eukaryotes)'), detail: t('stem.dna.100_250_adenine_nucleotides_added_to_3', '~100-250 adenine nucleotides added to 3\' end. Stabilizes mRNA + signals export.') },
         { step: 7, name: t('stem.dna.nuclear_export_eukaryotes', 'Nuclear export (eukaryotes)'), detail: t('stem.dna.mature_mrna_exits_through_nuclear_pore', 'Mature mRNA exits through nuclear pore complexes to the cytoplasm.') }
       ];
 
       var TRANSLATION_STEPS = [
         { step: 1, name: t('stem.dna.initiation_3', 'Initiation'), detail: t('stem.dna.small_ribosomal_subunit_binds_mrna_ini', 'Small ribosomal subunit binds mRNA. Initiator tRNA (carrying Met) binds AUG start codon. Large subunit joins.') },
-        { step: 2, name: t('stem.dna.elongation_2', 'Elongation'), detail: t('stem.dna.each_cycle_aminoacyl_trna_enters_a_sit', 'Each cycle: aminoacyl-tRNA enters A site → peptide bond forms (catalyzed by 23S rRNA, a ribozyme) → ribosome translocates one codon → tRNA shifts A→P→E.') },
+        { step: 2, name: t('stem.dna.elongation_2', 'Elongation'), detail: t('stem.dna.each_cycle_aminoacyl_trna_enters_a_sit', 'Each cycle: aminoacyl-tRNA enters A site â†’ peptide bond forms (catalyzed by 23S rRNA, a ribozyme) â†’ ribosome translocates one codon â†’ tRNA shifts Aâ†’Pâ†’E.') },
         { step: 3, name: t('stem.dna.termination_2', 'Termination'), detail: t('stem.dna.stop_codon_uaa_uag_uga_recognized_by_r', 'Stop codon (UAA/UAG/UGA) recognized by release factors. Peptide released, ribosome dissociates.') },
         { step: 4, name: t('stem.dna.folding_modification', 'Folding + modification'), detail: t('stem.dna.chaperones_hsp70_groel_help_proteins_f', 'Chaperones (Hsp70, GroEL) help proteins fold correctly. Post-translational modifications: phosphorylation, glycosylation, cleavage, disulfide bonds.') }
       ];
 
       var MUTATION_TYPES = [
         { type: 'Substitution (point)', subtype: 'Silent', desc: t('stem.dna.codon_changes_but_amino_acid_is_the_sa', 'Codon changes but amino acid is the same (genetic code redundancy). No effect.') },
-        { type: 'Substitution (point)', subtype: 'Missense', desc: t('stem.dna.codon_changes_different_amino_acid_eff', 'Codon changes → different amino acid. Effect ranges from none (conservative substitution) to severe (sickle cell: Glu→Val).') },
-        { type: 'Substitution (point)', subtype: 'Nonsense', desc: t('stem.dna.codon_changes_stop_codon_truncated_pro', 'Codon changes → STOP codon. Truncated protein, usually non-functional.') },
-        { type: 'Insertion', subtype: 'Frameshift (if not ÷3)', desc: t('stem.dna.adds_nucleotide_s_if_not_a_multiple_of', 'Adds nucleotide(s). If not a multiple of 3, shifts reading frame → all downstream codons changed. Usually severe.') },
-        { type: 'Deletion', subtype: 'Frameshift (if not ÷3)', desc: t('stem.dna.removes_nucleotide_s_same_frameshift_c', 'Removes nucleotide(s). Same frameshift consequence as insertion.') },
+        { type: 'Substitution (point)', subtype: 'Missense', desc: t('stem.dna.codon_changes_different_amino_acid_eff', 'Codon changes â†’ different amino acid. Effect ranges from none (conservative substitution) to severe (sickle cell: Gluâ†’Val).') },
+        { type: 'Substitution (point)', subtype: 'Nonsense', desc: t('stem.dna.codon_changes_stop_codon_truncated_pro', 'Codon changes â†’ STOP codon. Truncated protein, usually non-functional.') },
+        { type: 'Insertion', subtype: 'Frameshift (if not Ã·3)', desc: t('stem.dna.adds_nucleotide_s_if_not_a_multiple_of', 'Adds nucleotide(s). If not a multiple of 3, shifts reading frame â†’ all downstream codons changed. Usually severe.') },
+        { type: 'Deletion', subtype: 'Frameshift (if not Ã·3)', desc: t('stem.dna.removes_nucleotide_s_same_frameshift_c', 'Removes nucleotide(s). Same frameshift consequence as insertion.') },
         { type: 'Duplication', subtype: 'Gene/chromosome', desc: t('stem.dna.extra_copies_of_a_gene_or_region_can_l', 'Extra copies of a gene or region. Can lead to dosage effects (Down syndrome = extra chrom 21).') },
         { type: 'Inversion', subtype: 'Chromosomal', desc: t('stem.dna.segment_of_chromosome_flipped_may_disr', 'Segment of chromosome flipped. May disrupt genes at breakpoints.') },
         { type: 'Translocation', subtype: 'Chromosomal', desc: t('stem.dna.segment_moves_to_a_different_chromosom', 'Segment moves to a different chromosome. Famous: Philadelphia chromosome (CML; BCR-ABL fusion).') },
@@ -3978,8 +4329,8 @@ window.StemLab = window.StemLab || {
         { name: t('stem.dna.human_autosomes', 'Human autosomes'), count: '22 pairs', detail: t('stem.dna.pairs_1_22_numbered_roughly_by_size_wi', 'Pairs 1-22 (numbered roughly by size, with exceptions: chr 21 is smaller than chr 22).') },
         { name: t('stem.dna.sex_chromosomes', 'Sex chromosomes'), count: '1 pair', detail: t('stem.dna.xx_female_or_xy_male_y_is_much_smaller', 'XX (female) or XY (male). Y is much smaller, carries few genes (~70) vs X (~800).') },
         { name: t('stem.dna.total_human_chromosomes', 'Total human chromosomes'), count: '46', detail: t('stem.dna.23_pairs_diploid_in_somatic_cells_game', '23 pairs (diploid in somatic cells). Gametes are haploid (23 chromosomes, no pairs).') },
-        { name: t('stem.dna.total_human_genes', 'Total human genes'), count: '~20,000', detail: t('stem.dna.surprisingly_few_many_genes_produce_mu', 'Surprisingly few — many genes produce multiple proteins via alternative splicing. Much of the genome is regulatory or non-coding.') },
-        { name: t('stem.dna.total_base_pairs_haploid', 'Total base pairs (haploid)'), count: '~3.2 billion', detail: t('stem.dna.if_stretched_out_1_8_m_of_dna_per_cell', 'If stretched out, ~1.8 m of DNA per cell. Packed into a nucleus ~10 µm across via histones + supercoiling.') },
+        { name: t('stem.dna.total_human_genes', 'Total human genes'), count: '~20,000', detail: t('stem.dna.surprisingly_few_many_genes_produce_mu', 'Surprisingly few â€” many genes produce multiple proteins via alternative splicing. Much of the genome is regulatory or non-coding.') },
+        { name: t('stem.dna.total_base_pairs_haploid', 'Total base pairs (haploid)'), count: '~3.2 billion', detail: t('stem.dna.if_stretched_out_1_8_m_of_dna_per_cell', 'If stretched out, ~1.8 m of DNA per cell. Packed into a nucleus ~10 Âµm across via histones + supercoiling.') },
         { name: t('stem.dna.mitochondrial_dna', 'Mitochondrial DNA'), count: '16,569 bp (circular)', detail: t('stem.dna.maternally_inherited_codes_for_37_gene', 'Maternally inherited. Codes for 37 genes (13 proteins, 22 tRNAs, 2 rRNAs). Multiple copies per mitochondrion.') }
       ];
 
@@ -3994,9 +4345,9 @@ window.StemLab = window.StemLab || {
       ];
 
       var BIOTECH_TOOLS = [
-        { name: t('stem.dna.pcr_polymerase_chain_reaction', 'PCR (Polymerase Chain Reaction)'), invented: '1983 (Kary Mullis)', desc: t('stem.dna.amplifies_a_specific_dna_segment_by_2_', 'Amplifies a specific DNA segment by 2ⁿ (n cycles). Uses heat-stable Taq polymerase. Foundation of modern molecular biology.') },
+        { name: t('stem.dna.pcr_polymerase_chain_reaction', 'PCR (Polymerase Chain Reaction)'), invented: '1983 (Kary Mullis)', desc: t('stem.dna.amplifies_a_specific_dna_segment_by_2_', 'Amplifies a specific DNA segment by 2â¿ (n cycles). Uses heat-stable Taq polymerase. Foundation of modern molecular biology.') },
         { name: t('stem.dna.sanger_sequencing', 'Sanger sequencing'), invented: '1977 (Frederick Sanger)', desc: t('stem.dna.reads_dna_sequence_using_chain_termina', 'Reads DNA sequence using chain-terminating dideoxynucleotides. Read length ~800-1000 bp. Now largely replaced by next-gen sequencing.') },
-        { name: t('stem.dna.next_gen_sequencing_ngs', 'Next-gen sequencing (NGS)'), invented: '2005+ (multiple)', desc: t('stem.dna.massively_parallel_sequences_millions_', 'Massively parallel — sequences millions of fragments simultaneously. Illumina dominates. ~100-300 bp reads, billions per run.') },
+        { name: t('stem.dna.next_gen_sequencing_ngs', 'Next-gen sequencing (NGS)'), invented: '2005+ (multiple)', desc: t('stem.dna.massively_parallel_sequences_millions_', 'Massively parallel â€” sequences millions of fragments simultaneously. Illumina dominates. ~100-300 bp reads, billions per run.') },
         { name: 'CRISPR-Cas9', invented: '2012 (Doudna, Charpentier, Zhang)', desc: t('stem.dna.programmable_gene_editing_guide_rna_ta', 'Programmable gene editing. Guide RNA targets Cas9 nuclease to specific DNA. Cuts allow gene knockout or HDR-mediated insertion. Nobel 2020.') },
         { name: t('stem.dna.crispr_base_editing', 'CRISPR base editing'), invented: '2016 (Liu lab)', desc: t('stem.dna.edits_a_single_base_without_double_str', 'Edits a single base without double-strand break. Lower off-target effects than Cas9.') },
         { name: t('stem.dna.restriction_enzymes', 'Restriction enzymes'), invented: '1970s (Smith, Nathans, Arber)', desc: t('stem.dna.bacterial_proteins_that_cut_dna_at_spe', 'Bacterial proteins that cut DNA at specific 4-8 bp sequences. Enabled recombinant DNA technology. Nobel 1978.') },
@@ -4009,16 +4360,16 @@ window.StemLab = window.StemLab || {
       ];
 
       var DISEASES_AND_GENES = [
-        { disease: 'Sickle cell anemia', gene: 'HBB (β-globin)', mutation: 'Glu6Val (GAG→GTG)', inheritance: 'Autosomal recessive', notes: 'Heterozygotes have malaria resistance — balanced polymorphism in malaria-endemic regions.' },
-        { disease: 'Cystic fibrosis', gene: 'CFTR (chloride channel)', mutation: 'ΔF508 (Phe508 deletion, most common); 1900+ known mutations', inheritance: 'Autosomal recessive', notes: 'Carrier frequency ~1/25 in Europeans. Thick mucus in lungs + pancreas + gut.' },
-        { disease: 'Huntington disease', gene: 'HTT', mutation: 'CAG repeat expansion (≥36 repeats)', inheritance: 'Autosomal dominant', notes: 'Anticipation: repeats expand across generations, earlier onset in offspring.' },
+        { disease: 'Sickle cell anemia', gene: 'HBB (Î²-globin)', mutation: 'Glu6Val (GAGâ†’GTG)', inheritance: 'Autosomal recessive', notes: 'Heterozygotes have malaria resistance â€” balanced polymorphism in malaria-endemic regions.' },
+        { disease: 'Cystic fibrosis', gene: 'CFTR (chloride channel)', mutation: 'Î”F508 (Phe508 deletion, most common); 1900+ known mutations', inheritance: 'Autosomal recessive', notes: 'Carrier frequency ~1/25 in Europeans. Thick mucus in lungs + pancreas + gut.' },
+        { disease: 'Huntington disease', gene: 'HTT', mutation: 'CAG repeat expansion (â‰¥36 repeats)', inheritance: 'Autosomal dominant', notes: 'Anticipation: repeats expand across generations, earlier onset in offspring.' },
         { disease: 'BRCA-related breast/ovarian cancer', gene: 'BRCA1, BRCA2', mutation: '1000+ pathogenic variants', inheritance: 'Autosomal dominant (high penetrance)', notes: '60-85% lifetime breast cancer risk if pathogenic variant present. PARP inhibitors therapeutic.' },
-        { disease: 'Phenylketonuria (PKU)', gene: 'PAH', mutation: '500+ variants', inheritance: 'Autosomal recessive', notes: 'Newborn screening (Guthrie test) — early dietary management (low Phe) prevents intellectual disability.' },
+        { disease: 'Phenylketonuria (PKU)', gene: 'PAH', mutation: '500+ variants', inheritance: 'Autosomal recessive', notes: 'Newborn screening (Guthrie test) â€” early dietary management (low Phe) prevents intellectual disability.' },
         { disease: 'Down syndrome', gene: 'Whole chr 21 (trisomy)', mutation: 'Three copies of chr 21', inheritance: 'Sporadic (non-disjunction)', notes: 'Most common autosomal aneuploidy. Risk increases with maternal age.' },
         { disease: 'Tay-Sachs disease', gene: 'HEXA', mutation: 'Various (1278insTATC common in Ashkenazi)', inheritance: 'Autosomal recessive', notes: 'Founder effect in Ashkenazi Jewish (~1/27 carriers) and French Canadian populations.' },
         { disease: 'Hemophilia A', gene: 'F8 (factor VIII)', mutation: 'Inversions, deletions, points', inheritance: 'X-linked recessive', notes: 'Mostly affects males. Famous in European royal families via Queen Victoria.' },
         { disease: 'Duchenne muscular dystrophy', gene: 'DMD (dystrophin)', mutation: 'Large deletions common', inheritance: 'X-linked recessive', notes: 'Largest gene known (~2.4 Mb, ~99% introns). Boys typically wheelchair-bound by adolescence.' },
-        { disease: 'Lactose intolerance (adults)', gene: 'LCT (lactase)', mutation: 'Regulatory SNP (rs4988235) keeps gene "on" in adults', inheritance: 'Variable by population', notes: 'Persistence (continuing to make lactase as adult) is the derived trait — appeared with dairy-farming cultures.' }
+        { disease: 'Lactose intolerance (adults)', gene: 'LCT (lactase)', mutation: 'Regulatory SNP (rs4988235) keeps gene "on" in adults', inheritance: 'Variable by population', notes: 'Persistence (continuing to make lactase as adult) is the derived trait â€” appeared with dairy-farming cultures.' }
       ];
 
       var EVOLUTION_CONCEPTS = [
@@ -4030,20 +4381,20 @@ window.StemLab = window.StemLab || {
         { concept: 'Convergent evolution', detail: t('stem.dna.unrelated_organisms_evolve_similar_tra', 'Unrelated organisms evolve similar traits independently (wings in birds + bats + insects; eyes in vertebrates + cephalopods).') },
         { concept: 'Common ancestry', detail: t('stem.dna.all_life_shares_a_common_ancestor_luca', 'All life shares a common ancestor (LUCA). Evidence: shared genetic code, ribosomes, ATP, glycolysis, basic biochemistry.') },
         { concept: 'Phylogenetic tree', detail: t('stem.dna.diagram_showing_evolutionary_relations', 'Diagram showing evolutionary relationships. Increasingly built from DNA sequence comparisons rather than morphology.') },
-        { concept: 'Hardy-Weinberg equilibrium', detail: t('stem.dna.allele_frequencies_stay_constant_under', 'Allele frequencies stay constant under no-evolution assumptions: large pop, random mating, no selection/mutation/migration/drift. p² + 2pq + q² = 1.') }
+        { concept: 'Hardy-Weinberg equilibrium', detail: t('stem.dna.allele_frequencies_stay_constant_under', 'Allele frequencies stay constant under no-evolution assumptions: large pop, random mating, no selection/mutation/migration/drift. pÂ² + 2pq + qÂ² = 1.') }
       ];
 
       var DNA_GLOSSARY = [
         { term: 'Gene', def: 'A segment of DNA that codes for a functional product (protein or RNA).' },
         { term: 'Allele', def: 'A variant of a gene. Different alleles can produce different versions of the same trait.' },
         { term: 'Genotype', def: 'The complete set of alleles an organism has.' },
-        { term: 'Phenotype', def: 'The observable traits — result of genotype + environment + chance.' },
+        { term: 'Phenotype', def: 'The observable traits â€” result of genotype + environment + chance.' },
         { term: 'Homozygous', def: 'Two identical alleles at a locus (AA or aa).' },
         { term: 'Heterozygous', def: 'Two different alleles at a locus (Aa).' },
         { term: 'Dominant allele', def: 'Expressed in heterozygote. Capital letter (A).' },
         { term: 'Recessive allele', def: 'Only expressed in homozygote (aa). Lowercase (a).' },
         { term: 'Codominance', def: 'Both alleles fully expressed in heterozygote (ABO blood: AB shows both A + B antigens).' },
-        { term: 'Incomplete dominance', def: 'Heterozygote has intermediate phenotype (red × white → pink flowers).' },
+        { term: 'Incomplete dominance', def: 'Heterozygote has intermediate phenotype (red Ã— white â†’ pink flowers).' },
         { term: 'Locus', def: 'Specific physical location of a gene on a chromosome.' },
         { term: 'Genome', def: 'Complete set of an organism\'s DNA. Human ~3.2 billion bp.' },
         { term: 'Chromosome', def: 'Single, long, condensed DNA molecule with associated proteins (mainly histones).' },
@@ -4053,7 +4404,7 @@ window.StemLab = window.StemLab || {
         { term: 'Promoter', def: 'DNA sequence where RNA polymerase binds to start transcription. ~25-100 bp upstream of gene.' },
         { term: 'Codon', def: 'Three-nucleotide sequence specifying one amino acid (or stop signal). 64 possible codons.' },
         { term: 'Anticodon', def: 'Three-nucleotide sequence on tRNA that pairs with mRNA codon during translation.' },
-        { term: 'Ribosome', def: 'Cellular machine that synthesizes proteins. Made of rRNA + proteins. Catalytic activity is in the 23S rRNA — it\'s a ribozyme.' },
+        { term: 'Ribosome', def: 'Cellular machine that synthesizes proteins. Made of rRNA + proteins. Catalytic activity is in the 23S rRNA â€” it\'s a ribozyme.' },
         { term: 'tRNA', def: 'Transfer RNA. Adapter molecule that carries amino acids to the ribosome based on codon-anticodon pairing.' },
         { term: 'mRNA', def: 'Messenger RNA. Carries genetic code from DNA to ribosomes for translation.' },
         { term: 'rRNA', def: 'Ribosomal RNA. Structural + catalytic component of ribosomes. Most abundant RNA in cells.' },
@@ -4062,89 +4413,89 @@ window.StemLab = window.StemLab || {
         { term: 'Karyotype', def: 'Visual representation of an individual\'s full chromosome set. Reveals numerical or large structural abnormalities.' },
         { term: 'Pedigree', def: 'Diagram tracing a trait through a family tree. Reveals inheritance pattern (dominant/recessive, autosomal/sex-linked).' },
         { term: 'Epigenetics', def: 'Heritable changes in gene expression NOT caused by changes in DNA sequence. Methylation, histone modification, etc.' },
-        { term: 'Telomere', def: 'Repetitive DNA at chromosome ends (TTAGGG in vertebrates). Shortens with each division — linked to aging.' },
+        { term: 'Telomere', def: 'Repetitive DNA at chromosome ends (TTAGGG in vertebrates). Shortens with each division â€” linked to aging.' },
         { term: 'Centromere', def: 'Constricted region where sister chromatids attach. Site of kinetochore + spindle attachment during cell division.' }
       ];
 
       function expHeader() {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200' },
           h('div', null,
-            h('h3', { className: 'text-base font-black text-emerald-900' }, t('stem.dna.genetics_reference_library', '🧬 Genetics Reference Library')),
-            h('div', { className: 'text-[11px] text-emerald-700 mt-0.5' }, t('stem.dna.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
+            h('h3', { className: 'text-base font-black text-emerald-900' }, t('stem.dna.genetics_reference_library', 'ðŸ§¬ Genetics Reference Library')),
+            h('div', { className: 'text-[11px] text-emerald-700 mt-0.5' }, t('stem.dna.interactive_references_pick_a_topic_be', 'Interactive references â€” pick a topic below to explore.'))
           ),
           expSection && h('button', {
             onClick: function() { setExp({ expSection: null }); },
             className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 active:scale-[0.97]'
-          }, t('stem.dna.close_section', '✕ Close section'))
+          }, t('stem.dna.close_section', 'âœ• Close section'))
         );
       }
 
       function expTabBar() {
         // 45 DNA/biology sections grouped into 7 cohesive domains. All IDs
-        // preserved. Groups: DNA Basics · Cell & Organelles · Genetics &
-        // Inheritance · Biotech & Lab · Disease & Health · Life on Earth ·
+        // preserved. Groups: DNA Basics Â· Cell & Organelles Â· Genetics &
+        // Inheritance Â· Biotech & Lab Â· Disease & Health Â· Life on Earth Â·
         // Reference.
         var TAB_GROUPS = [
           { id: 'dna', label: t('stem.dna.dna_basics', 'DNA Basics'), color: 'emerald', tabs: [
-            { id: 'bases', label: t('stem.dna.base_pairs', 'Base pairs'), icon: '🅰🅣' },
-            { id: 'code', label: t('stem.dna.genetic_code', 'Genetic code'), icon: '🔡' },
-            { id: 'replication', label: t('stem.dna.dna_replication_2', 'DNA replication'), icon: '🔄' },
-            { id: 'transcription', label: t('stem.dna.transcription', 'Transcription'), icon: '✍' },
-            { id: 'translation', label: t('stem.dna.translation', 'Translation'), icon: '🏭' },
-            { id: 'dnarna', label: t('stem.dna.dna_vs_rna', 'DNA vs RNA'), icon: '⇌' },
-            { id: 'mutations', label: t('stem.dna.mutations_2', 'Mutations'), icon: '⚠' },
-            { id: 'amino', label: t('stem.dna.amino_acids', 'Amino acids'), icon: '⚕' },
-            { id: 'mutInquiry', label: t('stem.dna.mutation_inquiry', 'Mutation Inquiry'), icon: '🔬' }
+            { id: 'bases', label: t('stem.dna.base_pairs', 'Base pairs'), icon: 'ðŸ…°ðŸ…£' },
+            { id: 'code', label: t('stem.dna.genetic_code', 'Genetic code'), icon: 'ðŸ”¡' },
+            { id: 'replication', label: t('stem.dna.dna_replication_2', 'DNA replication'), icon: 'ðŸ”„' },
+            { id: 'transcription', label: t('stem.dna.transcription', 'Transcription'), icon: 'âœ' },
+            { id: 'translation', label: t('stem.dna.translation', 'Translation'), icon: 'ðŸ­' },
+            { id: 'dnarna', label: t('stem.dna.dna_vs_rna', 'DNA vs RNA'), icon: 'â‡Œ' },
+            { id: 'mutations', label: t('stem.dna.mutations_2', 'Mutations'), icon: 'âš ' },
+            { id: 'amino', label: t('stem.dna.amino_acids', 'Amino acids'), icon: 'âš•' },
+            { id: 'mutInquiry', label: t('stem.dna.mutation_inquiry', 'Mutation Inquiry'), icon: 'ðŸ”¬' }
           ] },
           { id: 'cell', label: t('stem.dna.cell_organelles', 'Cell & Organelles'), color: 'teal', tabs: [
-            { id: 'organelles', label: t('stem.dna.cell_organelles_2', 'Cell organelles'), icon: '🔬' },
-            { id: 'celltypes', label: t('stem.dna.cell_types', 'Cell types'), icon: '🧫' },
-            { id: 'pathways', label: t('stem.dna.cell_pathways', 'Cell pathways'), icon: '⇄' },
-            { id: 'periodtable_bio', label: t('stem.dna.bio_elements', 'Bio elements'), icon: '⌬' },
-            { id: 'devel', label: t('stem.dna.embryology', 'Embryology'), icon: '🥚' }
+            { id: 'organelles', label: t('stem.dna.cell_organelles_2', 'Cell organelles'), icon: 'ðŸ”¬' },
+            { id: 'celltypes', label: t('stem.dna.cell_types', 'Cell types'), icon: 'ðŸ§«' },
+            { id: 'pathways', label: t('stem.dna.cell_pathways', 'Cell pathways'), icon: 'â‡„' },
+            { id: 'periodtable_bio', label: t('stem.dna.bio_elements', 'Bio elements'), icon: 'âŒ¬' },
+            { id: 'devel', label: t('stem.dna.embryology', 'Embryology'), icon: 'ðŸ¥š' }
           ] },
           { id: 'genetics', label: t('stem.dna.genetics_inheritance', 'Genetics & Inheritance'), color: 'lime', tabs: [
-            { id: 'chromosomes', label: t('stem.dna.chromosomes', 'Chromosomes'), icon: '🧬' },
-            { id: 'meiosis', label: t('stem.dna.meiosis_vs_mitosis', 'Meiosis vs mitosis'), icon: '⊞' },
-            { id: 'mendel', label: t('stem.dna.mendelian_genetics', 'Mendelian genetics'), icon: '🫛' },
-            { id: 'epigenetics', label: t('stem.dna.epigenetics', 'Epigenetics'), icon: '✎' },
-            { id: 'genomes', label: t('stem.dna.genome_sizes', 'Genome sizes'), icon: '📏' },
-            { id: 'famousgenes', label: t('stem.dna.famous_genes', 'Famous genes'), icon: '⌬' }
+            { id: 'chromosomes', label: t('stem.dna.chromosomes', 'Chromosomes'), icon: 'ðŸ§¬' },
+            { id: 'meiosis', label: t('stem.dna.meiosis_vs_mitosis', 'Meiosis vs mitosis'), icon: 'âŠž' },
+            { id: 'mendel', label: t('stem.dna.mendelian_genetics', 'Mendelian genetics'), icon: 'ðŸ«›' },
+            { id: 'epigenetics', label: t('stem.dna.epigenetics', 'Epigenetics'), icon: 'âœŽ' },
+            { id: 'genomes', label: t('stem.dna.genome_sizes', 'Genome sizes'), icon: 'ðŸ“' },
+            { id: 'famousgenes', label: t('stem.dna.famous_genes', 'Famous genes'), icon: 'âŒ¬' }
           ] },
           { id: 'biotech', label: t('stem.dna.biotech_lab', 'Biotech & Lab'), color: 'cyan', tabs: [
-            { id: 'biotech', label: t('stem.dna.biotech_tools', 'Biotech tools'), icon: '🔬' },
-            { id: 'biotech2', label: t('stem.dna.biotech_apps', 'Biotech apps'), icon: '💉' },
-            { id: 'pcr', label: t('stem.dna.pcr_lab', 'PCR + lab'), icon: '🧪' },
-            { id: 'crispr', label: t('stem.dna.crispr_detail', 'CRISPR detail'), icon: '✂' },
-            { id: 'sequencing', label: t('stem.dna.sequencing_tech', 'Sequencing tech'), icon: '📊' },
-            { id: 'modelorg', label: t('stem.dna.model_organisms', 'Model organisms'), icon: '🧫' },
-            { id: 'ethics', label: t('stem.dna.bioethics', 'Bioethics'), icon: '⚖' }
+            { id: 'biotech', label: t('stem.dna.biotech_tools', 'Biotech tools'), icon: 'ðŸ”¬' },
+            { id: 'biotech2', label: t('stem.dna.biotech_apps', 'Biotech apps'), icon: 'ðŸ’‰' },
+            { id: 'pcr', label: t('stem.dna.pcr_lab', 'PCR + lab'), icon: 'ðŸ§ª' },
+            { id: 'crispr', label: t('stem.dna.crispr_detail', 'CRISPR detail'), icon: 'âœ‚' },
+            { id: 'sequencing', label: t('stem.dna.sequencing_tech', 'Sequencing tech'), icon: 'ðŸ“Š' },
+            { id: 'modelorg', label: t('stem.dna.model_organisms', 'Model organisms'), icon: 'ðŸ§«' },
+            { id: 'ethics', label: t('stem.dna.bioethics', 'Bioethics'), icon: 'âš–' }
           ] },
           { id: 'health', label: t('stem.dna.disease_health', 'Disease & Health'), color: 'rose', tabs: [
-            { id: 'diseases', label: t('stem.dna.disease_genes', 'Disease genes'), icon: '🏥' },
-            { id: 'cancer', label: t('stem.dna.cancer_biology', 'Cancer biology'), icon: '⚕' },
-            { id: 'immunity', label: t('stem.dna.immune_system', 'Immune system'), icon: '🛡' },
-            { id: 'viruses', label: t('stem.dna.virus_families', 'Virus families'), icon: '🦠' },
-            { id: 'microbiome', label: t('stem.dna.microbiome', 'Microbiome'), icon: '🦠' },
-            { id: 'organ_systems', label: t('stem.dna.organ_systems', 'Organ systems'), icon: '🫀' },
-            { id: 'hormones', label: t('stem.dna.hormones', 'Hormones'), icon: '⚛' },
-            { id: 'vitamins', label: t('stem.dna.vitamins', 'Vitamins'), icon: '💊' },
-            { id: 'neuro', label: t('stem.dna.neuroscience', 'Neuroscience'), icon: '🧠' }
+            { id: 'diseases', label: t('stem.dna.disease_genes', 'Disease genes'), icon: 'ðŸ¥' },
+            { id: 'cancer', label: t('stem.dna.cancer_biology', 'Cancer biology'), icon: 'âš•' },
+            { id: 'immunity', label: t('stem.dna.immune_system', 'Immune system'), icon: 'ðŸ›¡' },
+            { id: 'viruses', label: t('stem.dna.virus_families', 'Virus families'), icon: 'ðŸ¦ ' },
+            { id: 'microbiome', label: t('stem.dna.microbiome', 'Microbiome'), icon: 'ðŸ¦ ' },
+            { id: 'organ_systems', label: t('stem.dna.organ_systems', 'Organ systems'), icon: 'ðŸ«€' },
+            { id: 'hormones', label: t('stem.dna.hormones', 'Hormones'), icon: 'âš›' },
+            { id: 'vitamins', label: t('stem.dna.vitamins', 'Vitamins'), icon: 'ðŸ’Š' },
+            { id: 'neuro', label: t('stem.dna.neuroscience', 'Neuroscience'), icon: 'ðŸ§ ' }
           ] },
           { id: 'life', label: t('stem.dna.life_on_earth', 'Life on Earth'), color: 'amber', tabs: [
-            { id: 'evolution', label: t('stem.dna.evolution', 'Evolution'), icon: '🌳' },
-            { id: 'tree', label: t('stem.dna.tree_of_life', 'Tree of life'), icon: '🌳' },
-            { id: 'ecology', label: t('stem.dna.ecology', 'Ecology'), icon: '🌍' },
-            { id: 'animals2', label: t('stem.dna.animal_facts', 'Animal facts'), icon: '🐾' },
-            { id: 'animal_groups', label: t('stem.dna.animal_groups', 'Animal groups'), icon: '🦁' },
-            { id: 'famous_orgs', label: t('stem.dna.wild_dog_dna', 'Wild + dog DNA'), icon: '🐕' },
-            { id: 'plants', label: t('stem.dna.plant_biology', 'Plant biology'), icon: '🌿' },
-            { id: 'extinct', label: t('stem.dna.extinct_species', 'Extinct species'), icon: '🦕' }
+            { id: 'evolution', label: t('stem.dna.evolution', 'Evolution'), icon: 'ðŸŒ³' },
+            { id: 'tree', label: t('stem.dna.tree_of_life', 'Tree of life'), icon: 'ðŸŒ³' },
+            { id: 'ecology', label: t('stem.dna.ecology', 'Ecology'), icon: 'ðŸŒ' },
+            { id: 'animals2', label: t('stem.dna.animal_facts', 'Animal facts'), icon: 'ðŸ¾' },
+            { id: 'animal_groups', label: t('stem.dna.animal_groups', 'Animal groups'), icon: 'ðŸ¦' },
+            { id: 'famous_orgs', label: t('stem.dna.wild_dog_dna', 'Wild + dog DNA'), icon: 'ðŸ•' },
+            { id: 'plants', label: t('stem.dna.plant_biology', 'Plant biology'), icon: 'ðŸŒ¿' },
+            { id: 'extinct', label: t('stem.dna.extinct_species', 'Extinct species'), icon: 'ðŸ¦•' }
           ] },
           { id: 'reference', label: t('stem.dna.reference', 'Reference'), color: 'slate', tabs: [
-            { id: 'famous', label: t('stem.dna.history', 'History'), icon: '🕰' },
-            { id: 'glossary', label: t('stem.dna.glossary', 'Glossary'), icon: '📖' }
-          , { id: 'traceTrait', label: t('stem.dna.trace_trait', 'Trace trait'), icon: '🧬' }] }
+            { id: 'famous', label: t('stem.dna.history', 'History'), icon: 'ðŸ•°' },
+            { id: 'glossary', label: t('stem.dna.glossary', 'Glossary'), icon: 'ðŸ“–' }
+          , { id: 'traceTrait', label: t('stem.dna.trace_trait', 'Trace trait'), icon: 'ðŸ§¬' }] }
         ];
         function renderBtn(s, accent) {
           var active = expSection === s.id;
@@ -4166,7 +4517,7 @@ window.StemLab = window.StemLab || {
 
       function renderBasesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_rna_bases', '🅰🅣 DNA + RNA bases')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_rna_bases', 'ðŸ…°ðŸ…£ DNA + RNA bases')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.five_nitrogenous_bases_make_up_dna_rna', 'Five nitrogenous bases make up DNA + RNA: A, T, G, C (DNA); A, U, G, C (RNA). Purines (A, G) are 2-ringed; pyrimidines (T, U, C) are 1-ringed. Pairing follows specific H-bond patterns.')),
           h('div', { className: 'space-y-2' },
             BASE_PAIRS.map(function(b, i) {
@@ -4175,7 +4526,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-lg tracking-tight', style: { background: b.color } }, b.icon),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'text-sm font-black text-slate-800' }, b.base),
-                    h('div', { className: 'text-[11px] text-slate-600' }, b.cat + ' · ' + b.bonds)
+                    h('div', { className: 'text-[11px] text-slate-600' }, b.cat + ' Â· ' + b.bonds)
                   )
                 ),
                 h('div', { className: 'text-[11px] text-slate-700 mb-1' }, h('strong', null, t('stem.dna.pairs_with', 'Pairs with: ')), b.pairs),
@@ -4188,8 +4539,8 @@ window.StemLab = window.StemLab || {
 
       function renderCodeSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genetic_code_codon_table', '🔡 Genetic code — codon table')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.64_codons_4_encode_20_amino_acids_3_st', '64 codons (4³) encode 20 amino acids + 3 stop signals. Code is redundant (degenerate) — most amino acids have multiple codons, usually differing in the 3rd position ("wobble"). Universal across nearly all life.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genetic_code_codon_table', 'ðŸ”¡ Genetic code â€” codon table')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.64_codons_4_encode_20_amino_acids_3_st', '64 codons (4Â³) encode 20 amino acids + 3 stop signals. Code is redundant (degenerate) â€” most amino acids have multiple codons, usually differing in the 3rd position ("wobble"). Universal across nearly all life.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -4201,7 +4552,7 @@ window.StemLab = window.StemLab || {
               ),
               h('tbody', null,
                 GENETIC_CODE.map(function(g, i) {
-                  var isStop = g.aa === '—';
+                  var isStop = g.aa === 'â€”';
                   var isStart = g.note === 'START codon';
                   return h('tr', { key: 'g'+i, className: isStop ? 'bg-red-50' : isStart ? 'bg-emerald-50' : (i % 2 === 0 ? 'bg-white' : 'bg-slate-50') },
                     h('td', { className: 'px-2 py-1 text-slate-800 font-mono font-bold' }, g.codon),
@@ -4214,15 +4565,15 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'mt-3 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-900' },
-            h('strong', null, t('stem.dna.wobble', '💡 Wobble: ')), t('stem.dna.third_codon_position_pairs_less_strict', 'Third codon position pairs less strictly — a single tRNA can recognize multiple codons. Reduces the number of tRNAs needed (cells have ~30-40, not 64).')
+            h('strong', null, t('stem.dna.wobble', 'ðŸ’¡ Wobble: ')), t('stem.dna.third_codon_position_pairs_less_strict', 'Third codon position pairs less strictly â€” a single tRNA can recognize multiple codons. Reduces the number of tRNAs needed (cells have ~30-40, not 64).')
           )
         );
       }
 
       function renderReplicationSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_replication_3', '🔄 DNA replication')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.semi_conservative_each_new_helix_has_o', 'Semi-conservative — each new helix has one parent + one newly-synthesized strand. Proven by Meselson-Stahl 1958. ~50 bp/sec in bacteria, ~50 bp/sec per fork in eukaryotes (but thousands of forks in parallel).')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_replication_3', 'ðŸ”„ DNA replication')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.semi_conservative_each_new_helix_has_o', 'Semi-conservative â€” each new helix has one parent + one newly-synthesized strand. Proven by Meselson-Stahl 1958. ~50 bp/sec in bacteria, ~50 bp/sec per fork in eukaryotes (but thousands of forks in parallel).')),
           h('div', { className: 'space-y-2' },
             DNA_REPLICATION_STEPS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4240,8 +4591,8 @@ window.StemLab = window.StemLab || {
 
       function renderTranscriptionSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.transcription_dna_rna', '✍ Transcription (DNA → RNA)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.rna_polymerase_reads_dna_template_3_5_', 'RNA polymerase reads DNA template (3\'→5\') and synthesizes mRNA (5\'→3\'). In eukaryotes, the primary transcript is heavily processed before export.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.transcription_dna_rna', 'âœ Transcription (DNA â†’ RNA)')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.rna_polymerase_reads_dna_template_3_5_', 'RNA polymerase reads DNA template (3\'â†’5\') and synthesizes mRNA (5\'â†’3\'). In eukaryotes, the primary transcript is heavily processed before export.')),
           h('div', { className: 'space-y-2' },
             TRANSCRIPTION_STEPS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'flex gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4258,7 +4609,7 @@ window.StemLab = window.StemLab || {
 
       function renderTranslationSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.translation_mrna_protein_2', '🏭 Translation (mRNA → protein)')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.translation_mrna_protein_2', 'ðŸ­ Translation (mRNA â†’ protein)')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.ribosome_reads_mrna_in_3_base_codons_a', 'Ribosome reads mRNA in 3-base codons and builds protein. ~10-20 amino acids per second in bacteria; ~3-5 in eukaryotes. Multiple ribosomes can translate the same mRNA (polyribosome).')),
           h('div', { className: 'space-y-2' },
             TRANSLATION_STEPS.map(function(s, i) {
@@ -4276,7 +4627,7 @@ window.StemLab = window.StemLab || {
 
       function renderMutationsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mutation_types', '⚠ Mutation types')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mutation_types', 'âš  Mutation types')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.mutations_range_from_invisible_silent_', 'Mutations range from invisible (silent) to lethal. Their effect depends on what changes, where, and in which cell type (germline vs somatic).')),
           h('div', { className: 'space-y-2' },
             MUTATION_TYPES.map(function(m, i) {
@@ -4294,7 +4645,7 @@ window.StemLab = window.StemLab || {
 
       function renderChromosomesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_chromosomes_genome', '🧬 Human chromosomes + genome')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_chromosomes_genome', 'ðŸ§¬ Human chromosomes + genome')),
           h('div', { className: 'space-y-2' },
             CHROMOSOMES.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'flex items-baseline gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4311,7 +4662,7 @@ window.StemLab = window.StemLab || {
 
       function renderDnaRnaSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_vs_rna_2', '⇌ DNA vs RNA')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_vs_rna_2', 'â‡Œ DNA vs RNA')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -4337,7 +4688,7 @@ window.StemLab = window.StemLab || {
 
       function renderBiotechSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.biotech_tools_2', '🔬 Biotech tools')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.biotech_tools_2', 'ðŸ”¬ Biotech tools')),
           h('div', { className: 'space-y-1.5' },
             BIOTECH_TOOLS.map(function(t, i) {
               return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4354,8 +4705,8 @@ window.StemLab = window.StemLab || {
 
       function renderDiseasesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.disease_causing_genes_examples', '🏥 Disease-causing genes (examples)')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.a_sampling_of_well_characterized_genet', 'A sampling of well-characterized genetic disorders. Genetic counseling resources and current treatments evolve — verify with current literature for clinical decisions.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.disease_causing_genes_examples', 'ðŸ¥ Disease-causing genes (examples)')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.a_sampling_of_well_characterized_genet', 'A sampling of well-characterized genetic disorders. Genetic counseling resources and current treatments evolve â€” verify with current literature for clinical decisions.')),
           h('div', { className: 'space-y-2' },
             DISEASES_AND_GENES.map(function(d, i) {
               return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4374,7 +4725,7 @@ window.StemLab = window.StemLab || {
 
       function renderEvolutionSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.evolution_concepts', '🌳 Evolution concepts')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.evolution_concepts', 'ðŸŒ³ Evolution concepts')),
           h('div', { className: 'space-y-1.5' },
             EVOLUTION_CONCEPTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2.5 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4386,25 +4737,25 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ── Cycle 4 of the inquiry-learning study: REASONING VERIFICATION ──
-      // Refined H5: forced commitment of the ANSWER alone is not enough —
+      // â”€â”€ Cycle 4 of the inquiry-learning study: REASONING VERIFICATION â”€â”€
+      // Refined H5: forced commitment of the ANSWER alone is not enough â€”
       // learner must commit to the REASONING ranking too; reveal verifies both.
-      // Implementation: drag-rank 4 candidate explanations from most→least supporting.
+      // Implementation: drag-rank 4 candidate explanations from mostâ†’least supporting.
       var PEDIGREE_PUZZLES = [
         {
-          id: 'p1', title: t('stem.dna.family_a_three_generations_blue_eyes', 'Family A — three generations, blue eyes'),
+          id: 'p1', title: t('stem.dna.family_a_three_generations_blue_eyes', 'Family A â€” three generations, blue eyes'),
           description: t('stem.dna.two_unaffected_parents_gen_i_have_one_', 'Two unaffected parents (gen I) have one affected child + one unaffected (gen II). The affected child + unaffected partner have one affected + one unaffected (gen III). Trait appears in roughly 25% of offspring of unaffected x unaffected matings.'),
           correctPattern: 'autosomal_recessive',
           expertRanking: ['skip_generations', 'unaffected_carriers', 'no_sex_bias', 'present_in_homozygote'],
           explanations: [
-            { id: 'skip_generations', text: t('stem.dna.trait_skips_generations_unaffected_par', 'Trait skips generations (unaffected parents → affected child).') },
+            { id: 'skip_generations', text: t('stem.dna.trait_skips_generations_unaffected_par', 'Trait skips generations (unaffected parents â†’ affected child).') },
             { id: 'unaffected_carriers', text: t('stem.dna.parents_must_be_heterozygous_carriers_', 'Parents must be heterozygous carriers passing one recessive allele each.') },
             { id: 'no_sex_bias', text: t('stem.dna.affected_individuals_appear_in_both_se', 'Affected individuals appear in both sexes at roughly equal frequency.') },
             { id: 'present_in_homozygote', text: t('stem.dna.affected_aa_homozygous_carriers_aa_are', 'Affected = aa homozygous; carriers (Aa) are phenotypically unaffected.') }
           ]
         },
         {
-          id: 'p2', title: t('stem.dna.family_b_color_blindness_across_three_', 'Family B — color blindness across three generations'),
+          id: 'p2', title: t('stem.dna.family_b_color_blindness_across_three_', 'Family B â€” color blindness across three generations'),
           description: t('stem.dna.affected_grandfather_gen_i_has_unaffec', 'Affected grandfather (gen I) has unaffected daughter (gen II) and affected grandson via that daughter (gen III). No affected sons of unaffected fathers. Trait far more common in males.'),
           correctPattern: 'x_linked_recessive',
           expertRanking: ['male_bias', 'mother_carrier', 'skip_via_daughters', 'no_male_to_male'],
@@ -4416,7 +4767,7 @@ window.StemLab = window.StemLab || {
           ]
         },
         {
-          id: 'p3', title: t('stem.dna.family_c_huntington_like_late_onset_tr', 'Family C — Huntington-like late-onset trait'),
+          id: 'p3', title: t('stem.dna.family_c_huntington_like_late_onset_tr', 'Family C â€” Huntington-like late-onset trait'),
           description: t('stem.dna.every_affected_individual_has_at_least', 'Every affected individual has at least one affected parent. Trait appears in every generation. ~50% of children of affected parents are affected. Equal in males + females.'),
           correctPattern: 'autosomal_dominant',
           expertRanking: ['every_gen', 'affected_parent_required', 'fifty_pct', 'no_sex_bias_dom'],
@@ -4424,7 +4775,7 @@ window.StemLab = window.StemLab || {
             { id: 'every_gen', text: t('stem.dna.trait_appears_in_every_generation_no_s', 'Trait appears in every generation (no skipping).') },
             { id: 'affected_parent_required', text: t('stem.dna.every_affected_individual_has_at_least_2', 'Every affected individual has at least one affected parent.') },
             { id: 'fifty_pct', text: t('stem.dna.roughly_50_of_children_of_an_affected_', 'Roughly 50% of children of an affected heterozygote are affected.') },
-            { id: 'no_sex_bias_dom', text: t('stem.dna.equal_frequency_in_males_females_autos', 'Equal frequency in males + females — autosomal, not sex-linked.') }
+            { id: 'no_sex_bias_dom', text: t('stem.dna.equal_frequency_in_males_females_autos', 'Equal frequency in males + females â€” autosomal, not sex-linked.') }
           ]
         }
       ];
@@ -4456,9 +4807,9 @@ window.StemLab = window.StemLab || {
           setTT({ puzzles: newPuzzles });
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.dna.trace_the_trait', '🧬 Trace the trait')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.dna.trace_the_trait', 'ðŸ§¬ Trace the trait')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            t('stem.dna.inheritance_pattern_reasoning_ranking_', 'Inheritance pattern + reasoning ranking — both must be committed before reveal. The reveal grades your ranking position-by-position, not just your final answer. Real inquiry requires you to know WHY, not just WHAT.')),
+            t('stem.dna.inheritance_pattern_reasoning_ranking_', 'Inheritance pattern + reasoning ranking â€” both must be committed before reveal. The reveal grades your ranking position-by-position, not just your final answer. Real inquiry requires you to know WHY, not just WHAT.')),
           PEDIGREE_PUZZLES.map(function(puzzle, pIdx) {
             var defaultRanking = puzzle.explanations.map(function(e) { return e.id; });
             var st = state.puzzles[puzzle.id] || { pick: null, ranking: defaultRanking, revealed: false };
@@ -4501,7 +4852,7 @@ window.StemLab = window.StemLab || {
                   }, opt.label);
                 })
               ),
-              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most → least supporting):')),
+              h('div', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most â†’ least supporting):')),
               h('ol', { className: 'space-y-1 mb-2', style: { listStyle: 'none', padding: 0 } },
                 (st.ranking || defaultRanking).map(function(eId, rIdx) {
                   var expl = puzzle.explanations.find(function(e) { return e.id === eId; });
@@ -4519,14 +4870,14 @@ window.StemLab = window.StemLab || {
                       'aria-label': t('stem.dna.move_up', 'Move up'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx - 1); },
                       className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
-                    }, '▲'),
+                    }, 'â–²'),
                     !st.revealed && rIdx < (st.ranking || []).length - 1 && h('button', {
                       'aria-label': t('stem.dna.move_down', 'Move down'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx + 1); },
                       className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
-                    }, '▼'),
+                    }, 'â–¼'),
                     st.revealed && h('span', { className: 'text-[10px] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
-                      positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
+                      positionMatch ? 'âœ“ exact' : 'expert pos #' + (expertPos + 1))
                   );
                 })
               ),
@@ -4540,27 +4891,27 @@ window.StemLab = window.StemLab || {
                     setTT({ puzzles: newP, score: (state.score || 0) + bonus });
                   },
                   className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.97]'
-                }, st.revealed ? '✓ Revealed' : 'Reveal verdict'),
+                }, st.revealed ? 'âœ“ Revealed' : 'Reveal verdict'),
                 !canReveal && !st.revealed && h('span', { className: 'text-[10px] text-slate-500 italic' },
                   st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations'),
                 st.revealed && h('span', { className: 'text-[11px] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') },
-                  diagnosisCorrect ? '✓ Pattern correct' : '✗ Pattern off'),
+                  diagnosisCorrect ? 'âœ“ Pattern correct' : 'âœ— Pattern off'),
                 st.revealed && h('span', { className: 'text-[11px] text-slate-600' },
                   'Ranking match: ' + rankingScore + '/4 positions')
               )
             );
           }),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap' },
-            h('span', null, '🎯'),
+            h('span', null, 'ðŸŽ¯'),
             h('strong', null, 'Pattern score: ' + (state.score || 0) + ' / ' + PEDIGREE_PUZZLES.length),
-            h('span', { className: 'text-slate-500 ml-2 italic' }, t('stem.dna.notice_the_ranking_grade_is_independen', 'Notice: the ranking grade is independent of the pattern grade — you can identify the WHAT correctly but rank the WHY out of order.'))
+            h('span', { className: 'text-slate-500 ml-2 italic' }, t('stem.dna.notice_the_ranking_grade_is_independen', 'Notice: the ranking grade is independent of the pattern grade â€” you can identify the WHAT correctly but rank the WHY out of order.'))
           )
         );
       }
 
       function renderGlossarySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genetics_glossary', '📖 Genetics glossary')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genetics_glossary', 'ðŸ“– Genetics glossary')),
           h('div', { className: 'space-y-1' },
             DNA_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
@@ -4572,56 +4923,56 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
-      // ROUND 2 EXPANSION — Additional genetics references (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROUND 2 EXPANSION â€” Additional genetics references (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var GENOME_SIZES = [
-        { organism: 'φX174 (bacteriophage)', size: '~5,400 bp', genes: '11', notes: 'One of the smallest. First DNA genome sequenced (Sanger, 1977).' },
+        { organism: 'Ï†X174 (bacteriophage)', size: '~5,400 bp', genes: '11', notes: 'One of the smallest. First DNA genome sequenced (Sanger, 1977).' },
         { organism: 'HIV-1', size: '~9,700 bp', genes: '9', notes: 'RNA genome. Compact, with overlapping reading frames.' },
         { organism: 'E. coli', size: '~4.6 million bp', genes: '~4,300', notes: 'Workhorse of molecular biology. Circular chromosome.' },
         { organism: 'Yeast (S. cerevisiae)', size: '~12 million bp', genes: '~6,000', notes: 'First eukaryote sequenced (1996). 16 chromosomes.' },
         { organism: 'C. elegans (roundworm)', size: '~100 million bp', genes: '~20,000', notes: 'First multicellular sequenced. Cell-by-cell fate mapped.' },
         { organism: 'Fruit fly (D. melanogaster)', size: '~140 million bp', genes: '~14,000', notes: 'Classic genetics model. Polytene chromosomes.' },
         { organism: 'Arabidopsis (plant model)', size: '~135 million bp', genes: '~27,500', notes: 'First plant sequenced (2000).' },
-        { organism: 'Pufferfish (Takifugu)', size: '~390 million bp', genes: '~22,000', notes: 'Compact vertebrate genome — little "junk" DNA.' },
+        { organism: 'Pufferfish (Takifugu)', size: '~390 million bp', genes: '~22,000', notes: 'Compact vertebrate genome â€” little "junk" DNA.' },
         { organism: 'Human', size: '~3.0 billion bp', genes: '~20,000', notes: 'Reference draft 2001. Telomere-to-telomere finished 2022.' },
         { organism: 'Wheat', size: '~16 billion bp', genes: '~108,000', notes: 'Hexaploid (6 copies). Much larger than human.' },
         { organism: 'Axolotl (salamander)', size: '~32 billion bp', genes: '~23,000', notes: 'One of the largest sequenced. Lots of repetitive DNA.' },
-        { organism: 'Paris japonica (plant)', size: '~150 billion bp', genes: 'unknown', notes: 'Largest known eukaryotic genome. ~50× bigger than human.' }
+        { organism: 'Paris japonica (plant)', size: '~150 billion bp', genes: 'unknown', notes: 'Largest known eukaryotic genome. ~50Ã— bigger than human.' }
       ];
 
       var MEIOSIS_VS_MITOSIS = [
         { feature: 'Purpose', mitosis: 'Growth, repair, asexual reproduction', meiosis: 'Produce gametes (sperm, egg) for sexual reproduction' },
         { feature: 'Divisions', mitosis: '1', meiosis: '2 (meiosis I + meiosis II)' },
         { feature: 'Daughter cells', mitosis: '2', meiosis: '4' },
-        { feature: 'Daughter chromosome count', mitosis: 'Same as parent (diploid → diploid)', meiosis: 'Half of parent (diploid → haploid)' },
+        { feature: 'Daughter chromosome count', mitosis: 'Same as parent (diploid â†’ diploid)', meiosis: 'Half of parent (diploid â†’ haploid)' },
         { feature: 'Genetic variation', mitosis: 'None (clones, barring mutations)', meiosis: 'Crossing over + independent assortment = huge variation' },
         { feature: 'Homologous pairing', mitosis: 'No', meiosis: 'Yes (synapsis in prophase I)' },
-        { feature: 'Crossing over', mitosis: 'No', meiosis: 'Yes — exchanges DNA between homologs' },
+        { feature: 'Crossing over', mitosis: 'No', meiosis: 'Yes â€” exchanges DNA between homologs' },
         { feature: 'Where it happens', mitosis: 'All somatic cells', meiosis: 'Only germ cells (gonads)' }
       ];
 
       var MENDEL_LAWS = [
-        { name: t('stem.dna.law_of_segregation', 'Law of Segregation'), description: t('stem.dna.during_gamete_formation_the_two_allele', 'During gamete formation, the two alleles for each gene separate so each gamete carries only one allele.'), example: 'Pea plant Tt (heterozygous) produces ½ T gametes and ½ t gametes.' },
+        { name: t('stem.dna.law_of_segregation', 'Law of Segregation'), description: t('stem.dna.during_gamete_formation_the_two_allele', 'During gamete formation, the two alleles for each gene separate so each gamete carries only one allele.'), example: 'Pea plant Tt (heterozygous) produces Â½ T gametes and Â½ t gametes.' },
         { name: t('stem.dna.law_of_independent_assortment', 'Law of Independent Assortment'), description: t('stem.dna.alleles_for_different_genes_assort_ind', 'Alleles for different genes assort independently of one another during gamete formation (genes on different chromosomes).'), example: 'A TtYy plant produces TY, Ty, tY, ty gametes in equal proportions.' },
         { name: t('stem.dna.law_of_dominance', 'Law of Dominance'), description: t('stem.dna.when_two_different_alleles_are_present', 'When two different alleles are present, one (dominant) is expressed while the other (recessive) is masked.'), example: 'In peas, purple (P) is dominant to white (p). Pp plants are purple.' }
       ];
 
       var MENDEL_RATIOS = [
-        { cross: 'Monohybrid (Aa × Aa)', phenotype: '3:1', genotype: '1 AA : 2 Aa : 1 aa', notes: 'Classic dominance pattern.' },
-        { cross: 'Dihybrid (AaBb × AaBb)', phenotype: '9:3:3:1', genotype: '16 combinations', notes: 'Independent assortment of two genes.' },
-        { cross: 'Test cross (Aa × aa)', phenotype: '1:1', genotype: '1 Aa : 1 aa', notes: 'Used to determine if dominant phenotype is heterozygous or homozygous.' },
-        { cross: 'Incomplete dominance (RR × WW)', phenotype: 'All pink', genotype: 'All RW', notes: 'Heterozygotes show blended phenotype. Snapdragons, four o\'clocks.' },
-        { cross: 'Codominance (IᴬIᴮ blood type)', phenotype: 'AB blood', genotype: 'Both alleles expressed', notes: 'Both alleles fully expressed. Roan cattle (red + white = roan).' },
-        { cross: 'X-linked recessive (carrier female)', phenotype: 'Affected sons (50%)', genotype: 'XᴬXᵃ × XᴬY', notes: 'Pattern for hemophilia, color blindness, DMD.' }
+        { cross: 'Monohybrid (Aa Ã— Aa)', phenotype: '3:1', genotype: '1 AA : 2 Aa : 1 aa', notes: 'Classic dominance pattern.' },
+        { cross: 'Dihybrid (AaBb Ã— AaBb)', phenotype: '9:3:3:1', genotype: '16 combinations', notes: 'Independent assortment of two genes.' },
+        { cross: 'Test cross (Aa Ã— aa)', phenotype: '1:1', genotype: '1 Aa : 1 aa', notes: 'Used to determine if dominant phenotype is heterozygous or homozygous.' },
+        { cross: 'Incomplete dominance (RR Ã— WW)', phenotype: 'All pink', genotype: 'All RW', notes: 'Heterozygotes show blended phenotype. Snapdragons, four o\'clocks.' },
+        { cross: 'Codominance (Iá´¬Iá´® blood type)', phenotype: 'AB blood', genotype: 'Both alleles expressed', notes: 'Both alleles fully expressed. Roan cattle (red + white = roan).' },
+        { cross: 'X-linked recessive (carrier female)', phenotype: 'Affected sons (50%)', genotype: 'Xá´¬Xáµƒ Ã— Xá´¬Y', notes: 'Pattern for hemophilia, color blindness, DMD.' }
       ];
 
       var EPIGENETIC_MECHANISMS = [
-        { mechanism: 'DNA methylation', description: t('stem.dna.methyl_group_ch_added_to_cytosines_esp', 'Methyl group (–CH₃) added to cytosines, especially at CpG islands. Generally silences gene expression.'), example: 'Methylation of tumor-suppressor gene promoters can drive cancer.' },
-        { mechanism: 'Histone modifications', description: t('stem.dna.acetylation_methylation_phosphorylatio', 'Acetylation, methylation, phosphorylation of histone tails. Changes chromatin packing.'), example: 'Histone acetylation → open chromatin → active transcription. Deacetylation → silent.' },
+        { mechanism: 'DNA methylation', description: t('stem.dna.methyl_group_ch_added_to_cytosines_esp', 'Methyl group (â€“CHâ‚ƒ) added to cytosines, especially at CpG islands. Generally silences gene expression.'), example: 'Methylation of tumor-suppressor gene promoters can drive cancer.' },
+        { mechanism: 'Histone modifications', description: t('stem.dna.acetylation_methylation_phosphorylatio', 'Acetylation, methylation, phosphorylation of histone tails. Changes chromatin packing.'), example: 'Histone acetylation â†’ open chromatin â†’ active transcription. Deacetylation â†’ silent.' },
         { mechanism: 'Chromatin remodeling', description: t('stem.dna.atp_dependent_complexes_slide_or_eject', 'ATP-dependent complexes slide or eject nucleosomes to expose DNA.'), example: 'SWI/SNF complex repositions nucleosomes during gene activation.' },
-        { mechanism: 'Non-coding RNA', description: t('stem.dna.mirna_lncrna_regulate_gene_expression_', 'miRNA, lncRNA regulate gene expression post-transcriptionally.'), example: 'XIST lncRNA coats one X chromosome in females → X-inactivation.' },
+        { mechanism: 'Non-coding RNA', description: t('stem.dna.mirna_lncrna_regulate_gene_expression_', 'miRNA, lncRNA regulate gene expression post-transcriptionally.'), example: 'XIST lncRNA coats one X chromosome in females â†’ X-inactivation.' },
         { mechanism: 'Genomic imprinting', description: t('stem.dna.some_genes_expressed_only_from_materna', 'Some genes expressed only from maternal or paternal allele. Methylation marks.'), example: 'IGF2 expressed only from paternal allele; H19 only from maternal.' },
         { mechanism: 'Trans-generational inheritance', description: t('stem.dna.some_epigenetic_marks_survive_gametoge', 'Some epigenetic marks survive gametogenesis and pass to offspring.'), example: 'Dutch Hunger Winter (1944-45) descendants show altered metabolism, methylation patterns.' }
       ];
@@ -4631,34 +4982,34 @@ window.StemLab = window.StemLab || {
         { letter: 'R', three: 'Arg', name: t('stem.dna.arginine_2', 'Arginine'), side: 'Basic, positively charged', notes: 'Long side chain. Binds DNA/RNA (negatively charged).' },
         { letter: 'N', three: 'Asn', name: t('stem.dna.asparagine_2', 'Asparagine'), side: 'Polar, uncharged', notes: 'Can be glycosylated. Hydrogen bonds with water.' },
         { letter: 'D', three: 'Asp', name: t('stem.dna.aspartate_2', 'Aspartate'), side: 'Acidic, negatively charged', notes: 'Active site of many enzymes.' },
-        { letter: 'C', three: 'Cys', name: t('stem.dna.cysteine_2', 'Cysteine'), side: 'Polar, contains –SH', notes: 'Forms disulfide bonds (S-S) — stabilize protein folds.' },
+        { letter: 'C', three: 'Cys', name: t('stem.dna.cysteine_2', 'Cysteine'), side: 'Polar, contains â€“SH', notes: 'Forms disulfide bonds (S-S) â€” stabilize protein folds.' },
         { letter: 'E', three: 'Glu', name: t('stem.dna.glutamate_2', 'Glutamate'), side: 'Acidic, negatively charged', notes: 'Important neurotransmitter (in brain).' },
         { letter: 'Q', three: 'Gln', name: t('stem.dna.glutamine_2', 'Glutamine'), side: 'Polar, uncharged', notes: 'Most abundant amino acid in blood.' },
-        { letter: 'G', three: 'Gly', name: t('stem.dna.glycine_2', 'Glycine'), side: 'Nonpolar, smallest', notes: 'No side chain (just –H). Found in tight turns + collagen.' },
-        { letter: 'H', three: 'His', name: t('stem.dna.histidine_2', 'Histidine'), side: 'Basic, can be neutral or +', notes: 'pKa near 6 — important in enzyme active sites (proton transfer).' },
+        { letter: 'G', three: 'Gly', name: t('stem.dna.glycine_2', 'Glycine'), side: 'Nonpolar, smallest', notes: 'No side chain (just â€“H). Found in tight turns + collagen.' },
+        { letter: 'H', three: 'His', name: t('stem.dna.histidine_2', 'Histidine'), side: 'Basic, can be neutral or +', notes: 'pKa near 6 â€” important in enzyme active sites (proton transfer).' },
         { letter: 'I', three: 'Ile', name: t('stem.dna.isoleucine_2', 'Isoleucine'), side: 'Nonpolar, hydrophobic', notes: 'Branched chain. Essential.' },
         { letter: 'L', three: 'Leu', name: t('stem.dna.leucine_2', 'Leucine'), side: 'Nonpolar, hydrophobic', notes: 'Most common in proteins. Branched chain. Essential.' },
         { letter: 'K', three: 'Lys', name: t('stem.dna.lysine_2', 'Lysine'), side: 'Basic, positively charged', notes: 'Long side chain. Often modified (acetylation, methylation) in histones.' },
         { letter: 'M', three: 'Met', name: t('stem.dna.methionine_2', 'Methionine'), side: 'Nonpolar, contains S', notes: 'Start codon. Sulfur in side chain. Essential.' },
         { letter: 'F', three: 'Phe', name: t('stem.dna.phenylalanine_2', 'Phenylalanine'), side: 'Nonpolar, aromatic', notes: 'Benzene ring. Hydrophobic core of proteins. Essential.' },
-        { letter: 'P', three: 'Pro', name: t('stem.dna.proline_2', 'Proline'), side: 'Special — cyclic', notes: 'Side chain loops back to N. Creates kinks in protein chain.' },
-        { letter: 'S', three: 'Ser', name: t('stem.dna.serine_2', 'Serine'), side: 'Polar, contains –OH', notes: 'Active site of serine proteases. Phosphorylation target.' },
-        { letter: 'T', three: 'Thr', name: t('stem.dna.threonine_2', 'Threonine'), side: 'Polar, contains –OH', notes: 'Phosphorylation target. Essential.' },
-        { letter: 'W', three: 'Trp', name: t('stem.dna.tryptophan_2', 'Tryptophan'), side: 'Nonpolar, aromatic', notes: 'Largest amino acid. Fluorescent — used for protein detection. Essential.' },
-        { letter: 'Y', three: 'Tyr', name: t('stem.dna.tyrosine_2', 'Tyrosine'), side: 'Polar, aromatic with –OH', notes: 'Phosphorylation target in signaling.' },
-        { letter: 'V', three: 'Val', name: t('stem.dna.valine_2', 'Valine'), side: 'Nonpolar, hydrophobic', notes: 'Branched chain. Sickle cell anemia: Glu→Val mutation in β-globin. Essential.' }
+        { letter: 'P', three: 'Pro', name: t('stem.dna.proline_2', 'Proline'), side: 'Special â€” cyclic', notes: 'Side chain loops back to N. Creates kinks in protein chain.' },
+        { letter: 'S', three: 'Ser', name: t('stem.dna.serine_2', 'Serine'), side: 'Polar, contains â€“OH', notes: 'Active site of serine proteases. Phosphorylation target.' },
+        { letter: 'T', three: 'Thr', name: t('stem.dna.threonine_2', 'Threonine'), side: 'Polar, contains â€“OH', notes: 'Phosphorylation target. Essential.' },
+        { letter: 'W', three: 'Trp', name: t('stem.dna.tryptophan_2', 'Tryptophan'), side: 'Nonpolar, aromatic', notes: 'Largest amino acid. Fluorescent â€” used for protein detection. Essential.' },
+        { letter: 'Y', three: 'Tyr', name: t('stem.dna.tyrosine_2', 'Tyrosine'), side: 'Polar, aromatic with â€“OH', notes: 'Phosphorylation target in signaling.' },
+        { letter: 'V', three: 'Val', name: t('stem.dna.valine_2', 'Valine'), side: 'Nonpolar, hydrophobic', notes: 'Branched chain. Sickle cell anemia: Gluâ†’Val mutation in Î²-globin. Essential.' }
       ];
 
       var ORGANELLES = [
         { name: t('stem.dna.nucleus', 'Nucleus'), function: 'Houses DNA, controls gene expression, site of transcription', notes: 'Surrounded by double membrane (nuclear envelope). Pores allow regulated transport.' },
         { name: t('stem.dna.nucleolus', 'Nucleolus'), function: 'Produces ribosomal RNA + assembles ribosomes', notes: 'Dense region within the nucleus. Not membrane-bound.' },
-        { name: t('stem.dna.mitochondrion', 'Mitochondrion'), function: 'Cellular respiration → ATP production', notes: 'Has own DNA (mtDNA, ~16,500 bp in humans). Maternally inherited. Endosymbiotic origin.' },
-        { name: t('stem.dna.chloroplast_plants', 'Chloroplast (plants)'), function: 'Photosynthesis: light energy → glucose', notes: 'Has own DNA. Contains chlorophyll. Endosymbiotic origin (cyanobacterium).' },
+        { name: t('stem.dna.mitochondrion', 'Mitochondrion'), function: 'Cellular respiration â†’ ATP production', notes: 'Has own DNA (mtDNA, ~16,500 bp in humans). Maternally inherited. Endosymbiotic origin.' },
+        { name: t('stem.dna.chloroplast_plants', 'Chloroplast (plants)'), function: 'Photosynthesis: light energy â†’ glucose', notes: 'Has own DNA. Contains chlorophyll. Endosymbiotic origin (cyanobacterium).' },
         { name: t('stem.dna.endoplasmic_reticulum_rough', 'Endoplasmic reticulum (rough)'), function: 'Protein synthesis (ribosomes on surface), modification', notes: 'Continuous with nuclear envelope.' },
         { name: t('stem.dna.endoplasmic_reticulum_smooth', 'Endoplasmic reticulum (smooth)'), function: 'Lipid synthesis, detoxification, calcium storage', notes: 'No ribosomes. Abundant in liver cells.' },
         { name: t('stem.dna.golgi_apparatus', 'Golgi apparatus'), function: 'Modifies, sorts, packages proteins for secretion or delivery', notes: 'Stack of flattened sacs (cisternae).' },
         { name: t('stem.dna.lysosome', 'Lysosome'), function: 'Digestion via hydrolytic enzymes', notes: 'pH ~5 (acidic). Recycles cell components (autophagy).' },
-        { name: t('stem.dna.peroxisome', 'Peroxisome'), function: 'Breakdown of fatty acids, detox of H₂O₂', notes: 'Contains catalase. Important in liver and kidney.' },
+        { name: t('stem.dna.peroxisome', 'Peroxisome'), function: 'Breakdown of fatty acids, detox of Hâ‚‚Oâ‚‚', notes: 'Contains catalase. Important in liver and kidney.' },
         { name: t('stem.dna.vacuole_plant_central', 'Vacuole (plant central)'), function: 'Storage, turgor pressure', notes: 'Can be 90% of plant cell volume. Maintains shape.' },
         { name: t('stem.dna.cytoskeleton', 'Cytoskeleton'), function: 'Structure, motility, intracellular transport', notes: 'Microtubules, microfilaments, intermediate filaments.' },
         { name: t('stem.dna.ribosome', 'Ribosome'), function: 'Protein synthesis (translation)', notes: 'Made of rRNA + protein. Free in cytoplasm or attached to rough ER.' },
@@ -4667,33 +5018,33 @@ window.StemLab = window.StemLab || {
       ];
 
       var CELL_TYPES = [
-        { type: 'Prokaryote (bacteria/archaea)', size: '~1–10 μm', features: 'No nucleus or membrane-bound organelles. Circular DNA in nucleoid.', example: 'E. coli, Streptococcus' },
-        { type: 'Eukaryote (general)', size: '~10–100 μm', features: 'Nucleus + organelles. Linear chromosomes with histones.', example: 'All animals, plants, fungi, protists' },
-        { type: 'Neuron', size: 'soma ~10–100 μm; axon up to 1 m', features: 'Specialized for electrical signaling. Doesn\'t divide (mostly).', example: 'Brain, spinal cord, peripheral nerves' },
-        { type: 'Red blood cell (RBC)', size: '~7–8 μm', features: 'No nucleus or organelles in mature form. Packed with hemoglobin.', example: 'Mammalian erythrocytes' },
-        { type: 'White blood cell (lymphocyte)', size: '~7–15 μm', features: 'Immune surveillance. B cells make antibodies; T cells kill infected cells.', example: 'Lymph, blood, lymphoid tissue' },
+        { type: 'Prokaryote (bacteria/archaea)', size: '~1â€“10 Î¼m', features: 'No nucleus or membrane-bound organelles. Circular DNA in nucleoid.', example: 'E. coli, Streptococcus' },
+        { type: 'Eukaryote (general)', size: '~10â€“100 Î¼m', features: 'Nucleus + organelles. Linear chromosomes with histones.', example: 'All animals, plants, fungi, protists' },
+        { type: 'Neuron', size: 'soma ~10â€“100 Î¼m; axon up to 1 m', features: 'Specialized for electrical signaling. Doesn\'t divide (mostly).', example: 'Brain, spinal cord, peripheral nerves' },
+        { type: 'Red blood cell (RBC)', size: '~7â€“8 Î¼m', features: 'No nucleus or organelles in mature form. Packed with hemoglobin.', example: 'Mammalian erythrocytes' },
+        { type: 'White blood cell (lymphocyte)', size: '~7â€“15 Î¼m', features: 'Immune surveillance. B cells make antibodies; T cells kill infected cells.', example: 'Lymph, blood, lymphoid tissue' },
         { type: 'Muscle cell (skeletal)', size: 'long fibers, up to many cm', features: 'Multinucleate. Packed with myofibrils (actin + myosin).', example: 'Biceps, quadriceps' },
-        { type: 'Cardiac muscle', size: '~50–100 μm long', features: 'Branched. Intercalated discs synchronize contraction.', example: 'Heart' },
-        { type: 'Smooth muscle', size: '~100 μm long', features: 'Involuntary, no striations. Around hollow organs.', example: 'Intestines, blood vessels, uterus' },
+        { type: 'Cardiac muscle', size: '~50â€“100 Î¼m long', features: 'Branched. Intercalated discs synchronize contraction.', example: 'Heart' },
+        { type: 'Smooth muscle', size: '~100 Î¼m long', features: 'Involuntary, no striations. Around hollow organs.', example: 'Intestines, blood vessels, uterus' },
         { type: 'Epithelial cell', size: 'varies', features: 'Sheet-forming. Polarized (apical vs basal surfaces).', example: 'Skin, gut lining, glands' },
-        { type: 'Sperm', size: '~50 μm long', features: 'Highly streamlined. Mitochondria for flagellum power. Haploid.', example: 'Male gamete' },
-        { type: 'Egg (oocyte)', size: '~100 μm (human) up to ostrich egg', features: 'Huge cytoplasm with maternal mRNAs + organelles. Haploid.', example: 'Female gamete' },
+        { type: 'Sperm', size: '~50 Î¼m long', features: 'Highly streamlined. Mitochondria for flagellum power. Haploid.', example: 'Male gamete' },
+        { type: 'Egg (oocyte)', size: '~100 Î¼m (human) up to ostrich egg', features: 'Huge cytoplasm with maternal mRNAs + organelles. Haploid.', example: 'Female gamete' },
         { type: 'Stem cell', size: 'varies', features: 'Can self-renew + differentiate. Pluripotent (ESCs) or multipotent (adult).', example: 'Bone marrow HSCs, embryonic stem cells, iPSCs' }
       ];
 
       var SEQUENCING_METHODS = [
         { name: t('stem.dna.sanger_sequencing_2', 'Sanger sequencing'), year: '1977', readLength: '~800 bp', cost: 'high per base', notes: 'Chain termination with ddNTPs. Still used for short, accurate reads. Used for Human Genome Project.' },
         { name: t('stem.dna.illumina_short_read_ngs', 'Illumina (short-read NGS)'), year: '~2007', readLength: '~150-300 bp', cost: 'low per base', notes: 'Sequencing by synthesis with reversible terminators. High throughput, dominates whole-genome sequencing.' },
-        { name: t('stem.dna.ion_torrent', 'Ion Torrent'), year: '2010', readLength: '~200-400 bp', cost: 'moderate', notes: 'Detects H⁺ release as bases are added. No fluorescence — simpler optics.' },
+        { name: t('stem.dna.ion_torrent', 'Ion Torrent'), year: '2010', readLength: '~200-400 bp', cost: 'moderate', notes: 'Detects Hâº release as bases are added. No fluorescence â€” simpler optics.' },
         { name: t('stem.dna.pacbio_smrt', 'PacBio (SMRT)'), year: '2011', readLength: '10-100 kb', cost: 'moderate', notes: 'Long reads. Good for spanning repeats, structural variants, full transcripts.' },
-        { name: t('stem.dna.oxford_nanopore', 'Oxford Nanopore'), year: '~2014', readLength: '1 kb – 4 Mb', cost: 'low per device', notes: 'Detects current changes as DNA passes through pore. Portable (MinION). Used in Ebola, COVID field sequencing.' },
+        { name: t('stem.dna.oxford_nanopore', 'Oxford Nanopore'), year: '~2014', readLength: '1 kb â€“ 4 Mb', cost: 'low per device', notes: 'Detects current changes as DNA passes through pore. Portable (MinION). Used in Ebola, COVID field sequencing.' },
         { name: t('stem.dna.hi_c_chromosome_conformation_capture', 'Hi-C / chromosome conformation capture'), year: '2009', readLength: 'paired-end', cost: 'high', notes: 'Maps 3D genome organization, scaffolds genomes. Reveals chromatin loops and TADs.' }
       ];
 
       var BIOETHICS = [
         { topic: 'Genetic privacy', detail: t('stem.dna.who_can_access_your_genome_gina_2008_u', 'Who can access your genome? GINA (2008, US) prohibits genetic discrimination in employment + health insurance, NOT life insurance.') },
         { topic: 'Direct-to-consumer testing', detail: t('stem.dna.23andme_ancestrydna_reveal_ancestry_he', '23andMe, AncestryDNA reveal ancestry + health risk. Concerns: incidental findings, accuracy, third-party data sharing.') },
-        { topic: 'CRISPR germline editing', detail: t('stem.dna.in_2018_he_jiankui_edited_embryos_for_', 'In 2018, He Jiankui edited embryos for HIV resistance → twin births. Widely condemned. Most countries ban germline editing.') },
+        { topic: 'CRISPR germline editing', detail: t('stem.dna.in_2018_he_jiankui_edited_embryos_for_', 'In 2018, He Jiankui edited embryos for HIV resistance â†’ twin births. Widely condemned. Most countries ban germline editing.') },
         { topic: 'Designer babies', detail: t('stem.dna.hypothetical_selection_or_editing_of_e', 'Hypothetical selection or editing of embryos for non-medical traits (height, IQ). Currently technically limited; ethically contested.') },
         { topic: 'Gene drives', detail: t('stem.dna.engineered_to_spread_through_wild_popu', 'Engineered to spread through wild populations (e.g., mosquito malaria-resistance). Potential ecological irreversibility.') },
         { topic: 'Genetic testing for disease', detail: t('stem.dna.should_we_test_for_untreatable_disease', 'Should we test for untreatable diseases (Huntington)? Some people choose not to know.') },
@@ -4703,15 +5054,15 @@ window.StemLab = window.StemLab || {
       ];
 
       var DNA_HISTORY = [
-        { year: '1865', who: 'Gregor Mendel', what: 'Pea plant experiments → laws of inheritance. Largely ignored until 1900.' },
+        { year: '1865', who: 'Gregor Mendel', what: 'Pea plant experiments â†’ laws of inheritance. Largely ignored until 1900.' },
         { year: '1869', who: 'Friedrich Miescher', what: 'Isolated "nuclein" (DNA) from pus cells. Didn\'t know its function.' },
-        { year: '1928', who: 'Frederick Griffith', what: 'Transformation experiments in pneumonia bacteria → some "transforming principle" carries heredity.' },
+        { year: '1928', who: 'Frederick Griffith', what: 'Transformation experiments in pneumonia bacteria â†’ some "transforming principle" carries heredity.' },
         { year: '1944', who: 'Avery, MacLeod, McCarty', what: 'Showed Griffith\'s transforming principle is DNA.' },
         { year: '1952', who: 'Hershey + Chase', what: 'Blender experiment with radiolabeled phages confirmed DNA = genetic material.' },
         { year: '1953', who: 'Watson, Crick, Franklin, Wilkins', what: 'Double helix structure of DNA (using Franklin\'s Photo 51).' },
         { year: '1958', who: 'Meselson + Stahl', what: 'Showed DNA replication is semi-conservative.' },
-        { year: '1961', who: 'Jacob + Monod', what: 'Operon model — how genes are regulated (lac operon in E. coli).' },
-        { year: '1966', who: 'Nirenberg, Khorana, Holley', what: 'Cracked the genetic code — codon → amino acid mapping.' },
+        { year: '1961', who: 'Jacob + Monod', what: 'Operon model â€” how genes are regulated (lac operon in E. coli).' },
+        { year: '1966', who: 'Nirenberg, Khorana, Holley', what: 'Cracked the genetic code â€” codon â†’ amino acid mapping.' },
         { year: '1977', who: 'Frederick Sanger', what: 'Developed Sanger sequencing. Earlier (1958) sequenced insulin (proteins). Two Nobels.' },
         { year: '1983', who: 'Kary Mullis', what: 'Invented PCR (polymerase chain reaction).' },
         { year: '1990', who: 'NIH + international', what: 'Human Genome Project launched.' },
@@ -4722,8 +5073,8 @@ window.StemLab = window.StemLab || {
 
       function renderGenomesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genome_sizes_across_life', '📏 Genome sizes across life')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.genome_size_does_not_correlate_with_or', 'Genome size does not correlate with organism complexity (C-value paradox). Humans have similar gene counts to roundworms — much of "extra" DNA in larger genomes is non-coding.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.genome_sizes_across_life', 'ðŸ“ Genome sizes across life')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.genome_size_does_not_correlate_with_or', 'Genome size does not correlate with organism complexity (C-value paradox). Humans have similar gene counts to roundworms â€” much of "extra" DNA in larger genomes is non-coding.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -4750,7 +5101,7 @@ window.StemLab = window.StemLab || {
 
       function renderMeiosisSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.meiosis_vs_mitosis_2', '⊞ Meiosis vs Mitosis')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.meiosis_vs_mitosis_2', 'âŠž Meiosis vs Mitosis')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -4776,7 +5127,7 @@ window.StemLab = window.StemLab || {
 
       function renderMendelSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mendelian_genetics_2', '🫛 Mendelian genetics')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.mendelian_genetics_2', 'ðŸ«› Mendelian genetics')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.mendel_s_laws_1865', 'Mendel\'s Laws (1865)')),
             h('div', { className: 'space-y-2' },
@@ -4784,7 +5135,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: 'L'+i, className: 'p-3 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, L.name),
                   h('div', { className: 'text-[11px] text-slate-700 mb-1' }, L.description),
-                  h('div', { className: 'text-[10px] text-emerald-700 italic font-mono' }, '→ ' + L.example)
+                  h('div', { className: 'text-[10px] text-emerald-700 italic font-mono' }, 'â†’ ' + L.example)
                 );
               })
             )
@@ -4816,14 +5167,14 @@ window.StemLab = window.StemLab || {
 
       function renderEpigeneticsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.epigenetics_beyond_the_sequence', '✎ Epigenetics — beyond the sequence')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.epigenetics_beyond_the_sequence', 'âœŽ Epigenetics â€” beyond the sequence')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.heritable_changes_in_gene_expression_t', 'Heritable changes in gene expression that don\'t involve changes to DNA sequence. Influenced by environment, diet, stress.')),
           h('div', { className: 'space-y-2' },
             EPIGENETIC_MECHANISMS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'text-[12px] font-black text-slate-800 mb-1' }, m.mechanism),
                 h('div', { className: 'text-[11px] text-slate-700 mb-1' }, m.description),
-                h('div', { className: 'text-[10px] text-emerald-700 italic' }, '→ ' + m.example)
+                h('div', { className: 'text-[10px] text-emerald-700 italic' }, 'â†’ ' + m.example)
               );
             })
           )
@@ -4832,8 +5183,8 @@ window.StemLab = window.StemLab || {
 
       function renderAminoSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.the_20_standard_amino_acids', '⚕ The 20 standard amino acids')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.building_blocks_of_proteins_9_are_esse', 'Building blocks of proteins. 9 are "essential" (can\'t be synthesized — must come from diet): His, Ile, Leu, Lys, Met, Phe, Thr, Trp, Val.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.the_20_standard_amino_acids', 'âš• The 20 standard amino acids')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.building_blocks_of_proteins_9_are_esse', 'Building blocks of proteins. 9 are "essential" (can\'t be synthesized â€” must come from diet): His, Ile, Leu, Lys, Met, Phe, Thr, Trp, Val.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -4861,7 +5212,7 @@ window.StemLab = window.StemLab || {
 
       function renderOrganellesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.cell_organelles_3', '🔬 Cell organelles')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.cell_organelles_3', 'ðŸ”¬ Cell organelles')),
           h('div', { className: 'space-y-2' },
             ORGANELLES.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4876,7 +5227,7 @@ window.StemLab = window.StemLab || {
 
       function renderCellTypesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.cell_types_2', '🧫 Cell types')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.cell_types_2', 'ðŸ§« Cell types')),
           h('div', { className: 'space-y-2' },
             CELL_TYPES.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4894,7 +5245,7 @@ window.StemLab = window.StemLab || {
 
       function renderSequencingSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_sequencing_technologies', '📊 DNA sequencing technologies')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dna_sequencing_technologies', 'ðŸ“Š DNA sequencing technologies')),
           h('div', { className: 'space-y-2' },
             SEQUENCING_METHODS.map(function(s, i) {
               return h('div', { key: 's'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -4915,7 +5266,7 @@ window.StemLab = window.StemLab || {
 
       function renderEthicsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.bioethics_in_genetics', '⚖ Bioethics in genetics')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.bioethics_in_genetics', 'âš– Bioethics in genetics')),
           h('div', { className: 'space-y-2' },
             BIOETHICS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
@@ -4929,7 +5280,7 @@ window.StemLab = window.StemLab || {
 
       function renderFamousSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.history_of_genetics', '🕰 History of genetics')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.history_of_genetics', 'ðŸ•° History of genetics')),
           h('div', { className: 'space-y-2' },
             DNA_HISTORY.map(function(d, i) {
               return h('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
@@ -4948,24 +5299,24 @@ window.StemLab = window.StemLab || {
         var iq = d2.mutInquiry || { mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { setExp({ mutInquiry: Object.assign({}, iq, patch) }); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-        // expected number of beneficial mutations: μ * N * G * f_beneficial (≈1%)
+        // expected number of beneficial mutations: Î¼ * N * G * f_beneficial (â‰ˆ1%)
         var totalMuts = iq.mutRate * iq.popSize * iq.generations;
         var beneficial = totalMuts * 0.01;
         // Probability one beneficial mutation sweeps to fixation. Use the full Kimura
-        // (1962) diploid formula: (1 − e^(−2s)) / (1 − e^(−4Ns)). Special-cases:
-        //   • s = 0 (neutral)   → 1/(2N)   (drift fixation)
-        //   • Ns ≫ 1 (strong)    → ~2s     (Haldane limit)
-        //   • Ns ≪ 1 (weak)      → ~1/(2N) (effectively neutral)
+        // (1962) diploid formula: (1 âˆ’ e^(âˆ’2s)) / (1 âˆ’ e^(âˆ’4Ns)). Special-cases:
+        //   â€¢ s = 0 (neutral)   â†’ 1/(2N)   (drift fixation)
+        //   â€¢ Ns â‰« 1 (strong)    â†’ ~2s     (Haldane limit)
+        //   â€¢ Ns â‰ª 1 (weak)      â†’ ~1/(2N) (effectively neutral)
         // The old `2s` form contradicted both the widget's own neutral-mutation open
-        // question ("s=0 → fixProb = 1/(2N)") AND the disclaimer text that already
-        // recommended Kimura. Guard against overflow in exp(−4Ns) for large N·s.
+        // question ("s=0 â†’ fixProb = 1/(2N)") AND the disclaimer text that already
+        // recommended Kimura. Guard against overflow in exp(âˆ’4Ns) for large NÂ·s.
         var s = iq.selection;
         var Ns = iq.popSize * s;
         var fixProb;
         if (s === 0) {
           fixProb = 1 / (2 * iq.popSize);
         } else if (Math.abs(4 * Ns) > 700) {
-          // exp overflow → Haldane limit (or 0 if s < 0)
+          // exp overflow â†’ Haldane limit (or 0 if s < 0)
           fixProb = s > 0 ? 2 * s : 0;
         } else {
           var num = 1 - Math.exp(-2 * s);
@@ -4979,16 +5330,16 @@ window.StemLab = window.StemLab || {
           static: { label: t('stem.dna.static', 'Static'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: t('stem.dna.essentially_no_beneficial_fixation_exp', 'Essentially no beneficial fixation expected. Population is in mutation-selection balance or drift-only.') },
           driftdom: { label: 'Drift-dominated', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.dna.drift_dominates_few_expected_fixations', 'Drift dominates: few expected fixations even though mutations occur. Common in small populations.') },
           slowevo: { label: t('stem.dna.slow_evolution', 'Slow evolution'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.dna.a_handful_of_beneficial_mutations_expe', 'A handful of beneficial mutations expected to fix. Standard for most natural populations.') },
-          fastevo: { label: t('stem.dna.fast_evolution', 'Fast evolution'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dna.many_fixations_expected_strong_selecti', 'Many fixations expected — strong selection, large population, or both. E.g., bacterial antibiotic resistance.') },
+          fastevo: { label: t('stem.dna.fast_evolution', 'Fast evolution'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dna.many_fixations_expected_strong_selecti', 'Many fixations expected â€” strong selection, large population, or both. E.g., bacterial antibiotic resistance.') },
           runaway: { label: t('stem.dna.runaway_adaptation', 'Runaway adaptation'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dna.extreme_regime_viruses_cancer_cell_lin', 'Extreme regime: viruses, cancer cell lines, asexual lab populations. Many simultaneous adaptive sweeps.') }
         })[state];
-        // SVG: log-log mutation×population scatter with current point
+        // SVG: log-log mutationÃ—population scatter with current point
         function logX(v) { return 30 + (Math.log10(Math.max(1, v)) / 9) * 270; }
         function logY(v) { return 130 - Math.min(110, (Math.log10(Math.max(1e-12, v)) + 12) / 12 * 110); }
         return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.dna.mutation_inquiry_drift_selection_fixat', '🔬 Mutation Inquiry — Drift, Selection, Fixation')),
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.dna.mutation_inquiry_drift_selection_fixat', 'ðŸ”¬ Mutation Inquiry â€” Drift, Selection, Fixation')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.dna.set_per_base_mutation_rate_population_', 'Set per-base mutation rate, population size, generations, and selection coefficient. Predict how many beneficial mutations actually sweep to fixation. No score, no reveal.')),
-          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ~' + expectedFixed.toFixed(2) + ' fixations expected'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' Â· ~' + expectedFixed.toFixed(2) + ' fixations expected'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
             [
@@ -5019,11 +5370,11 @@ window.StemLab = window.StemLab || {
             h('circle', { cx: logX(1e8), cy: logY(1e-5), r: 14, fill: '#f87171', opacity: 0.2 }),
             h('text', { x: logX(1e8) + 18, y: logY(1e-5) + 3, fill: '#f87171', fontSize: 8, fontWeight: 700 }, 'virus'),
             h('circle', { cx: logX(iq.popSize), cy: logY(iq.mutRate), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
-            h('text', { x: 160, y: 158, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, t('stem.dna.log_n_vs_log_circles_typical_regimes', 'log₁₀(N) vs log₁₀(μ) — circles = typical regimes'))
+            h('text', { x: 160, y: 158, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, t('stem.dna.log_n_vs_log_circles_typical_regimes', 'logâ‚â‚€(N) vs logâ‚â‚€(Î¼) â€” circles = typical regimes'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.mutation_rate_log', 'Mutation rate μ (log)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mutRate.toExponential(1))),
+              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.mutation_rate_log', 'Mutation rate Î¼ (log)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mutRate.toExponential(1))),
               h('input', { type: 'range', min: -10, max: -2, step: 0.5, value: Math.log10(iq.mutRate), onChange: function(e) { setKey('mutRate', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
             ),
             h('label', null,
@@ -5043,30 +5394,30 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, mu: iq.mutRate.toExponential(1), N: iq.popSize.toExponential(1), g: iq.generations, s: iq.selection.toFixed(3), fix: expectedFixed.toFixed(2), state: sm.label }]) });
-            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.dna.log_this_evolutionary_regime', '📋 Log this evolutionary regime')),
+            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.dna.log_this_evolutionary_regime', 'ðŸ“‹ Log this evolutionary regime')),
             h('button', { onClick: function() { setIQ({ mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.dna.reset_5', 'Reset'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
-            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · μ' + e.mu + ' N' + e.N + ' g' + e.g + ' s' + e.s + ' → ' + e.fix); })
+            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' Â· Î¼' + e.mu + ' N' + e.N + ' g' + e.g + ' s' + e.s + ' â†’ ' + e.fix); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.dna.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage on fixation rate? Why?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.hypothesis_input', 'Evolutionary fixation hypothesis'), placeholder: t('stem.dna.e_g_selection_has_more_leverage_than_o', 'e.g., selection has more leverage than μ once N is large enough...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.dna.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.hypothesis_input', 'Evolutionary fixation hypothesis'), placeholder: t('stem.dna.e_g_selection_has_more_leverage_than_o', 'e.g., selection has more leverage than Î¼ once N is large enough...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.dna.i_m_stuck_show_open_questions', "ðŸ¤” I'm stuck â€” show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.dna.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
-              h('li', null, t('stem.dna.when_does_the_regime_move_from_drift_d', 'When does the regime move from drift-dominated to selection-dominated? What does N·s tell you?')),
-              h('li', null, t('stem.dna.why_are_antibiotic_resistance_and_vira', 'Why are antibiotic resistance and viral evolution so fast — which sliders are at their extreme?')),
+              h('li', null, t('stem.dna.when_does_the_regime_move_from_drift_d', 'When does the regime move from drift-dominated to selection-dominated? What does NÂ·s tell you?')),
+              h('li', null, t('stem.dna.why_are_antibiotic_resistance_and_vira', 'Why are antibiotic resistance and viral evolution so fast â€” which sliders are at their extreme?')),
               h('li', null, t('stem.dna.a_neutral_mutation_s_0_has_fixation_pr', 'A neutral mutation (s = 0) has fixation probability 1/(2N). What does that mean for large populations?')),
               h('li', null, t('stem.dna.could_the_same_population_size_be_drif', 'Could the same population size be "drift-dominated" for weak mutations and "selection-dominated" for strong ones simultaneously?'))
             )
           ),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-            h('span', null, t('stem.dna.i_can_explain_why_this_n_g_s_combinati', 'I can explain why this μ × N × g × s combination yields this regime.'))
+            h('span', null, t('stem.dna.i_can_explain_why_this_n_g_s_combinati', 'I can explain why this Î¼ Ã— N Ã— g Ã— s combination yields this regime.'))
           ),
           iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.explanation_input', 'Evolutionary fixation explanation'), placeholder: t('stem.dna.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.dna.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Uses the full Kimura (1962) diploid fixation formula (1−e^(−2s))/(1−e^(−4Ns)), which interpolates between Haldane\'s ~2s in the strong-selection limit (Ns≫1) and the neutral 1/(2N) in the drift limit (Ns≪1 or s=0).'))
+          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.dna.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget â€” no score, no reveal, no answer dump. Uses the full Kimura (1962) diploid fixation formula (1âˆ’e^(âˆ’2s))/(1âˆ’e^(âˆ’4Ns)), which interpolates between Haldane\'s ~2s in the strong-selection limit (Nsâ‰«1) and the neutral 1/(2N) in the drift limit (Nsâ‰ª1 or s=0).'))
         );
       }
 
@@ -5122,16 +5473,16 @@ window.StemLab = window.StemLab || {
       }
 
       var DOG_GENETICS = [
-        { breed: 'Dalmatian', trait: 'Spots', genetics: 'Two genes (S + T loci). Born white; spots develop in first weeks.', notes: 'All Dalmatians historically had uric-acid metabolism mutation → kidney stone risk.' },
-        { breed: 'Golden Retriever', trait: 'Coat color', genetics: 'E-locus extension gene — recessive ee gives yellow/red coat.', notes: 'All Goldens are ee for that locus. Variation in shade due to other genes.' },
+        { breed: 'Dalmatian', trait: 'Spots', genetics: 'Two genes (S + T loci). Born white; spots develop in first weeks.', notes: 'All Dalmatians historically had uric-acid metabolism mutation â†’ kidney stone risk.' },
+        { breed: 'Golden Retriever', trait: 'Coat color', genetics: 'E-locus extension gene â€” recessive ee gives yellow/red coat.', notes: 'All Goldens are ee for that locus. Variation in shade due to other genes.' },
         { breed: 'Border Collie', trait: 'Herding behavior', genetics: 'Strongly heritable behavioral trait. Several genes implicated.', notes: 'Most intelligent dog breed by some measures (vocabulary tests).' },
-        { breed: 'Bulldog (English)', trait: 'Flat face', genetics: 'Brachycephalic syndrome. Selective breeding shaped skull dramatically.', notes: 'Most cannot give birth naturally — ~80% require C-section.' },
+        { breed: 'Bulldog (English)', trait: 'Flat face', genetics: 'Brachycephalic syndrome. Selective breeding shaped skull dramatically.', notes: 'Most cannot give birth naturally â€” ~80% require C-section.' },
         { breed: 'Pug', trait: 'Curly tail + flat face', genetics: 'Similar brachycephalic genetics.', notes: 'Breathing + eye problems common.' },
         { breed: 'Greyhound', trait: 'Speed', genetics: 'Muscle composition + body proportions.', notes: 'Up to ~72 km/h. Heart proportionally larger than other breeds.' },
         { breed: 'Chihuahua', trait: 'Tiny size', genetics: 'IGF1 gene variants.', notes: 'Smallest dog breed. Adults 1-3 kg.' },
         { breed: 'Great Dane', trait: 'Huge size', genetics: 'IGF1 variants opposite of small breeds.', notes: 'Can reach 90+ kg. Short lifespan (~7 years).' },
         { breed: 'Husky / Malamute', trait: 'Blue eyes (some)', genetics: 'Variant near ALX4 gene.', notes: 'About 40% of Huskies have at least one blue eye.' },
-        { breed: 'Poodle', trait: 'Curly hypoallergenic coat', genetics: 'KRT71 mutation → curl.', notes: '"Hypoallergenic" overstated — all dogs produce allergenic proteins.' },
+        { breed: 'Poodle', trait: 'Curly hypoallergenic coat', genetics: 'KRT71 mutation â†’ curl.', notes: '"Hypoallergenic" overstated â€” all dogs produce allergenic proteins.' },
         { breed: 'Basenji', trait: 'Doesn\'t bark', genetics: 'Unusual larynx shape.', notes: 'African breed. "Sings" or yodels instead. Genetically distinct from most modern breeds.' }
       ];
 
@@ -5142,18 +5493,18 @@ window.StemLab = window.StemLab || {
         { fact: t('stem.dna.elephant_tp53_redundancy', 'Elephant TP53 redundancy'), detail: t('stem.dna.elephants_have_20_copies_of_tumor_supp', 'Elephants have ~20 copies of tumor suppressor TP53 (humans have 1). Possible explanation for low cancer rates despite huge cell number.') },
         { fact: t('stem.dna.salamander_regeneration', 'Salamander regeneration'), detail: t('stem.dna.axolotl_can_regrow_limbs_spinal_cord_h', 'Axolotl can regrow limbs, spinal cord, heart, even portions of brain. Studied for regenerative medicine.') },
         { fact: t('stem.dna.camel_hump', 'Camel hump'), detail: t('stem.dna.stores_fat_not_water_myth_allows_survi', 'Stores fat, not water (myth). Allows survival without food for weeks. Water comes from drinking + metabolic byproduct.') },
-        { fact: t('stem.dna.cheetah_inbreeding', 'Cheetah inbreeding'), detail: t('stem.dna.population_crashed_12_000_years_ago_ge', 'Population crashed ~12,000 years ago. Genetic bottleneck → very low diversity. All cheetahs basically twins genetically.') },
+        { fact: t('stem.dna.cheetah_inbreeding', 'Cheetah inbreeding'), detail: t('stem.dna.population_crashed_12_000_years_ago_ge', 'Population crashed ~12,000 years ago. Genetic bottleneck â†’ very low diversity. All cheetahs basically twins genetically.') },
         { fact: t('stem.dna.whale_evolution', 'Whale evolution'), detail: t('stem.dna.modern_whales_descended_from_land_mamm', 'Modern whales descended from land mammals (~50 mya). Closest living relatives: hippos. Vestigial pelvis bones remain.') },
         { fact: t('stem.dna.plant_chromosome_counts', 'Plant chromosome counts'), detail: t('stem.dna.wide_variation_adder_s_tongue_fern_720', 'Wide variation. Adder\'s tongue fern: ~720 pairs (most ever). Rice: 12 pairs. Humans: 23 pairs.') },
         { fact: t('stem.dna.bdelloid_rotifers', 'Bdelloid rotifers'), detail: t('stem.dna.all_female_asexual_for_80_million_year', 'All-female, asexual for ~80 million years. Acquire genes from other species (HGT) instead of mixing via sex.') },
         { fact: t('stem.dna.coelacanth', 'Coelacanth'), detail: t('stem.dna.lobe_finned_fish_thought_extinct_since', 'Lobe-finned fish thought extinct since dinosaur age. Living specimens found 1938. Lineage ~400 million years old.') },
-        { fact: t('stem.dna.horseshoe_crab_blood', 'Horseshoe crab blood'), detail: t('stem.dna.blue_copper_based_hemocyanin_detects_b', 'Blue (copper-based hemocyanin). Detects bacterial endotoxins — used to test vaccines + medical devices.') },
+        { fact: t('stem.dna.horseshoe_crab_blood', 'Horseshoe crab blood'), detail: t('stem.dna.blue_copper_based_hemocyanin_detects_b', 'Blue (copper-based hemocyanin). Detects bacterial endotoxins â€” used to test vaccines + medical devices.') },
         { fact: t('stem.dna.polar_bear_evolution', 'Polar bear evolution'), detail: t('stem.dna.diverged_from_brown_bears_150_000_500_', 'Diverged from brown bears ~150,000-500,000 years ago. Some grizzly-polar hybrids ("pizzly" or "grolar") confirmed in wild.') }
       ];
 
       function renderFamousOrgsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dog_breed_genetics_wild_dna_facts', '🐕 Dog breed genetics + wild DNA facts')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.dog_breed_genetics_wild_dna_facts', 'ðŸ• Dog breed genetics + wild DNA facts')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.dog_breed_genetics', 'Dog breed genetics')),
             h('div', { className: 'space-y-2' },
@@ -5188,7 +5539,7 @@ window.StemLab = window.StemLab || {
         { phylum: 'Nematoda', common: 'Roundworms', features: 'Long, thin, unsegmented', examples: 'C. elegans, hookworm, Trichinella', notes: '~25,000 described, but estimated millions of species. Most abundant animals on Earth.' },
         { phylum: 'Annelida', common: 'Segmented worms', features: 'Segmented body, closed circulatory system', examples: 'Earthworm, leech, marine bristle worms', notes: '~17,000 species. Important soil engineers.' },
         { phylum: 'Mollusca', common: 'Snails, clams, octopuses, squid', features: 'Soft body, often with shell, muscular foot', examples: 'Garden snail, octopus, scallop, giant squid', notes: '~85,000 living species. Octopuses are among most intelligent invertebrates.' },
-        { phylum: 'Arthropoda', common: 'Insects, spiders, crustaceans, centipedes', features: 'Exoskeleton (chitin), segmented body, jointed legs', examples: 'Ant, spider, lobster, butterfly', notes: '~1.1 million described — most of all animals. Probably 5-10× more undescribed.' },
+        { phylum: 'Arthropoda', common: 'Insects, spiders, crustaceans, centipedes', features: 'Exoskeleton (chitin), segmented body, jointed legs', examples: 'Ant, spider, lobster, butterfly', notes: '~1.1 million described â€” most of all animals. Probably 5-10Ã— more undescribed.' },
         { phylum: 'Echinodermata', common: 'Starfish, sea urchins, sea cucumbers, sand dollars', features: 'Radial symmetry (as adults), water vascular system, calcareous endoskeleton', examples: 'Sea star, sea urchin, sand dollar', notes: '~7,000 species. All marine. Bilateral as larvae.' },
         { phylum: 'Chordata', common: 'Vertebrates + close relatives', features: 'Notochord (or backbone), dorsal hollow nerve cord, gill slits at some stage, post-anal tail', examples: 'Fish, frogs, birds, mammals, humans', notes: '~65,000 species. Includes us.' }
       ];
@@ -5205,7 +5556,7 @@ window.StemLab = window.StemLab || {
 
       function renderAnimalGroupsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.animal_classification', '🦁 Animal classification')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.animal_classification', 'ðŸ¦ Animal classification')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.major_animal_phyla', 'Major animal phyla')),
             h('div', { className: 'space-y-2' },
@@ -5236,23 +5587,23 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
-      // ROUND 7 — Final dna data (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROUND 7 â€” Final dna data (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var VITAMINS = [
-        { vitamin: 'A (retinol)', solubility: 'Fat', sources: 'Liver, eggs, dairy, orange/yellow veg (as β-carotene)', role: 'Vision (rhodopsin), immune, skin, growth', deficit: 'Night blindness, xerophthalmia, immune compromise. Toxic in excess (especially retinol form).' },
+        { vitamin: 'A (retinol)', solubility: 'Fat', sources: 'Liver, eggs, dairy, orange/yellow veg (as Î²-carotene)', role: 'Vision (rhodopsin), immune, skin, growth', deficit: 'Night blindness, xerophthalmia, immune compromise. Toxic in excess (especially retinol form).' },
         { vitamin: 'B1 (thiamine)', solubility: 'Water', sources: 'Whole grains, pork, legumes, fortified foods', role: 'Energy metabolism (cofactor for pyruvate dehydrogenase)', deficit: 'Beriberi (cardio + neuro). Wernicke-Korsakoff in alcoholism.' },
-        { vitamin: 'B2 (riboflavin)', solubility: 'Water', sources: 'Dairy, eggs, leafy greens, fortified grains', role: 'FAD + FMN — electron carriers', deficit: 'Cracked lips, sore throat, anemia. Rarely deficient alone.' },
-        { vitamin: 'B3 (niacin)', solubility: 'Water', sources: 'Meat, fish, peanuts, fortified grains', role: 'NAD + NADP — major electron carriers', deficit: 'Pellagra: dermatitis, diarrhea, dementia, death.' },
-        { vitamin: 'B5 (pantothenic acid)', solubility: 'Water', sources: 'Wide variety', role: 'Coenzyme A — central to metabolism', deficit: 'Very rare. Almost never seen due to wide food distribution.' },
+        { vitamin: 'B2 (riboflavin)', solubility: 'Water', sources: 'Dairy, eggs, leafy greens, fortified grains', role: 'FAD + FMN â€” electron carriers', deficit: 'Cracked lips, sore throat, anemia. Rarely deficient alone.' },
+        { vitamin: 'B3 (niacin)', solubility: 'Water', sources: 'Meat, fish, peanuts, fortified grains', role: 'NAD + NADP â€” major electron carriers', deficit: 'Pellagra: dermatitis, diarrhea, dementia, death.' },
+        { vitamin: 'B5 (pantothenic acid)', solubility: 'Water', sources: 'Wide variety', role: 'Coenzyme A â€” central to metabolism', deficit: 'Very rare. Almost never seen due to wide food distribution.' },
         { vitamin: 'B6 (pyridoxine)', solubility: 'Water', sources: 'Meat, fish, potatoes, bananas, chickpeas', role: 'Amino acid + neurotransmitter metabolism', deficit: 'Anemia, dermatitis, depression. Toxic in extreme excess (neuropathy).' },
-        { vitamin: 'B7 (biotin)', solubility: 'Water', sources: 'Egg yolks, nuts, legumes, gut bacteria', role: 'Carboxylase enzymes (fatty acid synthesis, gluconeogenesis)', deficit: 'Rare — caused by raw egg whites long-term (avidin binds biotin).' },
+        { vitamin: 'B7 (biotin)', solubility: 'Water', sources: 'Egg yolks, nuts, legumes, gut bacteria', role: 'Carboxylase enzymes (fatty acid synthesis, gluconeogenesis)', deficit: 'Rare â€” caused by raw egg whites long-term (avidin binds biotin).' },
         { vitamin: 'B9 (folate)', solubility: 'Water', sources: 'Leafy greens, legumes, fortified grains', role: 'Nucleotide synthesis, methylation', deficit: 'Megaloblastic anemia, neural tube defects. Critical pre-conception + pregnancy.' },
         { vitamin: 'B12 (cobalamin)', solubility: 'Water', sources: 'Animal products (meat, fish, dairy, eggs)', role: 'Nucleotide synthesis, nerve myelination', deficit: 'Megaloblastic anemia, permanent neurological damage. Vegans need supplements.' },
         { vitamin: 'C (ascorbic acid)', solubility: 'Water', sources: 'Citrus, peppers, broccoli, strawberries', role: 'Collagen synthesis, antioxidant, iron absorption', deficit: 'Scurvy (gum bleeding, poor healing). Historically killed sailors.' },
         { vitamin: 'D (cholecalciferol)', solubility: 'Fat', sources: 'Sunlight (skin synthesis), fatty fish, fortified milk', role: 'Calcium + phosphorus absorption, immune', deficit: 'Rickets (kids), osteomalacia (adults). Common in northern winters.' },
-        { vitamin: 'E (α-tocopherol)', solubility: 'Fat', sources: 'Nuts, seeds, vegetable oils, leafy greens', role: 'Antioxidant — protects cell membranes', deficit: 'Rare. Neurological problems in deficiency.' },
+        { vitamin: 'E (Î±-tocopherol)', solubility: 'Fat', sources: 'Nuts, seeds, vegetable oils, leafy greens', role: 'Antioxidant â€” protects cell membranes', deficit: 'Rare. Neurological problems in deficiency.' },
         { vitamin: 'K1 (phylloquinone)', solubility: 'Fat', sources: 'Leafy greens', role: 'Blood clotting (carboxylation of clotting factors)', deficit: 'Bleeding. Newborns get vitamin K injection.' },
         { vitamin: 'K2 (menaquinone)', solubility: 'Fat', sources: 'Fermented foods (natto), gut bacteria, animal products', role: 'Calcium regulation, bone + cardiovascular health', deficit: 'Possible role in osteoporosis. Less established than K1.' }
       ];
@@ -5265,19 +5616,19 @@ window.StemLab = window.StemLab || {
         { mineral: 'Potassium', daily: '~3500-4700 mg', role: 'Major intracellular cation, nerve + muscle', sources: 'Bananas, potatoes, beans, leafy greens, citrus' },
         { mineral: 'Sodium', daily: '<2300 mg (UL)', role: 'Major extracellular cation, nerve impulses, BP', sources: 'Salt, processed foods. Most people exceed need.' },
         { mineral: 'Zinc', daily: '~8-11 mg', role: 'Immune function, wound healing, DNA synthesis', sources: 'Oysters, meat, legumes, seeds' },
-        { mineral: 'Copper', daily: '~900 μg', role: 'Iron metabolism, electron transport, neurotransmitter synthesis', sources: 'Shellfish, organ meats, nuts, dark chocolate' },
-        { mineral: 'Iodine', daily: '~150 μg', role: 'Thyroid hormones (T3, T4)', sources: 'Seafood, iodized salt, dairy. Deficiency caused goiter — iodized salt nearly eliminated it.' },
-        { mineral: 'Selenium', daily: '~55 μg', role: 'Antioxidant enzymes (glutathione peroxidase)', sources: 'Brazil nuts (very high), seafood, meat. Just 1-2 Brazil nuts/day meets need.' },
+        { mineral: 'Copper', daily: '~900 Î¼g', role: 'Iron metabolism, electron transport, neurotransmitter synthesis', sources: 'Shellfish, organ meats, nuts, dark chocolate' },
+        { mineral: 'Iodine', daily: '~150 Î¼g', role: 'Thyroid hormones (T3, T4)', sources: 'Seafood, iodized salt, dairy. Deficiency caused goiter â€” iodized salt nearly eliminated it.' },
+        { mineral: 'Selenium', daily: '~55 Î¼g', role: 'Antioxidant enzymes (glutathione peroxidase)', sources: 'Brazil nuts (very high), seafood, meat. Just 1-2 Brazil nuts/day meets need.' },
         { mineral: 'Manganese', daily: '~1.8-2.3 mg', role: 'Enzyme cofactor', sources: 'Whole grains, nuts, leafy greens, tea' },
-        { mineral: 'Chromium', daily: '~25-35 μg', role: 'Insulin function (debated)', sources: 'Broccoli, grape juice, whole grains' },
-        { mineral: 'Molybdenum', daily: '~45 μg', role: 'Enzyme cofactor', sources: 'Legumes, grains, nuts' },
+        { mineral: 'Chromium', daily: '~25-35 Î¼g', role: 'Insulin function (debated)', sources: 'Broccoli, grape juice, whole grains' },
+        { mineral: 'Molybdenum', daily: '~45 Î¼g', role: 'Enzyme cofactor', sources: 'Legumes, grains, nuts' },
         { mineral: 'Fluoride', daily: '~3-4 mg', role: 'Strengthens tooth enamel + bone', sources: 'Fluoridated water, tea, seafood. Excess causes fluorosis.' },
         { mineral: 'Chloride', daily: '~2300 mg', role: 'Extracellular fluid balance, stomach HCl', sources: 'Salt (NaCl). Rarely deficient.' }
       ];
 
       function renderVitaminsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.vitamins_minerals', '💊 Vitamins + minerals')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.vitamins_minerals', 'ðŸ’Š Vitamins + minerals')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.the_13_essential_vitamins', 'The 13 essential vitamins')),
             h('div', { className: 'space-y-2' },
@@ -5319,40 +5670,40 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
-      // ROUND 6 — Final dense data (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROUND 6 â€” Final dense data (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var ORGAN_SYSTEMS = [
-        { system: 'Cardiovascular', parts: 'Heart, arteries, veins, capillaries, blood', function: 'Transports O₂, CO₂, nutrients, hormones, heat. Maintains pressure + circulation.', notes: 'Heart pumps ~5 L/min at rest. ~100,000 km of blood vessels in adult.' },
-        { system: 'Respiratory', parts: 'Lungs, trachea, bronchi, alveoli, diaphragm', function: 'Exchange O₂ + CO₂ between air + blood.', notes: '~500 million alveoli in adult lungs. Surface area ~70 m² (tennis court).' },
+        { system: 'Cardiovascular', parts: 'Heart, arteries, veins, capillaries, blood', function: 'Transports Oâ‚‚, COâ‚‚, nutrients, hormones, heat. Maintains pressure + circulation.', notes: 'Heart pumps ~5 L/min at rest. ~100,000 km of blood vessels in adult.' },
+        { system: 'Respiratory', parts: 'Lungs, trachea, bronchi, alveoli, diaphragm', function: 'Exchange Oâ‚‚ + COâ‚‚ between air + blood.', notes: '~500 million alveoli in adult lungs. Surface area ~70 mÂ² (tennis court).' },
         { system: 'Digestive', parts: 'Mouth, esophagus, stomach, small + large intestine, liver, pancreas', function: 'Break down food, absorb nutrients, eliminate waste.', notes: 'Small intestine ~6-7 m long (in living person; longer at autopsy after muscle relaxes).' },
-        { system: 'Urinary (renal)', parts: 'Kidneys, ureters, bladder, urethra', function: 'Filter blood, regulate water/salt balance, excrete urea + other wastes.', notes: 'Kidneys filter ~180 L/day, reabsorb ~178 L → ~1-2 L urine.' },
+        { system: 'Urinary (renal)', parts: 'Kidneys, ureters, bladder, urethra', function: 'Filter blood, regulate water/salt balance, excrete urea + other wastes.', notes: 'Kidneys filter ~180 L/day, reabsorb ~178 L â†’ ~1-2 L urine.' },
         { system: 'Nervous', parts: 'Brain, spinal cord, peripheral nerves, sensory organs', function: 'Sense, process, respond. Coordinate body.', notes: '~86 billion neurons in brain. Each neuron makes thousands of synaptic connections.' },
-        { system: 'Endocrine', parts: 'Pituitary, thyroid, parathyroid, adrenals, pancreas (islets), gonads, hypothalamus', function: 'Hormone-based slow signaling. Metabolism, growth, reproduction, stress.', notes: 'Hormones travel via blood — slower than nervous signals but reach all cells.' },
+        { system: 'Endocrine', parts: 'Pituitary, thyroid, parathyroid, adrenals, pancreas (islets), gonads, hypothalamus', function: 'Hormone-based slow signaling. Metabolism, growth, reproduction, stress.', notes: 'Hormones travel via blood â€” slower than nervous signals but reach all cells.' },
         { system: 'Immune', parts: 'Lymph nodes, spleen, thymus, bone marrow, lymphatic vessels, immune cells', function: 'Defense against pathogens. Surveillance + memory.', notes: 'Innate (fast, non-specific) + adaptive (slow, specific, has memory).' },
-        { system: 'Lymphatic', parts: 'Lymph vessels, lymph nodes, lymph fluid', function: 'Return interstitial fluid to bloodstream. Transport immune cells. Absorb fats from gut.', notes: 'Closely tied to immune system. No central pump — flows via muscle compression.' },
+        { system: 'Lymphatic', parts: 'Lymph vessels, lymph nodes, lymph fluid', function: 'Return interstitial fluid to bloodstream. Transport immune cells. Absorb fats from gut.', notes: 'Closely tied to immune system. No central pump â€” flows via muscle compression.' },
         { system: 'Muscular', parts: 'Skeletal (~600), cardiac (heart), smooth (organs)', function: 'Movement (skeletal), pumping (cardiac), peristalsis + vasoconstriction (smooth).', notes: '~40% of body weight in adults. ATP-powered actin-myosin sliding.' },
-        { system: 'Skeletal', parts: '206 bones, joints, cartilage, ligaments, tendons', function: 'Support, protect, enable movement. Bone marrow makes blood cells.', notes: 'Born with ~270 bones — many fuse during growth. Largest: femur. Smallest: stapes (ear).' },
-        { system: 'Integumentary', parts: 'Skin, hair, nails, sebaceous + sweat glands', function: 'Barrier to environment. Thermoregulation. Vitamin D synthesis. Sensory input.', notes: 'Largest organ. ~16% of body weight. Adult skin total ~1.5-2 m².' },
+        { system: 'Skeletal', parts: '206 bones, joints, cartilage, ligaments, tendons', function: 'Support, protect, enable movement. Bone marrow makes blood cells.', notes: 'Born with ~270 bones â€” many fuse during growth. Largest: femur. Smallest: stapes (ear).' },
+        { system: 'Integumentary', parts: 'Skin, hair, nails, sebaceous + sweat glands', function: 'Barrier to environment. Thermoregulation. Vitamin D synthesis. Sensory input.', notes: 'Largest organ. ~16% of body weight. Adult skin total ~1.5-2 mÂ².' },
         { system: 'Reproductive', parts: 'Gonads (ovaries/testes), uterus, fallopian tubes, vagina, penis, prostate', function: 'Produce gametes + sex hormones. Enable reproduction.', notes: 'Only system that exists in two different anatomic configurations.' }
       ];
 
       var HORMONES = [
-        { hormone: 'Insulin', source: 'Pancreas (β cells in islets of Langerhans)', target: 'Liver, muscle, fat', effect: 'Lowers blood glucose by promoting uptake + storage as glycogen + fat.' },
-        { hormone: 'Glucagon', source: 'Pancreas (α cells)', target: 'Liver primarily', effect: 'Raises blood glucose. Stimulates glycogen breakdown + gluconeogenesis.' },
-        { hormone: 'Thyroxine (T₄)', source: 'Thyroid gland', target: 'Most cells', effect: 'Sets metabolic rate. Converted to active T₃ in tissues.' },
+        { hormone: 'Insulin', source: 'Pancreas (Î² cells in islets of Langerhans)', target: 'Liver, muscle, fat', effect: 'Lowers blood glucose by promoting uptake + storage as glycogen + fat.' },
+        { hormone: 'Glucagon', source: 'Pancreas (Î± cells)', target: 'Liver primarily', effect: 'Raises blood glucose. Stimulates glycogen breakdown + gluconeogenesis.' },
+        { hormone: 'Thyroxine (Tâ‚„)', source: 'Thyroid gland', target: 'Most cells', effect: 'Sets metabolic rate. Converted to active Tâ‚ƒ in tissues.' },
         { hormone: 'Calcitonin', source: 'Thyroid (C cells)', target: 'Bones, kidneys', effect: 'Lowers blood calcium by promoting deposit in bone.' },
         { hormone: 'Parathyroid hormone (PTH)', source: 'Parathyroid glands', target: 'Bones, kidneys, gut', effect: 'Raises blood calcium. Opposite of calcitonin.' },
         { hormone: 'Cortisol', source: 'Adrenal cortex', target: 'Most cells', effect: 'Stress response. Raises blood glucose. Suppresses immune system. Anti-inflammatory.' },
-        { hormone: 'Aldosterone', source: 'Adrenal cortex', target: 'Kidneys', effect: 'Retains Na⁺ + water, excretes K⁺. Raises blood pressure.' },
-        { hormone: 'Epinephrine (adrenaline)', source: 'Adrenal medulla', target: 'Heart, muscles, smooth muscle', effect: 'Fight-or-flight: ↑ heart rate, ↑ blood glucose, dilates airways.' },
-        { hormone: 'Norepinephrine', source: 'Adrenal medulla + nerve terminals', target: 'Blood vessels, heart', effect: 'Vasoconstriction, ↑ blood pressure. Sympathetic nervous system.' },
+        { hormone: 'Aldosterone', source: 'Adrenal cortex', target: 'Kidneys', effect: 'Retains Naâº + water, excretes Kâº. Raises blood pressure.' },
+        { hormone: 'Epinephrine (adrenaline)', source: 'Adrenal medulla', target: 'Heart, muscles, smooth muscle', effect: 'Fight-or-flight: â†‘ heart rate, â†‘ blood glucose, dilates airways.' },
+        { hormone: 'Norepinephrine', source: 'Adrenal medulla + nerve terminals', target: 'Blood vessels, heart', effect: 'Vasoconstriction, â†‘ blood pressure. Sympathetic nervous system.' },
         { hormone: 'Growth hormone (GH)', source: 'Anterior pituitary', target: 'Most tissues, especially bone + muscle', effect: 'Stimulates growth. Acts via IGF-1 from liver.' },
         { hormone: 'ACTH', source: 'Anterior pituitary', target: 'Adrenal cortex', effect: 'Stimulates cortisol release. Part of HPA axis.' },
-        { hormone: 'TSH', source: 'Anterior pituitary', target: 'Thyroid', effect: 'Stimulates T₃/T₄ production.' },
-        { hormone: 'FSH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Follicle development (♀) / sperm production (♂).' },
-        { hormone: 'LH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Triggers ovulation (♀) / testosterone production (♂).' },
+        { hormone: 'TSH', source: 'Anterior pituitary', target: 'Thyroid', effect: 'Stimulates Tâ‚ƒ/Tâ‚„ production.' },
+        { hormone: 'FSH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Follicle development (â™€) / sperm production (â™‚).' },
+        { hormone: 'LH', source: 'Anterior pituitary', target: 'Ovaries / testes', effect: 'Triggers ovulation (â™€) / testosterone production (â™‚).' },
         { hormone: 'Prolactin', source: 'Anterior pituitary', target: 'Mammary glands', effect: 'Milk production after childbirth.' },
         { hormone: 'Oxytocin', source: 'Posterior pituitary (made in hypothalamus)', target: 'Uterus, mammary glands, brain', effect: 'Childbirth contractions, milk letdown, social bonding.' },
         { hormone: 'ADH (vasopressin)', source: 'Posterior pituitary', target: 'Kidneys', effect: 'Water retention. Concentrates urine.' },
@@ -5363,15 +5714,15 @@ window.StemLab = window.StemLab || {
         { hormone: 'hCG', source: 'Placenta (after implantation)', target: 'Corpus luteum', effect: 'Maintains progesterone in early pregnancy. Detected by pregnancy tests.' },
         { hormone: 'Leptin', source: 'Fat cells', target: 'Hypothalamus', effect: 'Signals satiety. Long-term hunger regulation.' },
         { hormone: 'Ghrelin', source: 'Stomach', target: 'Hypothalamus', effect: 'Triggers hunger before meals.' },
-        { hormone: 'Renin', source: 'Kidneys (juxtaglomerular cells)', target: 'Blood', effect: 'Initiates RAAS (renin-angiotensin-aldosterone) → blood pressure regulation.' },
+        { hormone: 'Renin', source: 'Kidneys (juxtaglomerular cells)', target: 'Blood', effect: 'Initiates RAAS (renin-angiotensin-aldosterone) â†’ blood pressure regulation.' },
         { hormone: 'Erythropoietin (EPO)', source: 'Kidneys', target: 'Bone marrow', effect: 'Stimulates red blood cell production. Notorious in athletic doping.' },
-        { hormone: 'Atrial natriuretic peptide (ANP)', source: 'Heart (atria)', target: 'Kidneys + vessels', effect: 'Lowers blood pressure by promoting Na⁺ + water excretion.' },
-        { hormone: 'Vitamin D (calcitriol)', source: 'Skin (with sunlight) → liver → kidney', target: 'Gut + bone', effect: 'Promotes Ca²⁺ absorption. Acts like steroid hormone despite being a vitamin.' }
+        { hormone: 'Atrial natriuretic peptide (ANP)', source: 'Heart (atria)', target: 'Kidneys + vessels', effect: 'Lowers blood pressure by promoting Naâº + water excretion.' },
+        { hormone: 'Vitamin D (calcitriol)', source: 'Skin (with sunlight) â†’ liver â†’ kidney', target: 'Gut + bone', effect: 'Promotes CaÂ²âº absorption. Acts like steroid hormone despite being a vitamin.' }
       ];
 
       function renderOrganSystemsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_organ_systems', '🫀 Human organ systems')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_organ_systems', 'ðŸ«€ Human organ systems')),
           h('div', { className: 'space-y-2' },
             ORGAN_SYSTEMS.map(function(o, i) {
               return h('div', { key: 'o'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -5387,7 +5738,7 @@ window.StemLab = window.StemLab || {
 
       function renderHormonesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_hormones', '⚛ Major hormones')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_hormones', 'âš› Major hormones')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.hormones_travel_through_the_bloodstrea', 'Hormones travel through the bloodstream to act on distant target tissues. They orchestrate metabolism, growth, reproduction, stress response, and homeostasis.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
@@ -5413,9 +5764,9 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
-      // ROUND 5 — Dense data (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROUND 5 â€” Dense data (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var BIO_ELEMENTS = [
         { element: 'Oxygen (O)', pct: '65%', role: 'In water (~60% of body) + organic molecules.' },
@@ -5429,10 +5780,10 @@ window.StemLab = window.StemLab || {
         { element: 'Sodium (Na)', pct: '0.2%', role: 'Major extracellular cation. Nerve impulses.' },
         { element: 'Chlorine (Cl)', pct: '0.2%', role: 'Stomach HCl. Negative counter-ion.' },
         { element: 'Magnesium (Mg)', pct: '0.05%', role: 'Cofactor for ~300 enzymes. ATP-Mg complex.' },
-        { element: 'Iron (Fe)', pct: '0.006%', role: 'Hemoglobin (O₂ transport). Electron transport.' },
+        { element: 'Iron (Fe)', pct: '0.006%', role: 'Hemoglobin (Oâ‚‚ transport). Electron transport.' },
         { element: 'Zinc (Zn)', pct: '0.003%', role: 'Cofactor for many enzymes. Immune function.' },
         { element: 'Copper (Cu)', pct: '0.0001%', role: 'Cytochrome c oxidase. Iron metabolism.' },
-        { element: 'Iodine (I)', pct: '0.00003%', role: 'Thyroid hormones (T₃, T₄).' },
+        { element: 'Iodine (I)', pct: '0.00003%', role: 'Thyroid hormones (Tâ‚ƒ, Tâ‚„).' },
         { element: 'Selenium (Se)', pct: 'trace', role: 'Antioxidant enzymes (glutathione peroxidase).' },
         { element: 'Manganese (Mn)', pct: 'trace', role: 'Cofactor for various enzymes.' },
         { element: 'Cobalt (Co)', pct: 'trace', role: 'Center of vitamin B12.' },
@@ -5442,25 +5793,25 @@ window.StemLab = window.StemLab || {
 
       var CELL_PATHWAYS = [
         { pathway: 'Glycolysis', input: 'Glucose', output: '2 pyruvate + 2 ATP + 2 NADH', location: 'Cytoplasm', notes: 'Universal pathway. Anaerobic. First step of cellular respiration.' },
-        { pathway: 'Krebs (citric acid) cycle', input: 'Acetyl-CoA', output: 'CO₂ + ATP + NADH + FADH₂', location: 'Mitochondrial matrix', notes: '8 steps. Generates electron carriers for ETC.' },
-        { pathway: 'Electron transport chain', input: 'NADH, FADH₂, O₂', output: '~32 ATP + H₂O', location: 'Inner mitochondrial membrane', notes: 'Where most ATP is made. Proton gradient drives ATP synthase.' },
-        { pathway: 'Fermentation (lactic acid)', input: 'Pyruvate, NADH', output: 'Lactate + NAD⁺', location: 'Cytoplasm', notes: 'When oxygen is short. Muscle burn. Yogurt + sauerkraut bacteria.' },
-        { pathway: 'Fermentation (alcoholic)', input: 'Pyruvate, NADH', output: 'Ethanol + CO₂ + NAD⁺', location: 'Cytoplasm', notes: 'Yeast. Bread, beer, wine.' },
-        { pathway: 'Photosynthesis (light reactions)', input: 'H₂O, light, ADP, NADP⁺', output: 'O₂ + ATP + NADPH', location: 'Thylakoid membrane', notes: 'Splits water → O₂. Chlorophyll absorbs photons.' },
-        { pathway: 'Calvin cycle (dark reactions)', input: 'CO₂, ATP, NADPH', output: 'Glucose (G3P)', location: 'Chloroplast stroma', notes: 'Fixes CO₂ into organic molecules. Doesn\'t require light directly.' },
-        { pathway: 'Beta-oxidation', input: 'Fatty acids', output: 'Acetyl-CoA + NADH + FADH₂', location: 'Mitochondria + peroxisomes', notes: 'How fats are broken down for energy.' },
-        { pathway: 'Urea cycle', input: 'NH₃ + CO₂', output: 'Urea (excreted in urine)', location: 'Liver mitochondria + cytosol', notes: 'Disposes of toxic ammonia from protein breakdown.' },
+        { pathway: 'Krebs (citric acid) cycle', input: 'Acetyl-CoA', output: 'COâ‚‚ + ATP + NADH + FADHâ‚‚', location: 'Mitochondrial matrix', notes: '8 steps. Generates electron carriers for ETC.' },
+        { pathway: 'Electron transport chain', input: 'NADH, FADHâ‚‚, Oâ‚‚', output: '~32 ATP + Hâ‚‚O', location: 'Inner mitochondrial membrane', notes: 'Where most ATP is made. Proton gradient drives ATP synthase.' },
+        { pathway: 'Fermentation (lactic acid)', input: 'Pyruvate, NADH', output: 'Lactate + NADâº', location: 'Cytoplasm', notes: 'When oxygen is short. Muscle burn. Yogurt + sauerkraut bacteria.' },
+        { pathway: 'Fermentation (alcoholic)', input: 'Pyruvate, NADH', output: 'Ethanol + COâ‚‚ + NADâº', location: 'Cytoplasm', notes: 'Yeast. Bread, beer, wine.' },
+        { pathway: 'Photosynthesis (light reactions)', input: 'Hâ‚‚O, light, ADP, NADPâº', output: 'Oâ‚‚ + ATP + NADPH', location: 'Thylakoid membrane', notes: 'Splits water â†’ Oâ‚‚. Chlorophyll absorbs photons.' },
+        { pathway: 'Calvin cycle (dark reactions)', input: 'COâ‚‚, ATP, NADPH', output: 'Glucose (G3P)', location: 'Chloroplast stroma', notes: 'Fixes COâ‚‚ into organic molecules. Doesn\'t require light directly.' },
+        { pathway: 'Beta-oxidation', input: 'Fatty acids', output: 'Acetyl-CoA + NADH + FADHâ‚‚', location: 'Mitochondria + peroxisomes', notes: 'How fats are broken down for energy.' },
+        { pathway: 'Urea cycle', input: 'NHâ‚ƒ + COâ‚‚', output: 'Urea (excreted in urine)', location: 'Liver mitochondria + cytosol', notes: 'Disposes of toxic ammonia from protein breakdown.' },
         { pathway: 'Gluconeogenesis', input: 'Pyruvate, amino acids', output: 'Glucose', location: 'Liver mainly', notes: 'Make glucose when blood sugar drops.' },
         { pathway: 'Pentose phosphate pathway', input: 'Glucose-6-phosphate', output: 'NADPH + ribose-5-phosphate', location: 'Cytoplasm', notes: 'Provides building blocks for nucleotides + reducing power.' },
         { pathway: 'Cholesterol synthesis', input: 'Acetyl-CoA', output: 'Cholesterol', location: 'Smooth ER (liver primarily)', notes: 'Target of statin drugs (HMG-CoA reductase step).' },
-        { pathway: 'Apoptosis (intrinsic)', input: 'DNA damage, stress', output: 'Programmed cell death', location: 'Mitochondria → cytoplasm', notes: 'Releases cytochrome c. Activates caspases.' },
-        { pathway: 'Apoptosis (extrinsic)', input: 'Death receptor activation', output: 'Programmed cell death', location: 'Cell surface → cytoplasm', notes: 'Initiated by external "death signals" (e.g., Fas/FasL).' },
+        { pathway: 'Apoptosis (intrinsic)', input: 'DNA damage, stress', output: 'Programmed cell death', location: 'Mitochondria â†’ cytoplasm', notes: 'Releases cytochrome c. Activates caspases.' },
+        { pathway: 'Apoptosis (extrinsic)', input: 'Death receptor activation', output: 'Programmed cell death', location: 'Cell surface â†’ cytoplasm', notes: 'Initiated by external "death signals" (e.g., Fas/FasL).' },
         { pathway: 'Cell cycle (G1/S/G2/M)', input: 'Growth signals', output: 'Cell division', location: 'Nucleus + cytoplasm', notes: 'Tightly regulated by cyclins + cyclin-dependent kinases (CDKs).' },
-        { pathway: 'MAPK signaling', input: 'Growth factor binding', output: 'Gene expression changes', location: 'Cytoplasm → nucleus', notes: 'Cascade of kinases. Mutations drive many cancers.' },
+        { pathway: 'MAPK signaling', input: 'Growth factor binding', output: 'Gene expression changes', location: 'Cytoplasm â†’ nucleus', notes: 'Cascade of kinases. Mutations drive many cancers.' },
         { pathway: 'PI3K/AKT/mTOR', input: 'Insulin, growth factors', output: 'Cell growth, metabolism', location: 'Cytoplasm', notes: 'Promotes growth + protein synthesis. mTOR inhibitors as immunosuppressants + cancer drugs.' },
-        { pathway: 'JAK-STAT', input: 'Cytokines', output: 'Transcription factor activation', location: 'Cytoplasm → nucleus', notes: 'Immune cell signaling. JAK inhibitors for autoimmune disease.' },
-        { pathway: 'Notch signaling', input: 'Cell-cell contact (Notch ligand)', output: 'Cell fate decisions', location: 'Cell membrane → nucleus', notes: 'Developmental patterning. Lateral inhibition.' },
-        { pathway: 'Wnt/β-catenin', input: 'Wnt protein binding', output: 'Stem cell maintenance + body axis', location: 'Cell membrane → nucleus', notes: 'Critical in embryonic patterning + adult stem cells. Mutations drive colon cancer.' }
+        { pathway: 'JAK-STAT', input: 'Cytokines', output: 'Transcription factor activation', location: 'Cytoplasm â†’ nucleus', notes: 'Immune cell signaling. JAK inhibitors for autoimmune disease.' },
+        { pathway: 'Notch signaling', input: 'Cell-cell contact (Notch ligand)', output: 'Cell fate decisions', location: 'Cell membrane â†’ nucleus', notes: 'Developmental patterning. Lateral inhibition.' },
+        { pathway: 'Wnt/Î²-catenin', input: 'Wnt protein binding', output: 'Stem cell maintenance + body axis', location: 'Cell membrane â†’ nucleus', notes: 'Critical in embryonic patterning + adult stem cells. Mutations drive colon cancer.' }
       ];
 
       var EXTINCT_SPECIES = [
@@ -5477,7 +5828,7 @@ window.StemLab = window.StemLab || {
         { species: 'Quagga', when: '1883', notes: 'Half-striped zebra. Selective breeding program now attempting reverse breeding.' },
         { species: 'Western black rhinoceros', when: '2011 (declared extinct)', notes: 'Subspecies of black rhino. Poaching for horn.' },
         { species: 'Caspian tiger', when: '~1970s', notes: 'Hunted to extinction in Central Asia.' },
-        { species: 'Pyrenean ibex', when: '2000', notes: 'Last specimen cloned briefly in 2003 — first extinct species "resurrected".' },
+        { species: 'Pyrenean ibex', when: '2000', notes: 'Last specimen cloned briefly in 2003 â€” first extinct species "resurrected".' },
         { species: 'Tyrannosaurus rex', when: '66 mya (K-Pg extinction)', notes: 'Cretaceous-Paleogene boundary. Asteroid impact at Chicxulub.' },
         { species: 'Triceratops', when: '66 mya', notes: 'Same K-Pg extinction.' },
         { species: 'Brachiosaurus', when: '~140 mya', notes: 'Late Jurassic.' },
@@ -5487,7 +5838,7 @@ window.StemLab = window.StemLab || {
         { species: 'Megalodon', when: '~3.6 mya', notes: 'Giant shark, ~15-18 m long. Vanished as oceans cooled.' },
         { species: 'Trilobites', when: '252 mya (P-T extinction)', notes: 'Dominant Paleozoic arthropods for 270 million years. Vanished in greatest extinction event.' },
         { species: 'Ammonites', when: '66 mya', notes: 'Spiral-shelled cephalopods. K-Pg extinction.' },
-        { species: 'Dimetrodon', when: '~270 mya', notes: 'Sail-backed synapsid. NOT a dinosaur — closer relative of mammals than reptiles.' },
+        { species: 'Dimetrodon', when: '~270 mya', notes: 'Sail-backed synapsid. NOT a dinosaur â€” closer relative of mammals than reptiles.' },
         { species: 'Anomalocaris', when: '~520 mya', notes: 'Cambrian-era predator. ~1 m long, terrifying to trilobites.' },
         { species: 'Neanderthals', when: '~40,000 BP', notes: 'Closest extinct relative of modern humans. Most non-Africans carry 1-4% Neanderthal DNA.' },
         { species: 'Denisovans', when: '~30,000 BP', notes: 'Sister group to Neanderthals. Known mostly from DNA in finger bone + teeth. Tibetans carry adaptive Denisovan genes.' }
@@ -5495,7 +5846,7 @@ window.StemLab = window.StemLab || {
 
       function renderPeriodTableBioSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.elements_of_life', '⌬ Elements of life')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.elements_of_life', 'âŒ¬ Elements of life')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.approximate_elemental_composition_of_t', 'Approximate elemental composition of the human body by mass. Just 11 elements account for >99%. CHNOPS (C, H, N, O, P, S) make up almost all organic molecules.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
@@ -5522,7 +5873,7 @@ window.StemLab = window.StemLab || {
 
       function renderPathwaysSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_cell_pathways', '⇄ Major cell pathways')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.major_cell_pathways', 'â‡„ Major cell pathways')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -5550,8 +5901,8 @@ window.StemLab = window.StemLab || {
 
       function renderExtinctSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.extinct_species_2', '🦕 Extinct species')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.recent_extinctions_mostly_human_caused', 'Recent extinctions (mostly human-caused) + notable prehistoric extinctions. Earth has had 5 mass extinctions — many argue we\'re in a 6th now.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.extinct_species_2', 'ðŸ¦• Extinct species')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.recent_extinctions_mostly_human_caused', 'Recent extinctions (mostly human-caused) + notable prehistoric extinctions. Earth has had 5 mass extinctions â€” many argue we\'re in a 6th now.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -5575,16 +5926,16 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
-      // ROUND 4 — Dense reference data (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROUND 4 â€” Dense reference data (2026-05-31)
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var ANIMAL_FACTS = [
-        { animal: 'African elephant', lifespan: '60-70 yr', genome: '3.2 Gb', notes: 'Largest land animal. Pregnancy ~22 months — longest of any mammal.' },
+        { animal: 'African elephant', lifespan: '60-70 yr', genome: '3.2 Gb', notes: 'Largest land animal. Pregnancy ~22 months â€” longest of any mammal.' },
         { animal: 'Blue whale', lifespan: '80-90 yr', genome: '2.4 Gb', notes: 'Largest animal ever. Heart size of a small car. ~30 m long.' },
         { animal: 'Ostrich', lifespan: '40-45 yr', genome: '1.2 Gb', notes: 'Largest bird. Cannot fly. Eggs ~1.5 kg.' },
         { animal: 'Komodo dragon', lifespan: '~30 yr', genome: '1.5 Gb', notes: 'Largest lizard. Saliva harbors potent bacteria + venom.' },
-        { animal: 'Cheetah', lifespan: '10-12 yr', genome: '2.4 Gb', notes: 'Fastest land animal (~110 km/h). Very low genetic diversity → inbreeding risk.' },
+        { animal: 'Cheetah', lifespan: '10-12 yr', genome: '2.4 Gb', notes: 'Fastest land animal (~110 km/h). Very low genetic diversity â†’ inbreeding risk.' },
         { animal: 'Honeybee', lifespan: '6 wk (worker) / 5 yr (queen)', genome: '236 Mb', notes: 'Genetic sex determination via haploid males.' },
         { animal: 'Octopus (common)', lifespan: '1-2 yr', genome: '2.7 Gb', notes: 'Highly intelligent. Edits RNA extensively (unusual). Female dies after eggs hatch.' },
         { animal: 'Naked mole rat', lifespan: '30+ yr', genome: '2.8 Gb', notes: 'Extreme longevity for rodent. Cancer-resistant. Cold-blooded mammal (one of few).' },
@@ -5594,26 +5945,26 @@ window.StemLab = window.StemLab || {
         { animal: 'Mantis shrimp', lifespan: '~3-6 yr', genome: '~1.2 Gb', notes: '16 types of color receptors (humans: 3). Strikes faster than .22 caliber bullet.' },
         { animal: 'Bowhead whale', lifespan: '200+ yr', genome: '2.7 Gb', notes: 'Longest-lived mammal. Cancer resistance studied for human aging research.' },
         { animal: 'Greenland shark', lifespan: '300-500 yr', genome: 'unknown', notes: 'Longest-lived vertebrate. Slow growth + cold habitat.' },
-        { animal: 'Cicadas (periodical)', lifespan: '13 or 17 yr', genome: 'small', notes: 'Spend years underground; emerge in massive swarms. Prime numbers — predator avoidance hypothesis.' },
+        { animal: 'Cicadas (periodical)', lifespan: '13 or 17 yr', genome: 'small', notes: 'Spend years underground; emerge in massive swarms. Prime numbers â€” predator avoidance hypothesis.' },
         { animal: 'Anglerfish (female)', lifespan: '20+ yr', genome: 'unknown', notes: 'Bioluminescent lure. Males fuse permanently to females (parasitic mating).' }
       ];
 
       var PLANT_FACTS = [
-        { topic: 'Photosynthesis', detail: t('stem.dna.6co_6h_o_light_c_h_o_6o_powered_by_chl', '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂. Powered by chlorophyll. Source of most atmospheric oxygen.') },
-        { topic: 'C3, C4, CAM pathways', detail: t('stem.dna.c3_most_plants_c4_corn_sugarcane_effic', 'C3 (most plants), C4 (corn, sugarcane — efficient at high T), CAM (cacti, succulents — open stomata at night to save water).') },
-        { topic: 'Stomata', detail: t('stem.dna.tiny_pores_on_leaves_let_co_in_o_water', 'Tiny pores on leaves. Let CO₂ in + O₂/water out. Open/close in response to light, water, CO₂.') },
+        { topic: 'Photosynthesis', detail: t('stem.dna.6co_6h_o_light_c_h_o_6o_powered_by_chl', '6COâ‚‚ + 6Hâ‚‚O + light â†’ Câ‚†Hâ‚â‚‚Oâ‚† + 6Oâ‚‚. Powered by chlorophyll. Source of most atmospheric oxygen.') },
+        { topic: 'C3, C4, CAM pathways', detail: t('stem.dna.c3_most_plants_c4_corn_sugarcane_effic', 'C3 (most plants), C4 (corn, sugarcane â€” efficient at high T), CAM (cacti, succulents â€” open stomata at night to save water).') },
+        { topic: 'Stomata', detail: t('stem.dna.tiny_pores_on_leaves_let_co_in_o_water', 'Tiny pores on leaves. Let COâ‚‚ in + Oâ‚‚/water out. Open/close in response to light, water, COâ‚‚.') },
         { topic: 'Xylem', detail: t('stem.dna.carries_water_minerals_up_from_roots_d', 'Carries water + minerals UP from roots. Dead cells. Drives transpiration pull.') },
         { topic: 'Phloem', detail: t('stem.dna.carries_sugars_from_leaves_to_rest_of_', 'Carries sugars from leaves to rest of plant. Living cells. Bidirectional.') },
-        { topic: 'Auxin', detail: t('stem.dna.plant_hormone_phototropism_growing_tow', 'Plant hormone. Phototropism (growing toward light). Concentration on dark side → cells elongate → bends toward light.') },
+        { topic: 'Auxin', detail: t('stem.dna.plant_hormone_phototropism_growing_tow', 'Plant hormone. Phototropism (growing toward light). Concentration on dark side â†’ cells elongate â†’ bends toward light.') },
         { topic: 'Ethylene', detail: t('stem.dna.gas_hormone_ripens_fruit_why_ripe_bana', 'Gas hormone. Ripens fruit. Why ripe bananas ripen others. Stress signaling.') },
         { topic: 'Gibberellin', detail: t('stem.dna.promotes_stem_elongation_seed_germinat', 'Promotes stem elongation, seed germination, flowering.') },
         { topic: 'Cytokinin', detail: t('stem.dna.promotes_cell_division_delays_leaf_sen', 'Promotes cell division. Delays leaf senescence.') },
         { topic: 'Abscisic acid (ABA)', detail: t('stem.dna.stress_hormone_closes_stomata_when_wat', 'Stress hormone. Closes stomata when water-stressed. Promotes seed dormancy.') },
-        { topic: 'Pollen + double fertilization', detail: t('stem.dna.angiosperm_unique_one_sperm_fertilizes', 'Angiosperm unique: one sperm fertilizes egg (embryo), one fertilizes polar nuclei (endosperm — food for seed).') },
+        { topic: 'Pollen + double fertilization', detail: t('stem.dna.angiosperm_unique_one_sperm_fertilizes', 'Angiosperm unique: one sperm fertilizes egg (embryo), one fertilizes polar nuclei (endosperm â€” food for seed).') },
         { topic: 'Coevolution with pollinators', detail: t('stem.dna.flower_shape_color_scent_match_pollina', 'Flower shape + color + scent match pollinator preferences. Some highly specialized (orchid + specific moth).') },
         { topic: 'Carnivorous plants', detail: t('stem.dna.evolved_in_nutrient_poor_soils_venus_f', 'Evolved in nutrient-poor soils. Venus flytrap (snap), pitcher plants (pitfall), sundew (sticky).') },
         { topic: 'Mycorrhiza', detail: t('stem.dna.symbiosis_with_fungi_fungi_extend_root', 'Symbiosis with fungi. Fungi extend root reach; plants supply sugars. ~85% of plant species.') },
-        { topic: 'Nitrogen fixation (legumes)', detail: t('stem.dna.rhizobium_bacteria_in_root_nodules_con', 'Rhizobium bacteria in root nodules convert N₂ → NH₃. Why beans + peas are protein-rich + soil-improving.') },
+        { topic: 'Nitrogen fixation (legumes)', detail: t('stem.dna.rhizobium_bacteria_in_root_nodules_con', 'Rhizobium bacteria in root nodules convert Nâ‚‚ â†’ NHâ‚ƒ. Why beans + peas are protein-rich + soil-improving.') },
         { topic: 'Crop genetics', detail: t('stem.dna.domestication_selected_larger_seeds_wh', 'Domestication selected larger seeds (wheat), non-shattering (rice), sweeter fruit (apples). Recent: hybrid corn, GM, marker-assisted selection.') },
         { topic: 'Polyploidy in plants', detail: t('stem.dna.common_in_plants_rare_in_animals_wheat', 'Common in plants (rare in animals). Wheat is hexaploid (6 sets), strawberry is octoploid. Often increases vigor + crop yield.') },
         { topic: 'Lignin', detail: t('stem.dna.stiffening_compound_in_cell_walls_of_w', 'Stiffening compound in cell walls of wood. Why wood is stiff + slow to decompose.') }
@@ -5621,15 +5972,15 @@ window.StemLab = window.StemLab || {
 
       var FAMOUS_GENES = [
         { gene: 'BRCA1, BRCA2', chr: '17q, 13q', function: 'DNA double-strand break repair', notes: 'Mutations greatly increase breast + ovarian cancer risk.' },
-        { gene: 'TP53', chr: '17p', function: 'Tumor suppressor — "guardian of the genome"', notes: 'Mutated in ~50% of human cancers. Activates apoptosis when DNA damaged.' },
-        { gene: 'APOE', chr: '19q', function: 'Lipid transport', notes: 'APOE4 variant: 3-4× increased Alzheimer\'s risk. APOE2 protective.' },
+        { gene: 'TP53', chr: '17p', function: 'Tumor suppressor â€” "guardian of the genome"', notes: 'Mutated in ~50% of human cancers. Activates apoptosis when DNA damaged.' },
+        { gene: 'APOE', chr: '19q', function: 'Lipid transport', notes: 'APOE4 variant: 3-4Ã— increased Alzheimer\'s risk. APOE2 protective.' },
         { gene: 'CFTR', chr: '7q', function: 'Chloride channel in epithelial cells', notes: 'Mutations cause cystic fibrosis. ~1500 different mutations known.' },
-        { gene: 'HBB', chr: '11p', function: 'β-globin (oxygen transport)', notes: 'Sickle cell + β-thalassemia mutations. Glu6Val in HbS.' },
+        { gene: 'HBB', chr: '11p', function: 'Î²-globin (oxygen transport)', notes: 'Sickle cell + Î²-thalassemia mutations. Glu6Val in HbS.' },
         { gene: 'HTT', chr: '4p', function: 'Huntingtin (function not fully clear)', notes: 'Huntington\'s disease: CAG repeat expansion (>36).' },
         { gene: 'FMR1', chr: 'Xq', function: 'Fragile X mental retardation protein', notes: 'Most common inherited intellectual disability. CGG repeat expansion.' },
-        { gene: 'DMD', chr: 'Xp', function: 'Dystrophin (muscle structure)', notes: 'Largest known human gene (~2.4 Mb, 79 exons). Mutations → Duchenne muscular dystrophy.' },
+        { gene: 'DMD', chr: 'Xp', function: 'Dystrophin (muscle structure)', notes: 'Largest known human gene (~2.4 Mb, 79 exons). Mutations â†’ Duchenne muscular dystrophy.' },
         { gene: 'SRY', chr: 'Yp', function: 'Sex-determining region', notes: 'Triggers testis development in mammals.' },
-        { gene: 'MC1R', chr: '16q', function: 'Melanocortin 1 receptor', notes: 'Variants → red hair + fair skin. Higher melanoma risk.' },
+        { gene: 'MC1R', chr: '16q', function: 'Melanocortin 1 receptor', notes: 'Variants â†’ red hair + fair skin. Higher melanoma risk.' },
         { gene: 'LCT', chr: '2q', function: 'Lactase (digests lactose)', notes: 'Most humans lose expression after weaning. Persistence common in pastoral populations.' },
         { gene: 'ALDH2', chr: '12q', function: 'Aldehyde dehydrogenase (alcohol metabolism)', notes: 'Variant common in East Asian populations causes "alcohol flush".' },
         { gene: 'CYP2D6', chr: '22q', function: 'Drug metabolism (cytochrome P450)', notes: '>100 variants. Affects ~25% of prescription drug metabolism.' },
@@ -5643,19 +5994,19 @@ window.StemLab = window.StemLab || {
       ];
 
       var MODEL_ORGANISMS = [
-        { org: 'E. coli (bacterium)', size: '1-2 μm', life: '20 min div.', genome: '4.6 Mb', why: 'Easy to culture, fast, well-characterized. Workhorse of molecular biology + cloning.' },
-        { org: 'Saccharomyces cerevisiae (yeast)', size: '5 μm', life: '~90 min div.', genome: '12 Mb', why: 'Simplest eukaryote. Cell biology, drug screens, brewing + baking.' },
-        { org: 'Caenorhabditis elegans (worm)', size: '1 mm', life: '~3 days egg→adult', genome: '100 Mb', why: '959 somatic cells, all mapped. Apoptosis discovered here. Transparent.' },
+        { org: 'E. coli (bacterium)', size: '1-2 Î¼m', life: '20 min div.', genome: '4.6 Mb', why: 'Easy to culture, fast, well-characterized. Workhorse of molecular biology + cloning.' },
+        { org: 'Saccharomyces cerevisiae (yeast)', size: '5 Î¼m', life: '~90 min div.', genome: '12 Mb', why: 'Simplest eukaryote. Cell biology, drug screens, brewing + baking.' },
+        { org: 'Caenorhabditis elegans (worm)', size: '1 mm', life: '~3 days eggâ†’adult', genome: '100 Mb', why: '959 somatic cells, all mapped. Apoptosis discovered here. Transparent.' },
         { org: 'Drosophila melanogaster (fruit fly)', size: '~3 mm', life: '~10 days', genome: '140 Mb', why: 'Genetics workhorse since 1910 (Morgan). Many human disease orthologs.' },
         { org: 'Zebrafish (Danio rerio)', size: '~4 cm adult', life: '3-4 mo to adult', genome: '1.4 Gb', why: 'Transparent embryos. Vertebrate development + drug screens.' },
         { org: 'Xenopus laevis (African clawed frog)', size: '~10 cm', life: '~1 yr to adult', genome: '3.1 Gb (tetraploid)', why: 'Large eggs. Embryology + cell biology. Once used for pregnancy tests.' },
         { org: 'Mouse (Mus musculus)', size: '~7-10 cm body', life: '~3 wk gestation', genome: '2.7 Gb', why: 'Closest standard mammalian model. Knockout + transgenic technology mature.' },
-        { org: 'Rat', size: '~25 cm', life: '~3 wk gestation', genome: '2.7 Gb', why: 'Bigger than mouse → easier surgery. Behavioral + cardiovascular studies.' },
+        { org: 'Rat', size: '~25 cm', life: '~3 wk gestation', genome: '2.7 Gb', why: 'Bigger than mouse â†’ easier surgery. Behavioral + cardiovascular studies.' },
         { org: 'Arabidopsis thaliana', size: '~30 cm tall', life: '~6 wk', genome: '135 Mb', why: 'Small genome, short life cycle, easy to transform. Plant genetics model.' },
         { org: 'Chimp (Pan troglodytes)', size: 'human-like', life: '~40-50 yr', genome: '3.1 Gb', why: '~98.8% DNA shared with humans. Closest model for human-specific questions; restricted use.' },
         { org: 'Macaque (rhesus monkey)', size: '~50 cm', life: '~25 yr', genome: '2.9 Gb', why: 'Cardiovascular + immunology. Used for vaccine development.' },
-        { org: 'Tetrahymena (ciliate)', size: '~50 μm', life: '~3 hr div.', genome: '125 Mb', why: 'Telomeres + ribozymes discovered here.' },
-        { org: 'Bacteriophage λ', size: '~100 nm', life: '~30 min', genome: '48 kb', why: 'Lysogeny, gene regulation, recombination. Classic molecular biology.' },
+        { org: 'Tetrahymena (ciliate)', size: '~50 Î¼m', life: '~3 hr div.', genome: '125 Mb', why: 'Telomeres + ribozymes discovered here.' },
+        { org: 'Bacteriophage Î»', size: '~100 nm', life: '~30 min', genome: '48 kb', why: 'Lysogeny, gene regulation, recombination. Classic molecular biology.' },
         { org: 'iPS cells (human, in vitro)', size: 'cell-scale', life: 'continuous culture', genome: '3.0 Gb', why: 'Reprogrammed from adult cells. Generate any tissue type. Avoid embryo ethics.' }
       ];
 
@@ -5666,11 +6017,11 @@ window.StemLab = window.StemLab || {
         { concept: 'Biosphere', detail: t('stem.dna.all_ecosystems_on_earth_the_zone_of_li', 'All ecosystems on Earth. The zone of life.') },
         { concept: 'Niche', detail: t('stem.dna.role_of_a_species_in_its_ecosystem_two', 'Role of a species in its ecosystem. Two species can\'t occupy exactly the same niche (competitive exclusion).') },
         { concept: 'Habitat', detail: t('stem.dna.physical_place_where_an_organism_lives', 'Physical place where an organism lives.') },
-        { concept: 'Food web', detail: t('stem.dna.network_of_who_eats_whom_trophic_level', 'Network of who eats whom. Trophic levels: producers → primary consumers → secondary → etc.') },
+        { concept: 'Food web', detail: t('stem.dna.network_of_who_eats_whom_trophic_level', 'Network of who eats whom. Trophic levels: producers â†’ primary consumers â†’ secondary â†’ etc.') },
         { concept: 'Producers (autotrophs)', detail: t('stem.dna.make_own_food_plants_algae_some_bacter', 'Make own food. Plants, algae, some bacteria. Foundation of food chains.') },
         { concept: 'Consumers (heterotrophs)', detail: t('stem.dna.get_food_by_eating_others_herbivores_c', 'Get food by eating others. Herbivores, carnivores, omnivores.') },
         { concept: 'Decomposers', detail: t('stem.dna.break_down_dead_matter_fungi_bacteria_', 'Break down dead matter. Fungi, bacteria, detritivores. Recycle nutrients.') },
-        { concept: 'Symbiosis', detail: t('stem.dna.close_interaction_between_species_mutu', 'Close interaction between species. Mutualism (+/+), commensalism (+/0), parasitism (+/−).') },
+        { concept: 'Symbiosis', detail: t('stem.dna.close_interaction_between_species_mutu', 'Close interaction between species. Mutualism (+/+), commensalism (+/0), parasitism (+/âˆ’).') },
         { concept: 'Keystone species', detail: t('stem.dna.disproportionate_effect_on_ecosystem_d', 'Disproportionate effect on ecosystem despite low abundance. Sea otters control urchins, which control kelp.') },
         { concept: 'Carrying capacity (K)', detail: t('stem.dna.maximum_population_size_environment_ca', 'Maximum population size environment can sustain. Resources, predation, disease limit K.') },
         { concept: 'Exponential growth', detail: t('stem.dna.population_grows_at_constant_rate_dn_d', 'Population grows at constant rate. dN/dt = rN. Cannot continue forever.') },
@@ -5678,18 +6029,18 @@ window.StemLab = window.StemLab || {
         { concept: 'r-selected species', detail: t('stem.dna.many_offspring_little_parental_care_sh', 'Many offspring, little parental care, short-lived. Insects, weeds. Boom-and-bust.') },
         { concept: 'K-selected species', detail: t('stem.dna.few_offspring_lots_of_care_long_lived_', 'Few offspring, lots of care, long-lived. Whales, humans, oaks.') },
         { concept: 'Succession', detail: t('stem.dna.predictable_changes_in_community_over_', 'Predictable changes in community over time. Primary (bare rock) vs secondary (after disturbance).') },
-        { concept: 'Biodiversity', detail: t('stem.dna.variety_of_life_species_richness_count', 'Variety of life. Species richness (count) + evenness (distribution). High biodiversity → ecosystem resilience.') },
-        { concept: 'Extinction', detail: t('stem.dna.background_rate_1_species_per_million_', 'Background rate ~1 species per million per year. Current rate 100-1000× background due to humans.') },
+        { concept: 'Biodiversity', detail: t('stem.dna.variety_of_life_species_richness_count', 'Variety of life. Species richness (count) + evenness (distribution). High biodiversity â†’ ecosystem resilience.') },
+        { concept: 'Extinction', detail: t('stem.dna.background_rate_1_species_per_million_', 'Background rate ~1 species per million per year. Current rate 100-1000Ã— background due to humans.') },
         { concept: 'Biome', detail: t('stem.dna.major_life_zone_defined_by_climate_veg', 'Major life zone defined by climate + vegetation. Tropical rainforest, desert, tundra, savanna, etc.') },
-        { concept: 'Nitrogen cycle', detail: t('stem.dna.n_nh_fixation_no_no_nitrification_orga', 'N₂ → NH₃ (fixation) → NO₂⁻ → NO₃⁻ (nitrification) → organic N → back to N₂ (denitrification).') },
-        { concept: 'Carbon cycle', detail: t('stem.dna.co_photosynthesis_organic_c_respiratio', 'CO₂ ↔ photosynthesis ↔ organic C ↔ respiration. Fossil fuels move long-buried C back to atmosphere.') },
-        { concept: 'Water cycle', detail: t('stem.dna.evaporation_condensation_precipitation', 'Evaporation → condensation → precipitation → runoff/groundwater → back to ocean.') },
+        { concept: 'Nitrogen cycle', detail: t('stem.dna.n_nh_fixation_no_no_nitrification_orga', 'Nâ‚‚ â†’ NHâ‚ƒ (fixation) â†’ NOâ‚‚â» â†’ NOâ‚ƒâ» (nitrification) â†’ organic N â†’ back to Nâ‚‚ (denitrification).') },
+        { concept: 'Carbon cycle', detail: t('stem.dna.co_photosynthesis_organic_c_respiratio', 'COâ‚‚ â†” photosynthesis â†” organic C â†” respiration. Fossil fuels move long-buried C back to atmosphere.') },
+        { concept: 'Water cycle', detail: t('stem.dna.evaporation_condensation_precipitation', 'Evaporation â†’ condensation â†’ precipitation â†’ runoff/groundwater â†’ back to ocean.') },
         { concept: 'Biogeochemical cycles', detail: t('stem.dna.movement_of_elements_c_n_p_s_through_b', 'Movement of elements (C, N, P, S) through biotic + abiotic compartments.') }
       ];
 
       function renderAnimals2Section() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.notable_animals', '🐾 Notable animals')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.notable_animals', 'ðŸ¾ Notable animals')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -5716,7 +6067,7 @@ window.StemLab = window.StemLab || {
 
       function renderPlantsSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.plant_biology_2', '🌿 Plant biology')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.plant_biology_2', 'ðŸŒ¿ Plant biology')),
           h('div', { className: 'space-y-1' },
             PLANT_FACTS.map(function(p, i) {
               return h('div', { key: 'p'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
@@ -5730,7 +6081,7 @@ window.StemLab = window.StemLab || {
 
       function renderFamousGenesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.famous_human_genes', '⌬ Famous human genes')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.famous_human_genes', 'âŒ¬ Famous human genes')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -5757,14 +6108,14 @@ window.StemLab = window.StemLab || {
 
       function renderModelorgSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.model_organisms_in_research', '🧫 Model organisms in research')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.model_organisms_in_research', 'ðŸ§« Model organisms in research')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.each_chosen_for_properties_that_make_b', 'Each chosen for properties that make biology tractable: small size, fast life cycle, ease of culture, genetic tools.')),
           h('div', { className: 'space-y-2' },
             MODEL_ORGANISMS.map(function(m, i) {
               return h('div', { key: 'm'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
                   h('span', { className: 'text-[12px] font-black text-slate-800' }, m.org),
-                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto' }, m.size + ' · ' + m.life + ' · ' + m.genome)
+                  h('span', { className: 'text-[10px] text-emerald-700 font-mono ml-auto' }, m.size + ' Â· ' + m.life + ' Â· ' + m.genome)
                 ),
                 h('div', { className: 'text-[11px] text-slate-700 leading-relaxed' }, m.why)
               );
@@ -5775,7 +6126,7 @@ window.StemLab = window.StemLab || {
 
       function renderEcologySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.ecology_concepts', '🌍 Ecology concepts')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.ecology_concepts', 'ðŸŒ Ecology concepts')),
           h('div', { className: 'space-y-1' },
             ECOLOGY_CONCEPTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
@@ -5787,23 +6138,23 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
       // ROUND 3 EXPANSION (2026-05-31)
-      // ═════════════════════════════════════════════════════════════════════
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
       var PCR_STEPS = [
-        { step: '1. Denaturation', temp: '94-98°C', duration: '~30 sec', detail: t('stem.dna.heat_separates_double_stranded_dna_int', 'Heat separates double-stranded DNA into single strands. Hydrogen bonds break.') },
-        { step: '2. Annealing', temp: '50-65°C', duration: '~30 sec', detail: t('stem.dna.primers_short_dna_sequences_bind_to_co', 'Primers (short DNA sequences) bind to complementary regions on each template strand.') },
-        { step: '3. Extension', temp: '72°C', duration: '~30-60 sec', detail: t('stem.dna.dna_polymerase_taq_from_thermus_aquati', 'DNA polymerase (Taq, from Thermus aquaticus) extends primers, synthesizing new DNA.') }
+        { step: '1. Denaturation', temp: '94-98Â°C', duration: '~30 sec', detail: t('stem.dna.heat_separates_double_stranded_dna_int', 'Heat separates double-stranded DNA into single strands. Hydrogen bonds break.') },
+        { step: '2. Annealing', temp: '50-65Â°C', duration: '~30 sec', detail: t('stem.dna.primers_short_dna_sequences_bind_to_co', 'Primers (short DNA sequences) bind to complementary regions on each template strand.') },
+        { step: '3. Extension', temp: '72Â°C', duration: '~30-60 sec', detail: t('stem.dna.dna_polymerase_taq_from_thermus_aquati', 'DNA polymerase (Taq, from Thermus aquaticus) extends primers, synthesizing new DNA.') }
       ];
 
       var PCR_FACTS = [
-        { fact: t('stem.dna.amplification', 'Amplification'), detail: t('stem.dna.each_cycle_doubles_target_dna_30_cycle', 'Each cycle doubles target DNA. 30 cycles → ~10⁹-fold amplification.') },
+        { fact: t('stem.dna.amplification', 'Amplification'), detail: t('stem.dna.each_cycle_doubles_target_dna_30_cycle', 'Each cycle doubles target DNA. 30 cycles â†’ ~10â¹-fold amplification.') },
         { fact: t('stem.dna.inventor', 'Inventor'), detail: t('stem.dna.kary_mullis_invented_pcr_1983_won_nobe', 'Kary Mullis invented PCR (1983); won Nobel Prize 1993.') },
-        { fact: t('stem.dna.taq_polymerase', 'Taq polymerase'), detail: t('stem.dna.from_thermophilic_bacterium_in_hot_spr', 'From thermophilic bacterium in hot springs. Survives 95°C denaturation step.') },
+        { fact: t('stem.dna.taq_polymerase', 'Taq polymerase'), detail: t('stem.dna.from_thermophilic_bacterium_in_hot_spr', 'From thermophilic bacterium in hot springs. Survives 95Â°C denaturation step.') },
         { fact: t('stem.dna.qpcr_real_time', 'qPCR (real-time)'), detail: t('stem.dna.fluorescent_dyes_report_on_amplificati', 'Fluorescent dyes report on amplification in real time. Used for COVID tests, gene expression.') },
         { fact: 'RT-PCR', detail: t('stem.dna.reverse_transcription_pcr_converts_rna', 'Reverse Transcription PCR. Converts RNA to cDNA first. Used for RNA viruses (COVID, HIV, flu).') },
-        { fact: t('stem.dna.digital_pcr_dpcr', 'Digital PCR (dPCR)'), detail: t('stem.dna.partitions_sample_into_thousands_of_dr', 'Partitions sample into thousands of droplets. Counts presence/absence — highly accurate quantification.') },
+        { fact: t('stem.dna.digital_pcr_dpcr', 'Digital PCR (dPCR)'), detail: t('stem.dna.partitions_sample_into_thousands_of_dr', 'Partitions sample into thousands of droplets. Counts presence/absence â€” highly accurate quantification.') },
         { fact: t('stem.dna.applications', 'Applications'), detail: t('stem.dna.diagnostics_forensics_gene_cloning_anc', 'Diagnostics, forensics, gene cloning, ancient DNA (Jurassic Park-style; real life, mostly < 1 million years).') }
       ];
 
@@ -5814,17 +6165,17 @@ window.StemLab = window.StemLab || {
         { component: 'DSB (double-strand break)', role: 'Cas9 cleaves both DNA strands.', notes: 'Triggers cellular repair: NHEJ (error-prone) or HDR (homology-directed).' },
         { component: 'Repair templates (HDR)', role: 'Provide a sequence to insert at the cut site.', notes: 'Allows precise edits, but HDR is inefficient outside dividing cells.' },
         { component: 'Prime editing', role: '"Search-and-replace" without DSBs.', notes: 'Newer method (2019). Higher precision, fewer off-target effects.' },
-        { component: 'Base editing', role: 'Single-base changes (e.g., C→T) without DSB.', notes: 'Combines Cas9 nickase + deaminase. Useful for point mutations.' }
+        { component: 'Base editing', role: 'Single-base changes (e.g., Câ†’T) without DSB.', notes: 'Combines Cas9 nickase + deaminase. Useful for point mutations.' }
       ];
 
       var CRISPR_APPS = [
-        { use: 'Sickle cell + β-thalassemia (Casgevy)', detail: t('stem.dna.first_crispr_therapy_fda_approved_dec_', 'First CRISPR therapy FDA-approved (Dec 2023). Edits patient\'s stem cells ex vivo.') },
+        { use: 'Sickle cell + Î²-thalassemia (Casgevy)', detail: t('stem.dna.first_crispr_therapy_fda_approved_dec_', 'First CRISPR therapy FDA-approved (Dec 2023). Edits patient\'s stem cells ex vivo.') },
         { use: 'CAR-T cancer therapy', detail: t('stem.dna.crispr_engineers_t_cells_to_attack_can', 'CRISPR engineers T cells to attack cancer. Several Phase I/II trials.') },
         { use: 'Drug discovery screens', detail: t('stem.dna.crispr_knockout_libraries_reveal_which', 'CRISPR knockout libraries reveal which genes are essential for disease.') },
         { use: 'Animal disease models', detail: t('stem.dna.faster_than_traditional_knockout_mice_', 'Faster than traditional knockout mice. Used widely in research.') },
         { use: 'Crop improvement', detail: t('stem.dna.disease_resistant_rice_mushrooms_that_', 'Disease-resistant rice, mushrooms that don\'t brown, gluten-free wheat (still mostly research).') },
         { use: 'Mosquito gene drives', detail: t('stem.dna.spread_sterility_or_malaria_resistance', 'Spread sterility or malaria-resistance through wild populations. Field trials being debated.') },
-        { use: 'Heritable editing', detail: t('stem.dna.he_jiankui_2018_edited_human_embryos_m', 'He Jiankui (2018) edited human embryos → moral + scientific outcry. Currently banned in most countries.') }
+        { use: 'Heritable editing', detail: t('stem.dna.he_jiankui_2018_edited_human_embryos_m', 'He Jiankui (2018) edited human embryos â†’ moral + scientific outcry. Currently banned in most countries.') }
       ];
 
       var VIRUS_FAMILIES = [
@@ -5832,25 +6183,25 @@ window.StemLab = window.StemLab || {
         { family: 'Coronaviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'SARS-CoV-2 (COVID), MERS, SARS, common cold strains', notes: 'Largest RNA genomes (~30 kb). Crown of spike proteins.' },
         { family: 'Flaviviridae', genome: '(+)ssRNA', envelope: 'Yes', examples: 'Dengue, Zika, West Nile, yellow fever, hepatitis C', notes: 'Mostly mosquito-borne.' },
         { family: 'Herpesviridae', genome: 'dsDNA', envelope: 'Yes', examples: 'HSV-1/2, varicella zoster, Epstein-Barr, CMV', notes: 'Establish lifelong latent infection.' },
-        { family: 'Orthomyxoviridae', genome: '(−)ssRNA segmented', envelope: 'Yes', examples: 'Influenza A, B, C', notes: 'Segmented genome → reassortment → new strains.' },
-        { family: 'Paramyxoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Measles, mumps, RSV, Nipah', notes: 'Measles among most contagious diseases known (R₀ ~12-18).' },
+        { family: 'Orthomyxoviridae', genome: '(âˆ’)ssRNA segmented', envelope: 'Yes', examples: 'Influenza A, B, C', notes: 'Segmented genome â†’ reassortment â†’ new strains.' },
+        { family: 'Paramyxoviridae', genome: '(âˆ’)ssRNA', envelope: 'Yes', examples: 'Measles, mumps, RSV, Nipah', notes: 'Measles among most contagious diseases known (Râ‚€ ~12-18).' },
         { family: 'Picornaviridae', genome: '(+)ssRNA', envelope: 'No', examples: 'Polio, rhinovirus (common cold), hepatitis A, enteroviruses', notes: 'Small (pico) RNA viruses.' },
         { family: 'Retroviridae', genome: 'ssRNA (reverse-transcribed)', envelope: 'Yes', examples: 'HIV, HTLV', notes: 'Integrates into host genome. Reverse transcriptase converts RNA to DNA.' },
-        { family: 'Rhabdoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Rabies, vesicular stomatitis virus', notes: 'Bullet-shaped.' },
-        { family: 'Filoviridae', genome: '(−)ssRNA', envelope: 'Yes', examples: 'Ebola, Marburg', notes: 'Hemorrhagic fevers. Filamentous shape.' },
+        { family: 'Rhabdoviridae', genome: '(âˆ’)ssRNA', envelope: 'Yes', examples: 'Rabies, vesicular stomatitis virus', notes: 'Bullet-shaped.' },
+        { family: 'Filoviridae', genome: '(âˆ’)ssRNA', envelope: 'Yes', examples: 'Ebola, Marburg', notes: 'Hemorrhagic fevers. Filamentous shape.' },
         { family: 'Poxviridae', genome: 'dsDNA', envelope: 'Complex', examples: 'Smallpox (eradicated), mpox, vaccinia', notes: 'Largest viruses. Replicate in cytoplasm (unusual for DNA viruses).' },
         { family: 'Bacteriophage', genome: 'varies', envelope: 'sometimes', examples: 'T4 (E. coli), lambda', notes: 'Infect bacteria. Used as research tools + phage therapy (alternative to antibiotics).' }
       ];
 
       var MICROBIOME_FACTS = [
-        { topic: 'How many', detail: t('stem.dna.human_body_has_10_human_cells_10_10_mi', 'Human body has ~10¹³ human cells + ~10¹³-10¹⁴ microbial cells. Roughly equal in number.') },
+        { topic: 'How many', detail: t('stem.dna.human_body_has_10_human_cells_10_10_mi', 'Human body has ~10Â¹Â³ human cells + ~10Â¹Â³-10Â¹â´ microbial cells. Roughly equal in number.') },
         { topic: 'Microbial diversity', detail: t('stem.dna.500_1_000_bacterial_species_in_healthy', '500-1,000+ bacterial species in healthy adult gut. Plus archaea, fungi, viruses.') },
-        { topic: 'Genome contribution', detail: t('stem.dna.microbiome_carries_100_more_genes_than', 'Microbiome carries ~100× more genes than human genome. Adds many metabolic capabilities.') },
-        { topic: 'Gut-brain axis', detail: t('stem.dna.gut_microbes_communicate_with_brain_vi', 'Gut microbes communicate with brain via vagus nerve, immune signals, metabolites. Linked to mood, behavior — though many specific claims overstated.') },
-        { topic: 'Antibiotic disruption', detail: t('stem.dna.broad_spectrum_antibiotics_wipe_out_co', 'Broad-spectrum antibiotics wipe out commensals → may take months/years to recover. Some shifts persistent.') },
+        { topic: 'Genome contribution', detail: t('stem.dna.microbiome_carries_100_more_genes_than', 'Microbiome carries ~100Ã— more genes than human genome. Adds many metabolic capabilities.') },
+        { topic: 'Gut-brain axis', detail: t('stem.dna.gut_microbes_communicate_with_brain_vi', 'Gut microbes communicate with brain via vagus nerve, immune signals, metabolites. Linked to mood, behavior â€” though many specific claims overstated.') },
+        { topic: 'Antibiotic disruption', detail: t('stem.dna.broad_spectrum_antibiotics_wipe_out_co', 'Broad-spectrum antibiotics wipe out commensals â†’ may take months/years to recover. Some shifts persistent.') },
         { topic: 'C. diff + FMT', detail: t('stem.dna.fecal_microbiota_transplant_fmt_cures_', 'Fecal microbiota transplant (FMT) cures recurrent C. difficile infection ~90% of time. Other applications still experimental.') },
-        { topic: 'Skin microbiome', detail: t('stem.dna.varies_by_body_site_forehead_oily_domi', 'Varies by body site: forehead (oily, dominated by Cutibacterium acnes), gut (anaerobes), armpit (apocrine sweat + bacteria → body odor).') },
-        { topic: 'Vaginal microbiome', detail: t('stem.dna.healthy_lactobacillus_dominant_low_ph_', 'Healthy: Lactobacillus dominant, low pH. Imbalance → bacterial vaginosis (BV).') },
+        { topic: 'Skin microbiome', detail: t('stem.dna.varies_by_body_site_forehead_oily_domi', 'Varies by body site: forehead (oily, dominated by Cutibacterium acnes), gut (anaerobes), armpit (apocrine sweat + bacteria â†’ body odor).') },
+        { topic: 'Vaginal microbiome', detail: t('stem.dna.healthy_lactobacillus_dominant_low_ph_', 'Healthy: Lactobacillus dominant, low pH. Imbalance â†’ bacterial vaginosis (BV).') },
         { topic: 'Oral microbiome', detail: t('stem.dna.700_species_affects_cavities_gum_disea', '~700 species. Affects cavities, gum disease. Linked to cardiovascular risk.') },
         { topic: 'Birth mode', detail: t('stem.dna.vaginal_birth_seeds_infant_with_matern', 'Vaginal birth seeds infant with maternal vaginal microbes; C-section seeds with skin microbes. Long-term effects studied (some contested).') },
         { topic: 'Breast milk + microbiome', detail: t('stem.dna.contains_live_bacteria_prebiotics_hmos', 'Contains live bacteria + prebiotics (HMOs) that feed specific gut microbes (B. infantis).') }
@@ -5858,7 +6209,7 @@ window.StemLab = window.StemLab || {
 
       var EMBRYO_STAGES = [
         { stage: 'Fertilization', time: 'Day 0-1', detail: t('stem.dna.sperm_egg_fuse_diploid_zygote_forms', 'Sperm + egg fuse. Diploid zygote forms.') },
-        { stage: 'Cleavage', time: 'Day 1-3', detail: t('stem.dna.rapid_cell_divisions_without_growth_2_', 'Rapid cell divisions without growth. 2 → 4 → 8 → 16 cell stage.') },
+        { stage: 'Cleavage', time: 'Day 1-3', detail: t('stem.dna.rapid_cell_divisions_without_growth_2_', 'Rapid cell divisions without growth. 2 â†’ 4 â†’ 8 â†’ 16 cell stage.') },
         { stage: 'Morula', time: 'Day 3-4', detail: t('stem.dna.solid_ball_of_16_32_cells', 'Solid ball of ~16-32 cells.') },
         { stage: 'Blastocyst', time: 'Day 5-6', detail: t('stem.dna.hollow_ball_with_inner_cell_mass_futur', 'Hollow ball with inner cell mass (future embryo) + trophoblast (future placenta).') },
         { stage: 'Implantation', time: 'Day 6-12', detail: t('stem.dna.blastocyst_attaches_to_uterine_wall', 'Blastocyst attaches to uterine wall.') },
@@ -5876,9 +6227,9 @@ window.StemLab = window.StemLab || {
 
       var CANCER_HALLMARKS = [
         { hallmark: 'Sustained proliferative signaling', detail: t('stem.dna.cancer_cells_produce_their_own_growth_', 'Cancer cells produce their own growth signals or activate receptors constitutively.') },
-        { hallmark: 'Evading growth suppressors', detail: t('stem.dna.tumor_suppressors_p53_rb_inactivated_c', 'Tumor suppressors (p53, Rb) inactivated → cells divide despite stop signals.') },
+        { hallmark: 'Evading growth suppressors', detail: t('stem.dna.tumor_suppressors_p53_rb_inactivated_c', 'Tumor suppressors (p53, Rb) inactivated â†’ cells divide despite stop signals.') },
         { hallmark: 'Resisting cell death', detail: t('stem.dna.apoptosis_pathways_disabled_damaged_ce', 'Apoptosis pathways disabled. Damaged cells survive when they should die.') },
-        { hallmark: 'Enabling replicative immortality', detail: t('stem.dna.reactivate_telomerase_telomeres_mainta', 'Reactivate telomerase → telomeres maintained → unlimited divisions.') },
+        { hallmark: 'Enabling replicative immortality', detail: t('stem.dna.reactivate_telomerase_telomeres_mainta', 'Reactivate telomerase â†’ telomeres maintained â†’ unlimited divisions.') },
         { hallmark: 'Inducing angiogenesis', detail: t('stem.dna.tumors_recruit_blood_vessels_to_feed_g', 'Tumors recruit blood vessels to feed growing mass.') },
         { hallmark: 'Activating invasion + metastasis', detail: t('stem.dna.cells_lose_adhesion_migrate_colonize_d', 'Cells lose adhesion, migrate, colonize distant tissues.') },
         { hallmark: 'Reprogramming energy metabolism', detail: t('stem.dna.warburg_effect_tumors_use_glycolysis_e', 'Warburg effect: tumors use glycolysis even in oxygen presence.') },
@@ -5905,16 +6256,16 @@ window.StemLab = window.StemLab || {
 
       var NEURO_BASICS = [
         { topic: 'Neuron parts', detail: t('stem.dna.dendrites_receive_soma_cell_body_axon_', 'Dendrites (receive), soma (cell body), axon (transmit), terminals (release neurotransmitter).') },
-        { topic: 'Action potential', detail: t('stem.dna.all_or_none_electrical_signal_sodium_i', 'All-or-none electrical signal. Sodium in → depolarize → potassium out → repolarize. ~1 ms. Traveling speed: ~1 m/s (unmyelinated) to ~100 m/s (myelinated).') },
+        { topic: 'Action potential', detail: t('stem.dna.all_or_none_electrical_signal_sodium_i', 'All-or-none electrical signal. Sodium in â†’ depolarize â†’ potassium out â†’ repolarize. ~1 ms. Traveling speed: ~1 m/s (unmyelinated) to ~100 m/s (myelinated).') },
         { topic: 'Myelin sheath', detail: t('stem.dna.fatty_insulation_made_by_glia_oligoden', 'Fatty insulation made by glia (oligodendrocytes in CNS, Schwann cells in PNS). Speeds conduction. Destroyed in MS.') },
-        { topic: 'Synapse', detail: t('stem.dna.junction_between_neurons_electrical_or', 'Junction between neurons. Electrical or chemical (most). ~0.02 μm gap.') },
+        { topic: 'Synapse', detail: t('stem.dna.junction_between_neurons_electrical_or', 'Junction between neurons. Electrical or chemical (most). ~0.02 Î¼m gap.') },
         { topic: 'Neurotransmitters', detail: t('stem.dna.chemical_messengers_across_synapse_exc', 'Chemical messengers across synapse. Excitatory (glutamate), inhibitory (GABA), modulatory (serotonin, dopamine).') },
         { topic: 'Dopamine', detail: t('stem.dna.reward_motivation_motor_control_low_in', 'Reward, motivation, motor control. Low in Parkinson\'s; dysregulated in schizophrenia.') },
         { topic: 'Serotonin', detail: t('stem.dna.mood_sleep_appetite_ssris_target_reupt', 'Mood, sleep, appetite. SSRIs target reuptake.') },
         { topic: 'Acetylcholine', detail: t('stem.dna.neuromuscular_junction_memory_attentio', 'Neuromuscular junction. Memory + attention. Low in Alzheimer\'s.') },
         { topic: 'Glia (non-neuron brain cells)', detail: t('stem.dna.astrocytes_support_bbb_oligodendrocyte', 'Astrocytes (support, BBB), oligodendrocytes (myelin in CNS), microglia (immune), ependymal cells (CSF).') },
-        { topic: 'Brain regions', detail: t('stem.dna.cerebrum_cortex_thinking_perception_ce', 'Cerebrum (cortex — thinking, perception), cerebellum (motor coordination), brainstem (autonomic), limbic system (emotion + memory).') },
-        { topic: 'Neuroplasticity', detail: t('stem.dna.brain_reorganizes_itself_strongest_in_', 'Brain reorganizes itself — strongest in childhood but ongoing throughout life. Basis of learning.') },
+        { topic: 'Brain regions', detail: t('stem.dna.cerebrum_cortex_thinking_perception_ce', 'Cerebrum (cortex â€” thinking, perception), cerebellum (motor coordination), brainstem (autonomic), limbic system (emotion + memory).') },
+        { topic: 'Neuroplasticity', detail: t('stem.dna.brain_reorganizes_itself_strongest_in_', 'Brain reorganizes itself â€” strongest in childhood but ongoing throughout life. Basis of learning.') },
         { topic: 'Blood-brain barrier', detail: t('stem.dna.tight_junctions_between_brain_capillar', 'Tight junctions between brain capillary cells keep most molecules out. Major challenge for CNS drug delivery.') },
         { topic: 'Brain energy', detail: t('stem.dna.20_of_body_s_energy_at_rest_despite_be', '~20% of body\'s energy at rest despite being ~2% of mass. Mostly Na+/K+ pumps maintaining ion gradients.') }
       ];
@@ -5929,7 +6280,7 @@ window.StemLab = window.StemLab || {
         { kingdom: 'Animalia', features: 'Multicellular, heterotrophic, mobile (at some stage), no cell wall.', notes: 'Mostly sexual reproduction. From sponges (no true tissues) to vertebrates.' },
         { kingdom: 'Plantae', features: 'Multicellular, photosynthetic (chlorophyll a+b), cellulose cell walls.', notes: 'Includes algae (debated), mosses, ferns, gymnosperms, angiosperms.' },
         { kingdom: 'Fungi', features: 'Multicellular (mostly), heterotrophic, chitin cell walls. Digest externally.', notes: 'Decomposers + symbionts. Yeasts, molds, mushrooms, lichens (fungus + alga).' },
-        { kingdom: 'Protista', features: 'Eukaryotes that aren\'t plants, animals, or fungi. Polyphyletic — being reclassified.', notes: 'Amoebas, algae (some), Plasmodium (malaria), euglena.' }
+        { kingdom: 'Protista', features: 'Eukaryotes that aren\'t plants, animals, or fungi. Polyphyletic â€” being reclassified.', notes: 'Amoebas, algae (some), Plasmodium (malaria), euglena.' }
       ];
 
       var BIOTECH_APPS = [
@@ -5951,16 +6302,16 @@ window.StemLab = window.StemLab || {
 
       function renderPcrSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.pcr_polymerase_chain_reaction_2', '🧪 PCR (polymerase chain reaction)')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.pcr_polymerase_chain_reaction_2', 'ðŸ§ª PCR (polymerase chain reaction)')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.amplifies_specific_dna_sequences_a_bil', 'Amplifies specific DNA sequences a billion-fold. Workhorse of molecular biology, diagnostics, and forensics.')),
           h('div', { className: 'mb-3' },
-            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.the_3_steps_repeated_30', 'The 3 steps (repeated ~30×)')),
+            h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.the_3_steps_repeated_30', 'The 3 steps (repeated ~30Ã—)')),
             h('div', { className: 'space-y-1' },
               PCR_STEPS.map(function(s, i) {
                 return h('div', { key: 's'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
                     h('span', { className: 'text-[11px] font-black text-slate-800' }, s.step),
-                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.temp + ' · ' + s.duration)
+                    h('span', { className: 'text-[10px] font-mono text-emerald-700 ml-auto' }, s.temp + ' Â· ' + s.duration)
                   ),
                   h('div', { className: 'text-[10px] text-slate-700' }, s.detail)
                 );
@@ -5981,7 +6332,7 @@ window.StemLab = window.StemLab || {
 
       function renderCrisprSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.crispr_cas9', '✂ CRISPR-Cas9')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.crispr_cas9', 'âœ‚ CRISPR-Cas9')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.originally_a_bacterial_immune_system_n', 'Originally a bacterial immune system; now a programmable gene-editing tool. Doudna + Charpentier shared 2020 Nobel Prize.')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.components_concepts', 'Components + concepts')),
@@ -6009,8 +6360,8 @@ window.StemLab = window.StemLab || {
 
       function renderVirusesSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.virus_families_2', '🦠 Virus families')),
-          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.viruses_are_non_living_infectious_agen', 'Viruses are non-living infectious agents — they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.virus_families_2', 'ðŸ¦  Virus families')),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.viruses_are_non_living_infectious_agen', 'Viruses are non-living infectious agents â€” they need a host cell to replicate. Classified by genome type (Baltimore classification), envelope, shape.')),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'min-w-full text-[11px] border-collapse' },
               h('thead', null,
@@ -6038,9 +6389,9 @@ window.StemLab = window.StemLab || {
 
       function renderMicrobiomeSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_microbiome', '🦠 Human microbiome')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.human_microbiome', 'ðŸ¦  Human microbiome')),
           h('div', { className: 'p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3' },
-            h('strong', null, t('stem.dna.note', '⚠ Note: ')), t('stem.dna.microbiome_science_is_advancing_fast_m', 'Microbiome science is advancing fast. Many popular claims (specific probiotic strains "curing" specific conditions) outrun the evidence. Stick to robustly replicated findings.')
+            h('strong', null, t('stem.dna.note', 'âš  Note: ')), t('stem.dna.microbiome_science_is_advancing_fast_m', 'Microbiome science is advancing fast. Many popular claims (specific probiotic strains "curing" specific conditions) outrun the evidence. Stick to robustly replicated findings.')
           ),
           h('div', { className: 'space-y-1' },
             MICROBIOME_FACTS.map(function(m, i) {
@@ -6055,7 +6406,7 @@ window.StemLab = window.StemLab || {
 
       function renderDevelSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.embryonic_development', '🥚 Embryonic development')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.embryonic_development', 'ðŸ¥š Embryonic development')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.stages_human_approximate', 'Stages (human, approximate)')),
             h('div', { className: 'space-y-1' },
@@ -6070,7 +6421,7 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.germ_layers_what_each_forms', 'Germ layers — what each forms')),
+          h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.germ_layers_what_each_forms', 'Germ layers â€” what each forms')),
           h('div', { className: 'space-y-1' },
             GERM_LAYERS.map(function(L, i) {
               return h('div', { key: 'L'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
@@ -6084,7 +6435,7 @@ window.StemLab = window.StemLab || {
 
       function renderCancerSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.hallmarks_of_cancer', '⚕ Hallmarks of cancer')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.hallmarks_of_cancer', 'âš• Hallmarks of cancer')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, t('stem.dna.defined_by_hanahan_weinberg_2000_updat', 'Defined by Hanahan + Weinberg (2000, updated 2011). Most cancers acquire most of these hallmarks. Therapy increasingly targets specific hallmarks.')),
           h('div', { className: 'space-y-1' },
             CANCER_HALLMARKS.map(function(c, i) {
@@ -6099,7 +6450,7 @@ window.StemLab = window.StemLab || {
 
       function renderImmunitySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.the_immune_system', '🛡 The immune system')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.the_immune_system', 'ðŸ›¡ The immune system')),
           h('div', { className: 'space-y-2' },
             IMMUNE_COMPONENTS.map(function(c, i) {
               return h('div', { key: 'c'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-emerald-400 border border-slate-200' },
@@ -6113,7 +6464,7 @@ window.StemLab = window.StemLab || {
 
       function renderNeuroSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.neuroscience_basics', '🧠 Neuroscience basics')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.neuroscience_basics', 'ðŸ§  Neuroscience basics')),
           h('div', { className: 'space-y-1' },
             NEURO_BASICS.map(function(n, i) {
               return h('div', { key: 'n'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-emerald-400 border border-slate-200' },
@@ -6127,7 +6478,7 @@ window.StemLab = window.StemLab || {
 
       function renderTreeSection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.tree_of_life_2', '🌳 Tree of life')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.tree_of_life_2', 'ðŸŒ³ Tree of life')),
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[12px] font-bold text-slate-700 mb-1' }, t('stem.dna.three_domains_woese_1990', 'Three domains (Woese, 1990)')),
             h('div', { className: 'space-y-2' },
@@ -6155,7 +6506,7 @@ window.StemLab = window.StemLab || {
 
       function renderBiotech2Section() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.biotechnology_applications', '💉 Biotechnology applications')),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.dna.biotechnology_applications', 'ðŸ’‰ Biotechnology applications')),
           h('div', { className: 'space-y-2' },
             BIOTECH_APPS.map(function(b, i) {
               return h('div', { key: 'b'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
@@ -6171,7 +6522,7 @@ window.StemLab = window.StemLab || {
         h('summary', null,
           h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDA'),
           h('span', null, 'Biology reference library'),
-          h('span', { className: 'text-[10px] font-medium text-slate-500' }, expSection ? 'Selection saved' : '45 topics · optional')
+          h('span', { className: 'text-[10px] font-medium text-slate-500' }, expSection ? 'Selection saved' : '45 topics Â· optional')
         ),
         h('div', { className: 'px-3 pb-3' },
           expHeader(),

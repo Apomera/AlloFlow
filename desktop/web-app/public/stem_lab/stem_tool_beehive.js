@@ -17179,7 +17179,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ═══ DRONE FLIGHT MODE — Three.js WebGL flight experience with accessible 2D fallback ═══
         // ═══════════════════════════════════════════════════════════════
         var _droneCvRef = React.useRef(null);
-        var _droneOverlayCvRef = React.useRef(null);
         var _droneAnimId = React.useRef(0);
         var _droneKeys = React.useRef({});
         var _droneState = React.useRef({
@@ -17448,6 +17447,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (state.phase === 'mating') return 'Queen signal acquired';
           return 'Review replay - revise the route';
         }
+        function droneTrainingStatus(state) {
+          state = state || {};
+          if (!state.trainingActive) return { active: false, complete: !!state.trainingComplete, index: -1, total: 5, label: '', instruction: '', hint: '', progress: 0 };
+          var boosts = Math.floor((state.nectarCollected != null ? state.nectarCollected : state.pollenCollected) || 0);
+          var steps = [
+            { label: 'Build forward speed', instruction: 'Hold W or Arrow Up until airspeed reaches 2.0.', hint: 'Release after a short burst; gliding preserves energy.', met: (Number(state.speed) || 0) >= 2 },
+            { label: 'Skim one nectar boost', instruction: 'Stay below 30 ft and steer through a glowing bloom.', hint: 'The bloom refills energy and demonstrates approach control.', met: boosts >= 1 },
+            { label: 'Climb into the DCA band', instruction: 'Use Space in short pulses until altitude reaches 100 ft.', hint: 'Keep some forward speed so the wings continue producing lift.', met: (Number(state.y) || 0) >= 100 },
+            { label: 'Enter the DCA volume', instruction: 'Center the golden route gates and close to the DCA marker.', hint: 'Use small turns; large corrections waste energy and overshoot.', met: !!state.reachedDca || state.phase === 'congregation' || state.phase === 'mating' },
+            { label: 'Acquire the queen signal', instruction: 'Follow the gold signal and pass within 25 m of the queen.', hint: 'Match altitude first, then make one small heading correction.', met: !!state.reachedQueen || state.phase === 'mating' }
+          ];
+          var index = steps.findIndex(function(step) { return !step.met; });
+          if (index < 0) return { active: true, complete: true, index: steps.length, total: steps.length, label: 'Flight school complete', instruction: 'You completed the full takeoff-to-intercept control loop.', hint: 'Use the debrief to explain which control preserved the most energy.', progress: 100 };
+          return { active: true, complete: false, index: index, total: steps.length, label: steps[index].label, instruction: steps[index].instruction, hint: steps[index].hint, progress: Math.round(index / steps.length * 100) };
+        }
         function droneFlightEnvelope(state) {
           state = state || {};
           var maxEnergy = droneMaxEnergy(state.difficulty);
@@ -17545,6 +17559,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (scenePhaseNode) scenePhaseNode.textContent = scenePhaseLabel;
           var sceneDetailNode = document.querySelector('[data-flight-scene-detail="true"]');
           if (sceneDetailNode) sceneDetailNode.textContent = sceneCueDetail;
+          var training = droneTrainingStatus(state);
+          state.trainingCue = training;
+          var trainingPanel = document.querySelector('[data-flight-training="true"]');
+          if (trainingPanel) {
+            trainingPanel.style.display = training.active ? 'block' : 'none';
+            trainingPanel.setAttribute('aria-hidden', training.active ? 'false' : 'true');
+            trainingPanel.setAttribute('data-training-state', training.complete ? 'complete' : training.active ? 'active' : 'inactive');
+            trainingPanel.setAttribute('data-training-step', training.index >= 0 ? String(Math.min(training.total, training.index + 1)) : '0');
+            var trainingStepNode = trainingPanel.querySelector('[data-flight-training-step="true"]');
+            var trainingLabelNode = trainingPanel.querySelector('[data-flight-training-label="true"]');
+            var trainingInstructionNode = trainingPanel.querySelector('[data-flight-training-instruction="true"]');
+            var trainingHintNode = trainingPanel.querySelector('[data-flight-training-hint="true"]');
+            if (trainingStepNode) trainingStepNode.textContent = training.complete ? 'Complete' : 'Step ' + (training.index + 1) + ' / ' + training.total;
+            if (trainingLabelNode) trainingLabelNode.textContent = training.label;
+            if (trainingInstructionNode) trainingInstructionNode.textContent = training.instruction;
+            if (trainingHintNode) trainingHintNode.textContent = training.hint;
+            if (!training.complete && state._lastTrainingStep !== training.index) {
+              announceBee('Flight school step ' + (training.index + 1) + ' of ' + training.total + ': ' + training.label + '. ' + training.instruction, false);
+              state._lastTrainingStep = training.index;
+            }
+            if (training.complete) {
+              if (!state._trainingCompletionAnnounced) {
+                state._trainingCompletionAnnounced = true;
+                state.trainingComplete = true;
+                state.trainingCompleteUntil = now + 3500;
+                announceBee('Flight school complete. Review the debrief to connect your controls with the flight evidence.', false);
+              }
+              if (now >= (state.trainingCompleteUntil || 0)) state.trainingActive = false;
+            }
+          }
           var sceneChip = document.querySelector('[data-beehive-stage-chip="drone"]');
           if (sceneChip) {
             sceneChip.setAttribute('data-flight-phase', state.phase || 'launch');
@@ -17656,17 +17700,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           for (var oi = 0; oi < 40; oi++) obs.push({ x: (Math.random() - 0.5) * 800, z: -200 - Math.random() * 2500, type: ['tree', 'pole', 'building', 'tree', 'tree'][Math.floor(Math.random() * 5)], h: 30 + Math.random() * 80, hitCooldown: 0 });
           for (var fi = 0; fi < 76; fi++) {
             var lane = (fi % 4) - 1.5;
-            var depth = -110 - fi * 27 - Math.random() * 90;
-            var meadowCurve = Math.sin(fi * 0.55) * 105;
+            var guideBloom = fi < 10;
+            var depth = guideBloom ? -48 - fi * 25 : -110 - fi * 27 - Math.random() * 90;
+            var meadowCurve = Math.sin(fi * 0.55) * (guideBloom ? 18 : 105);
             fls.push({
-              x: lane * 95 + meadowCurve + (Math.random() - 0.5) * 70,
+              x: guideBloom ? ((fi % 2 ? 1 : -1) * (24 + (fi % 3) * 15) + meadowCurve) : lane * 95 + meadowCurve + (Math.random() - 0.5) * 70,
               z: depth,
               col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa'][fi % 7],
               hasPollen: true,
-              hasNectar: Math.random() < routeConfig.nectarChance,
-              nectar: 1 + Math.random() * 0.55,
-              radius: 24 + Math.random() * 14,
-              bloom: 0.8 + Math.random() * 0.7,
+              hasNectar: guideBloom || Math.random() < routeConfig.nectarChance,
+              nectar: guideBloom ? 1.35 : 1 + Math.random() * 0.55,
+              radius: guideBloom ? 34 : 24 + Math.random() * 14,
+              bloom: guideBloom ? 1.45 : 0.8 + Math.random() * 0.7,
               sway: Math.random() * 6.28,
               collected: false
             });
@@ -17693,7 +17738,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             score: 0, distance: 0, maxAlt: 10,
             timer: Math.max(45, (timerByDiff[difficulty] || 110) + scenarioConfig.timerBonus + queenCarryover.timerBonus),
             facts: [], factIdx: 0, telemetry: [], flightElapsed: 0, telemetryAccumulator: 0, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: queenCarryover.label,
-            hitFlash: 0, obstacleHits: 0, trafficHits: 0, lastHazardText: '', nearestObstacle: null, nearestTraffic: null, dcaStatus: null, paused: startsPaused, reachedLaunch: false, reachedDca: false, reachedQueen: false, lastAnnouncedPhase: 'launch', routeHint: 'Collect boosts low, then climb toward the DCA' // red flash when hit by bird or obstacle
+            hitFlash: 0, obstacleHits: 0, trafficHits: 0, lastHazardText: '', nearestObstacle: null, nearestTraffic: null, dcaStatus: null, paused: startsPaused, reachedLaunch: false, reachedDca: false, reachedQueen: false, lastAnnouncedPhase: 'launch', routeHint: 'Collect boosts low, then climb toward the DCA',
+            controlTurn: 0, controlPitch: 0, controlThrust: 0, groundEffect: 0, stallWarning: false,
+            trainingActive: difficulty === 'easy', trainingComplete: false, trainingStep: 0, _lastTrainingStep: -1 // red flash when hit by bird or obstacle
           };
           updAll({ drone: Object.assign({}, droneData, { active: true, paused: startsPaused, difficulty: difficulty, routePlan: selectedRoutePlan, scenario: droneScenario, carryover: queenCarryover.label, replayIndex: 0, cameraMode: _droneCameraMode.current || 'cockpit' }) });
           announceBee('Drone flight started on ' + difficulty + ' / ' + scenarioConfig.label + ' with ' + queenCarryover.label + (startsPaused ? ' and is paused for your reduced-motion preference. Resume when ready.' : '. Gather boosts low, then climb toward the DCA.'), false);
@@ -17749,10 +17796,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // runtimes while giving capable browsers depth-tested geometry.
           var threeWorld = null;
           var threeAlive = true;
+          var rendererBadge = par && par.querySelector ? par.querySelector('[data-flight-renderer-badge]') : null;
+          function setDroneRendererState(state, label) {
+            cv.setAttribute('data-flight-renderer', state);
+            if (rendererBadge) {
+              rendererBadge.setAttribute('data-renderer-state', state);
+              rendererBadge.textContent = label;
+            }
+          }
+          function setDroneFrameHealth(state, label) {
+            cv.setAttribute('data-flight-frame-health', state);
+            if (threeWorld && threeWorld.canvas) threeWorld.canvas.setAttribute('data-flight-frame-health', state);
+            if (rendererBadge) {
+              rendererBadge.setAttribute('data-frame-health', state);
+              if (label) rendererBadge.textContent = label;
+            }
+          }
+          function disposeThreeWorld() {
+            var world = threeWorld;
+            if (!world) return;
+            world.ready = false;
+            if (world.canvas && world.contextLossHandler) world.canvas.removeEventListener('webglcontextlost', world.contextLossHandler);
+            if (world.scene && world.scene.traverse) {
+              var disposedGeometry = [], disposedMaterial = [];
+              world.scene.traverse(function(node) {
+                if (node.geometry && disposedGeometry.indexOf(node.geometry) < 0) { disposedGeometry.push(node.geometry); try { node.geometry.dispose(); } catch (_) {} }
+                var materials = node.material ? (Array.isArray(node.material) ? node.material : [node.material]) : [];
+                materials.forEach(function(material) { if (material && disposedMaterial.indexOf(material) < 0) { disposedMaterial.push(material); try { material.dispose(); } catch (_) {} } });
+              });
+            }
+            if (world.renderer) { try { if (world.renderer.renderLists && world.renderer.renderLists.dispose) world.renderer.renderLists.dispose(); world.renderer.dispose(); } catch (_) {} }
+            if (world.canvas && world.canvas.parentNode) world.canvas.parentNode.removeChild(world.canvas);
+            threeWorld = null;
+          }
+          function disableThreeWorld(error) {
+            if (error && typeof console !== 'undefined' && console.warn) console.warn('[Beehive] Drone WebGL scene failed; continuing with the 2D safety view.', error);
+            disposeThreeWorld();
+            cv.setAttribute('data-flight-frame-health', 'fallback');
+            if (threeAlive) setDroneRendererState('canvas-2d-fallback', '2D safety view');
+          }
           function buildThreeWorld(THREE) {
             var threeCanvas = document.createElement('canvas');
             threeCanvas.setAttribute('aria-hidden', 'true');
-            threeCanvas.style.display = 'none';
+            threeCanvas.setAttribute('data-beehive-drone-webgl', 'true');
+            threeCanvas.setAttribute('data-flight-layer', 'three-world');
+            threeCanvas.setAttribute('data-flight-frame-health', 'warming');
+            threeCanvas.style.position = 'absolute';
+            threeCanvas.style.inset = '0';
+            threeCanvas.style.width = '100%';
+            threeCanvas.style.height = '100%';
+            threeCanvas.style.display = 'block';
+            threeCanvas.style.pointerEvents = 'none';
+            threeCanvas.style.zIndex = '0';
             var renderer;
             try {
               renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
@@ -17764,14 +17859,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             renderer.setClearColor(0x8fd3e8, 1);
             if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.94;
             var scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x8fd3e8, 260, 1900);
+            scene.fog = new THREE.Fog(0x72bee0, 360, 2600);
             var camera = new THREE.PerspectiveCamera(62, W / H, 0.5, 2600);
-            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x254d2a, 1.35));
-            var sun = new THREE.DirectionalLight(0xfff4cf, 1.7);
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x183f28, 0.96));
+            var sun = new THREE.DirectionalLight(0xfff1c2, 1.35);
             sun.position.set(-120, 260, 160);
             scene.add(sun);
-            var rim = new THREE.DirectionalLight(0x93c5fd, 0.75);
+            var rim = new THREE.DirectionalLight(0x7dd3fc, 0.38);
             rim.position.set(180, 80, -240);
             scene.add(rim);
 
@@ -17782,15 +17879,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var basic = function(color, opts) {
               return new THREE.MeshBasicMaterial(Object.assign({ color: color }, opts || {}));
             };
-            var ground = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), mat(0x4f9f4f, { roughness: 1 }));
+            var ground = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), mat(0x347d46, { roughness: 1 }));
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1;
             scene.add(ground);
-            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x64b35b, { transparent: true, opacity: 0.5 }));
+            var meadow = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), basic(0x52a65a, { transparent: true, opacity: 0.38 }));
             meadow.rotation.x = -Math.PI / 2;
             meadow.position.y = -0.95;
             ground.receiveShadow = true; meadow.receiveShadow = true;
             scene.add(meadow);
+            var routeMeadow = new THREE.Mesh(new THREE.PlaneGeometry(250, 2600), basic(0x72b968, { transparent: true, opacity: 0.22, depthWrite: false }));
+            routeMeadow.rotation.x = -Math.PI / 2; routeMeadow.position.set(0, -0.82, -1150); scene.add(routeMeadow);
+            var fieldRowMaterial = basic(0x245b35, { transparent: true, opacity: 0.18, depthWrite: false });
+            for (var fieldRowIndex = 1; fieldRowIndex <= 16; fieldRowIndex++) {
+              var fieldRow = new THREE.Mesh(new THREE.PlaneGeometry(1800, 5), fieldRowMaterial);
+              fieldRow.rotation.x = -Math.PI / 2; fieldRow.position.set(0, -0.76, -fieldRowIndex * 140); scene.add(fieldRow);
+            }
             sun.castShadow = true; sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
             sun.shadow.camera.left = -650; sun.shadow.camera.right = 650; sun.shadow.camera.top = 420; sun.shadow.camera.bottom = -1800;
             sun.shadow.camera.near = 20; sun.shadow.camera.far = 1200;
@@ -17810,7 +17914,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var cone = new THREE.ConeGeometry(1, 1, 8);
             var box = new THREE.BoxGeometry(1, 1, 1);
             var ring = new THREE.RingGeometry(10, 12, 36);
-            var objects = { obstacles: [], flowers: [], clouds: [], thermals: [], drones: [], birds: [], queens: [], route: [], routeLine: null, routeGates: [], windLines: [], obstacleWarn: null, playerDrone: null, particlePoints: null, dcaBeacon: null, queenBeacon: null };
+            var objects = { obstacles: [], flowers: [], clouds: [], thermals: [], drones: [], birds: [], queens: [], route: [], routeLine: null, routeGates: [], windLines: [], depthMarkers: [], horizonHills: [], obstacleWarn: null, playerDrone: null, particlePoints: null, dcaBeacon: null, queenBeacon: null };
+            var hillMaterials = [mat(0x245b35, { roughness: 1, flatShading: true }), mat(0x2f6f3c, { roughness: 1, flatShading: true })];
+            for (var hillIndex = 0; hillIndex < 10; hillIndex++) {
+              var hill = mesh(sphere, hillMaterials[hillIndex % 2], [170 + (hillIndex % 3) * 48, 54 + (hillIndex % 4) * 14, 125 + (hillIndex % 2) * 40]);
+              hill.position.set((hillIndex - 4.5) * 235 + Math.sin(hillIndex * 1.7) * 90, 28, -980 - (hillIndex % 3) * 330);
+              hill.rotation.y = hillIndex * 0.37; scene.add(hill); objects.horizonHills.push(hill);
+            }
+            var depthPostMaterial = basic(0x38bdf8, { transparent: true, opacity: 0.62, depthWrite: false });
+            var depthCapMaterial = basic(0x22d3ee, { transparent: true, opacity: 0.86, depthWrite: false });
+            for (var depthIndex = 1; depthIndex <= 14; depthIndex++) {
+              var depthGroup = new THREE.Group();
+              var depthZ = -depthIndex * 135;
+              var depthX = 126 + Math.sin(depthIndex * 0.8) * 16;
+              [-1, 1].forEach(function(side) {
+                var post = mesh(cylinder, depthPostMaterial, [0.75, 12, 0.75]); post.position.set(side * depthX, 6, 0); depthGroup.add(post);
+                var cap = mesh(smallSphere, depthCapMaterial, [2.2, 2.2, 2.2]); cap.position.set(side * depthX, 13, 0); depthGroup.add(cap);
+              });
+              depthGroup.position.z = depthZ; scene.add(depthGroup); objects.depthMarkers.push(depthGroup);
+            }
             var dcaBeacon = new THREE.Group();
             var dcaColumn = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 150, 24, 1, true), basic(0xfbbf24, { transparent: true, opacity: 0.075, side: THREE.DoubleSide, depthWrite: false })); dcaColumn.position.y = 75; dcaBeacon.add(dcaColumn);
             var dcaHalo = new THREE.Mesh(new THREE.TorusGeometry(42, 1.8, 10, 48), basic(0xfde68a, { transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false })); dcaHalo.rotation.x = Math.PI / 2; dcaHalo.position.y = 100; dcaBeacon.add(dcaHalo);
@@ -17904,11 +18026,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Vertical gates make the 600 m approach leg legible in depth.
             // Their spacing gives learners a visual distance rhythm before the DCA.
             var routeGates = [];
-            [-220, -420, -600].forEach(function(z, idx) {
+            [-140, -300, -460, -600].forEach(function(z, idx) {
               var gate = new THREE.Group();
-              var gateColor = idx === 2 ? 0xfbbf24 : 0x67e8f9;
-              var gateRadius = idx === 2 ? 42 : 30;
-              var gateRing = new THREE.Mesh(new THREE.TorusGeometry(gateRadius, 1.2, 8, 36), basic(gateColor, { transparent: true, opacity: idx === 2 ? 0.64 : 0.3, side: THREE.DoubleSide, depthWrite: false }));
+              var finalGate = idx === 3;
+              var gateColor = finalGate ? 0xfbbf24 : 0x22d3ee;
+              var gateRadius = finalGate ? 42 : 30;
+              var gateRing = new THREE.Mesh(new THREE.TorusGeometry(gateRadius, 1.2, 8, 36), basic(gateColor, { transparent: true, opacity: finalGate ? 0.76 : 0.52, side: THREE.DoubleSide, depthWrite: false }));
               gateRing.position.y = 100; gate.add(gateRing);
               var gateTop = new THREE.Mesh(new THREE.BoxGeometry(gateRadius * 2, 1.2, 1.2), basic(gateColor, { transparent: true, opacity: 0.42, depthWrite: false }));
               gateTop.position.set(0, 100 + gateRadius, 0); gate.add(gateTop);
@@ -17938,12 +18061,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var particleGeometry = new THREE.BufferGeometry();
             var particlePositions = new Float32Array(240 * 3); particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
             objects.particlePoints = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ color: 0xfacc15, size: 3.2, transparent: true, opacity: 0.85, depthWrite: false })); scene.add(objects.particlePoints);
-            return { THREE: THREE, canvas: threeCanvas, renderer: renderer, scene: scene, camera: camera, objects: objects, particlePositions: particlePositions, ready: true };
+            return { THREE: THREE, canvas: threeCanvas, renderer: renderer, scene: scene, camera: camera, objects: objects, particlePositions: particlePositions, renderedFrames: 0, flatFrameChecks: 0, frameHealth: 'warming', ready: true };
+          }
+          function verifyThreeFrameHealth(world) {
+            world.renderedFrames = (world.renderedFrames || 0) + 1;
+            if (world.frameHealth === 'verified' || (world.renderedFrames !== 8 && world.renderedFrames !== 24)) return;
+            if (!world.renderer || typeof world.renderer.getContext !== 'function') return;
+            var gl = world.renderer.getContext();
+            if (!gl || typeof gl.readPixels !== 'function' || !gl.RGBA || !gl.UNSIGNED_BYTE) return;
+            var width = Math.max(1, world.canvas.width || 1), height = Math.max(1, world.canvas.height || 1);
+            var points = [[0.16,0.18],[0.5,0.18],[0.84,0.18],[0.16,0.5],[0.5,0.5],[0.84,0.5],[0.16,0.82],[0.5,0.82],[0.84,0.82]];
+            var pixel = new Uint8Array(4), minChannel = 255, maxChannel = 0, opaqueSamples = 0;
+            try {
+              points.forEach(function(point) {
+                gl.readPixels(Math.min(width - 1, Math.floor(width * point[0])), Math.min(height - 1, Math.floor(height * point[1])), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+                if (pixel[3] > 8) opaqueSamples++;
+                for (var channel = 0; channel < 3; channel++) { minChannel = Math.min(minChannel, pixel[channel]); maxChannel = Math.max(maxChannel, pixel[channel]); }
+              });
+            } catch (_) { setDroneFrameHealth('unverified'); return; }
+            if (opaqueSamples >= 2 && maxChannel - minChannel >= 12) {
+              world.frameHealth = 'verified';
+              setDroneFrameHealth('verified', '3D scene verified');
+              return;
+            }
+            world.flatFrameChecks = (world.flatFrameChecks || 0) + 1;
+            setDroneFrameHealth('flat-check');
+            if (world.flatFrameChecks >= 2) throw new Error('WebGL produced repeated blank or flat frames');
           }
           function updateThreeWorld(now) {
             if (!threeWorld || !threeWorld.ready) return;
             var t = threeWorld, THREE = t.THREE, o = t.objects;
-            var sky = ds.y > 160 ? 0x253487 : ds.y > 80 ? 0x5da5d3 : 0x8fd3e8;
+            var sky = ds.y > 160 ? 0x355a9f : ds.y > 80 ? 0x4f9dca : 0x72bee0;
             t.scene.background = new THREE.Color(sky); t.scene.fog.color.setHex(sky);
             var cameraMode = _droneCameraMode.current === 'chase' ? 'chase' : 'cockpit';
             cv.setAttribute('data-flight-camera', cameraMode);
@@ -17964,8 +18112,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             } else {
               t.camera.position.set(ds.x, ds.y + cameraBob, ds.z);
               t.camera.rotation.order = 'YXZ';
-              t.camera.rotation.set(-(ds.pitch || 0) - cameraBob, ds.yaw || 0, ds.roll || 0);
+              // Three cameras look down -Z. Match the simulation convention: positive
+              // pitch looks up and positive yaw points the flight vector toward +X.
+              t.camera.rotation.set((ds.pitch || 0) - cameraBob, -(ds.yaw || 0), ds.roll || 0);
             }
+            var targetFov = cameraMode === 'chase' ? 58 + Math.min(8, (ds.speed || 0) * 0.75) : 62 + Math.min(9, (ds.speed || 0) * 0.82);
+            if (Math.abs(t.camera.fov - targetFov) > 0.03) { t.camera.fov += (targetFov - t.camera.fov) * (prefersReducedMotion ? 1 : 0.09); t.camera.updateProjectionMatrix(); }
+            t.scene.fog.near = 340 + Math.min(180, (ds.y || 0) * 0.65);
+            t.scene.fog.far = 2350 + Math.min(520, (ds.y || 0) * 1.4);
             t.camera.updateMatrixWorld();
             if (o.dcaBeacon) { o.dcaBeacon.visible = !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = now * 0.00028; o.dcaBeacon.children[1].rotation.z = now * 0.00055; }
             if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
@@ -18001,7 +18155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 gate.group.visible = gatesVisible;
                 var emphasis = Math.max(0.25, Math.min(1, 1 - Math.abs((ds.z || 0) - gate.z) / 520));
                 var gatePulse = prefersReducedMotion ? 0 : Math.sin(now * 0.004 + idx * 0.8);
-                gate.group.scale.setScalar((idx === 2 ? 1.08 : 1) * (1 + 0.04 * emphasis * gatePulse));
+                gate.group.scale.setScalar((idx === 3 ? 1.08 : 1) * (1 + 0.04 * emphasis * gatePulse));
                 gate.group.rotation.y = prefersReducedMotion ? 0 : Math.sin(now * 0.0005 + idx) * 0.05;
                 gate.group.children[0].material.opacity = idx === 2 ? 0.52 + emphasis * 0.2 : 0.2 + emphasis * 0.18;
               });
@@ -18033,18 +18187,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(item.bird.vx, -item.bird.vz); var flap = Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120; item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(1 + 0.12 * Math.sin(now * 0.01)); } });
             o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
             for (var pi = 0; pi < 240; pi++) { var pt = (ds.particles || [])[pi]; var off = pi * 3; t.particlePositions[off] = pt ? pt.x : 0; t.particlePositions[off + 1] = pt ? pt.y : -9999; t.particlePositions[off + 2] = pt ? pt.z : 0; }
-            t.particlePoints.geometry.attributes.position.needsUpdate = true;
+            o.particlePoints.geometry.attributes.position.needsUpdate = true;
             t.renderer.render(t.scene, t.camera);
+            verifyThreeFrameHealth(t);
           }
           function initThreeWorld() {
-            if (!(window.StemLab && typeof window.StemLab.ensureThree === 'function')) { cv.setAttribute('data-flight-renderer', 'canvas-2d-fallback'); return; }
-            cv.setAttribute('data-flight-renderer', 'loading');
+            if (!(window.StemLab && typeof window.StemLab.ensureThree === 'function')) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+            setDroneRendererState('loading', 'Preparing 3D');
             window.StemLab.ensureThree({ failMessage: 'The 3D flight engine could not load; the accessible 2D flight view remains active.' }).then(function(THREE) {
-              if (!threeAlive || !THREE) return;
-              threeWorld = buildThreeWorld(THREE);
-              if (threeWorld) cv.setAttribute('data-flight-renderer', 'three-webgl');
-              else cv.setAttribute('data-flight-renderer', 'canvas-2d-fallback');
-            }).catch(function() { if (threeAlive) cv.setAttribute('data-flight-renderer', 'canvas-2d-fallback'); });
+              if (!threeAlive) return;
+              if (!THREE) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+              try { threeWorld = buildThreeWorld(THREE); }
+              catch (error) { disableThreeWorld(error); return; }
+              if (!threeWorld) { setDroneRendererState('canvas-2d-fallback', '2D safety view'); return; }
+              if (par && threeWorld.canvas.parentNode !== par) par.insertBefore(threeWorld.canvas, cv);
+              cv.style.position = 'relative';
+              cv.style.zIndex = '1';
+              cv.style.background = 'transparent';
+              threeWorld.contextLossHandler = function(event) {
+                if (event && event.preventDefault) event.preventDefault();
+                disableThreeWorld(new Error('WebGL context lost'));
+              };
+              threeWorld.canvas.addEventListener('webglcontextlost', threeWorld.contextLossHandler, false);
+              setDroneRendererState('three-webgl', '3D scene active');
+            }).catch(function(error) { if (threeAlive) disableThreeWorld(error); });
           }
           initThreeWorld();
 
@@ -18060,14 +18226,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ds.timer -= dt;
               if (ds.timer <= 0) { ds.phase = 'end'; ds.timer = 0; }
 
-              // Controls
-              var thrust = 1.1, turn = 0, pitchD = 0;
-              var activeThrust = false;
-              if (keys.ArrowUp || keys.w) { thrust = 6.2; activeThrust = true; }
-              if (keys.ArrowDown || keys.s) thrust = -3;
-              if (keys.ArrowLeft || keys.a) turn = 2.5;
-              if (keys.ArrowRight || keys.d) turn = -2.5;
-              if (keys[' '] || keys.Shift) pitchD = keys[' '] ? 1.5 : -1.5;
+              // Controls are smoothed into aerodynamic intent. This gives the bee
+              // inertia without making keyboard taps feel delayed.
+              var thrustInput = 0, turnInput = 0, verticalInput = 0;
+              if (keys.ArrowUp || keys.w) thrustInput = 1;
+              if (keys.ArrowDown || keys.s) thrustInput = -1;
+              if (keys.ArrowLeft || keys.a) turnInput = -1;
+              if (keys.ArrowRight || keys.d) turnInput = 1;
+              if (keys[' ']) verticalInput = 1;
+              if (keys.Shift) verticalInput = -1;
+              var controlResponse = 1 - Math.exp(-7.5 * dt);
+              ds.controlThrust = (ds.controlThrust || 0) + (thrustInput - (ds.controlThrust || 0)) * controlResponse;
+              ds.controlTurn = (ds.controlTurn || 0) + (turnInput - (ds.controlTurn || 0)) * controlResponse;
+              ds.controlPitch = (ds.controlPitch || 0) + (verticalInput - (ds.controlPitch || 0)) * controlResponse;
+              var thrust = 1.05 + (ds.controlThrust >= 0 ? ds.controlThrust * 5.15 : ds.controlThrust * 4.05);
+              var activeThrust = thrustInput > 0;
               if (ds.boostTimer > 0) {
                 thrust += 1.6;
                 ds.boostTimer = Math.max(0, ds.boostTimer - dt);
@@ -18082,18 +18255,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ds.windNow = { x: windX, z: windZ, speed: Math.sqrt(windX * windX + windZ * windZ) };
               ds.vx += windX * 0.45 * dt; ds.vz += windZ * 0.45 * dt;
 
-              ds.yaw += turn * dt;
-              ds.pitch = Math.max(-0.6, Math.min(0.6, ds.pitch + pitchD * dt));
-              // Roll: gentle lean into turns (smoothed toward target, self-leveling when no turn)
-              var rollTarget = -turn * 0.15;
-              ds.roll = (ds.roll || 0) + (rollTarget - (ds.roll || 0)) * Math.min(1, 3 * dt);
+              var speedTurnAuthority = 1.45 + Math.min(1.05, (ds.speed || 0) / 5) * 1.05;
+              var turnRate = ds.controlTurn * speedTurnAuthority;
+              ds.yaw += turnRate * dt;
+              var pitchTarget = ds.controlPitch * 0.34;
+              ds.pitch = Math.max(-0.48, Math.min(0.48, (ds.pitch || 0) + (pitchTarget - (ds.pitch || 0)) * (1 - Math.exp(-4.8 * dt))));
+              var rollTarget = -ds.controlTurn * (0.2 + Math.min(0.22, (ds.speed || 0) * 0.025));
+              ds.roll = (ds.roll || 0) + (rollTarget - (ds.roll || 0)) * (1 - Math.exp(-4.2 * dt));
 
-              // Thrust along facing direction
+              // Thrust, speed-derived lift, and ground effect make altitude a
+              // consequence of flight state rather than a direct vertical move.
               var fwdX = Math.sin(ds.yaw), fwdZ = -Math.cos(ds.yaw);
               ds.vx += fwdX * thrust * dt;
               ds.vz += fwdZ * thrust * dt;
-              ds.vy += (pitchD * 2 + (ds.phase === 'launch' ? 4 : 0)) * dt;
-              ds.vy -= 2.0 * dt; // gravity
+              var liftRatio = Math.min(1, Math.max(0, (ds.speed || 0) / 4.5));
+              var groundEffect = ds.y < 26 ? Math.max(0, 1 - ds.y / 26) * 1.15 : 0;
+              var launchAssist = ds.phase === 'launch' ? 3.6 : 0;
+              var commandedLift = ds.controlPitch * (2.5 + liftRatio * 2.0);
+              var passiveLift = 0.22 + liftRatio * 1.42;
+              ds.groundEffect = groundEffect;
+              ds.stallWarning = ds.phase !== 'launch' && ds.y > 28 && (ds.speed || 0) < 1.2 && ds.controlPitch > 0.32;
+              ds.vy += (commandedLift + passiveLift + groundEffect + launchAssist - 2.05) * dt;
+              if (ds.stallWarning) ds.vy -= 1.45 * dt;
 
               // Drag
               var drag = Math.pow(0.968, frameScale);
@@ -18292,7 +18475,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // ── RENDER ──
             syncDroneInstruments(ds, now);
-            if (threeWorld && threeWorld.ready) updateThreeWorld(now);
+            if (threeWorld && threeWorld.ready) {
+              try { updateThreeWorld(now); }
+              catch (error) { disableThreeWorld(error); }
+            }
 
             c.clearRect(0, 0, W, H);
             var halfW = W / 2, halfH = H / 2;
@@ -18326,6 +18512,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var horizonY = halfH + Math.tan(ds.pitch) * _dFov;
             var roll = ds.roll || 0;
 
+            // The 2D world is painted only when WebGL is unavailable. In 3D mode
+            // this canvas stays transparent and carries HUD/instruction pixels only.
+            var usingThreeScene = !!(threeWorld && threeWorld.ready);
+            if (!usingThreeScene) {
             // Rotate world around the screen center by -roll so the horizon tilts correctly.
             c.save();
             c.translate(halfW, halfH);
@@ -18563,13 +18753,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
             // End of rolled world frame — hit flash + HUD must NOT be rotated.
             c.restore();
-
-            // Three.js owns the world layer when WebGL is available.
-            // The HUD below stays 2D so text remains crisp and screen-reader
-            // descriptions remain paired with the same accessible canvas.
-            if (threeWorld && threeWorld.ready) {
-              c.clearRect(0, 0, W, H);
-              c.drawImage(threeWorld.canvas, 0, 0, W, H);
             }
 
             // Spatial target cue: the 3D beacons are echoed by a small
@@ -18623,6 +18806,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = 1;
             c.beginPath(); c.moveTo(halfW - 10, halfH); c.lineTo(halfW + 10, halfH); c.stroke();
             c.beginPath(); c.moveTo(halfW, halfH - 10); c.lineTo(halfW, halfH + 10); c.stroke();
+
+            // Flight-path marker: the crosshair shows where the bee points; this
+            // ring shows where momentum is actually carrying it.
+            var localSideVelocity = (ds.vx || 0) * Math.cos(ds.yaw || 0) + (ds.vz || 0) * Math.sin(ds.yaw || 0);
+            var pathX = halfW + Math.max(-72, Math.min(72, localSideVelocity * 13));
+            var pathY = halfH - Math.max(-48, Math.min(48, (ds.vy || 0) * 9));
+            c.save(); c.strokeStyle = 'rgba(103,232,249,0.88)'; c.lineWidth = 1.4; c.shadowColor = '#67e8f9'; c.shadowBlur = 5;
+            c.beginPath(); c.arc(pathX, pathY, 7, 0, 6.28); c.stroke();
+            c.beginPath(); c.moveTo(pathX - 11, pathY); c.lineTo(pathX - 5, pathY); c.moveTo(pathX + 5, pathY); c.lineTo(pathX + 11, pathY); c.moveTo(pathX, pathY - 11); c.lineTo(pathX, pathY - 5); c.stroke();
+            c.shadowBlur = 0; c.font = 'bold 6px system-ui'; c.textAlign = 'center'; c.fillStyle = '#bae6fd'; c.fillText('FLIGHT PATH', pathX, pathY + 18); c.restore();
+            ds.flightPathCue = { x: Math.round(pathX - halfW), y: Math.round(pathY - halfH), slip: Math.round(localSideVelocity * 10) / 10 };
 
             // ── Compass / Queen bearing indicator (bottom-right) ──
             var compR = 22, compX = W - 36, compY = H - 36;
@@ -18789,7 +18983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // Altitude warning: pull up! (if falling fast)
-            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'end' && ds.phase !== 'mating') {
+            if (ds.y < 30 && ds.vy < -0.5 && ds.phase !== 'launch' && ds.phase !== 'end' && ds.phase !== 'mating') {
               var pullPulse = (Math.sin(now * 0.02) + 1) * 0.5;
               c.fillStyle = 'rgba(220,38,38,' + (0.7 + pullPulse * 0.3) + ')';
               c.font = 'bold 16px system-ui'; c.textAlign = 'center';
@@ -18797,6 +18991,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ═══ FLIGHT HUD: artificial horizon + altimeter + airspeed + compass ═══
+            if (ds.stallWarning && ds.phase !== 'end') {
+              var stallPulse = prefersReducedMotion ? 1 : 0.72 + (Math.sin(now * 0.014) + 1) * 0.14;
+              c.save(); c.fillStyle = 'rgba(15,23,42,0.82)'; c.fillRect(halfW - 112, halfH + 34, 224, 28);
+              c.strokeStyle = 'rgba(251,191,36,' + stallPulse + ')'; c.lineWidth = 2; c.strokeRect(halfW - 112, halfH + 34, 224, 28);
+              c.fillStyle = '#fde68a'; c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillText('LOW LIFT - THRUST OR LOWER THE NOSE', halfW, halfH + 52); c.restore();
+            }
+
             // Attitude indicator (bottom-left, round gauge showing pitch + roll)
             var aiX = 48, aiY = H - 60, aiR = 26;
             c.save();
@@ -19089,8 +19290,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // browser report 'W'; named keys (ArrowUp, Shift, ' ') pass through.
           function dkNorm(e) { var k = e.key; return (k && k.length === 1) ? k.toLowerCase() : k; }
           function dkIsTyping(e) { var tg = e.target; return !!(tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable)); }
+          function dkHasInteractiveFocus() {
+            var active = document.activeElement;
+            if (!active || active === document.body || active === cv || active === par) return false;
+            return !!(active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
+          }
           function dkDown(e) {
-            if (dkIsTyping(e) || document.querySelector('[data-beehive-focus-panel]')) return; // don't hijack keystrokes meant for a text field
+            if (dkIsTyping(e) || dkHasInteractiveFocus()) return; // preserve focused UI controls while allowing body/canvas flight keys
             var k = dkNorm(e);
             if (k === 'v' && !e.repeat) {
               toggleDroneCamera();
@@ -19126,10 +19332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             document.removeEventListener('keyup', dkUp);
             if (typeof window !== 'undefined') window.removeEventListener('blur', dkBlur);
             threeAlive = false;
-            if (threeWorld && threeWorld.renderer) {
-              try { threeWorld.renderer.dispose(); } catch (_) {}
-              threeWorld = null;
-            }
+            disposeThreeWorld();
           };
           } // end doSetup
           tryInit();
@@ -21369,7 +21572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '35', 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '37', 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
           h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
             h('div', { className: 'flex items-center gap-3 min-w-0' },
@@ -21724,9 +21927,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     })),
                   h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to chain nectar boosts.')))
               : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Drone Flight playfield', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
-                  h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
-                  h('canvas', { ref: _droneOverlayCvRef, 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'block' } }),
-                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to pause, and V to switch between cockpit and chase camera. The radar uses distinct shapes for route targets, predator birds, thermals, and nearby nectar blooms, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
+                  h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
+                  h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
+                  (function() { var cue = droneTrainingStatus(_droneState.current); return h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none', position: 'absolute', top: '82px', left: '50%', zIndex: 20, width: 'min(360px,calc(100% - 24px))', transform: 'translateX(-50%)', pointerEvents: 'none' }, className: 'rounded-xl border border-cyan-300/35 bg-slate-950/88 px-3 py-2 text-left text-white shadow-xl backdrop-blur-md' },
+                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[8px] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[10px] font-black text-amber-200' }, cue.label)),
+                    h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[10px] font-semibold leading-snug text-white' }, cue.instruction),
+                    h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[8px] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
+                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to pause, and V to switch between cockpit and chase camera. A renderer badge reports whether the true 3D scene is pixel-verified or the 2D safety view is active. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. The radar uses distinct shapes for route targets, predator birds, thermals, and nearby nectar blooms, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
                     h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[10px] font-black text-amber-200' }, droneFlightActive && _droneState.current && _droneState.current.phase !== 'launch' ? droneInstrumentPhase(_droneState.current).label : 'Flight objective'),

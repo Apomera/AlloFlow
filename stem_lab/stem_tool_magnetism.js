@@ -58,7 +58,7 @@
   var _benchTimer = null;
   var _motorSpinRAF = null;
   var _motorSpinActive = false;
-  var _motorSpinConfig = { current: 0, field: 0, currentDir: 1, fieldDir: 1, angle: 0, running: false };
+  var _motorSpinConfig = { current: 0, field: 0, currentDir: 1, fieldDir: 1, angle: 0, load: 0, running: false };
 
   // ── Pure physics helpers (exported for tests) ──────────────────────────
   // 2-D magnetic dipole field direction at point p from a dipole at `mag`
@@ -445,6 +445,51 @@
   function motorTorqueFactor(current, fieldStrength, angleDeg, currentDir, fieldDir) {
     var sign = (currentDir < 0 ? -1 : 1) * (fieldDir < 0 ? -1 : 1);
     return sign * Math.abs(current * fieldStrength) * Math.abs(Math.sin(angleDeg * Math.PI / 180));
+  }
+
+  function motorLoadState(current, fieldStrength, angleDeg, load) {
+    var angle = ((Number(angleDeg) || 0) % 360 + 360) % 360;
+    var leverage = Math.abs(Math.sin(angle * Math.PI / 180));
+    var baseTorque = Math.abs(Number(current) || 0) * Math.abs(Number(fieldStrength) || 0) / 12;
+    var magneticTorque = baseTorque * leverage;
+    var loadTorque = Math.max(0, Number(load) || 0);
+    var margin = magneticTorque - loadTorque;
+    return {
+      angle: angle,
+      leverage: leverage,
+      magneticTorque: magneticTorque,
+      loadTorque: loadTorque,
+      margin: margin,
+      ratio: loadTorque > 0 ? magneticTorque / loadTorque : Infinity,
+      stalled: loadTorque > 0 && margin < -1e-6
+    };
+  }
+
+  function motorLoadTrialState(samples, prediction) {
+    var list = Array.isArray(samples) ? samples.filter(function (sample) {
+      return sample && Number.isFinite(Number(sample.load));
+    }).map(function (sample) {
+      return { load: Math.max(0, Number(sample.load) || 0), margin: Number(sample.margin) || 0, stalled: !!sample.stalled };
+    }) : [];
+    var passingMax = null;
+    var stalledMin = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].stalled) stalledMin = stalledMin == null ? list[i].load : Math.min(stalledMin, list[i].load);
+      else passingMax = passingMax == null ? list[i].load : Math.max(passingMax, list[i].load);
+    }
+    var bracketed = passingMax != null && stalledMin != null && passingMax <= stalledMin;
+    var observed = bracketed ? (passingMax + stalledMin) / 2 : null;
+    var predicted = Math.max(0, Number(prediction) || 0);
+    return {
+      samples: list,
+      count: list.length,
+      passingMax: passingMax,
+      stalledMin: stalledMin,
+      bracketed: bracketed,
+      observed: observed,
+      predicted: predicted,
+      delta: observed == null ? null : observed - predicted
+    };
   }
 
   function motorSpatialState(angleDeg, current, fieldStrength, currentDir, fieldDir) {
@@ -1328,8 +1373,17 @@
         add('field_B', 'Particle field', source.chargeB, 'relative B', 1);
       } else {
         var torque = motorTorqueFactor(source.motorCurrent || 0, source.motorField || 0, source.motorAngle || 0, source.motorCurrentDir || 1, source.motorFieldDir || 1);
+        var loadState = motorLoadState(source.motorCurrent || 0, source.motorField || 0, source.motorAngle || 0, source.motorLoad || 0);
         add('torque_rel', 'Relative torque', Math.abs(torque / 12), 'x', 2);
         add('angle_deg', 'Rotor angle', source.motorAngle, 'deg', 0);
+        add('load_rel', 'Shaft load', loadState.loadTorque, 'x', 2);
+        add('load_margin', 'Load margin', loadState.margin, 'x', 2);
+        var loadTrial = motorLoadTrialState(source.motorLoadSamples, source.motorLoadPrediction);
+        if (loadTrial.bracketed) {
+          add('load_prediction', 'Predicted stall load', loadTrial.predicted, 'x', 2);
+          add('load_observed', 'Observed stall boundary', loadTrial.observed, 'x', 2);
+          add('load_offset', 'Prediction offset', loadTrial.delta, 'x', 2);
+        }
       }
     } else if (tab === 'induce') {
       if (source.induceMode === 'coil') {
@@ -1441,7 +1495,7 @@
         electro3dLengthCm: 12, electro3dRadiusCm: 3, electro3dMaterial: 'air',
         electro3dVectors: true, electro3dLines: true, electro3dProbe: { x: 0, y: 0, z: 0 },
         // Motor
-        motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1,
+        motorCurrent: 3, motorField: 4, motorLoad: 0.35, motorLoadPrediction: 1, motorLoadSamples: [], motorLoadTrialStarted: false, motorCurrentDir: 1, motorFieldDir: 1,
         motorRunning: false, motorAngle: 90, motorRan: false, motorDirectionSeen: false, motorMode: 'forces',
         motorView: '2d', motor3dStatus: 'loading', motor3dAttempt: 0, motor3dUsed: false, motor3dForces: true, motor3dCurrent: true,
         forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5, forceLabSpeed: 300, forceLabCurrentDir: 1, forceLabFieldDir: 1, forceLabUsed: false,
@@ -1494,6 +1548,7 @@
       var d = Object.assign({}, MAG_DEFAULTS, (labToolData && labToolData.magnetism) || {});
       _motorSpinConfig.current = Number(d.motorCurrent) || 0;
       _motorSpinConfig.field = Number(d.motorField) || 0;
+      _motorSpinConfig.load = Math.max(0, Number(d.motorLoad) || 0);
       _motorSpinConfig.currentDir = Number(d.motorCurrentDir) < 0 ? -1 : 1;
       _motorSpinConfig.fieldDir = Number(d.motorFieldDir) < 0 ? -1 : 1;
       _motorSpinConfig.angle = Number(d.motorAngle) || 0;
@@ -1506,7 +1561,7 @@
         } else {
           stopMotorSpin();
         }
-      }, [d.tab, d.motorMode, d.motorRunning, d.motorCurrent, d.motorField, d.motorCurrentDir, d.motorFieldDir]);
+      }, [d.tab, d.motorMode, d.motorRunning, d.motorCurrent, d.motorField, d.motorLoad, d.motorCurrentDir, d.motorFieldDir]);
       React.useEffect(function () {
         return function () { stopMotorSpin(); };
       }, []);
@@ -3252,6 +3307,53 @@
           upd(patch);
           announceToSR((nextMode === 'forces' ? 'Motor forces' : nextMode === 'energy' ? 'Energy systems' : nextMode === 'particle' ? 'Particle beam' : 'Mass analyzer') + ' investigation selected.');
         }
+        function motorLandmarkActive(angle) {
+          var currentAngle = ((Number(d.motorAngle) || 0) % 360 + 360) % 360;
+          var delta = Math.abs(currentAngle - angle);
+          return Math.min(delta, 360 - delta) < 0.5;
+        }
+        function freezeMotorAt(angle, label) {
+          stopMotorSpin();
+          upd({ motorAngle: angle, motorRunning: false, motorRan: true, motor3dUsed: d.motorView === '3d' ? true : d.motor3dUsed });
+          announceToSR(label + ' selected at ' + angle + ' degrees. The motor is paused so you can inspect the force pair.');
+        }
+        function probeMotorAngle(value) {
+          var angle = Math.max(0, Math.min(360, Math.round(Number(value) || 0)));
+          stopMotorSpin();
+          upd({ motorAngle: angle, motorRunning: false, motorRan: true, motor3dUsed: d.motorView === '3d' ? true : d.motor3dUsed });
+        }
+        var loadTrial = motorLoadTrialState(d.motorLoadSamples, d.motorLoadPrediction);
+        function startMotorLoadSweep() {
+          stopMotorSpin();
+          upd({ motorAngle: 90, motorRunning: false, motorRan: true, motorLoadTrialStarted: true, motorLoadSamples: [] });
+          announceToSR('Load sweep started at the 90-degree maximum-torque landmark. Keep current and field fixed, then change shaft load and record samples.');
+        }
+        function recordMotorLoadSample() {
+          var load = Math.max(0, Math.min(2, Number(d.motorLoad) || 0));
+          var result = motorLoadState(d.motorCurrent, d.motorField, 90, load);
+          var samples = Array.isArray(d.motorLoadSamples) ? d.motorLoadSamples.filter(function (sample) { return sample && Math.abs(Number(sample.load) - load) > 1e-6; }) : [];
+          samples.push({ load: load, margin: result.margin, stalled: result.stalled });
+          samples.sort(function (a, b) { return a.load - b.load; });
+          upd({ motorAngle: 90, motorRunning: false, motorRan: true, motorLoadTrialStarted: true, motorLoadSamples: samples });
+          announceToSR((result.stalled ? 'Stall' : 'Running') + ' sample recorded at ' + load.toFixed(2) + ' relative load.');
+        }
+        function motorLoadThresholdCard() {
+          var summary = !d.motorLoadTrialStarted ? 'Start the sweep, predict the boundary, then record one passing and one stalled sample.' :
+            loadTrial.count === 0 ? 'Prediction saved. Change the shaft load, then record a peak-torque sample.' :
+            loadTrial.bracketed ? 'Observed boundary ≈ ' + loadTrial.observed.toFixed(2) + 'x, between ' + loadTrial.passingMax.toFixed(2) + 'x running and ' + loadTrial.stalledMin.toFixed(2) + 'x stalled. Prediction offset: ' + (loadTrial.delta >= 0 ? '+' : '') + loadTrial.delta.toFixed(2) + 'x.' :
+            'Record both a passing and a stalled sample to bracket the threshold.';
+          return h('section', { role: 'region', 'aria-label': 'Motor load threshold investigation', style: { margin: '1px 0 9px', padding: '8px 0 0', borderTop: '1px solid ' + BORDER } },
+            h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, 'LOAD SWEEP · FIND THE STALL THRESHOLD'),
+            h('p', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.4, margin: '0 0 7px' } }, 'Predict the largest load the motor can carry. Start at peak torque, keep current and field fixed, then sweep the shaft load.'),
+            h('div', { role: 'group', 'aria-label': 'Stall threshold controls', style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'end' } },
+              h('div', { style: { flex: '1 1 180px', minWidth: 0 } }, slider('Predicted stall load (x)', Math.max(0, Number(d.motorLoadPrediction) || 0), 0, 2, 0.25, function (v) { upd({ motorLoadPrediction: v }); })),
+              h('button', { type: 'button', onClick: startMotorLoadSweep, style: btn(d.motorLoadTrialStarted) }, d.motorLoadTrialStarted ? 'Reset load sweep' : 'Start load sweep'),
+              h('button', { type: 'button', disabled: !d.motorLoadTrialStarted, onClick: recordMotorLoadSample, style: btn(false) }, 'Record peak-torque sample')),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { color: TEXT, fontSize: 11.5, lineHeight: 1.4, margin: '4px 0 5px' } }, summary),
+            loadTrial.count ? h('div', { role: 'list', 'aria-label': 'Recorded load sweep samples', style: { display: 'flex', gap: 5, flexWrap: 'wrap' } }, loadTrial.samples.map(function (sample) {
+              return h('span', { key: 'load-sample-' + sample.load, role: 'listitem', style: { color: sample.stalled ? '#fb7185' : '#34d399', fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, (sample.stalled ? 'STALL ' : 'PASS ') + sample.load.toFixed(2) + 'x');
+            })) : null);
+        }
         var modeSwitch = h('div', { role: 'group', 'aria-label': 'Motor investigation', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
           h('button', { 'aria-pressed': mode === 'forces' ? 'true' : 'false', onClick: function () { chooseMotorMode('forces'); }, style: btn(mode === 'forces') }, 'Motor forces'),
           h('button', { 'aria-pressed': mode === 'energy' ? 'true' : 'false', onClick: function () { chooseMotorMode('energy'); }, style: btn(mode === 'energy') }, 'Energy systems'),
@@ -3266,10 +3368,14 @@
               h('button', { 'aria-pressed': d.motorView === '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '3d', motor3dStatus: 'loading', motor3dUsed: true }); announceToSR('Three-dimensional motor torque lab selected.'); }, style: btn(d.motorView === '3d') }, '3D torque lab')),
             d.motorView === '3d' ? motor3DPanel() : h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 6 } }, motorSVG()),
             motorTorqueGraph(),
+            motorTelemetryHUD(),
             forceVectorLabCard(),
             powerBridgeCard(),
             slider('Current (I)', d.motorCurrent, 0, 6, 1, function (v) { upd({ motorCurrent: v }); }),
             slider('Magnet strength (B)', d.motorField, 1, 8, 1, function (v) { upd({ motorField: v }); }),
+            slider('Shaft load (relative torque ×)', Math.max(0, Number(d.motorLoad) || 0), 0, 2, 0.25, function (v) { upd({ motorLoad: v }); }),
+            h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 8px' } }, 'Raise the load until the margin reaches 0× to find the stall boundary.'),
+            motorLoadThresholdCard(),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '-2px 0 9px' } },
               h('button', { 'aria-pressed': d.motorCurrentDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ motorCurrentDir: -d.motorCurrentDir, motorDirectionSeen: true });
@@ -3299,6 +3405,15 @@
                   }
                 }, style: btn(d.motorRunning) }, d.motorRunning ? '⏹ Stop' : '▶ Run motor'),
               h('button', { onClick: function () { var md = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1; upd({ motorAngle: (d.motorAngle + md * 30 + 360) % 360, motorRan: true }); }, style: btn() }, '↻ Step by hand')),
+            h('div', { role: 'group', 'aria-label': 'Motor torque landmarks', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '2px 0 8px' } },
+              h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Freeze at:'),
+              h('button', { 'aria-pressed': motorLandmarkActive(0) ? 'true' : 'false', onClick: function () { freezeMotorAt(0, 'Dead spot'); }, style: btn(motorLandmarkActive(0)) }, '0° · dead spot'),
+              h('button', { 'aria-pressed': motorLandmarkActive(90) ? 'true' : 'false', onClick: function () { freezeMotorAt(90, 'Maximum torque'); }, style: btn(motorLandmarkActive(90)) }, '90° · maximum torque'),
+              h('button', { 'aria-pressed': motorLandmarkActive(180) ? 'true' : 'false', onClick: function () { freezeMotorAt(180, 'Commutator flip'); }, style: btn(motorLandmarkActive(180)) }, '180° · commutator flip'),
+              h('button', { 'aria-pressed': motorLandmarkActive(270) ? 'true' : 'false', onClick: function () { freezeMotorAt(270, 'Maximum torque'); }, style: btn(motorLandmarkActive(270)) }, '270° · maximum torque')),
+            h('div', { role: 'group', 'aria-label': 'Motor angle probe', style: { margin: '0 0 2px' } },
+              slider('Rotor angle (°)', Math.round(Number(d.motorAngle) || 0), 0, 360, 5, probeMotorAngle),
+              h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 9px' } }, 'Scrub the angle to watch torque leverage rise and fall. 0° and 360° are the same physical position.')),
             h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
               h('span', { 'aria-hidden': 'true' }, d.motorRunning ? 'RUN' : 'PAUSE'),
               h('span', null, h('b', null, d.motorRunning ? 'Torque run active. ' : 'Torque engine paused. '), d.motorRunning ? 'The rotor angle advances from the linked I × B torque model.' : 'Press Run motor to animate the rotor, or Step by hand to inspect one turn.')),
@@ -4112,6 +4227,80 @@
         ), '#a78bfa');
       }
 
+      function motorTelemetryHUD() {
+        var angle = ((Number(d.motorAngle) || 0) % 360 + 360) % 360;
+        var leverage = Math.abs(Math.sin(angle * Math.PI / 180));
+        var loadState = motorLoadState(d.motorCurrent, d.motorField, angle, d.motorLoad);
+        var hasDrive = Number(d.motorCurrent) > 0 && Number(d.motorField) > 0;
+        var phase = !hasDrive ? 'No torque' : loadState.stalled ? (leverage < 0.08 ? 'Dead spot · stalled under load' : 'Stalled under load') : leverage < 0.08 ? 'Dead spot' : leverage > 0.92 ? 'Maximum torque' : 'Turning pair';
+        var direction = hasDrive ? (d.motorCurrentDir * d.motorFieldDir > 0 ? 'Clockwise' : 'Counter-clockwise') : 'No rotation';
+        var halfTurn = angle < 180 ? 'Half-turn 1' : 'Half-turn 2';
+        var hint = !hasDrive ? 'Add current and field to create a force pair.' :
+          loadState.stalled ? 'The shaft load is larger than the available magnetic torque. Lower the load or increase current or field.' :
+          leverage < 0.08 ? 'Inertia carries the loop through this low-torque angle.' :
+          leverage > 0.92 ? 'The opposite wire forces have their strongest turning leverage.' :
+          'Opposite forces create a turning pair; the commutator keeps the rotation going.';
+        var liveTorque = Math.abs(motorTorqueFactor(d.motorCurrent, d.motorField, angle, d.motorCurrentDir, d.motorFieldDir) / 12);
+        var motorEvidence = (d.notebookTrials || []).filter(function (trial) {
+          return Array.isArray(trial.metrics) && trial.metrics.some(function (metric) { return metric.key === 'torque_rel'; });
+        }).slice(-1)[0] || null;
+        var recordedTorqueMetric = motorEvidence && motorEvidence.metrics ? motorEvidence.metrics.filter(function (metric) { return metric.key === 'torque_rel'; })[0] : null;
+        var recordedAngleMetric = motorEvidence && motorEvidence.metrics ? motorEvidence.metrics.filter(function (metric) { return metric.key === 'angle_deg'; })[0] : null;
+        var recordedTorque = recordedTorqueMetric && Number.isFinite(Number(recordedTorqueMetric.value)) ? Number(recordedTorqueMetric.value) : null;
+        var recordedAngle = recordedAngleMetric && Number.isFinite(Number(recordedAngleMetric.value)) ? Number(recordedAngleMetric.value) : null;
+        var ribbonX = 14 + angle / 360 * 292;
+        var phaseRibbon = h('svg', { viewBox: '0 0 320 50', width: '100%', style: { gridColumn: '1 / -1', display: 'block', margin: '0 0 1px' }, role: 'img',
+          'aria-label': 'Torque cycle phase. Current angle ' + angle.toFixed(0) + ' degrees. Dead spots near 0 and 180 degrees; maximum leverage near 90 and 270 degrees; the 180 degree marker is the commutator flip.' },
+          h('rect', { x: 14, y: 17, width: 292, height: 8, rx: 4, fill: BORDER }),
+          h('rect', { x: 14, y: 17, width: 24, height: 8, rx: 4, fill: 'rgba(244,63,94,.65)' }),
+          h('rect', { x: 74, y: 17, width: 26, height: 8, rx: 4, fill: 'rgba(52,211,153,.72)' }),
+          h('rect', { x: 136, y: 17, width: 48, height: 8, rx: 4, fill: 'rgba(244,63,94,.65)' }),
+          h('rect', { x: 220, y: 17, width: 26, height: 8, rx: 4, fill: 'rgba(52,211,153,.72)' }),
+          h('rect', { x: 282, y: 17, width: 24, height: 8, rx: 4, fill: 'rgba(244,63,94,.65)' }),
+          h('line', { x1: ribbonX, y1: 9, x2: ribbonX, y2: 31, stroke: '#fbbf24', strokeWidth: 2.5 }),
+          h('circle', { cx: ribbonX, cy: 17, r: 4, fill: '#fbbf24', stroke: INSTRUMENT, strokeWidth: 1.5 }),
+          h('text', { x: 14, y: 43, fill: SOFT, fontSize: 9.5, textAnchor: 'start' }, '0° dead'),
+          h('text', { x: 87, y: 43, fill: SOFT, fontSize: 9.5, textAnchor: 'middle' }, '90° max'),
+          h('text', { x: 160, y: 43, fill: SOFT, fontSize: 9.5, textAnchor: 'middle' }, '180° flip'),
+          h('text', { x: 233, y: 43, fill: SOFT, fontSize: 9.5, textAnchor: 'middle' }, '270° max'),
+          h('text', { x: 306, y: 43, fill: SOFT, fontSize: 9.5, textAnchor: 'end' }, '360°'));
+        var openNotebook = function () {
+          upd({ notebookOpen: true, tab: 'motor', motorMode: 'forces' });
+          announceToSR('Motor trial notebook opened. Write a prediction, then record the current torque setup.');
+        };
+        var comparePanel = motorEvidence && recordedTorque != null
+          ? h('div', { role: 'group', 'aria-label': 'Previous motor trial comparison', style: { gridColumn: '1 / -1', paddingTop: 7, borderTop: '1px solid rgba(251,191,36,.20)', color: SOFT, fontSize: 11.5, lineHeight: 1.4 } },
+            h('b', { style: { color: TEXT } }, 'Previous trial comparison. '),
+            'Recorded ' + recordedTorque.toFixed(2) + '× torque' + (recordedAngle == null ? '' : ' at ' + recordedAngle.toFixed(0) + '°') + ' · live ' + liveTorque.toFixed(2) + '× · Δ ' + (liveTorque - recordedTorque >= 0 ? '+' : '') + (liveTorque - recordedTorque).toFixed(2) + '×.',
+            motorEvidence.setup ? h('span', { style: { display: 'block' } }, 'Recorded setup: ' + motorEvidence.setup + '.') : null,
+            !d.notebookOpen ? h('button', { type: 'button', onClick: openNotebook, style: Object.assign({}, btn(), { marginTop: 6 }) }, 'Open notebook') : null)
+          : h('div', { role: 'group', 'aria-label': 'Motor trial recorder', style: { gridColumn: '1 / -1', paddingTop: 7, borderTop: '1px solid rgba(251,191,36,.20)', color: SOFT, fontSize: 11.5, lineHeight: 1.4 } },
+            h('b', { style: { color: TEXT } }, 'Record a torque trial. '),
+            'Change one control, save the evidence in the notebook, then compare the live setup here. Saved trials flow into Mission Control report exports.',
+            !d.notebookOpen ? h('button', { type: 'button', onClick: openNotebook, style: Object.assign({}, btn(), { marginTop: 6 }) }, 'Record a torque trial') : null);
+        return h('div', { role: 'group', 'aria-label': 'Live torque telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, margin: '0 0 10px', padding: '9px 10px', borderRadius: 9, background: 'rgba(251,191,36,.07)', border: '1px solid rgba(251,191,36,.24)' } },
+          h('div', null,
+            h('div', { style: { color: SOFT, fontSize: 11 } }, 'Rotor angle'),
+            h('strong', { style: { display: 'block', color: TEXT, fontSize: 15, fontVariantNumeric: 'tabular-nums' } }, angle.toFixed(0) + '°')),
+          h('div', null,
+            h('div', { style: { color: SOFT, fontSize: 11 } }, 'Torque leverage'),
+            h('meter', { min: 0, max: 100, value: leverage * 100, 'aria-label': 'Torque leverage ' + Math.round(leverage * 100) + ' percent', style: { display: 'block', width: '100%', height: 10, margin: '5px 0 2px' } }),
+            h('strong', { style: { color: TEXT, fontSize: 13, fontVariantNumeric: 'tabular-nums' } }, Math.round(leverage * 100) + '%')),
+          h('div', null,
+            h('div', { style: { color: SOFT, fontSize: 11 } }, 'Commutator phase'),
+            h('strong', { style: { display: 'block', color: TEXT, fontSize: 13 } }, halfTurn),
+            h('div', { style: { color: SOFT, fontSize: 11 } }, direction)),
+          h('div', null,
+            h('div', { style: { color: SOFT, fontSize: 11 } }, 'Load margin'),
+            h('strong', { style: { display: 'block', color: loadState.stalled ? '#fb7185' : TEXT, fontSize: 13, fontVariantNumeric: 'tabular-nums' } }, (loadState.margin >= 0 ? '+' : '') + loadState.margin.toFixed(2) + '×'),
+            h('div', { style: { color: SOFT, fontSize: 11 } }, loadState.stalled ? 'Stalled' : 'Headroom')),
+          h('div', { role: 'status', 'aria-live': 'polite', style: { gridColumn: '1 / -1', color: TEXT, fontSize: 11.5, lineHeight: 1.4 } },
+            h('b', null, d.motorRunning ? (loadState.stalled ? 'Torque run stalled. ' : 'Run engine active. ') : phase + '. '),
+            d.motorRunning ? (loadState.stalled ? 'Load exceeds available magnetic torque. Lower the shaft load or increase current or field.' : 'The angle is advancing through the commutator cycle. ' + phase + ' now.') : hint),
+          phaseRibbon,
+          comparePanel);
+      }
+
       function motorTorqueGraph() {
         var dir = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1;
         var amplitudeScale = Math.min(1, Math.abs(d.motorCurrent * d.motorField) / 48);
@@ -4378,7 +4567,10 @@
           var dt = Math.max(0, Math.min(80, ts - last)); last = ts;
           var spinDir = (cur.currentDir || 1) * (cur.fieldDir || 1) > 0 ? 1 : -1;
           var angleFactor = 0.18 + 0.82 * Math.abs(Math.sin((cur.angle || 0) * Math.PI / 180)); // inertia carries the loop through torque dead spots
-          var rate = (Number(cur.current) || 0) * (Number(cur.field) || 0) * 0.02 * angleFactor * spinDir;
+          var torqueCapacity = Math.abs(Number(cur.current) || 0) * Math.abs(Number(cur.field) || 0) / 12 * Math.abs(Math.sin((cur.angle || 0) * Math.PI / 180));
+          var loadDemand = Math.max(0, Number(cur.load) || 0);
+          var loadGate = loadDemand > 0 && torqueCapacity + 1e-6 < loadDemand ? 0 : 1;
+          var rate = (Number(cur.current) || 0) * (Number(cur.field) || 0) * 0.02 * angleFactor * loadGate * spinDir;
           var nextAngle = (cur.angle + dt * rate + 360) % 360;
           _motorSpinConfig.angle = nextAngle;
           upd({ motorAngle: nextAngle });
@@ -6238,6 +6430,8 @@
 
       function notebookSnapshot() {
         var station = (STATION_GUIDES[d.tab] || STATION_GUIDES.field).phase;
+        var motorLoadTrial = d.tab === 'motor' ? motorLoadTrialState(d.motorLoadSamples, d.motorLoadPrediction) : null;
+        var motorLoadNote = motorLoadTrial && motorLoadTrial.bracketed ? '; load sweep observed ' + motorLoadTrial.observed.toFixed(2) + 'x vs predicted ' + motorLoadTrial.predicted.toFixed(2) + 'x' : '';
         if (d.tab === 'field' && d.fieldView === 'map') {
           var mapMagnet = { x: 0, y: 0, angle: 0, polarity: 1, strength: Number(d.fieldMapStrength) || 1 };
           var mapProbe = Object.assign({ x: 90, y: 0 }, d.fieldMapProbe || {});
@@ -6285,8 +6479,8 @@
         }
         if (d.tab === 'motor' && d.motorMode === 'forces' && d.motorView === '3d') {
           var m3 = currentMotor3DState();
-          return { station: '3D motor torque lab', setup: 'I ' + m3.current + ', B ' + m3.field + ', rotor ' + Math.round(m3.angle) + '°, commutator half ' + m3.halfTurn,
-            result: m3.force.toFixed(3) + ' N on each active side, ' + Math.round(m3.torquePercent) + '% relative torque, ' + (m3.deadSpot ? 'torque dead spot' : (m3.torqueDirection > 0 ? 'clockwise' : 'counter-clockwise') + ' turning pair') };
+          return { station: '3D motor torque lab', setup: 'I ' + m3.current + ', B ' + m3.field + ', rotor ' + Math.round(m3.angle) + '°, load ' + Number(d.motorLoad || 0).toFixed(2) + 'x, commutator half ' + m3.halfTurn,
+            result: m3.force.toFixed(3) + ' N on each active side, ' + Math.round(m3.torquePercent) + '% relative torque, ' + (m3.deadSpot ? 'torque dead spot' : (m3.torqueDirection > 0 ? 'clockwise' : 'counter-clockwise') + ' turning pair') + motorLoadNote };
         }
         if (d.tab === 'motor' && d.benchUsed) {
           if (d.benchView === 'mission' && (d.benchTrace || []).length) {
@@ -6300,8 +6494,8 @@
         }
         if (d.tab === 'motor') {
           var mt = motorTorqueFactor(d.motorCurrent, d.motorField, d.motorAngle, d.motorCurrentDir, d.motorFieldDir);
-          return { station: station, setup: 'I ' + d.motorCurrent + ', B ' + d.motorField + ', angle ' + Math.round(d.motorAngle) + '°',
-            result: Math.abs(mt / 12).toFixed(2) + '× torque, ' + (mt >= 0 ? 'clockwise' : 'counter-clockwise') };
+          return { station: station, setup: 'I ' + d.motorCurrent + ', B ' + d.motorField + ', load ' + Number(d.motorLoad || 0).toFixed(2) + 'x, angle ' + Math.round(d.motorAngle) + '°',
+            result: Math.abs(mt / 12).toFixed(2) + '× torque, ' + (mt >= 0 ? 'clockwise' : 'counter-clockwise') + motorLoadNote };
         }
         if (d.tab === 'induce' && d.induceMode === '3d') {
           var i3 = currentInduction3DState();
@@ -6691,6 +6885,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, fieldProbeReading: fieldProbeReading, fieldScanSeries: fieldScanSeries, fieldPowerLawFit: fieldPowerLawFit, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, wireForceVectorState: wireForceVectorState, motorPowerBridgeState: motorPowerBridgeState, motorTorqueFactor: motorTorqueFactor, motorSpatialState: motorSpatialState, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, ANALYZER_SPECIES: ANALYZER_SPECIES, velocitySelectorState: velocitySelectorState, chargedParticleTrajectory: chargedParticleTrajectory, chargedParticleHelix: chargedParticleHelix, chargedParticleMirror: chargedParticleMirror, magnetosphereTeachingState: magnetosphereTeachingState, chargedParticleComparison: chargedParticleComparison, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, rotatingPhaseState: rotatingPhaseState, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, eddyBrakeState: eddyBrakeState, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MISSION_DEFS: MISSION_DEFS, missionProgressState: missionProgressState, missionEvidenceReviewState: missionEvidenceReviewState, missionReplayState: missionReplayState, notebookMetricSnapshot: notebookMetricSnapshot, missionReportState: missionReportState, missionCERState: missionCERState, MU0: MU0 };
+    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, fieldProbeReading: fieldProbeReading, fieldScanSeries: fieldScanSeries, fieldPowerLawFit: fieldPowerLawFit, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, wireForceVectorState: wireForceVectorState, motorPowerBridgeState: motorPowerBridgeState, motorTorqueFactor: motorTorqueFactor, motorLoadState: motorLoadState, motorLoadTrialState: motorLoadTrialState, motorSpatialState: motorSpatialState, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, ANALYZER_SPECIES: ANALYZER_SPECIES, velocitySelectorState: velocitySelectorState, chargedParticleTrajectory: chargedParticleTrajectory, chargedParticleHelix: chargedParticleHelix, chargedParticleMirror: chargedParticleMirror, magnetosphereTeachingState: magnetosphereTeachingState, chargedParticleComparison: chargedParticleComparison, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, rotatingPhaseState: rotatingPhaseState, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, eddyBrakeState: eddyBrakeState, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MISSION_DEFS: MISSION_DEFS, missionProgressState: missionProgressState, missionEvidenceReviewState: missionEvidenceReviewState, missionReplayState: missionReplayState, notebookMetricSnapshot: notebookMetricSnapshot, missionReportState: missionReportState, missionCERState: missionCERState, MU0: MU0 };
   }
 })();

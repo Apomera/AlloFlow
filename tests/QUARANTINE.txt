@@ -22,6 +22,7 @@
 # 2026-07-29 — 69 files RELEASED back to the blocking job: they now pass.
 #   Verified independently before removal (69/69 files, 941 assertions, 0 failures),
 #   not just taken from the gate. The FLAKY block below is untouched by design.
+# 2026-07-30 - +3 released (verified 34 assertions): fixed by the geology/DNA/SEL session.
 # 2026-07-29 — +2 more released after FIXING their stale harnesses (not the product):
 #   gemini_error_taxonomy_contract pinned _geminiCall's old 5-arg signature; table_caption_ai_tier
 #   pinned addAiTableCaptions(html) and never injected _neutralizePromptFence, so a per-table
@@ -31,11 +32,8 @@ tests/app_shell_runtime_a11y.test.js  # 1 failing · application shell accessibi
 tests/brain_atlas_golden.test.js  # 25 failing · brainAtlas render goldens view: lateral renders + pins a digest
 tests/chatgpt_phase2_reliability.test.js  # 2 failing · finding 5 — sliced-audit coverage honesty ranges keep identity, failed ranges get one calm-gated sequential re
 tests/deep_dive_batch3_fixes.test.js  # 1 failing · M1/M2/M6 — circle-back covers null audits, respects the wall, and keeps the status honest M6: the wait ticks t
-tests/expert_direct_edit.test.js  # 1 failing · anti-drift: the mini-audit is shared (no drift between Workbench + direct-edit) _reauditAndScore exists and fo
 tests/individual_remediation_polish.test.js  # 4 failing · remediation outcome is separate from verification completeness calls a target-reaching, axe-clean, AI-complete
 tests/lumen_render_golden.test.js  # 21 failing · Lumen — render golden master (SSR, §15) empty state — no observations (entry + sample, no chart)
-tests/pdf_extraction_timeout.test.js  # 2 failing · pdf.js extraction/OCR awaits are timeboxed (anti-hang) the image-extraction loop awaits are wrapped in _withTi
-tests/pipeline_failmode_honesty.test.js  # 1 failing · post-remediation toast — never claim success when content integrity is in doubt anti-drift: the integrity-warn
 tests/plt_k6_5622_pack.test.js  # 1 failing · Praxis PLT K–6 5622 diagnostic bank is candid that guided activities are not independent, expert-validated exa
 tests/stem_big_tools_golden.test.js  # 8 failing · big STEM tool render goldens (default state) renders + pins a digest for roadReady
 tests/stem_graph_tools_golden.test.js  # 10 failing · math/logic graph cluster render goldens (default state) renders + pins a digest for algebraCAS

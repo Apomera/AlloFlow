@@ -139,6 +139,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         });
       }
       var view = d.view || 'home';
+      var draftedSteps = LETTERS.filter(function(L) {
+        var response = (d.responses || {})[L.id];
+        return response && response.trim();
+      }).length;
+      var dearManProgressText = draftedSteps === 0
+        ? 'No DEAR MAN steps drafted yet. Start with Describe.'
+        : draftedSteps + ' of ' + LETTERS.length + ' DEAR MAN steps drafted.';
       function goto(v) { setDM({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
@@ -164,8 +171,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return h('button', {
+              id: 'dearman-tab-' + t.id,
+              key: t.id,
+              'aria-label': t.label,
+              'aria-controls': 'dearman-panel-' + t.id,
+              role: 'tab',
+              'aria-selected': active,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(event) {
+                var tabIndex = tabs.indexOf(t);
+                var nextIndex = tabIndex;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home') nextIndex = 0;
+                else if (event.key === 'End') nextIndex = tabs.length - 1;
+                else return;
+                event.preventDefault();
+                goto(tabs[nextIndex].id);
+                setTimeout(function() {
+                  var nextTab = document.getElementById('dearman-tab-' + tabs[nextIndex].id);
+                  if (nextTab) nextTab.focus();
+                }, 0);
+              },
+
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#3b82f6' : '#334155'),
                 background: active ? 'rgba(59,130,246,0.18)' : _deBg('#1e293b'),
                 color: active ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
@@ -493,7 +523,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'DEAR MAN script builder' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'dearman-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'dearman-tab-' + view, tabIndex: 0 },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'DEAR MAN progress', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.22)', color: _deFg('#bfdbfe'), fontSize: 11, lineHeight: 1.5 } }, dearManProgressText),
+          body
+        )
       );
     }
   });

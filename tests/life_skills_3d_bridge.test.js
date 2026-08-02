@@ -21,6 +21,10 @@ describe('Life Skills 3D host bridge', () => {
     expect(lifeSkills).toContain('/-challenge-start$/.test(type)');
     expect(lifeSkills).toContain('/-debrief$/.test(type)');
     expect(lifeSkills).toContain('/-teach-back$/.test(type)');
+    expect(lifeSkills).toContain('/-reflection$/.test(type)');
+    expect(lifeSkills).toContain('/-confidence$/.test(type)');
+    expect(lifeSkills).toContain('/-next-step$/.test(type)');
+    expect(lifeSkills).toContain('/-replay-complete$/.test(type)');
     expect(lifeSkills).toContain('/-help-pause$/.test(type)');
     expect(lifeSkills).toContain('/-why-reveal$/.test(type)');
   });

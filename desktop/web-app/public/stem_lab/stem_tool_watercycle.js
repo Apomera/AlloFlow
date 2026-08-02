@@ -201,7 +201,7 @@
       '.wc-viewport-dock{position:absolute;z-index:5;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 9px;border:1px solid rgba(125,211,252,.34);border-radius:12px;background:rgba(4,26,43,.88);box-shadow:0 10px 28px rgba(2,6,23,.34);backdrop-filter:blur(10px);color:#e0f2fe}',
       '.wc-viewport-state{min-width:0}.wc-viewport-state span{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.wc-viewport-state strong{display:block;max-width:260px;margin-top:1px;font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.wc-viewport-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.wc-viewport-btn{min-width:44px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.36);border-radius:8px;background:#075985;color:#fff;font-size:11px;font-weight:900}.wc-viewport-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}.wc-viewport-btn:disabled{opacity:.48;cursor:not-allowed}.wc-viewport-start{min-height:44px;padding:8px 14px;border-radius:9px;background:linear-gradient(135deg,#0e7490,#1d4ed8);color:#fff;font-size:12px;font-weight:900;box-shadow:0 8px 20px rgba(14,165,233,.3)}',
-      '.wc-viewport-choice{position:absolute;z-index:7;left:50%;bottom:76px;width:min(620px,calc(100% - 20px));transform:translateX(-50%);padding:12px;border:1px solid rgba(186,230,253,.5);border-radius:14px;background:rgba(4,26,43,.94);box-shadow:0 18px 42px rgba(2,6,23,.5);backdrop-filter:blur(12px);color:#e0f2fe}.wc-viewport-choice h5{margin:0;font-size:14px;font-weight:900}.wc-viewport-choice p{margin:3px 0 9px;font-size:10px;color:#bae6fd}.wc-viewport-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wc-viewport-choice-grid button{min-height:52px;padding:7px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.9);color:#fff;text-align:left}.wc-viewport-choice-grid strong,.wc-viewport-choice-grid span{display:block}.wc-viewport-choice-grid strong{font-size:11px}.wc-viewport-choice-grid span{margin-top:2px;font-size:9px;color:#bae6fd}',
+      '.wc-viewport-choice{position:absolute;z-index:7;left:50%;bottom:76px;width:min(620px,calc(100% - 20px));transform:translateX(-50%);padding:12px;border:1px solid rgba(186,230,253,.5);border-radius:14px;background:rgba(4,26,43,.94);box-shadow:0 18px 42px rgba(2,6,23,.5);backdrop-filter:blur(12px);color:#e0f2fe}.wc-viewport-choice h5{margin:0;font-size:14px;font-weight:900}.wc-viewport-choice p{margin:3px 0 9px;font-size:10px;color:#bae6fd}.wc-viewport-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wc-viewport-choice-grid button{min-height:52px;padding:7px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.9);color:#fff;text-align:left}.wc-viewport-choice-grid strong,.wc-viewport-choice-grid span{display:block}.wc-viewport-choice-grid strong{font-size:11px}.wc-viewport-choice-grid span{margin-top:2px;font-size:10px;color:#bae6fd}',
       '.wc-viewport-choice-grid button[data-route-choice="runoff"]{border-left:3px solid #3b82f6}.wc-viewport-choice-grid button[data-route-choice="infiltrate"]{border-left:3px solid #22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"]{border-left:3px solid #4ade80}',
       '.wc-viewport-choice-grid .wc-route-share-track{display:block;height:5px;margin-top:6px;border-radius:999px;background:rgba(125,211,252,.22);overflow:hidden}.wc-viewport-choice-grid .wc-route-share-track span{display:block;height:100%;margin:0;border-radius:inherit;background:#60a5fa}.wc-viewport-choice-grid button[data-route-choice="infiltrate"] .wc-route-share-track span{background:#22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"] .wc-route-share-track span{background:#4ade80}@media (forced-colors: active){.wc-viewport-choice-grid .wc-route-share-track{border:1px solid CanvasText;background:Canvas}.wc-viewport-choice-grid .wc-route-share-track span{background:Highlight}}',
       '.wc-route-choice-card{position:relative;transition:transform 160ms ease,box-shadow 160ms ease}.wc-route-choice-card:hover{transform:translateY(-1px)}.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px #facc15,0 10px 22px rgba(250,204,21,.18)}.wc-route-leader-badge{display:inline-block!important;margin-top:5px!important;padding:2px 5px;border-radius:5px;background:#facc15;color:#422006!important;font-size:8px!important;font-weight:900!important;letter-spacing:.04em;text-transform:uppercase}.wc-route-choice-signal{margin:4px 0 9px!important;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#fef08a!important;font-size:10px!important;font-weight:800!important}.wc-route-choice-card:focus-visible{outline:3px solid #facc15;outline-offset:2px}@media (forced-colors: active){.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px Highlight}.wc-route-leader-badge{background:Highlight;color:HighlightText!important}.wc-route-choice-signal{border-color:Highlight;background:Canvas;color:CanvasText!important}}',
@@ -211,7 +211,7 @@
       '.wc-journey-lens strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#0f172a}',
       '.wc-journey-choice-receipt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;margin-top:8px;padding:8px 10px;border:1px solid rgba(14,165,233,.28);border-left:3px solid #0ea5e9;border-radius:9px;background:rgba(224,242,254,.62);color:#334155}.wc-journey-choice-receipt-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-journey-choice-receipt strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#0f172a}.wc-journey-choice-receipt-copy{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#475569}.wc-journey-choice-signal{align-self:center;min-width:92px;padding:5px 7px;border-radius:7px;background:rgba(255,255,255,.78);color:#0369a1;font-size:10px;font-weight:900;text-align:center}.wc-journey-choice-track{display:block;height:5px;margin-top:5px;border-radius:999px;background:rgba(14,165,233,.18);overflow:hidden}.wc-journey-choice-track span{display:block;height:100%;border-radius:inherit;background:#0ea5e9}.dark .wc-journey-choice-receipt{background:rgba(8,47,73,.54);border-color:rgba(56,189,248,.25);border-left-color:#38bdf8;color:#cbd5e1}.dark .wc-journey-choice-receipt-kicker{color:#7dd3fc}.dark .wc-journey-choice-receipt strong{color:#f8fafc}.dark .wc-journey-choice-receipt-copy{color:#cbd5e1}.dark .wc-journey-choice-signal{background:rgba(15,23,42,.72);color:#7dd3fc}.dark .wc-journey-choice-track{background:rgba(56,189,248,.2)}.dark .wc-journey-choice-track span{background:#38bdf8}@media(max-width:460px){.wc-journey-choice-receipt{grid-template-columns:1fr}.wc-journey-choice-signal{justify-self:start;text-align:left}}@media(forced-colors:active){.wc-journey-choice-receipt{border-color:CanvasText;border-left-color:Highlight;background:Canvas;color:CanvasText}.wc-journey-choice-receipt-kicker,.wc-journey-choice-receipt strong,.wc-journey-choice-receipt-copy,.wc-journey-choice-signal{color:CanvasText}.wc-journey-choice-signal{background:Canvas}.wc-journey-choice-track{border:1px solid CanvasText;background:Canvas}.wc-journey-choice-track span{background:Highlight}}',
       '.wc-journey-choice-receipt.is-complete{border-left-color:#10b981;background:linear-gradient(135deg,rgba(236,253,245,.86),rgba(224,242,254,.58))}.dark .wc-journey-choice-receipt.is-complete{border-left-color:#34d399;background:linear-gradient(135deg,rgba(6,78,59,.5),rgba(8,47,73,.54))}@media(forced-colors:active){.wc-journey-choice-receipt.is-complete{border-left-color:Highlight;background:Canvas}}',
-      '.wc-route-ledger{margin-top:8px;padding:8px 10px;border-left:3px solid #0ea5e9;border-radius:9px;background:rgba(224,242,254,.56);color:#334155}.wc-route-ledger-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.wc-route-ledger-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-route-ledger-head strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#0f172a}.wc-route-ledger-head span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#475569}.wc-route-ledger-progress{flex:0 0 auto;min-width:54px;padding:5px 6px;border-radius:7px;background:rgba(255,255,255,.72);color:#0369a1;font-size:11px;font-weight:900;text-align:center}.wc-route-ledger-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.wc-route-ledger-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:5px;min-width:0;padding:6px 7px;border:1px solid rgba(14,165,233,.18);border-radius:7px;background:rgba(255,255,255,.58)}.wc-route-ledger-item.is-explored{border-color:rgba(16,185,129,.4)}.wc-route-ledger-item.is-current{border-color:#facc15;box-shadow:0 0 0 1px rgba(250,204,21,.5)}.wc-route-ledger-mark{font-size:13px;font-weight:900;color:#94a3b8}.wc-route-ledger-item.is-explored .wc-route-ledger-mark{color:#059669}.wc-route-ledger-item strong,.wc-route-ledger-item span{display:block}.wc-route-ledger-item strong{font-size:10px;line-height:1.2;color:#334155;overflow-wrap:anywhere}.wc-route-ledger-item small{display:block;margin-top:2px;font-size:9px;line-height:1.2;color:#64748b}.wc-route-ledger-count{font-size:9px;font-weight:900;color:#64748b;white-space:nowrap}.dark .wc-route-ledger{background:rgba(8,47,73,.5);border-left-color:#38bdf8;color:#cbd5e1}.dark .wc-route-ledger-kicker{color:#7dd3fc}.dark .wc-route-ledger-head strong{color:#f8fafc}.dark .wc-route-ledger-head span:last-child{color:#cbd5e1}.dark .wc-route-ledger-progress{background:rgba(15,23,42,.72);color:#7dd3fc}.dark .wc-route-ledger-item{background:rgba(15,23,42,.62);border-color:rgba(56,189,248,.18)}.dark .wc-route-ledger-item.is-explored{border-color:rgba(52,211,153,.42)}.dark .wc-route-ledger-item.is-current{border-color:#facc15}.dark .wc-route-ledger-item strong{color:#e2e8f0}.dark .wc-route-ledger-item small,.dark .wc-route-ledger-count{color:#94a3b8}@media(max-width:680px){.wc-route-ledger-list{grid-template-columns:1fr}.wc-route-ledger-item{grid-template-columns:auto minmax(0,1fr) auto}}@media(forced-colors:active){.wc-route-ledger{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-route-ledger-kicker,.wc-route-ledger-head strong,.wc-route-ledger-head span:last-child,.wc-route-ledger-progress,.wc-route-ledger-item strong,.wc-route-ledger-item small,.wc-route-ledger-count{color:CanvasText}.wc-route-ledger-progress,.wc-route-ledger-item{background:Canvas;border-color:CanvasText}.wc-route-ledger-item.is-current{outline:2px solid Highlight}.wc-route-ledger-item.is-explored .wc-route-ledger-mark{color:Highlight}}',
+      '.wc-route-ledger{margin-top:8px;padding:8px 10px;border-left:3px solid #0ea5e9;border-radius:9px;background:rgba(224,242,254,.56);color:#334155}.wc-route-ledger-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.wc-route-ledger-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-route-ledger-head strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#0f172a}.wc-route-ledger-head span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#475569}.wc-route-ledger-progress{flex:0 0 auto;min-width:54px;padding:5px 6px;border-radius:7px;background:rgba(255,255,255,.72);color:#0369a1;font-size:11px;font-weight:900;text-align:center}.wc-route-ledger-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.wc-route-ledger-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:5px;min-width:0;padding:6px 7px;border:1px solid rgba(14,165,233,.18);border-radius:7px;background:rgba(255,255,255,.58)}.wc-route-ledger-item.is-explored{border-color:rgba(16,185,129,.4)}.wc-route-ledger-item.is-current{border-color:#facc15;box-shadow:0 0 0 1px rgba(250,204,21,.5)}.wc-route-ledger-item.is-next{border-color:#818cf8;box-shadow:0 0 0 1px rgba(129,140,248,.5)}.wc-route-ledger-mark{font-size:13px;font-weight:900;color:#94a3b8}.wc-route-ledger-item.is-explored .wc-route-ledger-mark{color:#059669}.wc-route-ledger-item strong,.wc-route-ledger-item span{display:block}.wc-route-ledger-item strong{font-size:10px;line-height:1.2;color:#334155;overflow-wrap:anywhere}.wc-route-ledger-item small{display:block;margin-top:2px;font-size:9px;line-height:1.2;color:#64748b}.wc-route-ledger-count{font-size:9px;font-weight:900;color:#64748b;white-space:nowrap}.wc-route-ledger-item.is-next .wc-route-ledger-count{color:#4f46e5}.dark .wc-route-ledger{background:rgba(8,47,73,.5);border-left-color:#38bdf8;color:#cbd5e1}.dark .wc-route-ledger-kicker{color:#7dd3fc}.dark .wc-route-ledger-head strong{color:#f8fafc}.dark .wc-route-ledger-head span:last-child{color:#cbd5e1}.dark .wc-route-ledger-progress{background:rgba(15,23,42,.72);color:#7dd3fc}.dark .wc-route-ledger-item{background:rgba(15,23,42,.62);border-color:rgba(56,189,248,.18)}.dark .wc-route-ledger-item.is-explored{border-color:rgba(52,211,153,.42)}.dark .wc-route-ledger-item.is-current{border-color:#facc15}.dark .wc-route-ledger-item.is-next{border-color:#818cf8;box-shadow:0 0 0 1px rgba(129,140,248,.48)}.dark .wc-route-ledger-item strong{color:#e2e8f0}.dark .wc-route-ledger-item small,.dark .wc-route-ledger-count{color:#94a3b8}.dark .wc-route-ledger-item.is-next .wc-route-ledger-count{color:#c7d2fe}@media(max-width:680px){.wc-route-ledger-list{grid-template-columns:1fr}.wc-route-ledger-item{grid-template-columns:auto minmax(0,1fr) auto}}@media(forced-colors:active){.wc-route-ledger{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-route-ledger-kicker,.wc-route-ledger-head strong,.wc-route-ledger-head span:last-child,.wc-route-ledger-progress,.wc-route-ledger-item strong,.wc-route-ledger-item small,.wc-route-ledger-count{color:CanvasText}.wc-route-ledger-progress,.wc-route-ledger-item{background:Canvas;border-color:CanvasText}.wc-route-ledger-item.is-current{outline:2px solid Highlight}.wc-route-ledger-item.is-next{outline:2px dashed Highlight}.wc-route-ledger-item.is-explored .wc-route-ledger-mark{color:Highlight}}',
       '.wc-journey-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0}',
       '.wc-journey-actions{display:flex;align-items:center;gap:5px}',
       '.wc-journey-icon-btn{width:34px;height:34px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:16px;font-weight:900}',
@@ -221,10 +221,17 @@
       '.wc-journey-timeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0 8px}',
       '.wc-timeline-step{position:relative;min-width:0;padding:7px 4px;border-top:3px solid #cbd5e1;text-align:center;color:#64748b}',
       '.wc-timeline-step strong{display:block;font-size:10px;line-height:1.2;white-space:normal}',
+      '.wc-timeline-marker{display:block;height:15px;margin-bottom:2px;font-size:11px;font-weight:900;line-height:15px;color:#94a3b8}.wc-timeline-step.is-complete{border-color:#10b981;color:#047857;background:rgba(236,253,245,.56)}.wc-timeline-step.is-complete .wc-timeline-marker{color:#059669}.wc-timeline-step.is-current{border-color:#0284c7;color:#075985;background:rgba(224,242,254,.72)}.wc-timeline-step.is-current .wc-timeline-marker{color:#0284c7}.wc-timeline-step.is-upcoming .wc-timeline-marker{color:#94a3b8}',
       '.wc-timeline-step[aria-current="step"]{border-color:#0284c7;color:#075985;background:rgba(224,242,254,.72)}',
-      '.dark .wc-speed-segments{background:#0f172a;border-color:#334155}.dark .wc-speed-segments button{color:#bae6fd}.dark .wc-timeline-step{color:#94a3b8;border-color:#334155}.dark .wc-timeline-step[aria-current="step"]{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}',
+      '@media(forced-colors:active){.wc-timeline-step{color:CanvasText;border-color:CanvasText;background:Canvas}.wc-timeline-step.is-complete,.wc-timeline-step.is-current{border-color:Highlight;background:Canvas;color:CanvasText}.wc-timeline-step.is-complete .wc-timeline-marker,.wc-timeline-step.is-current .wc-timeline-marker{color:Highlight}}',
+      '.dark .wc-speed-segments{background:#0f172a;border-color:#334155}.dark .wc-speed-segments button{color:#bae6fd}.dark .wc-timeline-step{color:#94a3b8;border-color:#334155}.dark .wc-timeline-step[aria-current="step"]{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}.dark .wc-timeline-step.is-complete{color:#a7f3d0;border-color:#34d399;background:rgba(6,78,59,.42)}.dark .wc-timeline-step.is-complete .wc-timeline-marker{color:#34d399}.dark .wc-timeline-step.is-current{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}.dark .wc-timeline-step.is-current .wc-timeline-marker{color:#38bdf8}',
       '.wc-route-scenario-note{margin:5px 0;padding:5px 7px;border-left:2px solid #6366f1;border-radius:5px;background:rgba(99,102,241,.09);color:#4338ca;font-size:10px;font-weight:800;line-height:1.3}.dark .wc-route-scenario-note{border-color:#818cf8;background:rgba(49,46,129,.34);color:#c7d2fe}@media(forced-colors:active){.wc-route-scenario-note{border-color:Highlight;background:Canvas;color:CanvasText}}',
-      '.wc-2d-route-note{grid-column:1/-1;margin:0 0 5px;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#854d0e;font-size:10px;font-weight:800;line-height:1.25}.wc-2d-route-share{display:block;margin-top:5px;font-size:9px;font-weight:800;line-height:1.2;opacity:.86}.wc-2d-route-share-track{display:block;height:5px;margin-top:4px;border-radius:999px;background:rgba(100,116,139,.22);overflow:hidden}.wc-2d-route-share-track span{display:block;height:100%;border-radius:inherit;background:#3b82f6}.wc-2d-route-share-track.is-infiltrate span{background:#06b6d4}.wc-2d-route-share-track.is-plant span{background:#10b981}.dark .wc-2d-route-note{border-color:#facc15;background:rgba(250,204,21,.1);color:#fde68a}.dark .wc-2d-route-share-track{background:rgba(148,163,184,.22)}@media(forced-colors:active){.wc-2d-route-note{border-color:Highlight;background:Canvas;color:CanvasText}.wc-2d-route-share-track{border:1px solid CanvasText;background:Canvas}.wc-2d-route-share-track span{background:Highlight}}',
+      '.wc-viewport-choice .wc-viewport-scenario-note{margin:5px 0 8px!important;padding:5px 7px;border-left:2px solid #a5b4fc;border-radius:5px;background:rgba(79,70,229,.22);color:#e0e7ff!important;font-size:10px;font-weight:800;line-height:1.3}.wc-viewport-choice .wc-viewport-scenario-note:focus-visible{outline:2px solid #bfdbfe;outline-offset:2px}@media(forced-colors:active){.wc-viewport-choice .wc-viewport-scenario-note{border-color:Highlight;background:Canvas;color:CanvasText!important}}',
+      '.wc-2d-route-note{grid-column:1/-1;margin:0 0 5px;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#854d0e;font-size:10px;font-weight:800;line-height:1.25}.wc-2d-route-share{display:block;margin-top:5px;font-size:10px;font-weight:800;line-height:1.2;opacity:.86}.wc-2d-route-share-track{display:block;height:5px;margin-top:4px;border-radius:999px;background:rgba(100,116,139,.22);overflow:hidden}.wc-2d-route-share-track span{display:block;height:100%;border-radius:inherit;background:#3b82f6}.wc-2d-route-share-track.is-infiltrate span{background:#06b6d4}.wc-2d-route-share-track.is-plant span{background:#10b981}.dark .wc-2d-route-note{border-color:#facc15;background:rgba(250,204,21,.1);color:#fde68a}.dark .wc-2d-route-share-track{background:rgba(148,163,184,.22)}@media(forced-colors:active){.wc-2d-route-note{border-color:Highlight;background:Canvas;color:CanvasText}.wc-2d-route-share-track{border:1px solid CanvasText;background:Canvas}.wc-2d-route-share-track span{background:Highlight}}',
+      '.wc-route-return-copy{display:block;margin-top:3px;font-size:10px;font-weight:800;color:#0369a1}.dark .wc-route-return-copy{color:#7dd3fc}',
+      '.wc-route-driver-copy{display:block;margin-top:3px;font-size:10px;font-weight:800;color:#475569}.dark .wc-route-driver-copy{color:#cbd5e1}@media(forced-colors:active){.wc-route-driver-copy{color:CanvasText}}',
+      '.wc-route-pace-copy{display:block;margin-top:3px;font-size:10px;font-weight:800;color:#475569}.dark .wc-route-pace-copy{color:#cbd5e1}@media(forced-colors:active){.wc-route-pace-copy{color:CanvasText}}',
+      '.wc-route-share-track,.wc-2d-route-share-track{position:relative}.wc-route-share-baseline-marker{position:absolute!important;top:-2px!important;bottom:-2px!important;left:auto;width:2px!important;height:auto!important;margin:0!important;border-radius:0!important;background:#facc15!important;box-shadow:0 0 0 1px rgba(120,53,15,.28);z-index:2}.wc-route-baseline-note{grid-column:1/-1;margin:4px 0 7px;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#854d0e;font-size:10px;font-weight:800;line-height:1.25}.dark .wc-route-baseline-note{color:#fde68a}@media(forced-colors:active){.wc-route-share-baseline-marker{background:Highlight!important;box-shadow:none}.wc-route-baseline-note{border-color:Highlight;background:Canvas;color:CanvasText}}',
       '@media(max-width:560px){.wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}}',
       '.wc-hydro-quest{margin:0 0 10px;padding:11px 12px;border-left:3px solid #06b6d4;background:linear-gradient(90deg,rgba(8,47,73,.08),rgba(16,185,129,.08))}',
       '.wc-hydro-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.wc-hydro-kicker{display:block;font-size:10px;font-weight:900;text-transform:uppercase;color:#0284c7}.wc-hydro-head h4{margin:1px 0 0;font-size:16px;line-height:1.2;color:#0f172a}.wc-hydro-score{font-size:14px;color:#0369a1}',
@@ -244,6 +251,7 @@
       '.wc-chip{border-radius:999px;padding:6px 8px;font-size:11px;font-weight:800;color:#e0f2fe;background:rgba(8,47,73,.72);border:1px solid rgba(125,211,252,.28);backdrop-filter:blur(8px)}',
       '.wc-stage-rack{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}',
       '.wc-stage-rack button{min-height:34px}',
+      '.wc-stage-viewed-mark{font-size:11px;font-weight:900;line-height:1;color:#059669}.dark .wc-stage-viewed-mark{color:#6ee7b7}@media(forced-colors:active){.wc-stage-viewed-mark{color:Highlight}}',
       '.wc-control-panel{box-shadow:0 12px 28px rgba(15,23,42,.10)}',
       '.wc-land-lab{border:1px solid rgba(16,185,129,.34);background:linear-gradient(135deg,rgba(236,253,245,.96),rgba(239,246,255,.96));padding:12px;margin-bottom:12px;box-shadow:0 12px 28px rgba(15,23,42,.09)}',
       '.wc-land-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}',
@@ -252,17 +260,21 @@
       '.wc-land-control label,.wc-land-control legend{display:block;font-size:11px;font-weight:800;color:#166534;margin-bottom:5px}',
       '.wc-land-segments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}',
       '.wc-land-segments button{min-height:32px;padding:4px 5px;border:1px solid #a7f3d0;background:rgba(255,255,255,.88);color:#166534;font-size:10px;font-weight:800}',
+      '.wc-land-segments button:focus-visible{outline:3px solid #facc15;outline-offset:1px}@media(forced-colors:active){.wc-land-segments button[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-2px}}',
       '.wc-land-segments button[aria-pressed="true"]{background:#047857;border-color:#047857;color:#fff}',
       '.wc-land-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}',
       '.wc-land-result{padding:9px 10px;border-left:3px solid #0ea5e9;background:rgba(255,255,255,.82)}',
       '.wc-land-result span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
       '.wc-land-result strong{display:block;margin-top:2px;font-size:15px;color:#0f172a}',
+      '.wc-land-interpretation{grid-column:1/-1;margin:0;padding:7px 8px;border-left:2px solid #64748b;background:rgba(255,255,255,.62);color:#475569;font-size:11px;line-height:1.35}.dark .wc-land-interpretation{background:rgba(15,23,42,.58);color:#cbd5e1;border-left-color:#94a3b8}@media(forced-colors:active){.wc-land-interpretation{border-color:Highlight;background:Canvas;color:CanvasText}}',
+      '.wc-land-driver{grid-column:1/-1;margin:0;padding:7px 8px;border-left:2px solid #f59e0b;background:rgba(255,251,235,.8);color:#78350f;font-size:11px;line-height:1.35}.wc-land-prompt{grid-column:1/-1;margin:8px 0 0;padding:7px 8px;border-radius:8px;background:rgba(14,165,233,.08);color:#0c4a6e;font-size:11px;line-height:1.35}.dark .wc-land-driver{background:rgba(120,53,15,.24);color:#fde68a;border-left-color:#fbbf24}.dark .wc-land-prompt{background:rgba(14,116,144,.22);color:#bae6fd}@media(forced-colors:active){.wc-land-driver,.wc-land-prompt{border-color:Highlight;background:Canvas;color:CanvasText}}',
+      '.wc-climate-interpretation{flex:1 0 100%;margin-top:2px;padding:6px 8px;border-left:2px solid #0ea5e9;background:rgba(224,242,254,.64);color:#075985;font-size:11px;line-height:1.35}.dark .wc-climate-interpretation{background:rgba(8,47,73,.56);color:#bae6fd;border-left-color:#38bdf8}@media(forced-colors:active){.wc-climate-interpretation{border-color:Highlight;background:Canvas;color:CanvasText}}',
       '.dark .wc-land-lab{background:linear-gradient(135deg,rgba(6,78,59,.28),rgba(8,47,73,.32));border-color:rgba(52,211,153,.3)}',
       '.dark .wc-land-control label,.dark .wc-land-control legend{color:#6ee7b7}.dark .wc-land-segments button{background:#0f172a;border-color:#334155;color:#cbd5e1}.dark .wc-land-segments button[aria-pressed="true"]{background:#047857;color:#fff}.dark .wc-land-result{background:rgba(15,23,42,.82)}.dark .wc-land-result strong{color:#f8fafc}',
       '@media(max-width:640px){.wc-land-grid,.wc-land-results{grid-template-columns:1fr}}',
       '.wc-control-panel .grid.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '@media(max-width:840px){.wc-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-canvas-shell{height:360px!important}.wc-canvas-topbar{position:absolute;align-items:flex-start}.wc-chip-row{max-width:50%;justify-content:flex-end}.wc-control-panel .grid.grid-cols-3{grid-template-columns:1fr!important}}',
-      '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:380px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}.wc-viewport-dock{left:8px;right:8px;bottom:8px}.wc-viewport-state{width:100%}.wc-viewport-actions{width:100%;justify-content:flex-start}.wc-viewport-choice{bottom:128px}.wc-viewport-choice-grid{grid-template-columns:1fr}.wc-viewport-choice-grid button{min-height:44px}}',
+      '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:380px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}.wc-viewport-dock{left:8px;right:8px;bottom:8px}.wc-viewport-state{width:100%}.wc-viewport-actions{width:100%;justify-content:flex-start}.wc-viewport-choice{bottom:128px;width:calc(100% - 14px);padding:10px}.wc-viewport-choice-grid{grid-template-columns:1fr}.wc-viewport-choice-grid button{min-height:44px}}',
       '.dark .wc-cycle-brief{background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(16,185,129,.10) 58%,rgba(30,41,59,.76));border-color:rgba(56,189,248,.24)}',
       '.wc-explorer-root{--wc-border:rgba(14,165,233,.24);--wc-shadow:0 14px 34px rgba(15,23,42,.09)}',
       '.wc-explorer-root>div:first-child{align-items:center!important;gap:8px!important;padding:6px 2px 14px;margin-bottom:0!important;border-bottom:1px solid var(--wc-border)}',
@@ -311,7 +323,7 @@
       '.wc-challenge-item{display:flex;align-items:center;gap:6px;min-width:0;padding:7px 8px;border:1px solid rgba(125,211,252,.28);border-radius:10px;background:rgba(255,255,255,.48);text-align:left!important;opacity:1!important;filter:none!important}',
       '.wc-challenge-item.is-complete{border-color:rgba(16,185,129,.46);background:rgba(236,253,245,.86);box-shadow:0 4px 12px rgba(16,185,129,.12)}',
       '.wc-challenge-item.is-open{background:rgba(255,255,255,.34);border-style:dashed}',
-      '.wc-challenge-icon{flex:0 0 auto;font-size:18px;line-height:1}.wc-challenge-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:800;color:#334155}',
+      '.wc-challenge-status{flex:0 0 15px;display:inline-grid;place-items:center;font-size:12px;font-weight:900;color:#64748b}.wc-challenge-icon{flex:0 0 auto;font-size:18px;line-height:1}.wc-challenge-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:800;color:#334155}.wc-challenge-item.is-complete .wc-challenge-status{color:#059669}.dark .wc-challenge-item.is-complete .wc-challenge-status{color:#6ee7b7}@media(forced-colors:active){.wc-challenge-item.is-complete .wc-challenge-status{color:Highlight}.wc-challenge-item.is-open .wc-challenge-status{color:CanvasText}}',
       '@media(max-width:700px){.wc-challenge-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.wc-challenge-strip{grid-template-columns:1fr}.wc-challenge-name{white-space:normal}}',
       '.dark .wc-view-status{background:rgba(8,47,73,.52);border-color:rgba(56,189,248,.2);color:#bae6fd}.dark .wc-challenge-item{background:rgba(15,23,42,.64);border-color:rgba(56,189,248,.2)}.dark .wc-challenge-item.is-complete{background:rgba(6,78,59,.48);border-color:rgba(52,211,153,.42)}.dark .wc-challenge-name{color:#cbd5e1}',
       '.wc-view-switch{align-items:flex-end;gap:12px!important;padding-top:6px!important}',
@@ -331,6 +343,7 @@
       '.wc-viewport-actions{row-gap:6px}.wc-viewport-actions::before{content:"Camera";align-self:center;margin-right:2px;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#7dd3fc}',
       '@media(max-width:560px){.wc-viewport-actions::before{flex-basis:100%;margin-bottom:-1px}.wc-reset-control{flex-basis:100%;margin-top:2px}}',
       '.wc-preset-control{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:10px;font-weight:900;color:#6d28d9}.wc-preset-control select{min-height:28px;max-width:190px;padding:4px 24px 4px 7px;border:1px solid rgba(124,58,237,.25);border-radius:8px;background:rgba(255,255,255,.76);color:#4338ca;font-size:10px;font-weight:900}.wc-preset-control select:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
+      '.wc-preset-lesson{flex:1 0 100%;margin:0 0 8px;padding:6px 8px;border-left:2px solid #8b5cf6;border-radius:5px;background:rgba(245,243,255,.72);color:#4c1d95;font-size:10px;line-height:1.35}.wc-preset-lesson-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6d28d9}.wc-preset-lesson-copy{display:block;margin-top:2px}.dark .wc-preset-lesson{background:rgba(49,46,129,.26);border-left-color:#a78bfa;color:#ddd6fe}.dark .wc-preset-lesson-kicker{color:#c4b5fd}@media(forced-colors:active){.wc-preset-lesson{border-color:Highlight;background:Canvas;color:CanvasText}.wc-preset-lesson-kicker{color:CanvasText}}',
       '@media(max-width:620px){.wc-preset-control{flex:1 1 100%;margin-left:0}.wc-preset-control select{flex:1;max-width:none;min-width:0}}',
       '.dark .wc-preset-control{color:#c4b5fd}.dark .wc-preset-control select{background:rgba(15,23,42,.72);border-color:rgba(167,139,250,.35);color:#ddd6fe}',
       '.dark .wc-reset-control{background:rgba(8,47,73,.7);border-color:rgba(56,189,248,.32);color:#bae6fd}.dark .wc-reset-control:hover{background:#075985}.dark .wc-viewport-actions::before{color:#7dd3fc}',
@@ -359,22 +372,26 @@
       '.dark .wc-walkthrough-strip{background:linear-gradient(135deg,rgba(30,27,75,.55),rgba(8,47,73,.58));border-color:rgba(129,140,248,.28);color:#cbd5e1}.dark .wc-walkthrough-kicker{color:#a5b4fc}.dark .wc-walkthrough-copy strong{color:#f8fafc}.dark .wc-walkthrough-copy span:last-child{color:#94a3b8}.dark .wc-walkthrough-progress{background:#334155}.dark .wc-walkthrough-btn{background:rgba(15,23,42,.72);border-color:rgba(129,140,248,.32);color:#c7d2fe}.dark .wc-walkthrough-primary{background:#6366f1;border-color:#818cf8;color:#fff}',
       '.wc-compare-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(99,102,241,.24);border-left:3px solid #6366f1;border-radius:12px;background:linear-gradient(135deg,rgba(238,242,255,.72),rgba(224,242,254,.58));color:#334155}',
       '.wc-compare-copy{min-width:0}.wc-compare-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#4f46e5}.wc-compare-copy strong{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:#1e293b}.wc-compare-copy span:last-child{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}',
+      '.wc-compare-method{grid-column:1/-1;margin:0;padding:6px 8px;border-left:2px solid #6366f1;border-radius:5px;background:rgba(99,102,241,.08);color:#3730a3;font-size:10px;line-height:1.35}.wc-compare-method strong{margin-right:4px;color:#312e81}.dark .wc-compare-method{background:rgba(99,102,241,.18);color:#c7d2fe;border-left-color:#a5b4fc}.dark .wc-compare-method strong{color:#e0e7ff}@media(forced-colors:active){.wc-compare-method{border-color:Highlight;background:Canvas;color:CanvasText}.wc-compare-method strong{color:CanvasText}}',
       '.wc-compare-metrics{display:flex;flex-wrap:wrap;gap:5px;grid-column:1/-1}.wc-compare-metric{padding:5px 7px;border-radius:8px;background:rgba(255,255,255,.72);font-size:10px;color:#475569}.wc-compare-metric strong{margin-right:3px;color:#334155}.wc-compare-actions{display:flex;align-items:flex-start;gap:5px}.wc-compare-trigger,.wc-compare-btn{min-height:30px;padding:5px 8px;border:1px solid rgba(99,102,241,.28);border-radius:8px;background:rgba(255,255,255,.78);color:#4338ca;font-size:11px;font-weight:900;white-space:nowrap;transition:background 160ms ease,transform 160ms ease,box-shadow 160ms ease}.wc-compare-trigger:hover,.wc-compare-btn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 5px 12px rgba(79,70,229,.14)}.wc-compare-btn.is-clear{border-color:rgba(100,116,139,.28);color:#475569}.wc-compare-btn.is-clear:hover{color:#1e293b}',
       '.wc-compare-btn.is-restore{border-color:rgba(16,185,129,.32);color:#047857}.wc-compare-btn.is-restore:hover{color:#065f46}.wc-compare-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}.dark .wc-compare-btn.is-restore{border-color:rgba(52,211,153,.3);color:#a7f3d0}.dark .wc-compare-btn.is-restore:hover{background:#065f46;color:#ecfdf5}@media(forced-colors:active){.wc-compare-btn.is-restore{border-color:ButtonText;color:ButtonText}}',
       '@media(max-width:560px){.wc-compare-strip{grid-template-columns:1fr}.wc-compare-actions{align-items:stretch}.wc-compare-actions button{flex:1}.wc-compare-trigger{flex:1}}',
-      '.dark .wc-compare-strip{background:linear-gradient(135deg,rgba(30,27,75,.52),rgba(8,47,73,.5));border-color:rgba(129,140,248,.28);border-left-color:#818cf8;color:#cbd5e1}.dark .wc-compare-kicker{color:#a5b4fc}.dark .wc-compare-copy strong{color:#f8fafc}.dark .wc-compare-copy span:last-child{color:#94a3b8}.dark .wc-compare-metric{background:rgba(15,23,42,.72);color:#cbd5e1}.dark .wc-compare-metric strong{color:#f8fafc}.dark .wc-compare-trigger,.dark .wc-compare-btn{background:rgba(15,23,42,.72);border-color:rgba(129,140,248,.32);color:#c7d2fe}.dark .wc-compare-trigger:hover,.dark .wc-compare-btn:hover{background:#312e81}.dark .wc-compare-btn.is-clear{border-color:rgba(148,163,184,.3);color:#cbd5e1}',
-      '.wc-compare-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-column:1/-1;margin-top:1px}.wc-compare-bar-card{min-width:0}.wc-compare-bar-label{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-size:10px;font-weight:900;color:#334155}.wc-compare-bar-scale{font-size:9px;font-weight:700;color:#64748b}.wc-compare-bar-track{position:relative;height:8px;margin:5px 0 3px;border-radius:999px;background:rgba(148,163,184,.22);overflow:hidden}.wc-compare-bar-base,.wc-compare-bar-current{position:absolute;left:0;top:0;height:100%;border-radius:inherit}.wc-compare-bar-base{background:#94a3b8;opacity:.72}.wc-compare-bar-current{background:#0ea5e9;box-shadow:0 0 0 1px rgba(14,165,233,.18)}.wc-compare-bar-values{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:9px;line-height:1.2;color:#64748b}.wc-compare-bar-values strong{color:#334155}.wc-compare-bar-key{display:inline-flex;align-items:center;gap:3px}.wc-compare-bar-dot{width:6px;height:6px;border-radius:50%;background:#94a3b8}.wc-compare-bar-dot.is-current{background:#0ea5e9}',
+      '.dark .wc-compare-strip{background:linear-gradient(135deg,rgba(30,27,75,.52),rgba(8,47,73,.5));border-color:rgba(129,140,248,.28);border-left-color:#818cf8;color:#cbd5e1}.dark .wc-compare-kicker{color:#a5b4fc}.dark .wc-compare-copy strong{color:#f8fafc}.dark .wc-compare-copy span:last-child{color:#94a3b8}.dark .wc-compare-metric{background:rgba(15,23,42,.72);color:#cbd5e1}.dark .wc-compare-metric strong{color:#f8fafc}.dark .wc-compare-trigger,.dark .wc-compare-btn{background:rgba(15,23,42,.72);border-color:rgba(129,140,248,.32);color:#c7d2fe}.dark .wc-compare-trigger:hover,.dark .wc-compare-btn:hover{background:#312e81}.dark .wc-compare-btn.is-clear{border-color:rgba(148,163,184,.3);color:#cbd5e1}'
+,
+      '.wc-compare-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-column:1/-1;margin-top:1px}.wc-compare-bar-card{min-width:0}.wc-compare-bar-card.is-prediction-evidence{padding:5px 6px 4px;border:1px solid rgba(245,158,11,.42);border-radius:8px;background:rgba(255,247,237,.55)}.wc-compare-bar-card.is-prediction-evidence::before{content:"Check evidence";display:block;margin-bottom:3px;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#b45309}.wc-compare-bar-label{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-size:10px;font-weight:900;color:#334155}.wc-compare-bar-scale{font-size:9px;font-weight:700;color:#64748b}.wc-compare-bar-track{position:relative;height:8px;margin:5px 0 3px;border-radius:999px;background:rgba(148,163,184,.22);overflow:hidden}.wc-compare-bar-base,.wc-compare-bar-current{position:absolute;left:0;top:0;height:100%;border-radius:inherit}.wc-compare-bar-base{background:#94a3b8;opacity:.72}.wc-compare-bar-current{background:#0ea5e9;box-shadow:0 0 0 1px rgba(14,165,233,.18)}.wc-compare-bar-values{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:9px;line-height:1.2;color:#64748b}.wc-compare-bar-values strong{color:#334155}.wc-compare-bar-key{display:inline-flex;align-items:center;gap:3px}.wc-compare-bar-dot{width:6px;height:6px;border-radius:50%;background:#94a3b8}.wc-compare-bar-dot.is-current{background:#0ea5e9}',
       '@media(max-width:680px){.wc-compare-bars{grid-template-columns:1fr}.wc-compare-bar-card{padding-top:1px}}',
-      '.dark .wc-compare-bar-label{color:#e2e8f0}.dark .wc-compare-bar-scale,.dark .wc-compare-bar-values{color:#94a3b8}.dark .wc-compare-bar-values strong{color:#f8fafc}.dark .wc-compare-bar-track{background:rgba(100,116,139,.28)}.dark .wc-compare-bar-current{background:#38bdf8}.dark .wc-compare-bar-dot.is-current{background:#38bdf8}',
+      '.dark .wc-compare-bar-label{color:#e2e8f0}.dark .wc-compare-bar-card.is-prediction-evidence{border-color:rgba(251,191,36,.44);background:rgba(69,49,10,.34)}.dark .wc-compare-bar-card.is-prediction-evidence::before{color:#fbbf24}.dark .wc-compare-bar-scale,.dark .wc-compare-bar-values{color:#94a3b8}.dark .wc-compare-bar-values strong{color:#f8fafc}.dark .wc-compare-bar-track{background:rgba(100,116,139,.28)}.dark .wc-compare-bar-current{background:#38bdf8}.dark .wc-compare-bar-dot.is-current{background:#38bdf8}',
       '.wc-compare-bar-delta{display:block;margin-top:3px;font-size:9px;font-weight:900;line-height:1.2}.wc-compare-bar-delta.is-up{color:#047857}.wc-compare-bar-delta.is-down{color:#b91c1c}.wc-compare-bar-delta.is-flat{color:#64748b}.dark .wc-compare-bar-delta.is-up{color:#6ee7b7}.dark .wc-compare-bar-delta.is-down{color:#fca5a5}.dark .wc-compare-bar-delta.is-flat{color:#94a3b8}',
+      '.wc-route-mix{grid-column:1/-1;min-width:0;margin-top:2px;padding-top:5px;border-top:1px solid rgba(99,102,241,.14)}.wc-route-mix-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.wc-route-mix-title{font-size:10px;font-weight:900;color:#334155}.wc-route-mix-note{font-size:9px;color:#64748b}.wc-route-mix-bars{display:grid;gap:5px;margin-top:6px}.wc-route-mix-row{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:6px}.wc-route-mix-row-label{font-size:9px;font-weight:900;color:#64748b}.wc-route-mix-track{display:flex;position:relative;height:11px;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.2)}.wc-route-mix-segment{display:block;height:100%;min-width:1px}.wc-route-mix-segment.is-runoff{background:#3b82f6}.wc-route-mix-segment.is-infiltrate{background:#06b6d4}.wc-route-mix-segment.is-plant{background:#10b981}.wc-route-mix-legend{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:6px;font-size:9px;line-height:1.2;color:#475569}.wc-route-mix-legend span{white-space:nowrap}.wc-route-mix-legend strong{color:#334155}.dark .wc-route-mix{border-top-color:rgba(129,140,248,.18)}.dark .wc-route-mix-title{color:#f8fafc}.dark .wc-route-mix-note,.dark .wc-route-mix-row-label,.dark .wc-route-mix-legend{color:#94a3b8}.dark .wc-route-mix-legend strong{color:#e2e8f0}.dark .wc-route-mix-track{background:rgba(100,116,139,.28)}@media(forced-colors:active){.wc-route-mix{border-color:CanvasText}.wc-route-mix-track{border:1px solid CanvasText;background:Canvas}.wc-route-mix-segment{background:Highlight!important}.wc-route-mix-title,.wc-route-mix-note,.wc-route-mix-row-label,.wc-route-mix-legend,.wc-route-mix-legend strong{color:CanvasText}}',
       '@media (prefers-contrast: more){.wc-compare-strip,.wc-data-view{border-width:2px}.wc-compare-bar-track{height:10px;border:1px solid currentColor}.wc-compare-bar-current{box-shadow:0 0 0 2px currentColor}.wc-data-summary{font-weight:900}}',
       '@media (forced-colors: active){.wc-compare-strip,.wc-data-view{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-compare-bar-track{border:1px solid CanvasText;background:Canvas}.wc-compare-bar-base{background:CanvasText;opacity:1}.wc-compare-bar-current{background:Highlight;box-shadow:none}.wc-compare-bar-dot{background:CanvasText}.wc-compare-bar-dot.is-current{background:Highlight}.wc-compare-bar-delta.is-up,.wc-compare-bar-delta.is-down,.wc-compare-bar-delta.is-flat{color:CanvasText}.wc-data-summary::after{background:Canvas;color:CanvasText;border:1px solid CanvasText}details[open].wc-data-view>.wc-data-summary::after{background:Highlight;color:HighlightText}}',
+      '@media (forced-colors: active){.wc-compare-bar-card.is-prediction-evidence{border:2px solid Highlight;background:Canvas}.wc-compare-bar-card.is-prediction-evidence::before{color:Highlight}}',
       '.wc-prediction-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:9px 10px;border:1px solid rgba(245,158,11,.28);border-left:3px solid #f59e0b;border-radius:10px;background:linear-gradient(135deg,rgba(255,247,237,.82),rgba(254,249,195,.62));color:#334155}',
-      '.wc-prediction-copy{min-width:0}.wc-prediction-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#b45309}.wc-prediction-copy strong{display:block;margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b}.wc-prediction-copy span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}',
+      '.wc-prediction-copy{min-width:0}.wc-prediction-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#b45309}.wc-prediction-copy strong{display:block;margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b}.wc-prediction-copy span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}.wc-prediction-copy .wc-prediction-evidence{margin-top:4px;padding-top:4px;border-top:1px solid rgba(245,158,11,.22);color:#92400e}',
       '.wc-prediction-options{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;max-width:340px}.wc-prediction-option{display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:5px 7px;border:1px solid rgba(245,158,11,.32);border-radius:8px;background:rgba(255,255,255,.78);color:#92400e;font-size:10px;font-weight:900;white-space:nowrap;transition:background 160ms ease,transform 160ms ease,box-shadow 160ms ease}.wc-prediction-option:hover{background:#fff7ed;transform:translateY(-1px);box-shadow:0 5px 12px rgba(245,158,11,.14)}.wc-prediction-option:focus-visible,.wc-prediction-reset:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-prediction-option span:first-child{font-size:13px}',
       '.wc-prediction-result{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;max-width:340px;font-size:10px;color:#475569}.wc-prediction-result-badge{padding:4px 6px;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.wc-prediction-result-badge.is-match{background:#dcfce7;color:#166534}.wc-prediction-result-badge.is-mismatch{background:#fef3c7;color:#92400e}.wc-prediction-reset{min-height:27px;padding:4px 7px;border:1px solid rgba(245,158,11,.3);border-radius:7px;background:rgba(255,255,255,.74);color:#92400e;font-size:10px;font-weight:900}',
       '@media(max-width:680px){.wc-prediction-strip{grid-template-columns:1fr}.wc-prediction-options,.wc-prediction-result{justify-content:flex-start;max-width:none}}',
-      '.dark .wc-prediction-strip{background:linear-gradient(135deg,rgba(69,49,10,.42),rgba(8,47,73,.5));border-color:rgba(251,191,36,.3);border-left-color:#fbbf24;color:#cbd5e1}.dark .wc-prediction-kicker{color:#fbbf24}.dark .wc-prediction-copy strong{color:#f8fafc}.dark .wc-prediction-copy span:last-child{color:#94a3b8}.dark .wc-prediction-option{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}.dark .wc-prediction-option:hover{background:#78350f}.dark .wc-prediction-result{color:#cbd5e1}.dark .wc-prediction-result-badge.is-match{background:rgba(6,78,59,.6);color:#a7f3d0}.dark .wc-prediction-result-badge.is-mismatch{background:rgba(120,53,15,.62);color:#fde68a}.dark .wc-prediction-reset{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}',
+      '.dark .wc-prediction-strip{background:linear-gradient(135deg,rgba(69,49,10,.42),rgba(8,47,73,.5));border-color:rgba(251,191,36,.3);border-left-color:#fbbf24;color:#cbd5e1}.dark .wc-prediction-kicker{color:#fbbf24}.dark .wc-prediction-copy strong{color:#f8fafc}.dark .wc-prediction-copy span:last-child{color:#94a3b8}.dark .wc-prediction-copy .wc-prediction-evidence{border-top-color:rgba(251,191,36,.22);color:#fde68a}.dark .wc-prediction-option{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}.dark .wc-prediction-option:hover{background:#78350f}.dark .wc-prediction-result{color:#cbd5e1}.dark .wc-prediction-result-badge.is-match{background:rgba(6,78,59,.6);color:#a7f3d0}.dark .wc-prediction-result-badge.is-mismatch{background:rgba(120,53,15,.62);color:#fde68a}.dark .wc-prediction-reset{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}',
       '.wc-data-view{margin:0 0 12px;border-top:1px solid rgba(14,165,233,.16);border-bottom:1px solid rgba(14,165,233,.16)}',
       '.wc-data-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;padding:5px 2px;cursor:pointer;list-style:none;color:#075985}.wc-data-summary::-webkit-details-marker{display:none}.wc-data-summary::after{content:"+";display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:rgba(14,165,233,.12);color:#0369a1;font-size:16px;line-height:1}details[open].wc-data-view>.wc-data-summary::after{content:"\\2212";background:#0369a1;color:#fff}.wc-data-summary:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
       '.wc-data-summary-title{font-size:11px;font-weight:900;letter-spacing:.02em}.wc-data-summary-note{margin-left:auto;font-size:10px;font-weight:700;color:#64748b}',
@@ -385,7 +402,8 @@
       '.wc-experiment-log{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:9px 10px;border:1px solid rgba(16,185,129,.26);border-left:3px solid #10b981;border-radius:10px;background:linear-gradient(135deg,rgba(236,253,245,.78),rgba(224,242,254,.5));color:#334155}',
       '.wc-experiment-log-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;grid-column:1/-1}.wc-experiment-log-copy{min-width:0}.wc-experiment-log-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#047857}.wc-experiment-log-copy strong{display:block;margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b}.wc-experiment-log-copy span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.3;color:#64748b}',
       '.wc-experiment-log-clear{min-height:27px;padding:4px 7px;border:1px solid rgba(16,185,129,.3);border-radius:7px;background:rgba(255,255,255,.74);color:#047857;font-size:10px;font-weight:900;white-space:nowrap}.wc-experiment-log-clear:hover{background:#ecfdf5}.wc-experiment-log-clear:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
-      '.wc-log-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;grid-column:1/-1}.wc-log-entry{display:flex;align-items:flex-start;gap:6px;min-width:0;padding:6px 7px;border:1px solid rgba(16,185,129,.2);border-radius:8px;background:rgba(255,255,255,.7)}.wc-log-entry-index{display:grid;place-items:center;flex:0 0 20px;height:20px;border-radius:6px;background:rgba(16,185,129,.14);color:#047857;font-size:10px;font-weight:900}.wc-log-entry-copy{min-width:0}.wc-log-entry-copy strong,.wc-log-entry-copy span,.wc-log-entry-copy small{display:block;overflow-wrap:anywhere}.wc-log-entry-copy strong{font-size:10px;line-height:1.2;color:#1e293b}.wc-log-entry-copy span{margin-top:2px;font-size:9px;line-height:1.25;color:#475569}.wc-log-entry-copy small{margin-top:2px;font-size:9px;line-height:1.2;color:#64748b}',
+      '.wc-log-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;grid-column:1/-1}.wc-log-entry{display:flex;align-items:flex-start;gap:6px;min-width:0;padding:6px 7px;border:1px solid rgba(16,185,129,.2);border-radius:8px;background:rgba(255,255,255,.7)}.wc-log-entry-index{display:grid;place-items:center;flex:0 0 20px;height:20px;border-radius:6px;background:rgba(16,185,129,.14);color:#047857;font-size:10px;font-weight:900}.wc-log-entry-copy{min-width:0}.wc-log-entry-copy strong,.wc-log-entry-copy span,.wc-log-entry-copy small{display:block;overflow-wrap:anywhere}.wc-log-entry-copy strong{font-size:10px;line-height:1.2;color:#1e293b}.wc-log-entry-copy span{margin-top:2px;font-size:9px;line-height:1.25;color:#475569}.wc-log-entry-copy .wc-log-entry-evidence{font-weight:800}.wc-log-entry-copy small{margin-top:2px;font-size:9px;line-height:1.2;color:#64748b}',
+      '.wc-log-entry-copy .wc-log-entry-route-mix{margin-top:2px;font-weight:800;color:#0369a1}.dark .wc-log-entry-copy .wc-log-entry-route-mix{color:#7dd3fc}',
       '.wc-log-replay{margin-left:auto;flex:0 0 auto;min-height:25px;padding:3px 6px;border:1px solid rgba(16,185,129,.28);border-radius:6px;background:rgba(236,253,245,.7);color:#047857;font-size:9px;font-weight:900;white-space:nowrap}.wc-log-replay:hover{background:#d1fae5}.wc-log-replay:focus-visible{outline:3px solid #facc15;outline-offset:2px}.dark .wc-log-replay{background:rgba(6,78,59,.42);border-color:rgba(52,211,153,.3);color:#a7f3d0}.dark .wc-log-replay:hover{background:#047857;color:#fff}',
       '@media(max-width:680px){.wc-experiment-log{grid-template-columns:1fr}.wc-experiment-log-clear{justify-self:start}.wc-log-list{grid-template-columns:1fr}}',
       '.wc-experiment-log.is-replaying{border-color:rgba(245,158,11,.38);border-left-color:#f59e0b;background:linear-gradient(135deg,rgba(255,247,237,.84),rgba(254,249,195,.58))}.wc-experiment-log-replay-badge{display:inline-flex;align-items:center;align-self:flex-start;padding:4px 6px;border-radius:6px;background:#fef3c7;color:#92400e;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.dark .wc-experiment-log.is-replaying{border-color:rgba(251,191,36,.34);border-left-color:#fbbf24;background:linear-gradient(135deg,rgba(69,49,10,.48),rgba(8,47,73,.52))}.dark .wc-experiment-log-replay-badge{background:rgba(120,53,15,.62);color:#fde68a}',
@@ -591,7 +609,7 @@
     'precipitation': 'Water falling from clouds to Earth\'s surface as rain, snow, sleet, or hail when droplets grow too heavy.',
     'collection': 'The accumulation of water in oceans, lakes, rivers, and underground reservoirs, completing the surface loop.',
     'transpiration': 'The evaporation of water from plant leaves through tiny pores called stomata, acting as a natural pump.',
-    'infiltration': 'The process by which water on the ground surface enters the soil and rocks, replenishing groundwater.',
+    'infiltration': 'The process by which water on the ground surface enters soil and rock; some infiltrated water can contribute to groundwater recharge.',
     'sublimation': 'The direct transition of water from solid ice or snow into water vapor gas, bypassing the liquid phase.',
     'aquifer': 'An underground layer of water-bearing permeable rock, gravel, sand, or silt from which groundwater can be extracted.',
     'watershed': 'An area of land where all of the water that falls in it drains off into a common outlet like a river or bay.',
@@ -603,9 +621,18 @@
     'Clausius-Clapeyron': 'The thermodynamic relationship showing that atmospheric moisture capacity increases by about 7% per degree Celsius of warming.'
   };
 
+  var WATER_CYCLE_STAGE_COUNT = 6;
+  var WATER_CYCLE_STAGE_IDS = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];
+  function countWaterCycleStagesViewed(state) {
+    var viewed = (state && state.stagesViewed) || {};
+    var count = 0;
+    for (var i = 0; i < WATER_CYCLE_STAGE_IDS.length; i++) if (viewed[WATER_CYCLE_STAGE_IDS[i]]) count++;
+    return count;
+  }
+
   var WATER_CYCLE_CHALLENGES = [
     { id: 'complete_journey', name: 'Droplet Cycle', desc: 'Complete 1 full water droplet journey cycle', icon: '💧', rp: 25 },
-    { id: 'explore_all_stages', name: 'Global Explorer', desc: 'View all 5 water cycle stages', icon: '🌍', rp: 35 },
+    { id: 'explore_all_stages', name: 'Global Explorer', desc: 'View all ' + WATER_CYCLE_STAGE_COUNT + ' water cycle stages', icon: '🌍', rp: 35 },
     { id: 'adjust_climate', name: 'Climate Experimenter', desc: 'Adjust solar, temperature, or wind sliders in the Climate Lab', icon: '🌡️', rp: 20 },
     { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
     { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
@@ -614,11 +641,11 @@
   ];
 
   var WATER_CYCLE_PRESETS = {
-    balanced: { label: 'Balanced baseline', climSolar: 1.0, climTemp: 15, climWind: 1.0, landRainIntensity: 55, landSaturation: 45, landPermeability: 'medium', landSlope: 'moderate', landCover: 'grass' },
-    heatwave: { label: 'Heatwave and dry ground', climSolar: 1.5, climTemp: 35, climWind: 1.4, landRainIntensity: 35, landSaturation: 20, landPermeability: 'medium', landSlope: 'gentle', landCover: 'grass' },
-    heavy_storm: { label: 'Heavy storm', climSolar: 0.8, climTemp: 12, climWind: 1.8, landRainIntensity: 95, landSaturation: 85, landPermeability: 'low', landSlope: 'steep', landCover: 'urban' },
-    forest_recharge: { label: 'Forest recharge', climSolar: 1.0, climTemp: 15, climWind: 0.8, landRainIntensity: 65, landSaturation: 25, landPermeability: 'high', landSlope: 'gentle', landCover: 'forest' },
-    urban_runoff: { label: 'Urban runoff', climSolar: 1.1, climTemp: 20, climWind: 1.1, landRainIntensity: 80, landSaturation: 70, landPermeability: 'low', landSlope: 'moderate', landCover: 'urban' }
+    balanced: { label: 'Balanced baseline', climSolar: 1.0, climTemp: 15, climWind: 1.0, landRainIntensity: 55, landSaturation: 45, landPermeability: 'medium', landSlope: 'moderate', landCover: 'grass', lesson: 'Use this middle-condition baseline to compare one changed factor at a time.' },
+    heatwave: { label: 'Heatwave and dry ground', climSolar: 1.5, climTemp: 35, climWind: 1.4, landRainIntensity: 35, landSaturation: 20, landPermeability: 'medium', landSlope: 'gentle', landCover: 'grass', lesson: 'Compare stronger solar energy and heat with less-saturated ground: evaporation rises while infiltration has more room.' },
+    heavy_storm: { label: 'Heavy storm', climSolar: 0.8, climTemp: 12, climWind: 1.8, landRainIntensity: 95, landSaturation: 85, landPermeability: 'low', landSlope: 'steep', landCover: 'urban', lesson: 'Compare intense rain on saturated, steep, urban ground: the modeled signal should favor surface runoff.' },
+    forest_recharge: { label: 'Forest and permeable ground', climSolar: 1.0, climTemp: 15, climWind: 0.8, landRainIntensity: 65, landSaturation: 25, landPermeability: 'high', landSlope: 'gentle', landCover: 'forest', lesson: 'Compare forest cover, gentle slope, and permeable ground: infiltration gets more opportunity; this is not a recharge forecast.' },
+    urban_runoff: { label: 'Urban runoff', climSolar: 1.1, climTemp: 20, climWind: 1.1, landRainIntensity: 80, landSaturation: 70, landPermeability: 'low', landSlope: 'moderate', landCover: 'urban', lesson: 'Compare hard urban cover, heavier rain, and saturated soil: surface runoff gets more opportunity.' }
   };
 
   var WATER_CYCLE_PREDICTIONS = {
@@ -1001,7 +1028,7 @@
     questHooks: [
       { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
       { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
-      { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
+      { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return countWaterCycleStagesViewed(d) >= WATER_CYCLE_STAGE_COUNT; }, progress: function(d) { return countWaterCycleStagesViewed(d) + '/' + WATER_CYCLE_STAGE_COUNT + ' stages'; } },
       { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } },
       { id: 'myth_3', label: 'Answer 3 water myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.wcMythsDone || 0) >= 3; }, progress: function(d) { return (d.wcMythsDone || 0) + '/3 myths'; } }
     ],
@@ -1053,7 +1080,7 @@ const d = labToolData.waterCycle || {};
               if (ch.id === 'complete_journey') {
                 met = (state.journeyLoops || 0) >= 1;
               } else if (ch.id === 'explore_all_stages') {
-                met = Object.keys(state.stagesViewed || {}).length >= 5;
+                met = countWaterCycleStagesViewed(state) >= WATER_CYCLE_STAGE_COUNT;
               } else if (ch.id === 'adjust_climate') {
                 met = !!state.climateAdjusted;
               } else if (ch.id === 'quiz_pass') {
@@ -1215,6 +1242,11 @@ const d = labToolData.waterCycle || {};
           };
 
           var applyWcScenarioPreset = function(presetId) {
+            if (presetId === 'custom') {
+              updMulti({ wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' });
+              if (typeof announceToSR === 'function') announceToSR('Custom controls selected. Tune one variable at a time and compare the results.');
+              return;
+            }
             var preset = WATER_CYCLE_PRESETS[presetId];
             if (!preset) return;
             var nextData = {
@@ -1282,6 +1314,11 @@ const d = labToolData.waterCycle || {};
                 runoff: wcRunoffDelta,
                 infiltration: wcInfiltrationDelta
               },
+              routeShares: wcRouteShares ? {
+                runoff: wcRouteShares.runoff,
+                infiltration: wcRouteShares.infiltration,
+                plant: wcRouteShares.plant
+              } : null,
               snapshot: {
                 climSolar: currentSolar,
                 climTemp: currentTemp,
@@ -2347,7 +2384,7 @@ const d = labToolData.waterCycle || {};
                     onClick: readWatershed,
                     disabled: steward.aiReadLoading,
                     'aria-label': t('stem.watercycle.ask_ai_watershed_educator_to_read_your', 'Ask AI watershed educator to read your watershed data'),
-                    title: t('stem.watercycle.ai_watershed_science_educator_reads_yo', 'AI watershed-science educator reads your current state'),
+                    "data-tooltip": t('stem.watercycle.ai_watershed_science_educator_reads_yo', 'AI watershed-science educator reads your current state'),
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                     style: {
                       padding: '8px 12px',
@@ -2397,7 +2434,7 @@ const d = labToolData.waterCycle || {};
                       def.deepDive ? h('button', {
                         onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Deep-dive for ' + def.name,
-                        title: t('stem.watercycle.watershed_deep_dive_3', 'Watershed deep-dive'),
+                        "data-tooltip": t('stem.watercycle.watershed_deep_dive_3', 'Watershed deep-dive'),
                         className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                         style: {
                           background: 'transparent',
@@ -2439,7 +2476,7 @@ const d = labToolData.waterCycle || {};
                           key: t.id,
                           onClick: function() { applyStewardTech(t.id, c.id); },
                           disabled: disabled,
-                          title: t.desc,
+                          "data-tooltip": t.desc,
                           className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                           style: {
                             padding: '4px 8px',
@@ -2479,7 +2516,7 @@ const d = labToolData.waterCycle || {};
                       key: t.id,
                       onClick: function() { applyStewardTech(t.id, null); },
                       disabled: disabled,
-                      title: t.desc,
+                      "data-tooltip": t.desc,
                       className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                       style: {
                         padding: '6px 10px',
@@ -2664,7 +2701,7 @@ const d = labToolData.waterCycle || {};
                          '9-12': 'Amazon rainforest transpiration generates ~50% of its own rainfall via atmospheric moisture recycling, a process modeled by the "flying rivers" hypothesis.' } },
             { id: 'infiltration', label: t('stem.water_cycle.infiltration'), emoji: '\uD83E\uDEB4', color: '#92400e',
               desc: { 'K-2': 'Some rainwater soaks into the ground like a sponge! It goes down through dirt and rocks, getting cleaned along the way. This underground water fills wells and springs.',
-                      '3-5': 'Water soaks through soil and porous rock layers, replenishing underground aquifers that feed wells, springs, and rivers. This process naturally filters the water.',
+                      '3-5': 'Water soaks through soil and porous rock layers; some can reach underground aquifers that feed wells, springs, and rivers. Infiltration does not guarantee recharge.',
                       '6-8': 'Infiltration rate depends on soil porosity, hydraulic conductivity, and antecedent moisture. Darcy\'s Law (Q = KA·dh/dl) governs flow through saturated porous media. Typical hydraulic conductivity ranges from 10\u207B\u00B9\u00B2 m/s (clay) to 10\u207B\u00B2 m/s (gravel).',
                       '9-12': 'Richards\' equation extends Darcy\'s Law to unsaturated flow: \u2202\u03B8/\u2202t = \u2207·[K(\u03B8)\u2207(\u03C8+z)]. Van Genuchten parameters characterize soil-water retention curves. Isotope tracers (tritium, \u00B3H) date groundwater residence times from years to millennia.' },
               funFact: { 'K-2': 'Some underground water has been down there longer than the dinosaurs!',
@@ -2739,7 +2776,10 @@ const d = labToolData.waterCycle || {};
 
             _lastWcCanvas = canvasEl;
 
-            if (canvasEl._wcInit) return;
+            if (canvasEl._wcInit) {
+              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl._wcRedraw) canvasEl._wcRedraw();
+              return;
+            }
 
             canvasEl._wcInit = true;
 
@@ -2766,9 +2806,17 @@ const d = labToolData.waterCycle || {};
               canvasEl._wcAnim = null;
             }
 
-            function scheduleWaterCycleFrame() {
+            // forceRender is a PARAMETER here, as it is on draw(). The guard line
+            // below was copy-pasted from draw() into this function, which had no
+            // such binding — so reading it threw a ReferenceError, and the throw
+            // was reachable: && short-circuits, so it only fired once the first
+            // two conditions held, i.e. exactly when the canvas was PAUSED.
+            // Declaring the parameter preserves behaviour for all three existing
+            // call sites (they pass nothing -> undefined !== true -> the intended
+            // early return) and lets a caller opt into forcing a frame.
+            function scheduleWaterCycleFrame(forceRender) {
               if (!wcAlive || canvasEl._wcAnim || isWaterCycleHidden()) return;
-              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl.dataset.wc2dPaused === 'true') return;
+              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl.dataset.wc2dPaused === 'true' && forceRender !== true) return;
               if (typeof requestAnimationFrame !== 'function') return;
               canvasEl._wcAnim = requestAnimationFrame(draw);
             }
@@ -2783,6 +2831,7 @@ const d = labToolData.waterCycle || {};
               canvasEl._wcSyncReact = null;
               canvasEl._wcRestartJourney = null;
               canvasEl._wc2dSetPaused = null;
+              canvasEl._wcRedraw = null;
               canvasEl._wcCleanup = null;
             }
 
@@ -3103,12 +3152,12 @@ const d = labToolData.waterCycle || {};
               return jState;
             }
 
-            function draw() {
+            function draw(forceRender) {
               if (!wcAlive) return;
               canvasEl._wcAnim = null;
               if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
               if (isWaterCycleHidden()) { cancelWaterCycleFrame(); return; }
-              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl.dataset.wc2dPaused === 'true') return;
+              if (canvasEl.dataset.renderMode !== 'state-only' && canvasEl.dataset.wc2dPaused === 'true' && forceRender !== true) return;
 
               tick += wcMotionReduced ? 0.2 : 1;
 
@@ -4357,6 +4406,11 @@ const d = labToolData.waterCycle || {};
 
             }
 
+            canvasEl._wcRedraw = function() {
+              cancelWaterCycleFrame();
+              draw(true);
+            };
+
             scheduleWaterCycleFrame();
 
             // Journey callbacks
@@ -4374,6 +4428,10 @@ const d = labToolData.waterCycle || {};
               if (canvasEl._wcSyncReact) {
                 canvasEl._wcSyncReact('complete');
               }
+              if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
+              if (typeof stemCelebrate === 'function') stemCelebrate();
+              if (typeof announceToSR === 'function') announceToSR('Water journey complete. Loop recorded. Choose Start Another Loop to continue.');
+              if (typeof addToast === 'function') addToast('\uD83C\uDF89 Cycle complete! +25 XP.', 'success');
             };
             // Bridge canvas clicks and events to React state
             canvasEl._wcRestartJourney = function() {
@@ -4406,6 +4464,9 @@ const d = labToolData.waterCycle || {};
                   infiltrating: 'infiltration', aquifer_flow: 'infiltration', plant_absorb: 'transpiration', transpiring: 'transpiration' };
                 var nextStage = journeyStageMap[nextState];
                 var nextWaterCycle = Object.assign({}, current, { journeyState: nextState }, nextStage ? { activeStage: nextStage } : {});
+                if (nextState === 'complete' && current.journeyState !== 'complete') {
+                  nextWaterCycle.journeyLoops = (current.journeyLoops || 0) + 1;
+                }
                 if (pathKey) {
                   var paths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, current.journeyPaths || {});
                   paths[pathKey] = (paths[pathKey] || 0) + 1;
@@ -6320,7 +6381,7 @@ const d = labToolData.waterCycle || {};
             var branchPreviewGroup3d = new THREE.Group();
             var branchPreviewSpecs3d = [
               { key: 'runoff', labelKey: 'river', shareLabel: 'Runoff', color: 0x3b82f6, colorCss: '#3b82f6', curve: stateCurves3d.river_runoff, markerGeometry: new THREE.SphereGeometry(0.12, 12, 9) },
-              { key: 'infiltrate', labelKey: 'aquifer', shareLabel: 'Recharge', color: 0x22d3ee, colorCss: '#22d3ee', curve: stateCurves3d.infiltrating, markerGeometry: new THREE.OctahedronGeometry(0.14, 0) },
+              { key: 'infiltrate', labelKey: 'aquifer', shareLabel: 'Infiltration', color: 0x22d3ee, colorCss: '#22d3ee', curve: stateCurves3d.infiltrating, markerGeometry: new THREE.OctahedronGeometry(0.14, 0) },
               { key: 'plant', labelKey: 'plant', shareLabel: 'Plant', color: 0x4ade80, colorCss: '#4ade80', curve: stateCurves3d.plant_absorb, markerGeometry: new THREE.TetrahedronGeometry(0.15, 0) }
             ];
             function makeBranchShareLabel3d(branchSpec3d) {
@@ -8054,6 +8115,9 @@ const d = labToolData.waterCycle || {};
             } else if (k === 'g' || k === 'G') {
               e.preventDefault();
               toggleWcWalkthrough();
+            } else if (k === 'Escape' && wcFocusMode) {
+              e.preventDefault();
+              toggleWcFocusMode();
             } else if (k === 'j' || k === 'J') {
               e.preventDefault();
               if (d.journeyActive) {
@@ -8093,7 +8157,7 @@ const d = labToolData.waterCycle || {};
           var wcWalkthroughActive = !!d.wcWalkthroughActive;
           var wcWalkthroughIndex = typeof d.wcWalkthroughIndex === 'number' ? Math.max(0, Math.min(STAGES.length - 1, d.wcWalkthroughIndex)) : Math.max(0, resolvedStageIndex - 1);
           var completedChallengeCount = (d.completedChallenges || []).length;
-          var viewedStageCount = Object.keys(d.stagesViewed || {}).length;
+          var viewedStageCount = countWaterCycleStagesViewed(d);
           var journeyLabel = d.journeyActive
             ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
             : 'Ready to start';
@@ -8108,6 +8172,28 @@ const d = labToolData.waterCycle || {};
             d.journeyState === 'ground_choice' ? 'Waiting for a land pathway choice' :
             journeyPaused ? 'Journey paused' :
             'Moving at ' + journeySpeed + 'x speed';
+          var journeyStateLabels = {
+            idle: 'Journey preview',
+            ocean: 'Ocean storage',
+            evaporating: 'Evaporation',
+            condensing: 'Condensation',
+            precipitating: 'Precipitation',
+            ground_choice: 'Land pathway choice',
+            river_runoff: 'River runoff',
+            infiltrating: 'Infiltration',
+            aquifer_flow: 'Aquifer flow',
+            plant_absorb: 'Plant uptake',
+            transpiring: 'Transpiration',
+            complete: 'Cycle complete'
+          };
+          var journeyStateLabel = journeyStateLabels[d.journeyState || (d.journeyActive ? 'ocean' : 'idle')] || 'Water droplet in motion';
+          var journeyTransitionStatus = !d.journeyActive
+            ? 'Journey inactive. Start Journey to follow one droplet.'
+            : d.journeyState === 'ground_choice'
+              ? 'Land pathway choice. Choose River Runoff, Underground infiltration, or Plant uptake.'
+              : d.journeyState === 'complete'
+                ? 'Journey complete. Choose Start Another Loop to continue.'
+                : 'Droplet state: ' + journeyStateLabel + '. ' + journeyStatusLabel + '.';
           var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];
           var journeyTimelineIndex = {
             ocean: 0,
@@ -8168,6 +8254,7 @@ const d = labToolData.waterCycle || {};
             currentTemp > 2 && currentTemp < 18 ? 'Fog and rain' :
             'Balanced cycle';
           var evaporationIndex = Math.max(0.2, Math.min(2, currentSolar * (currentTemp / 15)));
+          var wcClimateInterpretation = evaporationIndex >= 1.35 ? 'Evaporation is accelerated by the current solar energy and temperature; wind changes how vapor is transported.' : evaporationIndex <= 0.7 ? 'Evaporation is slower because solar energy or temperature is lower; wind can still transport vapor after it leaves.' : 'Evaporation is moderate: solar energy and temperature are near the teaching baseline; wind changes transport.';
           var landRainIntensity = d.landRainIntensity != null ? d.landRainIntensity : 55;
           var landSaturation = d.landSaturation != null ? d.landSaturation : 45;
           var landPermeability = d.landPermeability || 'medium';
@@ -8197,6 +8284,34 @@ const d = labToolData.waterCycle || {};
             0.12 * (1 - slopePressure) +
             0.08 * (1 - rainPressure)
           )));
+          var wcLandRunoffDrivers = [
+            { label: 'rainfall intensity', value: 0.30 * rainPressure },
+            { label: 'soil saturation', value: 0.25 * saturationPressure },
+            { label: 'land cover', value: 0.18 * coverRunoffPressure },
+            { label: 'slope', value: 0.15 * slopePressure },
+            { label: 'permeability resistance', value: 0.12 * permeabilityResistance }
+          ];
+          var wcLandInfiltrationDrivers = [
+            { label: 'less-saturated soil', value: 0.32 * (1 - saturationPressure) },
+            { label: 'permeability', value: 0.28 * (1 - permeabilityResistance) },
+            { label: 'less-developed cover', value: 0.20 * (1 - coverRunoffPressure) },
+            { label: 'gentle slope', value: 0.12 * (1 - slopePressure) },
+            { label: 'lower rainfall intensity', value: 0.08 * (1 - rainPressure) }
+          ];
+          function strongestWcLandDriver(drivers) {
+            return drivers.reduce(function(best, driver) {
+              return driver.value > best.value ? driver : best;
+            }, drivers[0]);
+          }
+          var wcLandRunoffDriver = strongestWcLandDriver(wcLandRunoffDrivers);
+          var wcLandInfiltrationDriver = strongestWcLandDriver(wcLandInfiltrationDrivers);
+          var wcLandDriverReadout = 'Largest modeled runoff influence: ' + wcLandRunoffDriver.label + '; largest modeled infiltration influence: ' + wcLandInfiltrationDriver.label + '. These are qualitative influences, not measured effects.';
+          var wcLandInterpretation = runoffTendency >= infiltrationOpportunity + 10 ? 'Surface flow is favored: current rain, saturation, slope, cover, and permeability push more water toward surface flow.' : infiltrationOpportunity >= runoffTendency + 10 ? 'Infiltration is favored: permeability and less-saturated ground give water room to enter.' : 'The signals are balanced: compare runoff and infiltration rather than treating either as certain.';
+          var wcLandExperimentPrompt = runoffTendency >= infiltrationOpportunity + 10
+            ? 'Try a one-control test: lower rainfall or saturation, or choose more permeable or vegetated ground, then compare both indices.'
+            : infiltrationOpportunity >= runoffTendency + 10
+              ? 'Try a one-control test: raise rainfall or saturation, or choose steeper, urban, or less-permeable ground, then compare both indices.'
+              : 'Try a one-control test: change one input, compare both indices, and reset before trying another condition.';
           // Keep the learner-facing route shares aligned with the 3D branch model.
           // These are relative teaching comparisons, not measured water volumes.
           function estimateWcRouteShares(runoffValue, infiltrationValue, cover) {
@@ -8227,21 +8342,36 @@ const d = labToolData.waterCycle || {};
           // Keep route receipts and the pathway ledger downstream of the derived shares.
           // Journey states can render immediately after a route choice, so these values
           // must exist before any learner-facing route evidence is composed.
+          var journeyPathPaceByKey = {
+            runoff: 'Usually fast surface return',
+            infiltrate: 'Often slow underground return',
+            plant: 'Responsive to daytime energy'
+          };
+          var journeyPathReturnByKey = {
+            runoff: 'River to ocean',
+            infiltrate: 'Aquifer to ocean',
+            plant: 'Plant to vapor to cloud'
+          };
+          var journeyPathDriverByKey = {
+            runoff: 'Rain, saturation, and slope',
+            infiltrate: 'Permeability and pore space',
+            plant: 'Roots, cover, and daytime energy'
+          };
           var journeyChosenRoute = journeyChosenRouteKey === 'runoff'
-            ? { label: 'River runoff', signalLabel: 'Runoff tendency', signalValue: runoffTendency, relativeShare: wcRouteShares.runoff, pace: 'Usually fast surface return', rationale: 'Rainfall, saturation, slope, land cover, and permeability can keep more water moving across the surface.' }
+            ? { label: 'River runoff', signalLabel: 'Runoff tendency', signalValue: runoffTendency, relativeShare: wcRouteShares.runoff, pace: journeyPathPaceByKey.runoff, returnPath: journeyPathReturnByKey.runoff, driver: journeyPathDriverByKey.runoff, rationale: 'Rainfall, saturation, slope, land cover, and permeability can keep more water moving across the surface.' }
             : journeyChosenRouteKey === 'infiltrate'
-              ? { label: 'Underground infiltration', signalLabel: 'Infiltration opportunity', signalValue: infiltrationOpportunity, relativeShare: wcRouteShares.infiltration, pace: 'Often slow underground return', rationale: 'Permeable, less-saturated ground gives water more opportunity to enter pore spaces.' }
+              ? { label: 'Underground infiltration', signalLabel: 'Infiltration opportunity', signalValue: infiltrationOpportunity, relativeShare: wcRouteShares.infiltration, pace: journeyPathPaceByKey.infiltrate, returnPath: journeyPathReturnByKey.infiltrate, driver: journeyPathDriverByKey.infiltrate, rationale: 'Permeable, less-saturated ground gives water more opportunity to enter pore spaces.' }
               : journeyChosenRouteKey === 'plant'
-                ? { label: 'Plant uptake', signalLabel: 'Relative route share', signalValue: wcRouteShares.plant, relativeShare: wcRouteShares.plant, pace: 'Responsive to daytime energy', rationale: 'Plants can take up water and return some vapor through transpiration; this is not a measured uptake rate.' }
+                ? { label: 'Plant uptake', signalLabel: 'Relative route share', signalValue: wcRouteShares.plant, relativeShare: wcRouteShares.plant, pace: journeyPathPaceByKey.plant, returnPath: journeyPathReturnByKey.plant, driver: journeyPathDriverByKey.plant, rationale: 'Plants can take up water and return some vapor through transpiration; this is not a measured uptake rate.' }
                 : null;
           var journeyChoiceKicker = d.journeyState === 'complete' ? 'Cycle receipt' : 'Path chosen';
           var journeyChoiceCopy = journeyChosenRoute
-            ? (d.journeyState === 'complete' ? 'This route returned the droplet to the ocean. ' + journeyChosenRoute.pace + '.' : journeyChosenRoute.rationale)
+            ? (d.journeyState === 'complete' ? 'This route returned the droplet to the ocean. ' + journeyChosenRoute.pace + '. Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.' : journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.')
             : '';
           var journeyPathDefinitions = [
-            { key: 'runoff', label: 'River runoff', detail: 'Often fast surface return', count: journeyPaths.runoff },
-            { key: 'infiltrate', label: 'Underground infiltration', detail: 'Often slower, delayed return', count: journeyPaths.infiltrate },
-            { key: 'plant', label: 'Plant uptake', detail: 'Returns through transpiration', count: journeyPaths.plant }
+            { key: 'runoff', label: 'River runoff', detail: journeyPathDriverByKey.runoff + " · " + journeyPathPaceByKey.runoff + " · " + journeyPathReturnByKey.runoff, count: journeyPaths.runoff },
+            { key: 'infiltrate', label: 'Underground infiltration', detail: journeyPathDriverByKey.infiltrate + " · " + journeyPathPaceByKey.infiltrate + " · " + journeyPathReturnByKey.infiltrate, count: journeyPaths.infiltrate },
+            { key: 'plant', label: 'Plant uptake', detail: journeyPathDriverByKey.plant + " · " + journeyPathPaceByKey.plant + " · " + journeyPathReturnByKey.plant, count: journeyPaths.plant }
           ];
           var journeyPathCoverageCount = journeyPathDefinitions.filter(function(path) { return path.count > 0; }).length;
           var journeyPathNext = journeyPathDefinitions.find(function(path) { return path.count === 0; }) || null;
@@ -8254,7 +8384,7 @@ const d = labToolData.waterCycle || {};
               ? 'Try ' + journeyPathNext.label + ' next to compare residence time and return route.'
               : 'Choose a land pathway to start comparing routes.';
           var journeyDataContext = journeyChosenRoute
-            ? journeyChosenRoute.signalLabel + ': ' + journeyChosenRoute.signalValue + '/100. Relative route share: ' + journeyChosenRoute.relativeShare + ' percent. ' + journeyChosenRoute.rationale
+            ? journeyChosenRoute.signalLabel + ': ' + journeyChosenRoute.signalValue + '/100. Relative route share: ' + journeyChosenRoute.relativeShare + ' percent. ' + journeyChosenRoute.rationale + ' Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.'
             : d.journeyState === 'ground_choice'
               ? 'Choose a land pathway. Runoff tendency: ' + runoffTendency + '/100; infiltration opportunity: ' + infiltrationOpportunity + '/100. These are qualitative teaching indices, not measured volumes.' + ' Relative route shares: runoff ' + wcRouteShares.runoff + ' percent; infiltration ' + wcRouteShares.infiltration + ' percent; plant ' + wcRouteShares.plant + ' percent.' + (wcRouteLeader ? ' Strongest modeled pathway: ' + wcRouteLeaderLabel + '.' : ' The modeled signals are tied; compare the paths.')
               : journeyView === '3d' ? '3D tracked parcel' : '2D animated model';
@@ -8296,6 +8426,9 @@ const d = labToolData.waterCycle || {};
           }
           var wcScenarioBaseline = d.wcScenarioBaseline || null;
           var wcBaselineLandIndices = wcScenarioBaseline ? estimateWcLandIndices(wcScenarioBaseline) : null;
+          var wcBaselineRouteShares = wcScenarioBaseline
+            ? estimateWcRouteShares(wcBaselineLandIndices.runoff, wcBaselineLandIndices.infiltration, wcScenarioBaseline.landCover || 'grass')
+            : null;
           var wcBaselineEvaporationIndex = wcScenarioBaseline ? Math.max(0.2, Math.min(2,
             (wcScenarioBaseline.climSolar != null ? wcScenarioBaseline.climSolar : 1) *
             ((wcScenarioBaseline.climTemp != null ? wcScenarioBaseline.climTemp : 15) / 15)
@@ -8336,7 +8469,17 @@ const d = labToolData.waterCycle || {};
               ? 'Changed: ' + wcScenarioChanges.join(' · ')
               : 'Adjust a Climate Lab or Land-Surface control to see what shifts.';
           }
-                    var wcCausalStageIds = [];
+          var wcRouteBaselineActive = !!(wcBaselineRouteShares && wcScenarioChanges.length);
+          var wcRouteShareDeltaCopy = function(pathKey) {
+            if (!wcRouteBaselineActive) return '';
+            var delta = wcRouteShares[pathKey] - wcBaselineRouteShares[pathKey];
+            return 'Baseline ' + wcBaselineRouteShares[pathKey] + '% to current ' + wcRouteShares[pathKey] + '% (' + (delta > 0 ? '+' : '') + delta + ' pts)';
+          };
+          var wcRouteShareAria = function(pathKey) {
+            var copy = wcRouteShareDeltaCopy(pathKey);
+            return ' Relative teaching share, not measured water volume.' + (copy ? ' ' + copy + '.' : '');
+          };
+          var wcCausalStageIds = [];
           var wcCausalDriver = '';
           var wcCausalOutcome = '';
           var wcCausalChain = [];
@@ -8376,8 +8519,14 @@ const d = labToolData.waterCycle || {};
           var wcPredictionAnswer = '';
           var wcPredictionMatched = null;
           var wcPredictionFeedback = '';
+          var wcPredictionEvidence = '';
+          var wcPredictionEvidenceMetrics = [];
           var wcExperimentLog = Array.isArray(d.wcExperimentLog) ? d.wcExperimentLog.slice(-4) : [];
           var wcScenarioLabel = WATER_CYCLE_PRESETS[wcScenarioPreset] ? WATER_CYCLE_PRESETS[wcScenarioPreset].label : 'Custom controls';
+          var wcScenarioPresetInfo = WATER_CYCLE_PRESETS[wcScenarioPreset] || null;
+          var wcScenarioPresetLesson = wcScenarioPresetInfo
+            ? wcScenarioPresetInfo.lesson
+            : 'Choose a preset or tune one control at a time; compare the resulting indices.';
           var wcExperimentKey = [
             wcScenarioPreset, currentSolar, currentTemp, currentWind,
             landRainIntensity, landSaturation, landPermeability, landSlope, landCover
@@ -8407,9 +8556,67 @@ const d = labToolData.waterCycle || {};
               wcPredictionFeedback = wcPredictionMatched
                 ? 'Matched: ' + predictionAnswer.label + ' was the strongest modeled shift.'
                 : 'The strongest modeled shift was ' + predictionAnswer.label.toLowerCase() + '. Use the comparison values as evidence.';
+              if (wcPredictionAnswer === 'runoff') {
+                wcPredictionEvidence = 'Evidence to check: runoff ' + formatWcDelta(wcRunoffDelta, ' pts', 0) + '; infiltration ' + formatWcDelta(wcInfiltrationDelta, ' pts', 0) + '.';
+              } else if (wcPredictionAnswer === 'infiltration') {
+                wcPredictionEvidence = 'Evidence to check: infiltration ' + formatWcDelta(wcInfiltrationDelta, ' pts', 0) + '; runoff ' + formatWcDelta(wcRunoffDelta, ' pts', 0) + '.';
+              } else if (wcPredictionAnswer === 'evaporation') {
+                wcPredictionEvidence = 'Evidence to check: evaporation shifted ' + formatWcDelta(wcEvaporationDelta, 'x', 2) + ' from baseline.';
+              } else if (wcPredictionAnswer === 'storage') {
+                wcPredictionEvidence = 'Evidence to check: below-freezing air can store precipitation as snow or ice before collection.';
+              } else {
+                wcPredictionEvidence = 'Evidence to check: no single shift crossed the teaching thresholds; compare evaporation, runoff, and infiltration together.';
+              }
+              wcPredictionEvidenceMetrics = wcPredictionAnswer === 'runoff' || wcPredictionAnswer === 'infiltration'
+                ? ['runoff', 'infiltration']
+                : wcPredictionAnswer === 'evaporation'
+                  ? ['evaporation']
+                  : wcPredictionAnswer === 'mixed'
+                    ? ['evaporation', 'runoff', 'infiltration']
+                    : [];
             }
           }
 
+          var wcPredictionLabel = wcPrediction && WATER_CYCLE_PREDICTIONS[wcPrediction] ? WATER_CYCLE_PREDICTIONS[wcPrediction].label : '';
+          var wcPredictionAnswerLabel = wcPredictionAnswer && WATER_CYCLE_PREDICTIONS[wcPredictionAnswer] ? WATER_CYCLE_PREDICTIONS[wcPredictionAnswer].label : '';
+          var wcDataEvidenceStatus = wcPrediction
+            ? (wcPredictionAnswerLabel
+              ? (wcPredictionMatched ? 'Matched: ' + wcPredictionLabel : 'Hypothesis: ' + wcPredictionLabel + "; Evidence: " + wcPredictionAnswerLabel)
+              : 'Hypothesis recorded: ' + wcPredictionLabel)
+            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Prediction pending' : 'No prediction recorded');
+          var wcDataEvidenceDetail = wcPrediction
+            ? (wcPredictionEvidence || 'Compare the baseline and current values as evidence.')
+            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Choose a hypothesis before reviewing the evidence.' : 'Save a baseline, then adjust a control to compare a new scenario.');
+          var wcScenarioWorkflowStatus = !wcScenarioBaseline
+            ? 'Start with a baseline: adjust a control or choose a preset; the previous state is saved automatically.'
+            : !wcScenarioChanges.length
+              ? 'Baseline ready: change one control or choose a preset to create a comparison.'
+              : !wcPrediction
+                ? 'Comparison ready: record a prediction before reading the evidence.'
+                : wcObservationSaved
+                  ? 'Observation saved: restore the baseline or change one control to begin a new comparison.'
+                  : 'Prediction recorded: compare the bars and pathway mix as evidence, then save the observation.';
+          var wcDataTrailStatus = wcReplayedObservation
+            ? 'Replay active; ' + wcExperimentLog.length + '/4 observations saved'
+            : wcExperimentLog.length
+              ? wcExperimentLog.length + '/4 observations saved'
+              : 'No saved observations';
+          var wcDataTrailDetail = wcReplayedObservation
+            ? 'Replaying: ' + wcReplayedObservation + '. Adjust a control to branch from this observation.'
+            : wcExperimentLog.length
+              ? 'The trail preserves recent hypotheses, modeled evidence, pathway-mix snapshots, and qualitative deltas.'
+              : 'Save an observation after making a prediction to build a trail.';
+          var wcDataViewStatus = currentStageLabel + ' selected. ' +
+            'Climate ' + currentTemp + ' degrees C, solar ' + currentSolar.toFixed(2) + ' times baseline, wind ' + currentWind.toFixed(1) + ' times baseline. ' +
+            'Land routing indices: runoff ' + runoffTendency + ' of 100; infiltration ' + infiltrationOpportunity + ' of 100. ' +
+            'Relative teaching shares: runoff ' + wcRouteShares.runoff + ' percent; underground ' + wcRouteShares.infiltration + ' percent; plant ' + wcRouteShares.plant + ' percent.';
+          var wcJourneyPredictionReceipt = wcPrediction
+            ? ' Prediction receipt: ' + wcDataEvidenceStatus + '. ' + wcDataEvidenceDetail
+            : '';
+          journeyDataContext += wcJourneyPredictionReceipt;
+          if (wcRouteBaselineActive) {
+            journeyDataContext += ' Saved baseline route shares: runoff ' + wcBaselineRouteShares.runoff + ' percent; infiltration ' + wcBaselineRouteShares.infiltration + ' percent; plant ' + wcBaselineRouteShares.plant + ' percent.';
+          }
           function chooseJourneyPath(pathKey) {
             var stateMap = { runoff: 'river_runoff', infiltrate: 'infiltrating', plant: 'plant_absorb' };
             var stageMap = { runoff: 'collection', infiltrate: 'infiltration', plant: 'transpiration' };
@@ -8451,6 +8658,14 @@ const d = labToolData.waterCycle || {};
             if (journeyCanvas._wc3dAdjustCamera && journeyCanvas._wc3dAdjustCamera(action)) {
               var cameraActionCopy = { left: 'Rotated left.', right: 'Rotated right.', in: 'Zoomed in.', out: 'Zoomed out.' };
               if (typeof announceToSR === 'function') announceToSR(cameraActionCopy[action] || 'Camera adjusted.');
+            }
+          }
+          function handleWc2dKey(e) {
+            if (journeyView !== '2d') return;
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleWc2dPlayback();
             }
           }
           function handleJourney3dKey(e) {
@@ -8569,17 +8784,46 @@ const d = labToolData.waterCycle || {};
             if (typeof announceToSR === 'function') announceToSR(nextPaused ? '2D water cycle animation paused.' : '2D water cycle animation resumed.');
           }
 
+          function renderWcRouteMixBar(rowLabel, shares) {
+            return React.createElement("div", {
+              className: "wc-route-mix-row",
+              role: "img",
+              "aria-label": rowLabel + " route shares: River runoff " + shares.runoff + " percent; Underground infiltration " + shares.infiltration + " percent; Plant uptake " + shares.plant + " percent. Relative teaching shares, not measured water volumes."
+            },
+              React.createElement("span", { className: "wc-route-mix-row-label", "aria-hidden": "true" }, rowLabel),
+              React.createElement("div", { className: "wc-route-mix-track", "aria-hidden": "true" },
+                React.createElement("span", { className: "wc-route-mix-segment is-runoff", style: { width: shares.runoff + "%" } }),
+                React.createElement("span", { className: "wc-route-mix-segment is-infiltrate", style: { width: shares.infiltration + "%" } }),
+                React.createElement("span", { className: "wc-route-mix-segment is-plant", style: { width: shares.plant + "%" } })
+              )
+            );
+          }
+          function renderWcRouteMixLegend() {
+            var routeCopy = function(pathKey, label) {
+              var delta = wcRouteShares[pathKey] - wcBaselineRouteShares[pathKey];
+              return React.createElement("span", { role: "listitem" },
+                React.createElement("strong", null, label),
+                " " + wcBaselineRouteShares[pathKey] + "% to " + wcRouteShares[pathKey] + "% (" + formatWcDelta(delta, " pts", 0) + ")"
+              );
+            };
+            return React.createElement("div", { className: "wc-route-mix-legend", role: "list", "aria-label": "Pathway mix changes" },
+              routeCopy("runoff", "Runoff"),
+              routeCopy("infiltration", "Underground"),
+              routeCopy("plant", "Plant")
+            );
+          }
           function renderWc2dRouteShare(pathKey, share, isLeader) {
             var trackClass = pathKey === 'infiltrate' ? ' is-infiltrate' : pathKey === 'plant' ? ' is-plant' : '';
+            var deltaCopy = wcRouteShareDeltaCopy(pathKey);
             return React.createElement("span", { className: "wc-2d-route-share", "aria-hidden": "true" },
-              "Relative signal: " + share + "%",
+              "Relative signal: " + share + "%" + (deltaCopy ? " · " + deltaCopy : ""),
               React.createElement("span", { className: "wc-2d-route-share-track" + trackClass },
-                React.createElement("span", { style: { width: share + "%" } })
+                React.createElement("span", { style: { width: share + "%" } }),
+                wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares[pathKey] + "%" } })
               ),
               isLeader && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest modeled pathway")
             );
           }
-
           function renderLandSegments(label, stateKey, options, selected) {
             return React.createElement("fieldset", { className: "wc-land-control" },
               React.createElement("legend", null, label),
@@ -8590,8 +8834,9 @@ const d = labToolData.waterCycle || {};
                     key: option.id,
                     type: "button",
                     "aria-pressed": active,
+                    "aria-label": label + ": " + option.label + (active ? " (selected)" : ""),
                     onClick: function() { adjustLand(stateKey, option.id); }
-                  }, option.label);
+                  }, active ? "\u2713 " + option.label : option.label);
                 })
               )
             );
@@ -8604,7 +8849,8 @@ const d = labToolData.waterCycle || {};
               className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
               "data-wc-focus-mode": String(wcFocusMode),
               role: "region",
-              "aria-label": t('stem.watercycle.water_cycle_keyboard_shortcuts_1_throu', "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, G starts or stops the Guided Walkthrough, J toggles Journey mode, R U P choose your journey path."),
+              "aria-label": t('stem.watercycle.water_cycle_keyboard_shortcuts_1_throu', "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, G starts or stops the Guided Walkthrough, J toggles Journey mode, R U P choose your journey path, Escape exits Focus Canvas mode."),
+              "aria-keyshortcuts": "1 2 3 4 5 6 G J R U P Escape",
               tabIndex: 0,
               onKeyDown: onWcKey
             },
@@ -8641,12 +8887,14 @@ const d = labToolData.waterCycle || {};
               GRADE_BANDS.map(function(gb) {
                 return React.createElement("button", { 
                   key: gb,
+                  "aria-pressed": gradeBand === gb,
+                  "aria-label": "Set grade band " + gb + (gradeBand === gb ? " (selected)" : ""),
                   onClick: function() {
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' - content complexity updated!', 'success');
                   },
                   className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'transition-colors bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-700/60 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 active:scale-[0.97]'))
-                }, gb);
+                }, (gradeBand === gb ? "✓ " : "") + gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full border " + (isDark ? "bg-indigo-950/40 text-indigo-400 border-indigo-900/50" : "bg-indigo-50 text-indigo-600 border-indigo-200") },
                 gradeBand === 'K-2' ? '\uD83E\uDDF8 Elementary' : gradeBand === '3-5' ? '\uD83D\uDCDA Upper Elementary' : gradeBand === '6-8' ? '\uD83E\uDD13 Middle School' : '\uD83C\uDF93 High School'
@@ -8686,7 +8934,7 @@ const d = labToolData.waterCycle || {};
                 ),
                 React.createElement("div", { className: "wc-metric" },
                   React.createElement("span", null, t('stem.watercycle.progress', "Progress")),
-                  React.createElement("strong", null, viewedStageCount + "/6 stages - " + completedChallengeCount + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
+                  React.createElement("strong", null, viewedStageCount + "/" + WATER_CYCLE_STAGE_COUNT + " stages - " + completedChallengeCount + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
                 )
               )
             ),
@@ -8722,10 +8970,11 @@ const d = labToolData.waterCycle || {};
                 WATER_CYCLE_CHALLENGES.map(function(ch) {
                   var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
                   return React.createElement("div", {
-                    key: ch.id, title: ch.name + ": " + ch.desc + " (" + ch.rp + " RP)", "aria-label": ch.name + (done ? " completed" : " not yet completed"), role: "listitem",
+                    key: ch.id, "data-tooltip": ch.name + ": " + ch.desc + " (" + ch.rp + " RP)", "aria-label": ch.name + (done ? " completed" : " not yet completed") + ". Goal: " + ch.desc + ". Reward: " + ch.rp + " research points.", role: "listitem",
                     className: "wc-challenge-item text-center cursor-default transition-all " + (done ? "is-complete drop-shadow-md" : "is-open opacity-25 grayscale"),
                     style: { fontSize: "18px" }
                   },
+                    React.createElement("span", { className: "wc-challenge-status", "aria-hidden": "true" }, done ? "\u2713" : "\u25CB"),
                     React.createElement("span", { className: "wc-challenge-icon", "aria-hidden": "true" }, ch.icon),
                     React.createElement("span", { className: "wc-challenge-name" }, ch.name));
                 })
@@ -8777,7 +9026,7 @@ const d = labToolData.waterCycle || {};
                 }, wcScenarioBaseline ? "\u21BB Baseline" : "\u2295 Set baseline"),                journeyView === '3d' && React.createElement("button", {
                   type: "button",
                   className: "wc-camera-reset",
-                  title: "Resume guided camera",
+                  "data-tooltip": "Resume guided camera",
                   "aria-label": "Resume guided camera",
                   onClick: function() {
                     var journeyCanvas = document.getElementById('wcJourney3d');
@@ -8791,21 +9040,31 @@ const d = labToolData.waterCycle || {};
 journeyView === '2d' && React.createElement("div", {
               className: "wc-walkthrough-strip",
               role: "region",
-              "aria-label": "Guided water cycle walkthrough",
-              "aria-live": "polite"
+              "aria-labelledby": "wcWalkthroughTitle"
             },
               React.createElement("div", { className: "wc-walkthrough-copy" },
-                React.createElement("span", { className: "wc-walkthrough-kicker" }, "Guided walkthrough"),
+                React.createElement("span", { id: "wcWalkthroughTitle", className: "wc-walkthrough-kicker" }, "Guided walkthrough"),
                 React.createElement("strong", null, wcWalkthroughActive ? "Step " + (wcWalkthroughIndex + 1) + " of " + STAGES.length + ": " + currentStageLabel : "Trace all six processes"),
                 React.createElement("span", null, wcWalkthroughActive ? "Use Next to follow the system in sequence." : "Step through the system map in order, one process at a time.")
               ),
+              React.createElement("span", {
+                id: "wcWalkthroughStatus",
+                className: "sr-only",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              }, wcWalkthroughActive
+                ? "Guided walkthrough step " + (wcWalkthroughIndex + 1) + " of " + STAGES.length + ": " + currentStageLabel + "."
+                : "Guided walkthrough ready. Start to trace all six processes."),
               wcWalkthroughActive && React.createElement("div", {
                 className: "wc-walkthrough-progress",
                 role: "progressbar",
                 "aria-label": "Guided walkthrough progress",
+                "aria-describedby": "wcWalkthroughStatus",
                 "aria-valuemin": 1,
                 "aria-valuemax": STAGES.length,
-                "aria-valuenow": wcWalkthroughIndex + 1
+                "aria-valuenow": wcWalkthroughIndex + 1,
+                "aria-valuetext": "Step " + (wcWalkthroughIndex + 1) + " of " + STAGES.length + ": " + currentStageLabel
               }, React.createElement("span", { style: { width: (((wcWalkthroughIndex + 1) / STAGES.length) * 100) + "%" } })),
               React.createElement("div", { className: "wc-walkthrough-actions" },
                 !wcWalkthroughActive
@@ -8865,12 +9124,13 @@ journeyView === '2d' && React.createElement("div", {
             journeyView === '3d' && React.createElement("section", {
               className: "wc-hydro-quest",
               "data-watercycle-hydro-quest": "true",
-              "aria-labelledby": "wcHydroQuestTitle"
+              "aria-labelledby": "wcHydroQuestTitle",
+              "aria-describedby": "wcHydroQuestStatus"
             },
               React.createElement("div", { className: "wc-hydro-head" },
                 React.createElement("div", null,
-                  React.createElement("span", { className: "wc-hydro-kicker" }, "Hydro Quest"),
-                  React.createElement("h4", { id: "wcHydroQuestTitle" }, hydroRank)
+                  React.createElement("span", { id: "wcHydroQuestTitle", className: "wc-hydro-kicker" }, "Hydro Quest"),
+                  React.createElement("h4", null, hydroRank)
                 ),
                 React.createElement("strong", { className: "wc-hydro-score", "aria-label": hydroPoints + " of 120 Hydro Points" }, hydroPoints + " HP")
               ),
@@ -8880,14 +9140,24 @@ journeyView === '2d' && React.createElement("div", {
                 "aria-label": "Hydro Quest progress",
                 "aria-valuemin": 0,
                 "aria-valuemax": 120,
-                "aria-valuenow": hydroPoints
+                "aria-valuenow": hydroPoints,
+                "aria-valuetext": hydroCompleted + " of " + hydroMissions.length + " missions complete; " + hydroPoints + " of 120 Hydro Points."
               }, React.createElement("span", { style: { width: (hydroPoints / 1.2) + "%" } })),
-              React.createElement("div", { className: "wc-hydro-missions" },
+              React.createElement("p", {
+                id: "wcHydroQuestStatus",
+                className: "sr-only",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              }, hydroCompleted + " of " + hydroMissions.length + " Hydro Quest missions complete. " + hydroPoints + " of 120 Hydro Points."),
+              React.createElement("div", { className: "wc-hydro-missions", role: "list", "aria-label": "Hydro Quest missions" },
                 hydroMissions.map(function(mission) {
                   return React.createElement("div", {
                     key: mission.id,
                     className: "wc-hydro-mission" + (mission.complete ? " is-complete" : ""),
-                    "data-mission": mission.id
+                    "data-mission": mission.id,
+                    role: "listitem",
+                    "aria-label": mission.name + (mission.complete ? " complete. " : " open. ") + mission.detail
                   },
                     React.createElement("span", { className: "wc-hydro-mark", "aria-hidden": "true" }, mission.complete ? "\u2713" : "\u25cb"),
                     React.createElement("span", null,
@@ -8912,13 +9182,15 @@ journeyView === '2d' && React.createElement("div", {
                   return ((L + 0.05) / 0.05) >= (1.05 / (L + 0.05)) ? '#0a0f1a' : '#ffffff';
                 })(stage.color);
                 var isActive = (d.activeStage || 'evaporation') === stage.id;
+                var isViewed = !!(d.stagesViewed && d.stagesViewed[stage.id]);
                 var isCausalStage = wcCausalStageIds.indexOf(stage.id) >= 0;
                 var shortcut = (stageIdx + 1).toString();
                 return React.createElement("button", {
-                  "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : "") + (isCausalStage ? " (affected by current scenario)" : ""),
+                  "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : "") + (isViewed ? " (visited)" : " (not yet visited)") + (isCausalStage ? " (affected by current scenario)" : ""),
                   "aria-pressed": isActive,
                   key: stage.id,
                   "data-causal-stage": isCausalStage ? "true" : "false",
+                  "data-stage-viewed": String(isViewed),
                   onClick: function () {
                     selectStage(stage.id);
                     if (typeof announceToSR === 'function') announceToSR(stage.label + ' stage selected.');
@@ -8934,6 +9206,7 @@ journeyView === '2d' && React.createElement("div", {
                   style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : stage.color }
                 },
                   React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+                  isViewed && React.createElement("span", { className: "wc-stage-viewed-mark", "aria-hidden": "true" }, "\u2713"),
                   React.createElement("span", null, stage.emoji + " " + stage.label));
               })
             ),
@@ -8943,6 +9216,7 @@ React.createElement("div", {
               id: "wcStageFocusDescription",
               role: "status",
               "aria-live": "polite",
+              "aria-atomic": "true",
               style: { borderLeftColor: resolvedStage ? resolvedStage.color : '#0ea5e9' }
             },
               React.createElement("div", { className: "wc-stage-focus-copy" },
@@ -8989,6 +9263,8 @@ React.createElement("div", {
                 "aria-hidden": journeyView === '3d' ? "true" : undefined,
                 "aria-label": "Water cycle animation showing the " + currentStageLabel + " process. Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ".",
                 "aria-describedby": journeyView === '2d' ? "wcStageFocusDescription wcCanvasGuideDescription" : undefined,
+                "aria-keyshortcuts": journeyView === '2d' ? "Space Enter" : undefined,
+                onKeyDown: journeyView === '2d' ? handleWc2dKey : undefined,
                 ref: canvasRef,
                 id: "wcCanvas",
                 className: "wc-canvas-element",
@@ -9022,7 +9298,7 @@ React.createElement("div", {
               ),
               journeyView === '3d' && React.createElement("p", {
                 id: "wcJourney3dRouteBalanceInstructions", className: "sr-only"
-              }, "At the land decision, percentages compare relative runoff, groundwater recharge, and plant uptake tendencies from the current land cover and controls; they are teaching comparisons, not measured water volumes."
+              }, "At the land decision, percentages compare relative runoff, infiltration opportunity, and plant uptake tendencies from the current land cover and controls; they are teaching comparisons, not measured water volumes. Infiltration does not automatically mean groundwater recharge."
               ),
               journeyView === '3d' && React.createElement("p", {
                 id: "wcJourney3dGroundwaterInstructions", className: "sr-only"
@@ -9087,13 +9363,16 @@ React.createElement("div", {
                 className: "wc-viewport-choice",
                 role: "group",
                 "aria-labelledby": "wcViewportChoiceTitle",
-                "aria-describedby": "wcViewportChoiceDescription",
-                "aria-live": "polite",
-                "aria-atomic": "true",
+                "aria-describedby": "wcViewportChoiceDescription wcViewportChoiceStatus",
               },
                 React.createElement("h5", { id: "wcViewportChoiceTitle" }, "Choose where the droplet travels next"),
                 React.createElement("p", { id: "wcViewportChoiceDescription" }, "Compare the relative route shares as teaching evidence, not measured water volumes. You remain in control."),
-                React.createElement("p", { className: "wc-route-choice-signal" }, wcRouteLeaderLabel
+                wcScenarioBaseline && wcScenarioChanges.length && React.createElement("p", {
+                  className: "wc-viewport-scenario-note",
+                  role: "note"
+                }, wcScenarioHeadline + " Compare the route shares before choosing." + wcJourneyPredictionReceipt),
+                wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved baseline markers show each route's previous relative share; labels show the point change."),
+                React.createElement("p", { id: "wcViewportChoiceStatus", className: "wc-route-choice-signal", role: "status", "aria-live": "polite", "aria-atomic": "true" }, wcRouteLeaderLabel
                   ? "Strongest modeled signal: " + wcRouteLeaderLabel + " (" + wcMaxRouteShare + "%). Any route remains available."
                   : "The modeled signals are tied; compare the paths and choose any route."),
                 React.createElement("div", { className: "wc-viewport-choice-grid" },
@@ -9101,38 +9380,47 @@ React.createElement("div", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : ""),
                     "data-route-choice": "runoff",
-                    "aria-label": "Choose River Runoff path. Relative route share " + wcRouteShares.runoff + " percent. Runoff tendency " + landIndexBand(runoffTendency) + (wcRouteLeader === "runoff" ? " Strongest modeled pathway." : ""),
+                    "aria-label": "Choose River Runoff path. Relative route share " + wcRouteShares.runoff + " percent. Runoff tendency " + landIndexBand(runoffTendency) + (wcRouteLeader === "runoff" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
                     onClick: function() { chooseJourneyPath('runoff'); }
                   },
                     React.createElement("strong", null, "\uD83C\uDF0A River Runoff"),
                     wcRouteLeader === 'runoff' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.runoff + "% \u00B7 Runoff " + runoffTendency + "/100"),
-                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.runoff + "%" } }))
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.runoff + "% \u00B7 Runoff " + runoffTendency + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('runoff') : "")),
+                    React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.runoff),
+                    React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.runoff),
+                    React.createElement("span", { className: "wc-route-return-copy" }, "Return path: " + journeyPathReturnByKey.runoff),
+                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.runoff + "%" } }), wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares.runoff + "%" } }))
                   ),
                   React.createElement("button", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "infiltrate" ? " is-leading" : ""),
                     "data-route-choice": "infiltrate",
-                    "aria-label": "Choose Underground infiltration path. Relative route share " + wcRouteShares.infiltration + " percent. Infiltration opportunity " + landIndexBand(infiltrationOpportunity) + (wcRouteLeader === "infiltrate" ? " Strongest modeled pathway." : ""),
+                    "aria-label": "Choose Underground infiltration path. Relative route share " + wcRouteShares.infiltration + " percent. Infiltration opportunity " + landIndexBand(infiltrationOpportunity) + (wcRouteLeader === "infiltrate" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
                     onClick: function() { chooseJourneyPath('infiltrate'); }
                   },
                     React.createElement("strong", null, "\uD83E\uDEB4 Underground"),
                     wcRouteLeader === 'infiltrate' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.infiltration + "% \u00B7 Infiltration " + infiltrationOpportunity + "/100"),
-                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.infiltration + "%" } }))
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.infiltration + "% \u00B7 Infiltration " + infiltrationOpportunity + "/100" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('infiltrate') : "")),
+                    React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.infiltrate),
+                    React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.infiltrate),
+                    React.createElement("span", { className: "wc-route-return-copy" }, "Return path: " + journeyPathReturnByKey.infiltrate),
+                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.infiltration + "%" } }), wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares.infiltration + "%" } }))
                   ),
                   React.createElement("button", {
                     type: "button",
                     className: "wc-route-choice-card" + (wcRouteLeader === "plant" ? " is-leading" : ""),
                     "data-route-choice": "plant",
-                    "aria-label": "Choose Plant absorption path. Relative route share " + wcRouteShares.plant + " percent." + (wcRouteLeader === "plant" ? " Strongest modeled pathway." : ""),
+                    "aria-label": "Choose Plant absorption path. Relative route share " + wcRouteShares.plant + " percent." + (wcRouteLeader === "plant" ? " Strongest modeled pathway." : "") + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
                     onClick: function() { chooseJourneyPath('plant'); }
                   },
                     React.createElement("strong", null, "\uD83C\uDF3F Enter Plant"),
                     wcRouteLeader === 'plant' && React.createElement("span", { className: "wc-route-leader-badge" }, "Strongest signal"),
-                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.plant + "% \u00B7 Plant uptake"),
-                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.plant + "%" } })),
-                    React.createElement("span", null, "Return through transpiration")
+                    React.createElement("span", { className: "wc-route-share-copy" }, "Relative share " + wcRouteShares.plant + "% \u00B7 Plant uptake" + (wcRouteBaselineActive ? " \u00B7 " + wcRouteShareDeltaCopy('plant') : "")),
+                    React.createElement("span", { className: "wc-route-share-track", "aria-hidden": "true" }, React.createElement("span", { style: { width: wcRouteShares.plant + "%" } }), wcRouteBaselineActive && React.createElement("span", { className: "wc-route-share-baseline-marker", style: { left: wcBaselineRouteShares.plant + "%" } })),
+                    React.createElement("span", { className: "wc-route-driver-copy" }, "Driver: " + journeyPathDriverByKey.plant),
+                    React.createElement("span", { className: "wc-route-pace-copy" }, "Residence pace: " + journeyPathPaceByKey.plant),
+                    React.createElement("span", { className: "wc-route-return-copy" }, "Return path: " + journeyPathReturnByKey.plant),
+                    React.createElement("span", null, "Return through transpiration"),
                   )
                 )
               ),
@@ -9172,7 +9460,7 @@ React.createElement("div", {
                       type: "button", className: "wc-viewport-btn",
                       disabled: d.journeyState === 'ground_choice' || d.journeyState === 'complete',
                       "aria-label": journeyPaused ? "Resume water journey" : "Pause water journey",
-                      title: journeyPaused ? "Resume journey" : "Pause journey",
+                      "data-tooltip": journeyPaused ? "Resume journey" : "Pause journey",
                       onClick: function() {
                         var nextPaused = !journeyPaused;
                         upd('journeyPaused', nextPaused);
@@ -9181,7 +9469,7 @@ React.createElement("div", {
                       }
                     }, journeyPaused ? "\u25B6" : "\u23F8"),
                     React.createElement("button", {
-                      type: "button", className: "wc-viewport-btn", "aria-label": "Restart water journey from the ocean", title: "Restart journey",
+                      type: "button", className: "wc-viewport-btn", "aria-label": "Restart water journey from the ocean", "data-tooltip": "Restart journey",
                       onClick: function() {
                         updMulti({ journeyState: 'ocean', activeStage: 'collection', journeyPaused: false, journeyLastPath: '' });
                         var restartCanvas = document.getElementById('wcCanvas');
@@ -9193,7 +9481,7 @@ React.createElement("div", {
                         key: 'viewport-speed-' + speedOption,
                         type: "button", className: "wc-viewport-btn",
                         "aria-label": "Journey speed " + speedOption + " times",
-                        title: "Journey speed " + speedOption + "×",
+                        "data-tooltip": "Journey speed " + speedOption + "×",
                         "aria-pressed": journeySpeed === speedOption,
                         onClick: function() {
                           upd('journeySpeed', speedOption);
@@ -9210,7 +9498,7 @@ React.createElement("div", {
                       key: cameraControl.action,
                       type: "button", className: "wc-viewport-btn",
                       "aria-label": cameraControl.label,
-                      title: cameraControl.label,
+                      "data-tooltip": cameraControl.label,
                       onClick: function() { controlJourneyCamera(cameraControl.action); }
                     }, cameraControl.icon);
                   })
@@ -9229,8 +9517,8 @@ React.createElement("div", {
               React.createElement("span", { className: "wc-canvas-guide-copy" }, journeyView === '3d'
                 ? t('stem.watercycle.use_drag_or_arrow_keys_to_explore', "Use drag or arrow keys to explore; highlighted routes are clickable. Press F to follow the droplet.")
                 : (wc2dPaused
-                ? 'Animation paused on ' + currentStageLabel + '. Compare its starting store and destination, then resume when ready.'
-                : (currentStageCue || t('stem.watercycle.follow_the_moving_water_between_stores', "Follow the moving water between stores; the selected process is highlighted.")))),
+                ? 'Animation paused on ' + currentStageLabel + '. Control changes still repaint this frame; compare its starting store and destination, then press Space or Enter on the model to resume.'
+                : (currentStageCue || t('stem.watercycle.follow_the_moving_water_between_stores', "Follow the moving water between stores; the selected process is highlighted.")) + ' Press Space or Enter on the model to pause.')),
               journeyView === '2d' && React.createElement("button", {
                 type: "button",
                 className: "wc-2d-playback",
@@ -9247,10 +9535,17 @@ React.createElement("div", {
               role: "region",
               "aria-label": "Text data view of the Water Cycle model"
             },
-              React.createElement("summary", { className: "wc-data-summary" },
+              React.createElement("summary", { className: "wc-data-summary", "aria-describedby": "wcDataViewStatus" },
                 React.createElement("span", { className: "wc-data-summary-title" }, "Data view"),
-                React.createElement("span", { className: "wc-data-summary-note" }, "Text alternative to the canvas")
+                React.createElement("span", { className: "wc-data-summary-note" }, "Text alternative to the canvas; values update live")
               ),
+              React.createElement("p", {
+                id: "wcDataViewStatus",
+                className: "sr-only",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              }, wcDataViewStatus),
               React.createElement("div", { className: "wc-data-table-wrap" },
                 React.createElement("table", {
                   className: "wc-data-table",
@@ -9280,6 +9575,15 @@ React.createElement("div", {
                       )
                     ),
                     React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Pathway mix"),
+                      React.createElement("td", { className: "wc-data-route-mix", "aria-live": "polite", "aria-atomic": "true" },
+                        React.createElement("strong", null, "Runoff " + wcRouteShares.runoff + "% " + "\u00B7" + " Underground " + wcRouteShares.infiltration + "% " + "\u00B7" + " Plant " + wcRouteShares.plant + "%"),
+                        React.createElement("span", null, wcBaselineRouteShares
+                          ? "Saved baseline: Runoff " + wcBaselineRouteShares.runoff + "% " + "\u2192" + " " + wcRouteShares.runoff + "% " + "\u00B7" + " Underground " + wcBaselineRouteShares.infiltration + "% " + "\u2192" + " " + wcRouteShares.infiltration + "% " + "\u00B7" + " Plant " + wcBaselineRouteShares.plant + "% " + "\u2192" + " " + wcRouteShares.plant + "%"
+                          : "Relative teaching shares, not measured volumes.")
+                      )
+                    ),
+                    React.createElement("tr", null,
                       React.createElement("th", { scope: "row" }, "Land setting"),
                       React.createElement("td", null,
                         React.createElement("strong", null, landCover + " " + "\u00B7" + " " + landSlope + " slope"),
@@ -9294,9 +9598,23 @@ React.createElement("div", {
                       )
                     ),
                     React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Prediction and evidence"),
+                      React.createElement("td", { className: "wc-data-evidence-status", "aria-live": "polite", "aria-atomic": "true" },
+                        React.createElement("strong", null, wcDataEvidenceStatus),
+                        React.createElement("span", null, wcDataEvidenceDetail)
+                      )
+                    ),
+                    React.createElement("tr", null,
+                      React.createElement("th", { scope: "row" }, "Experiment trail"),
+                      React.createElement("td", { className: "wc-data-trail-status", "aria-live": "polite", "aria-atomic": "true" },
+                        React.createElement("strong", null, wcDataTrailStatus),
+                        React.createElement("span", null, wcDataTrailDetail)
+                      )
+                    ),
+                    React.createElement("tr", null,
                       React.createElement("th", { scope: "row" }, "Journey"),
                       React.createElement("td", null,
-                        React.createElement("strong", null, journeyChosenRoute ? journeyChosenRoute.label + " selected" : journeyStatusLabel),
+                        React.createElement("strong", null, journeyChosenRoute ? journeyChosenRoute.label + " selected" : journeyStateLabel + ". " + journeyStatusLabel),
                         React.createElement("span", null, journeyDataContext)
                       )
                     )
@@ -9324,6 +9642,7 @@ React.createElement("div", {
                     id: "wcScenarioPreset",
                     value: WATER_CYCLE_PRESETS[wcScenarioPreset] ? wcScenarioPreset : "custom",
                     "aria-label": "Choose a Water Cycle experiment preset",
+                    "aria-describedby": "wcScenarioPresetHint",
                     onChange: function(e) { applyWcScenarioPreset(e.target.value); }
                   },
                     React.createElement("option", { value: "custom" }, "Custom controls"),
@@ -9332,6 +9651,16 @@ React.createElement("div", {
                     })
                   )
                 )
+              ),
+              React.createElement("p", {
+                id: "wcScenarioPresetHint",
+                className: "wc-preset-lesson",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              },
+                React.createElement("span", { className: "wc-preset-lesson-kicker" }, "Experiment focus"),
+                React.createElement("span", { className: "wc-preset-lesson-copy" }, wcScenarioPresetLesson)
               ),
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
@@ -9394,13 +9723,14 @@ React.createElement("div", {
                 (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, t('stem.watercycle.stars_visible', "\u2B50 Stars visible")),
                 (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
                 React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-800") },
-                  "Evaporation index: " + Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))).toFixed(2) + "x"
+                  "Evaporation index: " + evaporationIndex.toFixed(2) + "x"
                                    ),
+                React.createElement("span", { className: "wc-climate-interpretation", role: "note" }, wcClimateInterpretation),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-reset-control",
                   onClick: resetClimate,
-                  title: t('stem.watercycle.reset_climate_settings', "Reset climate settings"),
+                  "data-tooltip": t('stem.watercycle.reset_climate_settings', "Reset climate settings"),
                   "aria-label": t('stem.watercycle.reset_climate_settings', "Reset climate settings")
                 }, "↺ Reset")
               )
@@ -9423,7 +9753,7 @@ React.createElement("div", {
                 ),
                 React.createElement("button", {
                   type: "button",
-                  title: "Reset land scenario",
+                  "data-tooltip": "Reset land scenario",
                   "aria-label": "Reset land-surface scenario",
                   onClick: resetLandScenario,
                   className: "wc-reset-control wc-land-reset"
@@ -9491,8 +9821,11 @@ React.createElement("div", {
                 React.createElement("div", { className: "wc-land-result", style: { borderLeftColor: "#10b981" } },
                   React.createElement("span", null, "Infiltration opportunity"),
                   React.createElement("strong", null, landIndexBand(infiltrationOpportunity) + " | " + infiltrationOpportunity + "/100")
-                )
+                ),
+                React.createElement("p", { className: "wc-land-driver", role: "note" }, wcLandDriverReadout)
               ),
+              React.createElement("p", { className: "wc-land-interpretation", role: "note" }, wcLandInterpretation),
+              React.createElement("p", { className: "wc-land-prompt", role: "note" }, wcLandExperimentPrompt),
               React.createElement("p", { role: "note", className: "text-[11px] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
                 "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
               )
@@ -9501,12 +9834,22 @@ React.createElement("div", {
               className: "wc-compare-strip",
               role: "region",
               "aria-label": "Scenario comparison",
-              "aria-live": "polite"
+              "aria-describedby": "wcScenarioWorkflowStatus"
             },
               React.createElement("div", { className: "wc-compare-copy" },
                 React.createElement("span", { className: "wc-compare-kicker" }, "Scenario Compare"),
                 React.createElement("strong", null, wcScenarioHeadline),
                 React.createElement("span", null, wcScenarioDetail)
+              ),
+              React.createElement("p", {
+                id: "wcScenarioWorkflowStatus",
+                className: "wc-compare-method",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              },
+                React.createElement("strong", null, "Experiment steps"),
+                wcScenarioWorkflowStatus
               ),
               React.createElement("div", { className: "wc-compare-actions" },
                 React.createElement("button", {
@@ -9551,9 +9894,9 @@ React.createElement("div", {
                 "aria-label": "Visual comparison of baseline and current values"
               },
                 React.createElement("div", {
-                  className: "wc-compare-bar-card",
+                  className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x, current " + evaporationIndex.toFixed(2) + "x"
+                  "aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x, current " + evaporationIndex.toFixed(2) + "x" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? ". Prediction evidence to check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Evaporation"),
@@ -9584,9 +9927,9 @@ React.createElement("div", {
                   }, "\u0394 " + formatWcDelta(wcEvaporationDelta, "x", 2))
                 ),
                 React.createElement("div", {
-                  className: "wc-compare-bar-card",
+                  className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff + " of 100, current " + runoffTendency + " of 100"
+                  "aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff + " of 100, current " + runoffTendency + " of 100" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? ". Prediction evidence to check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Runoff"),
@@ -9617,9 +9960,9 @@ React.createElement("div", {
                   }, "\u0394 " + formatWcDelta(wcRunoffDelta, " pts", 0))
                 ),
                 React.createElement("div", {
-                  className: "wc-compare-bar-card",
+                  className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration + " of 100, current " + infiltrationOpportunity + " of 100"
+                  "aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration + " of 100, current " + infiltrationOpportunity + " of 100" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? ". Prediction evidence to check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Infiltration"),
@@ -9648,6 +9991,21 @@ React.createElement("div", {
                   React.createElement("span", {
                     className: "wc-compare-bar-delta " + (wcInfiltrationDelta > 0 ? "is-up" : wcInfiltrationDelta < 0 ? "is-down" : "is-flat")
                   }, "\u0394 " + formatWcDelta(wcInfiltrationDelta, " pts", 0))
+                ),
+                React.createElement("div", {
+                  className: "wc-route-mix",
+                  role: "group",
+                  "aria-label": "Baseline and current pathway mix"
+                },
+                  React.createElement("div", { className: "wc-route-mix-head" },
+                    React.createElement("strong", { className: "wc-route-mix-title" }, "Pathway mix"),
+                    React.createElement("span", { className: "wc-route-mix-note" }, "Relative teaching shares, not water volumes")
+                  ),
+                  React.createElement("div", { className: "wc-route-mix-bars" },
+                    renderWcRouteMixBar("Base", wcBaselineRouteShares),
+                    renderWcRouteMixBar("Now", wcRouteShares)
+                  ),
+                  renderWcRouteMixLegend()
                 )
               )
             ),
@@ -9687,7 +10045,8 @@ React.createElement("div", {
                   : "Before reading the evidence, what will shift most?"),
                 React.createElement("span", null, wcPrediction
                   ? wcPredictionFeedback
-                  : "Choose one, then use the comparison values as evidence.")
+                  : "Choose one, then use the comparison values as evidence."),
+                wcPrediction && wcPredictionEvidence && React.createElement("span", { className: "wc-prediction-evidence" }, wcPredictionEvidence)
               ),
               !wcPrediction && React.createElement("div", {
                 className: "wc-prediction-options",
@@ -9732,17 +10091,22 @@ React.createElement("div", {
               className: "wc-experiment-log wc-focus-secondary" + (wcReplayedObservation ? " is-replaying" : ""),
               role: "region",
               "aria-label": "Experiment trail",
-              "aria-live": "polite"
+              "aria-describedby": "wcExperimentTrailStatus"
             },
               React.createElement("div", { className: "wc-experiment-log-head" },
                 React.createElement("div", { className: "wc-experiment-log-copy" },
                   React.createElement("span", { className: "wc-experiment-log-kicker" }, "Experiment trail"),
                   React.createElement("strong", null, wcExperimentLog.length + "/4 observations saved"),
-                  React.createElement("span", null, wcReplayedObservation
+                  React.createElement("span", {
+                    id: "wcExperimentTrailStatus",
+                    role: "status",
+                    "aria-live": "polite",
+                    "aria-atomic": "true"
+                  }, wcReplayedObservation
                     ? "Replaying: " + wcReplayedObservation + ". Adjust a control to branch from this observation."
                     : "Revisit what you predicted and what the evidence showed.")
                 ),
-                wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", role: "status", "aria-live": "polite" }, "Replay active"),
+                wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", "aria-hidden": "true" }, "Replay active"),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-experiment-log-clear",
@@ -9757,19 +10121,29 @@ React.createElement("div", {
               },
                 wcExperimentLog.slice().reverse().map(function(entry, entryIndex) {
                   var prediction = WATER_CYCLE_PREDICTIONS[entry.prediction] || WATER_CYCLE_PREDICTIONS.mixed;
+                  var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];
+                  var evidenceLabel = evidencePrediction ? evidencePrediction.label : 'Recorded shift';
                   var deltas = entry.deltas || {};
                   var evaporationDelta = typeof deltas.evaporation === 'number' ? deltas.evaporation : 0;
                   var runoffDelta = typeof deltas.runoff === 'number' ? deltas.runoff : 0;
                   var infiltrationDelta = typeof deltas.infiltration === 'number' ? deltas.infiltration : 0;
+                  var routeShares = entry.routeShares || null;
+                  var hasRouteShares = routeShares && typeof routeShares.runoff === 'number' && typeof routeShares.infiltration === 'number' && typeof routeShares.plant === 'number';
+                  var routeMixAccessibility = hasRouteShares
+                    ? ' Path mix: runoff ' + routeShares.runoff + ' percent; underground infiltration ' + routeShares.infiltration + ' percent; plant uptake ' + routeShares.plant + ' percent.'
+                    : '';
                   return React.createElement("div", {
                     key: entry.key || entry.savedAt || entryIndex,
                     className: "wc-log-entry",
-                    role: "listitem"
+                    role: "listitem",
+                    "aria-label": (entry.label || "Custom controls") + ". " + (entry.matched ? "Prediction matched the evidence." : "Prediction differed from the evidence.") + " Hypothesis: " + prediction.label + ". Evidence: " + evidenceLabel + "." + routeMixAccessibility
                   },
                     React.createElement("span", { className: "wc-log-entry-index", "aria-hidden": "true" }, String(wcExperimentLog.length - entryIndex)),
                     React.createElement("div", { className: "wc-log-entry-copy" },
                       React.createElement("strong", null, entry.label || "Custom controls"),
                       React.createElement("span", null, (entry.matched ? "Matched" : "Evidence differed") + " · Hypothesis: " + prediction.shortLabel),
+                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Evidence: " + evidenceLabel),
+                      hasRouteShares && React.createElement("span", { className: "wc-log-entry-route-mix" }, "Path mix (relative): Runoff " + routeShares.runoff + "% · Underground " + routeShares.infiltration + "% · Plant " + routeShares.plant + "%"),
                       React.createElement("small", null, "Evap " + formatWcDelta(evaporationDelta, "x", 2) + " · Runoff " + formatWcDelta(runoffDelta, "", 0) + " · Infiltration " + formatWcDelta(infiltrationDelta, "", 0))
                     ),
                     entry.snapshot && React.createElement("button", {
@@ -9811,7 +10185,9 @@ React.createElement("div", {
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 text-white text-xs font-bold rounded-xl hover:from-cyan-700 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, t('stem.watercycle.start_journey_j', "\uD83C\uDFAE Start Journey (J)"))
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": t('stem.watercycle.end_journey_mode_shortcut_j', "End Journey mode (shortcut: J)"),
+                      React.createElement("button", {
+                  type: "button",
+                  "aria-label": t('stem.watercycle.end_journey_mode_shortcut_j', "End Journey mode (shortcut: J)"),
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
@@ -9825,6 +10201,13 @@ React.createElement("div", {
                     )
               ),
 
+              React.createElement("p", {
+                id: "wcJourneyTransitionStatus",
+                className: "sr-only",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              }, journeyTransitionStatus),
               !d.journeyActive && React.createElement("div", {
                 role: "note",
                 style: {
@@ -9850,7 +10233,7 @@ React.createElement("div", {
                       className: "wc-journey-icon-btn",
                       disabled: d.journeyState === 'ground_choice' || d.journeyState === 'complete',
                       "aria-label": journeyPaused ? "Resume water journey" : "Pause water journey",
-                      title: journeyPaused ? "Resume journey" : "Pause journey",
+                      "data-tooltip": journeyPaused ? "Resume journey" : "Pause journey",
                       onClick: function() {
                         var nextPaused = !journeyPaused;
                         upd('journeyPaused', nextPaused);
@@ -9863,7 +10246,7 @@ React.createElement("div", {
                       type: "button",
                       className: "wc-journey-icon-btn",
                       "aria-label": "Restart water journey from the ocean",
-                      title: "Restart from ocean",
+                      "data-tooltip": "Restart from ocean",
                       onClick: function() {
                         updMulti({ journeyState: 'ocean', journeyPaused: false, journeyLastPath: '' });
                         upd('activeStage', 'collection');
@@ -9891,12 +10274,16 @@ React.createElement("div", {
                 ),
                 React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": "Water journey timeline" },
                   journeyTimelineSteps.map(function(step, index) {
+                    var timelineStepState = index < journeyTimelineIndex ? "is-complete" : index === journeyTimelineIndex ? "is-current" : "is-upcoming";
+                    var timelineStepLabel = index < journeyTimelineIndex ? "completed" : index === journeyTimelineIndex ? "current" : "upcoming";
                     return React.createElement("div", {
                       key: step,
                       role: "listitem",
-                      className: "wc-timeline-step",
-                      "aria-current": index === journeyTimelineIndex ? "step" : undefined
+                      className: "wc-timeline-step " + timelineStepState,
+                      "aria-current": index === journeyTimelineIndex ? "step" : undefined,
+                      "aria-label": step + ": " + timelineStepLabel
                     },
+                      React.createElement("span", { className: "wc-timeline-marker", "aria-hidden": "true" }, index < journeyTimelineIndex ? "\u2713" : index === journeyTimelineIndex ? "\u25CF" : "\u25CB"),
                       React.createElement("strong", null, (index + 1) + ". " + step)
                     );
                   })
@@ -9909,19 +10296,20 @@ React.createElement("div", {
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
                     (d.journeyState === 'ground_choice') ? (journeyView === '3d'
                       ? "\uD83E\uDEA8 Choose your path in the viewport above or use the buttons here:" : "\uD83E\uDEA8 Choose your path on the map or use the buttons here:") :
-                    (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
-                    "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
+                    (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! Loop " + (d.journeyLoops || 1) + " recorded \u00B7 +25 XP" :
+                    "\uD83D\uDCA7 Current: " + journeyStateLabel
                   ),
                   d.journeyState === 'complete' && React.createElement("p", { className: "text-[11px] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
                   journeyChosenRoute && React.createElement("div", {
                     className: "wc-journey-choice-receipt" + (d.journeyState === 'complete' ? " is-complete" : ""),
                     role: "region",
-                    "aria-label": "Selected journey path evidence"
+                    "aria-label": "Selected journey path evidence" + wcJourneyPredictionReceipt,
+                    "aria-live": "polite"
                   },
                     React.createElement("div", null,
                       React.createElement("span", { className: "wc-journey-choice-receipt-kicker" }, journeyChoiceKicker),
                       React.createElement("strong", null, journeyChosenRoute.label),
-                      React.createElement("span", { className: "wc-journey-choice-receipt-copy" }, journeyChoiceCopy)
+                      React.createElement("span", { className: "wc-journey-choice-receipt-copy" }, journeyChoiceCopy + wcJourneyPredictionReceipt)
                     ),
                     React.createElement("div", {
                       className: "wc-journey-choice-signal",
@@ -9960,55 +10348,72 @@ React.createElement("div", {
                       journeyPathDefinitions.map(function(path) {
                         var explored = path.count > 0;
                         var current = journeyChosenRouteKey === path.key;
-                        return React.createElement("div", {
+                        var isNext = !!journeyPathNext && journeyPathNext.key === path.key;
+                    return React.createElement("div", {
                           key: path.key,
-                          className: "wc-route-ledger-item" + (explored ? " is-explored" : "") + (current ? " is-current" : ""),
+                          className: "wc-route-ledger-item" + (explored ? " is-explored" : "") + (current ? " is-current" : "") + (isNext ? " is-next" : ""),
                           role: "listitem",
-                          "aria-label": path.label + ": " + (explored ? path.count + (path.count === 1 ? " loop explored" : " loops explored") : "not explored yet") + (current ? ". Current route." : "")
+                          "aria-label": path.label + ": " + (explored ? path.count + (path.count === 1 ? " loop explored" : " loops explored") : "not explored yet") + (current ? ". Current route." : "") + (isNext ? " Suggested next pathway." : "") + ". " + path.detail
                         },
                           React.createElement("span", { className: "wc-route-ledger-mark", "aria-hidden": "true" }, explored ? "✓" : "○"),
                           React.createElement("span", null,
                             React.createElement("strong", null, path.label),
                             React.createElement("small", null, path.detail)
                           ),
-                          React.createElement("span", { className: "wc-route-ledger-count" }, explored ? path.count + (path.count === 1 ? " loop" : " loops") : "Try next")
+                          React.createElement("span", { className: "wc-route-ledger-count" }, explored ? path.count + (path.count === 1 ? " loop" : " loops") : isNext ? "Next up" : "Try next")
                         );
                       })
                     )
                   ),
-                  d.journeyState === 'ground_choice' && wcScenarioBaseline && wcScenarioChanges.length && React.createElement("p", {
+                  d.journeyState === 'ground_choice' && journeyView !== '3d' && wcScenarioBaseline && wcScenarioChanges.length && React.createElement("p", {
                     className: "wc-route-scenario-note",
                     role: "note"
-                  }, wcScenarioHeadline + " Compare the route shares before choosing."),
+                  }, wcScenarioHeadline + " Compare the route shares before choosing." + wcJourneyPredictionReceipt),
                   d.journeyState === 'ground_choice' && journeyView === '2d' && React.createElement("p", { className: "wc-2d-route-note", role: "note" }, wcRouteLeader
-                    ? "Strongest modeled signal: " + wcRouteLeaderLabel + ". Compare the relative shares before choosing."
-                    : "The modeled signals are tied; compare the relative shares before choosing."),
+                    ? "Strongest modeled signal: " + wcRouteLeaderLabel + ". Compare the relative shares before choosing." + wcJourneyPredictionReceipt
+                    : "The modeled signals are tied; compare the relative shares before choosing." + wcJourneyPredictionReceipt),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
-                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)") + ". Relative route share " + wcRouteShares.runoff + " percent." + wcRouteLeaderAccessibility,
+                  wcRouteBaselineActive && React.createElement("p", { className: "wc-route-baseline-note", role: "note" }, "Saved baseline markers show each route's previous relative share; labels show the point change."),
+                    React.createElement("button", {
+                  type: "button",
+                  "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)") + ". Relative route share " + wcRouteShares.runoff + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.runoff + ". Driver: " + journeyPathDriverByKey.runoff + ". Return path: " + journeyPathReturnByKey.runoff + "." + wcRouteShareAria('runoff'),
                       onClick: function() { chooseJourneyPath('runoff'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.river_runoff_r', "River Runoff (R)")),
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency)),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.runoff),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.runoff),
+                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.runoff),
                       renderWc2dRouteShare('runoff', wcRouteShares.runoff, wcRouteLeader === 'runoff')
                     ),
-                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)") + ". Relative route share " + wcRouteShares.infiltration + " percent." + wcRouteLeaderAccessibility,
+                    React.createElement("button", {
+                  type: "button",
+                  "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)") + ". Relative route share " + wcRouteShares.infiltration + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.infiltrate + ". Driver: " + journeyPathDriverByKey.infiltrate + ". Return path: " + journeyPathReturnByKey.infiltrate + "." + wcRouteShareAria('infiltrate'),
                       onClick: function() { chooseJourneyPath('infiltrate'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "infiltrate" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.underground_u', "Underground (U)")),
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity)),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.infiltrate),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.infiltrate),
+                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.infiltrate),
                       renderWc2dRouteShare('infiltrate', wcRouteShares.infiltration, wcRouteLeader === 'infiltrate')
                     ),
-                    React.createElement("button", { "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)") + ". Relative route share " + wcRouteShares.plant + " percent." + wcRouteLeaderAccessibility,
+                    React.createElement("button", {
+                  type: "button",
+                  "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)") + ". Relative route share " + wcRouteShares.plant + " percent." + wcRouteLeaderAccessibility + " Residence pace: " + journeyPathPaceByKey.plant + ". Driver: " + journeyPathDriverByKey.plant + ". Return path: " + journeyPathReturnByKey.plant + "." + wcRouteShareAria('plant'),
                       onClick: function() { chooseJourneyPath('plant'); },
                       className: "wc-route-choice-card" + (wcRouteLeader === "plant" ? " is-leading" : "") + " p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.enter_plant_p', "Enter Plant (P)")),
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Transpiration!"),
+                      React.createElement("p", { className: "wc-route-driver-copy text-[11px] opacity-70" }, "Driver: " + journeyPathDriverByKey.plant),
+                      React.createElement("p", { className: "wc-route-pace-copy text-[11px] opacity-70" }, "Residence pace: " + journeyPathPaceByKey.plant),
+                      React.createElement("p", { className: "wc-route-return-copy text-[11px] opacity-70" }, "Return path: " + journeyPathReturnByKey.plant),
                       renderWc2dRouteShare('plant', wcRouteShares.plant, wcRouteLeader === 'plant')
                     )
                   ),
@@ -10018,22 +10423,19 @@ React.createElement("div", {
                       upd('journeyLastPath', '');
                       upd('journeyPaused', false);
                       upd('activeStage', 'collection');
-                      upd('journeyLoops', (d.journeyLoops || 0) + 1);
                       var cv = document.getElementById('wcCanvas');
                       if (cv) { cv.dataset.journeyState = 'ocean'; cv.dataset.activeStage = 'collection'; cv.dataset.journeyProgress = '0'; }
-                      awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
-                      stemCelebrate();
                       if (typeof announceToSR === 'function') {
-                        announceToSR('Starting loop ' + ((d.journeyLoops || 0) + 2) + '. You are now a water droplet in the ocean.');
+                        announceToSR('Starting another loop. You are now a water droplet in the ocean.');
                       }
-                      addToast('\uD83C\uDF89 Cycle complete! +25 XP. Starting new loop...', 'success');
+                      addToast('\uD83D\uDCA7 Another loop started. Compare a new pathway next.', 'info');
                     },
                     className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-cyan-700 text-white text-xs font-bold rounded-xl hover:from-emerald-700 hover:to-cyan-700 shadow-md transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                   }, t('stem.watercycle.start_another_loop_2', "\uD83D\uDD04 Start Another Loop"))
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[11px] font-bold", role: "status", "aria-label": "Journey progress summary", "aria-live": "polite", "aria-atomic": "true" },
                   React.createElement("span", { className: "text-cyan-650 text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -10070,17 +10472,20 @@ React.createElement("div", {
             ),
 
             // ═══ AI HYDROLOGIST TUTOR PANEL ═══
-            React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-white border-sky-200 shadow-sm") },
-              React.createElement("p", { className: "text-xs font-black mb-1 flex items-center gap-1.5 " + (isDark ? "text-slate-200" : "text-slate-700") },
+            React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-white border-sky-200 shadow-sm"), role: "region", "aria-labelledby": "wcHydrologistTutorTitle", "aria-busy": !!d.hydrologistLoading },
+              React.createElement("p", { id: "wcHydrologistTutorTitle", className: "text-xs font-black mb-1 flex items-center gap-1.5 " + (isDark ? "text-slate-200" : "text-slate-700") },
                 React.createElement("span", null, "🧠"),
                 React.createElement("span", null, t('stem.watercycle.ask_the_ai_hydrologist_tutor', "Ask the AI Hydrologist Tutor"))
               ),
-              React.createElement("p", { className: "text-[10px] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
+              React.createElement("p", { id: "wcHydrologistTutorHint", className: "text-[10px] mb-2 " + (isDark ? "text-slate-400" : "text-slate-500") },
                 "Ask questions about the " + (sel ? sel.label : 'water cycle') + " stage, climate feedbacks, or global hydrology."
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text",
+                  "aria-label": t('stem.watercycle.ask_the_ai_hydrologist_tutor', "Ask the AI Hydrologist Tutor"),
+                  "aria-describedby": "wcHydrologistTutorHint",
+                  disabled: d.hydrologistLoading,
                   placeholder: t('stem.watercycle.ask_a_question_e_g_why_do_clouds_float', "Ask a question (e.g., Why do clouds float?)..."),
                   value: d.hydrologistQuery || '',
                   onChange: function(e) { upd("hydrologistQuery", e.target.value); },
@@ -10088,15 +10493,24 @@ React.createElement("div", {
                   className: "flex-1 px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900 border-slate-800 text-slate-100 focus:border-yellow-500" : "bg-white border-slate-300 text-slate-900 focus:border-yellow-500")
                 }),
                 React.createElement("button", {
+                  type: "button",
+                  "aria-label": d.hydrologistLoading ? "Waiting for Hydrologist Tutor response" : "Ask Hydrologist Tutor",
                   disabled: d.hydrologistLoading,
                   onClick: askHydrologist,
                   className: "px-3 py-1.5 bg-sky-700 text-white rounded-lg text-xs font-bold hover:bg-sky-800 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
               ),
-              d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
+              d.hydrologistLoading && React.createElement("p", {
+                id: "wcHydrologistLoading",
+                className: "sr-only",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              }, "Hydrologist Tutor is thinking. Your question is being analyzed."),
+              d.hydrologistReply && React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", id: "wcHydrologistReply", className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
                 React.createElement("p", { className: "text-xs leading-relaxed font-medium" }, d.hydrologistReply)
               ),
-              d.hydrologistError && React.createElement("p", { className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
+              d.hydrologistError && React.createElement("p", { role: "alert", "aria-live": "assertive", id: "wcHydrologistError", className: "text-xs text-red-500 mt-2 font-bold" }, d.hydrologistError)
             ),
 
             // ═══ WATER BUDGET  -  Live Data Panel ═══
@@ -10107,10 +10521,8 @@ React.createElement("div", {
                 React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800") }, "TEACHING MODEL")
               ),
               (function() {
-                var s2 = d.climSolar != null ? d.climSolar : 1.0;
                 var t3 = d.climTemp != null ? d.climTemp : 15;
-                var w2 = d.climWind != null ? d.climWind : 1.0;
-                var evapRate = Math.max(0.2, Math.min(2, s2 * Math.max(0.2, (t3 + 20) / 35) * (0.85 + w2 * 0.15)));
+                var evapRate = evaporationIndex;
                 var precipType = t3 < -2 ? 'Snow favored' : t3 <= 3 ? 'Mixed / uncertain' : 'Rain favored';
                 var runoffDisplay = landIndexBand(runoffTendency) + ' | ' + runoffTendency + '/100';
                 var infiltrationDisplay = landIndexBand(infiltrationOpportunity) + ' | ' + infiltrationOpportunity + '/100';
@@ -10137,9 +10549,14 @@ React.createElement("div", {
               })()
             ),
 
-            React.createElement("div", { className: "wc-focus-secondary flex items-center gap-2 mb-2 flex-wrap" },
+            React.createElement("div", {
+              className: "wc-focus-secondary flex items-center gap-2 mb-2 flex-wrap",
+              role: "region",
+              "aria-label": "Water Cycle quiz",
+              "aria-busy": !!d.aiQuizLoading
+            },
 
-              React.createElement("button", { "aria-label": t('stem.watercycle.start_water_cycle_quiz', "Start water cycle quiz"),
+              React.createElement("button", { type: "button", "aria-label": t('stem.watercycle.start_water_cycle_quiz', "Start water cycle quiz"),
                 onClick: function () {
                   var pool = WATER_CYCLE_QUIZZES[gradeBand] || WATER_CYCLE_QUIZZES['3-5'];
                   var q = pool[Math.floor(Math.random() * pool.length)];
@@ -10156,7 +10573,7 @@ React.createElement("div", {
               }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz (" + gradeBand + ")"),
 
               // ═══ AI GENERATED QUIZ BUTTON ═══
-              callGemini && React.createElement("button", { "aria-label": t('stem.watercycle.generate_ai_quiz_question', "Generate AI quiz question"),
+              callGemini && React.createElement("button", { type: "button", "aria-label": t('stem.watercycle.generate_ai_quiz_question', "Generate AI quiz question"),
                 onClick: function() {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
@@ -10219,11 +10636,34 @@ React.createElement("div", {
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
-              d.wcQuiz && React.createElement("div", { className: "wc-focus-secondary mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200")},
+              d.wcQuiz && React.createElement("div", {
+                className: "wc-focus-secondary mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200"),
+                role: "region",
+                "aria-labelledby": "wcQuizQuestion",
+                "aria-describedby": "wcQuizInstructions wcQuizStatus"
+              },
 
-                React.createElement("p", { className: "text-sm font-bold mb-2 " + (isDark ? "text-sky-400" : "text-sky-800") }, d.wcQuiz.q),
+                React.createElement("p", {
+                  id: "wcQuizStatus",
+                  className: "sr-only",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-atomic": "true"
+                }, d.aiQuizLoading
+                  ? "Generating an AI quiz question."
+                  : d.wcQuiz.answered
+                    ? "Answer submitted. " + ((d.wcQuiz.score || 0)) + " correct across " + (d.wcAttempts || 0) + " attempts."
+                    : "Question ready for " + gradeBand + ". Select one answer."),
+                React.createElement("p", {
+                  id: "wcQuizQuestion",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-atomic": "true",
+                  className: "text-sm font-bold mb-2 " + (isDark ? "text-sky-400" : "text-sky-800")
+                }, d.wcQuiz.q),
+                React.createElement("p", { id: "wcQuizInstructions", className: "sr-only" }, "Choose one answer. After you answer, review the feedback and concept focus."),
 
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": "Quiz answer choices" },
 
                   d.wcQuiz.opts.map(function (opt) {
 
@@ -10241,7 +10681,11 @@ React.createElement("div", {
                           ? (isDark ? 'bg-red-950/60 border-red-800 text-red-400' : 'bg-red-100 border-red-400 text-red-900')
                           : (isDark ? 'bg-slate-950/40 border-slate-900 opacity-40 text-slate-500' : 'bg-slate-50 border-slate-200 opacity-40 text-slate-550');
 
-                    return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                    return React.createElement("button", {
+                      type: "button",
+                      "aria-label": d.wcQuiz.answered
+                        ? opt + (isCorrect ? " (correct answer)" : wasChosen ? " (your answer)" : " (not selected)")
+                        : "Select answer: " + opt,
 
                       key: opt, disabled: d.wcQuiz.answered, onClick: function () {
 
@@ -10288,13 +10732,19 @@ React.createElement("div", {
                 ),
 
                 // Inline wrong-option explanations and vocabulary study cards
-                d.wcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in fade-in" },
+                d.wcQuiz.answered && React.createElement("div", {
+                  className: "mt-3 space-y-2 animate-in fade-in",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-atomic": "true"
+                },
                   React.createElement("div", {
                     className: "p-3 rounded-lg text-sm " + (isDark
                       ? (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-950/40 text-emerald-400 border border-emerald-900/50" : "bg-red-950/40 text-red-400 border border-red-900/50")
                       : (d.wcQuiz.chosen === d.wcQuiz.a ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"))
                   },
                     React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
+                    React.createElement("p", { className: "text-xs mt-1 font-bold" }, "Correct answer: " + d.wcQuiz.a),
                     React.createElement("p", { className: "text-xs mt-1 leading-relaxed font-medium " + (isDark ? "text-slate-350" : "text-slate-700") },
                       d.wcQuiz.chosen === d.wcQuiz.a
                         ? "Great job! That is correct."
@@ -10358,19 +10808,24 @@ React.createElement("div", {
                 var m = mythBank[mi];
                 upd('wcMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
               }
-              return React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200") },
+              return React.createElement("div", { className: "wc-focus-secondary rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200"), role: "region", "aria-labelledby": "wcMythTitle" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
-                  React.createElement("button", { "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
+                  React.createElement("p", { id: "wcMythTitle", className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
+                  React.createElement("button", {
+                  type: "button",
+                  "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
                     onClick: startMyth,
                     className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                   }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
                 ),
-                myth && React.createElement("div", { className: "space-y-2" },
-                  React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
-                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                myth && React.createElement("div", { className: "space-y-2", role: "group", "aria-labelledby": "wcMythQuestion", "aria-describedby": "wcMythInstructions" },
+                  React.createElement("p", { id: "wcMythQuestion", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
+                  React.createElement("p", { id: "wcMythInstructions", className: "sr-only" }, "Decide whether the statement is true or false. After answering, review the explanation and Try it prompt."),
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": "True or false answers" },
                     [true, false].map(function (val) {
-                      return React.createElement("button", { key: String(val),
+                      return React.createElement("button", {
+                        type: "button",
+                        key: String(val),
                         "aria-label": "Answer " + (val ? 'true' : 'false'),
                         onClick: function () {
                           var right = val === myth.t;
@@ -10393,7 +10848,7 @@ React.createElement("div", {
                       }, val ? '\u2705 True' : '\u274C False');
                     })
                   ),
-                  myth.answered && React.createElement("div", { className: "p-2.5 rounded-lg border " + (myth.chosen === myth.t
+                  myth.answered && React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "p-2.5 rounded-lg border " + (myth.chosen === myth.t
                     ? (isDark ? "bg-emerald-950/40 border-emerald-900/50" : "bg-emerald-50 border-emerald-200")
                     : (isDark ? "bg-red-950/40 border-red-900/50" : "bg-red-50 border-red-200")) },
                     React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },

@@ -349,6 +349,50 @@
   };
 
   // ── Volcanic eruption narration (the extrusive-igneous story, staged) ──
+  var QUIZ_REMEDIATION = {
+    crust: [
+      { id: 'crust-superposition', misconception: 'Top layers are always oldest.', remedy: 'Sedimentary layers are usually deposited on top of older layers. Read from the surface downward for older relative age.' },
+      { id: 'crust-cross-cutting', misconception: 'A feature that cuts rock must be older.', remedy: 'The cutting feature had to arrive after the rock it cuts, so a pluton or fault is younger than the layers it crosses.' },
+      { id: 'crust-metamorphism', misconception: 'Marble forms by shells piling up or by river sand.', remedy: 'Marble is limestone changed by heat and pressure. The original chemistry remains, but the texture recrystallizes.' },
+      { id: 'crust-fossils', misconception: 'Fossils survive inside granite or magma.', remedy: 'Fossils are preserved most readily in sedimentary rock. Melting and strong heating destroy the original fossil record.' },
+      { id: 'crust-core-order', misconception: 'The top of a drill core is the oldest part.', remedy: 'A core reads from the surface downward: the top is youngest and deeper layers are older unless the rocks were disturbed.' }
+    ],
+    geode: [
+      { id: 'geode-crystal-size', misconception: 'Large crystals must have grown quickly.', remedy: 'Large crystals need time and open space. Slow growth lets atoms arrange into larger crystal faces.' },
+      { id: 'geode-cavity', misconception: 'The hollow was made by an explosion.', remedy: 'Acidic groundwater can dissolve limestone and leave a cavity. Later mineral-rich water lines that open space.' },
+      { id: 'geode-color', misconception: 'Amethyst purple comes from copper.', remedy: 'Trace iron in quartz plus natural irradiation produces the purple color.' },
+      { id: 'geode-sequence', misconception: 'Crystal points formed before the wall rind.', remedy: 'The rind precipitated on the cavity wall first. Quartz and amethyst then grew inward into the open space.' }
+    ],
+    deepEarth: [
+      { id: 'deepEarth-mantle', misconception: 'The mantle is a global ocean of liquid lava.', remedy: 'Most of the mantle is solid rock that flows slowly by plastic creep. Only small regions partially melt.' },
+      { id: 'deepEarth-waves', misconception: 'Scientists drilled to the outer core.', remedy: 'S-waves cannot travel through liquid. Their shadow pattern lets scientists infer a liquid outer core from the surface.' },
+      { id: 'deepEarth-pressure', misconception: 'The inner core is solid because it is made of a different metal.', remedy: 'The inner core is mostly the same iron-nickel system; immense pressure raises the melting point and keeps it solid.' },
+      { id: 'deepEarth-dynamo', misconception: 'The solid inner core alone generates the magnetic field.', remedy: 'Convection in the liquid outer core moves conducting iron-nickel and powers the geodynamo.' }
+    ],
+    subduction: [
+      { id: 'subduction-source', misconception: 'The descending slab itself melts to make the volcano.', remedy: 'Water released from the slab lowers the melting point of the mantle wedge. The wedge partially melts and supplies the arc magma.' },
+      { id: 'subduction-density', misconception: 'The oceanic plate sinks because it is thinner.', remedy: 'Old oceanic lithosphere is cold and dense. Density and buoyancy, not thickness alone, drive sinking.' },
+      { id: 'subduction-earthquakes', misconception: 'Deep earthquakes happen in the hot mantle wedge.', remedy: 'The cold rigid slab can break at depth. The hotter mantle wedge mostly flows instead of snapping.' },
+      { id: 'subduction-continent', misconception: 'Continental crust stays up because it is too strong.', remedy: 'Continental crust is relatively low density and buoyant, so it resists being pulled beneath the mantle.' }
+    ],
+    ridge: [
+      { id: 'ridge-magnetic', misconception: 'Magnetic stripes prove Earths field never changes.', remedy: 'Basalt records the field as it cools. Reversals create matching stripes on both sides as new seafloor spreads outward.' },
+      { id: 'ridge-elevation', misconception: 'The ridge is high only because lava piles up there.', remedy: 'Young crust is hot and buoyant. As it cools and densifies, it sinks away from the ridge.' },
+      { id: 'ridge-sediment', misconception: 'The newest seafloor has the thickest sediment.', remedy: 'Sediment accumulates over time, so older seafloor farther from the axis usually has more sediment.' },
+      { id: 'ridge-cooling', misconception: 'Pillow basalt and gabbro come from different magmas.', remedy: 'They can form from the same basaltic melt: rapid cooling in seawater makes pillows, while slow cooling at depth makes coarse gabbro.' }
+    ],
+    hotspot: [
+      { id: 'hotspot-motion', misconception: 'The plume wanders to make the island chain.', remedy: 'A relatively fixed plume supplies magma while the tectonic plate moves across it and carries older volcanoes away.' },
+      { id: 'hotspot-age', misconception: 'The island over the plume is the oldest.', remedy: 'The active island is youngest. Age generally increases with distance from the plume toward extinct and drowned seamounts.' },
+      { id: 'hotspot-shield', misconception: 'Shield volcanoes have gentle slopes because their lava is thick and explosive.', remedy: 'Runny basalt flows far in thin sheets, building broad gentle shields rather than steep explosive cones.' },
+      { id: 'hotspot-setting', misconception: 'Hotspot volcanoes must sit on plate boundaries.', remedy: 'Hotspots can occur within plates. The plume is a deep heat source separate from the boundary-driven processes at ridges and subduction zones.' }
+    ]
+  };
+  function quizRemediation(sceneId, index) {
+    var bank = QUIZ_REMEDIATION[sceneId] || QUIZ_REMEDIATION.crust;
+    return bank[index] || { id: sceneId + '-quiz-' + index, misconception: 'The evidence pattern is easy to mix up.', remedy: 'Return to the scene evidence, name what you observed, and connect it to the process before trying again.' };
+  }
+
   var ERUPT = [
     { fb: 'Pressure builds — dissolved gas and rising magma push up beneath the volcano.' },
     { fb: 'Magma climbs a conduit: a pipe of molten rock cutting straight to the surface.' },
@@ -744,6 +788,8 @@
     var quizByScene = (source.quizByScene && typeof source.quizByScene === 'object') ? source.quizByScene : {};
     var quizState = quizByScene[sceneId] || {};
     var signalIndex = (source.sceneSignals && Number.isFinite(source.sceneSignals[sceneId])) ? source.sceneSignals[sceneId] : -1;
+    var sequenceComplete = !!(source.sequenceByScene && source.sequenceByScene[sceneId]);
+    var quizMisconceptions = quizState.misconceptions && typeof quizState.misconceptions === 'object' ? quizState.misconceptions : {};
     var notebook = source.notebook && typeof source.notebook === 'object' ? source.notebook : {};
     var evidence = Array.isArray(notebook.evidence) ? notebook.evidence.filter(function (item) { return item.scene === sceneId; }) : [];
     var context = {
@@ -769,8 +815,10 @@
       evidenceCount: evidence.length,
       quizAttempts: Number(quizState.answered) || 0,
       quizCorrect: Number(quizState.correct) || 0,
+      misconceptionCount: Object.keys(quizMisconceptions).reduce(function (sum, key) { return sum + (Number(quizMisconceptions[key]) || 0); }, 0),
       signalStep: signalTotal ? Math.max(0, Math.min(signalIndex + 1, signalTotal)) : 0,
-      signalTotal: signalTotal
+      signalTotal: signalTotal,
+      sequenceComplete: sequenceComplete
     };
   }
 
@@ -807,6 +855,31 @@
   }
 
 
+  var EVIDENCE_MAP_ROLES = [
+    { id: 'observation', label: 'Observation', prompt: 'What did I directly observe?', help: 'A visible or measured detail.' },
+    { id: 'process', label: 'Process', prompt: 'How did it happen?', help: 'The geological change that connects the details.' },
+    { id: 'outcome', label: 'Outcome', prompt: 'What does it support?', help: 'The pattern or result that supports your claim.' }
+  ];
+  function evidenceMapForScene(map, sceneId) {
+    var source = map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+    var scoped = source[sceneId];
+    return scoped && typeof scoped === 'object' && !Array.isArray(scoped) ? scoped : {};
+  }
+  function evidenceMapStatus(evidence, map) {
+    var list = Array.isArray(evidence) ? evidence : [];
+    var allowed = {}, counts = {};
+    EVIDENCE_MAP_ROLES.forEach(function (role) { allowed[role.id] = true; counts[role.id] = 0; });
+    var assigned = 0;
+    list.forEach(function (item) {
+      var role = item && map ? map[item.id] : null;
+      if (!allowed[role]) return;
+      assigned += 1;
+      counts[role] += 1;
+    });
+    var missingRoles = EVIDENCE_MAP_ROLES.filter(function (role) { return counts[role.id] === 0; }).map(function (role) { return role.id; });
+    var mappedRoleCount = EVIDENCE_MAP_ROLES.length - missingRoles.length;
+    return { total: list.length, assigned: assigned, mappedRoleCount: mappedRoleCount, unassigned: list.length - assigned, counts: counts, missingRoles: missingRoles, ready: mappedRoleCount === EVIDENCE_MAP_ROLES.length };
+  }
   var MISSION_HINTS = {
     crust: { materials: 'Select any three materials so you can compare their depth, type, and formation story.', core: 'Use a drill-core site on the right; read the colored bands from youngest at the top to oldest at depth.', quiz: 'Switch to Assess, open the quiz, and answer one question about superposition or cross-cutting.' },
     geode: { layers: 'Select the chalcedony rind, agate bands, and quartz crystal; compare where each sits in the cavity.', sequence: 'Open the crystal growth sequence and reveal the steps from the wall inward.', quiz: 'Switch to Assess, open the crystal quiz, and test why open space makes larger crystals.' },
@@ -848,6 +921,106 @@
     ridge: { scale: '~30 km model span', direction: 'Ridge axis -> older flanks', read: 'The axis is youngest. Read outward for older crust, thicker sediment, and mirrored magnetic history.' },
     hotspot: { scale: '~150 km model span', direction: 'Plume -> plate-motion trail', read: 'The plume is the reference point. The plate carries volcanoes away, so age increases toward the drowned seamount.' }
   };
+
+  // Short, learner-facing definitions that bridge scene observations to the
+  // vocabulary used in the mission, quiz, and evidence notebook.
+  var SCENE_VOCABULARY = {
+    crust: [
+      { term: 'Superposition', definition: 'In an undisturbed stack, lower sedimentary layers were deposited before the layers above them.', cue: 'Use it when you compare depth in a drill core.' },
+      { term: 'Cross-cutting', definition: 'A feature that cuts across another rock formed after the rock it cuts.', cue: 'Use it when you trace the granite pluton through the layers.' },
+      { term: 'Contact metamorphism', definition: 'Heat from nearby magma changes rock without melting the whole rock.', cue: 'Use it when you compare limestone with the marble rim.' }
+    ],
+    geode: [
+      { term: 'Cavity', definition: 'An open space left when groundwater dissolves part of the host rock.', cue: 'Use it when you identify the hollow center.' },
+      { term: 'Precipitation', definition: 'Dissolved minerals leave water and become solid mineral layers or crystals.', cue: 'Use it when you explain how the rind and bands formed.' },
+      { term: 'Growth sequence', definition: 'Minerals that form first stay at the wall; later crystals grow inward into open space.', cue: 'Use it when you order rind, bands, and crystal points.' }
+    ],
+    deepEarth: [
+      { term: 'Seismic shadow', definition: 'A region with fewer recorded waves because a layer bends or blocks certain seismic waves.', cue: 'Use it when you infer a liquid outer core from missing S-waves.' },
+      { term: 'Convection', definition: 'Slow movement that transfers heat through a material as warmer and cooler regions circulate.', cue: 'Use it when you describe the mantle or liquid outer core.' },
+      { term: 'Pressure melting point', definition: 'The temperature at which a material melts can rise when pressure increases.', cue: 'Use it when you explain why the hotter inner core is solid.' }
+    ],
+    subduction: [
+      { term: 'Subduction', definition: 'The process in which one tectonic plate bends and sinks beneath another plate.', cue: 'Use it when you follow the cold slab toward the trench.' },
+      { term: 'Mantle wedge', definition: 'The wedge-shaped mantle above a sinking slab where water helps rock partially melt.', cue: 'Use it when you locate the source of arc magma.' },
+      { term: 'Flux melting', definition: 'Water lowers a rock’s melting point, allowing partial melt to form at a lower temperature.', cue: 'Use it when you connect slab water to the volcanic arc.' }
+    ],
+    ridge: [
+      { term: 'Magnetic reversal', definition: 'A time when Earth’s magnetic field points in the opposite direction.', cue: 'Use it when you read matching polarity stripes on both sides of the ridge.' },
+      { term: 'Seafloor spreading', definition: 'New ocean crust forms at a ridge and moves outward as more crust is added.', cue: 'Use it when you read the ridge axis as the youngest crust.' },
+      { term: 'Decompression melting', definition: 'Hot mantle can partially melt when it rises and pressure drops, even without extra heat.', cue: 'Use it when you explain the magma lens beneath the axis.' }
+    ],
+    hotspot: [
+      { term: 'Mantle plume', definition: 'A relatively fixed column of unusually hot mantle that can supply melt from below.', cue: 'Use it when you identify the reference point under the active volcano.' },
+      { term: 'Shield volcano', definition: 'A broad, gently sloping volcano built by runny basaltic lava.', cue: 'Use it when you compare the active volcano with a steep arc volcano.' },
+      { term: 'Plate-motion trail', definition: 'A line of volcanoes that records how a moving plate traveled over a relatively fixed plume.', cue: 'Use it when age increases toward the extinct island and seamount.' }
+    ]
+  };
+
+  // Scene-specific process orders power the optional sequencing challenge.
+  var SCENE_SEQUENCE_CHALLENGES = {
+    crust: { title: 'Relative-dating event order', prompt: 'Arrange the events from earliest to latest so the layer and cutting evidence tell one story.', items: [
+      { key: 'limestone', label: 'Limestone accumulates', detail: 'Shells and coral build the oldest sedimentary layer in a shallow sea.' },
+      { key: 'shale', label: 'Mud settles into shale', detail: 'Calm water deposits mud above the older limestone.' },
+      { key: 'sandstone', label: 'Sand becomes sandstone', detail: 'Buried sand is compacted and cemented into the upper sedimentary layer.' },
+      { key: 'soil', label: 'The surface weathers', detail: 'Exposed rock breaks down into soil at the surface.' },
+      { key: 'pluton', label: 'A granite pluton cuts through', detail: 'A later pulse of magma forces through the existing layers and freezes.' },
+      { key: 'rim', label: 'The contact rim is baked', detail: 'Heat from the pluton changes nearby limestone and shale without melting them.' }
+    ] },
+    geode: { title: 'Crystal-growth order', prompt: 'Arrange the events from the first cavity-forming step to the crystals that grew last.', items: [
+      { key: 'cavity', label: 'Groundwater dissolves a cavity', detail: 'Slightly acidic water leaves an open space in the limestone host.' },
+      { key: 'chalcedony', label: 'A wall rind precipitates', detail: 'Microcrystalline silica lines the cavity wall first.' },
+      { key: 'agate', label: 'Mineral-rich pulses leave bands', detail: 'Repeated water pulses deposit concentric agate bands.' },
+      { key: 'quartz', label: 'Open-space crystals grow inward', detail: 'Quartz and amethyst use the remaining room to form large points.' }
+    ] },
+    deepEarth: { title: 'Earth-interior evidence order', prompt: 'Arrange the evidence path from the shell we know to the inference about the center.', items: [
+      { key: 'crust', label: 'Start at the solid crust', detail: 'The thin outer shell is the surface reference for the radial model.' },
+      { key: 'upperMantle', label: 'Cross the solid mantle', detail: 'Mantle rock is solid but creeps and convects over geologic time.' },
+      { key: 'outerCore', label: 'Find the S-wave shadow', detail: 'Missing S-waves reveal a liquid outer core.' },
+      { key: 'innerCore', label: 'Explain the solid inner core', detail: 'Extreme pressure raises iron’s melting point and keeps the hotter center solid.' }
+    ] },
+    subduction: { title: 'Subduction cause-and-effect', prompt: 'Arrange the chain from plate motion to the volcano at the surface.', items: [
+      { key: 'slab', label: 'A cold slab descends', detail: 'Dense oceanic lithosphere bends into the trench and carries water downward.' },
+      { key: 'wedge', label: 'Water fluxes the mantle wedge', detail: 'Released water lowers the wedge’s melting point; the slab mostly does not melt.' },
+      { key: 'arcMagma', label: 'Arc magma rises', detail: 'Partial melt rises through the overriding plate.' },
+      { key: 'arcVolcano', label: 'The volcanic arc forms', detail: 'Magma reaches the surface and builds an arc volcano.' }
+    ] },
+    ridge: { title: 'Seafloor-spreading order', prompt: 'Arrange the evidence outward from the ridge axis to the older ocean floor.', items: [
+      { key: 'axialMagma', label: 'Magma rises at the axis', detail: 'Upwelling mantle partially melts as pressure drops.' },
+      { key: 'basaltN', label: 'New basalt records polarity', detail: 'Pillow basalt cools and locks in the magnetic field direction.' },
+      { key: 'basaltR', label: 'A reversal makes a mirror stripe', detail: 'Later basalt records the opposite field direction on both flanks.' },
+      { key: 'sediment', label: 'Older seafloor gathers sediment', detail: 'Farther crust cools, sinks, and accumulates a thicker sediment cover.' }
+    ] },
+    hotspot: { title: 'Hotspot plate-motion trail', prompt: 'Arrange the chain from the active volcano over the plume to the oldest drowned link.', items: [
+      { key: 'plume', label: 'A relatively fixed plume supplies melt', detail: 'Extra-hot mantle rises beneath one location.' },
+      { key: 'activeVolcano', label: 'A shield volcano grows', detail: 'Runny basalt builds a broad, gentle volcano over the plume.' },
+      { key: 'oldIsland', label: 'The plate carries an island away', detail: 'The volcano goes extinct after moving off the magma supply.' },
+      { key: 'seamount', label: 'The oldest link drowns', detail: 'Cooling, sinking crust and erosion carry the former island below sea level.' }
+    ] }
+  };
+  function sequenceChallengeFor(sceneId) { return SCENE_SEQUENCE_CHALLENGES[sceneId] || SCENE_SEQUENCE_CHALLENGES.crust; }
+  function sequenceInitialOrder(sceneId) {
+    var items = sequenceChallengeFor(sceneId).items, order = [], i;
+    for (i = 0; i < items.length; i += 2) order.push(items[i].key);
+    for (i = 1; i < items.length; i += 2) order.push(items[i].key);
+    if (sequenceIsCorrect(sceneId, order)) order.reverse();
+    return order;
+  }
+  function sequenceIsCorrect(sceneId, order) {
+    var items = sequenceChallengeFor(sceneId).items;
+    return Array.isArray(order) && order.length === items.length && items.every(function (item, index) { return order[index] === item.key; });
+  }
+
+  function sequenceMoveBefore(order, movingKey, targetKey) {
+    var next = Array.isArray(order) ? order.slice() : [];
+    var from = next.indexOf(movingKey), target = next.indexOf(targetKey);
+    if (from < 0 || target < 0 || movingKey === targetKey) return next;
+    next.splice(from, 1);
+    target = next.indexOf(targetKey);
+    if (target < 0) return Array.isArray(order) ? order.slice() : [];
+    next.splice(target, 0, movingKey);
+    return next;
+  }
 
   // three.js engine (imperative; lives on window[ENGINE_KEY])
   // ── three.js engine (imperative; lives on window[ENGINE_KEY]) ───────────────
@@ -1254,7 +1427,7 @@
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
       fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
-      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; },
+      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
@@ -1281,6 +1454,7 @@
       // overrides replace utility colors with black, white, and amber.
       var isDark = !!ctx.isDark || isContrast;
       var d = (ctx.toolData && ctx.toolData.geologyExplorer) || {};
+      var ttsAvailable = typeof ctx.callTTS === 'function' || !!(window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast || function () {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
@@ -1317,12 +1491,24 @@
       var md = React.useState((d.mode === 'investigate' || d.mode === 'assess') ? d.mode : 'explore'); var mode = md[0], setModeState = md[1];
       var lgs = React.useState(!!d.lessonGuide); var lessonGuideOpen = lgs[0], setLessonGuideOpen = lgs[1];
       var hs = React.useState(false); var hintShown = hs[0], setHintShown = hs[1];
+      var vbs = React.useState(false); var vocabularyOpen = vbs[0], setVocabularyOpen = vbs[1];
+      var seqo = React.useState(function () { return sequenceInitialOrder(scene); }); var sequenceOrder = seqo[0], setSequenceOrder = seqo[1];
+      var seqf = React.useState(null); var sequenceFeedback = seqf[0], setSequenceFeedback = seqf[1];
+      var seqd = React.useState(function () { return (d.sequenceByScene && typeof d.sequenceByScene === 'object') ? d.sequenceByScene : {}; }); var sequenceCompletionByScene = seqd[0], setSequenceCompletionByScene = seqd[1];
+      var sequenceComplete = !!sequenceCompletionByScene[scene];
+      var seqdrag = React.useState(null); var sequenceDragKey = seqdrag[0], setSequenceDragKey = seqdrag[1];
+      var seqtap = React.useState(null); var sequenceTapKey = seqtap[0], setSequenceTapKey = seqtap[1];
       var rts = React.useState(null); var routeTarget = rts[0], setRouteTarget = rts[1];
       var csc = React.useState(defaultComparisonScene(scene)); var compareSceneId = csc[0], setCompareSceneId = csc[1];
+      var tts = React.useState(false); var ttsSpeaking = tts[0], setTtsSpeaking = tts[1];
+      var ttsAudioRef = React.useRef(null);
+      var ttsSessionRef = React.useRef(0);
+      var ttsContextRef = React.useRef({ scene: scene, mode: mode });
       var sg = React.useState((d.sceneSignals && d.sceneSignals[scene]) || 0); var signalStep = sg[0], setSignalStep = sg[1];
       var initialNotebook = (d.notebook && typeof d.notebook === 'object') ? d.notebook : {};
       var notebookSeed = {
         evidence: Array.isArray(initialNotebook.evidence) ? initialNotebook.evidence : [],
+        evidenceMap: initialNotebook.evidenceMap && typeof initialNotebook.evidenceMap === 'object' && !Array.isArray(initialNotebook.evidenceMap) ? initialNotebook.evidenceMap : {},
         claim: typeof initialNotebook.claim === 'string' ? initialNotebook.claim : '',
         explanation: typeof initialNotebook.explanation === 'string' ? initialNotebook.explanation : '',
         submitted: !!initialNotebook.submitted,
@@ -1340,6 +1526,82 @@
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
       function routeTargetClass(target) { return routeTarget === target ? ' ring-2 ring-amber-400 ring-offset-2 ' : ''; }
+      function stopReadAloud() {
+        ttsSessionRef.current += 1;
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        var audio = ttsAudioRef.current;
+        ttsAudioRef.current = null;
+        if (audio) {
+          try { audio.pause(); audio.currentTime = 0; audio.onended = null; audio.onerror = null; } catch (e) {}
+        }
+        setTtsSpeaking(false);
+      }
+      function browserReadAloud(text, expectedSession) {
+        if (expectedSession != null && expectedSession !== ttsSessionRef.current) return;
+        stopReadAloud();
+        if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+          setTtsSpeaking(false); announce('Read aloud is not available in this browser.');
+          return;
+        }
+        try {
+          var utterance = new window.SpeechSynthesisUtterance(text);
+          utterance.rate = 0.95;
+          utterance.onend = function () { setTtsSpeaking(false); };
+          utterance.onerror = function () { setTtsSpeaking(false); };
+          setTtsSpeaking(true);
+          window.speechSynthesis.speak(utterance);
+        } catch (e) { setTtsSpeaking(false); announce('Read aloud could not start.'); }
+      }
+      function playGeneratedTts(url, text, expectedSession) {
+        if (!url || expectedSession !== ttsSessionRef.current || typeof window.Audio !== 'function') return false;
+        var audio;
+        try { audio = new window.Audio(url); } catch (e) { return false; }
+        ttsAudioRef.current = audio;
+        var finish = function () {
+          if (expectedSession !== ttsSessionRef.current) return;
+          ttsAudioRef.current = null;
+          setTtsSpeaking(false);
+        };
+        audio.onended = finish;
+        audio.onerror = function () { finish(); browserReadAloud(text, expectedSession); };
+        setTtsSpeaking(true);
+        try {
+          var pending = audio.play();
+          if (pending && typeof pending.catch === 'function') pending.catch(function () { finish(); browserReadAloud(text, expectedSession); });
+        } catch (e) { finish(); browserReadAloud(text, expectedSession); }
+        return true;
+      }
+      function readAloud(text) {
+        var clean = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 1800);
+        if (!clean) return;
+        stopReadAloud();
+        var session = ttsSessionRef.current;
+        if (typeof ctx.callTTS === 'function') {
+          setTtsSpeaking(true);
+          try {
+            var result = ctx.callTTS(clean, null, null, { force: true });
+            if (result && typeof result.then === 'function') {
+              result.then(function (url) {
+                if (!url) { browserReadAloud(clean, session); return; }
+                if (!playGeneratedTts(url, clean, session)) browserReadAloud(clean, session);
+              }).catch(function () { browserReadAloud(clean, session); });
+            } else if (!playGeneratedTts(result, clean, session)) browserReadAloud(clean, session);
+          } catch (e) { browserReadAloud(clean, session); }
+          return;
+        }
+        browserReadAloud(clean, session);
+      }
+      function readAloudButton(text, key, label) {
+        return h('button', { key: key, type: 'button', 'data-geology-read-aloud': key, 'aria-label': ttsSpeaking ? 'Stop reading aloud' : label, onClick: function () { if (ttsSpeaking) stopReadAloud(); else if (ttsAvailable) readAloud(text); else announce('Read aloud is not available in this browser.'); }, className: 'shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, ttsSpeaking ? 'Stop reading' : 'Read aloud');
+      }
+      React.useEffect(function () {
+        var previous = ttsContextRef.current;
+        ttsContextRef.current = { scene: scene, mode: mode };
+        if (previous.scene !== scene || previous.mode !== mode) stopReadAloud();
+      }, [scene, mode]);
+      React.useEffect(function () {
+        return function () { stopReadAloud(); };
+      }, []);
       function focusMissionTarget(checkId) {
         var action = missionActionFor(checkId);
         if (!action) return;
@@ -1368,6 +1630,18 @@
       function setNotebookField(field, value) {
         var current = notebookRef.current || { evidence: [], claim: '', explanation: '', submitted: false };
         saveNotebook(Object.assign({}, current, { [field]: value, submitted: false, rubric: null }));
+      }
+      function setEvidenceRole(itemId, role, itemLabel) {
+        var roleDef = EVIDENCE_MAP_ROLES.filter(function (item) { return item.id === role; })[0];
+        if (!roleDef) return;
+        var current = notebookRef.current || { evidence: [], claim: '', explanation: '', submitted: false, evidenceMap: {} };
+        var allMaps = current.evidenceMap && typeof current.evidenceMap === 'object' && !Array.isArray(current.evidenceMap) ? current.evidenceMap : {};
+        var sceneMap = Object.assign({}, evidenceMapForScene(allMaps, SCENE.id));
+        var clearing = sceneMap[itemId] === role;
+        if (clearing) delete sceneMap[itemId]; else sceneMap[itemId] = role;
+        var nextMap = Object.assign({}, allMaps, { [SCENE.id]: sceneMap });
+        saveNotebook(Object.assign({}, current, { evidenceMap: nextMap, submitted: false, rubric: null }));
+        announce(clearing ? 'Evidence mapping cleared.' : roleDef.label + ' mapping saved for ' + (itemLabel || itemId) + '.');
       }
       function selectRock(facts, viaCycle, msg) {
         setSelected(facts);
@@ -1403,13 +1677,17 @@
       function answerQuiz(i) {
         setQuizAns(i);
         var Q = sceneQuiz().items[quizI];
+        var remediation = i === Q.correct ? null : quizRemediation(SCENE.id, quizI);
         var quizByScene = (d.quizByScene && typeof d.quizByScene === 'object') ? d.quizByScene : {};
         var previous = quizByScene[SCENE.id] || { answered: 0, correct: 0 };
-        var nextQuizState = Object.assign({}, quizByScene, { [SCENE.id]: { answered: previous.answered + 1, correct: previous.correct + (i === Q.correct ? 1 : 0) } });
+        var misconceptions = previous.misconceptions && typeof previous.misconceptions === 'object' ? previous.misconceptions : {};
+        if (remediation) misconceptions = Object.assign({}, misconceptions, { [remediation.id]: (Number(misconceptions[remediation.id]) || 0) + 1 });
+        var nextQuizState = Object.assign({}, quizByScene, { [SCENE.id]: { answered: (Number(previous.answered) || 0) + 1, correct: (Number(previous.correct) || 0) + (i === Q.correct ? 1 : 0), misconceptions: misconceptions } });
         upd('quizByScene', nextQuizState);
         addNotebookEvidence('quiz', Q.q, (i === Q.correct ? 'Correct. ' : 'Not quite. ') + Q.why, 'question-' + quizI);
         announce((i === Q.correct ? 'Correct. ' : 'Not quite. ') + Q.why);
       }
+      function retryQuiz() { setQuizAns(null); announce('Try the same question again. Use the targeted feedback, then choose an answer.'); }
       function nextQuiz() { var B = sceneQuiz().items; var n = (quizI + 1) % B.length; setQuizI(n); setQuizAns(null); announce('Question ' + (n + 1) + '. ' + B[n].q); }
 
       // ── formation-history playback (assembles the crust in chronological order) ──
@@ -1843,6 +2121,7 @@
       function quizPanel() {
         var _bank = sceneQuiz(), _items = _bank.items;
         var Q = _items[Math.min(quizI, _items.length - 1)], revealed = quizAns != null;
+        var remediation = revealed && quizAns !== Q.correct ? quizRemediation(SCENE.id, quizI) : null;
         function ansBtn(i) {
           var chosen = quizAns === i, right = i === Q.correct;
           var cls = !revealed
@@ -1857,8 +2136,15 @@
           quizOn ? h('div', { className: 'mt-2' },
             h('div', { className: 'text-[12px] font-semibold ' + ink }, (Math.min(quizI, _items.length - 1) + 1) + '/' + _items.length + '. ' + Q.q),
             h('div', { className: 'flex flex-wrap gap-1.5 mt-1.5' }, Q.opts.map(function (_, i) { return ansBtn(i); })),
-            revealed ? h('div', { className: 'mt-2 text-[11.5px] ' + (quizAns === Q.correct ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-rose-300' : 'text-rose-700')) }, (quizAns === Q.correct ? '✓ ' : '✗ ') + Q.why) : null,
-            revealed ? h('button', { type: 'button', onClick: nextQuiz, className: 'mt-2 ' + btn + btnIdle }, t('stem.geology.quiz_next', 'Next question →')) : null
+            revealed ? h('div', { className: 'mt-2 text-[11.5px] ' + (quizAns === Q.correct ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-rose-300' : 'text-rose-700')) }, (quizAns === Q.correct ? '? ' : '? ') + Q.why) : null,
+            remediation ? h('div', { className: 'mt-2 rounded-lg border-l-2 border-amber-400 bg-amber-500/10 p-2.5 ' + ink, role: 'region', 'aria-label': 'Targeted remediation', 'data-geology-remediation': 'true' },
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Targeted feedback'),
+              h('div', { className: 'mt-1 text-[11px] font-bold' }, remediation.misconception),
+              h('p', { className: 'mt-1 text-[11px] leading-relaxed' }, remediation.remedy),
+              h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                readAloudButton('Targeted feedback. ' + remediation.misconception + '. ' + remediation.remedy, 'remediation-' + remediation.id, 'Read targeted feedback aloud'),
+                h('button', { type: 'button', onClick: retryQuiz, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, 'Try again'))) : null,
+            revealed ? h('button', { type: 'button', onClick: nextQuiz, className: 'mt-2 ' + btn + btnIdle }, t('stem.geology.quiz_next', 'Next question ?')) : null
           ) : null);
       }
 
@@ -1901,6 +2187,117 @@
         if (R) selectRock(rockFacts(step.key, DEPTH_GUESS[step.key] || 4), false, step.body);
         else announce(step.body);
       }
+      function invalidateSequenceCompletion() {
+        if (!sequenceComplete) return;
+        var next = Object.assign({}, sequenceCompletionByScene, { [SCENE.id]: false });
+        setSequenceCompletionByScene(next);
+        upd('sequenceByScene', next);
+      }
+      function moveSequenceCard(key, delta) {
+        var from = sequenceOrder.indexOf(key), to = from + delta;
+        if (from < 0 || to < 0 || to >= sequenceOrder.length) return;
+        var next = sequenceOrder.slice(), moved = next.splice(from, 1)[0];
+        next.splice(to, 0, moved);
+        setSequenceOrder(next); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null);
+        invalidateSequenceCompletion();
+      }
+      function dropSequenceCard(targetKey, event) {
+        if (event && event.preventDefault) event.preventDefault();
+        var dragged = sequenceDragKey;
+        try { if (event && event.dataTransfer && event.dataTransfer.getData('text/plain')) dragged = event.dataTransfer.getData('text/plain'); } catch (e) {}
+        if (!dragged || dragged === targetKey) { setSequenceDragKey(null); return; }
+        var from = sequenceOrder.indexOf(dragged), target = sequenceOrder.indexOf(targetKey);
+        if (from < 0 || target < 0) { setSequenceDragKey(null); return; }
+        var next = sequenceMoveBefore(sequenceOrder, dragged, targetKey);
+        setSequenceOrder(next); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null);
+        invalidateSequenceCompletion();
+      }
+      function selectSequenceCard(key) {
+        var challenge = sequenceChallengeFor(SCENE.id), byKey = {};
+        challenge.items.forEach(function (item) { byKey[item.key] = item; });
+        var item = byKey[key];
+        if (!item) return;
+        if (!sequenceTapKey) {
+          setSequenceTapKey(key);
+          setSequenceFeedback(null);
+          announce('Selected ' + item.label + '. Tap Place here on another card to move it before that card.');
+          return;
+        }
+        if (sequenceTapKey === key) {
+          setSequenceTapKey(null);
+          announce('Touch reorder canceled.');
+          return;
+        }
+        var moving = byKey[sequenceTapKey];
+        if (!moving) { setSequenceTapKey(key); return; }
+        var next = sequenceMoveBefore(sequenceOrder, sequenceTapKey, key);
+        setSequenceOrder(next);
+        setSequenceFeedback(null);
+        setSequenceDragKey(null);
+        setSequenceTapKey(null);
+        invalidateSequenceCompletion();
+        announce('Moved ' + moving.label + ' before ' + item.label + '.');
+      }
+
+      function resetSequenceOrder() {
+        setSequenceOrder(sequenceInitialOrder(SCENE.id)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null);
+        invalidateSequenceCompletion();
+        announce('Sequence order reset. Arrange the cards from earliest to latest.');
+      }
+      function checkSequenceOrder() {
+        var challenge = sequenceChallengeFor(SCENE.id), items = challenge.items, byKey = {}, firstWrong = -1;
+        setSequenceTapKey(null);
+        items.forEach(function (item) { byKey[item.key] = item; });
+        var correct = sequenceIsCorrect(SCENE.id, sequenceOrder);
+        if (correct) {
+          var saved = (d.sequenceByScene && typeof d.sequenceByScene === 'object') ? d.sequenceByScene : {};
+          var nextSaved = Object.assign({}, saved, sequenceCompletionByScene, { [SCENE.id]: true });
+          setSequenceCompletionByScene(nextSaved);
+          setSequenceFeedback({ correct: true, message: 'Correct. The process now reads as one evidence-based sequence.' });
+          upd('sequenceByScene', nextSaved);
+          addNotebookEvidence('process', 'Sequence challenge: ' + challenge.title, items.map(function (item) { return item.label; }).join(' → '), 'sequence-challenge');
+          announce('Sequence correct. The process is in the right order and saved as evidence.');
+          return;
+        }
+        for (var i = 0; i < items.length; i++) { if (sequenceOrder[i] !== items[i].key) { firstWrong = i; break; } }
+        var expected = firstWrong >= 0 ? items[firstWrong] : items[0];
+        setSequenceFeedback({ correct: false, message: 'Not yet. Position ' + (firstWrong + 1) + ' should be “' + expected.label + '”. Move a card, then check again.' });
+        announce('The sequence needs another change. Position ' + (firstWrong + 1) + ' should be ' + expected.label + '.');
+      }
+      function sceneSequencePanel() {
+        var challenge = sequenceChallengeFor(SCENE.id), items = challenge.items, byKey = {};
+        items.forEach(function (item) { byKey[item.key] = item; });
+        var touchSelected = sequenceTapKey ? byKey[sequenceTapKey] : null;
+        return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Sequence challenge', 'data-geology-sequence-challenge': 'true' },
+          h('div', { className: 'p-3' }, [
+            h('div', { key: 'seq-head', className: 'flex flex-wrap items-start justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Drag-and-drop reasoning'),
+                h('h3', { className: 'mt-1 text-[12px] font-extrabold ' + ink }, challenge.title),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, challenge.prompt)),
+              h('span', { className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (sequenceComplete ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, sequenceComplete ? 'Sequence saved' : 'Not checked')),
+            h('p', { key: 'seq-hint', className: 'mt-2 text-[10.5px] ' + muted }, 'Drag a card to reorder it. Or tap Select on one card, then Place here on another card. Keyboard users can use the Move earlier and Move later buttons.'),
+            h('p', { key: 'seq-status', className: 'mt-1 text-[10.5px] ' + muted, role: touchSelected ? 'status' : undefined, 'data-geology-sequence-touch-status': 'true' }, touchSelected ? 'Selected ' + touchSelected.label + '. Choose Place here on another card.' : 'Touch reorder is ready: choose Select on a card to move it before another card.'),
+            h('div', { key: 'seq-list', className: 'mt-2 space-y-1.5', role: 'list', 'aria-label': 'Sequence cards' },
+              sequenceOrder.map(function (key, index) {
+                var item = byKey[key];
+                return h('div', { key: key, role: 'listitem', draggable: true, 'data-geology-sequence-card': key, onDragStart: function (event) { setSequenceDragKey(key); try { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', key); } catch (e) {} }, onDragOver: function (event) { event.preventDefault(); }, onDrop: function (event) { dropSequenceCard(key, event); }, onDragEnd: function () { setSequenceDragKey(null); }, className: 'flex items-start gap-2 rounded-lg border p-2 transition ' + (sequenceDragKey === key ? 'ring-2 ring-amber-400 ' : '') + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') },
+                  h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-black text-white', 'aria-label': 'Position ' + (index + 1) }, index + 1),
+                  h('div', { className: 'min-w-0 flex-1' },
+                    h('div', { className: 'text-[11px] font-extrabold ' + ink }, item.label),
+                    h('p', { className: 'mt-0.5 text-[10.5px] leading-snug ' + muted }, item.detail)),
+                  h('div', { className: 'flex shrink-0 flex-wrap justify-end gap-1', role: 'group', 'aria-label': 'Reorder ' + item.label },
+                    h('button', { type: 'button', 'aria-pressed': sequenceTapKey === key ? 'true' : 'false', 'aria-label': sequenceTapKey === key ? 'Cancel touch reorder for ' + item.label : (touchSelected ? 'Place ' + touchSelected.label + ' before ' + item.label : 'Select ' + item.label + ' for touch reorder'), onClick: function () { selectSequenceCard(key); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (sequenceTapKey === key ? 'border-violet-500 bg-violet-600 text-white' : btnIdle) }, sequenceTapKey === key ? 'Cancel' : (touchSelected ? 'Place here' : 'Select')),
+                    h('button', { type: 'button', disabled: index === 0, 'aria-label': 'Move ' + item.label + ' earlier', onClick: function () { moveSequenceCard(key, -1); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === 0 ? 'opacity-40 ' : '') + btnIdle }, '↑'),
+                    h('button', { type: 'button', disabled: index === sequenceOrder.length - 1, 'aria-label': 'Move ' + item.label + ' later', onClick: function () { moveSequenceCard(key, 1); }, className: 'rounded-md border px-1.5 py-1 text-[10px] font-bold ' + (index === sequenceOrder.length - 1 ? 'opacity-40 ' : '') + btnIdle }, '↓')));
+              })),
+            h('div', { key: 'seq-actions', className: 'mt-2 flex flex-wrap gap-1.5' },
+              h('button', { type: 'button', 'data-geology-sequence-check': 'true', onClick: checkSequenceOrder, className: btn + btnIdle }, sequenceComplete ? 'Check again' : 'Check sequence'),
+              h('button', { type: 'button', 'data-geology-sequence-reset': 'true', onClick: resetSequenceOrder, className: btn + btnIdle }, 'Reset order')),
+            sequenceFeedback ? h('div', { key: 'seq-feedback', className: 'mt-2 rounded-lg border-l-2 p-2 text-[11px] leading-relaxed ' + (sequenceFeedback.correct ? 'border-emerald-400 bg-emerald-500/10 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') : 'border-amber-400 bg-amber-500/10 ' + ink), role: sequenceFeedback.correct ? 'status' : 'alert', 'data-geology-sequence-feedback': sequenceFeedback.correct ? 'correct' : 'retry' }, sequenceFeedback.message) : null
+          ]));
+      }
+
       function teacherProgressPanel() {
         var progress = Object.keys(SCENES).map(function (id) { return sceneProgressFor(id, d); });
         var completed = progress.filter(function (item) { return item.complete; }).length;
@@ -1908,8 +2305,9 @@
           try {
             var lines = ['Geology Explorer progress summary', 'Scenes complete: ' + completed + '/' + progress.length, ''];
             progress.forEach(function (item) {
-              lines.push(item.label + ' | checks ' + item.done + '/' + item.total + ' | observations ' + item.evidenceCount + ' | quiz attempts ' + item.quizAttempts + ' (' + item.quizCorrect + ' correct)');
+              lines.push(item.label + ' | checks ' + item.done + '/' + item.total + ' | observations ' + item.evidenceCount + ' | quiz attempts ' + item.quizAttempts + ' (' + item.quizCorrect + ' correct) | review flags ' + item.misconceptionCount);
               if (item.signalTotal) lines.push('  signal steps: ' + item.signalStep + '/' + item.signalTotal);
+              if (item.sequenceComplete) lines.push('  sequence challenge: complete');
               item.checks.forEach(function (check) { lines.push('  ' + (check.complete ? '[x] ' : '[ ] ') + check.label); });
               lines.push('');
             });
@@ -1933,7 +2331,9 @@
                   h('span', null, 'Checks ' + item.done + '/' + item.total),
                   h('span', null, 'Obs ' + item.evidenceCount),
                   h('span', null, 'Quiz ' + item.quizAttempts),
-                  item.signalTotal ? h('span', null, 'Signal ' + item.signalStep + '/' + item.signalTotal) : null))
+                  item.misconceptionCount ? h('span', { className: isDark ? 'text-amber-300' : 'text-amber-700' }, 'Review ' + item.misconceptionCount) : null,
+                  item.signalTotal ? h('span', null, 'Signal ' + item.signalStep + '/' + item.signalTotal) : null,
+                  item.sequenceComplete ? h('span', { className: isDark ? 'text-emerald-300' : 'text-emerald-700' }, 'Order ✓') : null))
             }))
         ]);
       }
@@ -1970,6 +2370,8 @@
 
       function sceneOrientationPanel() {
         var orientation = SCENE_ORIENTATION[SCENE.id] || SCENE_ORIENTATION.crust;
+        var vocabulary = SCENE_VOCABULARY[SCENE.id] || [];
+        var vocabularyText = vocabulary.map(function (item) { return item.term + '. ' + item.definition + ' ' + item.cue; }).join(' ');
         return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Scene orientation' },
           h('div', { className: 'p-3' }, [
             h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, t('stem.geology.orientation_title', 'How to read this model')),
@@ -1977,7 +2379,26 @@
               h('div', null, h('span', { className: 'block text-[10px] font-bold uppercase ' + muted }, t('stem.geology.orientation_scale', 'Scale')), orientation.scale),
               h('div', null, h('span', { className: 'block text-[10px] font-bold uppercase ' + muted }, t('stem.geology.orientation_direction', 'Direction')), orientation.direction)),
             h('p', { key: 'read', className: 'mt-2 text-[11px] leading-relaxed ' + muted }, orientation.read),
-            h('p', { key: 'note', className: 'mt-1 text-[10.5px] font-semibold ' + muted }, t('stem.geology.schematic_note', 'Schematic model - not to scale. Colors are illustrative.'))
+            h('p', { key: 'note', className: 'mt-1 text-[10.5px] font-semibold ' + muted }, t('stem.geology.schematic_note', 'Schematic model - not to scale. Colors are illustrative.')),
+            h('div', { key: 'audio', className: 'mt-2' }, readAloudButton('How to read this model. Scale: ' + orientation.scale + '. Direction: ' + orientation.direction + '. ' + orientation.read, 'orientation-' + SCENE.id, 'Read scene guidance aloud')),
+            h('div', { key: 'vocab', className: 'mt-3 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/40' : 'border-slate-200 bg-slate-50') }, [
+              h('div', { key: 'vb-head', className: 'flex flex-wrap items-center justify-between gap-2' }, [
+                h('div', { key: 'vb-label' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Vocabulary bridge'),
+                  h('p', { className: 'mt-0.5 text-[10.5px] ' + muted }, 'Connect the words to what you can observe.')),
+                h('button', { key: 'vb-toggle', type: 'button', 'aria-expanded': vocabularyOpen ? 'true' : 'false', 'aria-controls': 'geology-vocabulary-' + SCENE.id, 'data-geology-vocabulary-toggle': SCENE.id, onClick: function () { setVocabularyOpen(function (open) { return !open; }); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + btnIdle }, vocabularyOpen ? 'Hide vocabulary bridge' : 'Show vocabulary bridge')
+              ]),
+              vocabularyOpen ? h('div', { key: 'vb-body', id: 'geology-vocabulary-' + SCENE.id, role: 'region', 'aria-label': 'Vocabulary bridge', 'data-geology-vocabulary': 'true', className: 'mt-2' }, [
+                h('dl', { key: 'vb-list', className: 'space-y-2' }, vocabulary.map(function (item) {
+                  return h('div', { key: item.term, className: 'rounded-md border p-2 ' + (isDark ? 'border-slate-700' : 'border-slate-200') }, [
+                    h('dt', { key: 'term', className: 'text-[11px] font-extrabold ' + ink }, item.term),
+                    h('dd', { key: 'def', className: 'mt-0.5 text-[10.5px] leading-snug ' + muted }, item.definition),
+                    h('dd', { key: 'observe', className: 'mt-1 text-[10px] font-semibold leading-snug ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, 'Use it when: ' + item.cue)
+                  ]);
+                })),
+                h('div', { key: 'vb-audio', className: 'mt-2' }, readAloudButton('Vocabulary bridge. ' + vocabularyText, 'vocabulary-' + SCENE.id, 'Read vocabulary aloud'))
+              ]) : null
+            ])
           ]));
       }
 
@@ -1990,7 +2411,8 @@
             h('div', { className: 'min-w-0' },
               h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, t('stem.geology.scene.' + SCENE.id + '.eyebrow', mission.eyebrow)),
               h('h3', { className: 'mt-1 text-sm font-extrabold ' + ink }, t('stem.geology.scene.' + SCENE.id + '.question', mission.question)),
-              h('p', { className: 'mt-1 text-[11.5px] leading-relaxed ' + muted }, t('stem.geology.scene.' + SCENE.id + '.evidence', mission.evidencePrompt))),
+              h('p', { className: 'mt-1 text-[11.5px] leading-relaxed ' + muted }, t('stem.geology.scene.' + SCENE.id + '.evidence', mission.evidencePrompt)),
+            readAloudButton(mission.question + '. ' + mission.evidencePrompt, 'mission-' + SCENE.id, 'Read mission aloud')),
             h('div', { className: 'shrink-0 rounded-lg border px-2.5 py-1.5 text-center ' + (complete ? (isDark ? 'border-emerald-500/60 bg-emerald-950/30 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-800') : (isDark ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700')), 'aria-label': done + ' of ' + items.length + ' mission checks complete' },
               h('div', { className: 'text-base font-black' }, done + '/' + items.length),
               h('div', { className: 'text-[10px] font-bold uppercase tracking-wider' }, complete ? 'Ready to explain' : 'Field checks'))),
@@ -2040,10 +2462,24 @@
         var context = missionContext(), mission = missionForScene(), evidence = context.evidence;
         var ready = missionIsComplete(), explanation = notebook.explanation || '';
         var rubric = evaluateCER(mission, Object.assign({}, context, { missionComplete: ready }), notebook);
+        var mapAssignments = evidenceMapForScene(notebook.evidenceMap, SCENE.id);
+        var mapStatus = evidenceMapStatus(evidence, mapAssignments);
         function exportNote() {
           try {
             var lines = ['CER score: ' + rubric.score + '/' + rubric.total, 'Geology Explorer field note — ' + SCENE.label, '', 'Question: ' + mission.question, 'Claim: ' + (notebook.claim || '(not written)'), 'Explanation: ' + (notebook.explanation || '(not written)'), '', 'Evidence:'];
             evidence.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
+            lines.push('', 'Evidence map:');
+            EVIDENCE_MAP_ROLES.forEach(function (role) {
+              var mapped = evidence.filter(function (item) { return mapAssignments[item.id] === role.id; });
+              lines.push(role.label + ':');
+              if (!mapped.length) lines.push('- (none assigned)');
+              mapped.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
+            });
+            var unassigned = evidence.filter(function (item) { return !mapAssignments[item.id]; });
+            if (unassigned.length) {
+              lines.push('Unassigned:');
+              unassigned.forEach(function (item) { lines.push('- ' + item.label + ': ' + item.detail); });
+            }
             var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }), url = URL.createObjectURL(blob), a = document.createElement('a');
             a.href = url; a.download = 'geology-field-note-' + SCENE.id + '.txt'; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 0);
           } catch (e) { addToast('Could not export the field note.', 'error'); }
@@ -2069,6 +2505,27 @@
           })),
           h('p', { key: 'summary', className: 'mt-2 text-[11px] font-semibold ' + (rubric.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, rubric.ready ? t('stem.geology.rubric_ready', 'Ready to submit for teacher review.') : t('stem.geology.rubric_next', 'Use the feedback above to strengthen the explanation.'))
         ]);
+        var evidenceMapBox = h('section', { className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50'), role: 'region', 'aria-label': 'Evidence map', 'data-geology-evidence-map': 'true' }, [
+          h('div', { key: 'header', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+            h('div', { key: 'em-label' },
+              h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Evidence Map'),
+              h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + muted }, 'Give each collected item a job: what you observed, how the process worked, or what it supports.')),
+            h('span', { key: 'em-status', className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (mapStatus.ready ? (isDark ? 'border-emerald-500/60 text-emerald-200' : 'border-emerald-300 text-emerald-700') : muted) }, mapStatus.ready ? 'Map ready' : mapStatus.mappedRoleCount + '/' + EVIDENCE_MAP_ROLES.length + ' roles mapped')
+          ]),
+          h('p', { key: 'status', className: 'mt-2 text-[11px] font-semibold ' + (mapStatus.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted), role: mapStatus.ready ? 'status' : 'note', 'data-geology-evidence-map-status': 'true' }, mapStatus.ready ? 'Map ready: an observation, process, and outcome are represented.' : 'Map each item as an observation, process, or outcome. ' + mapStatus.unassigned + ' item' + (mapStatus.unassigned === 1 ? ' is' : 's are') + ' still unassigned.'),
+          evidence.length
+            ? h('div', { key: 'items', className: 'mt-2 space-y-2' }, evidence.map(function (item) {
+                var activeRole = mapAssignments[item.id];
+                return h('div', { key: item.id, className: 'rounded-lg border p-2 ' + (isDark ? 'border-slate-700' : 'border-slate-200'), 'data-geology-evidence-item': item.id }, [
+                  h('div', { key: 'detail' }, h('div', { className: 'text-[11px] font-bold ' + ink }, item.label), h('p', { className: 'mt-0.5 text-[10.5px] leading-snug ' + muted }, item.detail)),
+                  h('div', { key: 'roles', className: 'mt-1.5 flex flex-wrap gap-1', role: 'group', 'aria-label': 'Map ' + item.label }, EVIDENCE_MAP_ROLES.map(function (role) {
+                    var on = activeRole === role.id;
+                    return h('button', { key: role.id, type: 'button', title: role.prompt, 'aria-pressed': on ? 'true' : 'false', 'data-geology-evidence-role': role.id + ':' + item.id, onClick: function () { setEvidenceRole(item.id, role.id, item.label); }, className: 'rounded-md border px-2 py-1 text-[10px] font-bold ' + (on ? 'border-violet-500 bg-violet-600 text-white' : btnIdle) }, role.label);
+                  }))
+                ]);
+              }))
+            : h('p', { key: 'empty', className: 'mt-2 text-[11px] ' + muted }, 'Collect observations in Investigate mode, then map them here.')
+        ]);
         var evidenceBox = h('div', { className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-slate-700 bg-slate-900/50' : 'border-slate-200 bg-slate-50') }, [
           h('div', { key: 'title', className: 'text-[10px] font-black uppercase tracking-wider ' + muted }, 'Collected evidence'),
           evidence.length
@@ -2084,6 +2541,7 @@
             h('div', { key: 'title', className: 'text-[12px] font-extrabold ' + ink }, '📝 Explain your evidence'),
             h('p', { key: 'prompt', className: 'mt-1 text-[11px] leading-relaxed ' + muted }, rubric.ready ? mission.evidencePrompt : 'Complete the rubric checks above before submitting your conclusion.'),
             fields,
+            evidenceMapBox,
             rubricBox,
             evidenceBox,
             actions
@@ -2288,7 +2746,7 @@
               'aria-selected': on ? 'true' : 'false',
               tabIndex: on ? 0 : -1,
               onKeyDown: function(e) { geologySceneTabKeyDown(e, sceneIndex); },
-              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setCompareSceneId(defaultComparisonScene(sid)); setModeState('explore'); upd('mode', 'explore'); setHintShown(false); setRouteTarget(null); setSignalStep((d.sceneSignals && Number.isFinite(d.sceneSignals[sid])) ? d.sceneSignals[sid] : 0); setSlice(0); setExcavate(false); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
+              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setCompareSceneId(defaultComparisonScene(sid)); setModeState('explore'); upd('mode', 'explore'); setHintShown(false); setVocabularyOpen(false); setSequenceOrder(sequenceInitialOrder(sid)); setSequenceFeedback(null); setSequenceDragKey(null); setSequenceTapKey(null); setRouteTarget(null); setSignalStep((d.sceneSignals && Number.isFinite(d.sceneSignals[sid])) ? d.sceneSignals[sid] : 0); setSlice(0); setExcavate(false); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
               className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
             }, SCENES[sid].label);
           })),
@@ -2331,6 +2789,7 @@
                     h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + ink }, t('stem.geology.scene.' + SCENE.id + '.context', SCENE.blurb)),
                     h('p', { className: 'mt-2 text-[10.5px] font-semibold ' + muted }, 'Schematic model — not to scale. Colors are illustrative.'))),
             SCENE.id !== 'crust' ? sceneSignalPanel() : null,
+            inInvestigation ? sceneSequencePanel() : null,
             h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : ((SCENE.id === 'deepEarth' || SCENE.id === 'subduction') ? t('stem.geology.layers', 'Layers') : t('stem.geology.minerals', 'Minerals'))),
             strataList(),
             feat.fossils ? fossilStrip() : null,

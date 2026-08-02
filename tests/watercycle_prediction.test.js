@@ -35,6 +35,10 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       expect(source).toContain("if (currentTemp < 0) return 'storage';");
       expect(source).toContain('var wcPredictionMatched = null;');
       expect(source).toContain('wcPredictionMatched = wcPrediction === wcPredictionAnswer;');
+      expect(source).toContain('var wcPredictionEvidence = \'\';');
+      expect(source).toContain('var wcPredictionEvidenceMetrics = [];');
+      expect(source).toContain('Evidence to check: runoff ');
+      expect(source).toContain('className: "wc-prediction-evidence"');
     });
   });
 

@@ -71,6 +71,9 @@
               kept: prepared.keptCount,
               dropped: prepared.droppedCount,
               bytes: prepared.byteLength,
+              publishedIds: (Array.isArray(prepared.resources) ? prepared.resources : [])
+                .map(function (item) { return String(item && item.id || ''); })
+                .filter(Boolean),
             };
           });
         });

@@ -1440,17 +1440,17 @@ if (!window._galaxyHasLoadedOnce) {
 
               if (galaxyType === 'elliptical') {
 
-                var r = Math.pow(Math.random(), 0.5) * 0.6;
-
-                var theta = Math.random() * Math.PI * 2;
-
-                var phi = (Math.random() - 0.5) * Math.PI;
-
-                x = Math.cos(theta) * Math.cos(phi) * r;
-
-                z = Math.sin(theta) * Math.cos(phi) * r;
-
-                y = Math.sin(phi) * r * 0.6;
+                // A triaxial distribution gives ellipticals genuine 3-D depth.
+                // A dense old core blends into a much broader stellar envelope.
+                var ellipticalEnvelope = Math.random() < 0.72;
+                var ellipticalRadius = Math.pow(Math.random(), ellipticalEnvelope ? 1.8 : 0.62) * 0.78;
+                var ellipticalAzimuth = Math.random() * Math.PI * 2;
+                var ellipticalCosPolar = Math.random() * 2 - 1;
+                var ellipticalSinPolar = Math.sqrt(Math.max(0, 1 - ellipticalCosPolar * ellipticalCosPolar));
+                x = Math.cos(ellipticalAzimuth) * ellipticalSinPolar * ellipticalRadius;
+                y = ellipticalCosPolar * ellipticalRadius * 0.62;
+                z = Math.sin(ellipticalAzimuth) * ellipticalSinPolar * ellipticalRadius * 0.78;
+                // Uniform cos(polar) sampling avoids artificial latitude bands.
 
               } else if (galaxyType === 'irregular') {
 
@@ -1642,6 +1642,8 @@ if (!window._galaxyHasLoadedOnce) {
             var dopplerVelocityFieldMaterial = null, dopplerVelocitySampleMaterial = null;
             var radioPolarizationGroup = new THREE.Group(); radioPolarizationGroup.name = 'radioMagneticPolarizationField'; radioGroup.add(radioPolarizationGroup);
             var radioPolarizationMaterial = null, faradayRibbonMaterials = [], faradayRibbonObjects = [];
+            dopplerVelocityFieldGroup.visible = galaxyType !== 'elliptical';
+            radioPolarizationGroup.visible = galaxyType !== 'elliptical';
 
             var xrayGroup = new THREE.Group(); xrayGroup.name = 'xray';
             var xrayEventGroup = new THREE.Group(); xrayEventGroup.name = 'xrayEnergeticEvents'; xrayGroup.add(xrayEventGroup);
@@ -1912,7 +1914,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starShaderMat = new THREE.ShaderMaterial({
 
-              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uPointScale: { value: morphologyVisual.pointScale }, uStellarOpacity: { value: morphologyVisual.stellarOpacity }, uDiffractionScale: { value: morphologyVisual.diffractionScale }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uPointScale: { value: morphologyVisual.pointScale }, uZoomPointScale: { value: 1 }, uZoomOpacity: { value: 1 }, uStellarOpacity: { value: morphologyVisual.stellarOpacity }, uDiffractionScale: { value: morphologyVisual.diffractionScale }, uElliptical: { value: galaxyType === 'elliptical' ? 1 : 0 }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
 
               vertexShader: [
 
@@ -1942,6 +1944,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'uniform float uDetail;',
                 'uniform float uPointScale;',
+                'uniform float uZoomPointScale;',
+                'uniform float uZoomOpacity;',
+                'uniform float uElliptical;',
 
                 'uniform float uRotMode;',
 
@@ -1969,31 +1974,32 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vA = mix(0.9, 0.64 + 0.36 * twinkle, vBright);',
 
-                // Per-star orbital motion: each star circles the center at an angular speed
-                // set by the rotation-curve model (0 rigid disk, 1 Keplerian, 2 observed flat).
+                // Spiral stars share a disk plane; elliptical stars instead occupy
+                // differently tilted orbital planes and are pressure-supported.
                 '  vec3 p = position;',
-
                 '  float rr = length(position.xz);',
-
-                '  if (rr > 0.001) {',
-
+                '  if (uElliptical > 0.5) {',
+                '    float radius3 = length(position);',
+                '    vec3 orbitAxis = normalize(vec3(sin(aPhase * 6.283), 0.45 + 0.35 * cos(aPhase * 10.2), cos(aPhase * 6.283)));',
+                '    float orbitRate = 0.009 * (0.72 + fract(aPhase * 5.73) * 0.66) / sqrt(max(radius3, 0.08));',
+                '    float orbitAngle = uTime * orbitRate;',
+                '    float orbitCos = cos(orbitAngle);',
+                '    float orbitSin = sin(orbitAngle);',
+                '    p = position * orbitCos + cross(orbitAxis, position) * orbitSin + orbitAxis * dot(orbitAxis, position) * (1.0 - orbitCos);',
+                '    rr = length(p);',
+                '  } else if (rr > 0.001) {',
                 '    float a0 = atan(position.z, position.x);',
-
                 '    float omega = uRotMode < 0.5 ? 0.018 : (uRotMode < 1.5 ? 0.012 / pow(max(rr, 0.06), 1.5) : 0.03 / max(rr, 0.06));',
-
                 '    float aa = a0 + uTime * omega;',
-
                 '    p = vec3(cos(aa) * rr, position.y, sin(aa) * rr);',
-
                 '  }',
-
-                '  vDepthCue = clamp(0.5 + 0.5 * dot(p, uCameraDir) / max(rr, 0.08), 0.0, 1.0);',
+                '  vDepthCue = clamp(0.5 + 0.5 * dot(p, uCameraDir) / max(length(p), 0.08), 0.0, 1.0);',
 
                 '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
 
                 '  vFocusDefocus = smoothstep(0.08, 0.72, abs(-mv.z - uFocusDepth) / max(uFocusDepth, 0.2)) * uDepthOfField;',
 
-                '  gl_PointSize = min(sz * uPR * (84.0 / max(-mv.z, 1.0)) * (1.0 + vFocusDefocus * 0.28), mix(13.0, 24.0, min(uDetail, 1.5))) * uPointScale;',
+                '  gl_PointSize = min(sz * uPR * (84.0 / max(-mv.z, 1.0)) * (1.0 + vFocusDefocus * 0.28), mix(13.0, 24.0, min(uDetail, 1.5))) * uPointScale * uZoomPointScale;',
 
                 '  gl_Position = projectionMatrix * mv;',
 
@@ -2021,6 +2027,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'uniform float uOpticalDetail;',
                 'uniform float uStellarOpacity;',
+                'uniform float uZoomOpacity;',
                 'uniform float uDiffractionScale;',
 
                 // ── Star profile tuning ───────────────────────────────────────
@@ -2117,7 +2124,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  }',
 
-                '  gl_FragColor = vec4(col, alpha * uStellarOpacity);',
+                '  gl_FragColor = vec4(col, alpha * uStellarOpacity * uZoomOpacity);',
 
                 '}'
 
@@ -3218,20 +3225,29 @@ if (!window._galaxyHasLoadedOnce) {
             })();
             // ── Multiwavelength observing overlays ──
             (function () {
-              var irCount = 1400;
+              var irCount = galaxyType === 'elliptical' ? 1100 : 1400;
               var irGeo = new THREE.BufferGeometry();
               var irPos = new Float32Array(irCount * 3);
               var irCol = new Float32Array(irCount * 3);
               for (var ii = 0; ii < irCount; ii++) {
-                var irArm = ii % (gType.arms || 4);
-                var irAngle = (irArm / (gType.arms || 4)) * Math.PI * 2;
                 var irDist = 0.12 + Math.pow(Math.random(), 0.72) * 0.72;
-                var irWind = gType.windTightness || 2.5;
-                var irA = irAngle + irDist * irWind + (Math.random() - 0.5) * 0.18;
-                irPos[ii * 3] = Math.cos(irA) * irDist + (Math.random() - 0.5) * 0.035;
-                irPos[ii * 3 + 1] = (Math.random() - 0.5) * 0.028;
-                irPos[ii * 3 + 2] = Math.sin(irA) * irDist + (Math.random() - 0.5) * 0.035;
-                var irC = new THREE.Color().setHSL(0.06 + Math.random() * 0.04, 0.95, 0.45 + Math.random() * 0.18);
+                if (galaxyType === 'elliptical') {
+                  var irAzimuth = Math.random() * Math.PI * 2;
+                  var irCosPolar = Math.random() * 2 - 1;
+                  var irSinPolar = Math.sqrt(Math.max(0, 1 - irCosPolar * irCosPolar));
+                  irPos[ii * 3] = Math.cos(irAzimuth) * irSinPolar * irDist;
+                  irPos[ii * 3 + 1] = irCosPolar * irDist * 0.58;
+                  irPos[ii * 3 + 2] = Math.sin(irAzimuth) * irSinPolar * irDist * 0.78;
+                } else {
+                  var irArm = ii % (gType.arms || 4);
+                  var irAngle = (irArm / (gType.arms || 4)) * Math.PI * 2;
+                  var irWind = gType.windTightness || 2.5;
+                  var irA = irAngle + irDist * irWind + (Math.random() - 0.5) * 0.18;
+                  irPos[ii * 3] = Math.cos(irA) * irDist + (Math.random() - 0.5) * 0.035;
+                  irPos[ii * 3 + 1] = (Math.random() - 0.5) * 0.028;
+                  irPos[ii * 3 + 2] = Math.sin(irA) * irDist + (Math.random() - 0.5) * 0.035;
+                }
+                var irC = new THREE.Color().setHSL(0.06 + Math.random() * 0.04, galaxyType === 'elliptical' ? 0.52 : 0.95, 0.45 + Math.random() * 0.18);
                 irCol[ii * 3] = irC.r; irCol[ii * 3 + 1] = irC.g; irCol[ii * 3 + 2] = irC.b;
               }
               irGeo.setAttribute('position', new THREE.BufferAttribute(irPos, 3));
@@ -3241,12 +3257,12 @@ if (!window._galaxyHasLoadedOnce) {
               var thermalCtx = upscaleGalaxyCanvas(thermalCv, thermalCv.getContext('2d'));
               var thermalGradient = thermalCtx.createRadialGradient(96, 96, 0, 96, 96, 96); thermalGradient.addColorStop(0, 'rgba(255,255,255,0.92)'); thermalGradient.addColorStop(0.12, 'rgba(254,240,138,0.86)'); thermalGradient.addColorStop(0.34, 'rgba(251,146,60,0.48)'); thermalGradient.addColorStop(0.68, 'rgba(190,24,93,0.14)'); thermalGradient.addColorStop(1, 'rgba(0,0,0,0)'); thermalCtx.fillStyle = thermalGradient; thermalCtx.fillRect(0, 0, 192, 192);
               var thermalTexture = tuneGalaxyTexture(new THREE.CanvasTexture(thermalCv));
-              var thermalCloudCount = resolvedQuality === 'cinematic' ? 62 : resolvedQuality === 'high' ? 38 : 22;
+              var thermalCloudCount = galaxyType === 'elliptical' ? 0 : resolvedQuality === 'cinematic' ? 62 : resolvedQuality === 'high' ? 38 : 22;
               for (var tc = 0; tc < thermalCloudCount; tc++) { var tcRadius = 0.13 + Math.pow(Math.random(), 0.7) * 0.76, tcAngle = galaxyType === 'elliptical' || galaxyType === 'irregular' ? Math.random() * Math.PI * 2 : (tc % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + tcRadius * (gType.windTightness || 2.5) + 0.11, tcMat = new THREE.SpriteMaterial({ map: thermalTexture, color: tc % 5 === 0 ? 0xfde68a : tc % 3 === 0 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.12 + Math.random() * 0.2, depthWrite: false, blending: THREE.AdditiveBlending, rotation: tcAngle + (Math.random() - 0.5) * 0.5 }); var tcSprite = new THREE.Sprite(tcMat); tcSprite.position.set(Math.cos(tcAngle) * tcRadius, (Math.random() - 0.5) * 0.035, Math.sin(tcAngle) * tcRadius); var tcScale = 0.05 + Math.random() * 0.1; tcSprite.scale.set(tcScale * (1.35 + Math.random()), tcScale * (0.38 + Math.random() * 0.32), 1); tcSprite.userData = { baseOpacity: tcMat.opacity, baseScaleX: tcSprite.scale.x, baseScaleY: tcSprite.scale.y, phase: Math.random() * Math.PI * 2, drift: (Math.random() - 0.5) * 0.0006 }; tcSprite.renderOrder = 5; infraredThermalGroup.add(tcSprite); infraredThermalSprites.push(tcSprite); infraredThermalMats.push(tcMat); }
-              var thermalLaneCount = galaxyType === 'elliptical' ? 3 : resolvedQuality === 'cinematic' ? 18 : 11;
+              var thermalLaneCount = galaxyType === 'elliptical' ? 0 : resolvedQuality === 'cinematic' ? 18 : 11;
               for (var tl = 0; tl < thermalLaneCount; tl++) { var thermalLanePoints = [], thermalLaneSegments = resolvedQuality === 'cinematic' ? 84 : 52; for (var tls = 0; tls <= thermalLaneSegments; tls++) { var tlf = tls / thermalLaneSegments, tlRadius = 0.18 + tlf * 0.7, tlAngle = galaxyType === 'irregular' || galaxyType === 'elliptical' ? tl * 1.17 + tlf * 0.8 : (tl % (gType.arms || 4)) / (gType.arms || 4) * Math.PI * 2 + tlRadius * (gType.windTightness || 2.5) + (tl % 3 - 1) * 0.055; thermalLanePoints.push(new THREE.Vector3(Math.cos(tlAngle) * tlRadius, 0.01, Math.sin(tlAngle) * tlRadius)); } var thermalLaneMat = new THREE.LineBasicMaterial({ color: tl % 3 === 0 ? 0xfde68a : tl % 2 ? 0xfb7185 : 0xfdba74, transparent: true, opacity: 0.08 + (tl % 4) * 0.012, depthWrite: false, blending: THREE.AdditiveBlending }); thermalLaneMat.userData = { baseOpacity: thermalLaneMat.opacity, phase: tl * 0.9 }; var thermalLane = new THREE.Line(new THREE.BufferGeometry().setFromPoints(thermalLanePoints), thermalLaneMat); thermalLane.renderOrder = 4; infraredThermalGroup.add(thermalLane); infraredThermalMats.push(thermalLaneMat); }
 
-              for (var rr = 0; rr < 6; rr++) {
+              for (var rr = 0; rr < (galaxyType === 'elliptical' ? 0 : 6); rr++) {
                 var rad = 0.18 + rr * 0.115;
                 var ringMat = new THREE.MeshBasicMaterial({ color: rr % 2 ? 0x22d3ee : 0x67e8f9, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending });
                 var hRing = new THREE.Mesh(new THREE.RingGeometry(rad, rad + 0.0035, 160), ringMat);
@@ -3254,7 +3270,7 @@ if (!window._galaxyHasLoadedOnce) {
                 hRing.scale.set(1, 1, 0.35);
                 radioGroup.add(hRing);
               }
-              var radioCount = 900;
+              var radioCount = galaxyType === 'elliptical' ? 180 : 900;
               var radioGeo = new THREE.BufferGeometry();
               var radioPos = new Float32Array(radioCount * 3);
               for (var ri = 0; ri < radioCount; ri++) {
@@ -3265,7 +3281,7 @@ if (!window._galaxyHasLoadedOnce) {
                 radioPos[ri * 3 + 2] = Math.sin(rAngle) * rDist;
               }
               radioGeo.setAttribute('position', new THREE.BufferAttribute(radioPos, 3));
-              radioGroup.add(new THREE.Points(radioGeo, new THREE.PointsMaterial({ color: 0x67e8f9, size: 0.01, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending })));
+              radioGroup.add(new THREE.Points(radioGeo, new THREE.PointsMaterial({ color: 0x67e8f9, size: galaxyType === 'elliptical' ? 0.007 : 0.01, transparent: true, opacity: galaxyType === 'elliptical' ? 0.18 : 0.45, depthWrite: false, blending: THREE.AdditiveBlending })));
 
               // A resolved 21 cm moment-1 map: blue marks approaching hydrogen and
               // red marks receding hydrogen. Fine contours expose the velocity gradient.
@@ -4450,6 +4466,16 @@ if (!window._galaxyHasLoadedOnce) {
               spherical.r = Math.max(0.2, Math.min(3, spherical.r * (direction === 'in' ? 0.82 : 1.22)));
               updateCamera(); setCanvasStatus('Zoom ' + Math.round(120 / spherical.r) + '%');
             };
+            canvasEl._galaxyGetAdaptiveVisualState = function () {
+              return {
+                distance: spherical.r,
+                pointScale: starShaderMat.uniforms.uZoomPointScale.value,
+                opacity: starShaderMat.uniforms.uZoomOpacity.value,
+                exposure: renderer.toneMappingExposure,
+                bloomStrength: composer && canvasEl._bloomPass ? canvasEl._bloomPass.strength : 0,
+                bloomThreshold: composer && canvasEl._bloomPass ? canvasEl._bloomPass.threshold : 0
+              };
+            };
             canvasEl._galaxySetAutoRotate = function (enabled) { autoRotate = enabled !== false && !prefersReducedMotion; if (enabled && prefersReducedMotion && canvasEl._onMotionPreferenceChange) canvasEl._onMotionPreferenceChange(true); setCanvasStatus(autoRotate ? 'Gentle auto-rotation on' : prefersReducedMotion ? 'Auto-rotation remains off because reduced motion is enabled' : 'Auto-rotation paused'); };
             canvasEl._galaxySetTour = function (enabled) {
               if (prefersReducedMotion && enabled) { tourActive = false; setCanvasStatus('Cinematic tour is paused by reduced-motion settings'); if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); return; }
@@ -4990,13 +5016,17 @@ if (!window._galaxyHasLoadedOnce) {
               }
 
               var coreProximity = Math.max(0, Math.min(1, (0.92 - spherical.r) / 0.68));
-              var outerDiskLift = Math.max(0, Math.min(1, (spherical.r - 0.96) / 1.34));
+              var outerContextCompression = Math.max(0, Math.min(1, (spherical.r - 0.96) / 1.34));
               var transientGlareCompression = Math.min(0.11, supernovae.length * 0.026 + cinematicMotion.shock * 0.055 + cinematicMotion.aperture * 0.025);
               var modeExposure = currentObserveMode === 'xray' ? 0.96 : currentObserveMode === 'infrared' ? 1.06 : currentObserveMode === 'radio' ? 1.02 : currentObserveMode === 'gravity' ? 1.04 : 1.12;
-              var targetExposure = modeExposure + morphologyVisual.exposureBias - coreProximity * 0.19 + outerDiskLift * 0.07 - transientGlareCompression;
+              var targetExposure = modeExposure + morphologyVisual.exposureBias - coreProximity * 0.19 - outerContextCompression * 0.08 - transientGlareCompression;
               var adaptationRate = prefersReducedMotion ? 1 : 0.04;
+              var zoomPointTarget = 1 - outerContextCompression * 0.34;
+              var zoomOpacityTarget = 1 - outerContextCompression * 0.26;
+              starShaderMat.uniforms.uZoomPointScale.value += (zoomPointTarget - starShaderMat.uniforms.uZoomPointScale.value) * adaptationRate;
+              starShaderMat.uniforms.uZoomOpacity.value += (zoomOpacityTarget - starShaderMat.uniforms.uZoomOpacity.value) * adaptationRate;
               renderer.toneMappingExposure += (targetExposure - renderer.toneMappingExposure) * adaptationRate;
-              if (composer && canvasEl._bloomPass) { var adaptiveBloomStrength = bloomModeStrength - coreProximity * 0.24 + outerDiskLift * 0.07 - transientGlareCompression * 0.8; var adaptiveBloomThreshold = bloomModeThreshold + coreProximity * 0.075 + transientGlareCompression * 0.12; canvasEl._bloomPass.strength += (adaptiveBloomStrength - canvasEl._bloomPass.strength) * adaptationRate; canvasEl._bloomPass.threshold += (adaptiveBloomThreshold - canvasEl._bloomPass.threshold) * adaptationRate; }
+              if (composer && canvasEl._bloomPass) { var adaptiveBloomStrength = bloomModeStrength - coreProximity * 0.24 - outerContextCompression * 0.18 - transientGlareCompression * 0.8; var adaptiveBloomThreshold = bloomModeThreshold + coreProximity * 0.075 + outerContextCompression * 0.035 + transientGlareCompression * 0.12; canvasEl._bloomPass.strength += (adaptiveBloomStrength - canvasEl._bloomPass.strength) * adaptationRate; canvasEl._bloomPass.threshold += (adaptiveBloomThreshold - canvasEl._bloomPass.threshold) * adaptationRate; }
 
               if (composer) composer.render();
 
@@ -5423,10 +5453,10 @@ if (!window._galaxyHasLoadedOnce) {
             try { if (typeof el.replaceChildren === 'function') el.replaceChildren(); else el.innerHTML = ''; } catch (clearError) {}
           };
 
-          var realSkyRefCb = function (el) {
+          var realSkyRefCb = React.useCallback(function (el) {
             if (!el) {
-              // React hands us null both on a real unmount AND on every re-render
-              // (this callback is a fresh identity each time). Defer a tick and only
+              // The callback identity is stable across status renders. Defer disposal
+              // for genuine target changes/unmounts and verify the node disconnected.
               // dispose if the node really did leave the document.
               var detached = realSkyElementRef.current;
               if (!detached) return;
@@ -5443,9 +5473,12 @@ if (!window._galaxyHasLoadedOnce) {
             if (el._galaxyAladinDisposeTimer) { clearTimeout(el._galaxyAladinDisposeTimer); el._galaxyAladinDisposeTimer = null; }
             realSkyElementRef.current = el;
             if (!el.id) el.id = 'galaxy-real-sky-aladin';
+            if (el._galaxyAladinLoading) return;
             if (el._galaxyAladin) { syncRealSkyAladin(el); return; }
+            el._galaxyAladinLoading = true;
             setRealSkyStatus('loading', 'Loading Aladin Lite real-sky atlas...');
             ensureGalaxyAladinLite(function (ok) {
+              el._galaxyAladinLoading = false;
               if (!el.isConnected) return;
               if (!ok || !(window.A && window.A.aladin)) {
                 setRealSkyStatus('error', 'Real-sky atlas could not load. The external Aladin Lite service may be blocked or offline.');
@@ -5473,7 +5506,7 @@ if (!window._galaxyHasLoadedOnce) {
                 setRealSkyStatus('error', 'Real-sky atlas could not initialize on this device.');
               }
             });
-          };
+          }, [activeRealSkyTarget.key, activeRealSkySurvey.id, activeRealSkyCatalog.id, realSkyRetry]);
 
 
 
@@ -5885,7 +5918,7 @@ if (!window._galaxyHasLoadedOnce) {
                   ),
                   React.createElement("p", { className: "mt-1.5 border-t border-white/10 pt-1.5 text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.gravity_legend_note', 'The luminous disk is observed; the larger halo is reconstructed from motion and lensing evidence.'))
                 ),
-                !galaxyHudHidden && selectedStarMeasurement && selStar && activeRotationMeasurement && React.createElement("div", {
+                galaxyType !== 'elliptical' && !galaxyHudHidden && selectedStarMeasurement && selStar && activeRotationMeasurement && React.createElement("div", {
                   "data-galaxy-measurement": "true",
                   className: "pointer-events-none absolute left-3 top-20 z-10 w-[min(15rem,calc(100%_-_5.5rem))] rounded-xl border border-cyan-200/25 bg-slate-950/82 p-3 text-white shadow-2xl backdrop-blur-md",
                   role: "status",
@@ -6118,15 +6151,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1" },
 
-                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "🌀 " + __alloT('stem.galaxy.how_galaxy_spin_title', 'How does a galaxy spin?')),
+                  React.createElement("h4", { className: "text-sm font-bold text-white" }, (galaxyType === 'elliptical' ? "⬭ " : "🌀 ") + (galaxyType === 'elliptical' ? __alloT('stem.galaxy.how_elliptical_moves_title', 'How do elliptical stars move?') : __alloT('stem.galaxy.how_galaxy_spin_title', 'How does a galaxy spin?'))),
 
-                  React.createElement("span", { className: "ml-auto text-[11px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, __alloT('stem.galaxy.dark_matter_mystery_badge', 'dark matter mystery'))
+                  React.createElement("span", { className: "ml-auto text-[11px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, galaxyType === 'elliptical' ? __alloT('stem.galaxy.velocity_dispersion_badge', 'velocity dispersion') : __alloT('stem.galaxy.dark_matter_mystery_badge', 'dark matter mystery'))
 
                 ),
 
-                React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, __alloT('stem.galaxy.rotation_intro', "Pick a rotation model and watch the stars in the 3-D view above actually obey it. This one question — “how fast do outer stars orbit?” — led to one of the biggest discoveries in physics.")),
+                React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, galaxyType === 'elliptical' ? __alloT('stem.galaxy.elliptical_motion_intro', 'Elliptical galaxies are pressure-supported: their stars criss-cross the galaxy on differently tilted 3-D orbits instead of sharing one rotating disk.') : __alloT('stem.galaxy.rotation_intro', "Pick a rotation model and watch the stars in the 3-D view above actually obey it. This one question — “how fast do outer stars orbit?” — led to one of the biggest discoveries in physics.")),
 
-                React.createElement("div", { className: "mb-3 flex flex-wrap gap-2" },
+                React.createElement("div", { className: "mb-3 flex flex-wrap gap-2 " + (galaxyType === 'elliptical' ? 'hidden' : '') },
 
                   [
 
@@ -6183,6 +6216,21 @@ if (!window._galaxyHasLoadedOnce) {
                 (function () {
 
                   var CW = 360, CH = 148, padL = 36, padR = 10, padT = 12, padB = 26;
+                  if (galaxyType === 'elliptical') {
+                    return React.createElement("div", { "data-galaxy-elliptical-kinematics": "true", className: "rounded-xl border border-fuchsia-300/20 bg-slate-950/55 p-3" },
+                      React.createElement("svg", { viewBox: "0 0 360 112", className: "w-full", style: { maxHeight: '122px' }, role: "img", "aria-label": __alloT('stem.galaxy.elliptical_orbits_aria', 'Stars cross an elliptical galaxy on many differently tilted orbital planes. Their velocity dispersion supports the galaxy against gravity.') },
+                        React.createElement("ellipse", { cx: 180, cy: 54, rx: 112, ry: 39, fill: "rgba(251,191,36,0.08)", stroke: "rgba(253,230,138,0.38)", strokeWidth: 1.4 }),
+                        [{ rx: 90, ry: 20, rot: -18, color: '#67e8f9' }, { rx: 82, ry: 28, rot: 24, color: '#f0abfc' }, { rx: 104, ry: 13, rot: 4, color: '#fde68a' }, { rx: 58, ry: 34, rot: -42, color: '#c4b5fd' }].map(function (orbit, orbitIndex) { return React.createElement("ellipse", { key: orbitIndex, cx: 180, cy: 54, rx: orbit.rx, ry: orbit.ry, fill: "none", stroke: orbit.color, strokeWidth: 1.2, strokeDasharray: orbitIndex % 2 ? "4 3" : undefined, opacity: 0.72, transform: "rotate(" + orbit.rot + " 180 54)" }); }),
+                        React.createElement("circle", { cx: 180, cy: 54, r: 5, fill: "#fff7d6", stroke: "#fbbf24", strokeWidth: 2 }),
+                        React.createElement("text", { x: 180, y: 106, textAnchor: "middle", fill: "#cbd5e1", fontSize: 9, fontWeight: 700 }, __alloT('stem.galaxy.elliptical_orbit_caption', 'many orbital planes · no shared stellar disk'))
+                      ),
+                      React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center text-[11px]" },
+                        React.createElement("div", { className: "rounded-lg bg-white/[0.05] px-2 py-2 text-slate-200" }, React.createElement("span", { className: "block font-black text-amber-200" }, __alloT('stem.galaxy.elliptical_shape_label', 'Shape')), __alloT('stem.galaxy.elliptical_shape_value', 'Triaxial')),
+                        React.createElement("div", { className: "rounded-lg bg-white/[0.05] px-2 py-2 text-slate-200" }, React.createElement("span", { className: "block font-black text-cyan-200" }, __alloT('stem.galaxy.elliptical_motion_label', 'Motion')), __alloT('stem.galaxy.elliptical_motion_value', '3-D orbits')),
+                        React.createElement("div", { className: "rounded-lg bg-white/[0.05] px-2 py-2 text-slate-200" }, React.createElement("span", { className: "block font-black text-fuchsia-200" }, __alloT('stem.galaxy.elliptical_evidence_label', 'Evidence')), __alloT('stem.galaxy.elliptical_evidence_value', 'Velocity spread'))
+                      )
+                    );
+                  }
 
                   var px = function (fx) { return padL + fx * (CW - padL - padR); };
 
@@ -6256,10 +6304,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 })(),
 
-                React.createElement("p", { className: "text-xs leading-relaxed mt-2 " + (rotMode === 'flat' ? 'text-cyan-200' : rotMode === 'keplerian' ? 'text-amber-200' : 'text-slate-300') },
+                React.createElement("p", { className: "text-xs leading-relaxed mt-2 " + (galaxyType === 'elliptical' ? 'text-fuchsia-200' : rotMode === 'flat' ? 'text-cyan-200' : rotMode === 'keplerian' ? 'text-amber-200' : 'text-slate-300') },
 
+                  galaxyType === 'elliptical' ?
+                    __alloT('stem.galaxy.elliptical_motion_explain', 'The galaxy stays together because stars move through it in many directions. Astronomers measure the spread of those speeds—velocity dispersion—to infer the mass needed to hold the system together.') :
                   rotMode === 'keplerian' ?
-
                     __alloT('stem.galaxy.rotation_explain_keplerian', "If starlight were all there is, gravity weakens with distance and outer stars should crawl — watch the galaxy's center above lap the outskirts and the disk shear apart. Our solar system really works this way: Mercury laps Neptune 700 times per Neptune-year.") :
 
                   rotMode === 'rigid' ?
@@ -6270,7 +6319,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
-                selectedStarMeasurement && activeRotationMeasurement && React.createElement("section", { "data-galaxy-rotation-measurement": "true", className: "mt-3 overflow-hidden rounded-xl border border-cyan-200/20 bg-slate-950/60", "aria-labelledby": "galaxy-rotation-measurement-title" },
+                galaxyType !== 'elliptical' && selectedStarMeasurement && activeRotationMeasurement && React.createElement("section", { "data-galaxy-rotation-measurement": "true", className: "mt-3 overflow-hidden rounded-xl border border-cyan-200/20 bg-slate-950/60", "aria-labelledby": "galaxy-rotation-measurement-title" },
                   React.createElement("div", { className: "border-b border-white/10 bg-gradient-to-r from-cyan-400/10 to-fuchsia-400/10 px-3 py-2.5" },
                     React.createElement("div", { className: "flex items-center justify-between gap-2" },
                       React.createElement("h5", { id: "galaxy-rotation-measurement-title", className: "text-xs font-black text-white" }, __alloT('stem.galaxy.comparison_title', 'Same star, three gravity models')),
@@ -6307,7 +6356,7 @@ if (!window._galaxyHasLoadedOnce) {
                     __alloT('stem.galaxy.comparison_evidence_rigid', 'Toy prediction: speed rises directly with radius, as if the entire galaxy were a solid object.')
                   )
                 ),
-                React.createElement("p", { className: "text-[11px] text-slate-500 mt-1.5 italic" }, "💡 " + __alloT('stem.galaxy.rotation_density_wave_note', 'Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.'))
+                React.createElement("p", { className: "text-[11px] text-slate-500 mt-1.5 italic" }, "💡 " + (galaxyType === 'elliptical' ? __alloT('stem.galaxy.elliptical_motion_note', 'Notice that no single orbital plane dominates. The smooth shape is a statistical pattern made by many crossing stellar paths.') : __alloT('stem.galaxy.rotation_density_wave_note', 'Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.')))
 
               ),
 

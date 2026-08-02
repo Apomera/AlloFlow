@@ -151,12 +151,16 @@ describe('galaxy 3-D scene builder', () => {
     }
     expect(host.textContent).toContain('Old warm stars');
     expect(host.textContent).toContain('Concentrated core');
+    const motionTab = host.querySelector('[data-galaxy-control-tab="motion"]');
+    await React.act(async () => { motionTab.click(); });
+    expect(host.querySelector('[data-galaxy-elliptical-kinematics]')).not.toBeNull();
+    expect(host.textContent).toContain('velocity dispersion');
     assertClean();
   }, SCENE_TIMEOUT);
   it('exposes working scene handles after building', async () => {
     await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
     const canvas = host.querySelector('[data-galaxy-canvas]');
-    for (const handle of ['_setStarCount', '_setRotMode', '_setObserveMode', '_updateAge', '_triggerSupernova', '_galaxyWarp', '_galaxyResetView', '_galaxyZoom']) {
+    for (const handle of ['_setStarCount', '_setRotMode', '_setObserveMode', '_updateAge', '_triggerSupernova', '_galaxyWarp', '_galaxyResetView', '_galaxyZoom', '_galaxyGetAdaptiveVisualState']) {
       expect(typeof canvas[handle], handle).toBe('function');
     }
     // Each observing filter re-tunes dozens of materials; a typo in any branch
@@ -174,6 +178,29 @@ describe('galaxy 3-D scene builder', () => {
     assertClean();
   }, SCENE_TIMEOUT);
 
+  it('separates particles as the camera zooms out in every observing mode', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const before = canvas._galaxyGetAdaptiveVisualState();
+    expect(before.pointScale).toBeGreaterThan(0.95);
+    expect(before.opacity).toBeGreaterThan(0.95);
+
+    for (let i = 0; i < 7; i += 1) canvas._galaxyZoom('out');
+    for (let frame = 0; frame < 75; frame += 1) expect(restoreLoops.step()).toBe(true);
+    const distant = canvas._galaxyGetAdaptiveVisualState();
+    expect(distant.distance).toBeCloseTo(3, 4);
+    expect(distant.pointScale).toBeLessThan(0.72);
+    expect(distant.opacity).toBeLessThan(0.8);
+
+    for (const mode of ['visible', 'infrared', 'radio', 'xray', 'gravity']) {
+      canvas._setObserveMode(mode);
+      const state = canvas._galaxyGetAdaptiveVisualState();
+      expect(state.pointScale, mode).toBeLessThan(0.72);
+      expect(state.opacity, mode).toBeLessThan(0.8);
+    }
+    assertClean();
+  }, SCENE_TIMEOUT);
+
   it('tears the scene down cleanly', async () => {
     await mountGalaxy(LIGHT);
     const canvas = host.querySelector('[data-galaxy-canvas]');
@@ -185,12 +212,13 @@ describe('galaxy 3-D scene builder', () => {
 
   it('disposes the Real Sky atlas when its container unmounts', async () => {
     const destroyed = [];
+    const created = [];
     // Stand in for Aladin Lite: A.aladin() returns an instance bound to the div.
     window.A = {
-      aladin: () => ({
+      aladin: () => { created.push('create'); return {
         destroy() { destroyed.push('destroy'); },
         setFov() {}, gotoObject() {}, gotoRaDec() {}, setImageSurvey() {}, removeLayers() {}, addCatalog() {},
-      }),
+      }; },
     };
     // ensureGalaxyAladinLite short-circuits when the global is already present.
     await mountGalaxy({ ...LIGHT, simMode: 'realSky' });
@@ -198,6 +226,9 @@ describe('galaxy 3-D scene builder', () => {
     const container = host.querySelector('#galaxy-real-sky-aladin');
     expect(container).not.toBeNull();
     expect(container._galaxyAladin, 'atlas should have been created').toBeTruthy();
+    await React.act(async () => { await new Promise((r) => setTimeout(r, 5)); });
+    expect(created, 'status renders recreated the atlas').toEqual(['create']);
+    assertClean();
 
     // The container is keyed on target+survey+catalog, so switching targets used
     // to remount it and abandon the previous instance — twelve targets, twelve

@@ -630,6 +630,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [snapTarget, setSnapTarget] = useState(null);
   const [score, setScore] = useState(0);
   const [keyboardSelectedTerm, setKeyboardSelectedTerm] = useState(null);
+  const [audioHintsEnabled, setAudioHintsEnabled] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const scrollRef = useRef(null);
   const canvasRef = useRef(null);
@@ -638,6 +639,19 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const matchingDialogRef = useRef(null);
   const matchingCloseRef = useRef(null);
   useGameDialogFocus(matchingDialogRef, matchingCloseRef, onClose);
+  const readMatchingSelection = (text) => {
+      if (!audioHintsEnabled || !text || typeof window === 'undefined') return;
+      const player = window.AlloSpeechPlayer;
+      if (player && typeof player.speak === 'function') player.speak(String(text));
+  };
+  const toggleAudioHints = () => {
+      const nextEnabled = !audioHintsEnabled;
+      setAudioHintsEnabled(nextEnabled);
+      if (!nextEnabled && typeof window !== 'undefined') {
+          const player = window.AlloSpeechPlayer;
+          if (player && typeof player.stop === 'function') player.stop();
+      }
+  };
   const shuffleDefinitions = (validItems) => {
       const defs = validItems.map(item => ({ id: item.term, text: item.def }));
       if (defs.length <= 1) return defs;
@@ -685,6 +699,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
           } else {
               setKeyboardSelectedTerm(termId);
               setAnnouncement(t('matching.aria_term_selected'));
+              readMatchingSelection(items.find(item => item.id === termId)?.term || termId);
               if(playSound) playSound('click');
           }
       }
@@ -693,6 +708,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       if (isChecked) return;
       if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
+          readMatchingSelection(rightCol.find(def => def.id === defId)?.text);
           if (keyboardSelectedTerm) {
               setConnections(prev => {
                   const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== defId);
@@ -826,6 +842,19 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </div>
             </div>
             <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
+                <button
+                    type="button"
+                    onClick={toggleAudioHints}
+                    aria-pressed={audioHintsEnabled}
+                    aria-label={`${t('a11y.read_aloud') || 'Read aloud'}: ${audioHintsEnabled ? 'on' : 'off'}`}
+                    className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${audioHintsEnabled ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white'}`}
+                    title={audioHintsEnabled ? 'Audio hints on' : 'Audio hints off'}
+                    data-help-key="matching_audio_hints"
+                >
+                    <Volume2 size={14} aria-hidden="true" />
+                    <span>{t('a11y.read_aloud') || 'Audio hints'}</span>
+                    <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${audioHintsEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                </button>
                 <button type="button"
                     onClick={reset}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
@@ -937,6 +966,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                             } else {
                                                 setKeyboardSelectedTerm(item.id);
                                                 setAnnouncement(t('matching.aria_term_selected'));
+                                                readMatchingSelection(item.term);
                                                 if (playSound) playSound('click');
                                             }
                                         }}
@@ -949,7 +979,6 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         data-help-key="matching_term_item"
                                     >
                                         {item.term}
-                                        <SpeakButton text={item.term} size={11} className="ms-1" />
                                     </div>
                                     <div
                                         ref={el => termRefs.current[item.id] = el}
@@ -984,6 +1013,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                     <div
                                         onClick={() => {
                                             if (isChecked) return;
+                                            readMatchingSelection(def.text);
                                             if (keyboardSelectedTerm) {
                                                 setConnections(prev => {
                                                     const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== def.id);
@@ -1004,7 +1034,6 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         data-help-key="matching_def_item"
                                     >
                                         {def.text}
-                                        <SpeakButton text={def.text} size={11} className="ms-1 shrink-0" />
                                     </div>
                                 </div>
                             ))}

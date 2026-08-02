@@ -625,6 +625,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [snapTarget, setSnapTarget] = useState(null);
   const [score, setScore] = useState(0);
   const [keyboardSelectedTerm, setKeyboardSelectedTerm] = useState(null);
+  const [audioHintsEnabled, setAudioHintsEnabled] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const scrollRef = useRef(null);
   const canvasRef = useRef(null);
@@ -633,6 +634,19 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const matchingDialogRef = useRef(null);
   const matchingCloseRef = useRef(null);
   useGameDialogFocus(matchingDialogRef, matchingCloseRef, onClose);
+  const readMatchingSelection = (text) => {
+    if (!audioHintsEnabled || !text || typeof window === "undefined") return;
+    const player = window.AlloSpeechPlayer;
+    if (player && typeof player.speak === "function") player.speak(String(text));
+  };
+  const toggleAudioHints = () => {
+    const nextEnabled = !audioHintsEnabled;
+    setAudioHintsEnabled(nextEnabled);
+    if (!nextEnabled && typeof window !== "undefined") {
+      const player = window.AlloSpeechPlayer;
+      if (player && typeof player.stop === "function") player.stop();
+    }
+  };
   const shuffleDefinitions = (validItems) => {
     const defs = validItems.map((item) => ({ id: item.term, text: item.def }));
     if (defs.length <= 1) return defs;
@@ -680,6 +694,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       } else {
         setKeyboardSelectedTerm(termId);
         setAnnouncement(t("matching.aria_term_selected"));
+        readMatchingSelection(items.find((item) => item.id === termId)?.term || termId);
         if (playSound) playSound("click");
       }
     }
@@ -688,6 +703,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     if (isChecked) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
+      readMatchingSelection(rightCol.find((def) => def.id === defId)?.text);
       if (keyboardSelectedTerm) {
         setConnections((prev) => {
           const filtered = prev.filter((c) => c.termId !== keyboardSelectedTerm && c.defId !== defId);
@@ -804,6 +820,20 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     "button",
     {
       type: "button",
+      onClick: toggleAudioHints,
+      "aria-pressed": audioHintsEnabled,
+      "aria-label": `${t("a11y.read_aloud") || "Read aloud"}: ${audioHintsEnabled ? "on" : "off"}`,
+      className: `min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${audioHintsEnabled ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-white"}`,
+      title: audioHintsEnabled ? "Audio hints on" : "Audio hints off",
+      "data-help-key": "matching_audio_hints"
+    },
+    /* @__PURE__ */ React.createElement(Volume2, { size: 14, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", null, t("a11y.read_aloud") || "Audio hints"),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-1.5 h-1.5 rounded-full ${audioHintsEnabled ? "bg-emerald-500" : "bg-slate-300"}` })
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
       onClick: reset,
       className: "flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors",
       title: t("matching.reset_aria"),
@@ -893,6 +923,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
               } else {
                 setKeyboardSelectedTerm(item.id);
                 setAnnouncement(t("matching.aria_term_selected"));
+                readMatchingSelection(item.term);
                 if (playSound) playSound("click");
               }
             },
@@ -904,8 +935,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             className: `bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? "ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50" : ""}`,
             "data-help-key": "matching_term_item"
           },
-          item.term,
-          /* @__PURE__ */ React.createElement(SpeakButton, { text: item.term, size: 11, className: "ms-1" })
+          item.term
         ), /* @__PURE__ */ React.createElement(
           "div",
           {
@@ -935,6 +965,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
           {
             onClick: () => {
               if (isChecked) return;
+              readMatchingSelection(def.text);
               if (keyboardSelectedTerm) {
                 setConnections((prev) => {
                   const filtered = prev.filter((c) => c.termId !== keyboardSelectedTerm && c.defId !== def.id);
@@ -954,8 +985,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             className: `bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? "hover:border-indigo-300 hover:shadow-md" : ""}`,
             "data-help-key": "matching_def_item"
           },
-          def.text,
-          /* @__PURE__ */ React.createElement(SpeakButton, { text: def.text, size: 11, className: "ms-1 shrink-0" })
+          def.text
         )))))
       )
     )

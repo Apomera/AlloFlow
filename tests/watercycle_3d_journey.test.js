@@ -90,6 +90,11 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('"aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown F"');
       expect(source).toContain('" + journeyStatusLabel + " | illustrative scale"');
       expect(source).toContain('className: "wc-viewport-choice"');
+      expect(source).toContain('"aria-describedby": "wcViewportChoiceDescription wcViewportChoiceStatus"');
+      expect(source).toContain('id: "wcViewportChoiceStatus"');
+      expect(source).toContain('className: "wc-route-choice-signal"');
+      expect(source).toContain('role: "status"');
+      expect(source).toContain('"aria-atomic": "true"');
       expect(source).toContain("chooseJourneyPath('runoff')");
       expect(source).toContain("chooseJourneyPath('infiltrate')");
       expect(source).toContain("chooseJourneyPath('plant')");
@@ -303,7 +308,8 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('function updateBranchShareLabel3d(branchSpec3d, branchPercent3d)');
       expect(source).toContain('branchSpec3d.shareSprite3d = branchShareSprite3d;');
       expect(source).toContain("shareLabel: 'Runoff'");
-      expect(source).toContain("shareLabel: 'Recharge'");
+      expect(source).toContain("shareLabel: 'Infiltration'");
+      expect(source).not.toContain("shareLabel: 'Recharge'");
       expect(source).toContain("shareLabel: 'Plant'");
       expect(source).toContain("var branchRunoffCoverWeight3d = coverVisual3d === 'urban'");
       expect(source).toContain("var branchInfiltrationCoverWeight3d = coverVisual3d === 'urban'");
@@ -317,6 +323,9 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain("canvasEl.dataset.routePreview = groundChoiceActive3d ? 'runoff,infiltrate,plant' : 'hidden';");
       expect(source).toContain('canvasEl.dataset.routeBalance = groundChoiceActive3d ?');
       expect(source).toContain("canvasEl.dataset.routeBalanceModel = 'relative-tendency';");
+      expect(source).toContain('relative runoff, infiltration opportunity, and plant uptake tendencies');
+      expect(source).toContain('Infiltration does not automatically mean groundwater recharge.');
+      expect(source).not.toContain('relative runoff, groundwater recharge, and plant uptake tendencies');
       expect(source).toContain('At the land decision, percentages compare relative runoff');
       expect(source).toContain('"data-route-choice": "runoff"');
       expect(source).toContain('"data-route-choice": "infiltrate"');

@@ -78,7 +78,7 @@ const BASE = {
   sawAttract: false, sawRepel: false,
   fieldView: '2d', fieldMapProbe: { x: 90, y: 0 }, fieldMapPath: 'axial', fieldMapStrength: 1, fieldMapNoise: 0, fieldMapSamples: [], fieldMapUsed: false,
   turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false,
-  motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false, motorMode: 'forces',
+  motorCurrent: 3, motorField: 4, motorLoad: 0.35, motorLoadPrediction: 1, motorLoadSamples: [], motorLoadTrialStarted: false, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false, motorMode: 'forces',
   motorView: '2d', motor3dStatus: 'loading', motor3dAttempt: 0, motor3dUsed: false, motor3dForces: true, motor3dCurrent: true,
   forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5, forceLabSpeed: 300, forceLabCurrentDir: 1, forceLabFieldDir: 1, forceLabUsed: false,
   analyzerE: 6, analyzerSelectorB: 3, analyzerSpeed: 2, analyzerB: 4, analyzerSpecies: 'deuteron', analyzerShowAll: true, analyzerUsed: false,
@@ -150,6 +150,27 @@ describe('magnetism tool — real physics', () => {
     expect(physics.motorTorqueFactor(3, 4, 90, -1, -1)).toBeCloseTo(12, 12);
   });
 
+  it('reports magnetic torque margin against shaft load', () => {
+    const maximum = physics.motorLoadState(3, 4, 90, 0.5);
+    const edge = physics.motorLoadState(3, 4, 30, 0.5);
+    const stalled = physics.motorLoadState(3, 4, 20, 0.5);
+    const free = physics.motorLoadState(3, 4, 90, 0);
+    expect(maximum.magneticTorque).toBeCloseTo(1, 9);
+    expect(maximum.margin).toBeCloseTo(0.5, 9);
+    expect(maximum.stalled).toBe(false);
+    expect(edge.stalled).toBe(false);
+    expect(stalled.stalled).toBe(true);
+    expect(free.ratio).toBe(Infinity);
+  });
+  it('brackets a predicted stall threshold from passing and stalled samples', () => {
+    const trial = physics.motorLoadTrialState([
+      { load: 0.75, margin: 0.25, stalled: false },
+      { load: 1.25, margin: -0.25, stalled: true },
+    ], 1);
+    expect(trial).toMatchObject({ count: 2, passingMax: 0.75, stalledMin: 1.25, bracketed: true });
+    expect(trial.observed).toBeCloseTo(1, 9);
+    expect(trial.delta).toBeCloseTo(0, 9);
+  });
   it('couples generator load to shaft speed while conserving the energy ledger', () => {
     const heavy = physics.motorGeneratorBench(3, 4, 10, 3, 80, 4);
     const balanced = physics.motorGeneratorBench(3, 4, 40, 3, 80, 4);
@@ -502,6 +523,14 @@ describe('magnetism tool — expanded interactive simulation models', () => {
     expect(electro.map((metric) => metric.key)).toEqual(['field_mT', 'turns', 'current_A']);
     expect(electro[0].value).toBeGreaterThan(0);
     expect(electro[0].display).toContain('mT');
+    const motor = physics.notebookMetricSnapshot({ magnetism: { tab: 'motor', motorMode: 'forces', motorCurrent: 3, motorField: 4, motorAngle: 90, motorLoad: 0.5 } });
+    expect(motor.map((metric) => metric.key)).toEqual(['torque_rel', 'angle_deg', 'load_rel', 'load_margin']);
+    expect(motor[2].value).toBeCloseTo(0.5, 9);
+    expect(motor[3].value).toBeCloseTo(0.5, 9);
+    const completed = physics.notebookMetricSnapshot({ magnetism: { tab: 'motor', motorMode: 'forces', motorCurrent: 3, motorField: 4, motorAngle: 90, motorLoad: 1.25, motorLoadPrediction: 1, motorLoadSamples: [{ load: 0.75, margin: 0.25, stalled: false }, { load: 1.25, margin: -0.25, stalled: true }] } });
+    expect(completed.map((metric) => metric.key)).toEqual(['torque_rel', 'angle_deg', 'load_rel', 'load_margin', 'load_prediction', 'load_observed', 'load_offset']);
+    expect(completed[5].value).toBeCloseTo(1, 9);
+    expect(completed[6].value).toBeCloseTo(0, 9);
     const earth = physics.notebookMetricSnapshot({ magnetism: { tab: 'earth', earthSolarWind: 8 } });
     expect(earth.map((metric) => metric.key)).toEqual(['solar_wind', 'dayside_RE']);
     const replay = physics.missionReplayState('motor_path', { magnetism: {
@@ -942,8 +971,34 @@ describe('magnetism tool — jsdom mount smoke', () => {
   it('connects motor inputs to paired forces and an energy chain', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorCurrent: 5, motorField: 8 }));
     expect(html).toContain('Force on each active wire side ≈ 0.200 N');
+    expect(html).toContain('Live torque telemetry');
+    expect(html).toContain('Torque cycle phase');
+    expect(html).toContain('Torque leverage');
+    expect(html).toContain('Motor torque landmarks');
+    expect(html).toContain('Motor angle probe');
+    expect(html).toContain('Shaft load');
+    expect(html).toContain('Load margin');
+    expect(html).toContain('LOAD SWEEP');
+    expect(html).toContain('Predicted stall load');
+    expect(html).toContain('Start load sweep');
+    expect(html).toContain('Record peak-torque sample');
+    expect(html).toContain('Rotor angle');
+    expect(html).toContain('dead spot');
+    expect(html).toContain('commutator flip');
+    expect(html).toContain('Half-turn 1');
     expect(html).toContain('opposite wire forces create torque');
     expect(html).toContain('battery → moving charges → opposite magnetic forces → rotation');
+    expect(html).toContain('Record a torque trial');
+    const compared = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor',
+      notebookTrials: [{ station: 'Motor forces', setup: 'I 3 A · B 4', result: '1.00× torque', prediction: 'More current increases torque.', metrics: [
+        { key: 'torque_rel', label: 'Relative torque', value: 1, unit: 'x', digits: 2, display: '1.00 x' },
+        { key: 'angle_deg', label: 'Rotor angle', value: 45, unit: 'deg', digits: 0, display: '45 deg' },
+      ] }],
+    }));
+    expect(compared).toContain('Previous trial comparison');
+    expect(compared).toContain('Recorded setup: I 3 A · B 4.');
+    expect(compared).toContain('Live 1.00');
   });
 
   it('renders an accessible force-to-power bridge with linked speed and work controls', async () => {
@@ -1071,6 +1126,122 @@ describe('magnetism tool — jsdom mount smoke', () => {
       else delete window.requestAnimationFrame;
       if (previousCancel) window.cancelAnimationFrame = previousCancel;
       else delete window.cancelAnimationFrame;
+    }
+  });
+
+  it('freezes the 2D motor at a landmark angle for inspection', () => {
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: false, motorAngle: 90,
+    }));
+    try {
+      const landmark = () => Array.from(live.host.querySelectorAll('button')).find((button) => button.textContent.includes('180') && button.textContent.includes('commutator flip'));
+      expect(landmark()).toBeTruthy();
+      act(() => { landmark().click(); });
+      const motorSvg = Array.from(live.host.querySelectorAll('svg[role="img"]')).find((element) => (element.getAttribute('aria-label') || '').startsWith('Motor model'));
+      expect(motorSvg.getAttribute('aria-label')).toContain('rotated 180 degrees');
+      expect(live.host.textContent).toContain('Half-turn 2');
+      expect(landmark().getAttribute('aria-pressed')).toBe('true');
+    } finally {
+      live.unmount();
+    }
+  });
+
+  it('completes a predicted-versus-observed load sweep', () => {
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: false, motorAngle: 45, motorLoad: 0.35,
+    }));
+    try {
+      const button = (label) => Array.from(live.host.querySelectorAll('button')).find((candidate) => candidate.textContent.includes(label));
+      const loadInput = () => Array.from(live.host.querySelectorAll('input[type="range"]')).find((input) => (input.getAttribute('aria-valuetext') || '').startsWith('Shaft load'));
+      const setLoad = (value) => act(() => {
+        const input = loadInput();
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, String(value));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      act(() => { button('Start load sweep').click(); });
+      setLoad(0.75);
+      act(() => { button('Record peak-torque sample').click(); });
+      setLoad(1.25);
+      act(() => { button('Record peak-torque sample').click(); });
+      expect(live.host.textContent).toContain('Observed boundary');
+      expect(live.host.textContent).toContain('Prediction offset: +0.00x.');
+      expect(live.host.textContent).toContain('PASS 0.75x');
+      expect(live.host.textContent).toContain('STALL 1.25x');
+    } finally {
+      live.unmount();
+    }
+  });
+  it('scrubs the motor angle probe and pauses the engine', () => {
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: true, motorAngle: 90,
+    }));
+    try {
+      const angleInput = () => Array.from(live.host.querySelectorAll('input[type="range"]')).find((input) => (input.getAttribute('aria-valuetext') || '').startsWith('Rotor angle'));
+      expect(angleInput()).toBeTruthy();
+      act(() => {
+        const input = angleInput();
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, '135');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      const motorSvg = Array.from(live.host.querySelectorAll('svg[role="img"]')).find((element) => (element.getAttribute('aria-label') || '').startsWith('Motor model'));
+      expect(motorSvg.getAttribute('aria-label')).toContain('rotated 135 degrees');
+      expect(live.host.textContent).toContain('Torque engine paused.');
+      expect(angleInput().getAttribute('aria-valuetext')).toContain('135');
+    } finally {
+      live.unmount();
+    }
+  });
+
+  it('surfaces a stalled motor when shaft load exceeds peak torque', () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: true, motorAngle: 90, motorLoad: 2,
+    }));
+    expect(html).toContain('Torque run stalled.');
+    expect(html).toContain('Load exceeds available magnetic torque.');
+    expect(html).toContain('Stalled');
+  });
+  it('holds the rotor when load exceeds available torque', () => {
+    const previousRAF = window.requestAnimationFrame;
+    const previousCancel = window.cancelAnimationFrame;
+    const frames = [];
+    window.requestAnimationFrame = (callback) => { frames.push(callback); return frames.length; };
+    window.cancelAnimationFrame = () => {};
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: false, motorAngle: 90, motorLoad: 2,
+    }));
+    try {
+      const run = Array.from(live.host.querySelectorAll('button')).find((button) => button.textContent.includes('Run motor'));
+      const motorSvg = () => Array.from(live.host.querySelectorAll('svg[role="img"]')).find((element) => (element.getAttribute('aria-label') || '').startsWith('Motor model'));
+      act(() => { run.click(); });
+      const before = motorSvg().getAttribute('aria-label');
+      const firstFrame = frames.shift();
+      act(() => { firstFrame(0); });
+      const secondFrame = frames.shift();
+      act(() => { secondFrame(16); });
+      expect(motorSvg().getAttribute('aria-label')).toBe(before);
+      expect(live.host.textContent).toContain('Torque run stalled.');
+    } finally {
+      live.unmount();
+      if (previousRAF) window.requestAnimationFrame = previousRAF;
+      else delete window.requestAnimationFrame;
+      if (previousCancel) window.cancelAnimationFrame = previousCancel;
+      else delete window.cancelAnimationFrame;
+    }
+  });
+  it('treats the 360-degree wrap as the 0-degree dead spot', () => {
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: false, motorAngle: 359.8,
+    }));
+    try {
+      const deadSpot = Array.from(live.host.querySelectorAll('button')).find((button) => button.textContent.includes('dead spot'));
+      expect(deadSpot).toBeTruthy();
+      expect(deadSpot.getAttribute('aria-pressed')).toBe('true');
+    } finally {
+      live.unmount();
     }
   });
 

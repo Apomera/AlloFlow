@@ -32,10 +32,13 @@ beforeAll(() => {
 });
 
 describe('every canvas is exposed as a named image', () => {
-  it('pairs each 2D context with a role and a label', () => {
-    const canvases = (source.match(/getContext\('2d'\)/g) || []).length;
+  it('pairs every canvas element with a named image role through one shared 2D setup', () => {
+    const canvases = (source.match(/h\('canvas'/g) || []).length;
+    const contexts = (source.match(/getContext\('2d'\)/g) || []).length;
     const roles = (source.match(/role: 'img'/g) || []).length;
     expect(canvases).toBeGreaterThanOrEqual(13);
+    expect(contexts).toBe(1);
+    expect(source).toContain('function prepareCanvas(canvasEl, logicalWidth, logicalHeight)');
     expect(roles).toBeGreaterThanOrEqual(canvases);
   });
 });

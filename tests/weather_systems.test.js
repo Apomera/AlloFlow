@@ -752,6 +752,11 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('Moisture and precipitation');
     expect(html).toContain('Surface observations');
     expect(html).toContain('data-weather-focus-status');
+    expect(html).toContain('data-weather-focus-spotlight=\"on\"');
+    expect(html).toContain('data-weather-focus-spotlight-badge=\"front\"');
+    expect(html).toContain('data-weather-focus-spotlight-toggle=\"controls\"');
+    expect(html).toContain('Turn off the visual focus spotlight');
+    expect(html).toContain('Ground halo follows analysis focus');
     expect(html).toContain('Air masses, the frontal boundary, wind, and stations are isolated.');
     expect(html).toContain('aria-live="polite"');
   });
@@ -809,6 +814,29 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(teacherHtml).toContain('data-weather-local-persistence');
     expect(teacherHtml).toContain('Remember this workspace on this device');
     expect(teacherHtml).toContain('Clear local copy');
+    const presenterHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveAudienceMode: 'teacher', immersiveStageMode: true, immersivePresenterMode: true, immersiveTourStep: 'front' }
+    }, { gradeLevel: '8th Grade' });
+    expect(presenterHtml).toContain('data-weather-presenter-mode="on"');
+    expect(presenterHtml).toContain('data-weather-presenter-overlay');
+    expect(presenterHtml).toContain('Teacher cue');
+    expect(presenterHtml).toContain('Evidence to notice');
+    const checkpointHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveAudienceMode: 'teacher', immersiveStageMode: true, immersivePresenterMode: true, immersiveCheckpointRunnerOpen: true, immersiveTourStep: 'front', immersiveTourCompletedSteps: ['scan'] }
+    }, { gradeLevel: '8th Grade' });
+    expect(checkpointHtml).toContain('data-weather-checkpoint-runner="on"');
+    expect(checkpointHtml).toContain('data-weather-checkpoint-runner');
+    expect(checkpointHtml).toContain('Checkpoint runner');
+    expect(checkpointHtml).toContain('1/4 complete');
+    expect(checkpointHtml).toContain('Mark + next');
+    const summaryHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveStageMode: true, immersiveSceneSummaryOpen: true, immersiveFocus: 'moisture' }
+    }, { gradeLevel: '8th Grade' });
+    expect(summaryHtml).toContain('data-weather-scene-summary="on"');
+    expect(summaryHtml).toContain('data-weather-scene-summary-panel');
+    expect(summaryHtml).toContain('Accessible scene view');
+    expect(summaryHtml).toContain('Visible layer meanings');
+    expect(summaryHtml).toContain('Temperature');
     const stageHtml = renderTool('weatherSystems', {
       weatherSystems: { tab: 'immersive', immersiveStageMode: true, immersiveTourStep: 'front' }
     }, { gradeLevel: '8th Grade' });
@@ -818,6 +846,18 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(stageHtml).toContain('data-weather-stage-legend');
     expect(stageHtml).toContain('Visible 3D channels');
     expect(stageHtml).toContain('Air masses');
+    expect(stageHtml).toContain('data-weather-stage-focus-controls');
+    expect(stageHtml).toContain('Quick focus');
+    expect(stageHtml).toContain('Front dynamics');
+    expect(stageHtml).toContain('data-weather-focus-spotlight=\"on\"');
+    expect(stageHtml).toContain('data-weather-focus-spotlight-badge');
+    expect(stageHtml).toContain('Visual spotlight');
+    expect(stageHtml).toContain('data-weather-focus-spotlight-toggle=\"stage\"');
+    const spotlightOffHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveStageMode: true, immersiveFocusSpotlight: false }
+    }, { gradeLevel: '8th Grade' });
+    expect(spotlightOffHtml).toContain('data-weather-focus-spotlight=\"off\"');
+    expect(spotlightOffHtml).not.toContain('data-weather-focus-spotlight-badge');
     const stageTimelineHtml = renderTool('weatherSystems', {
       weatherSystems: {
         tab: 'immersive',
@@ -841,7 +881,8 @@ it('renders the immersive guided investigation tour and evidence note', () => {
             windSpeed: 22, windDir: 245, condition: 'Cloudy'
           }
         ],
-        liveWeatherTimelineIndex: 1
+        liveWeatherTimelineIndex: 1,
+        immersiveTimelineCompareIndex: 0
       }
     }, { gradeLevel: '8th Grade' });
     expect(stageTimelineHtml).toContain('data-weather-stage-timeline');
@@ -851,6 +892,10 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(stageTimelineHtml).toContain('data-weather-stage-timeline-context');
     expect(stageTimelineHtml).toContain('Forecast hour');
     expect(stageTimelineHtml).toContain('Scene time');
+    expect(stageTimelineHtml).toContain('data-weather-stage-timeline-comparison');
+    expect(stageTimelineHtml).toContain('Compare hours');
+    expect(stageTimelineHtml).toContain('weather-stage-timeline-comparison');
+    expect(stageTimelineHtml).toContain('Change since baseline');
   });
 
   it('renders optional structured location fields with address autocomplete semantics', () => {
@@ -3292,9 +3337,32 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain('data-weather-stage-timeline');
     expect(source).toContain('weather-stage-timeline-slider');
     expect(source).toContain('data-weather-stage-timeline-context');
+    expect(source).toContain('data-weather-stage-timeline-comparison');
+    expect(source).toContain('Change since baseline');
     expect(source).toContain('timelineStageContext');
     expect(source).toContain('data-weather-stage-legend');
     expect(source).toContain('stageLegendItems');
+    expect(source).toContain('stageFocusOptions');
+    expect(source).toContain('data-weather-stage-focus-controls');
+    expect(source).toContain('function toggleImmersiveFocusSpotlight()');
+    expect(source).toContain('function setFocusSpotlight(focusId, enabled)');
+    expect(source).toContain('new THREE.RingGeometry(radius * 0.72, radius, 64)');
+    expect(source).toContain('if (focusSpotlightGroup && focusSpotlightGroup.userData)');
+    expect(source).toContain('data-weather-focus-spotlight-badge');
+    expect(source).toContain('var focusSpotlightThemes = {');
+    expect(source).toContain("immersiveStageMode ? 'hidden xl:block '");
+    expect(source).toContain("'data-weather-focus-spotlight-toggle': 'controls'");
+    expect(source).toContain("'data-weather-focus-spotlight-toggle': 'stage'");
+    expect(source).toContain('data-weather-focus-spotlight');
+    expect(source).toContain('function toggleImmersivePresenterMode()');
+    expect(source).toContain('data-weather-presenter-overlay');
+    expect(source).toContain('data-weather-presenter-mode');
+    expect(source).toContain('function toggleImmersiveCheckpointRunner()');
+    expect(source).toContain('function advanceImmersiveCheckpointRunner()');
+    expect(source).toContain('data-weather-checkpoint-runner');
+    expect(source).toContain('function toggleImmersiveSceneSummary()');
+    expect(source).toContain('data-weather-scene-summary-panel');
+    expect(source).toContain('data-weather-scene-summary');
     expect(source).toContain('var IMMERSIVE_LOCAL_WORKSPACE_KEY =');
     expect(source).toContain('function immersiveLocalWorkspacePayload(data)');
     expect(source).toContain('function validateImmersiveLocalWorkspacePayload(payload)');

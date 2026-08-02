@@ -36,6 +36,12 @@
   .panel { padding:15px; }
   .scene-panel { overflow:hidden; min-height:610px; }
   .progress-line { display:flex; justify-content:space-between; gap:8px; align-items:center; color:var(--muted); font-size:12px; font-weight:800; margin-bottom:10px; }
+  .mission-banner { margin:0 0 11px; padding:10px; border:1px solid #3f6688; border-radius:12px; background:linear-gradient(135deg, rgba(14,116,144,.2), rgba(11,27,45,.78)); }
+  .mission-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .mission-kicker { margin:0 0 3px; color:var(--accent); font-size:9px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+  .mission-banner h2 { margin:0; font-size:14px; }
+  .mission-context { margin:6px 0 0; color:var(--muted); font-size:11px; line-height:1.4; }
+  .support-badge { flex:0 0 auto; padding:4px 7px; border:1px solid rgba(103,232,249,.38); border-radius:999px; color:var(--accent); background:rgba(8,19,33,.42); font-size:9px; font-weight:900; white-space:nowrap; }
   #progressValue { color:var(--accent); font-variant-numeric:tabular-nums; }
   .steps { list-style:none; padding:0; margin:0 0 13px; display:grid; gap:5px; }
   .step { display:flex; width:100%; align-items:center; gap:7px; padding:7px 8px; border:1px solid #365575; border-radius:8px; color:var(--muted); font-size:11px; font-weight:700; cursor:pointer; text-align:left; }
@@ -82,6 +88,28 @@
   button:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
   @media (max-width: 850px) { body { padding:10px; } .layout { grid-template-columns:1fr; } .scene-panel, a-scene { min-height:480px; } }
   @media (max-width: 480px) { .panel { padding:12px; } .scene-panel, a-scene { min-height:390px; } }
+
+  header { position: relative; isolation: isolate; overflow: hidden; padding: 15px 17px; border: 1px solid rgba(112,164,200,.55); border-radius: 18px; background: linear-gradient(135deg, rgba(16,34,56,.98), rgba(14,116,144,.24)); box-shadow: 0 16px 38px rgba(0,0,0,.24); }
+  header::before { content: ''; position: absolute; inset: -75% 38% 15% -15%; background: radial-gradient(circle, rgba(103,232,249,.22), transparent 68%); transform: rotate(-12deg); pointer-events: none; }
+  header::after { content: ''; position: absolute; width: 240px; height: 240px; right: -105px; top: -155px; border: 1px solid rgba(103,232,249,.25); border-radius: 50%; box-shadow: 0 0 0 18px rgba(103,232,249,.05), 0 0 0 40px rgba(103,232,249,.03); pointer-events: none; }
+  header > * { position: relative; z-index: 1; }
+  .badge { background: rgba(8,19,33,.34); box-shadow: 0 0 0 4px rgba(103,232,249,.06), 0 8px 18px rgba(0,0,0,.16); backdrop-filter: blur(8px); }
+  .panel, .scene-panel { background: linear-gradient(145deg, rgba(16,34,56,.98), rgba(23,45,71,.94)); box-shadow: 0 18px 55px rgba(0,0,0,.30); }
+  .scene-panel { position: relative; transition:border-color .18s ease, box-shadow .18s ease; }
+  .scene-panel[data-risk-active="true"] { border-color:var(--danger); box-shadow:0 0 0 2px rgba(251,113,133,.16), 0 18px 55px rgba(0,0,0,.30); }
+  .scene-panel[data-mission-complete="true"] { border-color:var(--good); box-shadow:0 0 0 2px rgba(74,222,128,.14), 0 18px 55px rgba(0,0,0,.30); }
+  .scene-panel::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.08), transparent 34%, transparent 70%, rgba(0,0,0,.16)); }
+  .scene-panel::after { content: '3D SCENE'; position: absolute; top: 12px; right: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(103,232,249,.35); border-radius: 999px; background: rgba(8,19,33,.62); color: var(--accent); font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; }
+  .scene-panel > * { position: relative; z-index: 2; }
+  .progress-line { border: 1px solid #365575; border-radius: 11px; background: linear-gradient(90deg, rgba(14,116,144,.18), rgba(11,27,45,.72)); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 8px 18px rgba(0,0,0,.14); }
+  #progressValue { display: inline-flex; padding: 4px 7px; border: 1px solid rgba(103,232,249,.35); border-radius: 999px; background: rgba(103,232,249,.10); }
+  .step { transition: transform .16s ease, border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
+  .step:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(0,0,0,.12); }
+  .step.current { box-shadow: 0 0 0 2px rgba(250,204,21,.13), 0 8px 18px rgba(0,0,0,.12); }
+  .step.done { box-shadow: 0 7px 16px rgba(74,222,128,.10); }
+  .choice, .tool, .view { transition: transform .16s ease, border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
+  .choice:hover, .tool:hover, .view:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(0,0,0,.14); }
+  .debrief { box-shadow: 0 10px 24px rgba(0,0,0,.14); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 </style>
 </head>
@@ -97,6 +125,10 @@
   <div class="layout">
     <section class="panel" aria-labelledby="stationTitle">
       <div class="progress-line"><span>Capstone progress</span><span id="progressValue">0 / 5 stations</span></div>
+      <section class="mission-banner" aria-labelledby="missionTitle">
+        <div class="mission-top"><div><p class="mission-kicker">Adaptive mission</p><h2 id="missionTitle"></h2></div><span class="support-badge" id="supportBadge"></span></div>
+        <p class="mission-context" id="missionContext"></p>
+      </section>
       <ol class="steps" id="steps" aria-label="Capstone stations"></ol>
       <div class="decision">
         <p class="eyebrow" id="stationLabel">Station 1</p>
@@ -215,6 +247,21 @@
   ];
   var BY_ID = {};
   TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var params = new URLSearchParams(window.location.search);
+  var LAB_TO_STATION = { safety: 'alarm', repair: 'shutoff', kitchen: 'stove', laundry: 'lint', transit: 'visibility' };
+  var MISSION_BY_FOCUS = {
+    safety: { title: 'Safe morning launch', context: 'An alarm interrupts the routine. Protect people first, then stabilize the rest of the day.', order: ['alarm', 'stove', 'shutoff', 'lint', 'visibility'] },
+    repair: { title: 'Stop the problem first', context: 'A water leak changes the plan. Control the source, then make the home and trip ready.', order: ['shutoff', 'lint', 'alarm', 'stove', 'visibility'] },
+    kitchen: { title: 'Breakfast to bus stop', context: 'Move from breakfast through home checks to a visible transit stop without carrying risk forward.', order: ['stove', 'alarm', 'lint', 'shutoff', 'visibility'] },
+    laundry: { title: 'Home routine under pressure', context: 'Weak dryer airflow is the first warning. Pause, protect the home, and keep the day moving safely.', order: ['lint', 'alarm', 'stove', 'shutoff', 'visibility'] },
+    transit: { title: 'Safe trip connection', context: 'Start with an unfamiliar stop after dark, then transfer the same stop-and-check habit back home.', order: ['visibility', 'alarm', 'stove', 'shutoff', 'lint'] }
+  };
+  var SUPPORT_LABELS = { supported: 'Extra coaching', guided: 'Guided practice', independent: 'Independent transfer' };
+  function validMissionFocus(value) { return Object.prototype.hasOwnProperty.call(MISSION_BY_FOCUS, value); }
+  function validOrder(value) { return Array.isArray(value) && value.length === TASKS.length && TASKS.every(function (task) { return value.indexOf(task.id) >= 0; }); }
+  function missionFor(focus) { return MISSION_BY_FOCUS[validMissionFocus(focus) ? focus : 'kitchen']; }
+  var requestedFocus = validMissionFocus(params.get('focus')) ? params.get('focus') : 'kitchen';
+  var requestedSupport = Object.prototype.hasOwnProperty.call(SUPPORT_LABELS, params.get('support')) ? params.get('support') : 'guided';
   var storageKey = 'alloflow-life-capstone-3d-progress-v1';
   function loadState() {
     try {
@@ -223,12 +270,16 @@
     } catch (_) { return { done: {}, missteps: 0, hints: 0 }; }
   }
   var saved = loadState();
-  var state = { mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: Array.isArray(saved.order) ? saved.order : TASKS.map(function (task) { return task.id; }), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
+  var hasSavedProgress = Object.keys(saved.done || {}).length > 0 || saved.mode === 'challenge';
+  var missionFocus = hasSavedProgress && validMissionFocus(saved.missionFocus) ? saved.missionFocus : requestedFocus;
+  var mission = missionFor(missionFocus);
+  var savedSupport = Object.prototype.hasOwnProperty.call(SUPPORT_LABELS, saved.support) ? saved.support : requestedSupport;
+  var state = { missionFocus: missionFocus, support: hasSavedProgress ? savedSupport : requestedSupport, mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: hasSavedProgress && validOrder(saved.order) ? saved.order : mission.order.slice(), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, attempts: saved.attempts && typeof saved.attempts === 'object' ? saved.attempts : {}, debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
   function shuffle(values) { var result = values.slice(); for (var i = result.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var swap = result[i]; result[i] = result[j]; result[j] = swap; } return result; }
-  function runTasks() { var ids = state.mode === 'challenge' ? state.order : TASKS.map(function (task) { return task.id; }); return ids.map(function (id) { return BY_ID[id]; }).filter(Boolean); }
+  function runTasks() { return state.order.map(function (id) { return BY_ID[id]; }).filter(Boolean); }
   function ensureChallengeChoices() { if (state.mode !== 'challenge') return; TASKS.forEach(function (task) { var savedIds = Array.isArray(state.challengeChoices[task.id]) ? state.challengeChoices[task.id] : []; var valid = savedIds.length === task.choices.length && savedIds.every(function (id) { return task.choices.some(function (choice) { return choice.id === id; }); }); if (!valid) state.challengeChoices[task.id] = shuffle(task.choices.map(function (choice) { return choice.id; })); }); }
   ensureChallengeChoices();
-  function saveState() { try { window.localStorage.setItem(storageKey, JSON.stringify({ mode: state.mode, order: state.order, challengeChoices: state.challengeChoices, risk: state.risk, debrief: state.debrief, done: state.done, missteps: state.missteps, hints: state.hints, updatedAt: Date.now() })); } catch (_) {} }
+  function saveState() { try { window.localStorage.setItem(storageKey, JSON.stringify({ missionFocus: state.missionFocus, support: state.support, mode: state.mode, order: state.order, challengeChoices: state.challengeChoices, risk: state.risk, attempts: state.attempts, debrief: state.debrief, done: state.done, missteps: state.missteps, hints: state.hints, updatedAt: Date.now() })); } catch (_) {} }
   function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
   function nextIndex() { var tasks = runTasks(); for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) return i; return tasks.length - 1; }
   function postToOpener(payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), '*'); } catch (_) {} }
@@ -250,25 +301,31 @@
     renderScene(); render();
     if (announceIt !== false) announce(BY_ID[station].title + ' is highlighted in the scene.');
   }
+  function postProgressSnapshot() {
+    postToOpener({ type: 'alloflow-life-capstone-3d-progress', completed: doneCount(), total: TASKS.length, confidence: state.debrief.confidence || '', nextStep: state.debrief.nextStep || '', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
+  }
   function completeTask(task) {
     if (state.done[task.id]) return;
     state.done[task.id] = true; saveState();
     var completed = doneCount();
-    if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'You practiced five connected safety decisions.', 'good'); postToOpener({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode }); announce(state.mode === 'challenge' ? 'Transfer challenge complete.' : 'Capstone complete.'); }
-    else { postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode }); setFeedback('Completed: ' + task.title + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '.'); }
+    if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'You practiced five connected safety decisions.', 'good'); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); announce(state.mode === 'challenge' ? 'Transfer challenge complete.' : 'Capstone complete.'); }
+    else { postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); setFeedback('Completed: ' + task.title + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '.'); }
   }
   function choose(choiceId) {
     var task = runTasks()[state.activeIndex];
     var choice = task && task.choices.find(function (item) { return item.id === choiceId; });
     if (!task || !choice) return;
     var revisiting = !!state.done[task.id];
+    state.attempts[task.id] = (Number(state.attempts[task.id]) || 0) + 1;
     state.hintShown = false;
     if (choice.safe) {
       delete state.risk[task.id];
       if (revisiting) { saveState(); setFeedback('Rehearsed: ' + task.title + '. The station remains marked safe.', 'good'); announce('Rehearsed ' + task.title + '.'); }
       else { completeTask(task); state.activeIndex = nextIndex(); state.focused = runTasks()[state.activeIndex].id; }
     } else {
-      state.risk[task.id] = true; state.missteps += 1; saveState(); state.focused = task.id; setFeedback(choice.feedback + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + choice.feedback);
+      state.risk[task.id] = true; state.missteps += 1;
+      if (state.support === 'supported' && state.attempts[task.id] === 1) { state.hintShown = true; state.hints += 1; }
+      saveState(); state.focused = task.id; setFeedback((state.hintShown ? 'Coaching cue: ' : '') + choice.feedback + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + choice.feedback + (state.hintShown ? ' A first-step cue is now available.' : ''));
     }
     render(); renderScene();
   }
@@ -288,11 +345,16 @@
     var wrap = document.getElementById('choices'); wrap.innerHTML = '';
     var choices = state.mode === 'challenge' ? state.challengeChoices[task.id].map(function (id) { return task.choices.find(function (choice) { return choice.id === id; }); }).filter(Boolean) : task.choices;
     choices.forEach(function (choice) {
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && state.mode !== 'challenge' ? ' safe' : ''); button.textContent = choice.label; button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
+      var hideSafeCue = state.mode === 'challenge' || state.support === 'independent';
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && !hideSafeCue ? ' safe' : ''); button.textContent = choice.label; button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
     });
   }
   function render() {
     var tasks = runTasks(); var task = tasks[state.activeIndex] || tasks[0]; var complete = doneCount() === tasks.length;
+    mission = missionFor(state.missionFocus);
+    document.getElementById('missionTitle').textContent = mission.title;
+    document.getElementById('missionContext').textContent = mission.context;
+    document.getElementById('supportBadge').textContent = SUPPORT_LABELS[state.support];
     document.getElementById('progressValue').textContent = doneCount() + ' / ' + TASKS.length + ' stations';
     document.getElementById('capstoneStatus').textContent = complete ? (state.mode === 'challenge' ? 'Transfer challenge complete' : 'Capstone complete') : (state.mode === 'challenge' ? 'Transfer challenge / ' : 'Guided sequence / ') + (state.missteps ? state.missteps + ' coaching moment' + (state.missteps === 1 ? '' : 's') : 'no coaching moments');
     document.getElementById('stationLabel').textContent = 'Station ' + (state.activeIndex + 1) + ' of ' + TASKS.length + ' · ' + task.room;
@@ -300,7 +362,7 @@
     document.getElementById('situation').textContent = task.situation;
     document.getElementById('instruction').textContent = state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or choose another station.' : task.instruction;
     renderChoices(task); renderSteps();
-    var hintButton = document.getElementById('hintButton'); hintButton.disabled = false; hintButton.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    var hintButton = document.getElementById('hintButton'); hintButton.disabled = false; hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
     var hintText = document.getElementById('hintText'); hintText.hidden = !state.hintShown; hintText.textContent = state.hintShown ? task.hint : '';
     var feedback = document.getElementById('feedback'); feedback.textContent = state.feedback; feedback.className = 'feedback' + (state.tone ? ' ' + state.tone : '');
     var challengeButton = document.getElementById('challengeButton'); challengeButton.disabled = !complete; challengeButton.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
@@ -333,12 +395,16 @@
     var focusId = state.focused || task.id;
     var marker = document.getElementById('sceneMarker'); marker.setAttribute('position', itemPosition(focusId)); marker.setAttribute('visible', !state.done[focusId] || !!state.risk[focusId]);
     var markerRing = document.getElementById('sceneMarkerRing'); var markerColor = state.risk[focusId] ? '#fb7185' : '#facc15'; if (markerRing) { markerRing.setAttribute('color', markerColor); markerRing.setAttribute('material', 'emissive: ' + markerColor + '; emissiveIntensity: .7'); }
-    document.getElementById('sceneNote').setAttribute('value', state.risk[task.id] ? 'RISK STILL ACTIVE\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase() : state.done[task.id] ? 'CHOOSE A STATION TO REVISIT' : 'FOCUS\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase());
+    var panel = document.getElementById('scenePanel');
+    var anyRisk = Object.keys(state.risk).some(function (id) { return !!state.risk[id]; });
+    panel.setAttribute('data-risk-active', String(anyRisk));
+    panel.setAttribute('data-mission-complete', String(doneCount() === TASKS.length && !anyRisk));
+    document.getElementById('sceneNote').setAttribute('value', state.risk[task.id] ? 'RISK STILL ACTIVE\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase() : doneCount() === TASKS.length && !anyRisk ? 'MISSION COMPLETE\nFIVE SAFER DECISIONS' : state.done[task.id] ? 'CHOOSE A STATION TO REVISIT' : 'FOCUS\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase());
   }
   function itemPosition(id) { return ({ stove: '-5.2 .14 -2.5', lint: '-1.8 .14 -2.5', shutoff: '1.8 .14 -2.5', alarm: '5.1 .14 -2.5', visibility: '0 .14 2.5' })[id] || '0 .14 -2.5'; }
-  function recordDebrief(field, value) { state.debrief[field] = value; saveState(); render(); var message = field === 'confidence' ? 'Readiness saved.' : 'Next practice step saved.'; announce(message); if (state.debrief.confidence && state.debrief.nextStep) postToOpener({ type: 'alloflow-life-capstone-3d-debrief', confidence: state.debrief.confidence, nextStep: state.debrief.nextStep, teachBack: state.debrief.teachBack, mode: state.mode }); }
-  function saveTeachBack() { var text = String(state.debriefDraft || '').trim(); if (!text) { state.teachBackMessage = 'Write a sentence before saving, or leave it blank to skip.'; render(); announce('Write a sentence before saving the teach-back.'); return; } state.debrief.teachBack = text; state.debriefDraft = text; state.teachBackMessage = 'Teach-back saved.'; saveState(); render(); postToOpener({ type: 'alloflow-life-capstone-3d-teach-back', teachBack: text, mode: state.mode }); announce('Teach-back saved.'); }
-  function beginChallenge() { state.mode = 'challenge'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.risk = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Transfer challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length }); announce('Transfer challenge started with a new station order.'); }
+  function recordDebrief(field, value) { state.debrief[field] = value; saveState(); postProgressSnapshot(); render(); var message = field === 'confidence' ? 'Readiness saved.' : 'Next practice step saved.'; announce(message); if (state.debrief.confidence && state.debrief.nextStep) postToOpener({ type: 'alloflow-life-capstone-3d-debrief', confidence: state.debrief.confidence, nextStep: state.debrief.nextStep, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); }
+  function saveTeachBack() { var text = String(state.debriefDraft || '').trim(); if (!text) { state.teachBackMessage = 'Write a sentence before saving, or leave it blank to skip.'; render(); announce('Write a sentence before saving the teach-back.'); return; } state.debrief.teachBack = text; state.debriefDraft = text; state.teachBackMessage = 'Teach-back saved.'; saveState(); render(); postToOpener({ type: 'alloflow-life-capstone-3d-teach-back', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); announce('Teach-back saved.'); }
+  function beginChallenge() { state.mode = 'challenge'; state.support = 'independent'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.risk = {}; state.attempts = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Transfer challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length, missionFocus: state.missionFocus, support: state.support }); announce('Transfer challenge started with a new station order.'); }
   document.getElementById('hintButton').addEventListener('click', function () { if (!state.hintShown) state.hints += 1; state.hintShown = true; saveState(); render(); announce('Hint: ' + runTasks()[state.activeIndex].hint); });
   document.getElementById('focusButton').addEventListener('click', function () { focus(runTasks()[state.activeIndex].id, true); });
   document.getElementById('challengeButton').addEventListener('click', beginChallenge);
@@ -346,10 +412,11 @@
   document.querySelectorAll('[data-next-step]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('nextStep', button.getAttribute('data-next-step')); }); });
   document.getElementById('teachBackInput').addEventListener('input', function () { state.debriefDraft = this.value.slice(0, 180); state.teachBackMessage = ''; document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180'; document.getElementById('teachBackFeedback').textContent = state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.'; });
   document.getElementById('saveTeachBackButton').addEventListener('click', saveTeachBack);
-  document.getElementById('resetButton').addEventListener('click', function () { state.mode = 'guided'; state.order = TASKS.map(function (task) { return task.id; }); state.challengeChoices = {}; state.risk = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = 'stove'; state.hintShown = false; setFeedback('Fresh start. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-reset' }); announce('Capstone reset.'); });
+  document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.risk = {}; state.attempts = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
   window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge };
-  var first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode });
+  var first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
+  postProgressSnapshot();
   if (!window.AFRAME) document.getElementById('scenePanel').classList.add('no-aframe');
 })();
 </script>

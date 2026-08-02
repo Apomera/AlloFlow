@@ -42,4 +42,29 @@ describe('water cycle canvas animation loop', () => {
       expect(source).not.toContain('canvasEl._wcCleanup = function ()');
     });
   });
+
+  it('makes the focusable 2D canvas keyboard-controllable', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('function handleWc2dKey(e)');
+      expect(source).toContain("if (e.key === ' ' || e.key === 'Enter') {");
+      expect(source).toContain('toggleWc2dPlayback();');
+      expect(source).toContain('"aria-keyshortcuts": journeyView === \'2d\' ? "Space Enter" : undefined,');
+      expect(source).toContain('Press Space or Enter on the model to pause.');
+    });
+  });
+
+  it('repaints the paused 2D frame when state changes', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('if (canvasEl._wcInit) {');
+      expect(source).toContain('canvasEl._wcRedraw();');
+      expect(source).toContain('function draw(forceRender)');
+      expect(source).toContain("&& forceRender !== true");
+      expect(source).toContain('canvasEl._wcRedraw = function()');
+      expect(source).toContain('Control changes still repaint this frame;');
+    });
+  });
 });

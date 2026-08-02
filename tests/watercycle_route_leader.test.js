@@ -22,8 +22,10 @@ describe('Water Cycle route leader cue', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('aria-describedby": "wcViewportChoiceDescription"');
+      expect(source).toContain('aria-describedby": "wcViewportChoiceDescription wcViewportChoiceStatus"');
       expect(source).toContain('className: "wc-route-choice-signal"');
+      expect(source).toContain('id: "wcViewportChoiceStatus"');
+      expect(source).toContain('role: "status"');
       expect(source).toContain('className: "wc-route-choice-card" + (wcRouteLeader === "runoff" ? " is-leading" : "")');
       expect(source).toContain('className: "wc-route-leader-badge"');
       expect(source).toContain('Strongest modeled pathway.');

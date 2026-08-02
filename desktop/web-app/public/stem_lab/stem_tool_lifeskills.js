@@ -1635,6 +1635,10 @@ window.StemLab = window.StemLab || {
         return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || 6);
       }) || null;
       var lifeSkills3dPassportHint = lifeSkills3dNextLab ? 'Next suggested lab: ' + lifeSkills3dNextLab.title + '.' : 'All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete. Revisit any lab to strengthen transfer skills.';
+      var lifeSkills3dReadinessCount = LIFE_SKILLS_3D_LABS.filter(function(lab) { return !!(lifeSkills3dPassport[lab.id] || {}).confidence; }).length;
+      var lifeSkills3dNextStepCount = LIFE_SKILLS_3D_LABS.filter(function(lab) { return !!(lifeSkills3dPassport[lab.id] || {}).nextStep; }).length;
+      var lifeSkills3dConfidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
+      var lifeSkills3dNextStepNames = { replay: 'Replay a target', explain: 'Explain it to someone', checklist: 'Use a checklist' };
 
       // ── State helpers ──
       function upd(k, v) {
@@ -1710,6 +1714,19 @@ window.StemLab = window.StemLab || {
           return next;
         });
       }
+      function updateLifeSkills3dPassportSignals(source, signals) {
+        var labId = lifeSkills3dLabId(source);
+        if (!LIFE_SKILLS_3D_LABS.some(function(lab) { return lab.id === labId; })) return;
+        upd('lifeSkills3dPassport', function(current) {
+          var next = Object.assign({}, current || {});
+          var record = Object.assign({ completed: 0, total: lifeSkills3dTotal(source), complete: false, confidence: '', nextStep: '' }, next[labId] || {});
+          if (signals && Object.prototype.hasOwnProperty.call(signals, 'confidence')) record.confidence = lifeSkills3dConfidenceNames[signals.confidence] ? signals.confidence : '';
+          if (signals && Object.prototype.hasOwnProperty.call(signals, 'nextStep')) record.nextStep = lifeSkills3dNextStepNames[signals.nextStep] ? signals.nextStep : '';
+          record.updatedAt = Date.now();
+          next[labId] = record;
+          return next;
+        });
+      }
       if (!window.__alloflowLifeSkills3dBridge) {
         window.__alloflowLifeSkills3dBridge = { seen: {}, handle: null };
         window.addEventListener('message', function(event) {
@@ -1743,6 +1760,13 @@ window.StemLab = window.StemLab || {
           upd('lifeSkills3dStatus', label + ' lab is ready.');
           return;
         }
+        if (/-progress$/.test(type)) {
+          var progressTotal = Number(data.total) || lifeSkills3dTotal(data.source);
+          var progressCompleted = Math.max(0, Number(data.completed) || 0);
+          updateLifeSkills3dPassport(data.source, progressCompleted, progressTotal, progressCompleted >= progressTotal);
+          updateLifeSkills3dPassportSignals(data.source, { confidence: data.confidence, nextStep: data.nextStep });
+          return;
+        }
         if (/-challenge-start$/.test(type)) {
           upd('lifeSkills3dStatus', label + ' transfer challenge started.');
           announceToSR('Started the 3D ' + label + ' transfer challenge.');
@@ -1750,6 +1774,7 @@ window.StemLab = window.StemLab || {
           return;
         }
         if (/-debrief$/.test(type)) {
+          updateLifeSkills3dPassportSignals(data.source, { confidence: data.confidence, nextStep: data.nextStep });
           upd('lifeSkills3dStatus', label + ' reflection saved.');
           announceToSR('Saved the 3D ' + label + ' reflection.');
           setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
@@ -1758,6 +1783,32 @@ window.StemLab = window.StemLab || {
         if (/-teach-back$/.test(type)) {
           upd('lifeSkills3dStatus', label + ' teach-back saved.');
           announceToSR('Saved the 3D ' + label + ' teach-back.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-reflection$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' reflection saved.');
+          announceToSR('Saved the 3D ' + label + ' reflection.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-confidence$/.test(type)) {
+          updateLifeSkills3dPassportSignals(data.source, { confidence: data.confidence });
+          upd('lifeSkills3dStatus', label + ' readiness saved.');
+          announceToSR('Saved the 3D ' + label + ' readiness level.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-next-step$/.test(type)) {
+          updateLifeSkills3dPassportSignals(data.source, { nextStep: data.nextStep });
+          upd('lifeSkills3dStatus', label + ' next practice step saved.');
+          announceToSR('Saved the 3D ' + label + ' next practice step.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-replay-complete$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' replay completed.');
+          announceToSR('Completed the 3D ' + label + ' replay.');
           setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
           return;
         }
@@ -1778,6 +1829,7 @@ window.StemLab = window.StemLab || {
             if (key.indexOf(data.source + ':') === 0) delete bridge.seen[key];
           });
           updateLifeSkills3dPassport(data.source, 0, lifeSkills3dTotal(data.source), false);
+          updateLifeSkills3dPassportSignals(data.source, { confidence: '', nextStep: '' });
           upd('lifeSkills3dStatus', label + ' progress reset.');
           return;
         }
@@ -1916,12 +1968,17 @@ window.StemLab = window.StemLab || {
           var host = String(window.location && window.location.hostname || '');
           if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) capstoneBase = window.location.origin + '/life_skills_capstone/life_skills_capstone.html';
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var capstoneFoundations = LIFE_SKILLS_3D_LABS.filter(function(lab) { return lab.id !== 'capstone'; });
+        var capstoneFocusLab = capstoneFoundations.find(function(lab) { return (lifeSkills3dPassport[lab.id] || {}).confidence === 'not-yet'; }) || (lifeSkills3dNextLab && lifeSkills3dNextLab.id !== 'capstone' ? lifeSkills3dNextLab : null) || capstoneFoundations.find(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || Number(lab.total) || 6); }) || capstoneFoundations[0];
+        var capstoneFocusRecord = lifeSkills3dPassport[capstoneFocusLab.id] || {};
+        var capstoneFoundationsComplete = capstoneFoundations.every(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !!record.complete || (Number(record.completed) || 0) >= (Number(record.total) || Number(lab.total) || 6); });
+        var capstoneSupport = capstoneFocusRecord.confidence === 'not-yet' || !(Number(capstoneFocusRecord.completed) || 0) ? 'supported' : capstoneFoundationsComplete ? 'independent' : 'guided';
+        var query = '?v=2&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + '&focus=' + encodeURIComponent(capstoneFocusLab.id) + '&support=' + encodeURIComponent(capstoneSupport);
         var w = null;
         try { w = window.open(capstoneBase + query, 'alloflow-life-capstone-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { announceToSR('The 3D day-in-the-life capstone was blocked. Allow pop-ups for this page, then try again.'); upd('capstone3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.'); return; }
-        upd('capstone3dMsg', '3D capstone opened in a new window.');
-        announceToSR('Opened the 3D day-in-the-life capstone in a new window.');
+        upd('capstone3dMsg', 'Adaptive 3D capstone opened with ' + capstoneSupport + ' support.');
+        announceToSR('Opened an adaptive 3D capstone focused on ' + capstoneFocusLab.title + '.');
         try { w.focus(); } catch (_) {}
       }
       function openLifeSkills3dById(id) {
@@ -3533,14 +3590,33 @@ window.StemLab = window.StemLab || {
 
         // ═══ PAYCHECK TAB ═══
         tab === 'overview' && h('div', { className: 'space-y-4', 'data-lifeskills-overview': 'true' },
-          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-3d-passport': 'true' },
+          h('div', { className: glassCard + ' space-y-3 relative overflow-hidden', 'data-lifeskills-3d-passport': 'true' },
+            h('div', { className: 'h-1.5 rounded-b-full bg-gradient-to-r from-cyan-500 via-teal-500 to-violet-500 -mx-4 -mt-4 mb-1', 'aria-hidden': 'true' }),
             h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, '3D practice passport'),
                 h('h4', { className: 'text-base font-black text-slate-800' }, lifeSkills3dCompletedLabs + '/' + LIFE_SKILLS_3D_LABS.length + ' labs completed'),
-                h('p', { className: 'text-[11px] text-slate-600' }, lifeSkills3dCompletedSteps + '/' + lifeSkills3dTotalSteps + ' scene steps practiced')
+                h('p', { className: 'text-[11px] text-slate-600' }, lifeSkills3dCompletedSteps + '/' + lifeSkills3dTotalSteps + ' scene steps practiced'),
+                h('p', { className: 'text-[10px] text-slate-500' }, lifeSkills3dReadinessCount + '/' + LIFE_SKILLS_3D_LABS.length + ' readiness check-ins'),
+                h('p', { className: 'text-[10px] text-slate-500' }, lifeSkills3dNextStepCount + '/' + LIFE_SKILLS_3D_LABS.length + ' next plans')
               ),
-              h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold' }, lifeSkills3dPassportHint)
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold' }, lifeSkills3dPassportHint),
+                lifeSkills3dNextLab && h('button', { type: 'button', onClick: function() { openLifeSkills3dById(lifeSkills3dNextLab.id); }, className: 'px-2 py-1 rounded-full bg-teal-700 text-white text-[11px] font-black hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700', 'aria-label': 'Open suggested next lab: ' + lifeSkills3dNextLab.title }, 'Open next lab')
+              )
+            ),
+            h('div', { className: 'grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-1', 'data-lifeskills-3d-path': 'true', 'aria-hidden': 'true' },
+              LIFE_SKILLS_3D_LABS.map(function(lab) {
+                var pathRecord = lifeSkills3dPassport[lab.id] || {};
+                var pathTotal = Math.max(1, Number(pathRecord.total) || Number(lab.total) || 6);
+                var pathCompleted = Math.max(0, Math.min(pathTotal, Number(pathRecord.completed) || 0));
+                var pathDone = !!pathRecord.complete || pathCompleted >= pathTotal;
+                return h('div', { key: lab.id, className: 'min-w-0 text-center' },
+                  h('span', { className: 'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm shadow-sm', style: { background: pathDone ? '#059669' : '#f1f5f9', color: pathDone ? '#ffffff' : lab.accent, border: '2px solid ' + (pathDone ? '#059669' : lab.accent + '66') } }, lab.icon),
+                  h('span', { className: 'mt-1 block truncate text-[9px] font-bold text-slate-600' }, lab.title),
+                  h('span', { className: 'block text-[9px] font-black ' + (pathDone ? 'text-emerald-700' : 'text-slate-500') }, pathDone ? 'DONE' : pathCompleted + '/' + pathTotal)
+                );
+              })
             ),
             h('div', { className: 'grid sm:grid-cols-2 xl:grid-cols-3 gap-2' },
               LIFE_SKILLS_3D_LABS.map(function(lab) {
@@ -3549,22 +3625,38 @@ window.StemLab = window.StemLab || {
                 var completed = Math.max(0, Math.min(total, Number(record.completed) || 0));
                 var percent = Math.round(completed / total * 100);
                 var done = !!record.complete || completed >= total;
+                var readiness = lifeSkills3dConfidenceNames[record.confidence] || 'Not set';
+                var nextStep = lifeSkills3dNextStepNames[record.nextStep] || 'Choose a next step';
                 return h('button', {
                   key: lab.id,
                   type: 'button',
+                  'data-lifeskills-3d-passport-tile': lab.id,
                   onClick: function() { openLifeSkills3dById(lab.id); },
-                  className: 'text-left rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-teal-700',
+                  className: 'group relative overflow-hidden text-left rounded-xl border bg-gradient-to-br from-white to-slate-50 p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-teal-700',
                   style: { borderColor: lab.accent + '66' },
                   'aria-label': 'Open ' + lab.title + ' 3D lab, ' + completed + ' of ' + total + ' steps complete'
                 },
-                  h('div', { className: 'flex items-center justify-between gap-2' },
-                    h('span', { className: 'text-sm font-black', style: { color: lab.accent } }, lab.icon + ' ' + lab.title),
-                    h('span', { className: 'text-[10px] font-bold ' + (done ? 'text-emerald-700' : 'text-slate-500') }, done ? 'READY' : completed + '/' + total)
+                  h('span', { className: 'absolute left-0 top-0 bottom-0 w-1 rounded-l-xl', style: { background: done ? '#059669' : lab.accent }, 'aria-hidden': 'true' }),
+                  h('div', { className: 'flex items-start justify-between gap-2 pl-1' },
+                    h('span', { className: 'min-w-0 flex items-center gap-2 text-sm font-black', style: { color: lab.accent } },
+                      h('span', { className: 'shrink-0', 'aria-hidden': 'true' }, lab.icon),
+                      h('span', { className: 'truncate' }, lab.title)
+                    ),
+                    h('div', { className: 'flex shrink-0 items-center gap-1.5' },
+                      h('span', { className: 'relative flex h-9 w-9 items-center justify-center rounded-full', style: { background: 'conic-gradient(' + (done ? '#059669' : lab.accent) + ' ' + percent + '%, #e2e8f0 0)' }, 'aria-hidden': 'true' },
+                        h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-white text-[10px] font-black text-slate-700' }, percent + '%')
+                      ),
+                      h('span', { className: 'text-[10px] font-bold ' + (done ? 'text-emerald-700' : 'text-slate-500') }, done ? 'READY' : completed + '/' + total)
+                    )
                   ),
-                  h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden mt-2', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': completed, 'aria-label': lab.title + ' progress' },
+                  h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden mt-2 ml-1', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': completed, 'aria-label': lab.title + ' progress' },
                     h('div', { className: 'h-full rounded-full transition-all', style: { width: percent + '%', background: done ? '#059669' : lab.accent } })
                   ),
-                  h('p', { className: 'text-[10px] text-slate-600 mt-2' }, done ? 'Revisit for transfer practice.' : 'Open the scene and practice safely.')
+                  h('div', { className: 'flex items-center justify-between gap-2 mt-2 ml-1 text-[10px] text-slate-600' },
+                    h('span', null, 'Readiness: ' + readiness),
+                    h('span', { className: 'text-right' }, nextStep)
+                  ),
+                  h('p', { className: 'text-[10px] text-slate-600 mt-2 ml-1' }, done ? 'Revisit for transfer practice.' : 'Open the scene and practice safely.')
                 );
               })
             )

@@ -67,6 +67,8 @@
   var STORAGE_VERSIONS = 'alloPoetTreeVersionsV1';
   var STORAGE_WORKSPACES = 'alloPoetTreeWorkspacesV1';
   var STORAGE_ACTIVE_WORKSPACE = 'alloPoetTreeActiveWorkspaceV1';
+  var STORAGE_STATUS_EVENT = 'alloPoetTreeStorageStatusV1';
+  var STORAGE_PROBE_KEY = 'alloPoetTreeProbeV1';
 
   function normalizeWorkspaces(value) {
     if (!Array.isArray(value)) return [];
@@ -91,8 +93,38 @@
     } catch (e) { return fallback; }
   }
 
+  function storageLabel(key) {
+    if (key === STORAGE_POEMS) return 'Library poems';
+    if (key === STORAGE_DRAFT) return 'drafts';
+    if (key === STORAGE_VERSIONS) return 'revision history';
+    if (key === STORAGE_WORKSPACES || key === STORAGE_ACTIVE_WORKSPACE) return 'workspaces';
+    if (key === STORAGE_PREFS) return 'privacy preferences';
+    return 'local Poet Tree data';
+  }
+
+  function emitStorageStatus(ok, key, operation, error) {
+    try {
+      if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function' || typeof window.CustomEvent !== 'function') return;
+      var action = operation === 'remove' ? 'remove' : 'save';
+      var message = ok ? (action === 'remove' ? 'Local ' + storageLabel(key) + ' cleared.' : 'Local data saved on this device.') : ('Could not ' + action + ' ' + storageLabel(key) + ' on this device. Your changes remain open, but may not survive closing.');
+      window.dispatchEvent(new window.CustomEvent(STORAGE_STATUS_EVENT, { detail: { ok: !!ok, key: key, operation: action, message: message, error: error && error.message ? error.message : '' } }));
+    } catch (e) {}
+  }
+
+  function storeRaw(key, value) {
+    try { localStorage.setItem(key, String(value)); emitStorageStatus(true, key, 'write'); return true; } catch (e) { emitStorageStatus(false, key, 'write', e); return false; }
+  }
+
+  function removeStoredValue(key) {
+    try { localStorage.removeItem(key); emitStorageStatus(true, key, 'remove'); return true; } catch (e) { emitStorageStatus(false, key, 'remove', e); return false; }
+  }
+
   function storeJson(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
+    try { return storeRaw(key, JSON.stringify(value)); } catch (e) { emitStorageStatus(false, key, 'write', e); return false; }
+  }
+
+  function probeLocalStorage() {
+    try { localStorage.setItem(STORAGE_PROBE_KEY, '1'); localStorage.removeItem(STORAGE_PROBE_KEY); return true; } catch (e) { return false; }
   }
 
   function loadActiveWorkspaceId() {
@@ -104,7 +136,7 @@
   }
 
   function storeActiveWorkspaceId(value) {
-    try { localStorage.setItem(STORAGE_ACTIVE_WORKSPACE, String(value || '')); return true; } catch (e) { return false; }
+    return storeRaw(STORAGE_ACTIVE_WORKSPACE, String(value || ''));
   }
 
   // A local-only revision token used to reject stale async AI responses.
@@ -116,6 +148,57 @@
       hash = Math.imul(hash, 16777619);
     }
     return (hash >>> 0).toString(16);
+  }
+
+  function downloadJsonPayload(payload, filename) {
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var urlApi = window.URL || window.webkitURL;
+    if (!urlApi || typeof urlApi.createObjectURL !== 'function') throw new Error('Download API unavailable');
+    var url = urlApi.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(url); }, 0);
+    return true;
+  }
+
+  function normalizeLocalBackupPayload(payload) {
+    if (!payload || payload.version !== 1 || !Array.isArray(payload.poems) || !Array.isArray(payload.revisions) || !Array.isArray(payload.workspaces)) throw new Error('Unsupported Poet Tree backup');
+    var importedAt = new Date().toISOString();
+    var normalizeDraft = function (item) {
+      if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+      var draftFormId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+      return { title: String(item.title || '').slice(0, 240), text: item.text, formId: draftFormId, targetWord: String(item.targetWord || '').slice(0, 80), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+    };
+    var poems = payload.poems.map(function (item, index) {
+      if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+      var title = String(item.title || 'Untitled').slice(0, 240);
+      var text = item.text;
+      var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+      var targetWord = String(item.targetWord || '').slice(0, 80);
+      return { id: String(item.id || ('restored-poem-' + index)).slice(0, 120), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+    }).filter(Boolean).slice(0, 50);
+    var revisions = payload.revisions.map(function (item, index) {
+      if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+      var title = String(item.title || 'Untitled').slice(0, 240);
+      var text = item.text;
+      var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+      var targetWord = String(item.targetWord || '').slice(0, 80);
+      return { id: String(item.id || ('restored-revision-' + index)).slice(0, 120), label: String(item.label || 'Restored version').slice(0, 80), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+    }).filter(Boolean).slice(0, 100);
+    var workspaces = normalizeWorkspaces(payload.workspaces).map(function (workspace) {
+      if (!FORMS.some(function (ff) { return ff.id === workspace.formId; })) workspace.formId = 'free';
+      return workspace;
+    });
+    var requestedActiveId = typeof payload.activeWorkspaceId === 'string' ? payload.activeWorkspaceId : '';
+    var activeWorkspace = workspaces.find(function (workspace) { return workspace.id === requestedActiveId; });
+    var activeId = activeWorkspace ? activeWorkspace.id : '';
+    var draft = normalizeDraft(payload.draft);
+    var recoveredDraft = normalizeDraft(payload.recoveredDraft);
+    return { poems: poems, revisions: revisions, workspaces: workspaces, activeId: activeId, activeWorkspace: activeWorkspace || null, draft: draft, recoveredDraft: recoveredDraft, fileVersion: payload.version, exportedAt: payload.exportedAt || '' };
   }
 
   function buildLineDiff(leftLines, rightLines) {
@@ -244,7 +327,7 @@
   var STR_REG = {};
   var LL_CUR = { lang: 'English', cache: {} };
   function llLoad() { try { return JSON.parse(localStorage.getItem(PT_I18N_KEY)) || {}; } catch (e) { return {}; } }
-  function llStore(v) { try { localStorage.setItem(PT_I18N_KEY, JSON.stringify(v)); } catch (e) {} }
+  function llStore(v) { storeJson(PT_I18N_KEY, v); }
   function llInterp(s, params) { if (s == null || !params) return s; Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); }); return s; }
   function tr(en, params) { if (en && typeof en === 'string') STR_REG[en] = true; var p = LL_CUR.cache[LL_CUR.lang]; return llInterp((p && p[en] != null) ? p[en] : en, params); }
   function llCleanJson(raw) { var s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); var f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; }
@@ -952,10 +1035,25 @@
     var _largeText = useState(function () { try { var p = JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); return !!p.largeText; } catch (e) { return false; } });
     var largeText = _largeText[0]; var setLargeText = _largeText[1];
     var _privacyOpen = useState(false); var privacyOpen = _privacyOpen[0]; var setPrivacyOpen = _privacyOpen[1];
+    var _backupPreview = useState(null); var backupPreview = _backupPreview[0]; var setBackupPreview = _backupPreview[1];
+    var _backupPreviewError = useState(''); var backupPreviewError = _backupPreviewError[0]; var setBackupPreviewError = _backupPreviewError[1];
+    var _restoreUndoSnapshot = useState(null); var restoreUndoSnapshot = _restoreUndoSnapshot[0]; var setRestoreUndoSnapshot = _restoreUndoSnapshot[1];
     var _cloudFeaturesEnabled = useState(function () { var prefs = loadJson(STORAGE_PREFS, {}); return prefs.cloudFeaturesEnabled !== false; });
     var cloudFeaturesEnabled = _cloudFeaturesEnabled[0]; var setCloudFeaturesEnabled = _cloudFeaturesEnabled[1];
     var cloudFeaturesEnabledRef = useRef(true);
     cloudFeaturesEnabledRef.current = cloudFeaturesEnabled;
+
+    var _storageStatus = useState(null); var storageStatus = _storageStatus[0]; var setStorageStatus = _storageStatus[1];
+    useEffect(function () {
+      var handleStorageStatus = function (event) {
+        var detail = event && event.detail;
+        if (!detail || !detail.message) return;
+        setStorageStatus({ kind: detail.ok ? 'success' : 'error', message: detail.message });
+      };
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') window.addEventListener(STORAGE_STATUS_EVENT, handleStorageStatus);
+      setStorageStatus(probeLocalStorage() ? { kind: 'success', message: 'Local saving is available on this device.' } : { kind: 'error', message: 'Local saving is unavailable. Export a backup before closing this tool.' });
+      return function () { if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') window.removeEventListener(STORAGE_STATUS_EVENT, handleStorageStatus); };
+    }, []);
 
     var ttsCancelRef = useRef(false);
     // Captures the element that was focused when read-aloud opens, so focus can return there on close (WCAG 2.4.3)
@@ -1059,7 +1157,7 @@
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
-      try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(next)); } catch (e) {}
+      storeJson(STORAGE_PREFS, next);
     }, []);
 
     var recordRevision = useCallback(function (label, snapshot) {
@@ -1147,8 +1245,8 @@
       var updated = [entry].concat(saved).slice(0, 50);
       recordRevision('Saved version', entry);
       setSaved(updated);
-      try { localStorage.setItem(STORAGE_POEMS, JSON.stringify(updated)); } catch (e) {}
-      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      storeJson(STORAGE_POEMS, updated);
+      removeStoredValue(STORAGE_DRAFT);
       setDraftCandidate(null);
       setDraftStatus('');
       addToast && addToast(tr('Poem saved.'), 'success');
@@ -1178,33 +1276,16 @@
       }
     }, [saved, addToast]);
 
+    function getLocalBackupPayload() {
+      var storedDraft = draftCandidate || loadJson(STORAGE_DRAFT, null);
+      var liveDraft = poemText.trim() ? { title: poemTitle.trim(), text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget, savedAt: new Date().toISOString() } : null;
+      var recoveredDraft = storedDraft && liveDraft && (storedDraft.title !== liveDraft.title || storedDraft.text !== liveDraft.text || (storedDraft.formId || 'free') !== liveDraft.formId || (storedDraft.targetWord || '') !== liveDraft.targetWord) ? storedDraft : null;
+      return { version: 1, exportedAt: new Date().toISOString(), poems: saved, draft: liveDraft || storedDraft, recoveredDraft: recoveredDraft, revisions: revisionHistory, workspaces: workspaces, activeWorkspaceId: activeWorkspaceId || '' };
+    }
+
     var exportAllLocalData = useCallback(function () {
       try {
-        var storedDraft = draftCandidate || loadJson(STORAGE_DRAFT, null);
-        var liveDraft = poemText.trim() ? { title: poemTitle.trim(), text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget, savedAt: new Date().toISOString() } : null;
-        var recoveredDraft = storedDraft && liveDraft && (storedDraft.title !== liveDraft.title || storedDraft.text !== liveDraft.text || (storedDraft.formId || 'free') !== liveDraft.formId || (storedDraft.targetWord || '') !== liveDraft.targetWord) ? storedDraft : null;
-        var payload = {
-          version: 1,
-          exportedAt: new Date().toISOString(),
-          poems: saved,
-          draft: liveDraft || storedDraft,
-          recoveredDraft: recoveredDraft,
-
-          revisions: revisionHistory,
-          workspaces: workspaces,
-          activeWorkspaceId: activeWorkspaceId || ''
-        };
-        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        var urlApi = window.URL || window.webkitURL;
-        if (!urlApi || typeof urlApi.createObjectURL !== 'function') throw new Error('Download API unavailable');
-        var url = urlApi.createObjectURL(blob);
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = 'poettree-local-backup.json';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(function () { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(url); }, 0);
+        downloadJsonPayload(getLocalBackupPayload(), 'poettree-local-backup.json');
         announcePT('Local writing data exported.');
         addToast && addToast('Complete local backup downloaded.', 'success');
       } catch (err) {
@@ -1221,82 +1302,121 @@
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var payload = JSON.parse(String(reader.result || ''));
-          if (!payload || payload.version !== 1 || !Array.isArray(payload.poems) || !Array.isArray(payload.revisions) || !Array.isArray(payload.workspaces)) throw new Error('Unsupported Poet Tree backup');
-          if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Replace all local Poet Tree writing data with this backup?')) return;
-          var importedAt = new Date().toISOString();
-          var normalizeDraft = function (item) {
-            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
-            var draftFormId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
-            return { title: String(item.title || '').slice(0, 240), text: item.text, formId: draftFormId, targetWord: String(item.targetWord || '').slice(0, 80), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
-          };
-          var importedPoems = payload.poems.map(function (item, index) {
-            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
-            var title = String(item.title || 'Untitled').slice(0, 240);
-            var text = item.text;
-            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
-            var targetWord = String(item.targetWord || '').slice(0, 80);
-            return { id: String(item.id || ('restored-poem-' + index)).slice(0, 120), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
-          }).filter(Boolean).slice(0, 50);
-          var importedRevisions = payload.revisions.map(function (item, index) {
-            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
-            var title = String(item.title || 'Untitled').slice(0, 240);
-            var text = item.text;
-            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
-            var targetWord = String(item.targetWord || '').slice(0, 80);
-            return { id: String(item.id || ('restored-revision-' + index)).slice(0, 120), label: String(item.label || 'Restored version').slice(0, 80), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
-          }).filter(Boolean).slice(0, 100);
-          var importedWorkspaces = normalizeWorkspaces(payload.workspaces).map(function (workspace) {
-            if (!FORMS.some(function (ff) { return ff.id === workspace.formId; })) workspace.formId = 'free';
-            return workspace;
-          });
-          var requestedActiveId = typeof payload.activeWorkspaceId === 'string' ? payload.activeWorkspaceId : '';
-          var activeWorkspace = importedWorkspaces.find(function (workspace) { return workspace.id === requestedActiveId; });
-          var activeId = activeWorkspace ? activeWorkspace.id : '';
-          var importedDraft = normalizeDraft(payload.draft);
-          var recoveredDraft = normalizeDraft(payload.recoveredDraft);
-          var current = activeWorkspace || importedDraft;
-          var draftToStore = recoveredDraft || (!activeId ? importedDraft : null);
-          abortAllAiRequests();
-          Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
-          setSaved(importedPoems);
-          setRevisionHistory(importedRevisions);
-          setCompareRevisionIds([]);
-          setWorkspaces(importedWorkspaces);
-          setActiveWorkspaceId(activeId);
-          setPoemTitle(current ? current.title || '' : '');
-          setPoemText(current ? current.text || '' : '');
-          setAcrosticTarget(current ? current.targetWord || '' : '');
-          setForm(current ? (FORMS.find(function (ff) { return ff.id === current.formId; }) || null) : null);
-          setDraftCandidate(draftToStore);
-          setDraftSavedAt(draftToStore ? draftToStore.savedAt || '' : '');
-          setDraftStatus(draftToStore ? 'A pending draft was restored from the backup.' : '');
-          setWorkspaceStatus(activeWorkspace ? 'Restored ' + activeWorkspace.name + '.' : 'Backup restored.');
-          if (activeId) storeActiveWorkspaceId(activeId); else { try { localStorage.removeItem(STORAGE_ACTIVE_WORKSPACE); } catch (e) {} }
-          storeJson(STORAGE_POEMS, importedPoems);
-          storeJson(STORAGE_VERSIONS, importedRevisions);
-          storeJson(STORAGE_WORKSPACES, importedWorkspaces);
-          if (draftToStore) storeJson(STORAGE_DRAFT, draftToStore); else { try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {} }
-          setAiFeedback(null); setMeterAnalysis(null); setCmuResult(null); setIllustration(null); setImagePoemUrl(null);
-          setRhymeResults(null); setVerbSuggestions(null); setSensesResult(null); setSparkWords(null); setTitleSuggestions(null);
-          setRewriteResult(null); setRewriteTargetId(''); setRewriteUndo(null); setThemeReport(null); setMentorMatch(null);
-          setMentorSearchConsent(false); setMentorConsentNeeded(false); setSoundDeviceResult(null); setMetaphors(null);
-          setMetaphorImages({}); setMetaphorImgLoading({}); setMetaphorEditText({}); setStanzaImages([]);
-          setSelfAssessment({}); setSelfAssessmentSubmitted(false); setRevisionPlan(null); setActiveTab('write');
-          setAiLoading(false); setMeterLoading(false); setCmuLoading(false); setIllusLoading(false); setImagePoemLoading(false);
-          setRhymeLoading(false); setVerbLoading(false); setSensesLoading(false); setSparkLoading(false); setTitleLoading(false);
-          setRewriteLoading(false); setThemeLoading(false); setMentorLoading(false); setSoundDeviceLoading(false);
-          setMetaphorLoading(false); setStanzaBoardLoading(false); setRevisionPlanLoading(false); setLlTranslating(false);
-          announcePT('Local writing data restored from backup.');
-          addToast && addToast('Local backup restored. Cloud and privacy preferences were unchanged.', 'success');
+          var prepared = normalizeLocalBackupPayload(JSON.parse(String(reader.result || '')));
+          setBackupPreview({ fileName: String(file.name || 'poettree-local-backup.json').slice(0, 160), backup: prepared });
+          setBackupPreviewError('');
+          announcePT('Backup loaded for review.');
+          addToast && addToast('Backup loaded. Review it before restoring.', 'info');
         } catch (err) {
-          warnLog('Local data restore failed:', err && err.message);
-          addToast && addToast('Could not restore that backup. Existing writing data was kept.', 'error');
+          setBackupPreview(null);
+          setBackupPreviewError('Could not read that backup. Existing writing data was kept.');
+          warnLog('Local data preview failed:', err && err.message);
+          addToast && addToast('Could not read that backup. Existing writing data was kept.', 'error');
         }
       };
-      reader.onerror = function () { addToast && addToast('Could not read that backup. Existing writing data was kept.', 'error'); };
+      reader.onerror = function () {
+        setBackupPreview(null);
+        setBackupPreviewError('Could not read that backup. Existing writing data was kept.');
+        addToast && addToast('Could not read that backup. Existing writing data was kept.', 'error');
+      };
       reader.readAsText(file);
     }, [addToast]);
+
+    function clearGeneratedPoetTreeResults() {
+      setAiFeedback(null); setMeterAnalysis(null); setCmuResult(null); setIllustration(null); setImagePoemUrl(null);
+      setRhymeResults(null); setVerbSuggestions(null); setSensesResult(null); setSparkWords(null); setTitleSuggestions(null);
+      setRewriteResult(null); setRewriteTargetId(''); setRewriteUndo(null); setThemeReport(null); setMentorMatch(null);
+      setMentorSearchConsent(false); setMentorConsentNeeded(false); setSoundDeviceResult(null); setMetaphors(null);
+      setMetaphorImages({}); setMetaphorImgLoading({}); setMetaphorEditText({}); setStanzaImages([]);
+      setSelfAssessment({}); setSelfAssessmentSubmitted(false); setRevisionPlan(null);
+      setAiLoading(false); setMeterLoading(false); setCmuLoading(false); setIllusLoading(false); setImagePoemLoading(false);
+      setRhymeLoading(false); setVerbLoading(false); setSensesLoading(false); setSparkLoading(false); setTitleLoading(false);
+      setRewriteLoading(false); setThemeLoading(false); setMentorLoading(false); setSoundDeviceLoading(false);
+      setMetaphorLoading(false); setStanzaBoardLoading(false); setRevisionPlanLoading(false); setLlTranslating(false);
+    }
+
+    var restoreLocalBackup = useCallback(function (mode, sourceBackup, isUndo) {
+      var backup = sourceBackup || (backupPreview && backupPreview.backup);
+      if (!backup) return;
+      var undoing = !!isUndo;
+      var merge = mode === 'merge' && !undoing;
+      var question = undoing ? 'Undo the last local-data restore and return to the previous writing state?' : (merge ? 'Merge this backup into your current local data? Your current draft will stay open.' : 'Replace all current local writing data with this backup? A safety copy will download first.');
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(question)) return;
+      var previousBackup = null;
+      try {
+        if (!undoing) previousBackup = normalizeLocalBackupPayload(getLocalBackupPayload());
+        downloadJsonPayload(getLocalBackupPayload(), 'poettree-pre-' + (undoing ? 'undo' : 'restore') + '-safety-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json');
+      } catch (err) {
+        warnLog('Pre-restore safety backup failed:', err && err.message);
+        addToast && addToast('Could not create the safety backup. Nothing was restored.', 'error');
+        return;
+      }
+      if (merge) {
+        var keyFor = function (item) { var separator = String.fromCharCode(0); return String(item.text || '') + separator + String(item.formId || 'free') + separator + String(item.targetWord || ''); };
+        var mergeUnique = function (incoming, existing, limit) {
+          var seen = {};
+          return incoming.concat(existing).filter(function (item) { var key = keyFor(item); if (seen[key]) return false; seen[key] = true; return true; }).slice(0, limit);
+        };
+        var mergedPoems = mergeUnique(backup.poems, saved, 50);
+        var mergedRevisions = mergeUnique(backup.revisions, revisionHistory, 100);
+        var mergedWorkspaces = workspaces.slice();
+        var usedWorkspaceIds = {};
+        mergedWorkspaces.forEach(function (workspace) { usedWorkspaceIds[workspace.id] = true; });
+        backup.workspaces.forEach(function (workspace, index) {
+          var copy = Object.assign({}, workspace);
+          var baseId = copy.id || ('restored-workspace-' + index);
+          var nextId = baseId;
+          if (usedWorkspaceIds[nextId]) nextId = 'restored-' + baseId + '-' + Date.now().toString(36) + '-' + index;
+          while (usedWorkspaceIds[nextId]) nextId += '-copy';
+          copy.id = nextId;
+          usedWorkspaceIds[nextId] = true;
+          mergedWorkspaces.push(copy);
+        });
+        mergedWorkspaces = mergedWorkspaces.slice(0, 24);
+        setSaved(mergedPoems); storeJson(STORAGE_POEMS, mergedPoems);
+        setRevisionHistory(mergedRevisions); storeJson(STORAGE_VERSIONS, mergedRevisions);
+        setWorkspaces(mergedWorkspaces); storeJson(STORAGE_WORKSPACES, mergedWorkspaces);
+        setRestoreUndoSnapshot(previousBackup);
+        setBackupPreview(null); setBackupPreviewError('');
+        announcePT('Local backup merged.');
+        addToast && addToast('Backup merged. Your current draft and privacy settings were unchanged. You can undo this merge once.', 'success');
+        return;
+      }
+      var current = backup.activeWorkspace || backup.draft;
+      var draftToStore = backup.recoveredDraft || (!backup.activeId ? backup.draft : null);
+      abortAllAiRequests();
+      Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
+      setSaved(backup.poems);
+      setRevisionHistory(backup.revisions);
+      setCompareRevisionIds([]);
+      setWorkspaces(backup.workspaces);
+      setActiveWorkspaceId(backup.activeId);
+      setPoemTitle(current ? current.title || '' : '');
+      setPoemText(current ? current.text || '' : '');
+      setAcrosticTarget(current ? current.targetWord || '' : '');
+      setForm(current ? (FORMS.find(function (ff) { return ff.id === current.formId; }) || null) : null);
+      setDraftCandidate(draftToStore);
+      setDraftSavedAt(draftToStore ? draftToStore.savedAt || '' : '');
+      setDraftStatus(draftToStore ? 'A pending draft was restored from the backup.' : '');
+      setWorkspaceStatus(backup.activeWorkspace ? 'Restored ' + backup.activeWorkspace.name + '.' : 'Backup restored.');
+      if (backup.activeId) storeActiveWorkspaceId(backup.activeId); else { removeStoredValue(STORAGE_ACTIVE_WORKSPACE); }
+      storeJson(STORAGE_POEMS, backup.poems);
+      storeJson(STORAGE_VERSIONS, backup.revisions);
+      storeJson(STORAGE_WORKSPACES, backup.workspaces);
+      if (draftToStore) storeJson(STORAGE_DRAFT, draftToStore); else { removeStoredValue(STORAGE_DRAFT); }
+      clearGeneratedPoetTreeResults();
+      setActiveTab('write');
+      setRestoreUndoSnapshot(undoing ? null : previousBackup);
+      setBackupPreview(null); setBackupPreviewError('');
+      announcePT(undoing ? 'Previous local writing data restored.' : 'Local writing data restored from backup.');
+      addToast && addToast(undoing ? 'Undo complete. Your previous writing state is back.' : 'Local backup restored. Cloud and privacy preferences were unchanged. You can undo this restore once.', 'success');
+    }, [backupPreview, saved, draftCandidate, poemTitle, poemText, form, acrosticTarget, revisionHistory, workspaces, activeWorkspaceId, addToast]);
+
+    var undoLocalRestore = useCallback(function () {
+      if (!restoreUndoSnapshot) return;
+      restoreLocalBackup('replace', restoreUndoSnapshot, true);
+    }, [restoreUndoSnapshot, restoreLocalBackup]);
+
 
     var importLibrary = useCallback(function (event) {
       var input = event && event.target;
@@ -1375,7 +1495,7 @@
       });
       setActiveWorkspaceId(workspaceId);
       storeActiveWorkspaceId(workspaceId);
-      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      removeStoredValue(STORAGE_DRAFT);
       setDraftCandidate(null);
       setDraftStatus('');
       setWorkspaceStatus((existing ? 'Updated ' : 'Saved ') + entry.name + '.');
@@ -1528,7 +1648,7 @@
     }, [draftCandidate]);
 
     var discardDraft = useCallback(function () {
-      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      removeStoredValue(STORAGE_DRAFT);
       setDraftCandidate(null);
       setDraftStatus('');
       announcePT('Local draft discarded.');
@@ -1540,7 +1660,7 @@
       Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
       llReqRef.current += 1;
       [STORAGE_POEMS, STORAGE_DRAFT, STORAGE_VERSIONS, STORAGE_WORKSPACES, STORAGE_ACTIVE_WORKSPACE].forEach(function (key) {
-        try { localStorage.removeItem(key); } catch (e) {}
+        removeStoredValue(key);
       });
       setSaved([]);
       setRevisionHistory([]);
@@ -1554,7 +1674,10 @@
       setDraftCandidate(null);
       setDraftSavedAt('');
       setDraftStatus('');
-      setWorkspaceStatus('');
+      setWorkspaceStatus('');
+      setBackupPreview(null);
+      setBackupPreviewError('');
+      setRestoreUndoSnapshot(null);
       setFoundSource('');
       setErasureSource('');
       setErasureKept({});
@@ -1701,7 +1824,7 @@
           else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
           var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
           window.__alloflowStudentArtifacts = next;
-          localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+          storeJson('alloflow_student_artifacts', next);
           window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
             detail: { source: 'poettree', sourceLabel: 'PoetTree', kindLabel: 'Poem', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact: artifact, count: next.length }
           }));
@@ -1714,7 +1837,7 @@
     var deletePoem = useCallback(function (id) {
       var updated = saved.filter(function (p) { return p.id !== id; });
       setSaved(updated);
-      try { localStorage.setItem(STORAGE_POEMS, JSON.stringify(updated)); } catch (e) {}
+      storeJson(STORAGE_POEMS, updated);
     }, [saved]);
 
     var requestPoemDelete = useCallback(function (poem, trigger) {
@@ -3357,6 +3480,29 @@
               'Disable cloud AI and image features'
             )
           ),
+          storageStatus && e('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '7px', padding: '6px 8px', borderRadius: '6px', background: storageStatus.kind === 'error' ? '#fff1f2' : '#ecfdf5', color: storageStatus.kind === 'error' ? '#9f1239' : '#166534', fontSize: '10px', fontWeight: 700 } }, storageStatus.message),
+          backupPreviewError && e('div', { role: 'alert', style: { marginTop: '8px', padding: '7px 9px', borderRadius: '7px', background: '#fff1f2', border: '1px solid #fda4af', color: '#9f1239', fontSize: '10px', fontWeight: 700 } }, backupPreviewError),
+          backupPreview && e('div', { role: 'region', 'aria-label': 'Backup restore preview', style: { marginTop: '9px', padding: '9px 10px', background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: '8px' } },
+            e('strong', { style: { display: 'block', fontSize: '11px', color: '#1e3a8a' } }, 'Backup ready to review'),
+            e('div', { style: { marginTop: '3px', fontSize: '10px', color: '#475569', overflowWrap: 'anywhere' } }, backupPreview.fileName + ' · Backup version ' + backupPreview.backup.fileVersion),
+            e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '7px', fontSize: '10px', color: '#1e3a8a', fontWeight: 700 } },
+              e('span', null, backupPreview.backup.poems.length + ' poems'),
+              e('span', null, '· ' + backupPreview.backup.revisions.length + ' revisions'),
+              e('span', null, '· ' + backupPreview.backup.workspaces.length + ' workspaces'),
+              backupPreview.backup.draft && e('span', null, '· 1 draft'),
+              backupPreview.backup.recoveredDraft && e('span', null, '· 1 pending draft')
+            ),
+            e('p', { style: { margin: '7px 0', fontSize: '10px', color: '#334155', lineHeight: 1.45 } }, 'A safety copy of your current writing data downloads before either action. Replace swaps in the backup; Merge adds its Library, revisions, and workspaces while leaving your current draft open.'),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              e('button', { onClick: function () { restoreLocalBackup('replace'); }, 'aria-label': 'Replace current local writing data with this backup', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Replace current data'),
+              e('button', { onClick: function () { restoreLocalBackup('merge'); }, 'aria-label': 'Merge this backup with current local writing data', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #0f766e', background: TEAL, color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Merge with current data'),
+              e('button', { onClick: function () { setBackupPreview(null); setBackupPreviewError(''); announcePT('Backup restore canceled.'); }, 'aria-label': 'Cancel backup restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Cancel')
+            )
+          ),
+          restoreUndoSnapshot && e('div', { role: 'status', 'aria-label': 'Restore undo available', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginTop: '9px', padding: '7px 9px', background: '#fefce8', border: '1px solid #fde68a', borderRadius: '7px', color: '#854d0e', fontSize: '10px' } },
+            e('span', null, 'A previous local state is available for one-step undo.'),
+            e('button', { onClick: undoLocalRestore, 'aria-label': 'Undo last local data restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #ca8a04', background: '#fff', color: '#854d0e', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Undo last restore')
+          ),
           e('div', { style: { display: 'flex', gap: '7px', marginTop: '9px', flexWrap: 'wrap' } },
             e('button', { onClick: discardDraft, disabled: !draftCandidate && !draftStatus, style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: draftCandidate || draftStatus ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Clear local draft'),
             e('button', { onClick: function () { if (localBackupImportRef.current) localBackupImportRef.current.click(); }, 'aria-label': 'Restore all local Poet Tree data from JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#fff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Restore local backup'),
@@ -3479,6 +3625,7 @@
               )
             ),
             draftStatus && e('div', { role: 'status', 'aria-live': 'polite', style: { color: '#475569', fontSize: '10px' } }, draftStatus + (draftSavedAt ? ' ' + new Date(draftSavedAt).toLocaleTimeString() : '')),
+            storageStatus && storageStatus.kind === 'error' && e('div', { role: 'alert', 'aria-live': 'assertive', style: { color: '#9f1239', fontSize: '10px', fontWeight: 700 } }, storageStatus.message),
             (workspaces.length > 0 || poemText.trim()) && e('div', { role: 'region', 'aria-label': 'Draft workspaces', style: { background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '10px 12px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
                 e('div', { style: { flex: 1, minWidth: '180px' } },

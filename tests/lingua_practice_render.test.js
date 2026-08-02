@@ -446,6 +446,47 @@ describe('Lingua Practice render flow', () => {
     expect(button('Reveal answer')).toBeTruthy();
   });
 
+  it('restores a review session after leaving the tab and offers a fresh start', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', nextReviewAt: 0, reviews: 0 },
+      { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', example: 'Adios.', translation: 'Goodbye.', nextReviewAt: 1, reviews: 0 },
+    ] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (2)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const queue = host.querySelector('#lingua-review-queue-title').parentNode;
+    const size = queue.querySelector('#lingua-review-size');
+    const order = queue.querySelector('#lingua-review-order');
+    await act(async () => { size.value = '5'; size.dispatchEvent(new Event('change', { bubbles: true })); });
+    await act(async () => { order.value = 'reviews'; order.dispatchEvent(new Event('change', { bubbles: true })); });
+    await act(async () => { button('Skip for now').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const snapshot = JSON.parse(localStorage.getItem('allo_lingua_review_v1')).Spanish;
+    expect(snapshot.size).toBe('5');
+    expect(snapshot.order).toBe('reviews');
+    expect(snapshot.skippedIds).toHaveLength(1);
+
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Review (2)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Pick up where you left off');
+    expect(button('Resume session')).toBeTruthy();
+    expect(button('Start fresh')).toBeTruthy();
+    expect(host.querySelector('#lingua-review-size').value).toBe('5');
+    expect(host.querySelector('#lingua-review-order').value).toBe('reviews');
+
+    await act(async () => { button('Resume session').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).not.toContain('Pick up where you left off');
+    expect(host.textContent).toContain('1 set aside for later in this session.');
+    expect(button('Skip for now')).toBeTruthy();
+
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Review (2)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(button('Start fresh')).toBeTruthy();
+    await act(async () => { button('Start fresh').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).not.toContain('Pick up where you left off');
+    expect(button('Review set-aside cards')).toBeFalsy();
+  });
+
   it('reverses an established card to target-to-known recall and schedules Hard', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{
       id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', reviewStage: 1, nextReviewAt: 0, reviews: 1,

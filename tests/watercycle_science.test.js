@@ -13,6 +13,9 @@ describe('water cycle teaching-model boundaries', () => {
 
       expect(source).toContain('"TEACHING MODEL"');
       expect(source).toContain('"Evaporation index: "');
+      expect(source).toContain('"Evaporation index: " + evaporationIndex.toFixed(2) + "x"');
+      expect(source).toContain('var evapRate = evaporationIndex;');
+      expect(source).not.toContain('var evapRate = Math.max(0.2');
       expect(source).toContain('var runoffTendency = Math.round');
       expect(source).toContain('var infiltrationOpportunity = Math.round');
       expect(source).toContain('Groundwater recharge remains unresolved.');
@@ -21,6 +24,10 @@ describe('water cycle teaching-model boundaries', () => {
       expect(source).toContain('Relative teaching indices, not measurements or a forecast.');
       expect(source).toContain('the vertical temperature profile matters');
       expect(source).toContain('Infiltration does not automatically become groundwater recharge.');
+      expect(source).toContain("    'infiltration': 'The process by which water on the ground surface enters soil and rock; some infiltrated water can contribute to groundwater recharge.'");
+      expect(source).toContain("Forest and permeable ground");
+      expect(source).toContain('Infiltration does not guarantee recharge.');
+      expect(source).not.toContain("forest_recharge: { label: 'Forest recharge'");
       expect(source).not.toContain('"Water Budget (Live)"');
       expect(source).not.toContain('"\\u26A1 Thunderstorm"');
       expect(source).not.toContain('var runoffPct = Math.min(95');

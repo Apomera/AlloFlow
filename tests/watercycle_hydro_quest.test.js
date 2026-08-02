@@ -29,7 +29,13 @@ describe('Water Cycle Hydro Quest', () => {
     expect(source).toContain('"data-watercycle-hydro-quest": "true"');
     expect(source).toContain('role: "progressbar"');
     expect(source).toContain('"aria-valuenow": hydroPoints');
+    expect(source).toContain('"aria-valuetext": hydroCompleted + " of " + hydroMissions.length + " missions complete; " + hydroPoints + " of 120 Hydro Points."');
+    expect(source).toContain('id: "wcHydroQuestStatus"');
+    expect(source).toContain('"aria-describedby": "wcHydroQuestStatus"');
     expect(source).toContain('mission.complete ? "Complete" : "Open"');
+    expect(source).toContain('className: "wc-hydro-missions", role: "list", "aria-label": "Hydro Quest missions"');
+    expect(source).toContain('role: "listitem"');
+    expect(source).toContain('mission.name + (mission.complete ? " complete. " : " open. ") + mission.detail');
   });
 
   test('feeds points into bounded 3D visual rewards', () => {

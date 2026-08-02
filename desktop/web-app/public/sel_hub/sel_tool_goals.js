@@ -1176,8 +1176,26 @@ window.SelHub = window.SelHub || {
         var motivationalBoost = getMotivationalBoost();
         var dailyNudge = getDailyNudge();
         var goalOfTheWeek = getGoalOfTheWeek();
+        var totalSteps = goals.reduce(function(sum, goal) {
+          return sum + (goal.steps || []).length;
+        }, 0);
+        var completedSteps = goals.reduce(function(sum, goal) {
+          return sum + (goal.steps || []).filter(function(step) { return step.done; }).length;
+        }, 0);
+        var goalProgressText = goals.length === 0
+          ? 'No goals yet. Start with one small goal.'
+          : completedGoals.length + ' of ' + goals.length + ' goals complete; ' + completedSteps + ' of ' + totalSteps + ' steps complete.';
         var categoryStats = getCategoryStats();
 
+        var goalTabs = [
+          { id: 'goals', label: '\uD83C\uDFAF Goals' },
+          { id: 'habits', label: '\uD83D\uDD01 Habits' },
+          { id: 'vision', label: '\uD83C\uDF1F Vision' },
+          { id: 'smart', label: '\uD83E\uDDE0 SMART' },
+          { id: 'coach', label: '\uD83E\uDD16 Coach' },
+          { id: 'checkin', label: '\uD83D\uDCDD Check-In' },
+          { id: 'progress', label: '\uD83D\uDCCA Progress' }
+        ];
         // ═══════════════════════════════════════════════════════════
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
@@ -1202,9 +1220,34 @@ window.SelHub = window.SelHub || {
           // Tabs
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('goals', h, ctx) : null),
           h('div', { role: 'tablist', 'aria-label': 'Goal Setter sections', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
-            [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
+            goalTabs.map(function(tb) {
               var active = tab === tb.id;
-              return h('button', { 'aria-label': tb.label, key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
+              var tabIndex = goalTabs.indexOf(tb);
+              return h('button', {
+                id: 'goal-tab-' + tb.id,
+                'aria-label': tb.label,
+                'aria-controls': 'goal-panel-' + tb.id,
+                'aria-selected': active,
+                key: tb.id,
+                role: 'tab',
+                tabIndex: active ? 0 : -1,
+                onClick: function() { sfxClick(); upd({ tab: tb.id }); },
+                onKeyDown: function(event) {
+                  var nextIndex = tabIndex;
+                  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % goalTabs.length;
+                  else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + goalTabs.length) % goalTabs.length;
+                  else if (event.key === 'Home') nextIndex = 0;
+                  else if (event.key === 'End') nextIndex = goalTabs.length - 1;
+                  else return;
+                  event.preventDefault();
+                  upd({ tab: goalTabs[nextIndex].id });
+                  setTimeout(function() {
+                    var nextTab = document.getElementById('goal-tab-' + goalTabs[nextIndex].id);
+                    if (nextTab) nextTab.focus();
+                  }, 0);
+                },
+                style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 }
+              }, tb.label);
             })
           ),
 
@@ -1253,7 +1296,8 @@ window.SelHub = window.SelHub || {
           ) : null,
 
           // Content
-          h('div', { style: { flex: 1, overflow: 'auto', padding: 16 } },
+          h('div', { id: 'goal-panel-' + tab, role: 'tabpanel', 'aria-labelledby': 'goal-tab-' + tab, tabIndex: 0, style: { flex: 1, overflow: 'auto', padding: 16 } },
+            h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'Goal progress summary', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)', color: _goaFg('#c7d2fe'), fontSize: 11, lineHeight: 1.5 } }, goalProgressText),
 
             // ── GOALS TAB ──
             tab === 'goals' ? h('div', null,
@@ -1551,7 +1595,7 @@ window.SelHub = window.SelHub || {
                 h('button', { onClick: function() { upd({ habitCategoryFilter: 'all' }); }, style: { padding: '3px 10px', borderRadius: 12, background: habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (habitCategoryFilter === 'all' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.08)'), color: habitCategoryFilter === 'all' ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, 'All'),
                 HABIT_CATEGORIES.map(function(hc) {
                   var isActive = habitCategoryFilter === hc.id;
-                  return h('button', { 'aria-label': 'Suggested habits  tap to add:', key: hc.id, onClick: function() { upd({ habitCategoryFilter: hc.id }); }, style: { padding: '3px 10px', borderRadius: 12, background: isActive ? hc.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? hc.color + '44' : 'rgba(99,102,241,0.08)'), color: isActive ? hc.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, hc.emoji + ' ' + hc.label);
+                  return h('button', { 'aria-label': 'Filter suggested habits by ' + hc.label, 'aria-pressed': isActive, key: hc.id, onClick: function() { upd({ habitCategoryFilter: hc.id }); }, style: { padding: '3px 10px', borderRadius: 12, background: isActive ? hc.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? hc.color + '44' : 'rgba(99,102,241,0.08)'), color: isActive ? hc.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, hc.emoji + ' ' + hc.label);
                 })
               ) : null,
               // Habit suggestion chips (with categories)
@@ -1564,7 +1608,7 @@ window.SelHub = window.SelHub || {
                     [{ n: 'Read 15 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise 20 min \uD83C\uDFC3', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'No phone at dinner \uD83D\uDCF1', c: 'social' }, { n: 'Practice instrument \uD83C\uDFB5', c: 'creative' }] :
                     [{ n: 'Read 30 min \uD83D\uDCDA', c: 'academic' }, { n: 'Exercise \uD83D\uDCAA', c: 'health' }, { n: 'Meditate \uD83E\uDDD8', c: 'health' }, { n: 'Journal \uD83D\uDCDD', c: 'creative' }, { n: 'Connect with a friend \uD83E\uDD1D', c: 'social' }]
                   ).map(function(sug) {
-                    return h('button', { 'aria-label': '4px 10px', key: sug.n, onClick: function() { addHabit(sug.n, sug.c); }, style: { padding: '4px 10px', borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, sug.n);
+                    return h('button', { 'aria-label': 'Add suggested habit: ' + sug.n, key: sug.n, onClick: function() { addHabit(sug.n, sug.c); }, style: { padding: '4px 10px', borderRadius: 16, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, sug.n);
                   })
                 )
               ) : null,
@@ -1742,7 +1786,7 @@ window.SelHub = window.SelHub || {
                       var isActive = smartExampleCat === cat.id;
                       var hasExamples = !!SMART_EXAMPLES[cat.id];
                       if (!hasExamples) return null;
-                      return h('button', { 'aria-label': '44', key: cat.id, onClick: function() { upd({ smartExampleCat: cat.id }); sfxClick(); }, style: { padding: '5px 12px', borderRadius: 16, background: isActive ? cat.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? cat.color + '44' : 'rgba(99,102,241,0.1)'), color: isActive ? cat.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label);
+                      return h('button', { 'aria-label': 'Filter SMART examples by ' + cat.label, 'aria-pressed': isActive, key: cat.id, onClick: function() { upd({ smartExampleCat: cat.id }); sfxClick(); }, style: { padding: '5px 12px', borderRadius: 16, background: isActive ? cat.color + '22' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (isActive ? cat.color + '44' : 'rgba(99,102,241,0.1)'), color: isActive ? cat.color : _goaFg('#94a3b8'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, cat.emoji + ' ' + cat.label);
                     })
                   ),
                   // Examples for selected category

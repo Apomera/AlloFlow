@@ -20,11 +20,19 @@ describe('Water Cycle Journey pathway explorer', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain("var journeyPathDefinitions = [");
+      expect(source).toContain('journeyPathDriverByKey.runoff');
+      expect(source).toContain('journeyPathDriverByKey.infiltrate');
+      expect(source).toContain('journeyPathDriverByKey.plant');
+      expect(source).toContain('+ ". " + path.detail');
       expect(source).toContain("var journeyPathCoverageLabel = journeyPathCoverageCount === journeyPathDefinitions.length");
       expect(source).toContain('className: "wc-route-ledger"');
       expect(source).toContain('"aria-label": "Journey pathway coverage"');
       expect(source).toContain('"aria-valuetext": journeyPathCoverageLabel');
-      expect(source).toContain('className: "wc-route-ledger-item" + (explored ? " is-explored" : "") + (current ? " is-current" : "")');
+      expect(source).toContain('var isNext = !!journeyPathNext && journeyPathNext.key === path.key;');
+      expect(source).toContain('className: "wc-route-ledger-item" + (explored ? " is-explored" : "") + (current ? " is-current" : "") + (isNext ? " is-next" : "")');
+      expect(source).toContain('Suggested next pathway.');
+      expect(source).toContain('Next up');
+      expect(source).toContain('.wc-route-ledger-item.is-next{');
       expect(source).toContain("Try ' + journeyPathNext.label + ' next to compare residence time and return route.");
       expect(source).toContain('@media(forced-colors:active){.wc-route-ledger');
     });

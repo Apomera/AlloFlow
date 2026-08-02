@@ -82,6 +82,23 @@ describe('Poet Tree enhancement wave', () => {
     expect(host.querySelector('#pt-editor').value).toContain('A small moon');
   });
 
+  it('surfaces local storage failures while keeping the draft open', async () => {
+    await mountPoet();
+    await openWriteTab();
+    const editor = host.querySelector('#pt-editor');
+    const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    const storagePrototype = Object.getPrototypeOf(localStorage);
+    const originalSetItem = storagePrototype.setItem;
+    Object.defineProperty(storagePrototype, 'setItem', { configurable: true, value: () => { throw new Error('quota exceeded'); } });
+    try {
+      setValue.call(editor, 'Storage failure stays editable');
+      await act(async () => { editor.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 800)); });
+      expect(host.textContent).toContain('Could not save drafts on this device');
+      expect(editor.value).toBe('Storage failure stays editable');
+    } finally {
+      Object.defineProperty(storagePrototype, 'setItem', { configurable: true, writable: true, value: originalSetItem });
+    }
+  });
   it('updates live draft statistics as the poem changes', async () => {
     await mountPoet();
     await openWriteTab();
@@ -447,6 +464,27 @@ describe('Poet Tree enhancement wave', () => {
       const valid = new File([JSON.stringify(backup)], 'poettree-local-backup.json', { type: 'application/json' });
       Object.defineProperty(input, 'files', { configurable: true, value: [valid] });
       await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 30)); });
+      const preview = Array.from(host.querySelectorAll('[role=region]')).find((element) => element.getAttribute('aria-label') === 'Backup restore preview');
+      expect(preview).toBeTruthy();
+      expect(preview.textContent).toContain('1 poems');
+      const urlApi = window.URL || window.webkitURL;
+      const originalCreateObjectURL = urlApi.createObjectURL;
+      const originalRevokeObjectURL = urlApi.revokeObjectURL;
+      const originalAnchorClick = HTMLAnchorElement.prototype.click;
+      const safetyBlobs = [];
+      urlApi.createObjectURL = (blob) => { safetyBlobs.push(blob); return 'blob:pre-restore-safety'; };
+      urlApi.revokeObjectURL = () => {};
+      HTMLAnchorElement.prototype.click = () => {};
+      try {
+        const replace = Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Replace current local writing data with this backup');
+        expect(replace).toBeTruthy();
+        await act(async () => { replace.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+        expect(safetyBlobs).toHaveLength(1);
+      } finally {
+        if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL; else delete urlApi.createObjectURL;
+        if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL; else delete urlApi.revokeObjectURL;
+        HTMLAnchorElement.prototype.click = originalAnchorClick;
+      }
       expect(JSON.parse(localStorage.getItem('alloPoetTreePoems'))[0].text).toBe('restored poem');
       expect(JSON.parse(localStorage.getItem('alloPoetTreeWorkspacesV1'))[0].text).toBe('workspace poem');
       expect(localStorage.getItem('alloPoetTreeActiveWorkspaceV1')).toBe('restored-workspace');
@@ -466,6 +504,105 @@ describe('Poet Tree enhancement wave', () => {
       expect(host.querySelector('#pt-editor').value).toBe('workspace poem');
     } finally {
       window.confirm = previousConfirm;
+    }
+  });
+  it('merges backup collections without replacing the current draft', async () => {
+    localStorage.setItem('alloPoetTreePoems', JSON.stringify([{ id: 'current-poem', title: 'Current', text: 'current poem' }]));
+    localStorage.setItem('alloPoetTreeVersionsV1', JSON.stringify([{ id: 'current-revision', title: 'Current', text: 'current revision', formId: 'free' }]));
+    localStorage.setItem('alloPoetTreeWorkspacesV1', JSON.stringify([{ id: 'current-workspace', name: 'Current workspace', title: 'Current', text: 'current workspace poem', formId: 'free' }]));
+    localStorage.setItem('alloPoetTreeActiveWorkspaceV1', 'current-workspace');
+    localStorage.setItem('alloPoetTreePrefs', JSON.stringify({ cloudFeaturesEnabled: false }));
+    await mountPoet();
+    const privacy = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Privacy');
+    await act(async () => { privacy.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const input = Array.from(host.querySelectorAll('input')).find((element) => element.getAttribute('aria-label') === 'Choose a PoetTree local backup JSON file');
+    const backup = {
+      version: 1,
+      poems: [{ id: 'incoming-poem', title: 'Incoming', text: 'incoming poem', formId: 'free' }],
+      draft: { title: 'Incoming draft', text: 'incoming draft', formId: 'free' },
+      recoveredDraft: null,
+      revisions: [{ id: 'incoming-revision', title: 'Incoming', text: 'incoming revision', formId: 'free' }],
+      workspaces: [{ id: 'incoming-workspace', name: 'Incoming workspace', title: 'Incoming', text: 'incoming workspace', formId: 'free' }],
+      activeWorkspaceId: 'incoming-workspace'
+    };
+    const previousConfirm = window.confirm;
+    const urlApi = window.URL || window.webkitURL;
+    const originalCreateObjectURL = urlApi.createObjectURL;
+    const originalRevokeObjectURL = urlApi.revokeObjectURL;
+    const originalAnchorClick = HTMLAnchorElement.prototype.click;
+    window.confirm = () => true;
+    urlApi.createObjectURL = () => 'blob:merge-safety';
+    urlApi.revokeObjectURL = () => {};
+    HTMLAnchorElement.prototype.click = () => {};
+    try {
+      const valid = new File([JSON.stringify(backup)], 'merge-backup.json', { type: 'application/json' });
+      Object.defineProperty(input, 'files', { configurable: true, value: [valid] });
+      await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 30)); });
+      const merge = Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Merge this backup with current local writing data');
+      expect(merge).toBeTruthy();
+      await act(async () => { merge.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(JSON.parse(localStorage.getItem('alloPoetTreePoems'))).toHaveLength(2);
+      expect(JSON.parse(localStorage.getItem('alloPoetTreeVersionsV1'))).toHaveLength(2);
+      expect(JSON.parse(localStorage.getItem('alloPoetTreeWorkspacesV1'))).toHaveLength(2);
+      expect(localStorage.getItem('alloPoetTreeActiveWorkspaceV1')).toBe('current-workspace');
+      expect(host.querySelector('#pt-editor').value).toBe('current workspace poem');
+      expect(JSON.parse(localStorage.getItem('alloPoetTreePrefs'))).toEqual({ cloudFeaturesEnabled: false });
+    } finally {
+      window.confirm = previousConfirm;
+      if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL; else delete urlApi.createObjectURL;
+      if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL; else delete urlApi.revokeObjectURL;
+      HTMLAnchorElement.prototype.click = originalAnchorClick;
+    }
+  });
+  it('undoes a replace restore back to the previous local state', async () => {
+    localStorage.setItem('alloPoetTreePoems', JSON.stringify([{ id: 'before-poem', title: 'Before', text: 'before poem' }]));
+    localStorage.setItem('alloPoetTreeWorkspacesV1', JSON.stringify([{ id: 'before-workspace', name: 'Before workspace', title: 'Before', text: 'before workspace poem', formId: 'free' }]));
+    localStorage.setItem('alloPoetTreeActiveWorkspaceV1', 'before-workspace');
+    localStorage.setItem('alloPoetTreePrefs', JSON.stringify({ cloudFeaturesEnabled: false, largeText: true }));
+    await mountPoet();
+    const privacy = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Privacy');
+    await act(async () => { privacy.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const input = Array.from(host.querySelectorAll('input')).find((element) => element.getAttribute('aria-label') === 'Choose a PoetTree local backup JSON file');
+    const incoming = {
+      version: 1,
+      poems: [{ id: 'after-poem', title: 'After', text: 'after poem', formId: 'free' }],
+      draft: { title: 'After draft', text: 'after draft', formId: 'free' },
+      recoveredDraft: null,
+      revisions: [],
+      workspaces: [{ id: 'after-workspace', name: 'After workspace', title: 'After', text: 'after workspace poem', formId: 'free' }],
+      activeWorkspaceId: 'after-workspace'
+    };
+    const previousConfirm = window.confirm;
+    const urlApi = window.URL || window.webkitURL;
+    const originalCreateObjectURL = urlApi.createObjectURL;
+    const originalRevokeObjectURL = urlApi.revokeObjectURL;
+    const originalAnchorClick = HTMLAnchorElement.prototype.click;
+    const safetyBlobs = [];
+    window.confirm = () => true;
+    urlApi.createObjectURL = (blob) => { safetyBlobs.push(blob); return 'blob:undo-safety'; };
+    urlApi.revokeObjectURL = () => {};
+    HTMLAnchorElement.prototype.click = () => {};
+    try {
+      const valid = new File([JSON.stringify(incoming)], 'undo-backup.json', { type: 'application/json' });
+      Object.defineProperty(input, 'files', { configurable: true, value: [valid] });
+      await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 30)); });
+      const replace = Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Replace current local writing data with this backup');
+      await act(async () => { replace.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      const undo = Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Undo last local data restore');
+      expect(undo).toBeTruthy();
+      await act(async () => { undo.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(safetyBlobs).toHaveLength(2);
+      expect(JSON.parse(localStorage.getItem('alloPoetTreePoems'))[0].text).toBe('before poem');
+      expect(JSON.parse(localStorage.getItem('alloPoetTreeWorkspacesV1'))[0].text).toBe('before workspace poem');
+      expect(localStorage.getItem('alloPoetTreeActiveWorkspaceV1')).toBe('before-workspace');
+      expect(host.querySelector('#pt-editor').value).toBe('before workspace poem');
+      expect(Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Undo last local data restore')).toBeFalsy();
+      expect(JSON.parse(localStorage.getItem('alloPoetTreePrefs'))).toEqual({ cloudFeaturesEnabled: false, largeText: true });
+    } finally {
+      window.confirm = previousConfirm;
+      if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL; else delete urlApi.createObjectURL;
+      if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL; else delete urlApi.revokeObjectURL;
+      HTMLAnchorElement.prototype.click = originalAnchorClick;
     }
   });
   it('erases local writing data while preserving the cloud privacy preference', async () => {

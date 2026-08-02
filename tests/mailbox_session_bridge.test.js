@@ -652,8 +652,8 @@ describe('three-copy sync pins (Phase C sections)', () => {
         copies.forEach(source => {
             const fn = sliceBetween(source, 'const createHomeworkAssignmentLink = useCallback', 'const [includeSourceCitations');
             const gate = fn.indexOf('if (_isCanvasEnv || _alloFirebaseIsPlaceholder)');
-            const hosted = fn.indexOf('await hostPackOnMailbox()');
-            const selfContained = fn.indexOf('return createSelfContainedHomeworkLink();');
+            const hosted = fn.indexOf('await hostPackOnMailbox(selectedResourceIds)');
+            const selfContained = fn.indexOf('return createSelfContainedHomeworkLink(selectedResourceIds);');
             const cloudWrite = fn.indexOf("'HW-' + generateUUID()");
             expect(gate).toBeGreaterThanOrEqual(0);
             expect(hosted).toBeGreaterThan(gate);
@@ -818,7 +818,7 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
         NEW_COPIES.forEach(source => {
             const fn = sliceBetween(source, 'const createSelfContainedHomeworkLink = useCallback', 'const hostPackOnMailbox = useCallback');
             expect(fn).toContain('shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS');
-            expect(fn).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;');
+            expect(fn).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
             // The old dead-end error toast is gone.
             expect(fn).not.toContain('too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export');
             // The redirect toast only fires when the mailbox is ready (no double toast).
@@ -826,6 +826,7 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
             // Not-connected queues the host for after the connect self-test lands.
             const host = sliceBetween(source, 'const hostPackOnMailbox = useCallback', 'const toggleMbHand = useCallback');
             expect(host).toContain('mbPendingHostRef.current = true;');
+            expect(host).toContain('mbPendingHostResourceIdsRef.current = selectedResourceIds;');
             expect(source).toContain('if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {');
             expect(source).toContain('hostPackOnMailboxRef.current = hostPackOnMailbox;');
         });

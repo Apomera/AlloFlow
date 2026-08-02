@@ -28,4 +28,10 @@ describe('Matching Game full-screen dialog accessibility', () => {
   it('keeps reduced-motion entry behavior', () => {
     expect(files[0][1]).toContain("useReducedMotion() ? '' : ' animate-in fade-in duration-300'");
   });
+
+  it.each(files)('%s uses one accessible audio-hints control instead of repeated card speakers', (_path, source) => {
+    expect(source).toContain('matching_audio_hints');
+    expect(source).toMatch(/aria-pressed(?:=|\":)\s*\{?audioHintsEnabled/);
+    expect(source).toContain('readMatchingSelection');
+  });
 });

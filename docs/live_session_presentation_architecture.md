@@ -216,12 +216,74 @@ does not persist, add a transport message, or copy prompts, answers, feedback,
 drawings, scores, codenames, or real names. Closed activity owners are not
 silently revived.
 
+## Phase 10: Post-session follow-up planner
+
+Saved session history now owns one optional follow-up plan per retained session,
+alongside the teacher note that already existed. The history view derives focus
+and activity-kind filters from the existing `insightBrief`, evidence cohorts,
+next moves, and `liveActivities`; it does not create a reporting database.
+
+A plan references one current student-safe History resource and either the whole
+class or one already-saved support cohort. It stores only bounded resource and
+cohort labels/counts plus planned/completed status—never cohort members, answers,
+prompts, feedback, scores, account ids, or live transport capabilities. Imported
+planner fields are rebuilt from this allowlist.
+
+Opening a planned resource calls the existing History restore path with live
+class-follow explicitly suppressed, so review never broadcasts by accident. Preparing
+an assignment calls the existing assignment builder with one explicit bounded
+resource-id selection; full-pack assignment buttons retain their prior behavior,
+including Canvas/mailbox fallback and expiry/privacy controls. The cohort field is
+a teacher distribution reminder, not access control for a shareable link; enforced
+group and individual delivery remains in the existing live-session send controls.
+Planning alone never sends or assigns anything.
+
+## Phase 11: Confirmed saved-plan handoff to the current live session
+
+The post-session planner now exposes a live action only while a session is
+active, the persisted plan is open and unchanged, and its student-safe History
+resource still exists. The teacher module passes only the saved session id back
+to the app shell. It never receives the live roster or supplies recipient ids.
+
+At action time the shell re-resolves the saved session, allowlisted plan,
+current History resource, current published-resource state, transport, mode,
+and recently active audience. Cohort delivery reuses the same ambiguity-safe
+codename resolver, shared Live Dock heartbeat classifier, and bounded multi-student
+sender as the end-session evidence flow;
+missing cohorts never fall back to the class. Whole-class delivery reuses the
+existing Teacher-Paced class-follow pointer instead of creating individual
+overrides for every learner. Student-Paced whole-class plans continue through
+the existing asynchronous assignment path rather than being silently pinned.
+
+The existing accessible confirmation dialog reports the current count and
+explains override precedence before any write. The shell re-resolves everything
+again after confirmation and cancels if the live session, plan, resource,
+publication fingerprint, mode, or recently active audience changed. Missing and
+stale heartbeats fail closed for individual/cohort overrides. Mailbox delivery
+requires the resource's successful pack fingerprint; Firebase delivery requires
+the exact source fingerprint acknowledged by the latest successful session-resource
+write, not merely a matching resource id. Whole-class confirmation discloses that
+reconnecting devices may follow the current class pointer, and success is reported
+only after that pointer command is persisted. Firebase resource publications are
+serialized per session so an older request cannot finish after and overwrite the newest
+resource revision. After any awaited delivery, the shell rechecks app id, code, mode,
+transport, and active status before reporting success for the current session. A
+confirmed send records no UIDs,
+codenames, receipts, or new delivery object in saved history and never marks the
+instructional plan complete automatically.
+
+The live command paths now target `activeSessionAppId || appId`, including
+group, individual, batched, release, class-follow, mode, and resource-publication
+operations used by this flow. This preserves writes when a session is resumed
+under its recorded host app id.
+
 ## Next increments
 
 Future work should continue as refinements over this contract:
 
-1. Refine the existing saved-session-history view with activity-kind filters
-   and teacher-authored follow-up notes; do not add a cloud reporting stream.
+1. Refine the existing live monitor into a moderation cockpit with working,
+   submitted, revision, hidden, and feedback-review states; keep broadcasts
+   anonymous and identity mapping teacher-private.
 2. Improve ordering/editing in History or units when sequence authoring needs
    grow; do not add a separate slide organizer.
 3. If reusable cue templates are added later, store only teacher-authored
@@ -238,6 +300,7 @@ The phase is pinned by `tests/live_lesson_run.test.js`,
 `tests/live_polling_wordcloud.test.js`,
 `tests/live_polling_feedback_response.test.js`,
 `tests/live_activity_pulse.test.js`,
-`tests/live_polling_feedback_response_ui.test.js`, and the existing live
+`tests/live_polling_feedback_response_ui.test.js`,
+`tests/post_session_follow_up_planner.test.js`, and the existing live
 session, session transport, and canvas live-control suites. The normal build
 smoke and extracted-view prop verifiers must also remain green.

@@ -142,7 +142,7 @@
   var guidedWelcome = '<div class="card" id="clab-guidedWelcome" hidden style="border-color:rgba(89,201,141,.55);background:linear-gradient(145deg,rgba(89,201,141,.11),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--good)"><p class="eyebrow">Guided first coaster</p><h3>Build, test, explain, and revise</h3><p class="hint" id="clab-guidedText" style="margin:0">Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.</p><ol style="display:grid;gap:6px;margin:10px 0 12px;padding:0;list-style:none"><li>1. Choose a glowing node and shape a hill.</li><li>2. Predict what will happen, then test the ride.</li><li>3. Read the evidence and revise one node.</li></ol><div id="clab-guidedStep" role="status" aria-live="polite" style="margin:8px 0;color:var(--ink2);font:600 11px var(--mono)"><b style="color:var(--good)">Step 1 of 4</b> - Shape the track</div><div id="clab-guidedRecord" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin-top:5px">Attempts: 0 - revisions: 0</div><p id="clab-guidedConditions" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin:4px 0 0">Controlled experiment starts with the current settings.</p><div id="clab-guidedPrediction" hidden style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><p class="eyebrow">Before the test</p><p class="hint" style="margin-bottom:8px">Make a prediction first. Then we will compare it with measured telemetry.</p><label class="hint" for="clab-guidedSpeed" style="display:block;margin:7px 0 4px">After the first drop, the train will</label><select id="clab-guidedSpeed" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="speedUp">speed up</option><option value="slowDown">slow down</option></select><label class="hint" for="clab-guidedForce" style="display:block;margin:9px 0 4px">The strongest vertical force will appear near the</label><select id="clab-guidedForce" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="valley">valley</option><option value="hill">hill</option><option value="turn">turn</option></select><p id="clab-guidedFeedback" role="status" aria-live="polite" hidden style="margin:9px 0 0;color:var(--ink2);font-size:12px"></p><p id="clab-guidedCompare" role="status" aria-live="polite" hidden style="margin:7px 0 0;color:var(--ink3);font:600 10px var(--mono)"></p></div><div class="btnrow"><button id="clab-guidedAction" class="primary" type="button">Begin guided build</button><button id="clab-guidedRevise" class="ghost" type="button" hidden>Revise one node</button><button id="clab-guidedExport" class="ghost" type="button" disabled>Copy experiment log</button><button id="clab-guidedClear" class="ghost" type="button" disabled>Clear notebook</button><button id="clab-guidedSkip" class="ghost" type="button">Use full lab</button></div></div>'
   CLAB_HTML = CLAB_HTML.replace('<div class="card clab-build-start" id="clab-buildStart">', guidedWelcome + '\n\n        <div class="card clab-build-start" id="clab-buildStart">');
   var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
-  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><p id="clab-adaptiveReason" class="hint" style="margin:4px 0 7px">Complete a guided run to receive a personalized next step.</p><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
+  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><div id="clab-adaptivePlan" style="margin:4px 0 7px;padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 4px">Action plan</p><p id="clab-adaptiveAction" class="hint" style="margin:0 0 4px;color:var(--ink2)"><b>1. Change:</b> Raise one highlighted node into a smooth hill and leave the ride settings unchanged.</p><p id="clab-adaptiveReason" class="hint" style="margin:0 0 4px"><b>2. Why:</b> Start with one measurable hill so height, energy, and safety have a clear baseline.</p><p id="clab-adaptiveFocus" class="hint" style="margin:0 0 4px;color:var(--ink3)"><b>3. Test:</b> Capture a baseline that shows how the first drop changes speed.</p><p id="clab-adaptiveSuccess" class="hint" style="margin:0;color:var(--ink3)"><b>Done when:</b> The measured hill reaches at least 20 m with safe vertical-force limits.</p></div><div class="btnrow" style="margin-top:0"><button id="clab-btnAdaptiveInspect" type="button" class="ghost" disabled>Inspect evidence</button><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
   var pointCoords = '<div class="coords" id="clab-ptCoords"></div>';
   CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" role="group" aria-label="No track node selected"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span><span class="wide">Bank match <b id="clab-nodeBankDelta">?</b></span><span class="wide clab-bank-key" aria-label="3-D banking guide: solid is the actual rail and dashed is the suggested bank"><i aria-hidden="true"></i>Actual rail<i class="suggested" aria-hidden="true"></i>Suggested</span></div>');
   var energyHud = '<div class="hudcol">\n          <span class="hudk">Energy budget</span>';
@@ -3480,10 +3480,12 @@ function renderPredictionEvidence(tele){
   const reflection = e.speedCorrect && e.forceCorrect
     ? 'Both predictions matched the measured ride. Explain how height and curvature caused those changes.'
     : 'Use the mismatch as a design clue: change one node, then predict again so the evidence can test the revision.';
+  const coaching = guidedRecord.prediction && guidedRecord.prediction.coach ? guidedHtmlEscape(guidedRecord.prediction.coach) : 'Use the mismatch as a clue about energy and curvature.';
   return `<div class="card" data-clab-prediction-evidence="true">
     <p class="eyebrow">Prediction -&gt; evidence</p>
     <p class="hint" style="margin:0 0 6px"><b>Claim:</b> after the first drop, the train would <b>${e.speedClaim}</b>; the strongest vertical force would appear near the <b>${e.forceClaim}</b>.</p>
     <p class="hint" style="margin:0 0 6px"><b>Evidence:</b> the measured train did <b>${e.speedActual}</b> after the drop (${speedState}); peak vertical force was <b>${fmt(e.maxGV, 1)} g</b> near the <b>${e.forceActual}</b> (${forceState}).</p>
+    <p class="chnote" style="margin:0 0 5px"><b>Physics clue:</b> ${coaching}</p>
     <p class="chnote" style="margin:0"><b>Reflection:</b> ${reflection}</p>
   </div>`;
 }
@@ -3592,31 +3594,39 @@ function guidedDesignNodeCount(entry){
 }
 function buildGuidedHistoryCsv(){
   const history = guidedHistoryEntries();
-  const columns = ['attempt', 'revision', 'goal', 'goal_value', 'goal_unit', 'goal_passed', 'top_speed_kmh', 'peak_vertical_g', 'minimum_vertical_g', 'speed_prediction', 'force_prediction', 'speed_prediction_correct', 'force_prediction_correct', 'friction', 'cars', 'propulsion', 'acceleration_mps2', 'track_nodes'];
+  const columns = ['attempt', 'revision', 'goal', 'goal_value', 'goal_unit', 'goal_passed', 'top_speed_kmh', 'peak_vertical_g', 'minimum_vertical_g', 'speed_prediction', 'force_prediction', 'speed_prediction_correct', 'force_prediction_correct', 'friction', 'cars', 'propulsion', 'acceleration_mps2', 'track_nodes', 'comparison_quality', 'conditions_match', 'goal_match', 'track_changed', 'safety_ok', 'prediction_coach'];
   const label = value => value === 'speedUp' ? 'speed up' : value === 'slowDown' ? 'slow down' : value || '';
-  const rows = history.map(entry => [
-    Number(entry.attempt) || '',
-    Number(entry.revision) || 0,
-    guidedGoalLabel(entry.goal),
-    guidedCsvNumber(entry.goalValue, 2),
-    guidedGoalUnit(entry.goal),
-    !!entry.goalPassed,
-    guidedCsvNumber((Number(entry.maxSpeed) || 0) * 3.6, 2),
-    guidedCsvNumber(entry.maxGV, 2),
-    guidedCsvNumber(entry.minGV, 2),
-    label(entry.speed),
-    entry.force || '',
-    !!entry.speedCorrect,
-    !!entry.forceCorrect,
-    entry.friction || '',
-    Number(entry.cars) || '',
-    entry.propulsion === 'launch' ? 'LSM launch' : entry.propulsion === 'chain' ? 'chain lift' : entry.propulsion || '',
-    guidedCsvNumber(entry.accel, 2),
-    guidedDesignNodeCount(entry)
-  ].map(csvCell).join(','));
+  const rows = history.map((entry, index) => {
+    const comparison = index > 0 ? guidedExperimentQuality(history, index - 1, index) : null;
+    return [
+      Number(entry.attempt) || '',
+      Number(entry.revision) || 0,
+      guidedGoalLabel(entry.goal),
+      guidedCsvNumber(entry.goalValue, 2),
+      guidedGoalUnit(entry.goal),
+      !!entry.goalPassed,
+      guidedCsvNumber((Number(entry.maxSpeed) || 0) * 3.6, 2),
+      guidedCsvNumber(entry.maxGV, 2),
+      guidedCsvNumber(entry.minGV, 2),
+      label(entry.speed),
+      entry.force || '',
+      !!entry.speedCorrect,
+      !!entry.forceCorrect,
+      entry.friction || '',
+      Number(entry.cars) || '',
+      entry.propulsion === 'launch' ? 'LSM launch' : entry.propulsion === 'chain' ? 'chain lift' : entry.propulsion || '',
+      guidedCsvNumber(entry.accel, 2),
+      guidedDesignNodeCount(entry),
+      comparison ? comparison.label : 'Baseline',
+      comparison ? comparison.conditionsMatch : '',
+      comparison ? comparison.goalMatch : '',
+      comparison ? comparison.trackChanged : '',
+      comparison ? comparison.safetyOk : '',
+      entry.predictionCoach || ''
+    ].map(csvCell).join(',');
+  });
   return [columns.map(csvCell).join(','), ...rows].join('\r\n') + '\r\n';
-}
-function bindGuidedHistoryExport(){
+}function bindGuidedHistoryExport(){
   const body = __clabGet('clab-reportBody');
   const button = body && body.querySelector('[data-clab-history-csv]');
   if(!button) return;
@@ -3644,16 +3654,23 @@ function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){
   const rubric = guidedRubricSummary();
   const reviewStatus = guidedReviewStatusText();
   const quality = safeHistory.length >= 2 ? guidedExperimentQuality(safeHistory, Math.max(0, safeHistory.length - 2), safeHistory.length - 1) : guidedLatestEvidenceQuality(safeHistory);
+  const adaptiveProgress = guidedAdaptiveProgress(safeHistory);
+  const adaptivePlan = guidedAdaptivePlan(adaptiveProgress.recommendation);
+  const reflectionPrompt = guidedReflectionPrompt(safeHistory, quality, adaptiveProgress.recommendation);
+  const latestCoach = safeHistory.length ? (safeHistory[safeHistory.length - 1].predictionCoach || '') : '';
+  const adaptivePath = adaptiveProgress.items.map(item => guidedHtmlEscape(guidedGoalLabel(item.goal)) + ': ' + (item.evidence ? 'validated comparison' : item.passed ? 'goal met' : item.runs ? 'practice in progress' : 'queued')).join(' · ');
   const rows = safeHistory.map(entry => '<tr><td>' + guidedHtmlEscape('Attempt ' + (Number(entry.attempt) || '?') + ' / revision ' + (Number(entry.revision) || 0)) + '</td><td>' + guidedHtmlEscape(guidedGoalLabel(entry.goal)) + '</td><td>' + guidedHtmlEscape(guidedGoalValueText(entry)) + '</td><td>' + guidedHtmlEscape(fmt((Number(entry.maxSpeed) || 0) * 3.6, 1) + ' km/h') + '</td><td>' + guidedHtmlEscape(fmt(Number(entry.maxGV) || 0, 1) + ' g') + '</td><td>' + (entry.goalPassed ? 'Met' : 'In progress') + '</td></tr>').join('');
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coaster Lab experiment report</title><style>' +
     ':root{--ink:#18212b;--ink2:#425466;--ink3:#687887;--line:#d9e1e8;--line2:#aebdca;--card2:#f5f8fa;--accent:#2878c8;--good:#198754;--warn:#a15c00}*{box-sizing:border-box}body{margin:0;background:#eef3f6;color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:900px;margin:0 auto;padding:28px;background:#fff;min-height:100vh}h1{margin:0 0 4px;font-size:28px}h2{font-size:17px;margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}.meta,.note,.chnote{color:var(--ink2);font-size:12px}.panel{border:1px solid var(--line);border-radius:8px;padding:12px;margin:12px 0;background:var(--card2)}.conclusion{white-space:pre-wrap;border-left:4px solid var(--accent);padding:10px 12px;background:#f7fbff}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:7px 6px;vertical-align:top}th{background:var(--card2);color:var(--ink2)}svg{max-width:100%;height:auto}@media print{body{background:#fff}main{max-width:none;padding:0}.no-print{display:none}.panel{break-inside:avoid}}' +
     '</style></head><body><main><h1>Coaster Lab experiment report</h1><p class="meta">Generated ' + guidedHtmlEscape(new Date().toLocaleString()) + '</p>' +
     '<section class="panel"><h2>Experiment setup</h2><p><b>Controlled conditions:</b> ' + guidedHtmlEscape(conditionText) + '</p><p><b>Saved attempts:</b> ' + safeHistory.length + '</p></section>' +
+    '<section class="panel" data-clab-adaptive-plan="true"><h2>Adaptive pathway</h2><p><b>Milestones met:</b> ' + adaptiveProgress.goalsMet + '/3</p><p><b>Validated comparisons:</b> ' + adaptiveProgress.evidenceReady + '/3</p><p><b>Current recommendation:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.title) + '</p><p class="meta">' + adaptivePath + '</p><p class="meta">' + guidedHtmlEscape(adaptiveProgress.recommendation.reason) + '</p><p class="meta"><b>Action plan - Change:</b> ' + guidedHtmlEscape(adaptivePlan.change) + '</p><p class="meta"><b>Action plan - Why:</b> ' + guidedHtmlEscape(adaptivePlan.why) + '</p><p class="meta"><b>Action plan - Test:</b> ' + guidedHtmlEscape(adaptivePlan.test) + '</p><p class="meta"><b>Done when:</b> ' + guidedHtmlEscape(adaptivePlan.success) + '</p><p class="meta"><b>Next move:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.action) + '</p><p class="meta"><b>Evidence focus:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.focus) + '</p></section>' +
     '<section><h2>Goal trend</h2>' + trend + '</section>' +
     '<section><h2>Experiment quality</h2>' + renderGuidedEvidenceQuality(quality) + '</section>' +
+    '<section><h2>Prediction coaching</h2><p>' + guidedHtmlEscape(latestCoach || 'Complete a guided prediction to receive a physics clue.') + '</p></section>' +
     '<section><h2>Selected comparison</h2>' + selectedSummary + selectedOverlay + '</section>' +
     '<section><h2>Run evidence</h2><div class="table-wrap"><table><thead><tr><th>Run</th><th>Goal</th><th>Measured goal</th><th>Top speed</th><th>Peak vertical force</th><th>Outcome</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6">No completed guided runs.</td></tr>') + '</tbody></table></div></section>' +
-    '<section><h2>Classroom rubric</h2><p><b>Score:</b> ' + rubric.earned + '/' + rubric.max + ' (' + rubric.percent + '%)</p><p><b>Review status:</b> ' + guidedHtmlEscape(reviewStatus) + '</p><p><b>Student reflection:</b> ' + guidedHtmlEscape(guidedRecord.studentReflection || 'None recorded.') + '</p><p><b>Teacher/mentor notes:</b> ' + guidedHtmlEscape(guidedRecord.teacherNotes || 'None recorded.') + '</p></section>' +
+    '<section><h2>Classroom rubric</h2><p><b>Score:</b> ' + rubric.earned + '/' + rubric.max + ' (' + rubric.percent + '%)</p><p><b>Review status:</b> ' + guidedHtmlEscape(reviewStatus) + '</p><p><b>Suggested reflection prompt:</b> ' + guidedHtmlEscape(reflectionPrompt) + '</p><p><b>Student reflection:</b> ' + guidedHtmlEscape(guidedRecord.studentReflection || 'None recorded.') + '</p><p><b>Teacher/mentor notes:</b> ' + guidedHtmlEscape(guidedRecord.teacherNotes || 'None recorded.') + '</p></section>' +
     '<section><h2>Claim; Evidence; Reasoning</h2><div class="conclusion">' + guidedHtmlEscape(conclusion) + '</div></section>' +
     '<p class="meta">This report describes the educational simulation results. Use the controlled-condition warning before making a causal claim.</p>' +
     '</main></body></html>';
@@ -3788,18 +3805,74 @@ function renderGuidedEvidenceQuality(quality){
 function guidedAdaptiveNextChallenge(goal){
   return ({ hill20: 'airtime3', airtime3: 'gentle4', gentle4: 'hill20' })[goal] || 'hill20';
 }
-function guidedAdaptiveRecommendation(history){
+function guidedAdaptiveAction(goal, stage){
+  if(stage === 'foundation') return 'Raise one highlighted node into a smooth hill, then make a prediction before testing.';
+  if(stage === 'safety') return 'Lower or broaden the steepest valley, then re-run with the same controlled settings.';
+  if(stage === 'evidence') return 'Keep friction, train, propulsion, and goal fixed; change exactly one track node before repeating.';
+  if(stage === 'refine'){
+    if(goal === 'hill20') return 'Raise the highest editable node gradually while keeping the preflight findings clear.';
+    if(goal === 'airtime3') return 'Smoothly raise the crest or improve crest entry speed without adding a sharp force spike.';
+    return 'Broaden the strongest valley and smooth the banking transition to reduce peak vertical force.';
+  }
+  return 'Record a baseline for this new target, then revise one node and compare the two runs.';
+}
+function guidedAdaptivePlan(recommendation){
+  const rec = recommendation || guidedAdaptiveRecommendation();
+  const goal = rec.challenge || activeChallenge || 'hill20';
+  const stage = rec.stage || 'foundation';
+  let change = 'Record a baseline, then revise exactly one track node for the new target.';
+  if(stage === 'foundation') change = 'Raise one highlighted node into a smooth hill and leave the ride settings unchanged.';
+  else if(stage === 'safety') change = 'Lower or broaden the steepest valley and keep friction, train, and propulsion unchanged.';
+  else if(stage === 'evidence') change = 'Change exactly one track node while holding settings and the challenge fixed.';
+  else if(stage === 'refine'){
+    if(goal === 'hill20') change = 'Raise the highest editable node gradually while keeping the preflight findings clear.';
+    else if(goal === 'airtime3') change = 'Smoothly raise the crest or improve crest entry speed without adding a sharp force spike.';
+    else change = 'Broaden the strongest valley and smooth the banking transition to reduce peak vertical force.';
+  }
+  const success = goal === 'hill20' ? 'The measured hill reaches at least 20 m with safe vertical-force limits.' : goal === 'airtime3' ? 'Measured airtime reaches at least 3.0 s while the ride remains within force limits.' : 'Peak vertical force stays below 4.0 g.';
+  return { change, why: rec.reason || 'Use the latest measured evidence to choose one targeted revision.', test: rec.focus || 'Run the design with the same settings and compare the measured result.', success };
+}
+function guidedCurrentTelemetry(){
+  if(!lastTele || lastTele.status !== 'complete' || !Array.isArray(lastTele.trace) || lastTele.trace.length <= 5) return null;
+  const currentKey = packetDesignKey(design.points);
+  const telemetryKey = lastTele.designKey ? packetDesignFingerprintFromKey(lastTele.designKey) : '';
+  if(telemetryKey && telemetryKey !== currentKey) return null;
+  return lastTele;
+}function guidedEvidenceFocus(tele, goal, stage){
+  const trace = tele && Array.isArray(tele.trace) ? tele.trace.filter(point => point && Number.isFinite(Number(point.s)) && Number.isFinite(Number(point.g))) : [];
+  if(stage === 'foundation') return 'Capture a baseline that shows how the first drop changes speed.';
+  if(stage === 'progression') return 'Capture a baseline for the new ' + guidedGoalLabel(goal) + ' target before revising a node.';
+  if(!trace.length) return goal === 'airtime3' ? 'Inspect the crest and run the design to measure airtime.' : goal === 'gentle4' ? 'Inspect the strongest valley or turn, then run the design to measure force.' : 'Inspect the highest editable node and run the design to measure hill height.';
+  const peak = trace.reduce((best, point) => Math.abs(Number(point.g)) > Math.abs(Number(best.g)) ? point : best, trace[0]);
+  const peakG = tele && Number.isFinite(Number(tele.maxGV)) ? Number(tele.maxGV) : null;
+  if(stage === 'safety' || peakG != null && peakG > LIM.gvMax){
+    const zone = guidedPeakZone(tele);
+    return 'Inspect the ' + zone + ' near ' + fmt(Number(peak.s), 0) + ' m, where the vertical-force trace reaches about ' + fmt(peakG == null ? Number(peak.g) : peakG, 1) + ' g.';
+  }
+  if(goal === 'airtime3') return 'Inspect the crest and compare the airtime trace before and after the next revision.';
+  if(goal === 'hill20') return 'Inspect the highest editable node and compare the measured hill height with the 20 m target.';
+  return 'Inspect the strongest valley or turn and compare the vertical-force trace with the 4.0 g target.';
+}function guidedEvidenceFocusPoint(tele){
+  const trace = tele && Array.isArray(tele.trace) ? tele.trace.filter(point => point && Number.isFinite(Number(point.s)) && Number.isFinite(Number(point.g))) : [];
+  if(!trace.length) return null;
+  return trace.reduce((best, point) => Math.abs(Number(point.g)) > Math.abs(Number(best.g)) ? point : best, trace[0]);
+}function guidedAdaptiveRecommendation(history){
   const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
-  if(!safeHistory.length) return { stage: 'foundation', challenge: 'hill20', title: 'Foundation: build a smooth 20 m hill', reason: 'Start with one measurable hill so height, energy, and safety have a clear baseline.' };
+  if(!safeHistory.length) return { stage: 'foundation', challenge: 'hill20', title: 'Foundation: build a smooth 20 m hill', reason: 'Start with one measurable hill so height, energy, and safety have a clear baseline.', action: guidedAdaptiveAction('hill20', 'foundation'), focus: guidedEvidenceFocus(null, 'hill20', 'foundation') };
   const latest = safeHistory[safeHistory.length - 1];
   const quality = guidedLatestEvidenceQuality(safeHistory);
-  if(quality.level === 'needsRevision') return { stage: 'safety', challenge: 'gentle4', title: 'Safety reset: finish below 4.0 vertical g', reason: quality.recommendation };
-  if(quality.level === 'partial') return { stage: 'evidence', challenge: latest.goal || activeChallenge || 'hill20', title: 'Evidence practice: repeat ' + guidedGoalLabel(latest.goal || activeChallenge || 'hill20'), reason: quality.recommendation };
-  if(!latest.goalPassed) return { stage: 'refine', challenge: latest.goal || activeChallenge || 'hill20', title: 'Refine: meet the ' + guidedGoalLabel(latest.goal || activeChallenge || 'hill20') + ' goal', reason: 'Your comparison is valid. Keep the controls fixed and make one more targeted track revision.' };
+  if(quality.level === 'needsRevision') return { stage: 'safety', challenge: 'gentle4', title: 'Safety reset: finish below 4.0 vertical g', reason: quality.recommendation, action: guidedAdaptiveAction('gentle4', 'safety'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), 'gentle4', 'safety') };
+  if(quality.level === 'partial'){
+    const goal = latest.goal || activeChallenge || 'hill20';
+    return { stage: 'evidence', challenge: goal, title: 'Evidence practice: repeat ' + guidedGoalLabel(goal), reason: quality.recommendation, action: guidedAdaptiveAction(goal, 'evidence'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), goal, 'evidence') };
+  }
+  if(!latest.goalPassed){
+    const goal = latest.goal || activeChallenge || 'hill20';
+    return { stage: 'refine', challenge: goal, title: 'Refine: meet the ' + guidedGoalLabel(goal) + ' goal', reason: 'Your comparison is valid. Keep the controls fixed and make one more targeted track revision.', action: guidedAdaptiveAction(goal, 'refine'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), goal, 'refine') };
+  }
   const next = guidedAdaptiveNextChallenge(latest.goal || activeChallenge);
-  return { stage: 'progression', challenge: next, title: 'Next rung: ' + guidedGoalLabel(next), reason: 'The last comparison was valid and the goal was met. Try a new engineering target while preserving a clear baseline.' };
-}
-function guidedAdaptiveProgress(history){
+  return { stage: 'progression', challenge: next, title: 'Next rung: ' + guidedGoalLabel(next), reason: 'The last comparison was valid and the goal was met. Try a new engineering target while preserving a clear baseline.', action: guidedAdaptiveAction(next, 'progression'), focus: guidedEvidenceFocus(guidedCurrentTelemetry(), next, 'progression') };
+}function guidedAdaptiveProgress(history){
   const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
   const recommendation = guidedAdaptiveRecommendation(safeHistory);
   const goals = ['hill20', 'airtime3', 'gentle4'];
@@ -3833,8 +3906,17 @@ function renderAdaptiveProgress(history){
 }function updateAdaptiveChallenge(){
   if(!adaptiveCoachEl) return;
   const recommendation = guidedAdaptiveRecommendation();
+  const plan = guidedAdaptivePlan(recommendation);
   if(adaptiveTitleEl) adaptiveTitleEl.textContent = recommendation.title;
-  if(adaptiveReasonEl) adaptiveReasonEl.textContent = recommendation.reason;
+  if(adaptiveReasonEl) adaptiveReasonEl.textContent = '2. Why: ' + plan.why;
+  if(adaptiveActionEl) adaptiveActionEl.textContent = '1. Change: ' + plan.change;
+  if(adaptiveFocusEl) adaptiveFocusEl.textContent = '3. Test: ' + plan.test;
+  if(adaptiveSuccessEl) adaptiveSuccessEl.textContent = 'Done when: ' + plan.success;
+  if(adaptiveInspectEl){
+    const ready = !!guidedCurrentTelemetry();
+    adaptiveInspectEl.disabled = !ready || sim.running;
+    adaptiveInspectEl.setAttribute('aria-label', ready ? 'Inspect evidence in the report and telemetry trace' : 'Run the current design before inspecting evidence');
+  }
   const selected = activeChallenge === recommendation.challenge;
   const locked = guidedConditionsLocked();
   if(adaptiveAcceptEl){
@@ -3843,8 +3925,7 @@ function renderAdaptiveProgress(history){
     adaptiveAcceptEl.setAttribute('aria-label', selected ? recommendation.title + ' is selected' : 'Use adaptive recommendation: ' + recommendation.title);
   }
   renderAdaptiveProgress();
-}
-async function acceptAdaptiveChallenge(){
+}async function acceptAdaptiveChallenge(){
   if(sim.running || !adaptiveAcceptEl) return;
   const recommendation = guidedAdaptiveRecommendation();
   if(activeChallenge === recommendation.challenge){
@@ -4074,12 +4155,14 @@ function guidedRubricBody(summary, locked){
   }).join('');
 }
 function guidedRubricSummaryText(summary){
-  const lines = ['COASTER LAB - classroom progress', 'Rubric score: ' + summary.earned + '/' + summary.max + ' (' + summary.percent + '%)', 'Attempts: ' + summary.attempts + ' | goals met: ' + summary.goalsMet + ' | prediction matches: ' + summary.predictionMatches + ' | usable comparisons: ' + summary.comparablePairs + ' (valid ' + summary.validEvidencePairs + '; partial ' + summary.partialEvidencePairs + '; needs revision ' + summary.needsRevisionPairs + ')', ''];
+  const progress = guidedAdaptiveProgress();
+  const plan = guidedAdaptivePlan(progress.recommendation);
+  const prompt = guidedReflectionPrompt(guidedHistoryEntries(), guidedLatestEvidenceQuality(), progress.recommendation);
+  const lines = ['COASTER LAB - classroom progress', 'Rubric score: ' + summary.earned + '/' + summary.max + ' (' + summary.percent + '%)', 'Attempts: ' + summary.attempts + ' | goals met: ' + summary.goalsMet + ' | prediction matches: ' + summary.predictionMatches + ' | usable comparisons: ' + summary.comparablePairs + ' (valid ' + summary.validEvidencePairs + '; partial ' + summary.partialEvidencePairs + '; needs revision ' + summary.needsRevisionPairs + ')', '', 'Adaptive recommendation: ' + progress.recommendation.title, 'Action plan - change: ' + plan.change, 'Action plan - why: ' + plan.why, 'Action plan - test: ' + plan.test, 'Done when: ' + plan.success, 'Next move: ' + progress.recommendation.action, 'Evidence focus: ' + progress.recommendation.focus, 'Suggested reflection prompt: ' + prompt, ''];
   summary.criteria.forEach(criterion => lines.push(criterion.label + ': ' + criterion.score + '/2 - ' + criterion.note));
   if(String(guidedRecord.studentReflection || '').trim()) lines.push('', 'Student reflection:', String(guidedRecord.studentReflection).trim());
   return lines.join('\n');
-}
-function guidedReviewSnapshot(summary){
+}function guidedReviewSnapshot(summary){
   return {
     earned: summary.earned,
     max: summary.max,
@@ -4094,11 +4177,24 @@ function guidedReviewSnapshot(summary){
     criteria: summary.criteria.map(criterion => ({ key: criterion.key, score: criterion.score, note: criterion.note }))
   };
 }
-function renderClassroomRubric(){
+function guidedReflectionPrompt(history, quality, recommendation){
+  const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
+  const latest = safeHistory[safeHistory.length - 1];
+  const safeQuality = quality || guidedLatestEvidenceQuality(safeHistory);
+  const safeRecommendation = recommendation || guidedAdaptiveRecommendation(safeHistory);
+  if(!latest) return 'What do you predict will happen, and what evidence will you collect?';
+  if(safeQuality.level === 'needsRevision') return 'Which force spike or safety finding will you change first, and how will you test whether the new track is safer?';
+  if(safeQuality.level === 'partial') return 'Which one track node will you revise while keeping friction, train, propulsion, and goal fixed? Why is that a fair test?';
+  if(safeRecommendation.stage === 'refine') return 'What measured result shows that your revision helped, and what single change will you make next to meet the goal?';
+  if(safeRecommendation.stage === 'progression') return 'What tradeoff will you investigate in the next challenge, and what baseline measurement will you compare it with?';
+  return 'How does your measured evidence support your claim, and what is your next engineering move?';
+}function renderClassroomRubric(){
   const history = guidedHistoryEntries();
   if(!history.length) return '';
   const summary = guidedRubricSummary();
   const quality = guidedLatestEvidenceQuality(history);
+  const recommendation = guidedAdaptiveRecommendation(history);
+  const reflectionPrompt = guidedReflectionPrompt(history, quality, recommendation);
   const locked = !!guidedReview.locked;
   const disabled = locked ? ' disabled' : '';
   return '<div class="card" data-clab-classroom-rubric="true" data-clab-review-locked="' + String(locked) + '">' +
@@ -4107,7 +4203,8 @@ function renderClassroomRubric(){
     '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><b data-clab-rubric-total>' + summary.earned + '/' + summary.max + ' points · ' + summary.percent + '%</b><span data-clab-review-status class="chnote" role="status" aria-live="polite">' + guidedHtmlEscape(guidedReviewStatusText()) + '</span></div>' +
         renderGuidedEvidenceQuality(quality) +
 '<div data-clab-rubric-body style="margin-top:6px">' + guidedRubricBody(summary, locked) + '</div>' +
-    '<label class="hint" for="clab-studentReflection" style="display:block;margin-top:10px">Student reflection / CER reasoning <textarea id="clab-studentReflection" data-clab-student-reflection rows="4" maxlength="2400" placeholder="Explain how the controlled evidence supports your claim..."' + disabled + ' style="display:block;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)">' + guidedHtmlEscape(guidedRecord.studentReflection || '') + '</textarea></label>' +
+    '<p data-clab-reflection-prompt class="hint" style="margin:10px 0 4px;padding:7px 8px;border-left:3px solid var(--accent);background:var(--card2)"><b>Reflection prompt:</b> ' + guidedHtmlEscape(reflectionPrompt) + '</p>' +
+    '<label class="hint" for="clab-studentReflection" style="display:block;margin-top:6px">Student reflection / CER reasoning <textarea id="clab-studentReflection" data-clab-student-reflection rows="4" maxlength="2400" placeholder="' + guidedHtmlEscape(reflectionPrompt) + '"' + disabled + ' style="display:block;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)">' + guidedHtmlEscape(guidedRecord.studentReflection || '') + '</textarea></label>' +
     '<label class="hint" for="clab-rubricNotes" style="display:block;margin-top:10px">Teacher/mentor notes <textarea id="clab-rubricNotes" data-clab-rubric-notes rows="4" maxlength="2400" placeholder="Add feedback or a next-step prompt..."' + disabled + ' style="display:block;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)">' + guidedHtmlEscape(guidedRecord.teacherNotes || '') + '</textarea></label>' +
     '<label class="hint" for="clab-reviewer" style="display:block;margin-top:10px">Reviewer name (optional) <input id="clab-reviewer" data-clab-reviewer maxlength="120" value="' + guidedHtmlEscape(guidedReview.reviewer || '') + '" placeholder="Teacher or mentor"' + disabled + ' style="display:block;width:100%;box-sizing:border-box;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)"></label>' +
     '<div class="btnrow" style="margin-top:7px"><button type="button" data-clab-copy-rubric>Copy student summary</button><button type="button" data-clab-finalize-review' + (locked ? ' disabled' : '') + '>Finalize review</button><button type="button" class="ghost" data-clab-reopen-review' + (locked ? '' : ' disabled') + '>Reopen review</button><button type="button" class="ghost" data-clab-reset-rubric' + disabled + '>Reset weights</button><span data-clab-rubric-status class="chnote" role="status" aria-live="polite"></span></div>' +
@@ -4923,6 +5020,11 @@ const challengeStatus = __clabGet('clab-challengeStatus');
 const adaptiveCoachEl = __clabGet('clab-adaptiveCoach');
 const adaptiveTitleEl = __clabGet('clab-adaptiveTitle');
 const adaptiveReasonEl = __clabGet('clab-adaptiveReason');
+const adaptiveActionEl = __clabGet('clab-adaptiveAction');
+const adaptiveFocusEl = __clabGet('clab-adaptiveFocus');
+const adaptivePlanEl = __clabGet('clab-adaptivePlan');
+const adaptiveSuccessEl = __clabGet('clab-adaptiveSuccess');
+const adaptiveInspectEl = __clabGet('clab-btnAdaptiveInspect');
 const adaptiveAcceptEl = __clabGet('clab-btnAdaptiveAccept');
 const adaptiveProgressEl = __clabGet('clab-adaptiveProgress');
 const adaptiveProgressCountEl = __clabGet('clab-adaptiveProgressCount');
@@ -5078,6 +5180,7 @@ function guidedNotebookText(){
     lines.push('Evidence: max speed ' + fmt((Number(entry.maxSpeed) || 0) * 3.6, 0) + ' km/h; peak vertical force ' + fmt(Number(entry.maxGV) || 0, 1) + ' g.');
     lines.push('Conditions: ' + (entry.friction || 'unknown') + ' friction; ' + (entry.cars || '?') + ' cars; ' + (entry.propulsion || 'unknown') + ' propulsion.');
     lines.push('Prediction check: ' + (entry.speedCorrect ? 'speed matched' : 'speed differed') + '; ' + (entry.forceCorrect ? 'force location matched' : 'force location differed') + '.');
+    lines.push('Physics coaching: ' + (entry.predictionCoach || 'Review how height, speed, and curvature shaped the ride.'));
     lines.push('');
   }
   return lines.join('\n');
@@ -5141,7 +5244,17 @@ function guidedTraceSnapshot(tele){
     gl: Number(Number(point.gl).toFixed(3))
   }));
 }
-function updateGuidedPredictionFeedback(tele){
+function guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorrect){
+  const clues = [];
+  if(speedCorrect) clues.push('Energy clue: your prediction matches the height-to-speed trade after the drop.');
+  else clues.push(actualSpeed === 'speedUp' ? 'Energy clue: height became kinetic energy, so the train sped up after the drop.' : 'Energy clue: the measured train did not gain much speed; inspect the drop, crest, and friction before revising.');
+  if(forceCorrect) clues.push('Force clue: your prediction matched where speed and track curvature produced the strongest vertical force.');
+  else if(actualForce === 'valley') clues.push('Force clue: the valley combined high speed with curvature, increasing vertical force.');
+  else if(actualForce === 'hill') clues.push('Force clue: the hill region changed the vertical force as the track curvature redirected the train.');
+  else if(actualForce === 'turn') clues.push('Force clue: the turn region changed the force as speed and curvature worked together.');
+  else clues.push('Force clue: inspect the telemetry trace to locate the strongest curvature and force spike.');
+  return clues.join(' ');
+}function updateGuidedPredictionFeedback(tele){
   if(!tele || !Array.isArray(tele.trace) || !tele.trace.length) return;
   const actualSpeed = guidedActualSpeed(tele);
   const actualForce = guidedPeakZone(tele);
@@ -5149,8 +5262,8 @@ function updateGuidedPredictionFeedback(tele){
   const forceCorrect = guidedPrediction.force === actualForce;
   const speedText = speedCorrect ? 'Speed prediction: correct - the train sped up after the drop.' : 'Speed prediction: the measured ride ' + (actualSpeed === 'speedUp' ? 'sped up' : 'slowed down') + ' after the drop.';
   const forceText = forceCorrect ? 'Force prediction: correct - the peak appeared near the ' + actualForce + '.' : 'Force prediction: the peak appeared near the ' + actualForce + '.';
-  guidedPrediction = { ...guidedPrediction, feedback: speedText + ' ' + forceText, speedCorrect, forceCorrect, actualForce };
-  guidedRecord.prediction = guidedPrediction;
+  const coach = guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorrect);
+  guidedPrediction = { ...guidedPrediction, feedback: speedText + ' ' + forceText, coach, speedCorrect, forceCorrect, actualForce };  guidedRecord.prediction = guidedPrediction;
   const goalSnapshot = guidedGoalSnapshot(tele);
   const historyEntry = {
     attempt: guidedRecord.attempts,
@@ -5158,6 +5271,7 @@ function updateGuidedPredictionFeedback(tele){
     speed: guidedPrediction.speed,
     force: guidedPrediction.force,
     speedCorrect, forceCorrect, actualForce,
+    predictionCoach: coach,
     maxSpeed: Number.isFinite(tele.maxV) ? tele.maxV : 0,
     maxGV: Number.isFinite(tele.maxGV) ? tele.maxGV : 0,
     minGV: Number.isFinite(tele.minGV) ? tele.minGV : 0,
@@ -5185,7 +5299,7 @@ function setGuidedState(next){
   syncGuidedWelcome();
 }
 function resetGuidedPrediction(){
-  guidedPrediction = { speed: '', force: '', feedback: '', speedCorrect: null, forceCorrect: null, actualForce: '' };
+  guidedPrediction = { speed: '', force: '', feedback: '', coach: '', speedCorrect: null, forceCorrect: null, actualForce: '' };
   if(guidedSpeedEl) guidedSpeedEl.value = '';
   if(guidedForceEl) guidedForceEl.value = '';
   if(guidedFeedbackEl){ guidedFeedbackEl.textContent = ''; guidedFeedbackEl.hidden = true; }
@@ -5283,7 +5397,28 @@ challengeSelect.addEventListener('change', () => {
   try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
   updateDesignChallenge();
 });
-if(adaptiveAcceptEl) adaptiveAcceptEl.addEventListener('click', acceptAdaptiveChallenge);
+function inspectAdaptiveEvidence(){
+  const currentTelemetry = guidedCurrentTelemetry();
+  if(!currentTelemetry){
+    banner('Run the current design before inspecting evidence.', 'fail', 2800);
+    return;
+  }
+  activateTab(__clabGet('clab-tab-report-btn'));
+  requestAnimationFrame(() => {
+    const point = guidedEvidenceFocusPoint(currentTelemetry);
+    if(point && telemetryReplay.tele){
+      applyTelemetryFrame(telemetryIndexAtDistance(currentTelemetry.trace, point.s));
+      drawTraces(currentTelemetry);
+    }
+    const body = __clabGet('clab-reportBody');
+    const target = body && (body.querySelector('.clab-replay') || body.querySelector('[data-clab-prediction-evidence]') || body.querySelector('[data-clab-guided-comparison]'));
+    if(target){
+      target.setAttribute('tabindex', '-1');
+      try{ target.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' }); target.focus({ preventScroll: true }); }catch(_e){}
+    }
+    banner('Evidence report opened at the strongest measured trace point.', 'pass', 3000);
+  });
+}if(adaptiveAcceptEl) adaptiveAcceptEl.addEventListener('click', acceptAdaptiveChallenge);if(adaptiveInspectEl) adaptiveInspectEl.addEventListener('click', inspectAdaptiveEvidence);
 __clabGet('clab-btnChallengeRun').addEventListener('click', () => {
   if(sim.running) banner('Finish or stop the current run first.', 'fail', 2200);
   else startRun(false);
@@ -5967,6 +6102,12 @@ function exportLabPacket(){
     guided: {
       state: guidedState,
       record: guidedRecord,
+      adaptive: (() => {
+        const history = guidedHistoryEntries();
+        const progress = guidedAdaptiveProgress(history);
+        const plan = guidedAdaptivePlan(progress.recommendation);
+        return { stage: progress.recommendation.stage, challenge: progress.recommendation.challenge, action: progress.recommendation.action, focus: progress.recommendation.focus, change: plan.change, why: plan.why, test: plan.test, success: plan.success, reflectionPrompt: guidedReflectionPrompt(history, null, progress.recommendation), goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady, milestones: progress.items.map(item => ({ goal: item.goal, runs: item.runs, passed: item.passed, evidence: item.evidence })) };
+      })(),
       challenge: activeChallenge,
       rubric: guidedRubricWeights,
       review: guidedReview
@@ -8411,16 +8552,21 @@ rootEl._lab = {
     };
   },
   designInfo: () => ({ pts: design.points.length, mode: design.propulsion.mode }),
-  guidedInfo: () => ({ state: guidedState, points: design.points.length, welcomeVisible: !!guidedWelcomeEl && !guidedWelcomeEl.hidden, prediction: { speed: guidedPrediction.speed, force: guidedPrediction.force, feedback: guidedPrediction.feedback, speedCorrect: guidedPrediction.speedCorrect, forceCorrect: guidedPrediction.forceCorrect }, notebook: { attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, hasPrediction: !!guidedRecord.prediction, historyLength: Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0, exportReady: Array.isArray(guidedRecord.history) && guidedRecord.history.length > 0, packetReady: (() => { try{ return exportLabPacket().length > 0; }catch(_e){ return false; } })(), clearReady: !!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length)), conditionsLocked: guidedConditionsLocked(), conditions: guidedRecord.conditions, packetEvidenceReady: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length), packetControlsVisible: !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport')) }, evidenceVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-prediction-evidence]')), comparisonVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-guided-comparison]')), timelineVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-timeline]')), comparisonBoardVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-compare]')), conclusionVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-comparison-conclusion]')), historyExportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-csv]')), historyTrendVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-trend]')), traceOverlayVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-trace-overlay]')), teacherReportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-teacher-report]')), classroomRubricVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-classroom-rubric]')), evidenceQualityVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-evidence-quality]')), adaptiveVisible: !!adaptiveCoachEl, adaptiveChallenge: guidedAdaptiveRecommendation().challenge, adaptiveStage: guidedAdaptiveRecommendation().stage, adaptiveProgressVisible: !!adaptiveProgressEl && !!adaptiveProgressTrackEl, adaptiveProgress: (() => { const progress = guidedAdaptiveProgress(); return { goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady }; })(), reviewVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-review-status]')), reviewLocked: !!guidedReview.locked }),
+  guidedInfo: () => ({ state: guidedState, points: design.points.length, welcomeVisible: !!guidedWelcomeEl && !guidedWelcomeEl.hidden, prediction: { speed: guidedPrediction.speed, force: guidedPrediction.force, feedback: guidedPrediction.feedback, coach: guidedPrediction.coach || '', speedCorrect: guidedPrediction.speedCorrect, forceCorrect: guidedPrediction.forceCorrect }, notebook: { attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, hasPrediction: !!guidedRecord.prediction, historyLength: Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0, exportReady: Array.isArray(guidedRecord.history) && guidedRecord.history.length > 0, packetReady: (() => { try{ return exportLabPacket().length > 0; }catch(_e){ return false; } })(), clearReady: !!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length)), conditionsLocked: guidedConditionsLocked(), conditions: guidedRecord.conditions, packetEvidenceReady: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length), packetControlsVisible: !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport')) }, evidenceVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-prediction-evidence]')), comparisonVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-guided-comparison]')), timelineVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-timeline]')), comparisonBoardVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-compare]')), conclusionVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-comparison-conclusion]')), historyExportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-csv]')), historyTrendVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-trend]')), traceOverlayVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-trace-overlay]')), teacherReportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-teacher-report]')), classroomRubricVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-classroom-rubric]')), evidenceQualityVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-evidence-quality]')), adaptiveVisible: !!adaptiveCoachEl, adaptiveActionVisible: !!adaptiveActionEl, adaptiveAction: guidedAdaptiveRecommendation().action, adaptiveFocusVisible: !!adaptiveFocusEl, adaptiveFocus: guidedAdaptiveRecommendation().focus, adaptivePlanVisible: !!adaptivePlanEl && !!adaptiveSuccessEl, adaptivePlan: guidedAdaptivePlan(), adaptiveInspectVisible: !!adaptiveInspectEl, adaptiveInspectReady: !!guidedCurrentTelemetry(), adaptiveChallenge: guidedAdaptiveRecommendation().challenge, adaptiveStage: guidedAdaptiveRecommendation().stage, adaptiveProgressVisible: !!adaptiveProgressEl && !!adaptiveProgressTrackEl, reflectionPromptVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-reflection-prompt]')), reflectionPrompt: guidedReflectionPrompt(), adaptiveProgress: (() => { const progress = guidedAdaptiveProgress(); return { goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady }; })(), reviewVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-review-status]')), reviewLocked: !!guidedReview.locked }),
   packetRoundTrip: () => {
     const before = { points: design.points.length, attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, state: guidedState, rubric: JSON.stringify(guidedRubricWeights), review: JSON.stringify(guidedReview), studentReflection: guidedRecord.studentReflection || '', teacherNotes: guidedRecord.teacherNotes || '' };
 
     try{
-      importLabPacket(exportLabPacket());
+      const exportedPacket = exportLabPacket();
+      const parsedPacket = JSON.parse(exportedPacket);
+      const adaptivePacket = parsedPacket.guided && parsedPacket.guided.adaptive;
+      importLabPacket(exportedPacket);
       const controls = !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport'));
+      const adaptive = !!(adaptivePacket && typeof adaptivePacket.action === 'string' && typeof adaptivePacket.focus === 'string' && typeof adaptivePacket.change === 'string' && typeof adaptivePacket.why === 'string' && typeof adaptivePacket.test === 'string' && typeof adaptivePacket.success === 'string' && typeof adaptivePacket.reflectionPrompt === 'string' && Array.isArray(adaptivePacket.milestones) && Number.isFinite(Number(adaptivePacket.goalsMet)) && Number.isFinite(Number(adaptivePacket.evidenceReady)));
       return {
-        pass: controls && !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length) && design.points.length === before.points && guidedRecord.attempts === before.attempts && guidedRecord.revisions === before.revisions && guidedState === before.state && !!guidedRecord.conditions && JSON.stringify(guidedRubricWeights) === before.rubric && JSON.stringify(guidedReview) === before.review && (guidedRecord.studentReflection || '') === before.studentReflection && (guidedRecord.teacherNotes || '') === before.teacherNotes && !!(guidedRecord.history[guidedRecord.history.length - 1] && Array.isArray(guidedRecord.history[guidedRecord.history.length - 1].trace) && guidedRecord.history[guidedRecord.history.length - 1].trace.length),
+        pass: controls && adaptive && !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length) && design.points.length === before.points && guidedRecord.attempts === before.attempts && guidedRecord.revisions === before.revisions && guidedState === before.state && !!guidedRecord.conditions && JSON.stringify(guidedRubricWeights) === before.rubric && JSON.stringify(guidedReview) === before.review && (guidedRecord.studentReflection || '') === before.studentReflection && (guidedRecord.teacherNotes || '') === before.teacherNotes && !!(guidedRecord.history[guidedRecord.history.length - 1] && Array.isArray(guidedRecord.history[guidedRecord.history.length - 1].trace) && guidedRecord.history[guidedRecord.history.length - 1].trace.length),
         controls,
+        adaptive,
         evidence: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length),
         points: design.points.length,
         attempts: guidedRecord.attempts,

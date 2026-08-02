@@ -13,12 +13,27 @@ describe('Water Cycle visual Scenario Compare', () => {
 
       expect(source).toContain('className: "wc-compare-bars"');
       expect(source).toContain('"aria-label": "Visual comparison of baseline and current values"');
+      expect(source).toContain('"aria-describedby": "wcScenarioWorkflowStatus"');
+      expect(source).toContain('id: "wcScenarioWorkflowStatus"');
+      expect(source).toContain('className: "wc-compare-method"');
+      expect(source).toContain('role: "status"');
+      expect(source).toContain('"aria-atomic": "true"');
+      expect(source).toContain('Experiment steps');
+      expect(source).toContain('Comparison ready: record a prediction before reading the evidence.');
+      expect(source).toContain('Prediction recorded: compare the bars and pathway mix as evidence, then save the observation.');
       expect(source).toContain('className: "wc-compare-bar-card"');
       expect(source).toContain('"aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2)');
       expect(source).toContain('"aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff');
       expect(source).toContain('"aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration');
       expect(source).toContain('className: "wc-compare-bar-base"');
       expect(source).toContain('className: "wc-compare-bar-current"');
+      expect(source).toContain('className: "wc-route-mix"');
+      expect(source).toContain('"aria-label": "Baseline and current pathway mix"');
+      expect(source).toContain('renderWcRouteMixBar("Base", wcBaselineRouteShares)');
+      expect(source).toContain('renderWcRouteMixBar("Now", wcRouteShares)');
+      expect(source).toContain('is-prediction-evidence');
+      expect(source).toContain('Prediction evidence to check');
+      expect(source).toContain('wcPredictionEvidenceMetrics.indexOf("evaporation")');
     });
   });
 
@@ -41,6 +56,14 @@ describe('Water Cycle visual Scenario Compare', () => {
       expect(source).toContain('formatWcDelta(wcInfiltrationDelta, " pts", 0)');
       expect(source).toContain('"is-up"');
       expect(source).toContain('"is-down"');
+      expect(source).toContain('role: "img"');
+      expect(source).toContain('className: "wc-route-mix-segment is-runoff"');
+      expect(source).toContain('className: "wc-route-mix-segment is-infiltrate"');
+      expect(source).toContain('className: "wc-route-mix-segment is-plant"');
+      expect(source).toContain('Relative teaching shares, not water volumes');
+      expect(source).toContain('formatWcDelta(delta, " pts", 0)');
+      expect(source).toContain('.wc-compare-method{grid-column:1/-1');
+      expect(source).toContain('@media(forced-colors:active){.wc-compare-method');
     });
   });
 });

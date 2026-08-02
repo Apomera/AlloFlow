@@ -15,7 +15,7 @@ describe('Water Cycle Journey completion receipt', () => {
       expect(source).toContain("nextWaterCycle.journeyLastPath = pathKey;");
       expect(source).toContain("d.journeyState === 'complete' ? d.journeyLastPath : ''");
       expect(source).toContain("var journeyChoiceKicker = d.journeyState === 'complete' ? 'Cycle receipt' : 'Path chosen';");
-      expect(source).toContain("'This route returned the droplet to the ocean. ' + journeyChosenRoute.pace + '.'");
+      expect(source).toContain("'This route returned the droplet to the ocean. ' + journeyChosenRoute.pace + '. Driver: ' + journeyChosenRoute.driver + '. Return path: ' + journeyChosenRoute.returnPath + '.'");
     });
   });
 
@@ -28,6 +28,18 @@ describe('Water Cycle Journey completion receipt', () => {
       expect(source).toContain("journeyLastPath: ''");
       expect(source).toContain("upd('journeyLastPath', '');");
       expect(source).toContain('Start Another Loop');
+    });
+  });
+  it('records the loop and reward when the journey actually completes', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain("if (nextState === 'complete' && current.journeyState !== 'complete')");
+      expect(source).toContain("nextWaterCycle.journeyLoops = (current.journeyLoops || 0) + 1;");
+      expect(source).toContain("awardStemXP('waterCycle', 25, 'Water Cycle journey loop');");
+      expect(source).toContain('Loop " + (d.journeyLoops || 1) + " recorded');
+      expect(source).toContain("Starting another loop. You are now a water droplet in the ocean.");
+      expect(source).not.toContain("upd('journeyLoops', (d.journeyLoops || 0) + 1);");
     });
   });
 });

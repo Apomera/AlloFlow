@@ -41,9 +41,10 @@ describe('presence heartbeat — student sender', () => {
 
 describe('presence heartbeat — teacher dock display', () => {
   it('renders a per-student presence dot with the three freshness bands + unknown', () => {
-    expect(ANTI).toMatch(/seenAge = entry\.lastSeen \? \(dockNow - entry\.lastSeen\) : null/);
-    expect(ANTI).toMatch(/seenAge < 95000/);
-    expect(ANTI).toMatch(/seenAge < 200000/);
+    expect(ANTI).toContain('const LIVE_ROSTER_PRESENCE_CONNECTED_MS = 95000;');
+    expect(ANTI).toContain('const LIVE_ROSTER_PRESENCE_STALE_MS = 200000;');
+    expect(ANTI).toContain('const classifyLiveRosterPresence =');
+    expect(ANTI).toContain('classifyLiveRosterPresence({ entry, now: dockNow })');
     expect(ANTI).toMatch(/presence_gone.*disconnected\?/);
     // accessible: the dot carries the label, not color alone
     expect(ANTI).toMatch(/aria-label=\{presence\.label\} title=\{presence\.label\}/);
