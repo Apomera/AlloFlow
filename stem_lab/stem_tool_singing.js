@@ -1999,6 +1999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var isDark = ctx.isDark;
+      var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var isContrast = ctx.isContrast;
       var canvasNarrate = ctx.canvasNarrate;
 
@@ -2719,7 +2720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening', 'Listening')),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.singing.listening', 'Listening')),
             micError && h('div', {
               className: 'text-xs text-red-500 ml-2',
               role: 'alert'
@@ -3022,7 +3023,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 displayLow && displayHigh
                   ? 'Green keys show your vocal range from ' + midiToNoteName(displayLow).str + ' to ' + midiToNoteName(displayHigh).str + '.'
                   : 'Complete the range test above to see your range highlighted.'),
-              h('canvas', { 'aria-label': t('stem.singing.singing_visualization_3', 'Singing visualization'),
+              h('canvas', { role: 'img', 'aria-label': t('stem.singing.singing_visualization_3', 'Singing visualization'),
                 ref: rangeKeyboardCanvasRef,
                 width: 600,
                 height: 80,
@@ -4462,7 +4463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening_2', 'Listening'))),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.singing.listening_2', 'Listening'))),
 
           // Tab navigation
           h('div', {
