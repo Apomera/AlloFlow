@@ -1422,7 +1422,7 @@ window.StemLab = window.StemLab || {
           );
         });
 
-        return h('svg', {
+        return h('svg', { role: 'img', 'aria-label': 'SIR epidemic projection chart showing susceptible, infected, and recovered populations over time',
           viewBox: '0 0 ' + w + ' ' + (ht + 15),
           className: 'w-full',
           style: { maxHeight: ht + 15 + 'px' },
@@ -1814,7 +1814,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4', 'data-epidemic-tool': 'true' },
 
         // ── Badge toast ──
-        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
+        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce motion-reduce:animate-none' },
           '\uD83C\uDFC6 Badge: ' + d.badgeToast
         ),
 
@@ -3300,7 +3300,7 @@ window.StemLab = window.StemLab || {
                 pathI += ' L ' + x(mi) + ' ' + y(mapHistory[mi].I);
                 pathR += ' L ' + x(mi) + ' ' + y(mapHistory[mi].R);
               }
-              return h('svg', { viewBox: '0 0 ' + w2 + ' ' + ht2, className: 'w-full', style: { maxHeight: ht2 + 'px' } },
+              return h('svg', { role: 'img', 'aria-label': 'SIR map simulation trajectories', viewBox: '0 0 ' + w2 + ' ' + ht2, className: 'w-full', style: { maxHeight: ht2 + 'px' } },
                 h('path', { d: pathS, fill: 'none', stroke: '#3b82f6', strokeWidth: 2 }),
                 h('path', { d: pathI, fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
                 h('path', { d: pathR, fill: 'none', stroke: '#22c55e', strokeWidth: 2 })
@@ -3562,7 +3562,7 @@ window.StemLab = window.StemLab || {
             callGemini ? h('button', { 'aria-label': __alloT('stem.epidemic.generate_scenario', 'Generate Scenario'), onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, __alloT('stem.epidemic.generate_scenario_2', '\uD83E\uDDE0 Generate Scenario')) :
             h('p', { className: 'text-xs text-slate-600 italic' }, __alloT('stem.epidemic.ai_not_available_requires_gemini_integ', 'AI not available \u2014 requires Gemini integration.'))
           ) : d.scenarioLoading ? h('div', { className: glassCard + ' text-center py-6' },
-            h('div', { className: 'text-3xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
+            h('div', { className: 'text-3xl animate-pulse motion-reduce:animate-none mb-2' }, '\uD83E\uDDE0'),
             h('p', { className: 'text-sm font-bold text-purple-600' }, __alloT('stem.epidemic.generating_outbreak_scenario', 'Generating outbreak scenario...'))
           ) : scenarioData && h('div', { className: 'space-y-3' },
             // Scenario briefing
@@ -3669,7 +3669,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: glassCard },
             d.chalAILoading ? h('div', { className: 'text-center py-4' },
-              h('div', { className: 'text-2xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
+              h('div', { className: 'text-2xl animate-pulse motion-reduce:animate-none mb-2' }, '\uD83E\uDDE0'),
               h('p', { className: 'text-xs text-purple-600 font-bold' }, __alloT('stem.epidemic.ai_generating_question', 'AI generating question...'))
             ) : h('div', { className: 'space-y-3' },
               activeChalQ && h('div', null,
@@ -3747,7 +3747,7 @@ window.StemLab = window.StemLab || {
               (function() {
                 if (battleUseAI && d.battleAILoading) {
                   return h('div', { className: 'text-center py-4' },
-                    h('div', { className: 'text-2xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
+                    h('div', { className: 'text-2xl animate-pulse motion-reduce:animate-none mb-2' }, '\uD83E\uDDE0'),
                     h('p', { className: 'text-xs text-purple-600 font-bold' }, __alloT('stem.epidemic.ai_generating_question_2', 'AI generating question...'))
                   );
                 }
@@ -3860,7 +3860,7 @@ window.StemLab = window.StemLab || {
                   return 'M ' + arr.map(function(v, i) { return (10 + (i / steps) * 300).toFixed(1) + ',' + (90 - v * 80).toFixed(1); }).join(' L ');
                 }
                 return h('div', { className: 'mb-3 rounded border border-slate-200 bg-slate-50 p-2' },
-                  h('svg', { viewBox: '0 0 320 105', className: 'w-full h-28 block' },
+                  h('svg', { role: 'img', 'aria-label': 'Susceptible, infected, and recovered trajectory chart', viewBox: '0 0 320 105', className: 'w-full h-28 block' },
                     // Baseline
                     h('line', { x1: 10, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
                     h('line', { x1: 10, y1: 10, x2: 10, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
@@ -3905,7 +3905,7 @@ window.StemLab = window.StemLab || {
                 h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
                   h('thead', null, h('tr', { className: 'bg-slate-100' },
                     ['contact %', 'intervention %', 'R₀', 'R_eff', 'regime'].map(function(c, i) {
-                      return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                      return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
                     }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     var rowBg = o.reg === 'contained' ? 'rgba(16,185,129,0.08)' : (o.reg === 'emerging' ? 'rgba(217,119,6,0.08)' : 'rgba(220,38,38,0.10)');
