@@ -1651,7 +1651,7 @@
 
     return el('div', {
       key: 'archStudio',
-      style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden', outline: 'none' },
+      style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden' },
       role: 'region',
       'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.'),
       tabIndex: 0,
