@@ -333,6 +333,7 @@
     var image = tensorToFloat32(imageTensor);
     var rgba = chwToRgba(image, IMAGE_SIZE, IMAGE_SIZE);
     var canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
     canvas.width = IMAGE_SIZE;
     canvas.height = IMAGE_SIZE;
     canvas.getContext('2d').putImageData(new ImageData(rgba, IMAGE_SIZE, IMAGE_SIZE), 0, 0);
