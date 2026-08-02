@@ -247,7 +247,7 @@ function StudentSaveAdventurePanel({
                       disabled={isResumingAdventure}
                       className={cx('w-full py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                     >
-                      {isResumingAdventure ? <RefreshCw size={18} className="animate-spin" aria-hidden="true" /> : <History size={18} aria-hidden="true"/>}
+                      {isResumingAdventure ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <History size={18} aria-hidden="true"/>}
                       {t('adventure.resume')}
                     </button>
                     <button
@@ -274,7 +274,7 @@ function StudentSaveAdventurePanel({
             ) : (
               <div className={cx('p-4 rounded-xl text-center', styles.livePanel)} role="status" aria-live="polite">
                 <p className={cx('text-sm font-bold mb-1', styles.liveTitle)}>
-                  <Wifi size={16} className="inline mr-1 animate-pulse" aria-hidden="true"/> {t('session.live_active')}
+                  <Wifi size={16} className="inline mr-1 animate-pulse motion-reduce:animate-none" aria-hidden="true"/> {t('session.live_active')}
                 </p>
                 <p className={cx('text-xs', styles.liveText)}>
                   {sessionData?.democracy?.isActive ? t('session.vote_prompt') : t('session.watch_prompt')}

@@ -238,7 +238,7 @@ function StudentSaveAdventurePanel({
     /* @__PURE__ */ React.createElement(Sparkles, { size: 18, "aria-hidden": "true" }),
     " ",
     t("adventure.start")
-  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse", "aria-hidden": "true" }), " ", t("session.live_active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? t("session.vote_prompt") : t("session.watch_prompt"))))));
+  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("session.live_active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? t("session.vote_prompt") : t("session.watch_prompt"))))));
 }
 
   window.AlloModules = window.AlloModules || {};
