@@ -7933,6 +7933,124 @@ const countWords = (text) => {
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
 const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const resolveRosterCodenamesToLiveUids = ({ codenames, rosterStudents, liveRoster, maxRecipients = 250 } = {}) => {
+    const safeRosterStudents = rosterStudents && typeof rosterStudents === 'object' && !Array.isArray(rosterStudents) ? rosterStudents : {};
+    const safeLiveRoster = liveRoster && typeof liveRoster === 'object' && !Array.isArray(liveRoster) ? liveRoster : {};
+    const rosterNameCounts = Object.keys(safeRosterStudents).reduce((counts, codename) => {
+        const normalized = normalizeRosterSessionCodename(codename);
+        if (normalized) counts.set(normalized, (counts.get(normalized) || 0) + 1);
+        return counts;
+    }, new Map());
+    const wanted = new Set(
+        (Array.isArray(codenames) ? codenames : [])
+            .map(normalizeRosterSessionCodename)
+            .filter(normalized => normalized && rosterNameCounts.get(normalized) === 1)
+    );
+    const buckets = Object.entries(safeLiveRoster).reduce((out, [uid, entry]) => {
+        const normalized = normalizeRosterSessionCodename(entry?.name);
+        if (!uid || !normalized || !wanted.has(normalized)) return out;
+        const existing = out.get(normalized) || [];
+        existing.push(uid);
+        out.set(normalized, existing);
+        return out;
+    }, new Map());
+    const recipientLimit = Math.max(1, Math.min(250, Number(maxRecipients) || 250));
+    return Array.from(buckets.values())
+        .filter(uids => uids.length === 1)
+        .map(uids => uids[0])
+        .slice(0, recipientLimit);
+};
+const resolveSavedFollowUpLivePlanTarget = ({
+    sessionId,
+    sessionHistory,
+    rosterStudents,
+    liveRoster,
+    resources,
+    normalizePlan,
+    getResourceFingerprint,
+    isResourcePublished,
+    activeSessionCode,
+    activeSessionAppId,
+    sessionMode = 'sync',
+    transportKind = 'firebase',
+    maxRecipients = 250,
+} = {}) => {
+    const sessionCode = String(activeSessionCode || '').trim().slice(0, 24);
+    if (!sessionCode) return { ok: false, reason: 'inactive-session' };
+    const wantedSessionId = String(sessionId || '').trim();
+    const savedSession = (Array.isArray(sessionHistory) ? sessionHistory : [])
+        .find(entry => entry && String(entry.id || '') === wantedSessionId);
+    if (!savedSession || typeof normalizePlan !== 'function') return { ok: false, reason: 'plan-unavailable' };
+    const plan = normalizePlan(savedSession.followUpPlan);
+    if (!plan) return { ok: false, reason: 'plan-unavailable' };
+    if (plan.status === 'completed') return { ok: false, reason: 'plan-completed' };
+    const resource = (Array.isArray(resources) ? resources : [])
+        .find(item => item && String(item.id || '') === String(plan.resourceId || ''));
+    if (!resource) return { ok: false, reason: 'resource-unavailable' };
+    let resourceFingerprint = '';
+    try {
+        resourceFingerprint = typeof getResourceFingerprint === 'function'
+            ? String(getResourceFingerprint(resource) || '')
+            : '';
+    } catch (_) {
+        resourceFingerprint = '';
+    }
+    if (!resourceFingerprint) return { ok: false, reason: 'resource-unavailable' };
+    let published = false;
+    try {
+        published = typeof isResourcePublished === 'function'
+            && isResourcePublished(resource, resourceFingerprint) === true;
+    } catch (_) {
+        published = false;
+    }
+    if (!published) return { ok: false, reason: 'resource-syncing' };
+    const safeLiveRoster = liveRoster && typeof liveRoster === 'object' && !Array.isArray(liveRoster) ? liveRoster : {};
+    const connectedUids = Object.entries(safeLiveRoster)
+        .filter(([uid, entry]) => uid && entry && typeof entry === 'object' && !Array.isArray(entry))
+        .map(([uid]) => uid)
+        .slice(0, 1000);
+    if (connectedUids.length === 0) return { ok: false, reason: 'no-live-learners' };
+    const normalizedMode = sessionMode === 'sync' ? 'sync' : 'async';
+    const base = {
+        ok: true,
+        sessionCode,
+        sessionAppId: String(activeSessionAppId || '').trim().slice(0, 160),
+        sessionMode: normalizedMode,
+        transportKind: transportKind === 'mailbox' ? 'mailbox' : 'firebase',
+        resource,
+        resourceFingerprint,
+        planSignature: [wantedSessionId, plan.resourceId, plan.audience, plan.cohortCode, plan.status, plan.plannedAt].join('|'),
+    };
+    if (plan.audience === 'cohort') {
+        const cohort = (Array.isArray(savedSession?.insightBrief?.evidenceCohorts) ? savedSession.insightBrief.evidenceCohorts : [])
+            .find(entry => entry && entry.intent === 'support' && String(entry.code || '') === String(plan.cohortCode || ''));
+        if (!cohort) return { ok: false, reason: 'cohort-unavailable' };
+        const uids = resolveRosterCodenamesToLiveUids({
+            codenames: cohort.codenames,
+            rosterStudents,
+            liveRoster: safeLiveRoster,
+            maxRecipients,
+        });
+        if (uids.length === 0) return { ok: false, reason: 'no-cohort-learners' };
+        return {
+            ...base,
+            audience: 'cohort',
+            audienceLabel: String(cohort.label || 'Evidence cohort').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Evidence cohort',
+            connectedCount: uids.length,
+            uids,
+            targetSignature: uids.slice().sort().join('|'),
+        };
+    }
+    if (normalizedMode !== 'sync') return { ok: false, reason: 'teacher-paced-required' };
+    return {
+        ...base,
+        audience: 'class',
+        audienceLabel: 'Whole class',
+        connectedCount: connectedUids.length,
+        uids: [],
+        targetSignature: connectedUids.slice().sort().join('|'),
+    };
+};
 const buildStudentResourcePatchBatches = ({ uids, roster, resourceId, resourceAt, maxRecipients = 250 } = {}) => {
     const safeRoster = roster && typeof roster === 'object' && !Array.isArray(roster) ? roster : {};
     const safeResourceId = String(resourceId || '');
@@ -11537,7 +11655,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1785678887903';
+    var pluginCdnVersion = '1785692038449';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -20173,6 +20291,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbPackItemsRef = useRef([]);
   const mbLivePackRef = useRef(null);
   const mbHostedPackFpRef = useRef('');
+  const liveSessionCommandStateRef = useRef(null);
+  const savedFollowUpLiveSendLockRef = useRef(false);
+  liveSessionCommandStateRef.current = {
+      activeSessionCode,
+      activeSessionAppId: activeSessionAppId || appId,
+      sessionData,
+      rosterKey,
+      history,
+      mbLive,
+      mbMode,
+      mailboxPublishedFingerprints: mbSentPacksRef.current,
+  };
   const moduleAutoRetryRef = useRef(false);
   const [mbStudent, setMbStudent] = useState(null);
   const [mbHostedAssignment, setMbHostedAssignment] = useState(null);
@@ -20646,30 +20776,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           followUpStatus: '',
       });
   };
-  const resolveEndSessionCohortUids = (codenames) => {
-      const rosterNameCounts = Object.keys(rosterKey?.students || {}).reduce((counts, codename) => {
-          const normalized = normalizeRosterSessionCodename(codename);
-          if (normalized) counts.set(normalized, (counts.get(normalized) || 0) + 1);
-          return counts;
-      }, new Map());
-      const wanted = new Set(
-          (Array.isArray(codenames) ? codenames : [])
-              .map(normalizeRosterSessionCodename)
-              .filter(normalized => normalized && rosterNameCounts.get(normalized) === 1)
-      );
-      const buckets = Object.entries(sessionData?.roster || {}).reduce((out, [uid, entry]) => {
-          const normalized = normalizeRosterSessionCodename(entry?.name);
-          if (!normalized || !wanted.has(normalized)) return out;
-          const existing = out.get(normalized) || [];
-          existing.push(uid);
-          out.set(normalized, existing);
-          return out;
-      }, new Map());
-      return Array.from(buckets.values())
-          .filter(uids => uids.length === 1)
-          .map(uids => uids[0])
-          .slice(0, 250);
-  };
+  const resolveEndSessionCohortUids = (codenames) => resolveRosterCodenamesToLiveUids({
+      codenames,
+      rosterStudents: rosterKey?.students,
+      liveRoster: sessionData?.roster,
+      maxRecipients: 250,
+  });
   const sendEndSessionEvidenceCohort = async (cohort) => {
       if (!endSessionPreview || endSessionPreview.busy || endSessionPreview.followUpBusy) return;
       const resourceId = String(endSessionPreview.followUpResourceId || '');
@@ -20848,6 +20960,117 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       const { karaokeStudentAudio, ...safe } = cleaned || {};
       return stripUndefined(safe);
+  };
+  const describeSavedFollowUpLiveFailure = (reason) => {
+      if (reason === 'inactive-session') return 'Start or resume a live session before sending this follow-up.';
+      if (reason === 'plan-completed') return 'Reopen this follow-up plan before sending it to a live session.';
+      if (reason === 'resource-unavailable') return 'The planned resource is no longer available in student-safe History. Nothing was sent.';
+      if (reason === 'resource-syncing') return 'This resource is still syncing to the live session. Wait a moment and try again.';
+      if (reason === 'cohort-unavailable') return 'The saved evidence cohort is no longer available. Review the plan; nothing was sent.';
+      if (reason === 'no-cohort-learners') return 'No uniquely matched learners from this cohort are currently connected. Nothing was sent.';
+      if (reason === 'no-live-learners') return 'No learners are currently connected to this live session.';
+      if (reason === 'teacher-paced-required') return 'Switch the current session to Teacher-Paced to present a whole-class follow-up, or use Prepare assignment link for asynchronous work.';
+      return 'This saved follow-up plan is no longer available. Review and save it again.';
+  };
+  const resolveSavedFollowUpLiveDeliverySnapshot = (sessionId) => {
+      const current = liveSessionCommandStateRef.current || {};
+      const moduleApi = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules : {};
+      const normalizePlan = moduleApi.normalizeRosterSessionFollowUpPlan;
+      const isMailbox = Boolean(current.mbLive);
+      const publishedSessionResources = Array.isArray(current.sessionData?.resources) ? current.sessionData.resources : [];
+      return resolveSavedFollowUpLivePlanTarget({
+          sessionId,
+          sessionHistory: current.rosterKey?.sessionHistory,
+          rosterStudents: current.rosterKey?.students,
+          liveRoster: current.sessionData?.roster,
+          resources: _alloStudentSafeResources(current.history),
+          normalizePlan,
+          getResourceFingerprint: (resource) => {
+              const packed = _alloSerializeResourceForStudentPack(resource);
+              return packed ? _alloQuickHash(JSON.stringify(packed) || '') : '';
+          },
+          isResourcePublished: (resource, fingerprint) => isMailbox
+              ? current.mailboxPublishedFingerprints?.[resource.id] === fingerprint
+              : publishedSessionResources.some(item => item && String(item.id || '') === String(resource.id || '')),
+          activeSessionCode: current.activeSessionCode || current.mbLive?.code,
+          activeSessionAppId: current.activeSessionAppId,
+          sessionMode: isMailbox ? current.mbMode : current.sessionData?.mode,
+          transportKind: isMailbox ? 'mailbox' : 'firebase',
+      });
+  };
+  const sendSavedFollowUpPlanToLiveSession = async (sessionId) => {
+      const cleanSessionId = String(sessionId || '').trim();
+      if (!cleanSessionId) return { status: 'unavailable', sent: 0, failed: 0, message: 'This saved follow-up plan is no longer available.' };
+      if (savedFollowUpLiveSendLockRef.current) {
+          return { status: 'busy', sent: 0, failed: 0, message: 'A live follow-up action is already in progress.' };
+      }
+      savedFollowUpLiveSendLockRef.current = true;
+      try {
+          const before = resolveSavedFollowUpLiveDeliverySnapshot(cleanSessionId);
+          if (!before.ok) {
+              return { status: 'unavailable', sent: 0, failed: 0, message: describeSavedFollowUpLiveFailure(before.reason) };
+          }
+          const isCohort = before.audience === 'cohort';
+          const confirmed = await new Promise(resolve => setConfirmDialog({
+              title: isCohort ? 'Assign saved follow-up to live cohort?' : 'Present saved follow-up to live class?',
+              message: isCohort
+                  ? `Assign "${before.resource.title || before.resource.type || 'Follow-up resource'}" to ${before.connectedCount} currently connected learner${before.connectedCount === 1 ? '' : 's'} in "${before.audienceLabel}"? This replaces their current individual live resource and takes precedence over group/class resources. Unmatched or disconnected learners will not receive it. The saved plan will remain open.`
+                  : `Present "${before.resource.title || before.resource.type || 'Follow-up resource'}" to the ${before.connectedCount} connected device${before.connectedCount === 1 ? '' : 's'} in the current Teacher-Paced class? This moves the existing class-follow pointer for everyone in the live session. The saved plan will remain open.`,
+              confirmText: isCohort ? 'Assign live follow-up' : 'Present to live class',
+              cancelText: 'Cancel',
+              tone: 'info',
+              onConfirm: () => resolve(true),
+              onCancel: () => resolve(false),
+          }));
+          if (!confirmed) return { status: 'cancelled', sent: 0, failed: 0, message: 'Nothing was sent.' };
+          const after = resolveSavedFollowUpLiveDeliverySnapshot(cleanSessionId);
+          if (!after.ok) {
+              return { status: 'unavailable', sent: 0, failed: 0, message: describeSavedFollowUpLiveFailure(after.reason) };
+          }
+          const unchanged = before.sessionCode === after.sessionCode
+              && before.sessionAppId === after.sessionAppId
+              && before.sessionMode === after.sessionMode
+              && before.transportKind === after.transportKind
+              && before.planSignature === after.planSignature
+              && before.resourceFingerprint === after.resourceFingerprint
+              && before.targetSignature === after.targetSignature;
+          if (!unchanged) {
+              return { status: 'unavailable', sent: 0, failed: 0, message: 'The live session, plan, resource, or connected audience changed while you reviewed the confirmation. Nothing was sent; review and try again.' };
+          }
+          if (after.audience === 'cohort') {
+              const result = await handleSetStudentsResource(after.uids, after.resource.id);
+              const sent = Math.max(0, Number(result?.sent) || 0);
+              const failed = Math.max(0, Number(result?.failed) || 0);
+              if (failed > 0) {
+                  return {
+                      status: sent > 0 ? 'partial' : 'failed',
+                      sent,
+                      failed,
+                      message: sent > 0
+                          ? `${sent} learner${sent === 1 ? '' : 's'} assigned; ${failed} could not be assigned. The plan remains open for review or retry.`
+                          : `The live follow-up could not be assigned to ${failed} learner${failed === 1 ? '' : 's'}. The plan remains open for retry.`,
+                  };
+              }
+              return { status: 'assigned', sent, failed: 0, message: `Assigned the live follow-up to ${sent} learner${sent === 1 ? '' : 's'}. The plan remains open until you mark it complete.` };
+          }
+          const followed = _alloFollowResourceLive(after.resource);
+          if (!followed) {
+              return { status: 'failed', sent: 0, failed: 0, message: 'The current class could not be moved to this resource. Nothing was marked complete.' };
+          }
+          setIsRosterKeyOpen(false);
+          handleRestoreView(after.resource, { suppressLiveFollow: true });
+          return {
+              status: 'presenting',
+              sent: 0,
+              failed: 0,
+              message: `Presentation started for the current live class (${after.connectedCount} connected). Student devices will follow as the session syncs; the saved plan remains open.`,
+          };
+      } catch (error) {
+          warnLog('Saved follow-up live handoff failed:', error);
+          return { status: 'failed', sent: 0, failed: 0, message: 'The live follow-up action failed. Nothing was marked complete; review the session and try again.' };
+      } finally {
+          savedFollowUpLiveSendLockRef.current = false;
+      }
   };
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
   const _mbPushOneResource = useCallback(async (item, opts = {}) => {
@@ -21246,17 +21469,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           .catch(() => { if (!cancelled) setMbQrSvg(''); });
       return () => { cancelled = true; };
   }, [mbLive?.joinUrl]);
-  // Shared packet builder for both self-contained links and mailbox hosting.
-  const buildAssignmentPackEncoded = useCallback(async ({ includeSharedActivity = false } = {}) => {
+  const resolveAssignmentResources = useCallback((resourceIds = null) => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
       const resourceCandidates = _alloStudentSafeResources(history);
-      const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+      if (Array.isArray(resourceIds)) {
+          const requestedIds = new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean).slice(0, 25));
+          return resourceCandidates.filter(item => requestedIds.has(String(item.id || '')));
+      }
+      return resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+  }, [generatedContent, history]);
+  // Shared packet builder for full packs and explicitly selected follow-up resources.
+  const buildAssignmentPackEncoded = useCallback(async ({ includeSharedActivity = false, resourceIds = null } = {}) => {
+      const resourcesToAssign = resolveAssignmentResources(resourceIds);
       if (!resourcesToAssign.length) {
           addToast('Create or restore a teacher resource before making a homework link.', 'info');
           return null;
       }
-      const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+      const explicitSelection = Array.isArray(resourceIds);
+      const title = String((explicitSelection ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
       const resources = resourcesToAssign.map(item => _alloSerializeResourceForStudentPack(item)).filter(Boolean);
+      if (!resources.length) {
+          addToast('None of the selected resources can be shared with students. Choose a different History resource.', 'info');
+          return null;
+      }
       const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
       const sharedActivityType = sharedAssignmentActivity.type === 'rating' ? 'rating' : 'word_cloud';
       const ratingMin = Math.max(1, Math.min(9, Math.trunc(Number(sharedAssignmentActivity.minValue) || 1)));
@@ -21296,20 +21531,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
       return { encoded, title, count: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), createdAt: packet.createdAt, expiresAt: packet.expiresAt, aiPolicy: studentAiPolicyForShare, sharedActivities };
-  }, [generatedContent, history, homeworkExpiryDays, sharedAssignmentActivity, sourceTopic, studentAiPolicyForShare]);
+  }, [generatedContent, homeworkExpiryDays, resolveAssignmentResources, sharedAssignmentActivity, sourceTopic, studentAiPolicyForShare]);
   // Latest-ref to the mailbox-host callback so the self-contained builder can
   // reroute oversize packs to it (hostPackOnMailbox is declared below), and so a
   // queued host can auto-run after a late mailbox connect. Mirrors the
   // startClassSessionRef idiom above (avoids a TDZ from the forward reference).
   const hostPackOnMailboxRef = useRef(null);
   const mbPendingHostRef = useRef(false);
+  const mbPendingHostResourceIdsRef = useRef(null);
   // Self-contained variant: no Firestore write, no student auth — the whole
   // pack is compressed into the URL fragment and decoded by the student shell.
   // This is the pathway that works when the class backend (e.g. Gemini
   // Canvas-managed Firebase) refuses anonymous student devices.
-  const createSelfContainedHomeworkLink = useCallback(async () => {
+  const createSelfContainedHomeworkLink = useCallback(async (resourceIds = null) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
       try {
-          const built = await buildAssignmentPackEncoded();
+          const built = await buildAssignmentPackEncoded({ resourceIds: selectedResourceIds });
           if (!built) return null;
           const shareUrl = _buildAlloPackShareUrl(built.encoded, built.aiPolicy);
           if (!shareUrl) {
@@ -21325,7 +21562,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               if (mbConfig?.url && mbConfig?.admin) {
                   addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
               }
-              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
+              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;
           }
           copyToClipboard(shareUrl);
           openQrShareModal({
@@ -21351,7 +21588,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
   // to the teacher's own Drive via their mailbox; the QR carries only a tiny
   // pointer, so it is always small enough to print.
-  const hostPackOnMailbox = useCallback(async () => {
+  const hostPackOnMailbox = useCallback(async (resourceIds = null) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
       const requiredMailboxVersion = sharedAssignmentActivity.enabled ? 11 : 9;
       if (mbConfig?.url && mbConfig?.admin && Number(mbConfig.v || 0) < requiredMailboxVersion) {
           addToast(`Update your Class Mailbox script to v${requiredMailboxVersion} before hosting ${sharedAssignmentActivity.enabled ? 'a shared class activity' : 'expiring homework'}.`, 'info');
@@ -21360,12 +21598,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       if (!mbConfig?.url || !mbConfig?.admin) {
           mbPendingHostRef.current = true; // auto-host once the connect self-test lands
+          mbPendingHostResourceIdsRef.current = selectedResourceIds;
           addToast('Connect your Class Mailbox first — open "Live class without accounts" for the one-time setup.', 'info');
           setMbPanelOpen(true);
           return null;
       }
       try {
-          const built = await buildAssignmentPackEncoded({ includeSharedActivity: true });
+          const built = await buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: selectedResourceIds });
           if (!built) return null;
           setMbBusy(true);
           const id = 'PK-' + generateUUID();
@@ -21412,7 +21651,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
       if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {
           mbPendingHostRef.current = false;
-          if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current();
+          const pendingResourceIds = mbPendingHostResourceIdsRef.current;
+          mbPendingHostResourceIdsRef.current = null;
+          if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current(pendingResourceIds);
       }
   }, [mbConfig]);
   const toggleMbHand = useCallback(async () => {
@@ -21516,10 +21757,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       }
   }, [addToast]);
-  const createHomeworkAssignmentLink = useCallback(async () => {
-      const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
-      const resourceCandidates = _alloStudentSafeResources(history);
-      const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+  const createHomeworkAssignmentLink = useCallback(async (resourceIds = null) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+      const resourcesToAssign = resolveAssignmentResources(selectedResourceIds);
       if (!resourcesToAssign.length) {
           addToast('Create or restore a teacher resource before making a homework QR.', 'info');
           return null;
@@ -21528,7 +21768,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // Never downgrade this opt-in to a Firestore or self-contained link,
       // because either route would produce a QR whose class cloud cannot work.
       if (sharedAssignmentActivity.enabled) {
-          return hostPackOnMailbox();
+          return hostPackOnMailbox(selectedResourceIds);
       }
       // Canvas-managed Firestore accepts the TEACHER's write but refuses the
       // anonymous STUDENT read (proven on a real phone 2026-07-09), so a
@@ -21540,14 +21780,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // own Firebase keep the cloud path.
       if (_isCanvasEnv || _alloFirebaseIsPlaceholder) {
           if (mbConfig?.url && mbConfig?.admin) {
-              const hosted = await hostPackOnMailbox();
+              const hosted = await hostPackOnMailbox(selectedResourceIds);
               if (hosted) return hosted;
           }
-          return createSelfContainedHomeworkLink();
+          return createSelfContainedHomeworkLink(selectedResourceIds);
       }
       try {
           const assignmentId = 'HW-' + generateUUID();
-          const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+          const title = String((selectedResourceIds ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
           const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: studentAiPolicyForShare === 'student-byok' ? 'byok' : 'off' });
           if (!shareUrl) {
               addToast('Homework QR is unavailable from this host. Configure a student app URL or use export sharing.', 'error');
@@ -21588,9 +21828,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       } catch (e) {
           warnLog('Homework QR creation failed:', e);
           addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
-          return createSelfContainedHomeworkLink();
+          return createSelfContainedHomeworkLink(selectedResourceIds);
       }
-  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, history, openQrShareModal, sharedAssignmentActivity.enabled, sourceTopic, user?.uid, studentAiPolicyForShare]);
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, openQrShareModal, resolveAssignmentResources, sharedAssignmentActivity.enabled, sourceTopic, user?.uid, studentAiPolicyForShare]);
   const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return false;
       const preview = window.open(url, '_blank');
@@ -30395,7 +30635,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   const handleSetGroupResource = async (groupId, resourceId) => {
       setIsPushingResource(prev => ({...prev, [groupId]: 'pushing'}));
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, {
             [`groups.${groupId}.resourceId`]: resourceId,
@@ -30419,7 +30659,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // the override. resourceAt is the consume-once nonce for student-paced mode.
   const handleSetStudentResource = async (uid, resourceId) => {
       if (!activeSessionCode || !uid) return { sent: 0, failed: 1 };
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, {
             [`roster.${uid}.resourceId`]: resourceId || null,
@@ -30448,7 +30688,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           maxRecipients: 250,
       });
       if (plan.uids.length === 0) return { sent: 0, failed: 0 };
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       let sent = 0;
       let failed = 0;
       for (const batch of plan.batches) {
@@ -30491,7 +30731,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           })
           .slice(0, 25);
       if (safeUids.length === 0) return { released: 0, failed: 0 };
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       const updates = {};
       safeUids.forEach(uid => {
           updates[`roster.${uid}.resourceId`] = null;
@@ -30656,7 +30896,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const toggleSessionMode = async () => {
       if (!activeSessionCode || !sessionData) return;
       const newMode = sessionData.mode === 'sync' ? 'async' : 'sync';
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
           await updateDoc(sessionRef, { mode: newMode });
           const modeLabel = newMode === 'sync' ? t('session.toast_mode_teacher') : t('session.toast_mode_student');
@@ -30678,9 +30918,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               if (ST && typeof ST.createFirebaseTransport === 'function') {
                   const transport = ST.createFirebaseTransport({
                       teacherOnlyTypes: TEACHER_ONLY_TYPES,
-                      uploadAssets: (items) => uploadSessionAssets(appId, items, activeSessionCode),
+                      uploadAssets: (items) => uploadSessionAssets(activeSessionAppId || appId, items, activeSessionCode),
                       prepareResources: (items) => prepareSessionResourcesForWrite(items),
-                      write: (payload) => writeToSession(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode), payload),
+                      write: (payload) => writeToSession(doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode), payload),
                       policy: () => ({ studentAi: studentAiPolicyForShare }),
                       onTrimmed: () => addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info'),
                   });
@@ -30701,7 +30941,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       };
       const timeoutId = setTimeout(syncResourcesToSession, 1500);
       return () => clearTimeout(timeoutId);
-  }, [history, activeSessionCode, isTeacherMode, appId, studentAiPolicyForShare]);
+  }, [history, activeSessionCode, activeSessionAppId, isTeacherMode, appId, studentAiPolicyForShare]);
   useEffect(() => {
       if (!activeSessionCode || !isTeacherMode) return;
       const syncStudentAiPolicy = async () => {
@@ -32607,7 +32847,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (activeSessionCode) {
           try {
               const followWrite = () => {
-                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                  const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
                   return updateDoc(sessionRef, { currentResourceId: item.id });
               };
               const ST = window.AlloModules && window.AlloModules.SessionTransport;
@@ -45788,6 +46028,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         isIndependentMode={isIndependentMode}
         onOpenSubmissionInbox={() => { setIsRosterKeyOpen(false); setIsSubmissionInboxOpen(true); }}
         onOpenSeatingChart={() => { setIsRosterKeyOpen(false); if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} } setIsSeatingChartOpen(true); }}
+        followUpResources={_alloStudentSafeResources(history)}
+        onOpenFollowUpResource={(resource) => { if (!resource) return; setIsRosterKeyOpen(false); handleRestoreView(resource, { suppressLiveFollow: true }); }}
+        onPrepareFollowUpAssignment={(resource) => { if (!resource?.id) return; setIsRosterKeyOpen(false); createHomeworkAssignmentLink([resource.id]); }}
+        onSendFollowUpToLiveSession={sendSavedFollowUpPlanToLiveSession}
       />
       {isSubmissionInboxOpen && (() => {
         const M = window.AlloModules && window.AlloModules.SubmissionInbox;
