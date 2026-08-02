@@ -31463,7 +31463,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (typeof settings.fullPackTargetGroup === 'string') setFullPackTargetGroup(settings.fullPackTargetGroup);
           const guided = workspace.guidedProgress || {};
           const normalizedGuided = normalizeGuidedProgress(guided);
-          setGuidedMode(typeof guided.enabled === 'boolean' ? guided.enabled : false);
+          // Merge, never stomp: a guided choice made THIS session (LaunchPad card,
+          // header entry, or a restore reached mid-guided via project import) must
+          // survive restoring a snapshot that was saved outside guided mode.
+          setGuidedMode(prev => prev || guided.enabled === true);
           setGuidedStep(normalizedGuided.guidedStep);
           setGuidedSelectedIds(normalizedGuided.selectedIds);
           setGuidedCompletedIds(normalizedGuided.completedSteps);
@@ -46465,7 +46468,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </p>
         </div>
       )}
-      {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
+      {/* Recovery-first ordering: canvasRecoveryDecisionMade must gate the LaunchPad
+          because the storage/recovery dialog renders far BELOW it (z-[10000] vs the
+          LaunchPad's zIndex 2147483000) — and restoring/clearing a workspace rewrites
+          guidedMode, so a pathway picked before the recovery decision was silently
+          undone by the restore that followed. Return users decide about saved work
+          first, then choose a pathway. */}
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
           t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
           requestMicPermission,
           setHasSelectedMode, setMicBannerDismissed, setGuidedMode,
@@ -46473,16 +46482,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setShowLearningHub, setShowEducatorHub,
           setPendingRole, setIsGateOpen, setShowAIBackendModal
       })}
-      {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach && React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
           t, setRunTour,
           // Tier 3 — pickMode dispatch. Mirrors the exact setter sequence each
-          // LaunchPad mode card fires (view_launch_pad_source.jsx:224-241),
+          // LaunchPad mode card fires (the mode cards in view_launch_pad_source.jsx),
           // including the educator password gate. Single source of truth lives
           // in the host so the coach module never bypasses the gate.
           pickMode: function (key) {
               switch (key) {
                   case 'full':
-                      setHasSelectedMode(true);
+                      // Explicit false: a restored workspace can arrive with guided
+                      // mode on, and Full Platform is a non-guided choice.
+                      setHasSelectedMode(true); setGuidedMode(false);
                       break;
                   case 'guided':
                       setHasSelectedMode(true); setGuidedMode(true);

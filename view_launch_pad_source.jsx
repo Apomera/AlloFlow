@@ -306,7 +306,9 @@ function LaunchPadView(props) {
             </div>
           )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
-            <button type="button" className="lp-card" style={{ animationDelay: '0.1s' }} aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); }}>
+            {/* setGuidedMode(false) is not redundant: a restored workspace can arrive
+                with guided mode already on, and Full Platform is a non-guided choice. */}
+            <button type="button" className="lp-card" style={{ animationDelay: '0.1s' }} aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(false); }}>
               <span className="lp-card-icon" style={{ display: 'block', fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</span>
               <span id="launch-pad-full-title" style={{ display: 'block', fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{fullTitle}</span>
               <span id="launch-pad-full-desc" style={{ display: 'block', fontSize: '12px', color: '#e0e7ff', lineHeight: '1.6', margin: 0 }}>{fullDesc}</span>

@@ -505,6 +505,7 @@
     "aria-describedby": "launch-pad-full-desc",
     onClick: () => {
       setHasSelectedMode(true);
+      setGuidedMode(false);
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: "lp-card-icon",
