@@ -1795,7 +1795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                       h('span', null, s.label),
                       h('span', { style: { color: loadMeta.color, fontFamily: 'monospace', fontWeight: 900 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
                     ),
-                    h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                    h('input', { type: 'range', 'aria-label': s.label, min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                   );
                 })
               ),
@@ -1952,7 +1952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                   var pct = Math.max(0, Math.min(1, ring.val));
                   var dash = (pct * 138).toFixed(1);
                   return h('div', { key: i, style: { textAlign: 'center' } },
-                    h('svg', { width: 56, height: 56, viewBox: '0 0 56 56' },
+                    h('svg', { width: 56, height: 56, viewBox: '0 0 56 56', role: 'img', 'aria-label': ring.label + ': ' + ring.num },
                       h('circle', { cx: 28, cy: 28, r: 22, fill: 'none', stroke: '#1a3a2a', strokeWidth: 5 }),
                       h('circle', { cx: 28, cy: 28, r: 22, fill: 'none', stroke: sm.color, strokeWidth: 5, strokeDasharray: dash + ' 138', strokeLinecap: 'round', transform: 'rotate(-90 28 28)' }),
                       h('text', { x: 28, y: 32, textAnchor: 'middle', fill: sm.color, fontSize: 10, fontWeight: 800 }, ring.num)
@@ -1968,7 +1968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                       h('span', null, s.label),
                       h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
                     ),
-                    h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                    h('input', { type: 'range', 'aria-label': s.label, min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
                   );
                 })
               ),
