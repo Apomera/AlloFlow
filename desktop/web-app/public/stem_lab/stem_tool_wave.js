@@ -1139,6 +1139,7 @@ const d = labToolData.wave;
                 var rBW = Math.max(80, Math.round(cW / 4)), rBH = Math.max(60, Math.round(cH / 4));
                 if (!canvasEl._rippleBuf || canvasEl._rippleBuf.width !== rBW || canvasEl._rippleBuf.height !== rBH) {
                   canvasEl._rippleBuf = document.createElement('canvas');
+                  canvasEl._rippleBuf.setAttribute('aria-hidden', 'true');
                   canvasEl._rippleBuf.width = rBW; canvasEl._rippleBuf.height = rBH;
                 }
                 var rbCtx = canvasEl._rippleBuf.getContext('2d');
