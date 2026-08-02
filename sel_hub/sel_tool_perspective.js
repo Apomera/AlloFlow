@@ -16,6 +16,7 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  // WCAG 2.2.1 triage: Date.now below timestamps saved practice and journal entries only; this screen has no countdown or user time limit, so pause controls are not applicable.
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-perspective')) return;
