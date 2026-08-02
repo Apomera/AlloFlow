@@ -224,7 +224,7 @@ function AnalysisView(props) {
       className: "w-full flex items-center justify-center gap-2 bg-white border border-red-600 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wrench, {
       size: 12
     }), t('analysis.fix_button'), " (", selectedDiscrepancies.size, ")")));
@@ -425,7 +425,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       className: "w-full flex items-center justify-center gap-2 bg-white border border-amber-600 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
-      className: "animate-spin"
+      className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wand2, {
       size: 12
     }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
@@ -465,7 +465,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     className: "flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
   }, downloadingContentId === 'dl-analysis-source' ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
   }), downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
@@ -502,7 +502,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     className: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 14
   }))), isEditingAnalysis ? /*#__PURE__*/React.createElement("div", {
