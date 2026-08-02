@@ -548,6 +548,254 @@ function _builderSuspendReviewComments(root) {
   };
 }
 
+const _BUILDER_CHANGE_SELECTOR = 'ins[data-allo-change-id],del[data-allo-change-id]';
+
+function _builderTrackedChangeType(marker) {
+  return String(marker?.tagName || '').toLowerCase() === 'del' ? 'delete' : 'insert';
+}
+
+function _builderPrepareTrackedChangeMarker(marker, type, metadata = {}) {
+  if (!marker) return null;
+  const normalizedType = type === 'delete' ? 'delete' : 'insert';
+  const fallbackId = `change-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const id = String(metadata.id || marker.getAttribute('data-allo-change-id') || fallbackId)
+    .replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || fallbackId;
+  const at = String(metadata.at || marker.getAttribute('data-allo-change-at') || marker.getAttribute('datetime') || new Date().toISOString()).slice(0, 48);
+  const author = String(metadata.author || marker.getAttribute('data-allo-change-author') || 'You').replace(/\s+/g, ' ').trim().slice(0, 80) || 'You';
+  marker.setAttribute('data-allo-change-id', id);
+  marker.setAttribute('data-allo-change-type', normalizedType);
+  marker.setAttribute('data-allo-change-at', at);
+  marker.setAttribute('data-allo-change-author', author);
+  marker.setAttribute('datetime', at);
+  marker.setAttribute('tabindex', '0');
+  if (normalizedType === 'delete') marker.setAttribute('contenteditable', 'false');
+  const summary = String(marker.textContent || (normalizedType === 'delete' ? 'Deleted content' : 'Inserted content')).replace(/\s+/g, ' ').trim().slice(0, 140);
+  marker.setAttribute('aria-label', `${normalizedType === 'delete' ? 'Deletion' : 'Insertion'} by ${author}: ${summary}`);
+  marker.setAttribute('title', `${normalizedType === 'delete' ? 'Deleted' : 'Inserted'} by ${author}: ${summary}`);
+  return marker;
+}
+
+function _builderCreateTrackedChange(doc, type, content, metadata = {}) {
+  if (!doc?.createElement) return null;
+  const normalizedType = type === 'delete' ? 'delete' : 'insert';
+  const marker = doc.createElement(normalizedType === 'delete' ? 'del' : 'ins');
+  _builderPrepareTrackedChangeMarker(marker, normalizedType, metadata);
+  if (typeof content === 'string') {
+    const parts = content.split('\n');
+    parts.forEach((part, index) => {
+      if (index) marker.appendChild(doc.createElement('br'));
+      if (part) marker.appendChild(doc.createTextNode(part));
+    });
+  } else if (content?.nodeType) marker.appendChild(content);
+  return marker;
+}
+
+function _builderTrackedChangeEntries(doc) {
+  if (!doc?.querySelectorAll) return [];
+  const seen = new Set();
+  return Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR)).map((marker, index) => {
+    const type = _builderTrackedChangeType(marker);
+    _builderPrepareTrackedChangeMarker(marker, type);
+    let id = marker.getAttribute('data-allo-change-id') || `change-${index + 1}`;
+    if (seen.has(id)) {
+      id = `${id}-${index + 1}`.slice(0, 80);
+      marker.setAttribute('data-allo-change-id', id);
+    }
+    seen.add(id);
+    return {
+      id,
+      index,
+      type,
+      text: String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220) || (type === 'delete' ? 'Deleted content' : 'Inserted content'),
+      at: marker.getAttribute('data-allo-change-at') || '',
+      author: marker.getAttribute('data-allo-change-author') || 'You',
+      node: marker,
+    };
+  });
+}
+
+function _builderTrackedRangeBoundaryElement(node) {
+  return node?.nodeType === 1 ? node : node?.parentElement;
+}
+
+function _builderTrackedRangeBlock(range) {
+  const selector = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,pre,address,dt,dd,td,th,div';
+  const start = _builderTrackedRangeBoundaryElement(range?.startContainer)?.closest?.(selector);
+  const end = _builderTrackedRangeBoundaryElement(range?.endContainer)?.closest?.(selector);
+  return start && start === end ? start : null;
+}
+
+function _builderRangeTrackedChange(range, type) {
+  const start = _builderTrackedRangeBoundaryElement(range?.startContainer)?.closest?.(_BUILDER_CHANGE_SELECTOR);
+  const end = _builderTrackedRangeBoundaryElement(range?.endContainer)?.closest?.(_BUILDER_CHANGE_SELECTOR);
+  if (!start || start !== end) return null;
+  return !type || _builderTrackedChangeType(start) === type ? start : null;
+}
+
+function _builderRangeContainsTrackedChange(range) {
+  if (!range) return false;
+  if (_builderTrackedRangeBoundaryElement(range.startContainer)?.closest?.(_BUILDER_CHANGE_SELECTOR)) return true;
+  if (_builderTrackedRangeBoundaryElement(range.endContainer)?.closest?.(_BUILDER_CHANGE_SELECTOR)) return true;
+  try { return Boolean(range.cloneContents().querySelector?.(_BUILDER_CHANGE_SELECTOR)); } catch (_) { return false; }
+}
+
+function _builderSetTrackedSelection(doc, range) {
+  try {
+    const selection = doc?.getSelection?.();
+    if (!selection || !range) return false;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return true;
+  } catch (_) { return false; }
+}
+
+function _builderAdjacentTrackedTextRange(doc, sourceRange, direction) {
+  if (!doc || !sourceRange?.collapsed) return sourceRange?.cloneRange?.() || null;
+  const backward = direction !== 'forward';
+  const block = _builderTrackedRangeBlock(sourceRange);
+  if (!block) return null;
+  const allowedText = (node) => node?.nodeType === 3 && node.nodeValue
+    && !node.parentElement?.closest('del[data-allo-change-id],script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]');
+  const descendant = (root, reverse) => {
+    if (!root) return null;
+    if (allowedText(root)) return root;
+    if (root.nodeType !== 1 || root.matches?.('del[data-allo-change-id],script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]')) return null;
+    const children = Array.from(root.childNodes || []);
+    if (reverse) children.reverse();
+    for (const child of children) {
+      const found = descendant(child, reverse);
+      if (found) return found;
+    }
+    return null;
+  };
+  const siblingText = (node, reverse) => {
+    let current = node;
+    while (current && current !== block) {
+      let sibling = reverse ? current.previousSibling : current.nextSibling;
+      while (sibling) {
+        const found = descendant(sibling, reverse);
+        if (found) return found;
+        sibling = reverse ? sibling.previousSibling : sibling.nextSibling;
+      }
+      current = current.parentNode;
+    }
+    return null;
+  };
+  let textNode = null;
+  let offset = 0;
+  const container = sourceRange.startContainer;
+  if (container?.nodeType === 3) {
+    if (backward && sourceRange.startOffset > 0) {
+      textNode = container;
+      offset = sourceRange.startOffset;
+    } else if (!backward && sourceRange.startOffset < String(container.nodeValue || '').length) {
+      textNode = container;
+      offset = sourceRange.startOffset;
+    } else {
+      textNode = siblingText(container, backward);
+      offset = backward ? String(textNode?.nodeValue || '').length : 0;
+    }
+  } else if (container?.nodeType === 1) {
+    const child = backward ? container.childNodes[sourceRange.startOffset - 1] : container.childNodes[sourceRange.startOffset];
+    textNode = descendant(child, backward) || siblingText(container, backward);
+    offset = backward ? String(textNode?.nodeValue || '').length : 0;
+  }
+  if (!allowedText(textNode)) return null;
+  const value = String(textNode.nodeValue || '');
+  const character = backward ? Array.from(value.slice(0, offset)).pop() : Array.from(value.slice(offset))[0];
+  if (!character) return null;
+  const range = doc.createRange();
+  if (backward) {
+    range.setStart(textNode, offset - character.length);
+    range.setEnd(textNode, offset);
+  } else {
+    range.setStart(textNode, offset);
+    range.setEnd(textNode, offset + character.length);
+  }
+  return range;
+}
+
+function _builderDispatchTrackedInput(doc, inputType) {
+  try {
+    const event = new doc.defaultView.Event('input', { bubbles: true });
+    try { Object.defineProperty(event, 'inputType', { value: inputType || 'insertTrackedChange' }); } catch (_) {}
+    doc.body?.setAttribute('data-allo-user-edited', '1');
+    doc.body?.dispatchEvent(event);
+  } catch (_) {}
+}
+
+function _builderReplaceRangeWithTrackedNodes(doc, range, markers, focusMode) {
+  if (!doc || !range || !markers?.length) return [];
+  const ids = markers.map((marker) => marker.getAttribute('data-allo-change-id'));
+  _builderSetTrackedSelection(doc, range);
+  let inserted = [];
+  try {
+    if (typeof doc.execCommand === 'function') {
+      const holder = doc.createElement('div');
+      markers.forEach((marker) => holder.appendChild(marker.cloneNode(true)));
+      if (doc.execCommand('insertHTML', false, holder.innerHTML)) {
+        inserted = ids.map((id) => Array.from(doc.querySelectorAll(_BUILDER_CHANGE_SELECTOR)).find((marker) => marker.getAttribute('data-allo-change-id') === id)).filter(Boolean);
+      }
+    }
+  } catch (_) {}
+  if (!inserted.length) {
+    try {
+      range.deleteContents();
+      const fragment = doc.createDocumentFragment();
+      markers.forEach((marker) => fragment.appendChild(marker));
+      range.insertNode(fragment);
+      inserted = markers;
+    } catch (_) { return []; }
+  }
+  const focusMarker = focusMode === 'insert'
+    ? inserted.slice().reverse().find((marker) => _builderTrackedChangeType(marker) === 'insert')
+    : inserted[0];
+  if (focusMarker) {
+    const nextRange = doc.createRange();
+    if (focusMode === 'insert') {
+      nextRange.selectNodeContents(focusMarker);
+      nextRange.collapse(false);
+    } else {
+      nextRange.setStartBefore(focusMarker);
+      nextRange.collapse(true);
+    }
+    _builderSetTrackedSelection(doc, nextRange);
+  }
+  _builderDispatchTrackedInput(doc, focusMode === 'insert' ? 'insertTrackedChange' : 'deleteTrackedChange');
+  return inserted;
+}
+
+function _builderTrackTextInsertion(doc, text, suppliedRange) {
+  const value = String(text ?? '');
+  if (!doc?.body || !value) return { ok: false, error: 'There is no text to insert.' };
+  const selection = doc.getSelection?.();
+  const range = suppliedRange?.cloneRange ? suppliedRange.cloneRange() : (selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null);
+  if (!range) return { ok: false, error: 'Place the caret in the document first.' };
+  const existingInsertion = _builderRangeTrackedChange(range, 'insert');
+  if (existingInsertion) {
+    try {
+      range.deleteContents();
+      const marker = doc.createTextNode(value);
+      range.insertNode(marker);
+      range.setStartAfter(marker);
+      range.collapse(true);
+      _builderSetTrackedSelection(doc, range);
+      _builderPrepareTrackedChangeMarker(existingInsertion, 'insert');
+      _builderDispatchTrackedInput(doc, 'insertTrackedChange');
+      return { ok: true, id: existingInsertion.getAttribute('data-allo-change-id'), marker: existingInsertion };
+    } catch (_) { return { ok: false, error: 'The insertion could not be tracked.' }; }
+  }
+  if (!_builderTrackedRangeBlock(range)) return { ok: false, blocked: true, error: 'Track Changes handles text within one paragraph at a time.' };
+  if (!range.collapsed && _builderRangeContainsTrackedChange(range)) return { ok: false, blocked: true, error: 'Accept or reject the selected revision before replacing it.' };
+  const markers = [];
+  if (!range.collapsed) markers.push(_builderCreateTrackedChange(doc, 'delete', range.cloneContents()));
+  const insertion = _builderCreateTrackedChange(doc, 'insert', value);
+  markers.push(insertion);
+  const live = _builderReplaceRangeWithTrackedNodes(doc, range, markers, 'insert');
+  const marker = live.find((item) => _builderTrackedChangeType(item) === 'insert') || null;
+  return marker ? { ok: true, id: marker.getAttribute('data-allo-change-id'), marker } : { ok: false, error: 'The insertion could not be tracked.' };
+}
+
 function _builderHeadingOutline(doc) {
   if (!doc) return [];
   return Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')).map((heading, index) => ({
@@ -763,6 +1011,7 @@ function ExportPreviewView(props) {
     exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle,
     getExportPreviewHTML, getSkippedResources, history, isAgentRunning, isGeneratingStyle,
     handleExportH5P, handleExportIMS, handleExportQTI,
+    openInAlloStudio,
     pdfFixResult, pptxLoaded, processExpertCommand, runAxeAudit,
     saveExportPreset, selectedFont, setAgentActivityLog, setAgentLogFullView,
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
@@ -4107,6 +4356,15 @@ function ExportPreviewView(props) {
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
                     ><Download size={14} /> {exportPreviewMode === 'worksheet' ? 'Print Worksheet' : exportPreviewMode === 'html' ? 'Download HTML' : exportPreviewMode === 'slides' ? (pptxLoaded ? 'Export Slides' : 'Loading...') : 'Download PDF'}</button>
+                    {/* Slides mode: same content as an EDITABLE deck (built directly in
+                        the studio — no .pptx round trip), reorder/refine, then export
+                        PPTX from there with the alt-text gate in force. */}
+                    {exportPreviewMode === 'slides' && typeof openInAlloStudio === 'function' && (
+                      <button onClick={openInAlloStudio}
+                        className="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                        title="Open this content in Page Designer as an editable slide deck — reorder, restyle, and export PowerPoint from there.">
+                        🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
+                    )}
                     {/* Alternative format exports */}
                     <details className="relative">
                       <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">

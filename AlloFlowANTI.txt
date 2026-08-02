@@ -11189,6 +11189,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // exports + the provenance ledger (docs/studio_design.md). Same lazy-load pattern.
   const [isAlloStudioOpen, _setIsAlloStudioOpenRaw] = useState(false);
   const setIsAlloStudioOpen = React.useCallback((v) => { if (v && window.__alloLazyAlloStudio) { try { window.__alloLazyAlloStudio(); } catch(_) {} } _setIsAlloStudioOpenRaw(v); }, []);
+  // One-shot entry action for the studio ("deck-from-resources" routes the
+  // export preview's Slides content into an editable deck). Cleared on close so
+  // reopening from the Educator Hub starts at the normal template picker.
+  const [alloStudioInitialAction, setAlloStudioInitialAction] = useState(null);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
   // Lazy-load AlloHaven host module + arcade-mode plugins on first open.
   // The host module is the largest single file in the bundle (~1.1 MB), so
@@ -46603,7 +46607,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
           setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, theme, toggleA11yInspect, updateExportPreview,
           exportPreviewSource,
-          onExportSuccess: () => completeGuidedDelivery('exportCreated')
+          onExportSuccess: () => completeGuidedDelivery('exportCreated'),
+          // Slides mode extra: route the same generated content into the studio
+          // as an EDITABLE deck (build-direct, no .pptx round trip).
+          openInAlloStudio: () => { setShowExportPreviewWrapped(false); setAlloStudioInitialAction('deck-from-resources'); setIsAlloStudioOpen(true); }
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {
@@ -46991,12 +46998,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 
         {videoRefPlayerItem && <VideoRefPlayerOverlay item={videoRefPlayerItem} onClose={() => setVideoRefPlayerItem(null)} addToast={addToast} t={t} />}
 
-        <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => setIsAlloStudioOpen(false)} icon="🎨" displayName="AlloStudio" t={t}>
+        <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); }} icon="🎨" displayName="Page Designer" t={t}>
             {(AlloStudio) => React.createElement(AlloStudio, {
-                onClose: () => setIsAlloStudioOpen(false),
+                onClose: () => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); },
                 addToast,
                 t,
                 initialRole: 'teacher',
+                initialAction: alloStudioInitialAction,
                 history: history,
                 resourceHistory: history,
                 // Born-accessible tagged PDF (docs/studio_design.md §6): the studio's
@@ -47005,7 +47013,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 // can toast honestly.
                 onExportTaggedPdf: async (html, title) => {
                     try {
-                        const _result = await createTypesetTaggedPdf({ accessibleHtml: html }, { title: title || 'AlloStudio document', lang: 'en', subject: 'Created in AlloStudio and tagged for accessibility by AlloFlow' });
+                        const _result = await createTypesetTaggedPdf({ accessibleHtml: html }, { title: title || 'Page Designer document', lang: 'en', subject: 'Created in Page Designer (AlloStudio) and tagged for accessibility by AlloFlow' });
                         const _bytes = _result && _result.bytes ? _result.bytes : _result;
                         if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes') || 'Tagged PDF generation returned no bytes.', 'error'); return false; }
                         const _rt = (_result && _result.roundTrip) || null;

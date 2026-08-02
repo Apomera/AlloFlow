@@ -363,8 +363,8 @@ function EducatorHubModal(props) {
               <button type="button" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>
-                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'AlloStudio'}</h3>
-                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, and posters that export born-accessible (tagged PDF, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
+                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</h3>
+                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, posters, and slide decks that export born-accessible (tagged PDF, PowerPoint, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
                 </div>
               </button>
               <button type="button" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">

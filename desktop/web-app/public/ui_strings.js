@@ -9236,9 +9236,9 @@
           "color": "rose"
         },
         {
-          "title": "AlloStudio",
+          "title": "Page Designer",
           "icon": "Sparkles",
-          "desc": "Agentic studio that builds and edits AlloFlow resources for you from a plain-language request.",
+          "desc": "Visual editor for flyers, worksheets, posters, and slide decks — AI drafts on request, every export born-accessible, PowerPoint in and out.",
           "category": "platform",
           "color": "fuchsia"
         },

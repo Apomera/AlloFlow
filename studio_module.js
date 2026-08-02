@@ -880,7 +880,7 @@
 
   function stAnalyzeDoc(doc) {
     var issues = [];
-    if (!doc || !Array.isArray(doc.objects)) return { issues: [{ type: 'file', severity: 'error', title: 'Document is not ready', message: 'Open or create an AlloStudio document first.' }], counts: { error: 1, warning: 0, review: 0 } };
+    if (!doc || !Array.isArray(doc.objects)) return { issues: [{ type: 'file', severity: 'error', title: 'Document is not ready', message: 'Open or create a document first.' }], counts: { error: 1, warning: 0, review: 0 } };
     stAltGate(doc.objects).forEach(function (m) {
       issues.push({ id: m.id, type: 'alt', severity: 'error', title: 'Image needs alt text', message: 'Add alt text or mark the image decorative before accessible export.' });
     });
@@ -1259,6 +1259,44 @@
       objectCount: modes.reduce(function (sum, mode) { return sum + ((mode.preview && mode.preview.objectCount) || 0); }, 0)
     };
   }
+  // Build a slide deck from resource cues — the "Open in Page Designer" route
+  // from the main app's generated content. One title slide + one slide per cue,
+  // all as actor 'import' (the content came from outside this editor). Image
+  // alt follows the cue-insert convention: the label the app generated the
+  // image FROM is real information, unlike an arbitrary upload.
+  function stDeckFromResourceCues(cues, options) {
+    var list = Array.isArray(cues) ? cues.filter(Boolean) : [];
+    var opts = options || {};
+    var now = stFiniteNumber(opts.now, 0);
+    var cap = Math.max(1, ST_MAX_PAGES - 1);
+    var used = list.slice(0, cap);
+    var d = stCreateDoc('slide-16x9', stCleanText(opts.title, 120) || 'Class deck', now);
+    stAppend(d, { type: 'doc.template', template: 'deck-from-resources' }, 'import', now);
+    var cw = d.canvas.w, ch = d.canvas.h;
+    stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 470, w: cw, h: 24 }, '#4f46e5') }, 'import', now);
+    stAppend(d, { type: 'object.add', object: stMakeText('heading1', d.title, { x: 96, y: 250, w: cw - 192, h: 110 }, { align: 'center', size: 54 }) }, 'import', now);
+    stAppend(d, { type: 'object.add', object: stMakeText('body', used.length + ' ' + (opts.subtitle || 'resources from this lesson'), { x: 96, y: 380, w: cw - 192, h: 60 }, { align: 'center', size: 22 }) }, 'import', now);
+    used.forEach(function (cue, i) {
+      var page = i + 1;
+      stAppend(d, { type: 'page.add' }, 'import', now);
+      var label = stCleanText(cue.label || cue.title, 160) || ('Resource ' + (i + 1));
+      var text = stCleanText(cue.text || cue.definition || cue.prompt, 900);
+      var bodyText = text && text !== label ? text : '';
+      var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
+      var provenance = { origin: 'resource-history', resourceId: stCleanText(cue.id, 90), sourceTitle: stCleanText(cue.sourceTitle, 140), sourceType: stCleanText(cue.sourceType || cue.kind, 50) };
+      var mk = function (obj) { obj.page = page; obj.provenance = provenance; stAppend(d, { type: 'object.add', object: obj }, 'import', now); };
+      mk(stMakeText('heading2', label, { x: 96, y: 56, w: cw - 192, h: 80 }, { size: 36 }));
+      if (imageSrc) {
+        var imgW = Math.round(cw * 0.34);
+        mk(stMakeImage(imageSrc, label, { x: cw - imgW - 96, y: 170, w: imgW, h: Math.round(ch * 0.55) }, 'resource-history'));
+        if (bodyText) mk(stMakeText('body', bodyText, { x: 96, y: 170, w: cw - imgW - 240, h: Math.round(ch * 0.6) }, { size: 22 }));
+      } else if (bodyText) {
+        mk(stMakeText('body', bodyText, { x: 96, y: 170, w: cw - 192, h: Math.round(ch * 0.6) }, { size: 24 }));
+      }
+    });
+    return { doc: d, used: used.length, skipped: Math.max(0, list.length - used.length) };
+  }
+
   function stResourceCueKindLabel(kind) {
     var clean = stCleanText(kind || 'resource', 40).toLowerCase();
     if (clean === 'image') return 'Images';
@@ -2766,7 +2804,7 @@
     items.push({
       id: 'overview',
       title: 'Studio product overview',
-      toolLabel: 'AlloStudio',
+      toolLabel: 'Page Designer',
       privacy: 'summary',
       text: 'Objects: ' + objects.length + '. Text blocks: ' + texts.length + '. Images: ' + images.length + '. Accessibility status: ' + lifecycle + '.'
     });
@@ -2774,7 +2812,7 @@
       items.push({
         id: 'worksheet-questions',
         title: 'Worksheet questions',
-        toolLabel: 'AlloStudio',
+        toolLabel: 'Page Designer',
         privacy: 'summary',
         text: worksheet.questions.slice(0, 8).map(function (q, i) { return (i + 1) + '. ' + q.prompt; }).join('\n')
       });
@@ -2785,7 +2823,7 @@
       items.push({
         id: o.id || ('text-' + i),
         title: o.role === 'heading1' ? 'Main heading' : o.role === 'heading2' ? 'Section heading' : 'Text block ' + (i + 1),
-        toolLabel: 'AlloStudio',
+        toolLabel: 'Page Designer',
         privacy: 'summary',
         text: text
       });
@@ -2794,7 +2832,7 @@
       items.push({
         id: o.id || ('image-' + i),
         title: 'Image ' + (i + 1),
-        toolLabel: 'AlloStudio',
+        toolLabel: 'Page Designer',
         privacy: o.decorative ? 'summary' : 'full',
         text: o.decorative ? 'Decorative image.' : (stCleanText(o.alt, 500) || 'Image has no alt text yet.')
       });
@@ -2803,9 +2841,9 @@
       id: 'allostudio-' + ((doc && doc.createdAt) || now) + '-' + stSlug(doc && doc.title, 'document'),
       type: 'allostudio-document',
       source: 'allostudio',
-      sourceLabel: 'AlloStudio',
+      sourceLabel: 'Page Designer',
       kindLabel: worksheet.questions && worksheet.questions.length ? 'Accessible Worksheet' : 'Accessible Studio Product',
-      title: (doc && doc.title) || 'AlloStudio document',
+      title: (doc && doc.title) || 'Page Designer document',
       summary: 'Born-accessible Studio product with ' + objects.length + ' object' + (objects.length === 1 ? '' : 's') + '. Status: ' + lifecycle + '.',
       privacy: 'student-controlled',
       lifecycleStatus: lifecycle,
@@ -2826,7 +2864,7 @@
     var imageCount = objects.filter(function (o) { return o && o.type === 'image'; }).length;
     return {
       id: 'allostudio-' + ((doc && doc.createdAt) || 0) + '-' + stSlug(doc && doc.title, 'document'),
-      title: (doc && doc.title) || 'AlloStudio document',
+      title: (doc && doc.title) || 'Page Designer document',
       updatedAt: at,
       createdAt: doc && doc.createdAt ? new Date(doc.createdAt).toISOString() : at,
       objectCount: objects.length,
@@ -2874,7 +2912,7 @@
   function stExportProcessMarkdown(doc, role) {
     var s = stActorSummary((doc.ledger && doc.ledger.ops) || []);
     var mins = Math.max(1, Math.round(s.activeMs / 60000));
-    var lines = ['# ' + (doc.title || 'AlloStudio Process'), '', role === 'student' ? '## My Process' : '## Process Summary', '', '- User edits: ' + s.user, '- AI actions: ' + s.ai, '- Imported items: ' + s.import, '- Approximate active minutes: ' + mins, '', ST_HONESTY_LINE, '', '## Recent Steps'];
+    var lines = ['# ' + (doc.title || 'Page Designer Process'), '', role === 'student' ? '## My Process' : '## Process Summary', '', '- User edits: ' + s.user, '- AI actions: ' + s.ai, '- Imported items: ' + s.import, '- Approximate active minutes: ' + mins, '', ST_HONESTY_LINE, '', '## Recent Steps'];
     ((doc.ledger && doc.ledger.ops) || []).slice(-20).forEach(function (op) {
       lines.push('- #' + op.seq + ' ' + stDescribeOp(op) + ' (' + op.actor + ')');
     });
@@ -4564,6 +4602,26 @@
       setView('edit'); clearSelection();
       stAnnounce(TT('studio.a11y_started', 'Started a new document from template') + ': ' + tpl.name);
     };
+    var buildDeckFromResources = function () {
+      if (!resourceCues.length) { addToast(TT('studio.deck_no_resources', 'Generate some lesson content in the main app first — the deck builds from your resource history.'), 'info'); return; }
+      var built = stDeckFromResourceCues(resourceCues, { title: stCleanText(resourceCues[0] && resourceCues[0].sourceTitle, 120) || 'Class deck', now: Date.now() });
+      _docRef.current = built.doc;
+      setPageIndex(0);
+      setView('edit'); clearSelection(); bump();
+      addToast('📽️ ' + TT('studio.deck_built', 'Deck drafted: a title slide plus one slide per resource. Reorder, edit, then export to PowerPoint.') + (built.skipped ? ' (' + built.skipped + ' ' + TT('studio.deck_skipped', 'resources beyond the page limit were left out') + ')' : ''), 'success');
+      stAnnounce(TT('studio.a11y_deck_built', 'Deck drafted from resources') + ': ' + built.used);
+    };
+    // Host routing ("Open in Page Designer" next to the main app's slide
+    // export): the prop arrives once; the ref guard makes it one-shot so
+    // closing the deck and picking a template does not rebuild it.
+    var initialActionRef = React.useRef(false);
+    React.useEffect(function () {
+      if (initialActionRef.current) return;
+      if (props.initialAction === 'deck-from-resources') {
+        initialActionRef.current = true;
+        buildDeckFromResources();
+      }
+    }, [props.initialAction]);
 
     // ── object insertion ──
     var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
@@ -5415,7 +5473,7 @@
       }).catch(function () { addToast(TT('studio.export_png_failed', 'PNG export failed.'), 'error'); });
     });
     var exportTagged = gateOr(function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open AlloStudio from the main app.'), 'error'); return; }
+      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'), 'error'); return; }
       addToast(TT('studio.tagged_building', '📄 Building the tagged PDF from your reading order…'), 'info');
       Promise.resolve(props.onExportTaggedPdf(stExportHtml(doc, { lang: 'en' }), doc.title || 'AlloStudio document'))
         .then(function (ok) { if (ok !== false) addToast(TT('studio.tagged_done', '✅ Tagged PDF downloaded — structure comes from your reading-order panel.'), 'success'); })
@@ -5444,7 +5502,7 @@
       // The host loads PptxGenJS globally (the main app's slide export uses it,
       // including inside Canvas); the studio never bundles it.
       var Pptx = typeof window !== 'undefined' ? window.PptxGenJS : null;
-      if (typeof Pptx !== 'function') { addToast(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open AlloStudio from the main app.'), 'error'); return; }
+      if (typeof Pptx !== 'function') { addToast(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open Page Designer from the main app.'), 'error'); return; }
       try {
         var builtDeck = stRenderPptx(stExportPptxSpec(doc, { lang: 'en' }), Pptx);
         Promise.resolve(builtDeck.writeFile({ fileName: safeName() + '.pptx' }))
@@ -5463,7 +5521,7 @@
       addToast(TT('studio.exported_worksheet_html', '📝 Structured worksheet HTML downloaded — real questions and answer spaces.'), 'success');
     };
     var exportWorksheetPdf = function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open AlloStudio from the main app.'), 'error'); return; }
+      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'), 'error'); return; }
       addToast(TT('studio.ws_building', '📝 Building a structured, tagged worksheet…'), 'info');
       Promise.resolve(props.onExportTaggedPdf(stExportWorksheetHtml(doc, { lang: 'en' }), (doc.title || 'Worksheet') + ' (worksheet)'))
         .then(function (ok) { if (ok !== false) addToast(TT('studio.ws_done', '✅ Structured worksheet PDF downloaded (real questions + answer spaces).'), 'success'); })
@@ -5521,7 +5579,7 @@
       ev.target.value = '';
       if (!f) return;
       var Zip = typeof window !== 'undefined' ? window.JSZip : null;
-      if (!Zip) { addToast(TT('studio.pptx_import_nolib', 'The import library is still loading — try again in a moment, or open AlloStudio from the main app.'), 'error'); return; }
+      if (!Zip) { addToast(TT('studio.pptx_import_nolib', 'The import library is still loading — try again in a moment, or open Page Designer from the main app.'), 'error'); return; }
       addToast(TT('studio.pptx_importing', '📽️ Importing the PowerPoint…'), 'info');
       stImportPptxFile(f, Zip, Date.now()).then(function (res) {
         if (!res || res.error) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((res && res.error) || 'unknown error'), 'error'); return; }
@@ -5688,6 +5746,11 @@
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 h('option', { value: 'slide-16x9' }, TT('studio.orient_slide', 'Slide deck (16:9)'))),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '✨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
+          resourceCues.length ? h('div', { style: { margin: '12px 18px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panelAlt, display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' } },
+            h('span', { style: { minWidth: 0, flex: '1 1 260px' } },
+              h('strong', { style: { display: 'block', fontSize: '13px', color: C.text } }, '📽️ ' + TT('studio.deck_from_resources', 'Build a deck from my resources')),
+              h('span', { style: { fontSize: '11px', color: C.muted } }, resourceCues.length + ' ' + TT('studio.deck_from_resources_hint', 'items from your lesson history become a title slide plus one editable slide each — then export to PowerPoint.'))),
+            h('button', { style: Object.assign({}, S.tool, { flex: '0 0 auto', textAlign: 'center', fontWeight: 900 }), onClick: buildDeckFromResources }, TT('studio.deck_build_go', 'Draft the deck'))) : null,
           h('div', { style: { padding: '14px 18px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
             shownTemplates.length ? shownTemplates.map(function (tpl) {
               var category = templateFilters.filter(function (opt) { return opt[0] === templateCategoryFor(tpl); })[0];
@@ -7071,6 +7134,7 @@
   AlloStudio.stSavePortfolioArtifact = stSavePortfolioArtifact;
   AlloStudio.stExportPptxSpec = stExportPptxSpec;
   AlloStudio.stRenderPptx = stRenderPptx;
+  AlloStudio.stDeckFromResourceCues = stDeckFromResourceCues;
   AlloStudio.stImportPptxDoc = stImportPptxDoc;
   AlloStudio.stImportPptxFile = stImportPptxFile;
   AlloStudio.stEmuPx = stEmuPx;

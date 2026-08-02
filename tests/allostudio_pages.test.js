@@ -236,6 +236,38 @@ describe('deck creation path (the gap that blocked the deck story)', () => {
   });
 });
 
+describe('deck from resource history ("Open in Page Designer" route)', () => {
+  const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  it('builds a title slide plus one slide per cue, all as actor import', () => {
+    const cues = [
+      { id: 'c1', label: 'Photosynthesis', text: 'Plants turn light into chemical energy.', sourceTitle: 'Biology unit' },
+      { id: 'c2', label: 'Chloroplast', text: 'The organelle where it happens.', imageSrc: PNG },
+      { id: 'c3', label: 'Quick check', text: 'What gas do plants take in?' },
+    ];
+    const built = ST.stDeckFromResourceCues(cues, { title: 'Biology unit', now: T0 });
+    const d = built.doc;
+    expect(ST.stValidateDoc(d)).toEqual([]);
+    expect(d.canvas.preset).toBe('slide-16x9');
+    expect(ST.stScenePageCount(d)).toBe(4);
+    expect(built.used).toBe(3);
+    expect(d.ledger.ops.every((op) => op.actor === 'import')).toBe(true);
+    // slide 2 carries the cue image with the generation label as its alt
+    const img = ST.stObjectsOnPage(d.objects, 2).find((o) => o.type === 'image');
+    expect(img.alt).toBe('Chloroplast');
+    // nothing blocks the PowerPoint export
+    expect(ST.stAltGate(d.objects)).toEqual([]);
+    expect(ST.stExportPptxSpec(d).slideCount).toBe(4);
+  });
+
+  it('caps at the page limit and reports what was left out', () => {
+    const many = Array.from({ length: ST.ST_MAX_PAGES + 10 }, (_, i) => ({ id: 'c' + i, label: 'Item ' + i, text: 'Body ' + i }));
+    const built = ST.stDeckFromResourceCues(many, { title: 'Big unit', now: T0 });
+    expect(ST.stScenePageCount(built.doc)).toBe(ST.ST_MAX_PAGES);
+    expect(built.skipped).toBe(11);
+    expect(ST.stValidateDoc(built.doc)).toEqual([]);
+  });
+});
+
 describe('validation', () => {
   it('rejects a page index past the document end', () => {
     const doc = ST.stCreateDoc('slide-16x9', 'Deck', T0);

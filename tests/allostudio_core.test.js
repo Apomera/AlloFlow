@@ -816,7 +816,7 @@ describe('resource shelf + portfolio continuity helpers', () => {
     const d = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
     ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,ORIGINAL', alt: 'Diagram', decorative: false, frame: { x: 0, y: 0, w: 100, h: 80 }, z: 5 } }, 'import', T0);
     const artifact = ST.stBuildPortfolioArtifact(d, { now: '2026-07-03T12:00:00.000Z' });
-    expect(artifact.sourceLabel).toBe('AlloStudio');
+    expect(artifact.sourceLabel).toBe('Page Designer'); // user-facing rename 2026-08-02; module/storage names unchanged
     expect(artifact.kindLabel).toBe('Accessible Worksheet');
     expect(artifact.lifecycleStatus).toBe('review');
     expect(artifact.items.some(item => /Question 1/.test(item.text))).toBe(true);
