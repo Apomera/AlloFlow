@@ -335,7 +335,7 @@
 
   function isWebGLAvailable() {
     try {
-      var c = document.createElement('canvas');
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
       return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
     } catch (e) { return false; }
   }
@@ -409,7 +409,7 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
   }
   function makeLabelSprite(THREE, text, hex) {
-    var canvas = document.createElement('canvas');
+    var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); c.setAttribute('aria-hidden', 'true');
     var ctx = canvas.getContext('2d');
     var font = 26, padX = 14, padY = 9;
     ctx.font = '600 ' + font + 'px sans-serif';
@@ -434,7 +434,7 @@
   var _glowTex = null;
   function makeGlowSprite(THREE, hex, scale) {
     if (!_glowTex) {
-      var c = document.createElement('canvas'); c.width = c.height = 128;
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = c.height = 128;
       var g = c.getContext('2d');
       var grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, 'rgba(255,255,255,1)');
@@ -496,7 +496,7 @@
     // soft radial-fade texture so depth planes read as glowing discs, not hard rectangles
     var planeTex = (function () {
       try {
-        var c = document.createElement('canvas'); c.width = c.height = 256; var g = c.getContext('2d');
+        var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = c.height = 256; var g = c.getContext('2d');
         var grd = g.createRadialGradient(128, 128, 0, 128, 128, 128);
         grd.addColorStop(0, 'rgba(255,255,255,0.9)'); grd.addColorStop(0.7, 'rgba(255,255,255,0.22)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
         g.fillStyle = grd; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
@@ -701,7 +701,7 @@
     // billboarded additive ring shown on the selected node; gently rotates (motion-safe).
     var focusRing = (function () {
       try {
-        var c = document.createElement('canvas'); c.width = c.height = 128; var g = c.getContext('2d');
+        var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = c.height = 128; var g = c.getContext('2d');
         g.strokeStyle = '#ffffff'; g.lineWidth = 9; g.beginPath(); g.arc(64, 64, 52, 0.15, Math.PI * 0.85); g.stroke();
         g.beginPath(); g.arc(64, 64, 52, Math.PI * 1.15, Math.PI * 1.85); g.stroke();   // two arcs = a "targeting" reticle
         var tex = new THREE.CanvasTexture(c);
@@ -1404,7 +1404,7 @@
     function _xrShowCaption(text) {
       _xrClearCaption();
       try {
-        var c = document.createElement('canvas'); c.width = 1024; c.height = 192;
+        var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 1024; c.height = 192;
         var g2 = c.getContext('2d');
         g2.fillStyle = 'rgba(2,6,23,0.85)'; g2.fillRect(0, 0, c.width, c.height);
         g2.strokeStyle = '#6366f1'; g2.lineWidth = 6; g2.strokeRect(3, 3, c.width - 6, c.height - 6);
