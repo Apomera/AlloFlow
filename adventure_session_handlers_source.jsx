@@ -558,6 +558,7 @@ const createAdventureReferenceSheet = async (characters) => {
   if (portraitCharacters.length < 2) return null;
 
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
   canvas.width = 800;
   canvas.height = 800;
   const ctx = canvas.getContext('2d');
