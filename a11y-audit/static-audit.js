@@ -338,7 +338,11 @@ const CHECKS = [
         /aria-keyshortcuts/.test(context) &&
         /Arrow(?:Left|Right|Up|Down)/.test(context) &&
         /(?:move|reorder)/i.test(context);
-      if (documentedKeyboardReorder || /keyboard/.test(localContext)) return false;
+      // A draggable row with explicit Move Up/Down (or reorder) buttons has a
+      // keyboard-usable alternative even when the row itself is not key-draggable.
+      const buttonMoveAlternative =
+        /<button\b/.test(context) && /onClick/.test(context) && /(?:move|reorder|up|down)/i.test(context);
+      if (documentedKeyboardReorder || buttonMoveAlternative || /keyboard/.test(localContext)) return false;
       return true;
     },
     fix: 'Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users.',
