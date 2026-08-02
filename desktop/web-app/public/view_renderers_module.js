@@ -3816,6 +3816,29 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }
   };
   React.useEffect(() => {
+    if (!presenting) return void 0;
+    const node = presentationRef.current;
+    const previouslyFocused = document.activeElement;
+    if (node && typeof node.focus === "function") {
+      try {
+        node.focus({ preventScroll: true });
+      } catch (e) {
+        try {
+          node.focus();
+        } catch (ignore) {
+        }
+      }
+    }
+    return () => {
+      if (previouslyFocused && previouslyFocused !== document.body && document.contains(previouslyFocused)) {
+        try {
+          previouslyFocused.focus();
+        } catch (e) {
+        }
+      }
+    };
+  }, [presenting]);
+  React.useEffect(() => {
     if (!recall || finished) return void 0;
     const iv = setInterval(() => {
       elapsedRef.current += 1;
@@ -5020,7 +5043,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setNonce((n) => n + 1);
     if (addToast) addToast(t("memory_palace.route_undone") || "Previous walking route restored.", "info");
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: presentationRef, onPointerDownCapture: handleTourInteraction, onKeyDownCapture: handleTourInteraction, className: presenting ? "fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4" : "max-w-6xl mx-auto", "aria-label": presenting ? t("memory_palace.presentation_aria") || "Memory Palace presentation" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: (presenting ? "hidden " : "flex ") + "items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.", recall && recall.direction && recall.direction !== "forward" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800" }, recall.direction === "backward" ? "\u21A9 " + (t("memory_palace.order_backward") || "Backwards") : "\u{1F500} " + (t("memory_palace.order_shuffle") || "Shuffled"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: presentationRef, onPointerDownCapture: handleTourInteraction, onKeyDownCapture: handleTourInteraction, className: presenting ? "fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-950" : "max-w-6xl mx-auto", role: presenting ? "dialog" : void 0, "aria-modal": presenting ? "true" : void 0, tabIndex: presenting ? -1 : void 0, "aria-label": presenting ? t("memory_palace.presentation_aria") || "Memory Palace presentation" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: (presenting ? "hidden " : "flex ") + "items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.", recall && recall.direction && recall.direction !== "forward" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800" }, recall.direction === "backward" ? "\u21A9 " + (t("memory_palace.order_backward") || "Backwards") : "\u{1F500} " + (t("memory_palace.order_shuffle") || "Shuffled"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => retryRecall(),

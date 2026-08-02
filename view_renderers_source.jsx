@@ -4665,6 +4665,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
     };
 
+    React.useEffect(() => {
+        if (!presenting) return undefined;
+        const node = presentationRef.current;
+        const previouslyFocused = document.activeElement;
+        if (node && typeof node.focus === 'function') {
+            try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (ignore) {} }
+        }
+        return () => {
+            if (previouslyFocused && previouslyFocused !== document.body && document.contains(previouslyFocused)) {
+                try { previouslyFocused.focus(); } catch (e) {}
+            }
+        };
+    }, [presenting]);
     // Stopwatch (count-up; freezes when the walk is scored).
     React.useEffect(() => {
         if (!recall || finished) return undefined;
@@ -5791,7 +5804,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
 
     return (
-        <div ref={presentationRef} onPointerDownCapture={handleTourInteraction} onKeyDownCapture={handleTourInteraction} className={presenting ? 'fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4' : 'max-w-6xl mx-auto'} aria-label={presenting ? (t('memory_palace.presentation_aria') || 'Memory Palace presentation') : undefined}>
+        <div ref={presentationRef} onPointerDownCapture={handleTourInteraction} onKeyDownCapture={handleTourInteraction} className={presenting ? 'fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-950' : 'max-w-6xl mx-auto'} role={presenting ? 'dialog' : undefined} aria-modal={presenting ? 'true' : undefined} tabIndex={presenting ? -1 : undefined} aria-label={presenting ? (t('memory_palace.presentation_aria') || 'Memory Palace presentation') : undefined}>
             <div className={(presenting ? 'hidden ' : 'flex ') + 'items-center justify-between gap-2 mb-3 flex-wrap'}>
                 <div className="text-xs text-slate-500">
                     {recall

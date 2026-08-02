@@ -247,7 +247,8 @@ const CHECKS = [
     severity: 'major',
     description: 'CSS animation used without prefers-reduced-motion or useReducedMotion() gate',
     test(line, lineNum, lines) {
-      if (!/animate-pulse|animate-bounce|animate-spin/.test(line)) return false;
+      const ungatedLine = line.replace(/motion-safe:animate-(?:pulse|bounce|spin)/g, '');
+      if (!/animate-pulse|animate-bounce|animate-spin/.test(ungatedLine)) return false;
       // Check surrounding context for reduced motion check
       const context = lines.slice(Math.max(0, lineNum - 5), lineNum + 2).join(' ');
       if (/useReducedMotion|prefers-reduced-motion|reducedMotion|motion-reduce:animate-none/.test(context)) return false;
@@ -307,7 +308,7 @@ const CHECKS = [
                         /z-?\[?\d{3,}|z-50|z-\[999/.test(line);
       if (!isOverlay) return false;
       const context = lines.slice(Math.max(0, lineNum - 6), lineNum + 12).join(' ');
-      if (/role\s*[:=]\s*['"](?:alert)?dialog['"]/.test(context)) return false;
+      if (/role\s*[:=]\s*['"](?:alert)?dialog['"]/.test(context) || /role\s*[:=][^,}]*\b(?:alert)?dialog\b/.test(context)) return false;
       // Backdrops and other visual layers can be fixed-position overlays without
       // being dialogs. Explicit presentation/hidden semantics are the author signal
       // that the layer is not an interactive modal surface.

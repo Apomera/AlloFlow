@@ -79,6 +79,16 @@ describe('static audit UI heuristics', () => {
     const report = scanFixture("const icon = h('svg', { viewBox: '0 0 20 20' });");
     expect(report).toContain('SVG-001');
   });
+  it('does not flag motion-safe utility animations', () => {
+    const report = scanFixture('<div className="motion-safe:animate-spin">Loading</div>');
+    expect(report).not.toContain('MOTION-001');
+  });
+
+  it('recognizes conditional dialog semantics for full-screen shells', () => {
+    const report = scanFixture('<div className="fixed inset-0 z-[9999]" role={presenting ? "dialog" : undefined} aria-modal={presenting ? "true" : undefined}></div>');
+    expect(report).not.toContain('DIALOG-001');
+  });
+
   it('does not report pointer-only outline suppression that preserves focus-visible', () => {
     const report = scanFixture([
       ".tool button:focus-visible { outline: 3px solid #4f46e5; }",
