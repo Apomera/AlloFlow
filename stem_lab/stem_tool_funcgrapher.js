@@ -389,36 +389,36 @@ window.StemLab = window.StemLab || {
           // ── Transformation labels ──
           var transformLabels = [];
           if (d.a !== 1 && d.a !== 0) {
-            if (d.a === -1) transformLabels.push({ text: __alloT('stem.funcgrapher.reflected_over_x_axis', 'Reflected over x-axis'), color: 'text-rose-600 bg-rose-50 border-rose-200' });
-            else if (d.a < 0) transformLabels.push({ text: 'Reflected & scaled \u00D7' + Math.abs(d.a), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            if (d.a === -1) transformLabels.push({ text: __alloT('stem.funcgrapher.reflected_over_x_axis', 'Reflected over x-axis'), color: 'text-rose-700 bg-rose-50 border-rose-200' });
+            else if (d.a < 0) transformLabels.push({ text: 'Reflected & scaled \u00D7' + Math.abs(d.a), color: 'text-rose-700 bg-rose-50 border-rose-200' });
             else if (Math.abs(d.a) > 1) transformLabels.push({ text: 'Vertical stretch \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
             else transformLabels.push({ text: 'Vertical compression \u00D7' + d.a, color: 'text-violet-600 bg-violet-50 border-violet-200' });
           }
           if (d.type === 'trig' && d.b !== 0 && d.b !== 1) {
-            transformLabels.push({ text: 'Period = 2\u03C0/' + Math.abs(d.b).toFixed(1), color: 'text-sky-600 bg-sky-50 border-sky-200' });
+            transformLabels.push({ text: 'Period = 2\u03C0/' + Math.abs(d.b).toFixed(1), color: 'text-sky-700 bg-sky-50 border-sky-200' });
           }
           if (d.type === 'linear' && d.a !== 0) {
             transformLabels.push({ text: 'Slope = ' + d.a, color: 'text-blue-600 bg-blue-50 border-blue-200' });
           }
           if (d.c !== 0 && d.type !== 'linear') {
-            transformLabels.push({ text: 'Shifted ' + (d.c > 0 ? 'up' : 'down') + ' ' + Math.abs(d.c) + ' units', color: 'text-teal-600 bg-teal-50 border-teal-200' });
+            transformLabels.push({ text: 'Shifted ' + (d.c > 0 ? 'up' : 'down') + ' ' + Math.abs(d.c) + ' units', color: 'text-teal-700 bg-teal-50 border-teal-200' });
           }
           if (d.b !== 0 && d.type === 'linear') {
-            transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-600 bg-green-50 border-green-200' });
+            transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-700 bg-green-50 border-green-200' });
           }
           // Key-feature chips for the function families (domain restrictions + asymptotes + vertex)
           if (d.type === 'quadratic' && d.a !== 0) {
             transformLabels.push({ text: 'Vertex at x = ' + (-d.b / (2 * d.a)).toFixed(2), color: 'text-indigo-600 bg-indigo-50 border-indigo-200' });
           }
           if (d.type === 'sqrt') {
-            transformLabels.push({ text: 'Domain: x ≥ ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+            transformLabels.push({ text: 'Domain: x ≥ ' + (-d.b), color: 'text-amber-800 bg-amber-50 border-amber-200' });
           }
           if (d.type === 'log') {
-            transformLabels.push({ text: 'Domain: x > ' + (-d.b) + ' · asymptote x = ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+            transformLabels.push({ text: 'Domain: x > ' + (-d.b) + ' · asymptote x = ' + (-d.b), color: 'text-amber-800 bg-amber-50 border-amber-200' });
           }
           if (d.type === 'rational') {
-            transformLabels.push({ text: 'Vertical asymptote: x = ' + (-d.b), color: 'text-rose-600 bg-rose-50 border-rose-200' });
-            transformLabels.push({ text: 'Horizontal asymptote: y = ' + d.c, color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            transformLabels.push({ text: 'Vertical asymptote: x = ' + (-d.b), color: 'text-rose-700 bg-rose-50 border-rose-200' });
+            transformLabels.push({ text: 'Horizontal asymptote: y = ' + d.c, color: 'text-rose-700 bg-rose-50 border-rose-200' });
           }
 
 
@@ -541,7 +541,7 @@ window.StemLab = window.StemLab || {
 
             // SVG Graph
 
-            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
+            React.createElement("svg", { role: "img", "aria-label": "Function graph showing the configured curve", viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
 
               // Grid lines (rendered first, behind curves)
 
@@ -740,15 +740,15 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2 flex-wrap" },
 
-              React.createElement("button", { onClick: () => { if (!d.showDeriv) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { deriv: true })); upd('showDeriv', !d.showDeriv); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => { if (!d.showDeriv) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { deriv: true })); upd('showDeriv', !d.showDeriv); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-800 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
-              React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
               d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
 
-              React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-600 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
+              React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-700 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
-              React.createElement("button", { onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 border border-emerald-600') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
+              React.createElement("button", { onClick: () => upd('showLearn', !d.showLearn), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-600') }, d.showLearn ? "\u2705 Learn" : "\uD83D\uDCD6 Learn"),
 
               roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-700 rounded-lg text-[11px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
 
@@ -849,7 +849,7 @@ window.StemLab = window.StemLab || {
 
             // ── Compare Mode Toggle + Sliders ──
             React.createElement("div", { className: "mt-2 flex items-center gap-2" },
-              React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-600') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
+              React.createElement("button", { onClick: function() { upd('compare', !d.compare); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.compare ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-600') }, d.compare ? '\u2705 Comparing' : '\uD83D\uDD00 Compare'),
               d.compare && React.createElement("div", { className: "flex gap-1.5" },
                 TYPES.map(function(tp) {
                   return React.createElement("button", { key: 'cmp-' + tp.id, onClick: function() { upd('compareType', tp.id); }, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + (d.compareType === tp.id ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600') }, tp.emoji);
@@ -885,7 +885,7 @@ window.StemLab = window.StemLab || {
                   upd('aiExplain', 'Explanation unavailable right now.');
                   upd('aiExplainLoading', false);
                 });
-              }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
+              }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
                   React.createElement("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider" }, __alloT('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation"))
@@ -1278,7 +1278,7 @@ window.StemLab = window.StemLab || {
                       key: gb,
                       onClick: function () { upd('fgGradeOverride', gb); upd('fgQuiz', null); },
                       "aria-pressed": active,
-                      className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-all " + (active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50')
+                      className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-all " + (active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
                     }, gb);
                   })
                 ),
@@ -1564,7 +1564,7 @@ window.StemLab = window.StemLab || {
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.funcgrapher.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.funcgrapher.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
+                h('textarea', { 'aria-label': __alloT('stem.funcgrapher.hypothesis_input', 'Function grapher hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.funcgrapher.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
@@ -1574,7 +1574,7 @@ window.StemLab = window.StemLab || {
                 h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                   __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.funcgrapher.explanation_input', 'Function grapher explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
                 h('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
               );
