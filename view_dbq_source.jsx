@@ -223,7 +223,7 @@ function DbqView(props) {
                   if (r._dbqTimerInterval) clearInterval(r._dbqTimerInterval);
                   setDbq('_dbqTimerEnd', null);
                   setDbq('_dbqTimerInterval', null);
-                }} className="text-[11px] text-slate-600 hover:text-red-600" aria-label={t("a11y.cancel_timer")}>✕</button></div>}{timerDone && <div className="flex items-center gap-2"><span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse">⏰ Time's up!</span><button onClick={() => {
+                }} className="text-[11px] text-slate-600 hover:text-red-600" aria-label={t("a11y.cancel_timer")}>✕</button></div>}{timerDone && <div className="flex items-center gap-2"><span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse motion-reduce:animate-none">⏰ Time's up!</span><button onClick={() => {
                   setDbq('_dbqTimerEnd', null);
                 }} className="text-[11px] text-slate-600 hover:text-slate-700" aria-label={t("a11y.dismiss_timer")}>{t("ui_common.dismiss")}</button></div>}</>;
           })()}</div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{

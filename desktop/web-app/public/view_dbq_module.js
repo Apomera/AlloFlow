@@ -295,7 +295,7 @@
     }, "✕")), timerDone && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse"
+      className: "text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200 animate-pulse motion-reduce:animate-none"
     }, "⏰ Time's up!"), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setDbq('_dbqTimerEnd', null);

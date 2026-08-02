@@ -288,8 +288,9 @@ const CHECKS = [
         || /\b\d+\s*(?:seconds?|minutes?)\s+(?:left|remaining)\b/i.test(content);
       if (!observesClock || !hasUserTimeLimit) return false;
       // Check for a documented adjustment mechanism.
-      const hasPause = /\b(?:pause|pauseTimer|isPaused|timerPaused|togglePause|pauseProbe|extendTimer|addTime)\b/i.test(content);
-      return !hasPause;
+      // Turning an optional timer off is also a WCAG timing adjustment; cancellation labels are accepted alongside pause/extend controls.
+      const hasAdjustment = /\b(?:pause|pauseTimer|isPaused|timerPaused|togglePause|pauseProbe|extendTimer|addTime|cancel[_\s-]?timer|stop[_\s-]?timer)\b/i.test(content);
+      return !hasAdjustment;
     },
     fix: 'Add Pause/Resume button and teacher-configurable extended time option.',
   },

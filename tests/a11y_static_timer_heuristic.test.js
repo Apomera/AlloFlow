@@ -52,6 +52,14 @@ describe('static audit timer rule', () => {
     expect(report).toContain('TIMER-001');
   });
 
+  it('accepts an optional timer with an explicit cancel control', () => {
+    const report = scanFixture([
+      'const timerActive = deadline && Date.now() < deadline;',
+      'button.setAttribute("aria-label", "Cancel timer");',
+      'setTimerEnd(null);',
+    ].join('\\n'));
+    expect(report).not.toContain('TIMER-001');
+  });
   it('accepts a ticking countdown with pause or extension controls', () => {
     const paused = scanFixture([
       'let timeLeft = 60;',
