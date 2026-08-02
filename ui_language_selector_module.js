@@ -79,7 +79,7 @@ const UiLanguageSelector = () => {
         className: "bg-indigo-600 h-full transition-all duration-300 ease-out",
         style: { width: `${progress}%` }
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), " Generating..."));
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " Generating..."));
   }
   return /* @__PURE__ */ React.createElement("div", { className: "relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg text-indigo-600" }, /* @__PURE__ */ React.createElement(Globe, { size: 14 })), /* @__PURE__ */ React.createElement(
     "select",
