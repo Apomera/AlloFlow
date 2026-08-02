@@ -913,7 +913,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             tutorLoading
               ? h('div', { className: 'flex items-center gap-2' },
-                  h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                  h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full motion-reduce:animate-none animate-spin' }),
                   h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
                 )
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
@@ -1011,6 +1011,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('div', { className: 'text-center' },
                   h('input', {
                     type: 'number', value: d.value,
+                    'aria-label': t('stem.unitconvert.value_to_convert', 'Value to convert'),
                     min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
                     'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
@@ -1025,7 +1026,6 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         if (Object.keys(tu).length >= 3) checkBadges({ tempMaster: true });
                       }
                     },
-                    'aria-label': t('stem.unitconvert.value_to_convert', 'Value to convert'),
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight',
                     step: '0.01'
                   }),
