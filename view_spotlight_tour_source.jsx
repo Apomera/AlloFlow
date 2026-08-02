@@ -108,8 +108,8 @@ function SpotlightTourView(props) {
   return (
         <>
             <div
-                role="presentation" aria-hidden="true"
                 data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
+                role="presentation" aria-hidden="true"
                 onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                     e.preventDefault();

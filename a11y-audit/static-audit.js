@@ -302,6 +302,11 @@ const CHECKS = [
       if (!isOverlay) return false;
       const context = lines.slice(lineNum - 1, lineNum + 12).join(' ');
       if (/role\s*[:=]\s*['"](?:alert)?dialog['"]/.test(context)) return false;
+      // Backdrops and other visual layers can be fixed-position overlays without
+      // being dialogs. Explicit presentation/hidden semantics are the author signal
+      // that the layer is not an interactive modal surface.
+      if (/role\s*[:=]\s*['"]presentation['"]/.test(context) ||
+          /aria-hidden\s*[:=]\s*['"]true['"]/.test(context)) return false;
       return true;
     },
     fix: 'Add role="dialog" or role="alertdialog", aria-modal="true", aria-labelledby, focus trap, and Escape key handler.',
