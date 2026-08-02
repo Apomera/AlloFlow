@@ -270,6 +270,7 @@ function EducatorHubModal(props) {
     // the API is policy-blocked (the Canvas case, probe-verified 2026-06-10).
     try {
       const ta = document.createElement('textarea');
+      ta.setAttribute('aria-label', 'Clipboard fallback text');
       ta.value = 'AlloFlow probe'; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
       document.body.appendChild(ta); ta.select();
       const ok = document.execCommand('copy');
@@ -322,7 +323,7 @@ function EducatorHubModal(props) {
               so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
               the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
               No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
-          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle" onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 id="educator-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🛠️</span> {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -422,6 +423,7 @@ function EducatorHubModal(props) {
               <button type="button" disabled={!!pdfBatchIntakeProgress} data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
+                  input.setAttribute('aria-label', t('educator_hub.pdf_upload_label') || 'Select PDF, DOCX, or PPTX files');
                   // PDF / DOCX / PPTX only. image/* was previously offered here but a lone image
                   // fell through to handleFileUpload's image branch — which OCRs into the
                   // lesson-generator text box, NOT the remediation pipeline (this card promises
@@ -674,7 +676,7 @@ function EducatorHubModal(props) {
               <div data-help-key="educator_hub_platform_check_card" className="col-span-full flex flex-col gap-2">
                 <div className="flex items-center gap-2 justify-end">
                   <button type="button" onClick={_runPlatformProbe} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted" title={t('educator_hub.platform_check_desc') || 'Tests what this environment can do — pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken.'}><span aria-hidden="true">🔬</span> {t('educator_hub.platform_check_title') || 'Platform check (diagnostics)'}</button>
-                  <button type="button" data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
+                  <button type="button" data-help-ignore="true" data-a11y-ignore="diagnostic-confirm" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
                     setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted"><span aria-hidden="true">🧪</span> {t('educator_hub.platform_check_dialog') || 'dialog test'}</button>
                 </div>
                 {platProbe && (
@@ -682,7 +684,8 @@ function EducatorHubModal(props) {
                   <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="educator-platform-results-title">
                     <div className="flex items-center justify-between mb-1">
                       <span id="educator-platform-results-title" className="font-bold text-slate-700">{t('educator_hub.platform_check_results') || 'Results'} — {platProbe.when}</span>
-                      <button type="button" onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} className="min-h-11 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200"><span aria-hidden="true">📋</span> {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
+                      <button type="button" onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea');
+      ta.setAttribute('aria-label', 'Clipboard fallback text'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} aria-label={t('educator_hub.platform_check_copy') || 'Copy report'} className="min-h-11 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200"><span aria-hidden="true">📋</span> {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
                     </div>
                     <ul className="space-y-0.5">
                       {platProbe.rows.map((r, i) => (

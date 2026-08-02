@@ -233,8 +233,10 @@ const CHECKS = [
     wcag: '3.3.4 Error Prevention',
     severity: 'major',
     description: 'Native confirm() dialog used for data-destructive actions; inaccessible with some screen readers',
-    test(line) {
-      return /\bconfirm\s*\(/.test(line) && !/\/\//.test(line.split('confirm')[0]);
+    test(line, lineNum, lines) {
+      if (!/\bconfirm\s*\(/.test(line) || /\/\//.test(line.split('confirm')[0])) return false;
+      const context = lines.slice(Math.max(0, lineNum - 2), lineNum + 2).join(' ');
+      return !/data-a11y-ignore/i.test(context);
     },
     fix: 'Replace with custom accessible modal with focus management.',
   },

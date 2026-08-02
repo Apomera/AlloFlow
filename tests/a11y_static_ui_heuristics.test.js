@@ -51,6 +51,11 @@ describe('static audit UI heuristics', () => {
     expect(report).not.toContain('INPUT-001');
   });
 
+  it('ignores explicitly marked diagnostic-only native confirms', () => {
+    const report = scanFixture('button data-a11y-ignore="diagnostic-confirm" onclick="window.confirm(Test)">Test</button>');
+    expect(report).not.toContain('CONFIRM-001');
+  });
+
   it('still reports an unlabeled multi-line input', () => {
     const report = scanFixture([
       "h('input', {",
