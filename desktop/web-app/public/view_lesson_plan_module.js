@@ -316,7 +316,7 @@
     className: "flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingExtensionGuide[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(ListChecks, {
     size: 14
   }), isGeneratingExtensionGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
@@ -398,7 +398,7 @@
     className: "w-full py-6 rounded-2xl border-2 border-dashed border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600"
   }, isGeneratingProgression ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(GitMerge, {
     size: 24,
     className: "rotate-90"
