@@ -902,7 +902,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           if (a.label) children.push(h('text', { key: 'al' + ai, x: (a.x1 + a.x2) / 2 + (a.labelDx || 4), y: (a.y1 + a.y2) / 2 + (a.labelDy || -3), fontSize: 7, fill: a.color || '#fbbf24', fontFamily: 'system-ui, sans-serif' }, a.label));
         });
         return h('div', { style: { textAlign: 'center' } },
-          h('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { background: 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)', borderRadius: 6, border: '1px solid ' + T.border } },
+          h('svg', {
+            width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
+            role: 'img',
+            'aria-label': __alloT('stem.swimlab.stroke_phase_diagram', 'Swimming stroke phase diagram') + (opts.caption ? ': ' + opts.caption : ''),
+            style: { background: 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)', borderRadius: 6, border: '1px solid ' + T.border }
+          },
             h('defs', null,
               h('marker', { id: 'wsArrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
                 h('path', { d: 'M0,0 L0,6 L6,3 z', fill: '#fbbf24' }))
