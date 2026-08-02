@@ -734,6 +734,7 @@ const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
         img.onload = () => {
             try {
                 const canvas = document.createElement('canvas');
+                canvas.setAttribute('aria-hidden', 'true');
                 let width = img.width;
                 let height = img.height;
                 if (width > maxWidth) {
