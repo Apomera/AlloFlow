@@ -118,7 +118,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                 disabled={isProcessing}
                 className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
-                 {isProcessing ? <RefreshCw size={18} className="animate-spin" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
+                 {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
                  {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
              </button>
              <div className="grid grid-cols-2 gap-3">
@@ -845,7 +845,7 @@ const sanitizeAdventurePortraitFile = (file, { maxDimension = 1024, quality = 0.
                 if (!sourceWidth || !sourceHeight) throw new Error('The portrait has invalid dimensions.');
                 const boundedDimension = Math.max(320, Math.min(2048, Number(maxDimension) || 1024));
                 const scale = Math.min(1, boundedDimension / Math.max(sourceWidth, sourceHeight));
-                const canvas = document.createElement('canvas');
+                const canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
                 canvas.width = Math.max(1, Math.round(sourceWidth * scale));
                 canvas.height = Math.max(1, Math.round(sourceHeight * scale));
                 const ctx = canvas.getContext('2d');
@@ -1043,7 +1043,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
             <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8">
                 <div className="text-center mb-6">
                     <span className="text-4xl mb-2 block" aria-hidden="true">🎭</span>
-                    <h2 ref={castTitleRef} id="adventure-cast-lobby-title" tabIndex={-1} className="text-2xl font-bold text-slate-800 focus:outline-none">{t('adventure.cast_lobby') || 'Meet Your Cast'}</h2>
+                    <h2 ref={castTitleRef} id="adventure-cast-lobby-title" tabIndex={-1} className="text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{t('adventure.cast_lobby') || 'Meet Your Cast'}</h2>
                     <p className="text-sm text-slate-600 mt-1">{t('adventure.cast_lobby_desc') || 'Select any name, role, or description to edit. Portraits generate automatically.'}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -1052,7 +1052,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                             <button type="button" disabled={isPortraitSanitizing || isPortraitQueueBusy} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
-                                    <div className="animate-spin w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
+                                    <div className="animate-spin motion-reduce:animate-none w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
                                 ) : char.portrait ? (
                                     <img src={char.portrait} alt={char.name} className="w-full h-full object-cover rounded-full"/>
                                 ) : (
@@ -1149,7 +1149,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 <p className="mt-2 text-[11px] text-violet-700 font-medium" role="status" aria-live="polite">Waiting its turn…</p>
                             )}
                             {char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse font-medium" role="status" aria-live="polite">Creating portrait…</p>
+                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse motion-reduce:animate-none font-medium" role="status" aria-live="polite">Creating portrait…</p>
                             )}
                         </div>
                     ))}

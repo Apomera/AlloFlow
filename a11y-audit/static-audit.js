@@ -303,7 +303,7 @@ const CHECKS = [
       const isOverlay = /fixed\s+inset-0|position\s*:\s*['"]?fixed/.test(line) &&
                         /z-?\[?\d{3,}|z-50|z-\[999/.test(line);
       if (!isOverlay) return false;
-      const context = lines.slice(lineNum - 1, lineNum + 12).join(' ');
+      const context = lines.slice(Math.max(0, lineNum - 6), lineNum + 12).join(' ');
       if (/role\s*[:=]\s*['"](?:alert)?dialog['"]/.test(context)) return false;
       // Backdrops and other visual layers can be fixed-position overlays without
       // being dialogs. Explicit presentation/hidden semantics are the author signal
