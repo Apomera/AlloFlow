@@ -1628,7 +1628,7 @@
                         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 0 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {
-                              return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: 'var(--allo-stem-deeper, #0a0e1a)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
+                              return h('th', { key: i, scope: 'col', style: { padding: 6, textAlign: 'left', background: 'var(--allo-stem-deeper, #0a0e1a)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
                             })
                           )),
                           h('tbody', null,
@@ -2685,7 +2685,7 @@
             h('table', { style: { width: '100%', minWidth: 0, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null, h('tr', null,
                 ['Material', 'Yield (MPa)', 'Density (kg/m³)', 'Modulus E (GPa)', 'Cost (rel.)'].map(function(c, i) {
-                  return h('th', { key: i, style: { padding: 8, textAlign: 'left', background: 'var(--allo-stem-panel, #1e293b)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
+                  return h('th', { key: i, scope: 'col', style: { padding: 8, textAlign: 'left', background: 'var(--allo-stem-panel, #1e293b)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
                 })
               )),
               h('tbody', null,
@@ -4778,7 +4778,7 @@
               h('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1' } },
                 h('thead', null, h('tr', { style: { background: '#1e293b' } },
                   ['span', 'area', 'material', 'safety factor', 'state'].map(function(c, i) {
-                    return h('th', { key: 'h' + i, style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
+                    return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 8px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
                   })
                 )),
                 h('tbody', null, iq.log.map(function(o, idx) {
