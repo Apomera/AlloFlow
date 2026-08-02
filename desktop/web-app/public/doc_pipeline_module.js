@@ -11809,7 +11809,7 @@ var createDocPipeline = function(deps) {
           const _renderScales = _renderFailureStreak > 0 ? [1.0] : [2.0, 1.25, 1.0];
           for (const _sc of _renderScales) {
             const _vp = page.getViewport({ scale: _sc });
-            const _c = document.createElement('canvas');
+            const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
             _c.width = _vp.width; _c.height = _vp.height;
             let _renderTask = null;
             try {
@@ -11904,7 +11904,7 @@ var createDocPipeline = function(deps) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (mixed-page OCR p' + p + ')'); // bound getPage — pdf.js worker can stall
           const viewport = page.getViewport({ scale: 2.0 });
-          canvas = document.createElement('canvas');
+          canvas = document.createElement('canvas'); if (typeof canvas.setAttribute === 'function') canvas.setAttribute('aria-hidden', 'true');
           canvas.width = viewport.width; canvas.height = viewport.height;
           const cctx = canvas.getContext('2d');
           await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
@@ -17178,7 +17178,7 @@ HTML section ${chunkNum}/${chunks.length}:
       img.onload = () => {
         clearTimeout(to);
         try {
-          const c = document.createElement('canvas');
+          const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
           c.width = 8; c.height = 8;
           const g = c.getContext('2d', { willReadFrequently: true });
           g.drawImage(img, 0, 0, 8, 8);
@@ -21235,7 +21235,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   let viewport = null, canvas = null;
                   for (const _sc of [1.5, 1.0]) {
                     const _vp = page.getViewport({ scale: _sc });
-                    const _c = document.createElement('canvas');
+                    const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
                     _c.width = _vp.width; _c.height = _vp.height;
                     try {
                       await _awaitImageWork(_withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 1.5 ? 30000 : 20000, 'page.render p' + pg + ' @' + _sc + 'x'));
@@ -21308,7 +21308,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   const _cropIsNearUniform = (srcCanvas, strict) => {
                     try {
                       const S = 24;
-                      const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
+                      const tiny = document.createElement('canvas'); tiny.setAttribute('aria-hidden', 'true'); tiny.width = S; tiny.height = S;
                       const tctx = tiny.getContext('2d');
                       tctx.drawImage(srcCanvas, 0, 0, S, S);
                       const data = tctx.getImageData(0, 0, S, S).data;
@@ -21363,7 +21363,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       imgOpIdx++;
                       if (pos && pos.w > 20 && pos.h > 20) {
                         try {
-                          const crop = document.createElement('canvas');
+                          const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
                           crop.width = Math.round(pos.w);
                           crop.height = Math.round(pos.h);
                           crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
@@ -21395,7 +21395,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       let y = 0, h = canvas.height * 0.2;
                       if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
                       else if (pos.includes('middle')) { y = canvas.height * 0.3; h = canvas.height * 0.35; }
-                      const crop = document.createElement('canvas');
+                      const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
                       crop.width = canvas.width; crop.height = h;
                       crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
                       // The fallback is a blind position-guess (no XObject geometry), so it
@@ -24349,7 +24349,7 @@ window.__pdfCropImage = function(imgId) {
     clearError();
     var tmpImg = new Image();
     tmpImg.onload = function() {
-      var c = document.createElement('canvas');
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
       c.width = Math.round(sw); c.height = Math.round(sh);
       c.getContext('2d').drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, c.width, c.height);
       var dataUrl = c.toDataURL('image/jpeg', 0.85);
@@ -27275,7 +27275,7 @@ tr { page-break-inside: avoid; }
   .conformance-pct { font-size: 14px; color: #64748b; font-weight: 600; }
   .stat-pill { display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
-  details summary { outline: none; }
+  details summary { outline: 2px solid transparent; outline-offset: 2px; }
   details summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 4px; }
   a { color: #2563eb; }
   @media print {
@@ -36345,14 +36345,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           .interactive-textarea:focus { outline: 2px solid #6366f1; border-color: #6366f1; }
           .interactive-blank { border: none; border-bottom: 2px solid #cbd5e1; padding: 0 5px; background: transparent; font-family: inherit; width: 150px; transition: border-color 0.2s; font-weight: bold; color: #1e40af; }
-          .interactive-blank:focus { border-bottom-color: #4f46e5; outline: none; }
+          .interactive-blank:focus { border-bottom-color: #4f46e5; outline: 2px solid #4f46e5; outline-offset: 2px; }
           .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
           .mcq-label:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
           /* Keyboard focus: a visible 2px indigo outline + soft outer ring.
              Replaces the browser default focus ring (which the radio sometimes
              eats) so keyboard-only users can see what they're about to pick.
              WCAG 2.4.7 (Focus Visible). */
-          .mcq-label:focus-within { background-color: #eef2ff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.18); outline: none; }
+          .mcq-label:focus-within { background-color: #eef2ff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.18); outline: 2px solid #6366f1; outline-offset: 1px; }
           /* Selected state: the option containing a checked radio gets a
              persistent indigo accent so students can scan back and see what
              they already picked. WCAG 1.4.11 (Non-text Contrast). */
@@ -36564,7 +36564,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-note-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 6px 6px 0 0; }
           .alloflow-note-editor-btn { background: rgba(255,255,255,0.75); border: 0; padding: 1px 6px; border-radius: 3px; font-weight: 700; cursor: pointer; font-size: 10px; }
           .alloflow-note-editor-btn:hover { background: rgba(255,255,255,1); }
-          .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: none; font-family: inherit; box-sizing: border-box; }
+          .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: 2px solid transparent; outline-offset: 2px; font-family: inherit; box-sizing: border-box; } .alloflow-note-editor textarea:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
 
           /* ─── Annotation pulse animation (Phase 5) ─── */
           @keyframes alloflow-anno-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }

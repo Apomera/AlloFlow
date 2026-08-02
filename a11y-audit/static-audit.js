@@ -78,6 +78,9 @@ const CHECKS = [
     severity: 'critical',
     description: 'Focus indicator suppressed via outline:none or outline:"none" without focus:ring or boxShadow replacement',
     test(line, lineNum, lines) {
+      // Ignore comment-only lines: embedded remediation guidance and code
+      // examples are not live focus styles.
+      if (/^\s*(?:\/\/|\/\*|\*)/.test(line)) return false;
       // Remove only complete pointer-focus rules that explicitly preserve
       // :focus-visible. Other outline suppression on the same source line must
       // remain auditable.
@@ -361,7 +364,7 @@ const CHECKS = [
         propLines.push(lines[i]);
         if (/^\s*\}/.test(lines[i])) break;
       }
-      return !/\bscope\s*[:=]/.test(propLines.join(' '));
+      return !/\bscope\s*[:=]/.test(propLines.join(' ')) && !/setAttribute\(\s*['"]scope['"]/.test(propLines.join(' '));
     },
     fix: 'Add scope="col" to column headers, scope="row" to row headers.',
   },
