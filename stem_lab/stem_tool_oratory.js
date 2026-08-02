@@ -1389,6 +1389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var isDark = ctx.isDark;
+      var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var isContrast = ctx.isContrast;
       var canvasNarrate = ctx.canvasNarrate;
 
@@ -2875,7 +2876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('div', { className: 'flex items-center gap-3' },
                   h('button', {
                     className: isRecording
-                      ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 animate-pulse active:scale-[0.97]'
+                      ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
                       : 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'),
                     onClick: isRecording ? stopRecording : startRecording,
                     'aria-label': isRecording ? 'Stop recording. Click to stop microphone.' : 'Start recording. Click to activate microphone and begin speech visualization.',
@@ -3565,7 +3566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       }, t('stem.oratory.practice_this_pattern', '\uD83C\uDFA4 Practice This Pattern')))
                   : h('div', { className: 'space-y-3' },
                       h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
-                        h('p', { className: (isDark ? 'text-green-300' : 'text-green-700') + ' font-bold text-sm animate-pulse' },
+                        h('p', { className: (isDark ? 'text-green-300' : 'text-green-700') + ' font-bold text-sm' + (reducedMotion ? '' : ' animate-pulse') },
                           t('stem.oratory.say_the_phrase_now_try_to_match_the_gr', 'Say the phrase now! Try to match the green target zone.'))),
                       h('div', { className: 'flex items-center gap-3 justify-center' },
                         h('button', {
@@ -3663,7 +3664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('div', { className: 'flex items-center gap-3' },
               h('button', {
                 className: isRecording
-                  ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-300 animate-pulse active:scale-[0.97]'
+                  ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
                   : 'px-4 py-2 rounded-full font-bold text-sm ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
                 onClick: isRecording ? stopRecording : startRecording,
                 'aria-label': isRecording ? 'Stop microphone' : 'Start microphone'
@@ -3774,7 +3775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }, t('stem.oratory.your_turn', '\uD83C\uDFA4 Your Turn'))),
 
                 // Mode status
-                multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3 animate-pulse' }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
+                multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3' + (reducedMotion ? '' : ' animate-pulse') }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
                 multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-600') + ' mt-3 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
             ),
 
@@ -3956,7 +3957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.oratory.recording', 'Recording'))),
+            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.oratory.recording', 'Recording'))),
 
           // Tab navigation
           h('div', {
