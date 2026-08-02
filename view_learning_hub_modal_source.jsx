@@ -94,7 +94,7 @@ function LearningHubModal(props) {
               dark mode. Adding the scope class opts the modal into the existing, tested dark
               remap (from-*-50 gradients -> dark tints, text-*-800/600 -> light). No-op in light
               mode: every .allo-docsuite rule is prefixed .theme-dark / .theme-contrast. */}
-          <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="learning-hub-title" aria-describedby="learning-hub-subtitle" onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="learning-hub-title" aria-describedby="learning-hub-subtitle" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 id="learning-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">{'\uD83E\uDDE9'}</span> {t('learning_hub.title') || 'Learning Tools'}</h2>
