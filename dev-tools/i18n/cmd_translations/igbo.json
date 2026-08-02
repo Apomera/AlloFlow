@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Emepela Video Studio.",
   "cmd.open_video_studio_hint": "Dekọọ, tinye ndepụta okwu ma dezie vidiyo nduzi",
   "palette.ctx.videoStudio": "Ebe a — Video Studio",
-  "palette.close": "Mechie palette iwu"
+  "palette.close": "Mechie palette iwu",
+  "cmd.apply_lesson_template": "Malite site n'ụdị echekwara",
+  "cmd.apply_lesson_template_done": "Malitere site na ",
+  "cmd.apply_lesson_template_hint": "Ọ na-amalite atụmatụ ọhụrụ site n'otu n'ime ụdị ị chekwara",
+  "cmd.apply_lesson_template_missing": "Ahụghị m ụdị a kpọrọ ",
+  "cmd.apply_lesson_template_which": "Kedu ụdị?",
+  "cmd.rebuild_lesson_step": "Wughachi otu nzọụkwụ nke atụmatụ",
+  "cmd.rebuild_lesson_step_done": "Na-ewughachi nzọụkwụ ",
+  "cmd.rebuild_lesson_step_hint": "Na-emepụta otu akụrụngwa ọzọ — kwuo nọmba nzọụkwụ",
+  "cmd.rebuild_lesson_step_missing": "Ahụghị m nzọụkwụ ahụ n'ime atụmatụ ahụ.",
+  "cmd.rebuild_lesson_step_none": "atụmatụ ahụ enweghị nzọụkwụ ugbu a.",
+  "cmd.rebuild_lesson_step_which": "Kedu nzọụkwụ?",
+  "cmd.run_lesson_blueprint": "Mepụta atụmatụ nkuzi",
+  "cmd.run_lesson_blueprint_done": "A na-emepụta atụmatụ — ị nwere ike ilele nzọụkwụ ọ bụla na kaadị ahụ.",
+  "cmd.run_lesson_blueprint_hint": "Na-emepụta akụrụngwa niile dị na atụmatụ ugbu a",
+  "cmd.cancelled": "Arịrịọ ịkagbu ka e zigara. Ọrụ dị ugbu a ga-akwụsị mgbe onye na-enye ya kwadoro ya."
 }

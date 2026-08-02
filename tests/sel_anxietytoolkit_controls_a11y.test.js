@@ -25,4 +25,16 @@ describe('Anxiety Toolkit control accessibility', () => {
     expect(text).toContain("'aria-label': 'Remove grounding item: ' + s");
     expect((text.match(/minWidth: 24, minHeight: 24/g) || []).length).toBeGreaterThanOrEqual(2);
   });
+
+  it('adapts overview and support language by grade band', () => {
+    const text = source();
+    expect(text).toContain('var ANXIETY_GUIDANCE = {');
+    expect(text).toContain('elementary:');
+    expect(text).toContain('middle:');
+    expect(text).toContain("var _anxBand = (ctx && ctx.gradeBand) || 'high';");
+    expect(text).toContain('_anxGuidance.homeIntro');
+    expect(text).toContain('_anxGuidance.support');
+    expect(text).toContain('is a practical CBT tool for sorting worry.');
+    expect(text).not.toContain('most useful CBT tools for adolescent anxiety');
+  });
 });

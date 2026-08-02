@@ -1,0 +1,23 @@
+module.exports = {
+  chin_falam: {
+    'toasts.building_accessible_docx': 'Word file accessible cu tuah a si tiah…',
+    'toasts.building_accessible_pptx': 'PowerPoint file accessible cu tuah a si tiah…',
+    'toasts.batch_tagging': '📄 ZIP caah tagged PDF pawl a siam lai — scan file cu rei deuh a herh (OCR cu file tin ah a tuah)…',
+    'toasts.builder_edits_preserved': '✋ Na kut in na thlaihmi cu khumh a si — preview cu thil thar in a siam lo. Export lole builder khar, cui hnuah settings thlaih.',
+    'toasts.builder_edits_synced': '✏️ Builder thlaihmi cu remediated document ah khumh a si — Tagged PDF / Word / PowerPoint export pawl ah an tel.',
+    'toasts.pptx_ai_theme': '🎨 Topic he a remi palette caah AI cu ka zohter lai (readability cu hi hmun ah kilven)…',
+    'toasts.make_accessible_fixing': '✨ Audit a dih — a te ah remediation a tuah lai (click pakhat hman a herh lo)…',
+    'toasts.tagged_pdf_saved_see_report': '📄 Tagged PDF khumh a si — report pumpak cu download button cungah a um (✕ in khar).',
+    'toasts.no_open_image_slot': 'Preview ah image slot a awhmi a um nawn lo — thumbnail cu image pakhat ah dir in thlaih.',
+    'toasts.extracted_image_inserted': '🖼 Image slot a awhmi pakhatnak ah chiah a si — hmun dang na duh ah thumbnail dir.',
+    'toasts.html_downloaded': '🌐 HTML download a si — browser tin ah na hman thei.',
+    'toasts.odt_downloaded': '📄 OpenDocument (.odt) download a si — LibreOffice, Google Docs, lole Word ah na hman thei.',
+    'toasts.daisy_downloaded': '🔊 DAISY talking-book package (.zip) download a si — DAISY reader ah hman.',
+    'toasts.mo_no_voice': 'Voice service a um lo, cu ruangah read-along audio cu tuah theih a si lo.',
+    'toasts.mo_busy': 'Read-along export pakhat cu tuah lai.',
+    'toasts.mo_no_text': 'Narrate ding caah a si thei mi readable text an hmuh lo.',
+    'toasts.mo_no_audio': '⚠ Read-along ebook khumh a si, asinain audio tuah theih a si lo (voice service a um lo). Text le sync structure cu a um lai.',
+    'toasts.mo_done': 'Read-along ebook download a si',
+    'toasts.audio_unavailable_now': 'Audio tu cu a um lo (job pakhat a tuah lai lole voice service cu off a si).',
+  },
+};

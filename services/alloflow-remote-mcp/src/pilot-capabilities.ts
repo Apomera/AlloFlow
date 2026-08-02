@@ -108,7 +108,7 @@ export function getRemoteCapabilities(env: PilotEnv): RemoteCapabilities {
         "The institution document path is configured but synthetic-only. When manually accepted, PDFs use private object storage and the remediation container sends document-derived content to the institution-approved Gemini project.",
       nextMilestone:
         readiness.accepted
-          ? "Synthetic pilot tools are enabled with bounded standard/thorough remediation and privacy-safe reports. Package an independently licensed offline PDF/UA validator before claiming PDF/UA conformance."
+          ? "Synthetic pilot tools are enabled with bounded standard/thorough remediation, privacy-safe reports, and packaged veraPDF evidence. Treat PDF/UA results as review evidence, not a conformance certificate."
           : `Complete synthetic staging acceptance, then set PILOT_ACCEPTANCE_VERSION=${REQUIRED_PILOT_ACCEPTANCE_VERSION}. This does not authorize real documents.`,
       note:
         "Configured means required bindings and values passed local validation; it is not an operational-health claim. MCP transport remains stateless while application state is durable.",

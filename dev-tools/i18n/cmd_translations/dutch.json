@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio geopend.",
   "cmd.open_video_studio_hint": "Neem walkthroughs op, ondertitel en bewerk ze",
   "palette.ctx.videoStudio": "Hier — Video Studio",
-  "palette.close": "Opdrachtenpalet sluiten"
+  "palette.close": "Opdrachtenpalet sluiten",
+  "cmd.apply_lesson_template": "Begin met een opgeslagen sjabloon",
+  "cmd.apply_lesson_template_done": "Gestart vanuit ",
+  "cmd.apply_lesson_template_hint": "Start een nieuw plan vanuit een van je opgeslagen sjablonen",
+  "cmd.apply_lesson_template_missing": "Ik kan geen sjabloon vinden met de naam ",
+  "cmd.apply_lesson_template_which": "Welk sjabloon?",
+  "cmd.rebuild_lesson_step": "Een stap van het plan opnieuw opbouwen",
+  "cmd.rebuild_lesson_step_done": "Stap wordt opnieuw opgebouwd: ",
+  "cmd.rebuild_lesson_step_hint": "Genereert één resource opnieuw — zeg welk stapnummer",
+  "cmd.rebuild_lesson_step_missing": "Ik kan die stap niet vinden in het plan.",
+  "cmd.rebuild_lesson_step_none": "het plan heeft nog geen stappen.",
+  "cmd.rebuild_lesson_step_which": "Welke stap?",
+  "cmd.run_lesson_blueprint": "Lesplan genereren",
+  "cmd.run_lesson_blueprint_done": "Bezig met het plan — je kunt elke stap op de kaart volgen.",
+  "cmd.run_lesson_blueprint_hint": "Genereert alle resources in het huidige plan",
+  "cmd.cancelled": "Annulering aangevraagd. De huidige bewerking stopt zodra de provider dit ondersteunt."
 }

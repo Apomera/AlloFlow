@@ -10,6 +10,29 @@ The `alloflow-remediation` connector runs AlloFlow's real remediation pipeline
 and an **honesty-gated verdict** — the pipeline is deliberately conservative
 about what it claims, and you must be too.
 
+## Inspect capabilities before choosing a path
+
+Call `remediation_capabilities` before opening a document. Follow
+`onboarding` when `actionRequired` is true, then classify the intended tool
+through `dataHandling`:
+
+- `offlineToolNames` make no external network request.
+- `publicDependencyDownloadToolNames` fetch Chromium or pinned exporter
+  libraries without intentionally including document content.
+- `geminiDocumentEgressToolNames` send the document or derived content to
+  Gemini under the user's key.
+
+A false `fullAiPipelineReady` does not make the connector unusable. Use its
+keyless tools when they satisfy the request. For full semantic remediation,
+use the Gemini-powered job flow only when the user has an appropriate key and
+is authorized to send that document to Gemini.
+
+Use `$alloflow-portable-remediation` when the document exists only as an
+attachment in the active file sandbox, no usable local path is available to
+the connector, or the user explicitly wants the portable no-key rebuild. That
+is a fallback for a different execution boundary, not a reason to bypass an
+installed connector's local tools.
+
 ## Golden rules
 
 1. **Never overstate the result.** Relay the verdict tier and its cautions
@@ -30,17 +53,22 @@ about what it claims, and you must be too.
 
 ## Standard flow
 
-1. `remediation_capabilities` — confirm `ready: true`. If `geminiKeyPresent`
-   is false, stop and tell the user how to set `GEMINI_API_KEY` (free key at
-   aistudio.google.com; note it is NOT covered by a school's Workspace DPA —
-   they should avoid student-identifiable documents on a personal key).
+1. `remediation_capabilities`: follow `onboarding`, then inspect
+   `dataHandling` and `keylessToolNames`. If setup is required, call
+   `remediation_setup` once. Treat `keyless-ready` as usable. Mention a
+   Gemini key only when the requested operation is listed in
+   `geminiDocumentEgressToolNames`; a personal key may not be covered by an
+   institution's agreements, so avoid student-identifiable data unless the
+   user confirms an authorized processing arrangement.
 2. Optional but cheap context: `pdf_audit` (1–3 min) for the before-score and
    issue list. Skip it if the user already asked for remediation — the
    remediation run audits internally anyway.
 3. `pdf_remediate_start` with the file path. Defaults are right for most
-   documents (target 95, 2 fix passes, tagged PDF on). Set `ocr_language`
-   (Tesseract code, e.g. `spa`) only when the user says the scan is in a
-   specific non-English language. Add `auto_continue: true` when the user
+   documents (target 95, 2 fix passes, tagged PDF on). Set `ocr_language` only
+   when the user identifies the language. Use the schema's lower-case ISO/BCP-47
+   value (for example `es`, `fr`, or `zh-hant`), never a legacy Tesseract code
+   such as `spa` or a compound value such as `eng+spa`. Add
+   `auto_continue: true` when the user
    wants the strongest result and accepts extra time/quota — it runs the
    app's own improvement loop (same canonical round merge) after the primary
    pass; report `autoContinue.roundsRun` and any reverted rounds from its log.

@@ -35479,41 +35479,79 @@ window.SelHub = window.SelHub || {
         { id: 'zone_history', label: '\uD83C\uDF21\uFE0F Heatmap' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Zones of Regulation tabs',
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: hc ? '2px solid #ffff00' : '1px solid #334155', background: hc ? '#000000' : undefined, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+      function selectZonesTab(tabId) {
+        var next = tabs.filter(function(item) { return item.id === tabId; })[0];
+        if (!next) return;
+        upd('activeTab', next.id);
+        if (soundEnabled) sfxClick();
+        announceToSR('Switched to ' + next.id + ' tab');
+      }
+
+      var tabBar = h('div', {
+        style: { display: 'flex', alignItems: 'stretch', gap: 2, padding: '10px 12px', borderBottom: hc ? '2px solid #ffff00' : '1px solid #334155', background: hc ? '#000000' : undefined, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(tab) {
-          var isActive = activeTab === tab.id;
-          return h('button', { 'aria-label': tab.label,
-            key: tab.id,
-            role: 'tab', 'aria-selected': isActive,
-            onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); announceToSR('Switched to ' + tab.id + ' tab'); },
-            style: {
-              padding: '7px 12px', borderRadius: 8, border: hc ? (isActive ? '2px solid #ffff00' : '1px solid #ffff00') : 'none', cursor: 'pointer',
-              background: isActive ? (hc ? '#000000' : '#7c3aed') : 'transparent',
-              color: hc ? '#ffff00' : (isActive ? '#fff' : _zoFg('#94a3b8')),
-              fontWeight: isActive ? 700 : 500, fontSize: 12,
-              whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
-            }
-          }, tab.label);
-        }),
-        // Sound toggle
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
-          onClick: function() { upd('soundEnabled', !soundEnabled); },
+        h('div', {
+          role: 'tablist', 'aria-label': 'Zones of Regulation tabs',
+          style: { display: 'flex', gap: 2, minWidth: 'max-content' }
+        },
+          tabs.map(function(tab) {
+            var isActive = activeTab === tab.id;
+            return h('button', {
+              'aria-label': tab.label,
+              key: tab.id,
+              id: 'zones-tab-' + tab.id,
+              'data-zones-tab': tab.id,
+              role: 'tab',
+              'aria-selected': isActive,
+              'aria-controls': 'zones-tab-panel',
+              tabIndex: isActive ? 0 : -1,
+              onClick: function() { selectZonesTab(tab.id); },
+              onKeyDown: function(e) {
+                var currentIndex = tabs.indexOf(tab);
+                var nextIndex = currentIndex;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                var nextTab = tabs[nextIndex];
+                selectZonesTab(nextTab.id);
+                setTimeout(function() {
+                  var target = document.querySelector('[data-zones-tab="' + nextTab.id + '"]');
+                  if (target) target.focus();
+                }, 0);
+              },
+              style: {
+                padding: '7px 12px', borderRadius: 8, border: hc ? (isActive ? '2px solid #ffff00' : '1px solid #ffff00') : 'none', cursor: 'pointer',
+                background: isActive ? (hc ? '#000000' : '#7c3aed') : 'transparent',
+                color: hc ? '#ffff00' : (isActive ? '#fff' : _zoFg('#94a3b8')),
+                fontWeight: isActive ? 700 : 500, fontSize: 12,
+                whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
+              }
+            }, tab.label);
+          })
+        ),
+        h('button', {
+          'aria-label': soundEnabled ? 'Mute sounds' : 'Unmute sounds',
+          'aria-pressed': soundEnabled,
+          onClick: function() {
+            var nextSound = !soundEnabled;
+            upd('soundEnabled', nextSound);
+            announceToSR(nextSound ? 'Sounds enabled' : 'Sounds muted');
+          },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', alignSelf: 'center', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        // Badges button
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
+        h('button', {
+          'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + BADGES.length + ')',
+          'aria-pressed': showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
-
-      // ══════════════════════════════════════════════════════════
-      // ── Topic-accent hero band per tab ──
-      // ══════════════════════════════════════════════════════════
+      // Topic-accent hero band per tab
       var heroBand = (function() {
         var TAB_META = {
           checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDEA6', title: 'Check-In \u2014 which zone right now?',                  hint: 'Kuypers\u2019 Zones of Regulation (2011): blue (low energy), green (calm + ready), yellow (alert + frustrated), red (overwhelm). Naming the zone IS the first regulation move \u2014 amygdala calms when prefrontal labels.' },
@@ -35582,7 +35620,7 @@ window.SelHub = window.SelHub || {
 
       function zoneLaunchCard(title, blurb, actionLabel, tabId, color) {
         return h('button', {
-          onClick: function() { upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
+          onClick: function() { selectZonesTab(tabId); },
           'aria-label': actionLabel + ': ' + title,
           style: {
             minHeight: 124,
@@ -38320,31 +38358,33 @@ if (activeTab === 'parent') {
         reCheckBanner,
         tabBar,
         heroBand,
-        zoneCommandPanel(),
-        badgePopup,
-        checkinContent,
-        exploreContent,
-        breatheContent,
-        bodyContent,
-        scenarioContent,
-        toolboxContent,
-        historyContent,
-        zoneWheelContent,
-        checkinFlowContent,
-        bodyMapperContent,
-        sorterContent,
-        zoneHistoryContent,
-        strategyMatcherContent,
-        zoneQuizContent,
-        coregulationContent,
-        compassContent,
-        pulseContent,
-        descriptorsContent,
-        triggersContent,
-        plansContent,
-        classroomContent,
-        parentContent,
-        limitsContent
+        h('div', { id: 'zones-tab-panel', role: 'tabpanel', 'aria-labelledby': 'zones-tab-' + activeTab },
+          zoneCommandPanel(),
+          badgePopup,
+          checkinContent,
+          exploreContent,
+          breatheContent,
+          bodyContent,
+          scenarioContent,
+          toolboxContent,
+          historyContent,
+          zoneWheelContent,
+          checkinFlowContent,
+          bodyMapperContent,
+          sorterContent,
+          zoneHistoryContent,
+          strategyMatcherContent,
+          zoneQuizContent,
+          coregulationContent,
+          compassContent,
+          pulseContent,
+          descriptorsContent,
+          triggersContent,
+          plansContent,
+          classroomContent,
+          parentContent,
+          limitsContent
+        )
       );
     }
   });

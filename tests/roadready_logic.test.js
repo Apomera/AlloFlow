@@ -305,6 +305,121 @@ describe('physical road layouts', () => {
   });
 
 
+  it('builds the Free Explore road mode selected by the learner', () => {
+    for (const roadType of ['residential', 'suburban', 'rural']) {
+      const world = RR.createFreeExploreWorld(991, roadType);
+      expect(world.mode).toBe('freeExplore');
+      expect(world.roadType).toBe(roadType);
+      for (const ci of [-1, 0, 1]) expect(world.getChunk(ci).biome).toBe(roadType);
+    }
+
+    const highway = RR.createFreeExploreWorld(991, 'highway');
+    expect(highway.getChunk(0).isHighway).toBe(true);
+    expect(highway.getChunk(0).physicalMedianBarrier).toBe(true);
+    expect(RR.worldPostedLimitMph(highway, highway.getChunk(0), 25, 8)).toBe(65);
+    expect(RR.createFreeExploreWorld(991, 'roundabout')).toBe(null);
+  });
+
+  it('aligns streamed traffic and cyclists to local authored lanes', () => {
+    const heading = 0.32;
+    const chunk = { biome: 'suburban', roadHalfWidth: 6.5, shoulderWidth: 0.6,
+      lanesPerDirection: 2 };
+    const spline = { centerAt: () => 48, headingAt: () => heading, heightAt: () => 0 };
+    const world = { spline, getChunk: () => chunk };
+    const traffic = [{ x: 10, y: 12, heading: Math.PI / 2, laneOffset: -1.5 }];
+    RR.alignTrafficToStreamedWorld(world, traffic);
+    expect(traffic[0].laneOffset).toBeCloseTo(-1.55, 8);
+    expect(traffic[0].x).toBeCloseTo(46.45, 8);
+    expect(traffic[0].heading).toBeCloseTo(Math.PI / 2 - heading, 8);
+
+    const cyclists = [{ x: 0, y: 12, heading: -Math.PI / 2, type: 'cyclist' }];
+    RR.alignCyclistsToStreamedWorld(world, cyclists);
+    expect(cyclists[0]._bikeLane).toBeCloseTo(5.8, 8);
+    expect(cyclists[0].x).toBeCloseTo(53.8, 8);
+  });
+
+  it('changes Free Explore traffic density without resetting nearby or cross-street actors', () => {
+    const chunk = { biome: 'suburban', roadHalfWidth: 6.5, shoulderWidth: 0.6,
+      lanesPerDirection: 2 };
+    const spline = { centerAt: y => 48 + Math.sin(y * 0.01), headingAt: () => 0.15,
+      heightAt: () => 0 };
+    const world = { spline, getChunk: () => chunk };
+    const player = { x: 46.45, y: 50 };
+    const nearby = { id: 'near', x: 46.45, y: 64, heading: Math.PI / 2,
+      laneOffset: -1.55, speed: 9, _intent: 'continue' };
+    const farA = { id: 'far-a', x: 46.45, y: 140, heading: Math.PI / 2,
+      laneOffset: -1.55, speed: 10 };
+    const farB = { id: 'far-b', x: 49.55, y: -60, heading: -Math.PI / 2,
+      laneOffset: 1.55, speed: 8 };
+    const cross = { id: 'cross', x: 20, y: 80, heading: 0, speed: 6,
+      crossStreet: true, _chunk: 2 };
+    const reduced = RR.reconcileFreeExploreTrafficPopulation(world,
+      [nearby, farA, farB, cross], { id: 'free_explore', traffic: 'heavy', speedLimit: 35 },
+      'light', player, () => 0.5);
+
+    expect(RR.trafficCountForLevel('light')).toBe(2);
+    expect(RR.trafficCountForLevel('medium')).toBe(4);
+    expect(RR.trafficCountForLevel('heavy')).toBe(7);
+    expect(reduced).toContain(nearby);
+    expect(reduced).toContain(cross);
+    expect(nearby).toMatchObject({ speed: 9, _intent: 'continue' });
+    expect(reduced.filter(v => !v.crossStreet)).toHaveLength(2);
+
+    const grown = RR.reconcileFreeExploreTrafficPopulation(world, reduced,
+      { id: 'free_explore', traffic: 'light', speedLimit: 35 }, 'medium', player, () => 0.5);
+    expect(grown).toContain(nearby);
+    expect(grown).toContain(cross);
+    expect(grown.filter(v => !v.crossStreet)).toHaveLength(4);
+    for (const vehicle of grown.filter(v => !v.crossStreet && v !== nearby && v !== farA && v !== farB)) {
+      expect(Math.hypot(vehicle.x - player.x, vehicle.y - player.y)).toBeGreaterThanOrEqual(24);
+      const expectedCenter = spline.centerAt(vehicle.y);
+      expect(vehicle.x).toBeCloseTo(expectedCenter + vehicle.laneOffset, 6);
+    }
+  });
+
+  it('leaves bounded roundabout traffic unchanged when density controls are unavailable', () => {
+    const traffic = [{ id: 'circle', _roundaboutState: { inCircle: true }, x: 48, y: 48 }];
+    expect(RR.reconcileFreeExploreTrafficPopulation(null, traffic,
+      { id: 'roundabout' }, 'heavy', { x: 48, y: 20 }, () => 0.5)).toBe(traffic);
+  });
+
+  it('uses each streamed chunk profile for road physics, controls, and pedestrians', () => {
+    const spline = { centerAt: () => 48, headingAt: () => 0, heightAt: () => 0 };
+    const wideChunk = { index: 0, biome: 'commercial', roadHalfWidth: 4.5,
+      shoulderWidth: 0.6, lanesPerDirection: 1, pedestrianCount: 4,
+      hasIntersection: true, intersectionY: 16 };
+    const world = { seed: 22, profile: null, spline, getChunk: () => wideChunk };
+
+    expect(RR.roadProfileAt(world, 12, null)).toBe(wideChunk);
+    expect(RR.roadSurfacePoseAt(world, 52, 12).height).toBeCloseTo(0.01, 6);
+    const approach = RR.playerControlApproach(world,
+      { x: 48, y: 16, type: 'light' },
+      { x: 53, y: 10, heading: Math.PI / 2 }, 4.5);
+    expect(approach.sameRoad).toBe(true);
+
+    expect(RR.pedestrianCountForRoad({ biome: 'commercial' })).toBe(4);
+    expect(RR.pedestrianCountForRoad({ biome: 'rural' })).toBe(0);
+    expect(RR.spawnStreamedPedestrians({ id: 'freeExplore' }, world, wideChunk, 0)).toHaveLength(4);
+  });
+
+  it('places physical guardrails by curvature rather than compass heading', () => {
+    const straightDiagonal = { headingAt: () => 0.45 };
+    expect(RR.signedRoadCurvatureAt(straightDiagonal, 10)).toBe(0);
+    expect(RR.guardrailSideForRoad(straightDiagonal, 10)).toBe(0);
+
+    const rightBend = { headingAt: (y) => y * 0.04 };
+    const leftBend = { headingAt: (y) => -y * 0.04 };
+    expect(RR.guardrailSideForRoad(rightBend, 10)).toBe(-1);
+    expect(RR.guardrailSideForRoad(leftBend, 10)).toBe(1);
+
+    const spline = { centerAt: () => 48, headingAt: (y) => y * 0.04, heightAt: () => 0 };
+    const profile = { biome: 'rural', roadHalfWidth: 3.5, shoulderWidth: 0.6,
+      intersectionEvery: 0, signalType: null, noLandmarks: true };
+    const chunk = RR.generateChunk(1, 8123, 48, spline, { profile });
+    expect(chunk.cells.some((row) => row.includes(9))).toBe(true);
+    expect(RR.isStaticObstacleCell(9)).toBe(true);
+  });
+
   it('uses longitudinal road gaps for following and rejects adjacent or oncoming cars', () => {
     const heading = 0.55;
     const spline = {
@@ -1333,6 +1448,27 @@ describe('continuous scripted worlds', () => {
       const row = chunk.cells[Math.floor(RR.CHUNK_SIZE / 2)];
       expect(row[Math.round(chunk.roadCenters[Math.floor(RR.CHUNK_SIZE / 2)])]).toBe(6);
     }
+  });
+
+  it('applies a local 15 mph school zone to player and traffic position queries', () => {
+    const schoolType = { id: 'school', contextRule: 'school_zone_15mph' };
+    const chunks = {
+      3: { index: 3, biome: 'residential', landmark: { centerY: 28, type: schoolType } },
+      4: { index: 4, biome: 'residential' },
+    };
+    const world = {
+      mode: 'freeExplore',
+      getChunk: (ci) => chunks[ci] || { index: ci, biome: 'residential' },
+    };
+    const schoolY = 3 * RR.CHUNK_SIZE + 28;
+
+    expect(RR.worldPostedLimitMph(world, chunks[3], 25, schoolY)).toBe(15);
+    expect(RR.worldPostedLimitMph(world, chunks[4], 25, schoolY + RR.SCHOOL_ZONE_RADIUS_WORLD)).toBe(15);
+    expect(RR.worldPostedLimitMph(world, chunks[4], 25, schoolY + RR.SCHOOL_ZONE_RADIUS_WORLD + 0.01)).toBe(25);
+    expect(RR.worldPostedLimitMph(world, chunks[3], 25)).toBe(25);
+
+    const authored = { mode: 'scenario', postedLimitMph: 35, getChunk: world.getChunk };
+    expect(RR.worldPostedLimitMph(authored, chunks[3], 25, schoolY)).toBe(35);
   });
 
   it('uses deterministic scenario-specific controls and school landmarks', () => {

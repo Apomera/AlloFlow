@@ -126,7 +126,19 @@ for (const file of pages) {
         /Audio never hits cloud/i,
         /Google injects key/i,
         /1,500 Flash requests/i,
-        /\$23\.5K/i
+        /\$23\.5K/i,
+        /MIT-licensed/i,
+        /Student data should never/i,
+        /Zero-Knowledge Architecture/i,
+        /WCAG 2\.1 AA/i,
+        /Interactive parity offline/i,
+        /You only need a Google account/i,
+        /No-Profit, Pro-Teacher/i,
+        /MIT License Badge/i,
+        /Forever Free/i,
+        /Cost to educators/i,
+        /same license as Linux/i,
+        /No vendor lock-in/i
     ];
     banned.forEach(function (pattern) {
         if (pattern.test(html)) fail(file, 'stale or absolute promotional claim: ' + pattern);
@@ -149,8 +161,9 @@ while ((match = markdownLink.exec(readme))) {
     const target = match[1].replace(/^<|>$/g, '');
     if (!localTargetExists('README.md', target)) fail('README.md', 'broken local link: ' + target);
 }
-if (!/122 plugin files \/ 123 registered IDs/i.test(readme)) fail('README.md', 'developer inventory does not show current STEM counts');
-if (!/built toward \*\*WCAG 2\.1 AA\*\*/i.test(readme)) fail('README.md', 'accessibility posture should remain qualified');
+if (!/STEM Lab \(\d+ Plugin Files \/ \d+ Registered Tool IDs\)/i.test(readme)) fail('README.md', 'developer inventory does not show a STEM file/registration summary');
+if (!/built toward \*\*WCAG 2\.2 AA\*\*/i.test(readme)) fail('README.md', 'accessibility posture should remain qualified');
+if (!/a11y-audit\/WCAG-2\.2-current-audit\.md/i.test(readme)) fail('README.md', 'README should link the current limited-scope WCAG 2.2 audit');
 if (/every game and tool accessible/i.test(readme)) fail('README.md', 'contains an unverified universal keyboard claim');
 if (/\\u[0-9a-f]{4}/i.test(readme)) fail('README.md', 'contains a literal Unicode escape sequence');
 
@@ -165,9 +178,20 @@ try {
     const stemFiles = fs.readdirSync(path.join(root, 'stem_lab')).filter(function (name) {
         return /^stem_tool_.*\.js$/i.test(name);
     }).length;
-    if (!stem || Number(stem[1]) !== 123) fail('registry', 'expected 123 STEM registrations');
-    if (!sel || Number(sel[1]) !== 70) fail('registry', 'expected 70 SEL registrations');
-    if (stemFiles !== 122) fail('registry', 'expected 122 STEM plugin files, found ' + stemFiles);
+    if (!stem || !sel) {
+        fail('registry', 'registry output did not include STEM and SEL counts');
+    } else {
+        const stemCount = Number(stem[1]);
+        const selCount = Number(sel[1]);
+        if (!Number.isInteger(stemCount) || stemCount < 1) fail('registry', 'invalid STEM registration count');
+        if (!Number.isInteger(selCount) || selCount < 1) fail('registry', 'invalid SEL registration count');
+        if (!Number.isInteger(stemFiles) || stemFiles < 1) fail('registry', 'invalid STEM plugin-file count');
+        const readmeHasCurrentFiles = new RegExp('\\b' + stemFiles + '\\b[\\s\\S]{0,100}(?:plugin files|stem_tool)', 'i').test(readme);
+        const readmeHasCurrentRegistrations = new RegExp('\\b' + stemCount + '\\b[\\s\\S]{0,100}(?:registered STEM|STEM tool registrations)', 'i').test(readme);
+        if (!readmeHasCurrentFiles || !readmeHasCurrentRegistrations) {
+            fail('README.md', 'developer inventory does not show current STEM counts (' + stemFiles + ' files / ' + stemCount + ' registrations)');
+        }
+    }
 } catch (error) {
     fail('registry', 'registry check failed: ' + error.message);
 }

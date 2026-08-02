@@ -1,0 +1,23 @@
+module.exports = {
+  lao: {
+    'toasts.building_accessible_docx': 'ກຳລັງສ້າງໄຟລ໌ Word ທີ່ເຂົ້າເຖິງໄດ້…',
+    'toasts.building_accessible_pptx': 'ກຳລັງສ້າງໄຟລ໌ PowerPoint ທີ່ເຂົ້າເຖິງໄດ້…',
+    'toasts.batch_tagging': '📄 ກຳລັງສ້າງ PDF ທີ່ມີ tag ສຳລັບ ZIP — ໄຟລ໌ທີ່ສະແກນໃຊ້ເວລາດົນກວ່າ (OCR ເຮັດຕໍ່ໄຟລ໌)…',
+    'toasts.builder_edits_preserved': '✋ ເກັບການແກ້ໄຂດ້ວຍມືຂອງທ່ານໄວ້ — ບໍ່ໄດ້ສ້າງ preview ໃໝ່. Export ຫຼືປິດ builder ເພື່ອບັນທຶກ ແລ້ວຈຶ່ງປ່ຽນ settings.',
+    'toasts.builder_edits_synced': '✏️ ບັນທຶກການແກ້ໄຂຂອງ builder ໃນເອກະສານທີ່ແກ້ໄຂແລ້ວ — Tagged PDF / Word / PowerPoint export ມີການແກ້ໄຂແລ້ວ.',
+    'toasts.pptx_ai_theme': '🎨 ກຳລັງຖາມ AI ເພື່ອເລືອກ palette ທີ່ເໝາະກັບຫົວຂໍ້ (ຄວາມອ່ານງ່າຍຖືກຄວບຄຸມຢູ່ນີ້)…',
+    'toasts.make_accessible_fixing': '✨ ກວດສອບສຳເລັດ — ກຳລັງແກ້ໄຂອັດຕະໂນມັດ (ບໍ່ຕ້ອງຄລິກ)…',
+    'toasts.tagged_pdf_saved_see_report': '📄 ບັນທຶກ Tagged PDF ແລ້ວ — report ເຕັມຢູ່ເທິງປຸ່ມ download (✕ ເພື່ອປິດ).',
+    'toasts.no_open_image_slot': 'ບໍ່ມີ image slot ທີ່ເປີດຢູ່ໃນ preview ແລ້ວ — ລາກ thumbnail ໃສ່ image ເພື່ອປ່ຽນແທນ.',
+    'toasts.extracted_image_inserted': '🖼 ໃສ່ໃນ image slot ທີ່ເປີດອັນທຳອິດແລ້ວ — ລາກ thumbnail ຖ້າຕ້ອງການບ່ອນອື່ນ.',
+    'toasts.html_downloaded': '🌐 ດາວໂຫຼດ HTML ແລ້ວ — ເປີດໄດ້ໃນ browser ໃດກໍໄດ້.',
+    'toasts.odt_downloaded': '📄 ດາວໂຫຼດ OpenDocument (.odt) ແລ້ວ — ເປີດໄດ້ໃນ LibreOffice, Google Docs ຫຼື Word.',
+    'toasts.daisy_downloaded': '🔊 ດາວໂຫຼດ DAISY talking-book package (.zip) ແລ້ວ — ເປີດໃນ DAISY reader.',
+    'toasts.mo_no_voice': 'ບໍລິການສຽງບໍ່ພ້ອມ, ຈຶ່ງສ້າງ read-along audio ບໍ່ໄດ້ໃນຕອນນີ້.',
+    'toasts.mo_busy': 'ການ export read-along ກຳລັງເຮັດຢູ່ແລ້ວ.',
+    'toasts.mo_no_text': 'ບໍ່ພົບຂໍ້ຄວາມທີ່ອ່ານໄດ້ເພື່ອບັນຍາຍ.',
+    'toasts.mo_no_audio': '⚠ ບັນທຶກ read-along ebook ແລ້ວ ແຕ່ສ້າງ audio ບໍ່ໄດ້ (ບໍລິການສຽງບໍ່ພ້ອມ). Text ແລະ sync structure ຍັງຄົງຢູ່.',
+    'toasts.mo_done': 'ດາວໂຫຼດ read-along ebook ແລ້ວ',
+    'toasts.audio_unavailable_now': 'ຕອນນີ້ audio ບໍ່ພ້ອມ (ອາດມີ job ກຳລັງເຮັດ ຫຼືບໍລິການສຽງປິດຢູ່).',
+  },
+};

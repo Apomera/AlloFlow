@@ -122,7 +122,7 @@ describe('Submission Inbox -> AlloSheet aggregate privacy boundary', () => {
       source: {
         tool: 'submission-inbox',
         label: 'Submission Inbox saved gradebook',
-        version: '1',
+        version: '2',
       },
       title: 'Submission Inbox saved-grade summaries',
       createdAt,
@@ -148,7 +148,18 @@ describe('Submission Inbox -> AlloSheet aggregate privacy boundary', () => {
     expect(artifact.tables[0].columns).toEqual([
       column('assignment_code', 'Assignment code', 'category'),
       column('teacher_saved_submission_count', 'Teacher-saved submissions', 'number'),
-      column('unique_class_nickname_count', 'Unique saved class nicknames', 'number'),
+      column('unique_class_nickname_count', 'Unique saved learner groups', 'number'),
+      column('stable_assignment_identity_submission_count', 'Submissions with stable assignment identity', 'number'),
+      column('legacy_assignment_identity_submission_count', 'Submissions using legacy assignment grouping', 'number'),
+      column('stable_learner_identity_submission_count', 'Submissions with stable learner identity', 'number'),
+      column('unresolved_or_legacy_learner_submission_count', 'Submissions with unresolved or legacy learner identity', 'number'),
+      column('human_reviewed_submission_count', 'Human-reviewed submissions', 'number'),
+      column('pending_review_submission_count', 'Submissions pending human review', 'number'),
+      column('review_sample_status', 'Review sample status', 'category'),
+      column('due_date_status', 'Due-date status', 'category'),
+      column('on_time_submission_count', 'On-time submissions', 'number'),
+      column('late_submission_count', 'Late submissions', 'number'),
+      column('unknown_due_date_submission_count', 'Submissions with unknown due date', 'number'),
       column('submissions_with_saved_rubric', 'Submissions with a saved rubric', 'number'),
       column('submissions_without_saved_rubric', 'Submissions without a saved rubric', 'number'),
       column('first_submitted_date', 'First submitted date', 'date'),
@@ -189,23 +200,45 @@ describe('Submission Inbox -> AlloSheet aggregate privacy boundary', () => {
         assignment_code: 'A001',
         teacher_saved_submission_count: 20,
         unique_class_nickname_count: 20,
+        stable_assignment_identity_submission_count: 0,
+        legacy_assignment_identity_submission_count: 20,
+        stable_learner_identity_submission_count: 0,
+        unresolved_or_legacy_learner_submission_count: 20,
+        human_reviewed_submission_count: 0,
+        pending_review_submission_count: 20,
+        review_sample_status: 'available',
+        due_date_status: 'not_provided',
+        on_time_submission_count: null,
+        late_submission_count: null,
+        unknown_due_date_submission_count: null,
         submissions_with_saved_rubric: 10,
         submissions_without_saved_rubric: 10,
         first_submitted_date: '2026-07-01',
         last_submitted_date: '2026-07-20',
         last_saved_date: '2026-07-20',
-        saved_record_status: 'teacher_saved_not_review_attested',
+        saved_record_status: 'not_review_attested',
       },
       {
         assignment_code: 'A002',
         teacher_saved_submission_count: 5,
         unique_class_nickname_count: 5,
+        stable_assignment_identity_submission_count: 0,
+        legacy_assignment_identity_submission_count: 5,
+        stable_learner_identity_submission_count: 0,
+        unresolved_or_legacy_learner_submission_count: 5,
+        human_reviewed_submission_count: 0,
+        pending_review_submission_count: 5,
+        review_sample_status: 'available',
+        due_date_status: 'not_provided',
+        on_time_submission_count: null,
+        late_submission_count: null,
+        unknown_due_date_submission_count: null,
         submissions_with_saved_rubric: 0,
         submissions_without_saved_rubric: 5,
         first_submitted_date: '2026-07-21',
         last_submitted_date: '2026-07-25',
         last_saved_date: '2026-07-25',
-        saved_record_status: 'teacher_saved_not_review_attested',
+        saved_record_status: 'not_review_attested',
       },
     ]);
     expect(artifact.tables[1]).toMatchObject({
@@ -507,23 +540,45 @@ describe('Submission Inbox -> AlloSheet aggregate privacy boundary', () => {
         assignment_code: 'A001',
         teacher_saved_submission_count: 1,
         unique_class_nickname_count: 1,
+        stable_assignment_identity_submission_count: 0,
+        legacy_assignment_identity_submission_count: 1,
+        stable_learner_identity_submission_count: 0,
+        unresolved_or_legacy_learner_submission_count: 1,
+        human_reviewed_submission_count: null,
+        pending_review_submission_count: null,
+        review_sample_status: 'suppressed_small_groups',
+        due_date_status: 'not_provided',
+        on_time_submission_count: null,
+        late_submission_count: null,
+        unknown_due_date_submission_count: null,
         submissions_with_saved_rubric: 1,
         submissions_without_saved_rubric: 0,
         first_submitted_date: '',
         last_submitted_date: '',
         last_saved_date: '2026-07-20',
-        saved_record_status: 'teacher_saved_not_review_attested',
+        saved_record_status: 'review_state_suppressed',
       },
       {
         assignment_code: 'A002',
         teacher_saved_submission_count: 1,
         unique_class_nickname_count: 1,
+        stable_assignment_identity_submission_count: 0,
+        legacy_assignment_identity_submission_count: 1,
+        stable_learner_identity_submission_count: 0,
+        unresolved_or_legacy_learner_submission_count: 1,
+        human_reviewed_submission_count: null,
+        pending_review_submission_count: null,
+        review_sample_status: 'suppressed_small_groups',
+        due_date_status: 'not_provided',
+        on_time_submission_count: null,
+        late_submission_count: null,
+        unknown_due_date_submission_count: null,
         submissions_with_saved_rubric: 1,
         submissions_without_saved_rubric: 0,
         first_submitted_date: '2024-02-29',
         last_submitted_date: '2024-02-29',
         last_saved_date: '2024-02-29',
-        saved_record_status: 'teacher_saved_not_review_attested',
+        saved_record_status: 'review_state_suppressed',
       },
     ]);
     expect(artifact.provenance).toMatchObject({
@@ -913,6 +968,75 @@ describe('Submission Inbox -> AlloSheet aggregate privacy boundary', () => {
       assignmentKeys: [],
     })).toThrow(/at least one saved assignment summary/i);
   });
+
+  it('uses stable identities across title and nickname changes and reports privacy-safe review coverage', () => {
+    const classId = 'SECRET_STABLE_CLASS_ID_Z9';
+    const assignmentId = 'SECRET_STABLE_ASSIGNMENT_ID_Z9';
+    const entries = Array.from({ length: 10 }, (_, index) => savedEntry({
+      assignment: index % 2 ? 'SECRET_RENAMED_ASSIGNMENT_Z9' : 'SECRET_ORIGINAL_ASSIGNMENT_Z9',
+      className: 'SECRET_STABLE_CLASS_LABEL_Z9',
+      nickname: index < 5 ? `SECRET_OLD_NICKNAME_Z9_${index}` : `SECRET_NEW_NICKNAME_Z9_${index - 5}`,
+      submittedAt: `2026-07-${String(index + 1).padStart(2, '0')}T10:00:00.000Z`,
+      gradedAt: `2026-07-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`,
+      extra: {
+        identity: {
+          classId,
+          assignmentId,
+          learnerId: `SECRET_STABLE_LEARNER_ID_Z9_${index % 5}`,
+          resolution: 'exact',
+        },
+        review: { state: index < 5 ? 'reviewed' : 'pending' },
+      },
+    }));
+
+    const options = handoff.getAlloSheetOptions(entries, {
+      createdAt,
+      dateRange: 'all',
+      attemptPolicy: 'all-saved',
+    });
+    expect(options.assignmentCount).toBe(1);
+
+    const artifact = handoff.buildAlloSheetEnvelope(entries, {
+      createdAt,
+      dateRange: 'all',
+      attemptPolicy: 'all-saved',
+      datasets: { submissionSummary: true, scoreSummary: false },
+    });
+    expect(artifact.tables[0].rows[0].values).toMatchObject({
+      teacher_saved_submission_count: 10,
+      unique_class_nickname_count: 5,
+      stable_assignment_identity_submission_count: 10,
+      legacy_assignment_identity_submission_count: 0,
+      stable_learner_identity_submission_count: 10,
+      unresolved_or_legacy_learner_submission_count: 0,
+      human_reviewed_submission_count: 5,
+      pending_review_submission_count: 5,
+      review_sample_status: 'available',
+      saved_record_status: 'mixed_review_state',
+    });
+    expect(artifact.provenance).toMatchObject({
+      humanReviewAttestation: false,
+      reviewSemantics: {
+        humanReviewAttestationSupport: true,
+        humanReviewedSavedEntryCount: 5,
+        suppressedReviewSummaryCount: 0,
+      },
+      identitySemantics: {
+        stableLearnerIdentitySupport: true,
+        stableLearnerIdentityEntryCount: 10,
+        learnerGrouping: 'stable-class-and-learner-id',
+        stableAssignmentIdentitySupport: true,
+        stableAssignmentIdentityEntryCount: 10,
+        assignmentGrouping: 'stable-class-and-assignment-id',
+      },
+    });
+    const serialized = JSON.stringify(artifact);
+    expect(serialized).not.toContain(classId);
+    expect(serialized).not.toContain(assignmentId);
+    expect(serialized).not.toContain('SECRET_STABLE_LEARNER_ID_Z9');
+    expect(serialized).not.toContain('SECRET_RENAMED_ASSIGNMENT_Z9');
+  });
+
 });
 
 describe('Submission Inbox -> AlloSheet packaging and host wiring', () => {

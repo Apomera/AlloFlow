@@ -379,6 +379,20 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById(keeperCanvas.getAttribute('aria-describedby'))).toBeTruthy();
     expect(document.getElementById('beehive-canvas-wrap').getAttribute('role')).toBe('tabpanel');
     expect(host.querySelectorAll('[data-beehive-scene-actions="true"] button')).toHaveLength(3);
+    const budget = host.querySelector('[data-action-budget="true"]');
+    expect(budget).toBeTruthy();
+    expect(budget.getAttribute('role')).toBe('status');
+    expect(budget.getAttribute('aria-label')).toContain('3 of 3 action points available');
+    expect(host.querySelectorAll('[data-action-point-state="available"]')).toHaveLength(3);
+    const feed = host.querySelector('[data-management-action="Feed"]');
+    expect(feed.getAttribute('data-management-cost')).toBe('1 AP');
+    expect(feed.getAttribute('aria-label')).toContain('Cost: 1 AP.');
+    expect(host.querySelector('[data-management-cost-badge="Feed"]').textContent).toBe('1 AP');
+    const conservation = host.querySelector('[data-conservation-impact="plant_wildflowers"]');
+    expect(conservation).toBeTruthy();
+    expect(conservation.getAttribute('aria-label')).toContain('Effect: Habitat +10 | Foraging +5.');
+    expect(conservation.getAttribute('data-conservation-ready')).toBe('true');
+    expect(host.querySelector('[data-conservation-preview="plant_wildflowers"]').textContent).toContain('Habitat +10');
 
     await mount({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
     const queenCanvas = host.querySelector('[data-beehive-queen-canvas="true"]');
@@ -424,6 +438,14 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const phase = host.querySelector('[aria-label="Queen RTS phase and cycle status"]');
     expect(phase.getAttribute('role')).toBe('group');
     expect(phase.hasAttribute('aria-live')).toBe(false);
+    const quickCommands = host.querySelectorAll('[data-beehive-battlefield-dock="true"] [data-quick-command]');
+    expect(quickCommands).toHaveLength(3);
+    expect(Array.from(quickCommands).every((button) => (button.getAttribute('aria-label') || '').includes('Effect:'))).toBe(true);
+    expect(host.querySelector('[data-command-preview="scout_rival"]').textContent).toContain('Reveal rival power');
+    const structureCards = host.querySelectorAll('[data-mobile-rail="comb-structures"] [data-structure-ready]');
+    expect(structureCards.length).toBeGreaterThan(0);
+    expect(Array.from(structureCards).every((button) => (button.getAttribute('aria-label') || '').includes('Effect:'))).toBe(true);
+    expect(host.querySelector('[data-structure-preview="guard"]').textContent).toContain('adds guards');
     const scout = host.querySelector('[data-beehive-battlefield-dock="true"] [data-quick-command="scout_rival"]');
     await act(async () => { scout.click(); await Promise.resolve(); });
     const live = document.getElementById('allo-live-beehive');
@@ -554,6 +576,15 @@ describe('Beehive WCAG 2.2 accessibility', () => {
 //     aria-describedby paragraph naming every key, and the flight loop listens at document level.
 describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
   const SRC = source;   // the module source this suite already reads at the top of the file
+
+  it('keeps drone replay moments tied to the maneuver and preserves the first sample', () => {
+    const replay = SRC.slice(SRC.indexOf('function droneReplayChart'));
+    expect(replay).toMatch(/replayIndexValue = droneData\.replayIndex == null/);
+    expect(replay).toMatch(/selectedAction = selectedSample\.action \|\| 'Glide'/);
+    expect(replay).toMatch(/'Control: ' \+ selectedAction/);
+    expect(replay).toMatch(/action: ds\.lastManeuver/);
+    expect(replay).toMatch(/impact: ds\.lastManeuver/);
+  });
 
   it('has no aria-label stranded on a role-less div or span', () => {
     // A container with aria-label and no role has its NAME DROPPED by browsers, so the label is

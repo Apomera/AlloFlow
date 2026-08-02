@@ -121,6 +121,19 @@ const createReadAloudAudioService = (dependencies = {}) => {
         return audio.url || audio.audioUrl || audio.objectUrl || null;
     }
 
+    function audioProvenanceOf(audio) {
+        if (!audio || typeof audio !== 'object') return {};
+        const provenance = audio.provenance && typeof audio.provenance === 'object'
+            ? audio.provenance
+            : {};
+        const out = {};
+        ['provider', 'engine', 'engineVersion', 'model', 'modelVersion'].forEach((key) => {
+            const value = audio[key] != null ? audio[key] : provenance[key];
+            if (value != null && String(value).trim()) out[key] = value;
+        });
+        return out;
+    }
+
     function forResource(configuration = {}) {
         const resourceId = configuration.resourceId == null ? '' : String(configuration.resourceId);
         const resourceType = configuration.resourceType == null ? '' : String(configuration.resourceType);
@@ -269,7 +282,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 segment.fields.synthesisProfile || segment.fields.profile
             );
             if (overrides && typeof overrides === 'object') Object.assign(profile, overrides);
-            ['voice', 'language', 'provider', 'speed', 'synthesisRate', 'directionFingerprint', 'voiceResolverVersion'].forEach((key) => {
+            ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion',
+                'speed', 'synthesisRate', 'directionFingerprint', 'voiceResolverVersion'].forEach((key) => {
                 if (segment && segment.fields && segment.fields[key] != null) profile[key] = segment.fields[key];
             });
             if (profile.synthesisRate == null && profile.speed != null) profile.synthesisRate = profile.speed;
@@ -283,6 +297,10 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 language: profile.language,
                 speed: profile.synthesisRate == null ? profile.speed : profile.synthesisRate,
                 provider: profile.provider,
+                engine: profile.engine,
+                engineVersion: profile.engineVersion,
+                model: profile.model,
+                modelVersion: profile.modelVersion,
                 directionFingerprint: profile.directionFingerprint,
                 voiceResolverVersion: profile.voiceResolverVersion,
             };
@@ -295,6 +313,10 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 speed: profile.synthesisRate == null ? profile.speed : profile.synthesisRate,
                 synthesisRate: profile.synthesisRate == null ? profile.speed : profile.synthesisRate,
                 provider: profile.provider,
+                engine: profile.engine,
+                engineVersion: profile.engineVersion,
+                model: profile.model,
+                modelVersion: profile.modelVersion,
                 directionFingerprint: profile.directionFingerprint,
                 voiceResolverVersion: profile.voiceResolverVersion == null ? 2 : profile.voiceResolverVersion,
                 createdAt: new Date().toISOString(),
@@ -319,7 +341,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
             if (typeof store.inspect === 'function') {
                 const inspected = store.inspect(key, compatibility);
                 if (inspected && typeof inspected === 'object') {
-                    const status = ['ready', 'stale', 'missing'].includes(inspected.status)
+                    const status = ['ready', 'stale', 'missing', 'corrupt'].includes(inspected.status)
                         ? inspected.status
                         : (inspected.url != null ? 'ready' : 'missing');
                     return {
@@ -331,6 +353,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                         identity: inspected.identity || null,
                         synthesisProfile: inspected.synthesisProfile || null,
                         legacy: inspected.legacy === true,
+                        quarantine: inspected.quarantine || null,
                         segment,
                         profile,
                     };
@@ -360,17 +383,17 @@ const createReadAloudAudioService = (dependencies = {}) => {
             };
         }
 
-        function inspect(input) {
+        function inspect(input, options = {}) {
             const segment = requireSegment(input);
             const store = liveStore({ segment, operation: 'inspect' });
-            const profile = profileFor(segment, 'inspect');
+            const profile = Object.assign({}, profileFor(segment, 'inspect'), options.profile || {});
             return inspectDescriptor(segment, store, profile);
         }
 
         function summary() {
             const list = segments();
             const store = liveStore({ operation: 'summary' });
-            const result = { total: list.length, ready: 0, stale: 0, missing: 0, estimatedBytes: 0 };
+            const result = { total: list.length, ready: 0, stale: 0, corrupt: 0, missing: 0, estimatedBytes: 0 };
             list.forEach((segment) => {
                 const status = inspectDescriptor(segment, store, profileFor(segment, 'summary')).status;
                 result[status] += 1;
@@ -407,6 +430,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 priority: options.priority,
                 maxRetries: options.maxRetries,
             });
+            Object.assign(profile, audioProvenanceOf(audio));
             throwIfAborted(options.signal);
             const url = audioUrlOf(audio);
             if (!url) {
@@ -432,8 +456,9 @@ const createReadAloudAudioService = (dependencies = {}) => {
             return store && typeof store.serialize === 'function' ? store.serialize() : null;
         }
 
-        async function persistStore(reason, segment, store) {
+        async function persistStore(reason, segment, store, signal) {
             if (!persist || !shouldPersist(reason, segment)) return false;
+            throwIfAborted(signal);
             const resource = liveResource({ segment, operation: 'persist', reason });
             const payload = serializeStore(store);
             await persist({
@@ -446,6 +471,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 reason,
                 segment,
                 payload,
+                signal,
             });
             emit('persisted', { reason, segment, payload });
             return true;
@@ -456,7 +482,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
             const operation = options.operation;
             const signal = options.signal;
             throwIfAborted(signal);
-            const profile = Object.assign({}, profileFor(segment, operation), options.profile || {});
+            const profile = Object.assign({}, profileFor(segment, operation), options.profile || {},
+                audioProvenanceOf(audio));
             const encoded = await encode(audio, {
                 segment,
                 profile,
@@ -473,11 +500,12 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 throw serviceError('invalid-encoded-audio', 'The read-aloud encoder did not return base64 audio data.', encoded);
             }
             const store = liveStore({ segment, operation });
+            Object.assign(profile, audioProvenanceOf(encoded));
             if (!store) throw serviceError('store-unavailable', 'No read-aloud audio store is available for this resource.');
-            const metadata = metadataFor(profile, options.metadata);
+            const metadata = Object.assign(metadataFor(profile, options.metadata), audioProvenanceOf(profile));
             const entry = {
                 key: segment.storageKey,
-                b64: encoded.b64.replace(/^data:[^,]*,/, '').replace(/\s+/g, ''),
+                b64: encoded.b64,
                 mime: encoded.mime || 'audio/mpeg',
                 source: options.source,
                 metadata,
@@ -497,7 +525,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 const detail = typeof store.lastPutError === 'function' ? store.lastPutError() : null;
                 throw serviceError('store-put-failed', 'The read-aloud audio store rejected this clip.', detail);
             }
-            await persistStore(operation, segment, store);
+            await persistStore(operation, segment, store, signal);
             emit('stored', { operation, segment, profile, source: entry.source, url: storedUrl, metadata });
             return storedUrl || audioUrlOf(audio);
         }
@@ -538,8 +566,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 resourceId,
                 resourceType,
                 lane,
+                operation: 'regenerate',
                 signal: options.signal,
                 reason: options.reason || 'regenerate',
+                priority: options.priority,
+                maxRetries: options.maxRetries,
             });
             throwIfAborted(options.signal);
             return storeAudio(segment, audio, {
@@ -575,6 +606,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
 
             throwIfAborted(signal);
             progress('start');
+            result.reconciliation = await reconcile({ signal, reason: 'prepare-reconcile' });
             for (let index = 0; index < list.length; index += 1) {
                 throwIfAborted(signal);
                 const segment = list[index];
@@ -585,7 +617,16 @@ const createReadAloudAudioService = (dependencies = {}) => {
                     continue;
                 }
                 try {
-                    await regenerate(segment, { signal, reason: 'prepare-all' });
+                    await regenerate(segment, {
+                        signal,
+                        reason: 'prepare-all',
+                        profile: options.profile,
+                        source: options.source,
+                        metadata: options.metadata,
+                        storeOptions: options.storeOptions,
+                        priority: options.priority,
+                        maxRetries: options.maxRetries,
+                    });
                     result.prepared += 1;
                     progress('segment', { index, segment, status: 'prepared', previousStatus: state.status });
                 } catch (error) {
@@ -604,13 +645,47 @@ const createReadAloudAudioService = (dependencies = {}) => {
             return result;
         }
 
+
+        async function reconcile(options = {}) {
+            const signal = options.signal;
+            throwIfAborted(signal);
+            const store = liveStore({ operation: 'reconcile' });
+            if (!store || typeof store.reconcile !== 'function') return null;
+            const activeKeys = segments().map((segment) => segment.storageKey);
+            const report = await Promise.resolve(store.reconcile(activeKeys, {
+                pruneAi: options.pruneAi !== false,
+            }));
+            if (report && report.changed && options.persist !== false) {
+                await persistStore(options.reason || 'reconcile', null, store, signal);
+            }
+            emit('reconciled', { report });
+            return report;
+        }
+
+        async function quarantine(input, detail, options = {}) {
+            const segment = requireSegment(input);
+            const signal = options.signal;
+            throwIfAborted(signal);
+            const store = liveStore({ segment, operation: 'quarantine' });
+            if (!store) return false;
+            const quarantineEntry = typeof store.quarantine === 'function'
+                ? store.quarantine.bind(store)
+                : (typeof store.markCorrupt === 'function' ? store.markCorrupt.bind(store) : null);
+            if (!quarantineEntry) return false;
+            const changed = !!(await Promise.resolve(quarantineEntry(segment.storageKey, detail)));
+            if (!changed) return false;
+            await persistStore(options.reason || 'quarantine', segment, store, signal);
+            emit('quarantined', { segment, quarantine: detail || null });
+            return true;
+        }
         async function remove(input, options = {}) {
             const segment = requireSegment(input);
+            throwIfAborted(options.signal);
             const store = liveStore({ segment, operation: 'remove' });
             if (!store || typeof store.remove !== 'function') return false;
             const existed = typeof store.has === 'function' ? !!store.has(segment.storageKey) : true;
             store.remove(segment.storageKey);
-            await persistStore('remove', segment, store);
+            await persistStore('remove', segment, store, options.signal);
             emit('removed', { segment, existed });
             return existed;
         }
@@ -636,6 +711,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
             regenerate,
             capturePlayed,
             saveRecording,
+            reconcile,
+            quarantine,
             remove,
             subscribe,
             serialize,
@@ -829,8 +906,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             const matches = availableByText.get(spokenText);
             if (matches && matches.length) {
                 const descriptor = useOccurrence
-                    ? matches[Math.min(occurrence, matches.length - 1)]
+                    ? matches[occurrence]
                     : matches.shift();
+                if (!descriptor) return null;
                 return Object.assign({}, descriptor, { suppliedIndex: index });
             }
             // A sentence that is genuinely outside the resource has no stable
@@ -861,7 +939,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const resource = liveResource();
         const resourceType = resourceTypeOf(resource);
         if (!resourceType) return null;
-        const resourceId = String(resource.id || resource.resourceId || 'unsaved');
+        const resourceId = String(resource.id || resource.resourceId || resource.__alloUnsavedTtsToken || 'unsaved');
         const rawSegments = resourceSegments(resource, resourceType, suppliedSentences, occurrence);
         const adapter = {
             id: 'alloflow.' + resourceType + '.read-aloud',
@@ -978,10 +1056,17 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
 
     function inspect(sentence, lane, options) {
         if (!sentence) return null;
-        const binding = bindingFor([sentence], lane || 'reference', options && options.occurrence);
+        if (lane && typeof lane === 'object') {
+            options = lane;
+            lane = options.lane;
+        }
+        options = options && typeof options === 'object' ? options : {};
+        const binding = bindingFor([sentence], lane || options.lane || 'reference', options.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return null;
-        try { return binding.controller.inspect(segment); } catch (_) { return null; }
+        try {
+            return binding.controller.inspect(segment, { profile: options.profile });
+        } catch (_) { return null; }
     }
 
     async function regenerate(sentence, options = {}) {
@@ -989,7 +1074,16 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const segment = firstSegment(binding);
         if (!segment) return null;
         try {
-            return await binding.controller.regenerate(segment, { storeOptions: { allowReplaceHuman: true } });
+            return await binding.controller.regenerate(segment, {
+                signal: options.signal,
+                reason: options.reason || 'regenerate',
+                priority: options.priority,
+                maxRetries: options.maxRetries,
+                profile: options.profile,
+                source: options.source,
+                metadata: options.metadata,
+                storeOptions: Object.assign({}, options.storeOptions || {}, { allowReplaceHuman: true }),
+            });
         } catch (error) {
             notifyStatus(binding, segment.spokenText, 'error', failureDetail(error));
             return null;
@@ -1017,7 +1111,12 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const dynamicSignal = {};
         Object.defineProperty(dynamicSignal, 'aborted', {
             enumerable: true,
-            get: () => !!safeCall(cancellationGetter, false, []),
+            get: () => !!((options.signal && options.signal.aborted) ||
+                safeCall(cancellationGetter, false, [])),
+        });
+        Object.defineProperty(dynamicSignal, 'reason', {
+            enumerable: true,
+            get: () => options.signal && options.signal.reason,
         });
 
         function legacyProgress(event) {
@@ -1035,7 +1134,16 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
 
         let cancelled = false;
         try {
-            const result = await controller.prepareAll({ signal: dynamicSignal, onProgress: legacyProgress });
+            const result = await controller.prepareAll({
+                signal: options.signal || dynamicSignal,
+                onProgress: legacyProgress,
+                profile: options.profile,
+                source: options.source,
+                metadata: options.metadata,
+                storeOptions: options.storeOptions,
+                priority: options.priority,
+                maxRetries: options.maxRetries,
+            });
             if (result && result.errors && result.errors.length) {
                 lastFailure = failureDetail(result.errors[result.errors.length - 1].error);
             }
@@ -1047,7 +1155,8 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             }
         }
         const finalSummary = controller.summary();
-        const remaining = Math.max(0, Number(finalSummary.stale || 0) + Number(finalSummary.missing || 0));
+        const remaining = Math.max(0, Number(finalSummary.stale || 0) +
+            Number(finalSummary.corrupt || 0) + Number(finalSummary.missing || 0));
         return {
             ok: !cancelled && remaining === 0,
             generated,
@@ -1084,11 +1193,14 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             if (binding.controller.inspect(segment).status === 'ready') return false;
             notifyStatus(binding, segment.spokenText, 'saving');
             await binding.controller.capturePlayed(segment, url, {
-                source: 'ai-played',
                 // The resolution-time profile travels with the URL; without it
                 // a mid-flight settings change relabels the clip (Puck audio
                 // stored as Kore) and later compatible lookups accept it.
                 profile: options.profile || (provenance && provenance.profile) || undefined,
+                signal: options.signal,
+                metadata: options.metadata,
+                storeOptions: options.storeOptions,
+                source: options.source || 'ai-played',
             });
             const summary = binding.controller.summary();
             notifyStatus(binding, segment.spokenText, 'saved', { storedBytes: summary.estimatedBytes || 0 });
@@ -1099,15 +1211,32 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         }
     }
 
-    async function saveRecording(sentence, blob, source, lane) {
+    async function saveRecording(sentence, blob, source, lane, options = {}) {
         if (!sentence || !blob) return false;
-        const selectedLane = lane || (String(source || '').indexOf('human-student') === 0 ? 'student' : 'reference');
-        const binding = bindingFor([sentence], selectedLane);
+        let suppliedSource = source;
+        let suppliedLane = lane;
+        let suppliedOptions = options && typeof options === 'object' ? options : {};
+        if (source && typeof source === 'object') {
+            suppliedOptions = source;
+            suppliedSource = source.source;
+            suppliedLane = source.lane;
+        } else if (lane && typeof lane === 'object') {
+            suppliedOptions = lane;
+            suppliedLane = lane.lane;
+        }
+        const selectedLane = suppliedOptions.lane || suppliedLane ||
+            (String(suppliedSource || '').indexOf('human-student') === 0 ? 'student' : 'reference');
+        const binding = bindingFor([sentence], selectedLane, suppliedOptions.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return false;
         try {
             await binding.controller.saveRecording(segment, blob, {
-                source: source || (selectedLane === 'student' ? 'human-student' : 'human-teacher'),
+                source: suppliedSource || suppliedOptions.source ||
+                    (selectedLane === 'student' ? 'human-student' : 'human-teacher'),
+                signal: suppliedOptions.signal,
+                profile: suppliedOptions.profile,
+                metadata: suppliedOptions.metadata,
+                storeOptions: suppliedOptions.storeOptions,
             });
             return true;
         } catch (error) {
@@ -1116,12 +1245,48 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         }
     }
 
-    async function remove(sentence, lane) {
+    async function remove(sentence, lane, options = {}) {
         if (!sentence) return false;
-        const binding = bindingFor([sentence], lane || 'reference');
+        if (lane && typeof lane === 'object') {
+            options = lane;
+            lane = options.lane;
+        }
+        const binding = bindingFor([sentence], lane || options.lane || 'reference', options.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return false;
-        try { return !!(await binding.controller.remove(segment)); } catch (_) { return false; }
+        try {
+            return !!(await binding.controller.remove(segment, { signal: options.signal }));
+        } catch (_) { return false; }
+    }
+
+    async function quarantine(sentence, detail, options = {}) {
+        if (!sentence) return false;
+        const binding = bindingFor([sentence], options.lane || 'reference', options.occurrence);
+        const segment = firstSegment(binding);
+        if (!segment) return false;
+        try {
+            return !!(await binding.controller.quarantine(segment, detail, {
+                signal: options.signal,
+                reason: options.reason || 'quarantine',
+            }));
+        } catch (_) { return false; }
+    }
+
+    async function reconcile(lane, options = {}) {
+        if (lane && typeof lane === 'object') {
+            options = lane;
+            lane = options.lane;
+        }
+        const binding = bindingFor(null, lane || options.lane || 'reference');
+        if (!binding) return null;
+        try {
+            return await binding.controller.reconcile({
+                signal: options.signal,
+                reason: options.reason || 'reconcile',
+                pruneAi: options.pruneAi !== false,
+                persist: options.persist,
+            });
+        } catch (_) { return null; }
     }
 
     function summary(sentences, lane) {
@@ -1130,7 +1295,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         try { return binding.controller.summary(); } catch (_) { return null; }
     }
 
-    return { resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, summary };
+    return {
+        resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, quarantine, reconcile, summary,
+    };
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createReadAloudAudioService = createReadAloudAudioService;

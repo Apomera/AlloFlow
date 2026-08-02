@@ -1257,6 +1257,8 @@ class AIProvider {
         // TTS rate limiting state
         this._ttsRateLimitedUntil = 0;
         this._ttsCache = new Map();
+        this._ttsCacheMaxEntries = 96;
+        this._ttsEndpointCooldown = new Map();
         this._ttsQueue = Promise.resolve();
 
         // Imagen rate limiting state
@@ -2332,27 +2334,27 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} [opts.language] - Language hint for TTS tiering
      * @returns {Promise<string|null>} Audio URL or null
      */
-    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null } = {}) {
+    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, signal = null } = {}) {
         if (!text) return null;
+        const _ttsOvr = this._ttsProvider || null;
+        if (_ttsOvr === 'off') return null;
 
         // Canvas mode: always use browser speechSynthesis
         if (this.isCanvasEnv) {
-            return this._browserSpeechSynthesis(text, speed);
+            return this._browserSpeechSynthesis(text, speed, language);
         }
 
         this._debugLog(`[AIProvider] textToSpeech: "${text?.substring(0, 30)}..." voice=${voice}`);
 
         // Check ttsProvider override from AI Backend Settings
-        const _ttsOvr = this._ttsProvider || null;
-        if (_ttsOvr === 'off') return null;
-        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed);
-        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed);
-        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed);
+        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, language);
+        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed, language, signal);
+        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed, language, signal);
 
         // Default: route by backend
         switch (this.backend) {
             case 'gemini':
-                return this._geminiTTS(text, voice, speed);
+                return this._geminiTTS(text, voice, speed, language, signal);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2361,21 +2363,112 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiTTS(text, voice, speed);
+                return this._openaiTTS(text, voice, speed, language, signal);
         }
     }
 
-    _browserSpeechSynthesis(text, speed) {
-        if (window.speechSynthesis && text) {
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.rate = speed || 1;
-            window.speechSynthesis.speak(utter);
-        }
-        return null;
+    _browserSpeechSynthesis(_text, _speed, _language) {
+        const error = new Error('Browser speech must be started by the active playback session');
+        error.name = 'BrowserTTSRequiredError';
+        error.code = 'BROWSER_TTS_REQUIRED';
+        error.useBrowserTts = true;
+        throw error;
     }
 
-    async _geminiTTS(text, voice, speed) {
+    _ttsCacheKey(text, voice, _speed, language) {
+        return JSON.stringify([String(text || ''), String(voice || ''), String(language || ''), 'natural-rate-v1']);
+    }
+
+    _cacheTtsUrl(cacheKey, audioUrl) {
+        const previous = this._ttsCache.get(cacheKey);
+        if (previous && previous !== audioUrl) {
+            try { if (String(previous).startsWith('blob:')) URL.revokeObjectURL(previous); } catch (_) { }
+        }
+        this._ttsCache.delete(cacheKey);
+        this._ttsCache.set(cacheKey, audioUrl);
+        while (this._ttsCache.size > this._ttsCacheMaxEntries) {
+            const oldestKey = this._ttsCache.keys().next().value;
+            const oldestUrl = this._ttsCache.get(oldestKey);
+            this._ttsCache.delete(oldestKey);
+            try { if (oldestUrl && String(oldestUrl).startsWith('blob:')) URL.revokeObjectURL(oldestUrl); } catch (_) { }
+        }
+    }
+
+    ownsUrl(url) {
+        if (!url) return false;
+        for (const cachedUrl of this._ttsCache.values()) {
+            if (cachedUrl === url) return true;
+        }
+        return false;
+    }
+
+    invalidateUrl(url) {
+        if (!url) return false;
+        let removed = false;
+        for (const [key, cachedUrl] of Array.from(this._ttsCache.entries())) {
+            if (cachedUrl === url) {
+                this._ttsCache.delete(key);
+                removed = true;
+            }
+        }
+        if (removed) {
+            try { if (String(url).startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) { }
+        }
+        return removed;
+    }
+
+    clearTtsCache() {
+        const urls = new Set(this._ttsCache.values());
+        this._ttsCache.clear();
+        for (const url of urls) {
+            try { if (url && String(url).startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) { }
+        }
+    }
+
+    _throwIfTtsAborted(signal) {
+        if (!signal?.aborted) return;
+        const error = new Error('TTS request aborted');
+        error.name = 'AbortError';
+        throw error;
+    }
+
+    _createTtsRequestSignal(signal, timeoutMs) {
+        if (typeof AbortController === 'undefined') return { signal, timedOut: () => false, cleanup: () => { } };
+        const controller = new AbortController();
+        let didTimeout = false;
+        const onAbort = () => { try { controller.abort(); } catch (_) { } };
+        if (signal?.aborted) onAbort();
+        else if (signal?.addEventListener) signal.addEventListener('abort', onAbort, { once: true });
+        const timer = setTimeout(() => {
+            didTimeout = true;
+            try { controller.abort(); } catch (_) { }
+        }, timeoutMs);
+        return {
+            signal: controller.signal,
+            timedOut: () => didTimeout,
+            cleanup: () => {
+                clearTimeout(timer);
+                try { signal?.removeEventListener?.('abort', onAbort); } catch (_) { }
+            },
+        };
+    }
+
+    _waitForTtsRetry(delayMs, signal) {
+        this._throwIfTtsAborted(signal);
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => { cleanup(); resolve(); }, delayMs);
+            const onAbort = () => {
+                cleanup();
+                const error = new Error('TTS request aborted');
+                error.name = 'AbortError';
+                reject(error);
+            };
+            const cleanup = () => { clearTimeout(timer); try { signal?.removeEventListener?.('abort', onAbort); } catch (_) { } };
+            try { signal?.addEventListener?.('abort', onAbort, { once: true }); } catch (_) { }
+        });
+    }
+
+    async _geminiTTS(text, voice, speed, language = null, signal = null) {
         // Rate limit check
         if (Date.now() < this._ttsRateLimitedUntil) {
             this._warnLog('[AIProvider TTS] Skipping — rate-limit cooldown active');
@@ -2383,10 +2476,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         // Cache check
-        const cacheKey = `${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
+        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
         if (this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
-            return this._ttsCache.get(cacheKey);
+            const cachedUrl = this._ttsCache.get(cacheKey);
+            this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
+            return cachedUrl;
         }
 
         // Queue for serialization
@@ -2407,20 +2502,26 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             };
 
             for (let attempt = 0; attempt <= 2; attempt++) {
+                this._throwIfTtsAborted(signal);
+                const request = this._createTtsRequestSignal(signal, 12000);
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
+                        signal: request.signal,
                     });
 
                     if (response.status === 429) {
+                        request.cleanup();
                         this._ttsRateLimitedUntil = Date.now() + 60000;
                         this._warnLog('[AIProvider TTS] ⚠️ 429 — 60s cooldown');
                         return null;
                     }
+                    if (!response.ok) throw new Error(`Gemini TTS returned ${response.status}`);
 
                     const data = await response.json();
+                    request.cleanup();
                     const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
                     if (!audioPart) throw new Error('No audio in response');
 
@@ -2435,11 +2536,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     const wavBuffer = this._pcmToWav(bytes, 24000, 1);
                     const blob = new Blob([wavBuffer], { type: 'audio/wav' });
                     const audioUrl = URL.createObjectURL(blob);
-                    this._ttsCache.set(cacheKey, audioUrl);
+                    this._cacheTtsUrl(cacheKey, audioUrl);
                     return audioUrl;
                 } catch (e) {
+                    request.cleanup();
+                    this._throwIfTtsAborted(signal);
+                    if (request.timedOut()) e = new Error('Gemini TTS request timed out');
+
                     if (attempt < 2) {
-                        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+                        await this._waitForTtsRetry(1000 * (attempt + 1), signal);
                     } else {
                         this._warnLog('[AIProvider TTS] All retries exhausted:', e.message);
                         throw e;
@@ -2448,10 +2553,25 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
         });
         this._ttsQueue = task.catch(() => { });
-        return task;
+        if (!signal) return task;
+        return new Promise((resolve, reject) => {
+            const cleanup = () => { try { signal.removeEventListener('abort', rejectAborted); } catch (_) { } };
+            const rejectAborted = () => {
+                cleanup();
+                const error = new Error('TTS request aborted');
+                error.name = 'AbortError';
+                reject(error);
+            };
+            if (signal.aborted) return rejectAborted();
+            try { signal.addEventListener('abort', rejectAborted, { once: true }); } catch (_) { }
+            task.then(
+                (value) => { cleanup(); resolve(value); },
+                (error) => { cleanup(); reject(error); }
+            );
+        });
     }
 
-    async _openaiTTS(text, voice, speed) {
+    async _openaiTTS(text, voice, speed, language = null, signal = null) {
         // TTS tiering: Kokoro (high quality) → Edge TTS (wide language) → browser fallback
         const ttsEndpoints = [
             'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
@@ -2460,47 +2580,55 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         ];
 
         // Cache check
-        const cacheKey = `${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
+        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
         if (this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
-            return this._ttsCache.get(cacheKey);
+            const cachedUrl = this._ttsCache.get(cacheKey);
+            this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
+            return cachedUrl;
         }
 
         for (const url of ttsEndpoints) {
+            this._throwIfTtsAborted(signal);
+            const cooldownUntil = this._ttsEndpointCooldown.get(url) || 0;
+            if (cooldownUntil > Date.now()) continue;
+            const request = this._createTtsRequestSignal(signal, 5000);
             try {
                 const payload = {
                     model: this.models.tts,
                     input: text,
                     voice: voice?.toLowerCase() || 'alloy',
-                    speed: speed || 1,
+                    speed: 1,
                     response_format: 'wav',
                 };
-
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 5000);
 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
-                    signal: controller.signal,
+                    signal: request.signal,
                 });
-                clearTimeout(timeout);
+                this._ttsEndpointCooldown.delete(url);
 
                 if (!response.ok) throw new Error(`TTS returned ${response.status}`);
                 const blob = await response.blob();
+                request.cleanup();
                 const audioUrl = URL.createObjectURL(blob);
-                this._ttsCache.set(cacheKey, audioUrl);
+                this._cacheTtsUrl(cacheKey, audioUrl);
                 this._debugLog(`[AIProvider TTS] ✅ Success from ${url}`);
                 return audioUrl;
             } catch (err) {
+                request.cleanup();
+                this._throwIfTtsAborted(signal);
+                this._ttsEndpointCooldown.set(url, Date.now() + 30000);
+                if (request.timedOut()) err = new Error('Local TTS endpoint timed out');
                 this._debugLog(`[AIProvider TTS] ${url} failed: ${err.message}, trying next...`);
             }
         }
 
         // All TTS servers failed — use browser speech as final fallback
         this._warnLog('[AIProvider TTS] All TTS servers unavailable, using browser speech');
-        return this._browserSpeechSynthesis(text, speed);
+        return this._browserSpeechSynthesis(text, speed, language);
     }
 
     // ─── SAFETY ───────────────────────────────────────────────────────

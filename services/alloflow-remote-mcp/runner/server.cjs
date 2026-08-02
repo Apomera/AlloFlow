@@ -603,7 +603,50 @@ function remediationQuality(result) {
   };
 }
 
-function buildReport(spec, inputMetadata, result, taggedMetadata, quality) {
+function normalizePdfUaValidation(value) {
+  const fallback = {
+    status: 'not_run',
+    reason: 'independent_validator_not_packaged',
+  };
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return fallback;
+  const count = (candidate) => (
+    Number.isSafeInteger(candidate) && candidate >= 0 && candidate <= 1_000_000
+      ? candidate
+      : 0
+  );
+  if (value.status === 'compliant' || value.status === 'noncompliant') {
+    if (value.validator !== 'veraPDF' || value.profile !== 'ua1') {
+      throw new RunnerError('driver_result_invalid', 500, false);
+    }
+    return {
+      status: value.status,
+      validator: 'veraPDF',
+      profile: 'ua1',
+      validatorVersion: typeof value.validatorVersion === 'string' && value.validatorVersion.length <= 32
+        ? value.validatorVersion
+        : null,
+      failedRules: count(value.failedRules),
+      failedChecks: count(value.failedChecks),
+      passedRules: count(value.passedRules),
+      passedChecks: count(value.passedChecks),
+    };
+  }
+  if (value.status === 'unavailable') {
+    const reason = ['validator_not_available', 'validator_timeout', 'validator_error'].includes(value.reason)
+      ? value.reason
+      : 'validator_error';
+    return { status: 'unavailable', reason };
+  }
+  if (
+    value.status === 'not_run' &&
+    ['disabled_for_institution_pilot', 'independent_validator_not_packaged'].includes(value.reason)
+  ) {
+    return { status: 'not_run', reason: value.reason };
+  }
+  throw new RunnerError('driver_result_invalid', 500, false);
+}
+
+function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUaValidation) {
   const roundsRun = autoContinueRoundsRun(spec, result);
   return {
     schema: RUN_SCHEMA,
@@ -629,10 +672,7 @@ function buildReport(spec, inputMetadata, result, taggedMetadata, quality) {
       size: taggedMetadata.size,
       sha256: taggedMetadata.sha256,
     },
-    pdfUaValidation: {
-      status: 'not_run',
-      reason: 'independent_validator_not_packaged',
-    },
+    pdfUaValidation: normalizePdfUaValidation(pdfUaValidation),
   };
 }
 
@@ -857,12 +897,43 @@ function createRunnerServer(options = {}) {
         };
         await writeBufferAtomic(files.taggedPdf, taggedPdf);
 
+        let pdfUaValidation = {
+          status: 'not_run',
+          reason: 'independent_validator_not_packaged',
+        };
+        if (typeof driver.validatePdfUaCli === 'function') {
+          context.stage = 'validating';
+          context.driver = driver;
+          try {
+            pdfUaValidation = await driver.validatePdfUaCli({
+              filePath: files.taggedPdf,
+              signal: context.abort.signal,
+              timeoutMs: 120000,
+              maxBytes: maxResultBytes,
+            });
+          } catch (error) {
+            if (context.abort.signal.aborted) throw new CancelledError();
+            const message = String(error && error.message || '');
+            pdfUaValidation = {
+              status: 'unavailable',
+              reason: /timed out/i.test(message)
+                ? 'validator_timeout'
+                : (/could not start|not packaged/i.test(message)
+                  ? 'validator_not_available'
+                  : 'validator_error'),
+            };
+          } finally {
+            context.driver = null;
+          }
+        }
+
         const report = buildReport(
           spec,
           inputMetadata,
           remediation,
           taggedMetadata,
           quality,
+          pdfUaValidation,
         );
         const reportBuffer = Buffer.from(`${JSON.stringify(report, null, 2)}\n`, 'utf8');
         if (reportBuffer.length > MAX_REPORT_BYTES) {

@@ -5801,6 +5801,116 @@ window.StemLab = window.StemLab || {
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
+      var FIELD_PROGRESS_VERSION = 1;
+      function fieldProgressMap(value) {
+        var out = {};
+        if (!value || typeof value !== 'object') return out;
+        for (var key in value) if (Object.prototype.hasOwnProperty.call(value, key) && value[key]) out[key] = true;
+        return out;
+      }
+      function fieldProgressRecordFor(state) {
+        var scanLogged = fieldProgressMap(state.field3dScanLogged);
+        var assemblyPlaced = fieldProgressMap(state.field3dAssemblyPlaced);
+        var scanCount = Object.keys(scanLogged).length;
+        var assemblyCount = Object.keys(assemblyPlaced).length;
+        var challengeDone = Math.max(0, Math.floor(Number(state.field3dChallengeDone) || 0));
+        var workflowStarted = state.field3dWorkflowStarted === true || scanCount > 0 || assemblyCount > 0;
+        return {
+          version: FIELD_PROGRESS_VERSION,
+          speciesId: state.field3dSelected || state.selected || null,
+          workflowStarted: workflowStarted,
+          reconstructionMode: state.field3dReconstructionMode || 'evidence',
+          showSkeleton: state.field3dShowSkeleton !== false,
+          showBody: state.field3dShowBody !== false,
+          showHuman: state.field3dShowHuman !== false,
+          showEvidence: state.field3dShowEvidence !== false,
+          autoRotate: state.field3dAutoRotate !== false,
+          scanTargetIdx: Math.max(0, Math.floor(Number(state.field3dScanTargetIdx) || 0)),
+          scanLogged: scanLogged,
+          scanSpecies: state.field3dScanSpecies || state.field3dSelected || state.selected || null,
+          assemblyPlaced: assemblyPlaced,
+          assemblySpecies: state.field3dAssemblySpecies || state.field3dSelected || state.selected || null,
+          assemblyFocusIdx: Math.max(0, Math.floor(Number(state.field3dAssemblyFocusIdx) || 0)),
+          claimFocus: state.field3dClaimFocus || 'scale',
+          claimBone: state.field3dClaimBone || null,
+          claimBoneSpecies: state.field3dClaimBoneSpecies || null,
+          challengeIdx: Math.max(0, Math.floor(Number(state.field3dChallengeIdx) || 0)),
+          challengePicked: state.field3dChallengePicked || null,
+          challengeScore: Math.max(0, Math.floor(Number(state.field3dChallengeScore) || 0)),
+          challengeDone: challengeDone,
+          hasProgress: workflowStarted || !!state.field3dClaimBone || challengeDone > 0
+        };
+      }
+      function fieldProgressIsValid(record) {
+        return !!(record && record.version === FIELD_PROGRESS_VERSION && record.speciesId && record.hasProgress);
+      }
+      function fieldProgressClearPatch() {
+        return {
+          tab: 'explore',
+          selected: null,
+          field3dProgress: null,
+          field3dSelected: null,
+          field3dWorkflowStarted: false,
+          field3dDrawerOpen: false,
+          field3dFocusMode: false,
+          field3dOrientationDismissed: false,
+          field3dReconstructionMode: 'evidence',
+          field3dScanTargetIdx: 0,
+          field3dScanLogged: {},
+          field3dScanSpecies: null,
+          field3dAssemblyPlaced: {},
+          field3dAssemblySpecies: null,
+          field3dAssemblyFocusIdx: 0,
+          field3dClaimFocus: 'scale',
+          field3dClaimBone: null,
+          field3dClaimBoneSpecies: null,
+          field3dChallengeIdx: 0,
+          field3dChallengePicked: null,
+          field3dChallengeScore: 0,
+          field3dChallengeDone: 0,
+          field3dAutoRotate: true
+        };
+      }
+      function fieldProgressRestorePatch(record) {
+        return {
+          tab: 'field3d',
+          selected: record.speciesId,
+          field3dSelected: record.speciesId,
+          field3dProgress: record,
+          field3dWorkflowStarted: record.workflowStarted === true,
+          field3dReconstructionMode: record.reconstructionMode || 'evidence',
+          field3dShowSkeleton: record.showSkeleton !== false,
+          field3dShowBody: record.showBody !== false,
+          field3dShowHuman: record.showHuman !== false,
+          field3dShowEvidence: record.showEvidence !== false,
+          field3dAutoRotate: record.autoRotate !== false,
+          field3dScanTargetIdx: record.scanTargetIdx || 0,
+          field3dScanLogged: fieldProgressMap(record.scanLogged),
+          field3dScanSpecies: record.scanSpecies || record.speciesId,
+          field3dAssemblyPlaced: fieldProgressMap(record.assemblyPlaced),
+          field3dAssemblySpecies: record.assemblySpecies || record.speciesId,
+          field3dAssemblyFocusIdx: record.assemblyFocusIdx || 0,
+          field3dClaimFocus: record.claimFocus || 'scale',
+          field3dClaimBone: record.claimBone || null,
+          field3dClaimBoneSpecies: record.claimBoneSpecies || null,
+          field3dChallengeIdx: record.challengeIdx || 0,
+          field3dChallengePicked: record.challengePicked || null,
+          field3dChallengeScore: record.challengeScore || 0,
+          field3dChallengeDone: record.challengeDone || 0,
+          field3dDrawerOpen: false,
+          field3dFocusMode: false,
+          field3dOrientationDismissed: true
+        };
+      }
+      function decorateFieldProgressPatch(patch) {
+        var touched = Object.keys(patch).some(function (key) { return key.indexOf('field3d') === 0; });
+        if (!touched || Object.prototype.hasOwnProperty.call(patch, 'field3dProgress')) return patch;
+        var merged = {};
+        for (var key in d) if (Object.prototype.hasOwnProperty.call(d, key)) merged[key] = d[key];
+        for (var nextKey in patch) if (Object.prototype.hasOwnProperty.call(patch, nextKey)) merged[nextKey] = patch[nextKey];
+        patch.field3dProgress = fieldProgressRecordFor(merged);
+        return patch;
+      }
       var upd = function (key, val) {
         if (typeof key === 'object' && key) {
           if (key.tab === 'explore' && key.selected === null && key.field3dScanLogged && key.field3dAssemblyPlaced) {
@@ -5810,10 +5920,11 @@ window.StemLab = window.StemLab || {
             key.field3dFocusMode = false;
             key.field3dDrawerReturnFocusId = null;
           }
+          key = decorateFieldProgressPatch(key);
           if (ctx.updateMulti) ctx.updateMulti('dinoLab', key);
           else if (ctx.update) Object.keys(key).forEach(function (k) { ctx.update('dinoLab', k, key[k]); });
         }
-        else { if (ctx.update) ctx.update('dinoLab', key, val); }
+        else { var scalarPatch = {}; scalarPatch[key] = val; scalarPatch = decorateFieldProgressPatch(scalarPatch); if (ctx.updateMulti) ctx.updateMulti('dinoLab', scalarPatch); else if (ctx.update) Object.keys(scalarPatch).forEach(function (k) { ctx.update('dinoLab', k, scalarPatch[k]); }); }
       };
       var announceToSR = ctx.announceToSR || function () {};
 
@@ -6310,6 +6421,7 @@ window.StemLab = window.StemLab || {
         var bodyOpacityState = React.useState(28), bodyOpacity = bodyOpacityState[0], setBodyOpacity = bodyOpacityState[1];
         var reconstructionProfile = reconstructionProfileFor(props.species);
         var skeletalProfile = skeletalAnatomyProfileFor(props.species);
+        var cameraPresetState = React.useState(null), cameraPreset = cameraPresetState[0], setCameraPreset = cameraPresetState[1];
         var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
         var surfaceHypothesis = hypothesisSet.active;
         var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });
@@ -6318,6 +6430,10 @@ window.StemLab = window.StemLab || {
         var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
         autoRotateRef.current = props.autoRotate;
         if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 };
+
+        function notifyOrientationInteraction() {
+          if (props.orientationCueVisible && typeof props.onOrientationDismiss === 'function') props.onOrientationDismiss();
+        }
 
         React.useEffect(function () {
           var canvas = canvasRef.current;
@@ -8274,25 +8390,31 @@ window.StemLab = window.StemLab || {
 
             var modelCenter = vec(len * 0.02, Math.max(0.5, ht * 0.42), 0);
             var radius = Math.max(len * 0.84, ht * 1.9, 5.5);
+            var cameraTargetIsEvidence = !!evidenceAnchorPoints[scanTargetId];
+            var cameraTarget = cameraTargetIsEvidence ? evidenceAnchorPoints[scanTargetId].clone() : modelCenter.clone();
             function updateCameraReadout() {
               var rotationDegrees = Math.round((((yaw * 180 / Math.PI) + 180) % 360 + 360) % 360 - 180);
               var elevationDegrees = Math.round(pitch * 180 / Math.PI);
               var zoomPercent = Math.round(100 / zoom);
-              var nextReadout = 'Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
+              var nextReadout = 'Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model') + ' | Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
               if (nextReadout !== lastCameraReadout && cameraReadoutRef.current) {
                 cameraReadoutRef.current.textContent = nextReadout;
                 lastCameraReadout = nextReadout;
               }
             }
             function updateCameraView() {
-              var distance = radius * 1.55 * zoom;
-              camera.position.set(len * 0.12, modelCenter.y + Math.sin(pitch) * distance, Math.cos(pitch) * distance);
-              camera.lookAt(modelCenter);
+              var distance = radius * (cameraTargetIsEvidence ? 1.18 : 1.55) * zoom;
+              var targetForView = cameraTarget.clone();
+              if (cameraTargetIsEvidence) targetForView.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+              camera.position.set(targetForView.x + len * 0.12, targetForView.y + Math.sin(pitch) * distance, targetForView.z + Math.cos(pitch) * distance);
+              camera.lookAt(targetForView);
               yawRef.current.pitch = pitch;
               yawRef.current.zoom = zoom;
               updateCameraReadout();
             }
             activeCameraControl = function (nextYaw, nextPitch, nextZoom, message) {
+              cameraTargetIsEvidence = false;
+              cameraTarget = modelCenter.clone();
               yaw = nextYaw;
               pitch = clampView(nextPitch, 0.04, 0.72);
               zoom = clampView(nextZoom, 0.68, 1.65);
@@ -8336,7 +8458,7 @@ window.StemLab = window.StemLab || {
               intersectionObserver.observe(canvas);
             }
 
-            function pointerDown(ev) { try { canvas.focus(); } catch (e) {} dragging = true; pauseAutoRotate(60000); lastX = ev.clientX || 0; lastY = ev.clientY || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
+            function pointerDown(ev) { notifyOrientationInteraction(); try { canvas.focus(); } catch (e) {} setCameraPreset(null); dragging = true; pauseAutoRotate(60000); lastX = ev.clientX || 0; lastY = ev.clientY || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
             function pointerMove(ev) {
               if (!dragging) return;
               var x = ev.clientX || 0;
@@ -8349,8 +8471,9 @@ window.StemLab = window.StemLab || {
               updateCameraView();
             }
             function pointerUp(ev) { dragging = false; interactionPauseUntil = performance.now() + 2200; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
-            function keyDown(ev) {
+            function keyDown(ev) { notifyOrientationInteraction();
               var key = ev.key;
+              if (key !== 'Home') setCameraPreset(null);
               pauseAutoRotate(2400);
               if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
                 ev.preventDefault(); yaw -= Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated left.');
@@ -8365,6 +8488,9 @@ window.StemLab = window.StemLab || {
               } else if (key === 'PageDown') {
                 ev.preventDefault(); zoom = clampView(zoom * 1.10, 0.68, 1.65); updateCameraView(); setStatus('Camera zoomed out.');
               } else if (key === 'Home') {
+                setCameraPreset('reset');
+                cameraTargetIsEvidence = false;
+                cameraTarget = modelCenter.clone();
                 ev.preventDefault(); yaw = -0.35; pitch = 0.18; zoom = 1; yawRef.current.value = yaw; updateCameraView(); setStatus('Reconstruction returned to its starting view.');
               }
             }
@@ -8391,7 +8517,7 @@ window.StemLab = window.StemLab || {
             });
 
             var sameSpeciesRefresh = readySpeciesRef.current === props.species.id;
-            setStatus(sameSpeciesRefresh ? '3D evidence view updated. Camera view preserved.' : '3D reconstruction loaded. Drag to orbit, use the wheel to zoom, or use the arrow keys.');
+            setStatus(cameraTargetIsEvidence ? 'Camera centered on ' + cap(scanTargetId) + ' evidence anchor.' : (sameSpeciesRefresh ? '3D evidence view updated. Camera view preserved.' : '3D reconstruction loaded. Drag to orbit, use the wheel to zoom, or use the arrow keys.'));
             readySpeciesRef.current = props.species.id;
             function syncAnimation() {
               if (!alive) return;
@@ -8471,7 +8597,8 @@ window.StemLab = window.StemLab || {
           };
         }, []);
 
-        function applyCameraPreset(preset) {
+        function applyCameraPreset(preset) { notifyOrientationInteraction();
+          setCameraPreset(preset);
           if (!cameraControlRef.current) return;
           var presets = {
             front: { yaw: 0, pitch: 0.16, zoom: 1, message: 'Front reconstruction view selected.' },
@@ -8512,27 +8639,69 @@ window.StemLab = window.StemLab || {
         var layerSummary = [props.showSkeleton ? 'skeleton proxy' : null, props.showBody ? 'body outline' : null, props.showHuman ? 'human scale' : null, props.showEvidence ? 'evidence markers' : null].filter(Boolean).join(', ') || 'no visual layers enabled';
         var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Reconstruction profile: ' + reconstructionProfile.label + ' with ' + reconstructionProfile.coverage + ' fossil coverage. Active surface hypothesis: ' + surfaceHypothesis.label + ', status ' + surfaceHypothesis.status + '. ' + surfaceHypothesis.warning + ' Limb osteology: ' + skeletalProfile.limbOsteology + '; evidence basis: ' + skeletalProfile.limbEvidence + '. Girdle architecture: ' + skeletalProfile.girdleOsteology + '. Vertebral architecture: ' + skeletalProfile.vertebralArchitecture + '; evidence basis: ' + skeletalProfile.vertebralEvidence + '. Thoracic cage: ' + skeletalProfile.ribArchitecture + '; evidence basis: ' + skeletalProfile.ribEvidence + '. Gastral basket: ' + skeletalProfile.gastralBasketMode + '. Uncinate evidence: ' + skeletalProfile.uncinateEvidence + '. Sacral load path: ' + skeletalProfile.sacralCount + '-element series; ' + skeletalProfile.sacralArchitecture + '; evidence basis: ' + skeletalProfile.sacralEvidence + '. Caudal transition: ' + skeletalProfile.caudalArchitecture + '. Haemal arches: ' + skeletalProfile.chevronArchitecture + '; evidence basis: ' + skeletalProfile.chevronEvidence + '. Distal limbs: ' + skeletalProfile.distalLimbMode + '; evidence basis: ' + skeletalProfile.distalLimbEvidence + '. Cranial mechanics: ' + skeletalProfile.cranialKinesis + '; evidence basis: ' + skeletalProfile.cranialEvidence + '. Head-neck junction: ' + skeletalProfile.craniocervicalArchitecture + '; evidence basis: ' + skeletalProfile.craniocervicalEvidence + '. Mandibular lever: ' + skeletalProfile.mandibularLeverArchitecture + '; evidence basis: ' + skeletalProfile.mandibularLeverEvidence + '. Integument mode: ' + surfaceHypothesis.integumentMode + '; evidence basis: ' + skeletalProfile.integumentEvidence + '. Respiratory reconstruction: ' + skeletalProfile.respiratoryMode + '; evidence basis: ' + skeletalProfile.respiratoryEvidence + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
 
+var evidenceRoute = [
+          { id: 'skull', label: 'Skull' },
+          { id: 'shoulder', label: 'Shoulder' },
+          { id: 'hip', label: 'Hip' }
+        ];
+        function renderEvidenceRoute() {
+          if (!props.showEvidence) return null;
+          var loggedRoute = props.loggedAnchors || {};
+          var activeRouteIndex = 0;
+          evidenceRoute.forEach(function (step, index) { if (step.id === (props.scanTarget || 'skull')) activeRouteIndex = index; });
+          var activeRoute = evidenceRoute[activeRouteIndex];
+          var activeRouteLogged = !!loggedRoute[activeRoute.id];
+          return el('div', { className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': 'Evidence route', style: { position: 'absolute', top: 96, right: 10, width: 'min(172px, calc(100% - 20px))', padding: 8, borderRadius: 10, background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(245,158,11,0.48)', boxShadow: '0 10px 24px rgba(0,0,0,0.24)', zIndex: 3 } },
+            el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6, color: '#f8fafc', fontSize: 11, fontWeight: 900, letterSpacing: '0.03em', textTransform: 'uppercase' } },
+              el('span', null, 'Evidence route'),
+              el('span', { style: { color: '#fbbf24', fontSize: 10 } }, (props.loggedCount || 0) + '/' + (props.scanTotal || 3))
+            ),
+            evidenceRoute.map(function (step, index) {
+              var current = step.id === (props.scanTarget || 'skull');
+              var logged = !!loggedRoute[step.id];
+              var state = logged ? 'Logged' : (current ? 'Current' : 'Next');
+              return el('div', { key: step.id, role: 'listitem', style: { marginTop: index ? 4 : 0 } },
+                el('button', { type: 'button', onClick: function () { if (props.onScanTargetChange) props.onScanTargetChange(index); }, 'aria-current': current ? 'step' : null, 'aria-pressed': current ? 'true' : 'false', 'aria-label': 'Focus ' + step.label + ' evidence anchor' + (logged ? ', logged' : (current ? ', current focus' : ', next focus')), style: { width: '100%', display: 'grid', gridTemplateColumns: '20px minmax(0,1fr) auto', alignItems: 'center', gap: 6, padding: '5px 6px', borderRadius: 7, border: '1px solid ' + (current ? 'rgba(245,158,11,0.68)' : (logged ? 'rgba(34,197,94,0.46)' : 'rgba(148,163,184,0.24)')), background: current ? 'rgba(245,158,11,0.16)' : (logged ? 'rgba(34,197,94,0.10)' : 'rgba(15,23,42,0.44)'), color: '#f8fafc', cursor: 'pointer', textAlign: 'left', fontSize: 11.5, fontWeight: 850 } },
+                  el('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, display: 'grid', placeItems: 'center', borderRadius: 999, background: current ? '#b45309' : (logged ? '#166534' : 'rgba(148,163,184,0.22)'), color: '#fff', fontSize: 10, fontWeight: 900 } }, String(index + 1)),
+                  el('span', null, step.label),
+                  el('span', { style: { color: current ? '#fbbf24' : (logged ? '#86efac' : '#cbd5e1'), fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase' } }, state)
+                )
+              );
+            }),
+            props.scanActive ? (activeRouteLogged ? el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: '5px 6px', borderRadius: 7, background: 'rgba(34,197,94,0.10)', color: '#86efac', fontSize: 10.5, fontWeight: 800 } }, activeRoute.label + ' observation logged') : el('button', { type: 'button', onClick: function () { if (props.onLogScanTarget) props.onLogScanTarget(); }, 'aria-label': 'Log ' + activeRoute.label + ' observation', style: { width: '100%', marginTop: 7, padding: '6px 7px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.68)', background: 'rgba(245,158,11,0.18)', color: '#fef3c7', cursor: 'pointer', fontSize: 10.5, fontWeight: 900 } }, 'Log ' + activeRoute.label + ' observation')) : el('div', { style: { marginTop: 7, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.35 } }, 'Start the field scan to log observations.'),
+          );
+        }
         return el('div', { className: 'dinolab-3d-shell' },
           el('div', { className: 'dinolab-3d-viewer' + (props.focusMode ? ' dinolab-3d-viewer-focus' : ''), style: { position: 'relative', minHeight: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
           el('div', { id: viewerDescId, style: srOnlyStyle }, viewerSummary),
-          el('canvas', { ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
+          el('canvas', { id: 'dinolab-3d-canvas-' + props.species.id, ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
             props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.loggedCount != null ? readoutChip('Scan ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Logged ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Path ' + (props.pathLoggedCount || 0) + '/' + (props.pathTotal || 2), 'rgba(34,197,94,0.65)') : null
           ),
+          renderEvidenceRoute(),
+          props.orientationCueVisible ? el('div', { className: 'dinolab-3d-orientation-cue', role: 'note', 'aria-label': '3D viewer orientation tips', style: { position: 'absolute', left: 14, top: 52, maxWidth: 'min(330px, calc(100% - 28px))', padding: 10, borderRadius: 10, border: '1px solid rgba(20,184,166,0.48)', background: 'rgba(15,23,42,0.94)', color: '#e2e8f0', boxShadow: '0 10px 28px rgba(0,0,0,0.28)', zIndex: 4 } },
+            el('div', { style: { fontSize: 12.5, fontWeight: 900, marginBottom: 3 } }, 'New to the field station?'),
+            el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45, maxWidth: 280 } }, 'Drag to orbit. Use the wheel or Page Up/Page Down to zoom. Start with the amber ' + (props.scanLabel || 'evidence') + ' target.'),
+            el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': 'Dismiss 3D viewer orientation tips', style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
+          ) : null,
           el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': 'Current 3D camera view', style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
-          el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': '3D camera viewpoints and body inference opacity', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+          el('details', { className: 'dinolab-3d-controls-disclosure', open: props.focusMode ? true : null, style: { marginTop: 8 } },
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 12.5, fontWeight: 900, padding: '6px 0' } }, 'View controls & layers', el('span', { className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-flex', alignItems: 'center', marginLeft: 8, padding: '2px 7px', borderRadius: 999, border: '1px solid ' + (cameraPreset ? 'rgba(94,234,212,0.55)' : T.border), background: cameraPreset ? 'rgba(20,184,166,0.12)' : 'transparent', color: cameraPreset ? '#5eead4' : T.soft, fontSize: 11.5, fontWeight: 800 } }, cameraPreset ? (cameraPreset === 'reset' ? 'Reset view' : 'Preset: ' + cap(cameraPreset)) : 'Free orbit | drag + wheel')),
+            el('div', { className: 'dinolab-3d-view-controls', role: 'group', 'aria-label': '3D camera viewpoints and body inference opacity', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 4 } },
             ['front', 'side', 'overhead', 'reset'].map(function (preset) {
               var label = preset === 'overhead' ? 'Overhead' : (preset === 'reset' ? 'Reset view' : cap(preset));
-              return el('button', { key: preset, type: 'button', onClick: function () { applyCameraPreset(preset); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, label);
+              var active = cameraPreset === preset;
+              return el('button', { key: preset, type: 'button', onClick: function () { applyCameraPreset(preset); }, 'aria-label': label + ' camera view', 'aria-pressed': active ? 'true' : 'false', style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (active ? '#5eead4' : T.border), background: active ? 'rgba(20,184,166,0.15)' : T.deeper, color: T.text, cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, label);
             }),
             el('label', { style: { display: 'flex', alignItems: 'center', gap: 7, flex: '1 1 220px', minWidth: 190, paddingLeft: 4, color: T.soft, fontSize: 11.5, fontWeight: 800 } },
               el('span', { style: { whiteSpace: 'nowrap' } }, 'Body inference ' + bodyOpacity + '%'),
               el('input', { type: 'range', min: 10, max: 75, step: 1, value: bodyOpacity, disabled: !props.showBody, onChange: updateBodyOpacity, 'aria-label': 'Body inference opacity', 'aria-valuetext': bodyOpacity + ' percent', style: { flex: 1, minWidth: 90, accentColor: '#14b8a6' } })
             )
+          )
           )
         );
       }
@@ -8554,9 +8723,9 @@ window.StemLab = window.StemLab || {
         var autoRotate = d.field3dAutoRotate !== false;
         var focusMode = d.field3dFocusMode === true;
         var scanTargets = [
-          { id: 'skull', label: 'Skull', prompt: 'Check how skull evidence constrains head size, bite posture, and sensory placement.' },
-          { id: 'shoulder', label: 'Shoulder', prompt: 'Compare shoulder position to the rib cage, forelimbs, and body balance.' },
-          { id: 'hip', label: 'Hip', prompt: 'Use the hip anchor to reason about tail counterbalance, stance, and locomotion.' }
+          { id: 'skull', label: 'Skull', prompt: 'Check how skull evidence constrains head size, bite posture, and sensory placement.', why: 'Skull shape, teeth, and jaw joints are direct anatomy clues for feeding and sensory claims. Use them to constrain head proportions without treating missing muscles or behavior as directly observed.' },
+          { id: 'shoulder', label: 'Shoulder', prompt: 'Compare shoulder position to the rib cage, forelimbs, and body balance.', why: 'The shoulder connects the forelimbs to the rib cage and spine. Comparing those anchors helps explain posture and movement, while the soft-tissue envelope remains an inference.' },
+          { id: 'hip', label: 'Hip', prompt: 'Use the hip anchor to reason about tail counterbalance, stance, and locomotion.', why: 'The hip carries hindlimb load and links to the tail counterbalance. It supports stance and locomotion reasoning, but exact muscle placement and habitual motion are not preserved directly.' }
         ];
         var scanTargetIdx = modIndex(d.field3dScanTargetIdx, scanTargets.length);
         var scanTarget = scanTargets[scanTargetIdx];
@@ -8576,12 +8745,12 @@ window.StemLab = window.StemLab || {
         var claimReadinessText = 'Claim strength ' + claimReadinessScore + ' of 5. ' + claimReadinessLabel + '.';
         var claimReadinessHint = scanComplete ? 'All anchors and path links are logged. Build a claim with evidence and reasoning.' : (scanPathCount > 0 ? 'A linked path connects anchors. Finish the scan for the strongest claim.' : (scanLoggedCount > 0 ? 'One or more anchors are logged. Link neighboring anchors for stronger reasoning.' : 'Log at least one anchor before writing a claim.'));
         var assemblyPieces = [
-          { id: 'skull', label: 'Skull', role: 'feeding and senses', scan: 'skull', insight: 'diet and sensory evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Skull evidence is strongest for function claims about feeding, bite style, and sensory placement.', detail: 'Teeth, jaw joints, and eye sockets help scientists infer diet, bite style, and how the head was carried.' },
-          { id: 'spine', label: 'Spine', role: 'posture and balance', scan: 'shoulder', insight: 'posture chain evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Spine evidence links shoulder to hip, so it is strongest for posture and balance claims.', detail: 'Backbones connect the shoulder and hip, setting the body line used for posture and balance claims.' },
-          { id: 'ribs', label: 'Ribs', role: 'breathing and body volume', scan: 'shoulder', insight: 'body-volume evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Rib evidence supports function claims about breathing space, organs, and cautious body-volume reconstruction.', detail: 'The rib cage protects organs and gives a cautious boundary for soft-tissue reconstruction.' },
-          { id: 'pelvis', label: 'Pelvis', role: 'hip socket and muscle attachment', scan: 'hip', insight: 'stance and muscle evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Pelvis evidence is strongest for posture claims about stance, hip sockets, and muscle attachment.', detail: 'The pelvis links the spine to the hindlimbs and preserves clues about stance and powerful muscles.' },
-          { id: 'hindlimb', label: 'Hindlimb', role: 'movement and weight support', scan: 'hip', insight: 'movement evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Hindlimb evidence supports function claims about movement, stride, speed, and weight support.', detail: 'Femur, shin, and foot proportions help learners connect anatomy to speed, stride, and body mass.' },
-          { id: 'tail', label: 'Tail', role: 'counterbalance', scan: 'hip', insight: 'balance evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Tail evidence is strongest for posture claims because it counterbalances the hips, body, and head.', detail: 'Tail vertebrae counterbalance the body, especially when the hips and shoulders sit at different heights.' }
+          { id: 'skull', label: 'Skull', role: 'feeding and senses', scan: 'skull', insight: 'diet and sensory evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Skull evidence is strongest for function claims about feeding, bite style, and sensory placement.', detail: 'Teeth, jaw joints, and eye sockets help scientists infer diet, bite style, and how the head was carried.', why: 'Assembled skull evidence gives the claim a named anatomy anchor: it shows which structures support the inference and which soft tissues remain reconstructed.' },
+          { id: 'spine', label: 'Spine', role: 'posture and balance', scan: 'shoulder', insight: 'posture chain evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Spine evidence links shoulder to hip, so it is strongest for posture and balance claims.', detail: 'Backbones connect the shoulder and hip, setting the body line used for posture and balance claims.', why: 'The spine turns separate shoulder and hip observations into a connected body line, making the posture claim traceable rather than impressionistic.' },
+          { id: 'ribs', label: 'Ribs', role: 'breathing and body volume', scan: 'shoulder', insight: 'body-volume evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Rib evidence supports function claims about breathing space, organs, and cautious body-volume reconstruction.', detail: 'The rib cage protects organs and gives a cautious boundary for soft-tissue reconstruction.', why: 'Ribs provide a bounded body-volume clue and protect organs, so they support cautious breathing or soft-tissue claims without proving exact organ placement.' },
+          { id: 'pelvis', label: 'Pelvis', role: 'hip socket and muscle attachment', scan: 'hip', insight: 'stance and muscle evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Pelvis evidence is strongest for posture claims about stance, hip sockets, and muscle attachment.', detail: 'The pelvis links the spine to the hindlimbs and preserves clues about stance and powerful muscles.', why: 'The pelvis anchors stance and hindlimb loading; it helps explain posture while leaving muscle size and soft-tissue contours explicitly uncertain.' },
+          { id: 'hindlimb', label: 'Hindlimb', role: 'movement and weight support', scan: 'hip', insight: 'movement evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Hindlimb evidence supports function claims about movement, stride, speed, and weight support.', detail: 'Femur, shin, and foot proportions help learners connect anatomy to speed, stride, and body mass.', why: 'Proportions across the hindlimb connect anatomy to stride and weight support; they suggest movement capacity, not a measured top speed.' },
+          { id: 'tail', label: 'Tail', role: 'counterbalance', scan: 'hip', insight: 'balance evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Tail evidence is strongest for posture claims because it counterbalances the hips, body, and head.', detail: 'Tail vertebrae counterbalance the body, especially when the hips and shoulders sit at different heights.', why: 'Tail vertebrae make the balance argument visible by connecting the hip anchor to the body line, while habitual tail motion remains inferred.' }
         ];
         var rawAssemblyPlaced = (d.field3dAssemblyPlaced && typeof d.field3dAssemblyPlaced === 'object') ? d.field3dAssemblyPlaced : {};
         var assemblySpecies = d.field3dAssemblySpecies || null;
@@ -8593,6 +8762,7 @@ window.StemLab = window.StemLab || {
         var assemblyUnlocked = scanComplete;
         var assemblyComplete = assemblyPlacedCount >= assemblyPieces.length;
         var workflowStarted = d.field3dWorkflowStarted === true || scanLoggedCount > 0 || assemblyPlacedCount > 0;
+        var orientationCueVisible = !focusMode && !workflowStarted && d.field3dOrientationDismissed !== true;
         function fieldDrawerSectionAvailable(section) {
           if (section === 'assemble') return scanComplete;
           if (section === 'claim') return assemblyComplete;
@@ -8625,7 +8795,7 @@ window.StemLab = window.StemLab || {
         function setScanTarget(idx) {
           var nextIdx = modIndex(idx, scanTargets.length);
           upd({ field3dScanTargetIdx: nextIdx, field3dShowEvidence: true });
-          announceToSR('3D scan focus: ' + scanTargets[nextIdx].label);
+          announceToSR('3D scan focus: ' + scanTargets[nextIdx].label + '. Camera centered on the evidence anchor.');
         }
         function nextScanTarget() { setScanTarget(scanTargetIdx + 1); }
         function showScanMarkers() {
@@ -8701,6 +8871,11 @@ window.StemLab = window.StemLab || {
           focusFieldControlSoon(returnFocusId);
           announceToSR('Field tools closed. 3D model centered.');
         }
+        function dismissOrientationCue() {
+          if (d.field3dOrientationDismissed === true) return;
+          upd('field3dOrientationDismissed', true);
+          announceToSR('3D viewer orientation tips dismissed.');
+        }
         function startFieldScan() {
           openFieldDrawer('evidence', { field3dWorkflowStarted: true, field3dShowEvidence: true, field3dScanTargetIdx: 0 }, 'Field scan started. Skull is the first evidence target.');
         }
@@ -8712,7 +8887,9 @@ window.StemLab = window.StemLab || {
           announceToSR(dn.common + ' species file opened');
         }
         function toggleFieldFocus() {
-          upd({ field3dFocusMode: !focusMode, field3dDrawerOpen: false });
+          var nextFocus = !focusMode;
+          upd({ field3dFocusMode: nextFocus, field3dDrawerOpen: false });
+          focusFieldControlSoon(nextFocus ? 'dinolab-3d-canvas-' + dn.id : 'dinolab-field-focus-toggle');
           announceToSR(focusMode ? 'Focus view closed.' : 'Focus view opened. The 3D model is enlarged and supporting panels are hidden.');
         }
         function workflowStepAvailable(step) {
@@ -8856,6 +9033,10 @@ window.StemLab = window.StemLab || {
           showEvidence ? null : el('div', { key: 'hidden', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: 8, borderRadius: 8, border: '1px solid rgba(245,158,11,0.38)', background: 'rgba(15,23,42,0.26)', marginBottom: 8 } }, [ el('span', { key: 't', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.35 } }, 'Scan markers hidden'), el('button', { key: 'b', onClick: showScanMarkers, style: { fontSize: 11.5, fontWeight: 900, padding: '5px 9px', borderRadius: 7, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Show scan markers') ]),
           el('div', { key: 'target', style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginBottom: 6 } }, 'Target: ' + scanTarget.label + ' anchor'),
           el('div', { key: 'prompt', style: { fontSize: 12, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, scanTarget.prompt),
+          workflowStarted ? el('details', { key: 'why', className: 'dinolab-evidence-why', style: { marginBottom: 8, padding: '7px 9px', borderRadius: 8, border: '1px solid rgba(94,234,212,0.28)', background: 'rgba(20,184,166,0.08)' } },
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 11.5, fontWeight: 900 } }, 'Why this matters'),
+            el('div', { style: { marginTop: 6, color: T.soft, fontSize: 11.5, lineHeight: 1.48 } }, scanTarget.why)
+          ) : null,
           el('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
             el('button', { key: 'log', onClick: logScanTarget, disabled: !!scanLogged[scanTarget.id], style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(34,197,94,0.50)', background: scanLogged[scanTarget.id] ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.18)', color: T.text, cursor: scanLogged[scanTarget.id] ? 'default' : 'pointer', opacity: scanLogged[scanTarget.id] ? 0.72 : 1 } }, scanLogged[scanTarget.id] ? 'Observation logged' : 'Log observation'),
             el('button', { key: 'next', onClick: nextScanTarget, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Next scan target')
@@ -8895,6 +9076,10 @@ window.StemLab = window.StemLab || {
           })),
           el('div', { key: 'focus', style: { fontSize: 12.5, color: T.text, lineHeight: 1.48, marginBottom: 5 } }, 'Focus: ' + assemblyFocus.label + ' - ' + assemblyFocus.role),
           el('div', { key: 'detail', style: { fontSize: 12, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, assemblyFocus.detail),
+          assemblyUnlocked ? el('details', { key: 'why', className: 'dinolab-evidence-why', style: { marginBottom: 8, padding: '7px 9px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.28)', background: 'rgba(167,139,250,0.08)' } },
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 11.5, fontWeight: 900 } }, 'Why this fossil matters'),
+            el('div', { style: { marginTop: 6, color: T.soft, fontSize: 11.5, lineHeight: 1.48 } }, assemblyFocus.why)
+          ) : null,
           el('div', { key: 'insightTitle', style: { paddingTop: 7, borderTop: '1px solid ' + T.border, fontSize: 11.5, color: T.soft, fontWeight: 900, marginBottom: 6 } }, 'Anatomy insights ' + assemblyInsightCount + '/' + assemblyPieces.length),
           assemblyInsightCount ? el('div', { key: 'insights', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 5, marginBottom: 8 } }, assemblyInsightPieces.map(function (piece) {
             return el('span', { key: piece.id, style: { fontSize: 11, fontWeight: 900, color: '#ddd6fe', padding: '4px 6px', borderRadius: 7, border: '1px solid rgba(167,139,250,0.34)', background: 'rgba(167,139,250,0.12)' } }, piece.label + ': ' + piece.role);
@@ -8914,28 +9099,28 @@ window.StemLab = window.StemLab || {
             label: 'Scale',
             claim: dn.common + ' was a large animal at about ' + fmtLength(dn.lengthM) + ' long.',
             evidence: 'Use the length guide, human scale figure, and logged skull-to-hip anchors to support the size estimate.',
-            reasoning: 'Size claims are strongest when measurements are connected to fossil anchors instead of just a number.'
+            reasoning: 'Size claims are strongest when measurements are connected to fossil anchors instead of just a number.', why: 'Measurements anchor the estimate, but body mass, posture, and exact soft-tissue dimensions still carry uncertainty.'
           },
           {
             id: 'posture',
             label: 'Posture',
             claim: dn.common + ' posture is reconstructed from how the skull, shoulder, hip, and tail balance.',
             evidence: 'Compare the shoulder and hip anchors with the translucent body outline before deciding how the animal carried its weight.',
-            reasoning: 'Posture is an inference: bones constrain it, but soft tissue and motion are reconstructed.'
+            reasoning: 'Posture is an inference: bones constrain it, but soft tissue and motion are reconstructed.', why: 'Joint surfaces constrain possible poses, but cartilage thickness, muscles, and habitual motion are not directly preserved.'
           },
           {
             id: 'function',
             label: 'Function',
             claim: dn.common + ' anatomy can support a function claim about feeding, breathing, movement, or balance.',
             evidence: assemblySupportReady ? 'Use assembled fossils as body-system evidence: ' + assemblyInsightText + '.' : 'Place fossils in the assembly puzzle before making a function claim.',
-            reasoning: 'Function claims are strongest when bone shape is tied to a body job such as sensing, breathing, moving, or balancing.'
+            reasoning: 'Function claims are strongest when bone shape is tied to a body job such as sensing, breathing, moving, or balancing.', why: 'Bone shape can suggest a body job, but behavior and soft tissue remain inferred. Name the anatomy clue before making the broader function claim.'
           },
           {
             id: 'uncertainty',
             label: 'Uncertainty',
             claim: 'One part of the reconstruction should stay tentative: ' + dn.uncertain,
             evidence: 'Pair the fossil evidence note with the visible scan anchors and name what is not preserved directly.',
-            reasoning: 'Good science separates observed fossils from model-based interpretation.'
+            reasoning: 'Good science separates observed fossils from model-based interpretation.', why: 'An uncertainty statement is part of the evidence trail: it marks where the model is extrapolating beyond directly preserved fossil material.'
           }
         ];
         var claimFocusId = d.field3dClaimFocus || 'scale';
@@ -8977,6 +9162,71 @@ window.StemLab = window.StemLab || {
           upd(patch);
           announceToSR('3D claim builder: ' + id);
         }
+        function fieldInvestigationSummaryText() {
+          var logged = loggedAnchorLabels.length ? loggedAnchorLabels.join(', ') : 'None yet';
+          var assembled = assemblyInsightPieces.length ? assemblyInsightPieces.map(function (piece) { return piece.label + ' (' + piece.role + ')'; }).join(', ') : 'None yet';
+          var namedEvidence = claimEvidenceText || 'No named fossil selected';
+          return [
+            'Dino Lab investigation summary',
+            'Species: ' + dn.common + ' (' + dn.name + ')',
+            'Workflow: ' + cap(activeWorkflowStep) + ' | ' + scanStatusText + ' | ' + assemblyProgressText,
+            'Reconstruction mode: ' + activeHypothesis.label,
+            'Evidence anchors logged: ' + logged + '.',
+            'Evidence route: Skull -> Shoulder -> Hip; ' + scanPathCount + '/' + scanPathLinks.length + ' links logged.',
+            'Assembly evidence: ' + assembled + '.',
+            'Claim focus: ' + claimFocus.label,
+            'Claim: ' + claimFocus.claim,
+            'Evidence: ' + claimFocus.evidence,
+            'Reasoning: ' + claimFocus.reasoning,
+            'Why this inference is cautious: ' + claimFocus.why,
+            'Named fossil evidence: ' + namedEvidence + '.',
+            'Uncertainty: ' + dn.uncertain
+          ].join('\n');
+        }
+        function fallbackCopyFieldInvestigationSummary(summary) {
+          if (typeof document === 'undefined' || !document.createElement || !document.body) return false;
+          var area = document.createElement('textarea');
+          area.value = summary;
+          area.setAttribute('readonly', 'true');
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.appendChild(area);
+          area.focus();
+          area.select();
+          var copied = false;
+          try { copied = typeof document.execCommand === 'function' && document.execCommand('copy'); } catch (e) { copied = false; }
+          document.body.removeChild(area);
+          return copied;
+        }
+        function copyFieldInvestigationSummary() {
+          var summary = fieldInvestigationSummaryText();
+          function finish(copied) { announceToSR(copied ? 'Investigation summary copied to the clipboard.' : 'Copy failed. The investigation summary remains visible in the share panel.'); }
+          if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(summary).then(function () { finish(true); }).catch(function () { finish(fallbackCopyFieldInvestigationSummary(summary)); });
+          } else finish(fallbackCopyFieldInvestigationSummary(summary));
+        }
+        function downloadFieldInvestigationSummary() {
+          var summary = fieldInvestigationSummaryText();
+          if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined') {
+            announceToSR('Summary download is not available in this browser.');
+            return;
+          }
+          try {
+            var blob = new Blob([summary], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'dinolab-' + dn.id + '-investigation-summary.txt';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if (typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(url);
+            announceToSR('Investigation summary downloaded.');
+          } catch (e) {
+            announceToSR('Summary download failed. The investigation summary remains visible in the share panel.');
+          }
+        }
         var claimBuilderPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Field claim builder'),
           el('div', { key: 'status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, 'Using ' + scanLoggedCount + '/' + scanTargets.length + ' logged anchors' + (scanComplete ? ' | Ready for CER' : ' | Scan more for a stronger claim')),
@@ -9001,7 +9251,19 @@ window.StemLab = window.StemLab || {
           })),
           el('div', { key: 'claim', style: { padding: '8px 0', borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Claim'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.claim)),
           el('div', { key: 'evidence', style: { padding: '8px 0', borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Evidence'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.evidence)),
-          el('div', { key: 'reasoning', style: { paddingTop: 8, borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Reasoning'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.reasoning))
+          el('div', { key: 'reasoning', style: { paddingTop: 8, borderTop: '1px solid ' + T.border } }, el('div', { style: { fontSize: 11, color: T.soft, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, 'Reasoning'), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.48 } }, claimFocus.reasoning)),
+          workflowStarted ? el('details', { key: 'inferenceWhy', className: 'dinolab-evidence-why', style: { marginTop: 8, padding: '7px 9px', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', background: 'rgba(56,189,248,0.08)' } },
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 11.5, fontWeight: 900 } }, 'Why this inference is cautious'),
+            el('div', { style: { marginTop: 6, color: T.soft, fontSize: 11.5, lineHeight: 1.48 } }, claimFocus.why)
+          ) : null,
+          workflowStarted ? el('details', { key: 'share', className: 'dinolab-investigation-share', style: { marginTop: 10, padding: '8px 9px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.30)', background: 'rgba(20,184,166,0.08)' } },
+            el('summary', { style: { cursor: 'pointer', color: T.text, fontSize: 11.5, fontWeight: 900 } }, 'Share investigation summary'),
+            el('div', { style: { marginTop: 6, color: T.soft, fontSize: 11.5, lineHeight: 1.48 } }, 'Create a plain-text handoff with the species, evidence route, assembled fossils, claim, reasoning, and uncertainty note.'),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 8 } },
+              el('button', { type: 'button', onClick: copyFieldInvestigationSummary, 'aria-label': 'Copy Dino Lab investigation summary to clipboard', style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.55)', background: 'rgba(20,184,166,0.17)', color: T.text, cursor: 'pointer' } }, 'Copy summary'),
+              el('button', { type: 'button', onClick: downloadFieldInvestigationSummary, 'aria-label': 'Download Dino Lab investigation summary', style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, 'Download summary')
+            )
+          ) : null
         ], { marginBottom: 12, background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.25)' });
         var challengeSteps = [
           {
@@ -9168,7 +9430,7 @@ window.StemLab = window.StemLab || {
                 el('div', { className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': '3D model view controls', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
                   el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin'),
                   focusMode ? null : el('button', { id: 'dinolab-field-tools-toggle', type: 'button', onClick: drawerOpen ? closeFieldDrawer : openCurrentWorkflowTools, 'aria-expanded': drawerOpen ? 'true' : 'false', 'aria-controls': 'dinolab-field-drawer', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (drawerOpen ? '#5eead4' : T.border), background: drawerOpen ? 'rgba(20,184,166,0.16)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, drawerOpen ? 'Close field tools' : 'Open field tools'),
-                  el('button', { type: 'button', onClick: toggleFieldFocus, 'aria-pressed': focusMode ? 'true' : 'false', 'aria-keyshortcuts': focusMode ? 'Escape' : null, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (focusMode ? '#5eead4' : '#15803d'), background: focusMode ? 'rgba(20,184,166,0.16)' : '#15803d', color: focusMode ? T.text : '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, focusMode ? 'Exit focus view' : 'Focus model')
+                  el('button', { id: 'dinolab-field-focus-toggle', type: 'button', onClick: toggleFieldFocus, 'aria-pressed': focusMode ? 'true' : 'false', 'aria-keyshortcuts': focusMode ? 'Escape' : null, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (focusMode ? '#5eead4' : '#15803d'), background: focusMode ? 'rgba(20,184,166,0.16)' : '#15803d', color: focusMode ? T.text : '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, focusMode ? 'Exit focus view' : 'Focus model')
                 )
               ),
               el('div', { className: 'dinolab-field-workflow', hidden: focusMode, role: 'list', 'aria-label': 'Field Station workflow', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
@@ -9187,7 +9449,7 @@ window.StemLab = window.StemLab || {
                   )
                 );
               })),
-              el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { className: 'dinolab-field-next', hidden: focusMode, role: 'region', 'aria-label': 'Current field task', style: { marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', padding: 12, borderRadius: 10, border: '1px solid rgba(20,184,166,0.34)', background: 'rgba(20,184,166,0.08)' } },
                 el('div', { style: { flex: '1 1 300px' } },
                   el('div', { style: { fontSize: 12.5, fontWeight: 900, color: T.text, marginBottom: 2 } }, !workflowStarted ? 'Begin at the model' : (activeWorkflowStep === 'scan' ? 'Scan ' + scanTarget.label : (activeWorkflowStep === 'assemble' ? 'Assemble the fossil tray' : 'Turn evidence into a claim'))),
@@ -9201,6 +9463,7 @@ window.StemLab = window.StemLab || {
               )
             ),
             el('aside', { key: 'side', id: 'dinolab-field-drawer', className: 'dinolab-field-drawer', hidden: !drawerOpen || focusMode, 'aria-labelledby': 'dinolab-field-drawer-title', style: { position: 'absolute', top: 12, right: 12, bottom: 12, width: 'min(360px, calc(100% - 24px))', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', zIndex: 6, padding: 12, borderRadius: 12, border: '1px solid ' + T.border, background: T.panel, boxShadow: '0 18px 48px rgba(0,0,0,0.34)' } },
+              el('div', { className: 'dinolab-field-drawer-handle', 'aria-hidden': 'true', style: { display: 'none', width: 44, height: 4, borderRadius: 999, background: 'rgba(148,163,184,0.48)', margin: '-2px auto 10px' } }),
               el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 } },
                 el('div', { id: 'dinolab-field-drawer-title', style: { fontSize: 14, fontWeight: 900 } }, 'Field tools: ' + (drawerSection === 'reconstruct' ? 'Model' : cap(drawerSection))),
                 el('button', { id: 'dinolab-field-drawer-close', type: 'button', onClick: closeFieldDrawer, 'aria-label': 'Close field tools and return to the 3D model', 'aria-keyshortcuts': 'Escape', style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontWeight: 900 } }, 'Close')
@@ -9581,11 +9844,24 @@ window.StemLab = window.StemLab || {
         content = el('div', { style: { padding: 20, color: T.text } },
           el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
           el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
-          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dReconstructionMode: 'evidence', field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dReconstructionMode: 'evidence', field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, field3dProgress: null, field3dWorkflowStarted: false, field3dDrawerOpen: false, field3dFocusMode: false, field3dOrientationDismissed: false, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
         );
       }
 
       function renderMissionDeck() {
+        var savedProgress = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
+        var hasSavedProgress = fieldProgressIsValid(savedProgress);
+        var savedSpecies = hasSavedProgress ? (byId(savedProgress.speciesId) || DINOS[0]) : null;
+        var savedScanCount = hasSavedProgress ? Object.keys(savedProgress.scanLogged || {}).length : 0;
+        var savedAssemblyCount = hasSavedProgress ? Object.keys(savedProgress.assemblyPlaced || {}).length : 0;
+        function resumeFieldInvestigation() {
+          upd(fieldProgressRestorePatch(savedProgress));
+          announceToSR('Resumed Dino Lab investigation for ' + savedSpecies.common + '.');
+        }
+        function clearSavedInvestigation() {
+          upd(fieldProgressClearPatch());
+          announceToSR('Saved Dino Lab investigation cleared.');
+        }
         var seenCount = Object.keys(seen || {}).length;
         var quizCount = d.quizCorrect || 0;
         var activeTab = (TABS.filter(function (tb) { return tb.id === tab; })[0] || TABS[0]).label;
@@ -9606,6 +9882,15 @@ window.StemLab = window.StemLab || {
               el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
               el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Choose a fossil investigation path.'),
               el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
+              hasSavedProgress ? el('div', { className: 'dinolab-resume-card', role: 'region', 'aria-label': 'Saved Dino Lab investigation', style: { marginTop: 12, padding: 10, borderRadius: 10, border: '1px solid rgba(94,234,212,0.42)', background: 'rgba(20,184,166,0.10)' } },
+                el('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Saved investigation'),
+                el('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc', marginBottom: 3 } }, savedSpecies.common + ' · ' + savedScanCount + '/3 evidence logged · ' + savedAssemblyCount + '/6 assembled'),
+                el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.4, marginBottom: 8 } }, 'Your evidence path is saved. Continue where you left off or clear it for a fresh investigation.'),
+                el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  el('button', { type: 'button', onClick: resumeFieldInvestigation, 'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common, style: { padding: '7px 10px', borderRadius: 7, border: '1px solid #5eead4', background: '#0f766e', color: '#f8fafc', cursor: 'pointer', fontSize: 11.5, fontWeight: 900 } }, 'Resume investigation'),
+                  el('button', { type: 'button', onClick: clearSavedInvestigation, 'aria-label': 'Clear saved Dino Lab investigation', style: { padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.42)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Clear saved progress')
+                )
+              ) : null,
               el('div', { className: 'dinolab-mission-stats', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
                 [
                   ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
@@ -9641,6 +9926,7 @@ window.StemLab = window.StemLab || {
       var accessibilityStyles = '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
         '@media(max-width:980px){.dinolab-root .dinolab-field-drawer{position:static!important;width:100%!important;max-height:none!important;margin-top:12px!important}.dinolab-root .dinolab-field-workflow{grid-template-columns:repeat(2,minmax(0,1fr))!important}}' +
         '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-field-toolbar-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;margin-left:0!important}.dinolab-root .dinolab-field-toolbar-actions>button{width:100%!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +
+        '@media(max-width:720px){.dinolab-root .dinolab-field-drawer{padding:14px!important;border-radius:14px 14px 10px 10px!important;box-shadow:0 -8px 24px rgba(0,0,0,0.24)!important;border-top:2px solid rgba(20,184,166,0.42)!important}.dinolab-root .dinolab-field-drawer-handle{display:block!important}}' +
         '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
       return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));

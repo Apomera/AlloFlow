@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio oyabbe.",
   "cmd.open_video_studio_hint": "Mak, ket coc i te gin ma inen ki yub vidio me nyuto tic",
   "palette.ctx.videoStudio": "Kany — Video Studio",
-  "palette.close": "Lor palette me cik"
+  "palette.close": "Lor palette me cik",
+  "cmd.apply_lesson_template": "Cak ki template ma ki gwoko",
+  "cmd.apply_lesson_template_done": "Cak ki ",
+  "cmd.apply_lesson_template_hint": "Cako plan manyen ki template acel i kin ma igwoko",
+  "cmd.apply_lesson_template_missing": "Pe anongo template ma nying ne ",
+  "cmd.apply_lesson_template_which": "Template mene?",
+  "cmd.rebuild_lesson_step": "Cwako odoco laa acel me plan",
+  "cmd.rebuild_lesson_step_done": "Cwako odoco laa ",
+  "cmd.rebuild_lesson_step_hint": "Cako odoco gin tic acel — lok ni laa mene",
+  "cmd.rebuild_lesson_step_missing": "Pe anongo laa man i plan.",
+  "cmd.rebuild_lesson_step_none": "plan pe tye ki laa kadi dong.",
+  "cmd.rebuild_lesson_step_which": "Laa mene?",
+  "cmd.run_lesson_blueprint": "Cwec plan me pwony",
+  "cmd.run_lesson_blueprint_done": "Plan tye ka cwece — in twero neno laa acel acel i card.",
+  "cmd.run_lesson_blueprint_hint": "Cwec gin tic ducu ma tye i plan man.",
+  "cmd.cancelled": "Kwayo me juko otyeko. Tic ma tye kawuono bi juki ka ngat ma cung ne oyie."
 }

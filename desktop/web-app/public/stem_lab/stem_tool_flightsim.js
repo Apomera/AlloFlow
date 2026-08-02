@@ -365,6 +365,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   // Deterministic flap model shared by physics, PFD, and tests. Full flaps
   // increase maximum lift by 45% and nearly triple profile drag: the aircraft
   // can approach slower, but cannot accelerate or glide as efficiently.
+
+  // Shared directional relief lighting for both renderers. The optional height
+  // sampler lets the visual layer use its local terrain model while keeping
+  // this pure helper available to tests and other hosts.
+  function getTerrainSunLight(lat, lon, water, solarHour, brightness, heightSampler) {
+    var hr = Number(solarHour);
+    if (!isFinite(hr)) hr = 12;
+    hr = ((hr % 24) + 24) % 24;
+    var bright = Math.max(0, Math.min(1, Number(brightness) || 0));
+    var phase = Math.PI * (hr - 6) / 12;
+    var sunElev = Math.sin(phase);
+    var daylight = Math.max(0, Math.min(1, sunElev * 1.35));
+    var warm = Math.max(0, Math.min(1, 1 - daylight)) * (0.22 + bright * 0.78);
+    if (water) return { shade: 0.98 + bright * 0.04, warm: warm };
+
+    var sampler = typeof heightSampler === 'function' ? heightSampler : function(a, b) {
+      var n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+      return (n - Math.floor(n)) * 500;
+    };
+    var step = 0.018;
+    var ftPerDeg = 364800;
+    var cosLat = Math.max(0.18, Math.cos(lat * Math.PI / 180));
+    var east = sampler(lat, lon + step);
+    var west = sampler(lat, lon - step);
+    var north = sampler(lat + step, lon);
+    var south = sampler(lat - step, lon);
+    var gradX = (east - west) / (2 * step * ftPerDeg * cosLat);
+    var gradZ = (south - north) / (2 * step * ftPerDeg);
+    var facing = -(gradX * Math.cos(phase) + gradZ * Math.sin(phase));
+    facing = Math.max(-1, Math.min(1, facing));
+    var shade = 0.86 + bright * 0.12 + facing * (0.06 + daylight * 0.15);
+    return { shade: Math.max(0.68, Math.min(1.18, shade)), warm: warm };
+  }
+
   function getFlapAerodynamics(flapDeg) {
     var degrees = Math.max(0, Math.min(30, Number(flapDeg) || 0));
     var ratio = degrees / 30;
@@ -735,6 +769,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     if (avgFrameMs > 42 && tier < 2) return tier + 1;
     if (avgFrameMs < 24 && tier > 0) return tier - 1;
     return tier;
+  }
+
+  // Canvas scenery budgets share the adaptive governor used by WebGL.
+  // Structural navigation cues (roads, rivers, runways) are never removed;
+  // only repeated cosmetic census loops shrink as frame pressure rises.
+  function getSceneryQualityBudget(tier) {
+    tier = Math.max(0, Math.min(2, Math.round(Number(tier) || 0)));
+    return tier === 0
+      ? { fieldRadius: 5, lakeRadius: 2, townRadius: 3, treeRadius: 6, forestRadius: 3, canopyFactor: 1, shadowCount: 6, sparkleRadius: 2, microDetails: true }
+      : tier === 1
+        ? { fieldRadius: 4, lakeRadius: 1, townRadius: 2, treeRadius: 4, forestRadius: 2, canopyFactor: 0.65, shadowCount: 4, sparkleRadius: 1, microDetails: true }
+        : { fieldRadius: 3, lakeRadius: 1, townRadius: 1, treeRadius: 3, forestRadius: 1, canopyFactor: 0.35, shadowCount: 2, sparkleRadius: 0, microDetails: false };
   }
 
   // ── GROUND-TRACK TRAIL sampler ──
@@ -9990,6 +10036,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             cgx.fillStyle = cGrad;
             cgx.fillRect(0, 0, 128, 64);
           });
+          // A cool underside gradient gives the billboard a readable volume
+          // cue when viewed against bright sky; the sprite remains transparent
+          // and cheap, so quality tiers still control the census rather than
+          // the texture cost.
+          var cloudUnderside = cgx.createLinearGradient(0, 22, 0, 64);
+          cloudUnderside.addColorStop(0, 'rgba(75,94,120,0)');
+          cloudUnderside.addColorStop(0.62, 'rgba(75,94,120,0.12)');
+          cloudUnderside.addColorStop(1, 'rgba(45,58,82,0.34)');
+          cgx.fillStyle = cloudUnderside;
+          cgx.fillRect(0, 18, 128, 46);
           var cloudTex = new THREE.CanvasTexture(cloudCanvas);
 
           // Sun + moon: glow sprites positioned each frame from the SAME
@@ -10169,7 +10225,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         group.userData = {
           props: [],
           rotors: [],
-          flames: []
+          flames: [],
+          navLights: []
+        };
+
+        // Tiny emissive marker lights make the aircraft silhouette readable
+        // against both bright terrain and dusk/night sky. They are shared by
+        // every airframe and animated as a single cheap pulse pass.
+        var addNavLight = function(x, y, z, color, phase, mode) {
+          var lightMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9, depthWrite: false });
+          var lightObj = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), lightMat);
+          lightObj.position.set(x, y, z);
+          group.add(lightObj);
+          group.userData.navLights.push({ obj: lightObj, phase: phase || 0, mode: mode || 'steady' });
         };
 
         var whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
@@ -10185,6 +10253,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           fuseGeo.rotateX(Math.PI / 2);
           var fuselage = new THREE.Mesh(fuseGeo, whiteMat);
           group.add(fuselage);
+
+          // Blue-tinted canopy catches the cockpit light in chase view.
+          var canopyGeo = new THREE.BoxGeometry(2.7, 1.1, 3.4);
+          var canopy = new THREE.Mesh(canopyGeo, blueGlass);
+          canopy.position.set(0, 1.25, 2.0);
+          group.add(canopy);
 
           var wingGeo = new THREE.BoxGeometry(22, 0.3, 3);
           var wings = new THREE.Mesh(wingGeo, whiteMat);
@@ -10494,6 +10568,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           });
         }
 
+        var navDefs = type === 'cessna172'
+          ? [[-11, 1.2, 1.0, 0xef4444, 0, 'steady'], [11, 1.2, 1.0, 0x22c55e, 1.7, 'steady'], [0, 1.2, -5.8, 0xffffff, 3.1, 'strobe']]
+          : type === 'boeing737'
+            ? [[-16, -0.45, -2, 0xef4444, 0, 'steady'], [16, -0.45, -2, 0x22c55e, 1.7, 'steady'], [0, 4.4, -16, 0xffffff, 3.1, 'strobe']]
+            : type === 'glider'
+              ? [[-16, 0.5, 2, 0xef4444, 0, 'steady'], [16, 0.5, 2, 0x22c55e, 1.7, 'steady']]
+              : type === 'rescue_heli'
+                ? [[-1.8, 0.2, 5.8, 0xef4444, 0, 'steady'], [1.8, 0.2, 5.8, 0x22c55e, 1.7, 'steady'], [0, 1.8, -13.6, 0xffffff, 3.1, 'strobe']]
+                : type === 'drone'
+                  ? [[-1.6, 0.35, 1.6, 0xef4444, 0, 'strobe'], [1.6, 0.35, 1.6, 0x22c55e, 1.7, 'strobe']]
+                  : [[-7, 0.1, -2, 0xef4444, 0, 'steady'], [7, 0.1, -2, 0x22c55e, 1.7, 'steady'], [0, 1.8, -7, 0xffffff, 3.1, 'strobe']];
+        navDefs.forEach(function(nd) { addNavLight(nd[0], nd[1], nd[2], nd[3], nd[4], nd[5]); });
+
         return group;
       };
 
@@ -10599,7 +10686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         return ((seed * 17) % 18) * 10;
       };
 
-      var updateTerrainMesh = function(playerLat, playerLon) {
+      var updateTerrainMesh = function(playerLat, playerLon, solarHour, brightness) {
         if (!window.THREE || !threeSceneRef.current) return;
         var THREE = window.THREE;
         var scene = threeSceneRef.current;
@@ -10708,10 +10795,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 });
               }
             }
-            var reliefShade = water ? 1 : (0.90 + terrainHash(vlat * 18, vlon * 18) * 0.16);
+            var reliefLight = getTerrainSunLight(vlat, vlon, water, solarHour, brightness, terrainHeight);
+            var reliefShade = water ? 1 : (0.90 + terrainHash(vlat * 18, vlon * 18) * 0.16) * reliefLight.shade;
             var r = Math.min(1, worldEnv.color[0] / 255 * reliefShade);
             var g = Math.min(1, worldEnv.color[1] / 255 * reliefShade);
             var b = Math.min(1, worldEnv.color[2] / 255 * reliefShade);
+            if (!water && reliefLight.warm > 0.25) {
+              var reliefWarm = reliefLight.warm * 0.025;
+              r = Math.min(1, r + reliefWarm);
+              g = Math.min(1, g + reliefWarm * 0.25);
+              b = Math.max(0, b - reliefWarm * 0.65);
+            }
             if (water) waterIdx.push({ i: index, x: px, y: py, r: r, g: g, b: b });
 
             colorAttr.setXYZ(index, r, g, b);
@@ -10801,6 +10895,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           });
         }
 
+        if (acMesh.userData.navLights) {
+          var navTime = timeRef.current || 0;
+          acMesh.userData.navLights.forEach(function(nav) {
+            var pulse = nav.mode === 'strobe'
+              ? (Math.sin(navTime * 7 + nav.phase) > 0.72 ? 1 : 0.22)
+              : 0.78 + Math.sin(navTime * 2 + nav.phase) * 0.12;
+            nav.obj.material.opacity = pulse;
+            nav.obj.scale.setScalar(0.75 + pulse * 0.3);
+          });
+        }
+
         if (d.thirdPerson) {
           var offset = new THREE.Vector3(0, 8, 30);
           offset.applyEuler(new THREE.Euler(pitchRad * 0.5, -headingRad, 0, 'YXZ'));
@@ -10850,6 +10955,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           else if (qTier >= 2) cloudN = Math.min(cloudN, 6);
           var dnB2 = dayNight.brightness != null ? dayNight.brightness : 1;
           var cloudTint = wxNow3 === 'stormy' ? 0.45 : 1; // storm decks read darker
+          var cloudSolarPhase = Math.PI * ((dayNight.solarHour != null ? dayNight.solarHour : 12) - 6) / 12;
+          var cloudWarm = Math.max(0, Math.min(1, 1 - Math.max(0, Math.sin(cloudSolarPhase) * 1.35)));
           var cloudHalf = 60000;
           var cKids = resources.cloudGroup.children;
           for (var ck = 0; ck < cKids.length; ck++) {
@@ -10862,9 +10969,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             else if (cOx < -cloudHalf) cSpr2.position.x += cloudHalf * 2;
             if (cOz > cloudHalf) cSpr2.position.z -= cloudHalf * 2;
             else if (cOz < -cloudHalf) cSpr2.position.z += cloudHalf * 2;
-            cSpr2.material.opacity = 0.75 * Math.max(0.2, dnB2);
+            var cDistance = Math.sqrt(cOx * cOx + cOz * cOz);
+            var cDepthFade = 0.62 + 0.38 * (1 - Math.min(1, cDistance / cloudHalf));
+            cSpr2.material.opacity = 0.75 * Math.max(0.2, dnB2) * cDepthFade;
             var cGray = Math.max(0.35, dnB2) * cloudTint;
-            cSpr2.material.color.setRGB(cGray, cGray, cGray * (wxNow3 === 'stormy' ? 1.05 : 1));
+            cSpr2.material.color.setRGB(
+              Math.min(1, cGray + cloudWarm * 0.08),
+              Math.min(1, cGray + cloudWarm * 0.025),
+              Math.max(0, Math.min(1, cGray * (wxNow3 === 'stormy' ? 1.05 : 1) - cloudWarm * 0.035)));
           }
         }
 
@@ -11173,14 +11285,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         } catch (e) {}
 
         if (!terrainCenterRef.current) {
-          updateTerrainMesh(state.lat, state.lon);
+          updateTerrainMesh(state.lat, state.lon, dayNight.solarHour, dayNight.brightness);
         } else {
           var R = 364800.0;
           var dx = (state.lon - terrainCenterRef.current.lon) * R * Math.cos(terrainCenterRef.current.lat * Math.PI / 180);
           var dz = -(state.lat - terrainCenterRef.current.lat) * R;
           var dist = Math.sqrt(dx * dx + dz * dz);
           if (dist > 8000) {
-            updateTerrainMesh(state.lat, state.lon);
+            updateTerrainMesh(state.lat, state.lon, dayNight.solarHour, dayNight.brightness);
           }
         }
 
@@ -11220,6 +11332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var distNm = haversineNm(state.lat, state.lon, wp.lat, wp.lon);
           if (distNm < 10 && !resources.runwayMeshes[wp.code]) {
             var rwGroup = new THREE.Group();
+            rwGroup.userData.runwayLights = [];
             
             var asphaltGeo = new THREE.BoxGeometry(150, 2, 8000);
             var asphaltMat = new THREE.MeshLambertMaterial({ color: 0x374151 });
@@ -11244,6 +11357,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 line.position.set(-60 + t * 40, 0.05, side * 3950);
                 rwGroup.add(line);
               }
+            }
+
+            // Low-poly runway fixtures: the bloom pass turns these tiny
+            // emissive spheres into convincing edge, threshold, and approach
+            // lights without adding expensive PointLights per airport.
+            var addRunwayLight = function(x, z, color, phase) {
+              var lightGeo = new THREE.SphereGeometry(3, 6, 6);
+              var lightMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.12, depthWrite: false });
+              lightMat.fog = false;
+              var light = new THREE.Mesh(lightGeo, lightMat);
+              light.position.set(x, 2.6, z);
+              rwGroup.add(light);
+              rwGroup.userData.runwayLights.push({ obj: light, phase: phase || 0 });
+            };
+            for (var rl = 0; rl < 18; rl++) {
+              var rlZ = -3600 + rl * 420;
+              addRunwayLight(-68, rlZ, 0xffffff, rl * 0.37);
+              addRunwayLight(68, rlZ, 0xffffff, rl * 0.37 + 1.1);
+            }
+            // Threshold lights read green from the approach side and red from
+            // the far runway end, matching the real visual language.
+            for (var th = 0; th < 8; th++) {
+              var thX = -52 + th * 15;
+              addRunwayLight(thX, -3975, 0x22c55e, th * 0.22);
+              addRunwayLight(thX, 3975, 0xef4444, th * 0.22 + 0.8);
+            }
+            // Sequenced approach lights extend beyond the near threshold.
+            for (var al = 0; al < 7; al++) {
+              var alZ = -4140 - al * 180;
+              addRunwayLight(-24, alZ, 0xfff4bf, al * 0.55);
+              addRunwayLight(24, alZ, 0xfff4bf, al * 0.55 + 0.3);
             }
 
             var loc = geodeticToLocal(wp.lat, wp.lon, wp.alt + 1);
@@ -11284,6 +11428,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               light.material.color.setHex(papiColors[idx]);
             });
           }
+        });
+
+        // Animate runway fixtures as a single cheap material pass. Daylight
+        // leaves the markers readable; dusk/night drives the bloom-friendly
+        // pulse that makes the airport feel inhabited from approach.
+        Object.keys(resources.runwayMeshes).forEach(function(code) {
+          var rwLights = resources.runwayMeshes[code].userData && resources.runwayMeshes[code].userData.runwayLights;
+          if (!rwLights) return;
+          var lightBase = dayNight.isNight ? 0.92 : dayNight.isDusk ? 0.58 : 0.12;
+          rwLights.forEach(function(rec) {
+            var pulse = 0.76 + Math.sin(timeRef.current * 2.6 + rec.phase) * 0.18;
+            rec.obj.material.opacity = Math.max(0.05, lightBase * pulse);
+          });
         });
 
         Object.keys(resources.missionMeshes).forEach(function(key) {
@@ -11978,6 +12135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         h += terrainHash(lat * 40 + 10, lon * 40 + 10) * 80;
         return h;
       };
+
       var isWater = function(lat, lon) {
         // REAL land/water: the Natural Earth mask (isWaterMask, 0.1° cells)
         // replaces the old continental boxes + noise, so oceans, seas, and
@@ -12031,7 +12189,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // grid of features keyed on lat/lon that visibly scroll relative to
       // the player and fade out by ~6000 ft AGL (where the standard terrain
       // sampling takes over and supplies the variation naturally).
-      var drawLowAltDetails = function(gfx, W, H, horizonY, state, time, dayNight2) {
+      var drawLowAltDetails = function(gfx, W, H, horizonY, state, time, dayNight2, qualityTier) {
+        var sceneryBudget = getSceneryQualityBudget(qualityTier);
         var fieldElev = state.fieldElev || 0;
         var aglAlt = Math.max(0, state.altitude - fieldElev);
         if (aglAlt > 6000) return;
@@ -12075,8 +12234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var FSTEP = 0.012;
           var flatC = Math.round(state.lat / FSTEP) * FSTEP;
           var flonC = Math.round(state.lon / FSTEP) * FSTEP;
-          for (var fi = -5; fi <= 5; fi++) {
-            for (var fj = -5; fj <= 5; fj++) {
+          for (var fi = -sceneryBudget.fieldRadius; fi <= sceneryBudget.fieldRadius; fi++) {
+            for (var fj = -sceneryBudget.fieldRadius; fj <= sceneryBudget.fieldRadius; fj++) {
               var fLat = flatC + fi * FSTEP;
               var fLon = flonC + fj * FSTEP;
               var fSeed = terrainHash(fLat * 91, fLon * 53);
@@ -12124,7 +12283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               // Cluster of 5-9 small dark dots representing cattle or sheep
               // grouped near the cell center. Seed-locked positions so the
               // herd doesn't shimmer, but visible only at close range.
-              if (fSeed > 0.55 && fSeed <= 0.7 && aglAlt < 1800 && pTL.t > 0.55
+              if (sceneryBudget.microDetails && fSeed > 0.55 && fSeed <= 0.7 && aglAlt < 1800 && pTL.t > 0.55
                   && terrainHash(fLat * 311, fLon * 211) > 0.7) {
                 var herdN = 5 + Math.floor(fSeed * 5);
                 var herdCx = (pTL.x + pTR.x + pBL.x + pBR.x) / 4;
@@ -12155,8 +12314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var LSTEP = 0.04;
           var llatC = Math.round(state.lat / LSTEP) * LSTEP;
           var llonC = Math.round(state.lon / LSTEP) * LSTEP;
-          for (var li = -2; li <= 2; li++) {
-            for (var lj = -2; lj <= 2; lj++) {
+          for (var li = -sceneryBudget.lakeRadius; li <= sceneryBudget.lakeRadius; li++) {
+            for (var lj = -sceneryBudget.lakeRadius; lj <= sceneryBudget.lakeRadius; lj++) {
               var lLat = llatC + li * LSTEP;
               var lLon = llonC + lj * LSTEP;
               var lSeed = terrainHash(lLat * 173, lLon * 89);
@@ -12178,7 +12337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               // Sailboats on big lakes (close range only) — 2-3 small white
               // triangles at deterministic positions inside the ellipse, each
               // drifting slowly with time so the lake actually has motion.
-              if (lakeRx > 14 && pl.t > 0.45) {
+              if (sceneryBudget.microDetails && lakeRx > 14 && pl.t > 0.45) {
                 var nSails = 2 + Math.floor(lSeed * 2);
                 for (var sb = 0; sb < nSails; sb++) {
                   var sbAng = terrainHash(sb, lSeed * 60) * Math.PI * 2;
@@ -12215,8 +12374,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var lonC = Math.round(state.lon / STEP) * STEP;
         var townTint = 'rgba(120,110,100,';
         var roofTint = 'rgba(160,90,70,';
-        for (var di = -3; di <= 3; di++) {
-          for (var dj = -3; dj <= 3; dj++) {
+        for (var di = -sceneryBudget.townRadius; di <= sceneryBudget.townRadius; di++) {
+          for (var dj = -sceneryBudget.townRadius; dj <= sceneryBudget.townRadius; dj++) {
             var cellLat = latC + di * STEP;
             var cellLon = lonC + dj * STEP;
             var seed = terrainHash(cellLat * 67, cellLon * 41);
@@ -12228,7 +12387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var p = projectLatLon(cellLat + jLat, cellLon + jLon);
             if (!p) continue;
             var isCity = seed > 0.94; // top 6% get a skyline
-            var nBldgs = Math.floor(6 + seed * 12) + (isCity ? 8 : 0);
+            var nBldgs = Math.max(4, Math.floor((Math.floor(6 + seed * 12) + (isCity ? 8 : 0)) * Math.max(0.45, sceneryBudget.canopyFactor)));
             var clusterR = Math.max(3, 9 * p.t * (0.8 + seed * 0.4)) * (isCity ? 1.6 : 1);
 
             // City skyline: a row of taller silhouette rectangles BEHIND
@@ -12361,8 +12520,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                         : localWorldEnv.id === 'tropical_rainforest' ? 'rgba(24,98,47,'
                         : localWorldEnv.id === 'grassland' ? 'rgba(74,92,43,'
                         : 'rgba(35,80,40,';
-          for (var ti = -6; ti <= 6; ti++) {
-            for (var tj = -6; tj <= 6; tj++) {
+          for (var ti = -sceneryBudget.treeRadius; ti <= sceneryBudget.treeRadius; ti++) {
+            for (var tj = -sceneryBudget.treeRadius; tj <= sceneryBudget.treeRadius; tj++) {
               var tLat = tlatC + ti * TREE_STEP;
               var tLon = tlonC + tj * TREE_STEP;
               var tSeed = terrainHash(tLat * 211, tLon * 137);
@@ -12683,8 +12842,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var FOREST_STEP = 0.022;
           var folatC = Math.round(state.lat / FOREST_STEP) * FOREST_STEP;
           var folonC = Math.round(state.lon / FOREST_STEP) * FOREST_STEP;
-          for (var foi = -3; foi <= 3; foi++) {
-            for (var foj = -3; foj <= 3; foj++) {
+          for (var foi = -sceneryBudget.forestRadius; foi <= sceneryBudget.forestRadius; foi++) {
+            for (var foj = -sceneryBudget.forestRadius; foj <= sceneryBudget.forestRadius; foj++) {
               var foLat = folatC + foi * FOREST_STEP;
               var foLon = folonC + foj * FOREST_STEP;
               var foSeed = terrainHash(foLat * 79, foLon * 167);
@@ -12703,7 +12862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.ellipse(pf.x, pf.y, foRx, foRy, 0, 0, Math.PI * 2);
               gfx.fill();
               // Canopy dots — boreal/deciduous mix tones
-              var canopyN = Math.floor(18 + foSeed * 26);
+              var canopyN = Math.max(6, Math.floor((18 + foSeed * 26) * sceneryBudget.canopyFactor));
               for (var cd = 0; cd < canopyN; cd++) {
                 var cdAng = terrainHash(foSeed * 100 + cd, foLat * 5) * Math.PI * 2;
                 var cdRad = terrainHash(foSeed * 200 + cd, foLon * 5) * foRx * 0.85;
@@ -12730,7 +12889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // 6 deterministically-seeded shadows wrap across the ground area.
         if (aglAlt < 5000) {
           gfx.fillStyle = 'rgba(20,30,40,' + (0.18 * fade) + ')';
-          for (var sh = 0; sh < 6; sh++) {
+          for (var sh = 0; sh < sceneryBudget.shadowCount; sh++) {
             // Position cycles through the visible ground band, slowly drifting
             var shPhase = ((time * 0.05 + sh * 0.17) % 1);
             var shScreenX = ((shPhase * (W + 200)) - 100);
@@ -12746,12 +12905,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // ── Lake & river surface sparkles: small bright dots overlaid on
         // water bodies that twinkle with time, suggesting sun reflection
         // off ripples. Re-uses the same lake grid as the lake renderer.
-        if (aglAlt < 4000 && dayNight2 && !dayNight2.isNight) {
+        if (sceneryBudget.sparkleRadius > 0 && aglAlt < 4000 && dayNight2 && !dayNight2.isNight) {
           var spStep = 0.04;
           var splatC = Math.round(state.lat / spStep) * spStep;
           var splonC = Math.round(state.lon / spStep) * spStep;
-          for (var spi = -2; spi <= 2; spi++) {
-            for (var spj = -2; spj <= 2; spj++) {
+          for (var spi = -sceneryBudget.sparkleRadius; spi <= sceneryBudget.sparkleRadius; spi++) {
+            for (var spj = -sceneryBudget.sparkleRadius; spj <= sceneryBudget.sparkleRadius; spj++) {
               var spLat = splatC + spi * spStep;
               var spLon = splonC + spj * spStep;
               var spSeed = terrainHash(spLat * 173, spLon * 89);
@@ -13698,6 +13857,362 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       // ── Draw terrain perspective ──
+      // -- Connected night-world light network --
+      // City meshes already carry emissive windows, but the surrounding world
+      // needs a readable road-and-settlement rhythm too. This deterministic
+      // overlay projects a small land-only network into the cockpit frame,
+      // adds a soft cityGlow at each node, and animates a few headlights along
+      // links. It works over both WebGL and Canvas without adding scene geometry.
+      var drawNightGroundLights = function(gfx, W, H, horizonY, state, time, dayNight2, qualityTier) {
+        if (!dayNight2 || !dayNight2.isNight) return;
+        var aglAlt = Math.max(0, (Number(state.altitude) || 0) - (Number(state.fieldElev) || 0));
+        if (aglAlt > 12000 || isWater(state.lat, state.lon)) return;
+        var budget = getSceneryQualityBudget(qualityTier);
+        var tier = Math.max(0, Math.min(2, Math.round(Number(qualityTier) || 0)));
+        var fade = Math.max(0, 1 - aglAlt / 12000);
+        var radius = tier === 0 ? 3 : tier === 1 ? 2 : 1;
+        var maxNodes = tier === 0 ? 12 : tier === 1 ? 8 : 4;
+        var step = 0.06;
+        var latCenter = Math.round(state.lat / step) * step;
+        var lonCenter = Math.round(state.lon / step) * step;
+        var hdgRad = (Number(state.heading) || 0) * Math.PI / 180;
+        var cosHdg = Math.cos(hdgRad);
+        var sinHdg = Math.sin(hdgRad);
+        var cosLat = Math.max(0.05, Math.cos((Number(state.lat) || 0) * Math.PI / 180));
+
+        // Keep the same forward-facing perspective as low-altitude details,
+        // but let the network reach farther toward the horizon (~12 nm).
+        function projectNightPoint(lat, lon) {
+          var dLat = lat - state.lat;
+          var dLon = (lon - state.lon) * cosLat;
+          var nmFwd = (dLat * cosHdg + dLon * sinHdg) * 60;
+          var nmSide = (dLat * (-sinHdg) + dLon * cosHdg) * 60;
+          if (nmFwd < 0.15 || nmFwd > 12) return null;
+          var t = 1 - Math.min(1, Math.log(nmFwd + 1) / Math.log(13));
+          var y = horizonY + (H - horizonY) * (0.06 + 0.94 * t * t);
+          var sideScale = 62 * (0.42 + t * t * 0.72);
+          var x = W / 2 + nmSide * sideScale;
+          if (x < -60 || x > W + 60) return null;
+          return { x: x, y: y, t: t, nmFwd: nmFwd };
+        }
+
+        var nodes = [];
+        var nodeMap = Object.create(null);
+        // Roads are sparse; settlement nodes are rarer and brighter. Restrict
+        // both to land so light strings never run across open water.
+        for (var ni = -radius; ni <= radius && nodes.length < maxNodes * 2; ni++) {
+          for (var nj = -radius; nj <= radius && nodes.length < maxNodes * 2; nj++) {
+            var cellLat = latCenter + ni * step;
+            var cellLon = lonCenter + nj * step / cosLat;
+            if (isWater(cellLat, cellLon)) continue;
+            var seed = terrainHash(cellLat * 71, cellLon * 43);
+            if (seed < (tier === 0 ? 0.67 : tier === 1 ? 0.71 : 0.76)) continue;
+            var projected = projectNightPoint(cellLat, cellLon);
+            if (!projected) continue;
+            var node = { i: ni, j: nj, p: projected, seed: seed };
+            nodes.push(node);
+            nodeMap[ni + ',' + nj] = node;
+          }
+        }
+        if (!nodes.length) return;
+
+        gfx.save();
+        gfx.lineCap = 'round';
+        // Link neighboring settlement cells into a low-key road network.
+        for (var ri = 0; ri < nodes.length; ri++) {
+          var roadNode = nodes[ri];
+          var dirs = [[1, 0], [0, 1], [1, 1], [-1, 1]];
+          for (var rd = 0; rd < dirs.length; rd++) {
+            var roadPeer = nodeMap[(roadNode.i + dirs[rd][0]) + ',' + (roadNode.j + dirs[rd][1])];
+            if (!roadPeer || roadPeer.p.nmFwd < 0.15) continue;
+            var roadSeed = terrainHash(roadNode.i * 19 + roadNode.j * 7, roadPeer.i * 23 + roadPeer.j * 11);
+            if (roadSeed < 0.30) continue;
+            var roadDepth = Math.max(0.2, (roadNode.p.t + roadPeer.p.t) * 0.5);
+            gfx.strokeStyle = 'rgba(255,177,83,' + (0.14 * fade * roadDepth) + ')';
+            gfx.lineWidth = Math.max(0.55, 0.7 + roadDepth * 0.8);
+            gfx.beginPath();
+            gfx.moveTo(roadNode.p.x, roadNode.p.y);
+            gfx.lineTo(roadPeer.p.x, roadPeer.p.y);
+            gfx.stroke();
+            // A pair of slow, offset headlights makes the network feel alive.
+            var carCount = budget.microDetails ? 2 : 1;
+            for (var car = 0; car < carCount; car++) {
+              var phase = ((Number(time) || 0) * (0.035 + roadSeed * 0.018) + roadSeed * 8 + car * 0.47) % 1;
+              var carX = roadNode.p.x + (roadPeer.p.x - roadNode.p.x) * phase;
+              var carY = roadNode.p.y + (roadPeer.p.y - roadNode.p.y) * phase;
+              var carSize = Math.max(0.8, 1.1 + roadDepth * 1.1);
+              gfx.fillStyle = car % 2 === 0
+                ? 'rgba(255,237,171,' + (0.62 * fade * roadDepth) + ')'
+                : 'rgba(255,127,75,' + (0.48 * fade * roadDepth) + ')';
+              gfx.fillRect(carX - carSize / 2, carY - carSize / 2, carSize, carSize * 0.72);
+            }
+          }
+        }
+
+        // Draw nodes over the roads so each settlement reads as a warm cluster.
+        for (var ci = 0; ci < nodes.length && ci < maxNodes; ci++) {
+          var city = nodes[ci];
+          var cityDepth = Math.max(0.25, city.p.t);
+          var cityRadius = 7 + 19 * cityDepth * (city.seed > 0.91 ? 1.3 : 0.8);
+          var cityGlow = gfx.createRadialGradient(city.p.x, city.p.y, 0, city.p.x, city.p.y, cityRadius);
+          cityGlow.addColorStop(0, 'rgba(255,205,117,' + (0.30 * fade * cityDepth) + ')');
+          cityGlow.addColorStop(0.35, 'rgba(255,162,75,' + (0.15 * fade * cityDepth) + ')');
+          cityGlow.addColorStop(1, 'rgba(255,125,54,0)');
+          gfx.fillStyle = cityGlow;
+          gfx.fillRect(city.p.x - cityRadius, city.p.y - cityRadius, cityRadius * 2, cityRadius * 2);
+          var lightCount = city.seed > 0.91 ? (budget.microDetails ? 9 : 5) : (budget.microDetails ? 5 : 3);
+          for (var li = 0; li < lightCount; li++) {
+            var lightAng = terrainHash(city.seed * 100 + li, city.i * 13 + city.j * 17) * Math.PI * 2;
+            var lightRad = (2 + terrainHash(city.seed * 200 + li, city.j * 29) * cityRadius * 0.62) * cityDepth;
+            var lightX = city.p.x + Math.cos(lightAng) * lightRad;
+            var lightY = city.p.y + Math.sin(lightAng) * lightRad * 0.48;
+            var twinkle = 0.58 + 0.42 * (Math.sin((Number(time) || 0) * 2.5 + li * 1.9 + city.seed * 10) * 0.5 + 0.5);
+            gfx.fillStyle = li % 4 === 0
+              ? 'rgba(255,236,166,' + (0.78 * twinkle * fade * cityDepth) + ')'
+              : 'rgba(255,174,88,' + (0.57 * twinkle * fade * cityDepth) + ')';
+            gfx.fillRect(lightX, lightY, Math.max(0.8, 0.9 + cityDepth * 1.4), Math.max(0.7, 0.75 + cityDepth));
+          }
+        }
+        gfx.restore();
+      };
+
+      // -- Atmospheric cloud-shadow compositor --
+      // Cloud meshes and rain currently live in the sky layer, while terrain
+      // remains uniformly lit. This pass closes that visual gap: deterministic
+      // penumbra patches drift across the projected ground plane with wind,
+      // weather coverage, solar brightness, and adaptive quality. It is a
+      // screen-space bridge shared by WebGL and Canvas, so the world stays
+      // coherent even when the renderer falls back.
+      var drawCloudShadowPass = function(gfx, W, H, horizonY, state, time, dayNight2, qualityTier) {
+        var wx = weatherRef.current || {};
+        if (!state || !dayNight2 || dayNight2.isNight) return;
+        var brightness = Math.max(0, Math.min(1, Number(dayNight2.brightness) || 0));
+        if (brightness < 0.12) return;
+        var aglAlt = Math.max(0, (Number(state.altitude) || 0) - (Number(state.fieldElev) || 0));
+        if (aglAlt > 18000) return;
+        var weatherType = wx.type || 'clear';
+        var cover = weatherType === 'stormy' ? 0.94
+          : weatherType === 'overcast' ? 0.72
+          : weatherType === 'gusty' ? 0.34
+          : weatherType === 'breezy' ? 0.20 : 0.12;
+        var visibility = wx.visibility == null ? 1 : Math.max(0.25, Math.min(1, Number(wx.visibility) || 0));
+        var altitudeFade = Math.max(0.16, 1 - aglAlt / 22000);
+        var shadowStrength = cover * brightness * altitudeFade * (0.74 + visibility * 0.26);
+        if (shadowStrength < 0.035) return;
+        var tier = Math.max(0, Math.min(2, Math.round(Number(qualityTier) || 0)));
+        var shadowCount = tier === 0 ? 9 : tier === 1 ? 6 : 3;
+        var windKts = Math.max(0, Number(wx.wind) || 0);
+        var windRel = (((Number(wx.windDir) || 0) - (Number(state.heading) || 0) + 540) % 360) - 180;
+        var driftX = Math.sin(windRel * Math.PI / 180) * (9 + windKts * 0.30);
+        var driftY = Math.cos(windRel * Math.PI / 180) * (3 + windKts * 0.08);
+        var seedBase = Math.floor((Number(state.lat) || 0) * 37) * 17 + Math.floor((Number(state.lon) || 0) * 23);
+        var horizonDepth = Math.max(0, Math.min(1, (H - horizonY) / Math.max(1, H)));
+        gfx.save();
+        gfx.globalCompositeOperation = 'multiply';
+        for (var si = 0; si < shadowCount; si++) {
+          var shadowSeed = terrainHash(seedBase + si * 19.7, seedBase * 0.37 + si * 11.3);
+          var spread = 1.9 + shadowSeed * 2.5;
+          var wrapW = W + 190;
+          var rawX = shadowSeed * W * spread + si * W * 0.21 + Number(time || 0) * driftX;
+          var x = ((rawX % wrapW) + wrapW) % wrapW - 95;
+          var yT = 0.16 + ((shadowSeed * 4.7 + si * 0.19) % 0.72);
+          var y = horizonY + (H - horizonY) * yT;
+          var depth = 0.34 + yT * 0.92 + horizonDepth * 0.16;
+          var rx = (24 + shadowSeed * 86) * depth;
+          var ry = (5 + shadowSeed * 13) * depth;
+          var angle = Math.atan2(driftY, Math.max(2, Math.abs(driftX))) * 0.42;
+          var alpha = shadowStrength * (0.10 + depth * 0.16) * (0.82 + Math.sin(Number(time || 0) * 0.22 + si) * 0.08);
+          var cloudShadow = gfx.createRadialGradient(x, y, 0, x, y, rx);
+          cloudShadow.addColorStop(0, 'rgba(26,38,56,' + alpha + ')');
+          cloudShadow.addColorStop(0.42, 'rgba(34,48,68,' + (alpha * 0.58) + ')');
+          cloudShadow.addColorStop(1, 'rgba(38,52,70,0)');
+          gfx.fillStyle = cloudShadow;
+          gfx.beginPath();
+          gfx.ellipse(x, y, rx, ry, angle, 0, Math.PI * 2);
+          gfx.fill();
+        }
+        gfx.restore();
+      };
+
+      // -- Canvas solar bodies and horizon halo --
+      // WebGL has explicit sun/moon sprites; the fallback previously relied on
+      // a gradient plus rays, so changing renderers changed the emotional
+      // lighting of the same flight. Keep this pass behind terrain and clouds:
+      // a warm disc and horizon bloom at dawn/day, a cool moon at night, with
+      // weather visibility gently softening the body rather than hiding it.
+      var drawCanvasSolarBodies = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (!state || !dayNight2) return;
+        var solarHour = Number(dayNight2.solarHour);
+        if (!isFinite(solarHour)) solarHour = 12;
+        solarHour = ((solarHour % 24) + 24) % 24;
+        var wx = weatherRef.current || {};
+        var visibility = wx.visibility == null ? 1 : Math.max(0.25, Math.min(1, Number(wx.visibility) || 0));
+        var solarT = Math.max(0, Math.min(1, (solarHour - 6) / 12));
+        var sunPhase = Math.PI * (solarHour - 6) / 12;
+        var sunElev = Math.sin(sunPhase);
+        var bodyPoint = function(hour) {
+          var t = Math.max(0, Math.min(1, (hour - 6) / 12));
+          return {
+            x: W * (0.10 + t * 0.80),
+            y: Math.max(18, horizonY * (0.14 + Math.abs(t - 0.5) * 0.68))
+          };
+        };
+
+        if (sunElev > -0.08) {
+          var sun = bodyPoint(solarHour);
+          var sunAlpha = Math.max(0, Math.min(0.96, 0.42 + sunElev * 0.48)) * (0.72 + visibility * 0.28);
+          var sunR = 7 + Math.max(0, sunElev) * 7;
+          var haloR = 28 + Math.max(0, sunElev) * 34;
+          gfx.save();
+          gfx.globalCompositeOperation = 'lighter';
+          var sunHalo = gfx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, haloR);
+          sunHalo.addColorStop(0, 'rgba(255,226,166,' + (sunAlpha * 0.34) + ')');
+          sunHalo.addColorStop(0.42, 'rgba(255,175,88,' + (sunAlpha * 0.12) + ')');
+          sunHalo.addColorStop(1, 'rgba(255,120,64,0)');
+          gfx.fillStyle = sunHalo;
+          gfx.fillRect(sun.x - haloR, sun.y - haloR, haloR * 2, haloR * 2);
+          gfx.fillStyle = 'rgba(255,244,205,' + sunAlpha + ')';
+          gfx.beginPath(); gfx.arc(sun.x, sun.y, sunR, 0, Math.PI * 2); gfx.fill();
+          // A very thin flare only at low sun keeps the disc dimensional
+          // without competing with the flight instruments.
+          var lowSun = Math.max(0, 1 - Math.max(0, sunElev) * 2.4);
+          if (lowSun > 0.18) {
+            gfx.strokeStyle = 'rgba(255,210,145,' + (sunAlpha * lowSun * 0.26) + ')';
+            gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(sun.x - 52, sun.y); gfx.lineTo(sun.x + 52, sun.y); gfx.stroke();
+          }
+          gfx.restore();
+
+          if (dayNight2.isDusk || sunElev < 0.20) {
+            var horizonGlow = gfx.createRadialGradient(sun.x, horizonY, 6, sun.x, horizonY, W * 0.42);
+            horizonGlow.addColorStop(0, 'rgba(255,152,86,' + (sunAlpha * 0.20) + ')');
+            horizonGlow.addColorStop(0.45, 'rgba(245,108,104,' + (sunAlpha * 0.08) + ')');
+            horizonGlow.addColorStop(1, 'rgba(170,75,130,0)');
+            gfx.fillStyle = horizonGlow;
+            gfx.fillRect(0, Math.max(0, horizonY - W * 0.24), W, W * 0.38);
+          }
+        }
+
+        var moonHour = (solarHour + 12) % 24;
+        var moonT = Math.max(0, Math.min(1, (moonHour - 6) / 12));
+        var moonPhase = Math.PI * (moonHour - 6) / 12;
+        var moonElev = Math.sin(moonPhase);
+        var moonDark = Math.max(0, 1 - (Number(dayNight2.brightness) || 0) * 1.3);
+        if (moonElev > -0.03 && moonDark > 0.22) {
+          var moon = bodyPoint(moonHour);
+          var moonAlpha = Math.min(0.84, moonDark * 0.78) * (0.72 + visibility * 0.28);
+          var moonR = 6 + Math.max(0, moonElev) * 3;
+          var moonHaloR = 20 + Math.max(0, moonElev) * 18;
+          gfx.save();
+          var moonHalo = gfx.createRadialGradient(moon.x, moon.y, 0, moon.x, moon.y, moonHaloR);
+          moonHalo.addColorStop(0, 'rgba(195,216,255,' + (moonAlpha * 0.24) + ')');
+          moonHalo.addColorStop(0.5, 'rgba(155,185,235,' + (moonAlpha * 0.08) + ')');
+          moonHalo.addColorStop(1, 'rgba(110,145,210,0)');
+          gfx.fillStyle = moonHalo;
+          gfx.fillRect(moon.x - moonHaloR, moon.y - moonHaloR, moonHaloR * 2, moonHaloR * 2);
+          gfx.fillStyle = 'rgba(224,233,255,' + moonAlpha + ')';
+          gfx.beginPath(); gfx.arc(moon.x, moon.y, moonR, 0, Math.PI * 2); gfx.fill();
+          // Subtle phase mask: a dark offset disc creates a readable crescent
+          // while leaving the underlying sky gradient untouched elsewhere.
+          var phaseMask = moonDark < 0.55 ? 0.62 : 0.28;
+          gfx.fillStyle = 'rgba(12,20,47,' + (moonAlpha * phaseMask) + ')';
+          gfx.beginPath(); gfx.arc(moon.x + moonR * 0.42, moon.y - moonR * 0.12, moonR * 0.92, 0, Math.PI * 2); gfx.fill();
+          gfx.restore();
+        }
+      };
+
+      // -- 3D world signposts --
+      // The 2D renderer labels nearby GEO_PLACES, but the default WebGL path
+      // only shows the mesh. These restrained signposts preserve the lesson's
+      // geography layer in the main scene: screen-space projection, depth
+      // fade, bearing/distance, and a pulsing ground pin, capped by quality.
+      // No discovery state is mutated here; the existing geography renderer
+      // remains the single source of announcements and completion tracking.
+      var drawThreeWorldSignposts = function(gfx, W, H, horizonY, state, time, dayNight2, qualityTier) {
+        if (!state || state.altitude < 1200) return;
+        var visRange = Math.max(45, Math.min(420, state.altitude / 105));
+        var tier = Math.max(0, Math.min(2, Math.round(Number(qualityTier) || 0)));
+        var maxLabels = tier === 0 ? 7 : tier === 1 ? 5 : 3;
+        var candidates = [];
+        GEO_PLACES.forEach(function(place) {
+          var dist = haversineNm(state.lat, state.lon, place.lat, place.lon);
+          if (dist <= visRange) candidates.push({ place: place, dist: dist });
+        });
+        candidates.sort(function(a, b) { return a.dist - b.dist; });
+        if (!candidates.length) return;
+
+        gfx.save();
+        var occupied = [];
+        for (var si = 0; si < candidates.length && occupied.length < maxLabels; si++) {
+          var item = candidates[si];
+          var p = item.place;
+          var dist = item.dist;
+          var brg = bearing(state.lat, state.lon, p.lat, p.lon);
+          var relBrg = ((brg - state.heading + 540) % 360) - 180;
+          if (Math.abs(relBrg) > 78) continue;
+          var depth = Math.max(0.08, 1 - dist / visRange);
+          var screenX = W / 2 + (relBrg / 78) * (W / 2);
+          var screenY = horizonY + (H - horizonY) * (0.12 + depth * 0.54);
+          var fontSize = Math.max(8, Math.min(14, Math.round(8 + depth * 6)));
+          var minGap = 54 + fontSize * 2;
+          var crowded = occupied.some(function(prev) {
+            return Math.abs(prev.x - screenX) < minGap && Math.abs(prev.y - screenY) < 28;
+          });
+          if (crowded) continue;
+          occupied.push({ x: screenX, y: screenY });
+
+          var color = p.type === 'capital' ? '#fbbf24'
+            : p.type === 'city' ? '#7dd3fc'
+            : p.name.indexOf('Mountain') >= 0 || p.name.indexOf('Canyon') >= 0 || p.name.indexOf('Himalaya') >= 0 ? '#c4b5fd'
+            : p.name.indexOf('Reef') >= 0 || p.name.indexOf('Island') >= 0 ? '#22d3ee'
+            : p.name.indexOf('Desert') >= 0 || p.name.indexOf('Sahara') >= 0 ? '#fbbf24'
+            : '#86efac';
+          var icon = p.type === 'capital' ? '★'
+            : p.type === 'city' ? '●'
+            : p.name.indexOf('Mountain') >= 0 || p.name.indexOf('Canyon') >= 0 ? '▲'
+            : '◆';
+          var alpha = Math.max(0.34, Math.min(0.94, 0.34 + depth * 0.62));
+          if (dayNight2 && dayNight2.isNight) alpha *= 0.92;
+          var labelName = p.name.length > 28 ? p.name.slice(0, 26) + '…' : p.name;
+          var labelText = icon + ' ' + labelName;
+          var distanceText = Math.round(dist) + ' nm · ' + String(Math.round(brg) % 360).padStart(3, '0') + '°';
+
+          // Ground pin and a short dashed leader keep the label anchored to the
+          // terrain instead of reading like a floating HUD notification.
+          gfx.globalAlpha = alpha * 0.48;
+          gfx.strokeStyle = color;
+          gfx.lineWidth = 0.8;
+          gfx.setLineDash([2, 3]);
+          gfx.beginPath(); gfx.moveTo(screenX, screenY + 3); gfx.lineTo(screenX, screenY + 18 + depth * 14); gfx.stroke();
+          gfx.setLineDash([]);
+          gfx.globalAlpha = alpha * (0.58 + depth * 0.2);
+          gfx.beginPath(); gfx.arc(screenX, screenY + 18 + depth * 14, 2.2 + depth * 2, 0, Math.PI * 2); gfx.fillStyle = color; gfx.fill();
+          var pulse = 1 + Math.sin((Number(time) || 0) * 2.2 + si) * 0.25;
+          gfx.globalAlpha = alpha * 0.22;
+          gfx.beginPath(); gfx.arc(screenX, screenY + 18 + depth * 14, (5 + depth * 4) * pulse, 0, Math.PI * 2); gfx.stroke();
+
+          // Compact glassy label plate: readable against bright terrain,
+          // transparent enough to preserve the 3D scene underneath.
+          gfx.font = '600 ' + fontSize + 'px system-ui';
+          var textWidth = gfx.measureText(labelText).width;
+          var plateW = textWidth + 12;
+          var plateH = fontSize + 13;
+          gfx.globalAlpha = alpha * 0.62;
+          gfx.fillStyle = dayNight2 && dayNight2.isNight ? 'rgba(4,10,25,0.84)' : 'rgba(8,18,35,0.68)';
+          if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(screenX - plateW / 2, screenY - fontSize - 5, plateW, plateH, 5); gfx.fill(); }
+          else gfx.fillRect(screenX - plateW / 2, screenY - fontSize - 5, plateW, plateH);
+          gfx.globalAlpha = alpha;
+          gfx.fillStyle = color;
+          gfx.textAlign = 'center'; gfx.textBaseline = 'alphabetic';
+          gfx.fillText(labelText, screenX, screenY);
+          gfx.font = '8px monospace';
+          gfx.fillStyle = 'rgba(226,232,240,' + (alpha * 0.72) + ')';
+          gfx.fillText(distanceText, screenX, screenY + 10);
+        }
+        gfx.globalAlpha = 1;
+        gfx.restore();
+      };
+
       var drawTerrain = function(gfx, W, H, horizonY, state, time, dayNight2) {
         var rows = 16;
         var alt = Math.max(100, state.altitude);
@@ -13995,8 +14510,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           } else {
             var biomeColor = rowWorldEnv.color;
             var textureNoise = terrainHash(scanLat * 5, scanLon * 5) - 0.5;
-            var depthLight = 0.82 + depth * 0.22 + textureNoise * 0.10;
+            var rowSunLight = getTerrainSunLight(
+              scanLat, scanLon, false,
+              dayNight2 && dayNight2.solarHour != null ? dayNight2.solarHour : 12,
+              dayNight2 && dayNight2.brightness != null ? dayNight2.brightness : 1,
+              terrainHeight);
+            var depthLight = (0.82 + depth * 0.22 + textureNoise * 0.10) * rowSunLight.shade;
             var reliefWarmth = (rowWorldEnv.id === 'alpine' || rowWorldEnv.id === 'polar') ? 0 : Math.min(28, elev / 260);
+            reliefWarmth += rowSunLight.warm * 7;
             var landR = Math.max(0, Math.min(255, biomeColor[0] * depthLight + reliefWarmth));
             var landG = Math.max(0, Math.min(255, biomeColor[1] * depthLight - reliefWarmth * 0.35));
             var landB = Math.max(0, Math.min(255, biomeColor[2] * depthLight - reliefWarmth * 0.45));
@@ -16884,15 +17405,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Rain streaks on windshield
         if (wx.type === 'stormy' || wx.type === 'overcast') {
           var isHeavy = wx.type === 'stormy';
-          // Background rain streaks (distant)
+          // Background rain streaks (distant). Wind direction is
+          // projected into the cockpit frame so a crosswind visibly shears the
+          // precipitation instead of producing vertical arcade lines.
+          var windRel = (((Number(wx.windDir) || 0) - (state && state.heading || 0) + 540) % 360) - 180;
+          var windKts = Math.max(0, Number(wx.wind) || 0);
+          var rainSlant = Math.sin(windRel * Math.PI / 180) * (isHeavy ? 9 : 4) + (isHeavy ? 2 : 1);
+          var rainSpeed = 250 + windKts * 4;
           gfx.strokeStyle = 'rgba(150,180,220,' + (isHeavy ? 0.35 : 0.12) + ')';
           gfx.lineWidth = 1;
           var rainCount = isHeavy ? 80 : 25;
           for (var i = 0; i < rainCount; i++) {
-            var rx = (i * 73 + time * 250) % W;
+            var rx = (i * 73 + time * rainSpeed + windKts * i * 0.8) % W;
             var ry = (i * 41 + time * 900) % H;
             var rLen = isHeavy ? 15 + Math.sin(i * 3.7) * 5 : 10;
-            gfx.beginPath(); gfx.moveTo(rx, ry); gfx.lineTo(rx - 2, ry + rLen); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(rx, ry); gfx.lineTo(rx - rainSlant, ry + rLen); gfx.stroke();
+          }
+
+          // Near-horizon precipitation curtain: a soft depth layer makes the
+          // storm feel like a volume between aircraft and terrain, while its
+          // strength fades above the weather deck.
+          var rainBand = state && state.altitude != null ? Math.max(0.22, Math.min(1, 1 - Math.max(0, state.altitude - 6000) / 9000)) : 1;
+          var curtainAlpha = (isHeavy ? 0.18 : 0.07) * (1 - wx.visibility) * rainBand;
+          if (curtainAlpha > 0.008) {
+            var rainCurtain = gfx.createLinearGradient(0, Math.max(0, horizonY - 80), 0, H);
+            rainCurtain.addColorStop(0, 'rgba(130,160,190,0)');
+            rainCurtain.addColorStop(0.62, 'rgba(130,160,190,' + (curtainAlpha * 0.35) + ')');
+            rainCurtain.addColorStop(1, 'rgba(115,145,175,' + curtainAlpha + ')');
+            gfx.fillStyle = rainCurtain;
+            gfx.fillRect(0, Math.max(0, horizonY - 80), W, H - Math.max(0, horizonY - 80));
+          }
+
+          // Foreground streaks sell speed and windshield depth during a heavy
+          // cell; count stays capped and only appears below the cloud deck.
+          if (isHeavy && rainBand > 0.35) {
+            gfx.strokeStyle = 'rgba(205,225,245,0.2)';
+            gfx.lineWidth = 1.25;
+            for (var fg = 0; fg < 20; fg++) {
+              var fgX = (fg * 97 + time * (520 + windKts * 2.5)) % W;
+              var fgY = (fg * 53 + time * 1300) % H;
+              var fgLen = 34 + (fg % 5) * 7;
+              gfx.beginPath();
+              gfx.moveTo(fgX, fgY);
+              gfx.lineTo(fgX - rainSlant * 1.8, fgY + fgLen);
+              gfx.stroke();
+            }
           }
           // Windshield droplets (close-up rain drops, only in heavy rain)
           if (isHeavy && state && state.speed > 50) {
@@ -19626,13 +20183,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillRect(0, Math.max(0, horizonY - 90), W, 110);
             }
 
+            // Explicit sun/moon bodies keep Canvas and WebGL lighting in visual parity.
+            drawCanvasSolarBodies(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
             // Procedural terrain (replaces flat gradient)
             drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
             // Low-altitude detail layer: scrolling towns, trees, and roads so
             // the student sees motion and "ground features" rather than a
             // featureless wash. Fades out by 6000 ft AGL.
-            drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+            drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight, qualityRef.current.tier);
 
             // Other aircraft passing — a few ghost planes drift across the
             // sky at different altitudes and bearings. Strong "shared airspace"
@@ -19661,10 +20221,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (state.altitude < 12000) {
               var hillSeed = Math.floor(state.lat * 10) * 47 + Math.floor(state.lon * 10) * 13;
               var hillHide = Math.min(1, state.altitude / 12000);
-              // Two parallax layers: back (gray-blue) and front (darker).
+              // Two parallax layers: back (haze-softened) and front (darker).
+              // Pulling the ridge tint from the active biome keeps humid, dusty,
+              // and polar regions visually distinct even at the horizon.
+              var hillHaze = canvasWorldEnv.haze || [95, 115, 145];
+              var hillTint = function(base, hazeMix) {
+                return 'rgb(' + Math.round(base[0] * (1 - hazeMix) + hillHaze[0] * hazeMix) + ','
+                  + Math.round(base[1] * (1 - hazeMix) + hillHaze[1] * hazeMix) + ','
+                  + Math.round(base[2] * (1 - hazeMix) + hillHaze[2] * hazeMix) + ')';
+              };
               [
-                { alpha: 0.55 * (1 - hillHide), tint: 'rgb(95,115,145)', amp: 22, base: 6, freq: 0.018, offset: 0 },
-                { alpha: 0.75 * (1 - hillHide), tint: 'rgb(60,78,100)',  amp: 14, base: 3, freq: 0.032, offset: 40 }
+                { alpha: 0.55 * (1 - hillHide), tint: hillTint([95,115,145], 0.45), amp: 22, base: 6, freq: 0.018, offset: 0 },
+                { alpha: 0.75 * (1 - hillHide), tint: hillTint([60,78,100], 0.22),  amp: 14, base: 3, freq: 0.032, offset: 40 }
               ].forEach(function(layer) {
                 if (layer.alpha < 0.02) return;
                 gfx.fillStyle = layer.tint.replace('rgb(', 'rgba(').replace(')', ',' + layer.alpha + ')');
@@ -19684,6 +20252,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               });
             }
           }
+
+          // WebGL world signposts keep geography lessons visible in the default 3D path.
+          if (threeLoaded) drawThreeWorldSignposts(gfx, W, H, horizonY, state, timeRef.current, dayNight, qualityRef.current.tier);
+
+          // Cloud shadows bridge the sky/weather layer into the terrain and fade with altitude.
+          drawCloudShadowPass(gfx, W, H, horizonY, state, timeRef.current, dayNight, qualityRef.current.tier);
+
+          // Connected night light network overlays both terrain renderers and fades with altitude.
+          drawNightGroundLights(gfx, W, H, horizonY, state, timeRef.current, dayNight, qualityRef.current.tier);
 
           // ── Converging traffic: spawn/advance in the loop (owns dt), draw pure ──
           // OUTSIDE the !threeLoaded gate: this used to live in the 2D-fallback
@@ -19830,9 +20407,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var rowYBase = cloudY + ci * 3;
                 var capY = horizonY - (12 + ci * 2) - 4; // never paint below this
                 var rowY = Math.min(rowYBase, capY);
+                // Paint a soft blue-gray underside first, then restore the
+                // weather tint for the sunlit lobes and a small top highlight.
+                var cloudBottomAlpha = alphaHere * (dayNight.isNight ? 0.34 : 0.25);
+                gfx.fillStyle = 'rgba(92,110,132,' + cloudBottomAlpha + ')';
+                gfx.beginPath(); gfx.ellipse(cx2, rowY + 5, cSize * 1.04, 10 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.fillStyle = 'rgba(' + tintStr + ',' + alphaHere + ')';
                 gfx.beginPath(); gfx.ellipse(cx2, rowY, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
                 gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, rowY - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
                 gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, rowY + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.fillStyle = 'rgba(255,255,255,' + (alphaHere * 0.28) + ')';
+                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.12, rowY - 6, cSize * 0.48, 4 + ci, 0, 0, Math.PI * 2); gfx.fill();
               }
             });
           }
@@ -23773,6 +24358,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       nearestRealCities: nearestRealCities,
       isWaterMask: isWaterMask,
       stepQualityTier: stepQualityTier,
+      getSceneryQualityBudget: getSceneryQualityBudget,
+      getTerrainSunLight: getTerrainSunLight,
       getSprintScoreSummary: getSprintScoreSummary,
       WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
       CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,

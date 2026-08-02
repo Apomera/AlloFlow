@@ -1,0 +1,25 @@
+const keys = ['summary_completed', 'summary_emoji', 'summary_label', 'summary_resources', 'summary_skipped'];
+const make = (values) => Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+module.exports = {
+  hmong: make(['Ua tiav', 'Emoji txhawb', 'Kev xaus kev ua tiav ntawm Hom Coj Qhia', 'Peev txheej', 'Hla']),
+  igbo: make(['Emechara', 'Nkwado emoji', 'Nchịkọta mmecha Ọnọdụ Nduzi', 'Akụ', 'Gafere']),
+  indonesian: make(['Selesai', 'Dukungan emoji', 'Ringkasan penyelesaian Mode Terpandu', 'Sumber daya', 'Dilewati']),
+  italian: make(['Completato', 'Supporto emoji', 'Riepilogo completamento modalità guidata', 'Risorse', 'Saltato']),
+  japanese: make(['完了', '絵文字対応', 'ガイドモード完了サマリー', 'リソース', 'スキップ']),
+  kannada: make(['ಪೂರ್ಣಗೊಂಡಿದೆ', 'ಎಮೋಜಿ ಬೆಂಬಲ', 'ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯ ಸಾರಾಂಶ', 'ಸಂಪನ್ಮೂಲಗಳು', 'ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ']),
+  karen: make(['Ta bluh', 'Emoji htee', 'Htee p’ghaw k’thaw ta bluh hta', 'Hmanruah', 'Ta htee']),
+  khmer: make(['បានបញ្ចប់', 'ការគាំទ្ររូបអារម្មណ៍', 'សេចក្តីសង្ខេបការបញ្ចប់របៀបណែនាំ', 'ធនធាន', 'បានរំលង']),
+  kinyarwanda: make(['Byarangiye', 'Inkunga ya emoji', 'Incamake y’irangizwa ry’uburyo buyobowe', 'Umutungo', 'Byasimbutswe']),
+  kirundi: make(['Vyahera', 'Ugushigikira emoji', 'Incamake yo kurangiza uburyo buyobowe', 'Umutungo', 'Vyasimbutswe']),
+  korean: make(['완료됨', '이모지 지원', '가이드 모드 완료 요약', '리소스', '건너뜀']),
+  lao: make(['ສຳເລັດ', 'ຮອງຮັບ emoji', 'ບົດສະຫຼຸບການສຳເລັດໂໝດຄຳແນະນຳ', 'ຊັບພະຍາກອນ', 'ຂ້າມ']),
+  latin: make(['Perfectum', 'Auxilium emoji', 'Summarium completionis modi ducti', 'Opes', 'Omissum']),
+  lingala: make(['Esili', 'Lisungi ya emoji', 'Mokuse ya bosilisi ya Mode ya Bokambi', 'Ba-resource', 'Eleki']),
+  maay_maay: make(['La dhammeeyey', 'Taageerada emoji', 'Soo koobidda dhammeystirka Habka Hagidda', 'Khayraad', 'La booday']),
+  malayalam: make(['പൂർത്തിയായി', 'ഇമോജി പിന്തുണ', 'മാർഗനിർദ്ദേശ മോഡ് പൂർത്തീകരണ സംഗ്രഹം', 'വിഭവങ്ങൾ', 'ഒഴിവാക്കി']),
+  marathi: make(['पूर्ण', 'इमोजी समर्थन', 'मार्गदर्शित मोड पूर्णत्वाचा सारांश', 'संसाधने', 'वगळले']),
+  marshallese: make(['Ejjab dedelọñ', 'Emoji kōjparok', 'Kōmelele in kadeloñ Mode eo ej kōmman', 'Men ko', 'Jolok']),
+  nepali: make(['पूरा भयो', 'इमोजी समर्थन', 'निर्देशित मोड पूरा भएको सारांश', 'स्रोतहरू', 'छोडियो']),
+  pashto: make(['بشپړ شو', 'د ایموجي ملاتړ', 'د لارښود حالت د بشپړتیا لنډیز', 'سرچینې', 'پرېښودل شو']),
+  polish: make(['Ukończono', 'Obsługa emoji', 'Podsumowanie ukończenia trybu prowadzonego', 'Zasoby', 'Pominięto']),
+};

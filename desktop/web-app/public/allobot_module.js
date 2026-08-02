@@ -339,6 +339,21 @@ function alloStemAccessory(toolId) {
   const d = alloStemDiscipline(toolId);
   return d ? STEM_DISCIPLINE_ACCESSORY[d] || "microscope" : null;
 }
+const releaseAlloBotAudioUrl = (url) => {
+  if (!url || !String(url).startsWith("blob:")) return;
+  try {
+    if (typeof window.__alloTtsCacheOwnsUrl === "function" && window.__alloTtsCacheOwnsUrl(url)) return;
+    URL.revokeObjectURL(url);
+  } catch (_) {
+  }
+};
+const isAlloBotTtsOff = () => {
+  try {
+    return JSON.parse(safeGetItem("alloflow_ai_config") || "{}").ttsProvider === "off";
+  } catch (_) {
+    return false;
+  }
+};
 const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   useEffect(() => {
@@ -479,6 +494,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [moveDuration, setMoveDuration] = useState(700);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const speechGenerationRef = useRef(0);
+  const speechRequestAbortRef = useRef(null);
   const prevDragPos = useRef({ x: 0, y: 0 });
   const [dragRotation, setDragRotation] = useState(0);
   const [velocity, setVelocity] = useState({ dx: 0, dy: 0 });
@@ -606,9 +622,26 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const soundEnabledRef = useRef(soundEnabled);
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
-    if (!soundEnabled && currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current = null;
+    if (!soundEnabled) {
+      try {
+        speechRequestAbortRef.current?.abort();
+      } catch (_) {
+      }
+      if (currentAudioRef.current) {
+        try {
+          currentAudioRef.current.pause();
+        } catch (_) {
+        }
+        currentAudioRef.current = null;
+      }
+      if (lastAudioUrlRef.current) {
+        releaseAlloBotAudioUrl(lastAudioUrlRef.current);
+        lastAudioUrlRef.current = null;
+      }
+      try {
+        window.speechSynthesis?.cancel();
+      } catch (_) {
+      }
       setIsTalking(false);
     }
   }, [soundEnabled]);
@@ -734,11 +767,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   }, [isFlightActive, soundEnabled]);
   useEffect(() => {
     return () => {
+      try {
+        speechRequestAbortRef.current?.abort();
+      } catch (_) {
+      }
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
       }
       if (lastAudioUrlRef.current) {
-        URL.revokeObjectURL(lastAudioUrlRef.current);
+        releaseAlloBotAudioUrl(lastAudioUrlRef.current);
       }
     };
   }, []);
@@ -790,13 +827,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       lastGlobalSpeech.time = now;
     }
     speechGenerationRef.current += 1;
+    try {
+      speechRequestAbortRef.current?.abort();
+    } catch (_) {
+    }
+    const speechRequestController = typeof AbortController !== "undefined" ? new AbortController() : null;
+    speechRequestAbortRef.current = speechRequestController;
     const myGenId = speechGenerationRef.current;
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
     }
     if (lastAudioUrlRef.current) {
-      URL.revokeObjectURL(lastAudioUrlRef.current);
+      releaseAlloBotAudioUrl(lastAudioUrlRef.current);
       lastAudioUrlRef.current = null;
     }
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
@@ -831,6 +874,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setInternalMood(null);
       setIsTalking(false);
       currentAudioRef.current = null;
+      if (speechRequestAbortRef.current === speechRequestController) speechRequestAbortRef.current = null;
       if (onSpeechEnd) onSpeechEnd();
     };
     let audioStarted = false;
@@ -846,28 +890,53 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       });
       if (onGenerateAudio) {
         const _hasKokoro = !!window._kokoroTTS;
-        const attemptTTS = async (attemptNum) => {
-          const timeoutMs = _hasKokoro ? 9e4 : attemptNum === 1 ? 2e4 : 15e3;
-          debugLog(`\u{1F3A4} AlloBot TTS attempt ${attemptNum} (${timeoutMs}ms timeout, kokoro=${_hasKokoro})...`);
-          const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs));
-          const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);
-          return Promise.race([audioPromise, timeoutPromise]);
+        const attemptTTS = async () => {
+          const timeoutMs = _hasKokoro ? 9e4 : 2e4;
+          debugLog(`\u{1F3A4} AlloBot TTS request (${timeoutMs}ms timeout, kokoro=${_hasKokoro})...`);
+          let timeoutId = null;
+          let timedOut = false;
+          const timeoutPromise = new Promise((resolve) => {
+            timeoutId = setTimeout(() => {
+              timedOut = true;
+              try {
+                speechRequestController?.abort();
+              } catch (_) {
+              }
+              resolve(null);
+            }, timeoutMs);
+          });
+          const language = document?.documentElement?.lang || navigator?.language || "English";
+          const audioPromise = Promise.resolve(onGenerateAudio(ttsText, selectedVoice, voiceSpeed, {
+            maxRetries: 0,
+            signal: speechRequestController?.signal || null,
+            language,
+            priority: "interactive",
+            reason: "allobot-speech"
+          }));
+          audioPromise.then((lateUrl) => {
+            if (timedOut) releaseAlloBotAudioUrl(lateUrl);
+          }, () => {
+          });
+          try {
+            return await Promise.race([audioPromise, timeoutPromise]);
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+          }
         };
         try {
-          let audioUrl = await attemptTTS(1);
+          let audioUrl = await attemptTTS();
+          if (speechRequestAbortRef.current === speechRequestController) speechRequestAbortRef.current = null;
           if (!audioUrl) {
-            console.warn("[TTS] Gemini TTS attempt 1 timed out or returned null \u2014 retrying after delay...");
-            await new Promise((r) => setTimeout(r, 1500));
-            if (myGenId !== speechGenerationRef.current) return;
-            audioUrl = await attemptTTS(2);
-          }
-          if (!audioUrl) {
-            console.warn("[TTS] \u26A0\uFE0F Both Gemini TTS attempts failed \u2014 showing text only (no browser TTS)");
+            console.warn("[TTS] Generated AlloBot audio unavailable \u2014 using the active fallback policy.");
           } else {
             debugLog("onGenerateAudio returned: URL Present");
           }
-          if (myGenId !== speechGenerationRef.current) return;
+          if (myGenId !== speechGenerationRef.current) {
+            releaseAlloBotAudioUrl(audioUrl);
+            return;
+          }
           if (!soundEnabledRef.current) {
+            releaseAlloBotAudioUrl(audioUrl);
             setIsTalking(false);
             resetState();
             return;
@@ -876,7 +945,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             lastAudioUrlRef.current = audioUrl;
             const audio = new Audio(audioUrl);
             audio.playbackRate = voiceSpeed;
-            audio.volume = voiceVolume;
+            audio.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
             currentAudioRef.current = audio;
             if (window._kokoroTTS && window._kokoroTTS.chainPlay) {
               window._kokoroTTS.chainPlay(audio, voiceSpeed, voiceVolume, resetState);
@@ -885,6 +954,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             }
             const handleAudioError = (e) => {
               warnLog("Bot audio error/interrupted", e);
+              const shouldInvalidate = !e || e.name !== "NotAllowedError" && e.name !== "AbortError";
+              if (shouldInvalidate) {
+                try {
+                  window.__alloInvalidateTtsUrl?.(audioUrl);
+                } catch (_) {
+                }
+                if (lastAudioUrlRef.current === audioUrl) lastAudioUrlRef.current = null;
+              }
               resetState();
             };
             audio.onerror = handleAudioError;
@@ -894,39 +971,40 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             }).catch(handleAudioError);
           }
         } catch (e) {
-          if (window._kokoroTTS) {
-            warnLog("\u26A0\uFE0F TTS attempt failed but Kokoro present \u2014 skipping browser TTS:", e?.message);
-          } else {
-            warnLog("\u26A0\uFE0F Gemini TTS failed, falling back to browser TTS:", e?.message);
-          }
+          warnLog("\u26A0\uFE0F Generated AlloBot audio failed; device voice may be used:", e?.message);
         }
       }
-      if (!cloudSuccess && myGenId === speechGenerationRef.current && !isGlobalMuted()) {
-        if (window._kokoroTTS) {
-          debugLog("AlloBot: Kokoro present \u2014 skipping browser TTS fallback, showing text bubble only");
-        } else {
-          try {
-            if (window.speechSynthesis && ttsText && ttsText.length > 0) {
-              window.speechSynthesis.cancel();
-              const utter = new SpeechSynthesisUtterance(ttsText);
-              utter.rate = voiceSpeed || 1;
-              utter.volume = voiceVolume || 1;
-              utter.onend = resetState;
-              utter.onerror = () => {
-                resetState();
-              };
-              window.speechSynthesis.speak(utter);
-              audioStarted = true;
-              cloudSuccess = true;
-              debugLog("AlloBot: Using browser TTS fallback");
-            } else {
-              warnLog("AlloBot: No browser TTS available \u2014 text bubble only");
-              setIsTalking(false);
+      if (!cloudSuccess && myGenId === speechGenerationRef.current && !isGlobalMuted() && !isAlloBotTtsOff()) {
+        try {
+          if (window.speechSynthesis && ttsText && ttsText.length > 0) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(ttsText);
+            utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
+            utter.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
+            const browserLanguage = document?.documentElement?.lang || navigator?.language || "";
+            if (browserLanguage) utter.lang = browserLanguage;
+            try {
+              const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
+              const voices = window.speechSynthesis.getVoices?.() || [];
+              const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
+              if (matchingVoice) utter.voice = matchingVoice;
+            } catch (_) {
             }
-          } catch (fallbackErr) {
-            warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
+            utter.onend = resetState;
+            utter.onerror = () => {
+              resetState();
+            };
+            window.speechSynthesis.speak(utter);
+            audioStarted = true;
+            cloudSuccess = true;
+            debugLog("AlloBot: Using browser TTS fallback");
+          } else {
+            warnLog("AlloBot: No browser TTS available \u2014 text bubble only");
             setIsTalking(false);
           }
+        } catch (fallbackErr) {
+          warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
+          setIsTalking(false);
         }
       }
     }

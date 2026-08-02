@@ -18,4 +18,18 @@ describe('Sleep diary table accessibility', () => {
     expect(text).toContain("h('th', { scope: 'row'");
     expect(text).not.toContain("h('td', { style: { padding: 5, fontFamily: 'ui-monospace, monospace' } }, e.date)");
   });
+
+  it('adapts guidance and records a testable sleep change', () => {
+    const text = source();
+    expect(text).toContain('var SLEEP_GUIDANCE = {');
+    expect(text).toContain('elementary:');
+    expect(text).toContain('minHours: 9');
+    expect(text).toContain("var _sleBand = (ctx && ctx.gradeBand) || 'high';");
+    expect(text).toContain("'aria-label': 'Sleep check observations'");
+    expect(text).toContain("id: 'sl-experiment'");
+    expect(text).toContain('experiment: experiment');
+    expect(text).toContain("'Tried: ' + e.experiment");
+    expect(text).not.toContain('Crisis Text Line');
+    expect(text).not.toContain('single most useful tool for diagnosis');
+  });
 });

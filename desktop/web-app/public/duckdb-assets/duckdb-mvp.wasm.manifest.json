@@ -1,0 +1,23 @@
+{
+  "format": "alloflow-chunked-wasm-v1",
+  "source": "duckdb-mvp.wasm",
+  "bytes": 39362651,
+  "sha256": "45d72a81fba8e57693d890da837c7041310e385e75619a8559839b15388dfe97",
+  "parts": [
+    {
+      "file": "duckdb-mvp.wasm.part00",
+      "bytes": 16777216,
+      "sha256": "d3b3e18c34cb83ad4475df453c30b105bf79f2030349c3e40c3c2526315c1a7f"
+    },
+    {
+      "file": "duckdb-mvp.wasm.part01",
+      "bytes": 16777216,
+      "sha256": "55dce6e2d3d37f0a259a0710dc76a1ebaab848bb6ee33974cb32df52990471a9"
+    },
+    {
+      "file": "duckdb-mvp.wasm.part02",
+      "bytes": 5808219,
+      "sha256": "5b28b2be0c3e663639c9ca920156e2bc60c210ca4a13dce625a266508c6d649a"
+    }
+  ]
+}

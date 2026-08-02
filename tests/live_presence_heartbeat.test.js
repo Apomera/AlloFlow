@@ -22,7 +22,7 @@ describe('presence heartbeat — write path is gated and validated', () => {
     expect(ANTI).toMatch(/Presence heartbeat \(2026-07-16/);
   });
   it('the participant validator accepts only null or a finite non-negative number', () => {
-    expect(ANTI).toMatch(/field === 'signalAt' \|\| field === 'viewingAt' \|\| field === 'lastSeen'/);
+    expect(ANTI).toMatch(/field === 'signalAt' \|\| field === 'viewingAt' \|\| field === 'viewingResourceAt' \|\| field === 'lastSeen'/);
   });
   it('participantCanPatchSession allows the field on the per-uid roster root', () => {
     expect(ANTI).toMatch(/wsProgress: 1, wsProbeResult: 1, lastSeen: 1/);

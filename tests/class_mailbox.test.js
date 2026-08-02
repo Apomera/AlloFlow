@@ -66,7 +66,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(11);
+        expect(call({ a: 'hello' }).v).toBe(12);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -114,9 +114,21 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(got.data).toBe('AAABBB');
         expect(got.of).toBe(1);
         expect(got.title).toBe('Cells unit');
+        const extendedAt = new Date(Date.now() + 2 * 86400000).toISOString();
+        expect(call({ a: 'extendpack', id, expiresAt: extendedAt }).e).toBe('not-admin');
+        expect(call({ a: 'extendpack', admin, id, expiresAt: extendedAt })).toMatchObject({ ok: true, id, activities: 0 });
+        expect(JSON.parse(driveFiles.get('pack-' + id + '.json')).expiresAt).toBe(extendedAt);
+        expect(call({ a: 'extendpack', admin, id, expiresAt: new Date(Date.now() + 1000).toISOString() }).e).toBe('not-extension');
         const expiredId = 'PK-22345678-1234-1234-1234-123456789012';
         expect(call({ a: 'putpack', admin, id: expiredId, k: PK, part: 1, of: 1, data: 'OLD', title: 'Old unit', expiresAt: new Date(Date.now() - 1000).toISOString() }).ok).toBe(true);
         expect(call({ a: 'getpack', id: expiredId, k: PK, part: 1 }).e).toBe('expired');
+        expect(call({ a: 'extendpack', admin, id: expiredId, expiresAt: extendedAt }).e).toBe('expired');
+        const cloneId = 'PK-32345678-1234-1234-1234-123456789012';
+        const cloneSecret = 'clone_secret_clone_20';
+        const cloneExpiry = new Date(Date.now() + 7 * 86400000).toISOString();
+        expect(call({ a: 'clonepack', sourceId: expiredId, id: cloneId, k: cloneSecret, expiresAt: cloneExpiry }).e).toBe('not-admin');
+        expect(call({ a: 'clonepack', admin, sourceId: expiredId, id: cloneId, k: cloneSecret, expiresAt: cloneExpiry })).toMatchObject({ ok: true, id: cloneId, chars: 3 });
+        expect(call({ a: 'getpack', id: cloneId, k: cloneSecret, part: 1 })).toMatchObject({ ok: true, data: 'OLD', title: 'Old unit' });
         expect(call({ a: 'getpack', id, k: 'wrong_wrong_wrong_20', part: 1 }).e).toBe('denied');
         expect(call({ a: 'getpack', id: 'PK-00000000-0000-0000-0000-000000000000', k: PK }).e).toBe('no-pack');
         expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
@@ -191,6 +203,11 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(manifest.activities).toHaveLength(2);
         expect(manifest.activities.map(candidate => candidate.activityId)).toEqual([aid, secondAid]);
         expect(manifest.activities.every(candidate => candidate.expiresAt === expiresAt)).toBe(true);
+        const extendedAt = new Date(Date.now() + 2 * 86400000).toISOString();
+        expect(call({ a: 'extendpack', admin, id, expiresAt: extendedAt })).toMatchObject({ ok: true, activities: 2 });
+        const extendedManifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(extendedManifest.expiresAt).toBe(extendedAt);
+        expect(extendedManifest.activities.every(candidate => candidate.expiresAt === extendedAt)).toBe(true);
 
         const activityFile = `activity-${id}-${aid}.json`;
         const secondActivityFile = `activity-${id}-${secondAid}.json`;

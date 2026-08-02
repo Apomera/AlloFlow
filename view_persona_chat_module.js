@@ -397,7 +397,7 @@
     if (!window.__alloDeviceStoragePromise) {
       window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
         var s = document.createElement('script');
-        s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+        s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager';
         s.onload = function () {
           if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else reject(new Error('device storage module missing after load'));
         };

@@ -15,6 +15,13 @@ const startClassSession = async (deps) => {
     const aiPolicy = {
         studentAi: studentAiPolicyForShare === 'student-byok' ? 'student-byok' : 'off'
     };
+    const hostHeartbeatAt = Date.now();
+    const hostPresence = {
+        state: 'online',
+        heartbeatAt: hostHeartbeatAt,
+        expiresAt: hostHeartbeatAt + (90 * 1000),
+        leaseId: null,
+    };
     addToast(t('session.creating', { code }), "info");
     try {
         const resourcesToUpload = history.filter(h => h.id);
@@ -27,6 +34,7 @@ const startClassSession = async (deps) => {
             createdAt: new Date().toISOString(),
             hostId: user?.uid,
             aiPolicy,
+            hostPresence,
         };
         try {
             const payloadStr = JSON.stringify(sessionPayload);
@@ -45,6 +53,7 @@ const startClassSession = async (deps) => {
             createdAt: new Date().toISOString(),
             hostId: user?.uid,
             aiPolicy,
+            hostPresence,
             roster: {},
             democracy: {
                 isActive: false,
@@ -115,6 +124,7 @@ const startClassSession = async (deps) => {
                 createdAt: new Date().toISOString(),
                 hostId: user?.uid,
                 aiPolicy,
+                hostPresence,
                 isLocalOnly: true,
                 transport: 'local-preview',
                 shareUnavailableReason: 'firebase-permission-denied',

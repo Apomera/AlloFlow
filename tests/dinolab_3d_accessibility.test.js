@@ -71,6 +71,32 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': '3D model view controls'");
     expect(source).toContain("id: 'dinolab-field-species-file'");
     expect(source).toContain('grid-template-columns:repeat(auto-fit,minmax(108px,1fr))');
+    expect(source).toContain('var cameraPresetState = React.useState(null)');
+    expect(source).toContain("'aria-label': label + ' camera view'");
+    expect(source).toContain("'aria-pressed': active ? 'true' : 'false'");
+    expect(source).toContain("setCameraPreset('reset');\n                cameraTargetIsEvidence = false;\n                cameraTarget = modelCenter.clone();\n                ev.preventDefault(); yaw = -0.35; pitch = 0.18; zoom = 1;");
+    expect(source).toContain("className: 'dinolab-3d-controls-disclosure'");
+    expect(source).toContain('open: props.focusMode ? true : null');
+    expect(source).toContain("id: 'dinolab-3d-canvas-' + props.species.id");
+    expect(source).toContain("focusFieldControlSoon(nextFocus ? 'dinolab-3d-canvas-' + dn.id : 'dinolab-field-focus-toggle')");
+    expect(source).toContain("id: 'dinolab-field-focus-toggle'");
+    expect(source).toContain('View controls & layers');
+    expect(source).toContain("className: 'dinolab-camera-state', role: 'status', 'aria-live': 'polite'");
+    expect(source).toContain("className: 'dinolab-3d-evidence-route', role: 'list', 'aria-label': 'Evidence route'");
+    expect(source).toContain("onScanTargetChange: setScanTarget");
+    expect(source).toContain("scanActive: workflowStarted");
+    expect(source).toContain("onLogScanTarget: logScanTarget");
+    expect(source).toContain("'aria-label': 'Log ' + activeRoute.label + ' observation'");
+    expect(source).toContain("Start the field scan to log observations.");
+    expect(source).toContain("'aria-current': current ? 'step' : null");
+    expect(source).toContain("'aria-label': 'Focus ' + step.label + ' evidence anchor'");
+    expect(source).toContain("className: 'dinolab-3d-orientation-cue', role: 'note'");
+    expect(source).toContain("'aria-label': 'Dismiss 3D viewer orientation tips'");
+    expect(source).toContain("var orientationCueVisible = !focusMode && !workflowStarted && d.field3dOrientationDismissed !== true;");
+    expect(source).toContain('function dismissOrientationCue()');
+    expect(source).toContain('function notifyOrientationInteraction()');
+    expect(source).toContain("className: 'dinolab-field-drawer-handle'");
+    expect(source).toContain('dinolab-field-drawer-handle{display:block!important}');
     expect(source).toContain('function workflowStepAvailable(step)');
     expect(source).toContain('function openWorkflowStep(step)');
     expect(source).toContain("if (step === 'assemble') return scanComplete;");
@@ -122,6 +148,32 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('yawRef.current.zoom = zoom;');
     expect(source).toContain('function updateCameraView()');
     expect(source).toContain('var cameraReadoutRef = React.useRef(null);');
+    expect(source).toContain('var FIELD_PROGRESS_VERSION = 1;');
+    expect(source).toContain('function fieldProgressRecordFor(state)');
+    expect(source).toContain('function fieldProgressRestorePatch(record)');
+    expect(source).toContain('function fieldProgressClearPatch()');
+    expect(source).toContain('function decorateFieldProgressPatch(patch)');
+    expect(source).toContain("'aria-label': 'Saved Dino Lab investigation'");
+    expect(source).toContain("'aria-label': 'Resume Dino Lab investigation for ' + savedSpecies.common");
+    expect(source).toContain("'aria-label': 'Clear saved Dino Lab investigation'");
+    expect(source).toContain("'Why this matters'");
+    expect(source).toContain("'Why this fossil matters'");
+    expect(source).toContain("'Why this inference is cautious'");
+    expect(source).toContain('function fieldInvestigationSummaryText()');
+    expect(source).toContain('function copyFieldInvestigationSummary()');
+    expect(source).toContain('function downloadFieldInvestigationSummary()');
+    expect(source).toContain('navigator.clipboard.writeText(summary)');
+    expect(source).toContain('new Blob([summary]');
+    expect(source).toContain("'aria-label': 'Copy Dino Lab investigation summary to clipboard'");
+    expect(source).toContain("'aria-label': 'Download Dino Lab investigation summary'");
+    expect(source).toContain('var cameraTargetIsEvidence = !!evidenceAnchorPoints[scanTargetId];');
+    expect(source).toContain('var targetForView = cameraTarget.clone();');
+    expect(source).toContain('camera.position.set(targetForView.x + len * 0.12');
+    expect(source).toContain('camera.lookAt(targetForView);');
+    expect(source).toContain("Target ' + (cameraTargetIsEvidence ? cap(scanTargetId) + ' anchor' : 'full model')");
+    expect(source).toContain('cameraTargetIsEvidence = false;');
+    expect(source).toContain("Camera centered on ' + cap(scanTargetId) + ' evidence anchor.");
+    expect(source).toContain("Camera centered on the evidence anchor.");
     expect(source).toContain('var sceneRef = React.useRef(null);');
     expect(source).toContain('var cameraRef = React.useRef(null);');
     expect(source).toContain('var rendererRef = React.useRef(null);');
@@ -602,6 +654,21 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     }));
 
     await api.React.act(async () => { render(); });
+    const orientationCue = host.querySelector('.dinolab-3d-orientation-cue');
+    expect(orientationCue).not.toBeNull();
+    await api.React.act(async () => { host.querySelector('button[aria-label="Dismiss 3D viewer orientation tips"]')?.click(); });
+    expect(data.field3dOrientationDismissed).toBe(true);
+    expect(host.querySelector('.dinolab-3d-orientation-cue')).toBeNull();
+    const focusToggle = host.querySelector('#dinolab-field-focus-toggle');
+    expect(focusToggle?.textContent).toBe('Focus model');
+    await api.React.act(async () => { focusToggle?.click(); await new Promise(resolve => setTimeout(resolve, 8)); });
+    expect(data.field3dFocusMode).toBe(true);
+    expect(document.activeElement?.id).toBe('dinolab-3d-canvas-tyrannosaurus');
+    const exitFocusToggle = host.querySelector('#dinolab-field-focus-toggle');
+    expect(exitFocusToggle?.textContent).toBe('Exit focus view');
+    await api.React.act(async () => { exitFocusToggle?.click(); await new Promise(resolve => setTimeout(resolve, 8)); });
+    expect(data.field3dFocusMode).toBe(false);
+    expect(document.activeElement?.id).toBe('dinolab-field-focus-toggle');
     const scanStep = host.querySelector('button[aria-label="Step 2 Scan, Ready"]');
     const lockedAssembly = host.querySelector('button[aria-label="Step 3 Assemble, Locked"]');
     expect(scanStep).not.toBeNull();
@@ -650,6 +717,155 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     await api.React.act(async () => { root.unmount(); });
     host.remove();
   });
+  it('restores and clears a saved evidence investigation', async () => {
+    const api = setupDinoLab();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const saved = {
+      version: 1,
+      speciesId: 'tyrannosaurus',
+      hasProgress: true,
+      workflowStarted: true,
+      reconstructionMode: 'evidence',
+      showSkeleton: true,
+      showBody: true,
+      showHuman: true,
+      showEvidence: true,
+      autoRotate: false,
+      scanTargetIdx: 1,
+      scanLogged: { skull: true },
+      scanSpecies: 'tyrannosaurus',
+      assemblyPlaced: { skull: true },
+      assemblySpecies: 'tyrannosaurus',
+      assemblyFocusIdx: 1,
+      claimFocus: 'posture',
+      claimBone: 'spine',
+      claimBoneSpecies: 'tyrannosaurus',
+      challengeIdx: 2,
+      challengePicked: null,
+      challengeScore: 1,
+      challengeDone: 2
+    };
+    let data = { ...baseData('explore'), field3dProgress: saved };
+    let lastPatch = null;
+    const render = () => root.render(api.tool.cfg.render({
+      React: api.React,
+      toolData: { dinoLab: data },
+      update: () => {},
+      updateMulti: (_scope, patch) => { lastPatch = patch; },
+      announceToSR: () => {},
+    }));
+
+    await api.React.act(async () => { render(); });
+    const resume = host.querySelector('button[aria-label="Resume Dino Lab investigation for T. rex"]');
+    expect(resume).not.toBeNull();
+    await api.React.act(async () => { resume?.click(); });
+    expect(lastPatch?.tab).toBe('field3d');
+    expect(lastPatch?.field3dSelected).toBe('tyrannosaurus');
+    expect(lastPatch?.field3dScanTargetIdx).toBe(1);
+    expect(lastPatch?.field3dScanLogged?.skull).toBe(true);
+    expect(lastPatch?.field3dClaimBone).toBe('spine');
+
+    data = { ...baseData('explore'), field3dProgress: saved };
+    lastPatch = null;
+    await api.React.act(async () => { render(); });
+    const clear = host.querySelector('button[aria-label="Clear saved Dino Lab investigation"]');
+    expect(clear).not.toBeNull();
+    await api.React.act(async () => { clear?.click(); });
+    expect(lastPatch?.field3dProgress).toBeNull();
+    expect(lastPatch?.field3dSelected).toBeNull();
+    expect(lastPatch?.field3dWorkflowStarted).toBe(false);
+
+    await api.React.act(async () => { root.unmount(); });
+    host.remove();
+  });
+  it('copies a readable investigation summary from the share disclosure', async () => {
+    const api = setupDinoLab();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let data = {
+      ...baseData('field3d'),
+      field3dWorkflowStarted: true,
+      field3dScanLogged: { skull: true, shoulder: true },
+      field3dScanSpecies: 'tyrannosaurus',
+      field3dScanTargetIdx: 1,
+      field3dAssemblyPlaced: { skull: true, spine: true },
+      field3dAssemblySpecies: 'tyrannosaurus',
+      field3dClaimFocus: 'posture',
+      field3dClaimBone: 'spine',
+      field3dClaimBoneSpecies: 'tyrannosaurus'
+    };
+    let copiedText = '';
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: (value) => { copiedText = value; return Promise.resolve(); } }
+    });
+    const render = () => root.render(api.tool.cfg.render({
+      React: api.React,
+      toolData: { dinoLab: data },
+      update: () => {},
+      updateMulti: () => {},
+      announceToSR: () => {},
+    }));
+
+    await api.React.act(async () => { render(); });
+    const share = host.querySelector('details.dinolab-investigation-share');
+    expect(share).not.toBeNull();
+    const copy = host.querySelector('button[aria-label="Copy Dino Lab investigation summary to clipboard"]');
+    expect(copy).not.toBeNull();
+    await api.React.act(async () => { copy?.click(); await Promise.resolve(); });
+    expect(copiedText).toContain('Dino Lab investigation summary');
+    expect(copiedText).toContain('Species: T. rex (Tyrannosaurus rex)');
+    expect(copiedText).toContain('Evidence anchors logged: Skull, Shoulder.');
+    expect(copiedText).toContain('Evidence route: Skull -> Shoulder -> Hip; 1/2 links logged.');
+    expect(copiedText).toContain('Why this inference is cautious:');
+
+    await api.React.act(async () => { root.unmount(); });
+    host.remove();
+    if (originalClipboard === undefined) delete navigator.clipboard;
+    else Object.defineProperty(navigator, 'clipboard', { configurable: true, value: originalClipboard });
+  });
+  it('moves the active evidence focus from the in-stage route', async () => {
+    const api = setupDinoLab();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let data = baseData('field3d');
+    let lastPatch = null;
+    const render = () => root.render(api.tool.cfg.render({
+      React: api.React,
+      toolData: { dinoLab: data },
+      update: () => {},
+      updateMulti: (_scope, patch) => { lastPatch = patch; },
+      announceToSR: () => {},
+    }));
+
+    await api.React.act(async () => { render(); });
+    const shoulder = host.querySelector('button[aria-label="Focus Shoulder evidence anchor, next focus"]');
+    expect(shoulder).not.toBeNull();
+    await api.React.act(async () => { shoulder?.click(); });
+    expect(lastPatch?.field3dScanTargetIdx).toBe(1);
+    expect(lastPatch?.field3dProgress?.version).toBe(1);
+    expect(lastPatch?.field3dProgress?.scanTargetIdx).toBe(1);
+
+    data = { ...data, ...lastPatch };
+    await api.React.act(async () => { render(); });
+    expect(host.querySelector('button[aria-label="Focus Shoulder evidence anchor, current focus"]')).not.toBeNull();
+    data = { ...data, field3dWorkflowStarted: true };
+    await api.React.act(async () => { render(); });
+    const logShoulder = host.querySelector('button[aria-label="Log Shoulder observation"]');
+    expect(logShoulder).not.toBeNull();
+    await api.React.act(async () => { logShoulder?.click(); });
+    expect(lastPatch?.field3dScanLogged?.shoulder).toBe(true);
+    expect(lastPatch?.field3dScanTargetIdx).toBe(2);
+    expect(host.querySelector('button[aria-label="Focus Skull evidence anchor, current focus"]')).toBeNull();
+
+    await api.React.act(async () => { root.unmount(); });
+    host.remove();
+  });
   it('keeps the same 3D canvas mounted across unrelated Field Station updates', async () => {
     const api = setupDinoLab();
     const host = document.createElement('div');
@@ -673,6 +889,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
 
     const opacity = host.querySelector('input[aria-label="Body inference opacity"]');
+    expect(host.querySelector('.dinolab-3d-controls-disclosure')?.open).toBe(false);
     expect(opacity).not.toBeNull();
     const nativeValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
     await api.React.act(async () => {
@@ -684,14 +901,20 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
 
     const sideViewButton = [...host.querySelectorAll('.dinolab-3d-view-controls button')].find(button => button.textContent === 'Side');
     expect(sideViewButton).not.toBeNull();
+    expect(sideViewButton?.getAttribute('aria-pressed')).toBe('false');
     await api.React.act(async () => { sideViewButton.click(); });
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+    const sideViewButtonAfter = [...host.querySelectorAll('.dinolab-3d-view-controls button')].find(button => button.textContent === 'Side');
+    expect(sideViewButtonAfter?.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('.dinolab-camera-state')?.textContent).toBe('Preset: Side');
+    expect(host.querySelector('.dinolab-3d-view-controls button[aria-label="Front camera view"]')?.getAttribute('aria-pressed')).toBe('false');
 
     data = { ...data, field3dShowBody: false, field3dScanTargetIdx: 2, field3dScanLogged: { skull: true }, field3dAssemblyPlaced: { skull: true } };
     await api.React.act(async () => { render(); });
 
     data = { ...data, field3dFocusMode: true };
     await api.React.act(async () => { render(); });
+    expect(host.querySelector('.dinolab-3d-controls-disclosure')?.open).toBe(true);
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
     expect(host.querySelector('.dinolab-tablist')).toBeNull();
     expect([...host.querySelectorAll('button')].some(button => button.textContent === 'Exit focus view')).toBe(true);
@@ -699,6 +922,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     data = { ...data, field3dFocusMode: false };
     await api.React.act(async () => { render(); });
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+    expect(host.querySelector('.dinolab-3d-controls-disclosure')?.open).toBe(false);
     expect(host.querySelector('.dinolab-tablist')).not.toBeNull();
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
     expect(host.querySelector('input[aria-label="Body inference opacity"]')?.disabled).toBe(true);

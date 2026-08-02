@@ -38,15 +38,16 @@ describe('Typing Practice calendar accessibility and measurement integrity', () 
       'return (' + extractFunction('typingPracticeCalendarStats') + ')'
     )();
     expect(summarize([
-      { count: 0, totalChars: 0, comparable: 0, assisted: 0, best: 0 },
-      { count: 3, totalChars: 450, comparable: 2, assisted: 1, best: 34 },
-      { count: 1, totalChars: 90, comparable: 0, assisted: 1, best: 0 }
+      { count: 0, totalChars: 0, comparable: 0, assisted: 0, metricOnly: 0, best: 0 },
+      { count: 3, totalChars: 450, comparable: 2, assisted: 1, metricOnly: 0, best: 34 },
+      { count: 1, totalChars: 90, comparable: 0, assisted: 0, metricOnly: 1, best: 0 }
     ])).toEqual({
       practiceDays: 2,
       sessions: 4,
       characters: 540,
       comparableSessions: 2,
-      assistedSessions: 2,
+      assistedSessions: 1,
+      metricOnlySessions: 1,
       bestComparableWpm: 34
     });
   });
@@ -81,6 +82,23 @@ describe('Typing Practice calendar accessibility and measurement integrity', () 
       "'  .tp-root .tp-practice-calendar-grid { grid-template-columns: repeat(10, minmax(16px, 1fr)) !important; }'"
     );
     expect(source).toContain(".tp-calendar-day-active { background: Highlight !important;");
+  });
+
+  it('provides an accessible recent-session trend table', () => {
+    expect(source).toContain("id: 'tp-session-trend-table'");
+    expect(source).toContain("'aria-label': 'Recent comparable session data'");
+    expect(source).toContain("'Last ' + trend.length + ' WPM-comparable typing sessions.");
+    expect(source).toContain("['Date', 'Drill', 'Pace', 'Accuracy', 'Comparability']");
+    expect(source).toContain('typingPracticeMetricDisplay(s)');
+  });
+
+  it('keeps character-rate sessions visible on a separate CPM scale', () => {
+    expect(source).toContain("var cpmSessions = filteredSessions.filter");
+    expect(source).toContain("id: 'tp-cpm-trend-title'");
+    expect(source).toContain("id: 'tp-cpm-trend-table'");
+    expect(source).toContain("'aria-label': 'Character-rate session data'");
+    expect(source).toContain("'Not WPM comparable'");
+    expect(source).toContain('Character-rate sessions use a separate CPM trend below when available');
   });
 
   it('keeps the desktop mirror identical', () => {

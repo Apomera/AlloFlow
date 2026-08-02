@@ -1054,7 +1054,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex gap-2 justify-end mb-2' },
               h('button', { type: 'button', 'aria-label': speedPaused ? t('stem.angles.resume_speed_round', 'Resume speed round') : t('stem.angles.pause_speed_round', 'Pause speed round'), 'aria-pressed': speedPaused ? 'true' : 'false', onClick: toggleSpeedPause, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-red-700 text-white hover:bg-red-800' }, speedPaused ? t('stem.angles.resume', 'Resume') : t('stem.angles.pause', 'Pause')),
-              h('button', { type: 'button', 'aria-label': t('stem.angles.add_fifteen_seconds', 'Add 15 seconds'), onClick: extendSpeedRound, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700' }, '+15s')
+              h('button', { type: 'button', 'aria-label': t('stem.angles.add_fifteen_seconds', 'Add 15 seconds'), onClick: extendSpeedRound, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800' }, '+15s')
             ),
             speedTarget && h('div', null,
               h('div', { className: 'text-center mb-2' },

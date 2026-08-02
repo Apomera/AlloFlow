@@ -353,6 +353,173 @@ describe('GIS Studio', () => {
     expect(html).toContain('<table');
   });
 
+  it('normalizes story-map frames and tracks reflection progress', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const story = tool.testing.normalizeStoryMap({
+      title: '<script>story</script>',
+      slides: Array.from({ length: 14 }, (_, index) => ({ title: 'Frame ' + index, narrative: 'Observation ' + index })),
+      checks: { claim: true, evidence: true }
+    });
+    expect(story.slides).toHaveLength(12);
+    expect(story.subtitle).toContain('Claim → evidence → limitation');
+    expect(tool.testing.storyMapProgress(story)).toEqual({ complete: 2, total: 3, percent: 67, frames: 12 });
+  });
+
+  it('builds an escaped, ordered, accessible story-map report', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const report = tool.testing.buildStoryMapReport({
+      title: 'Watershed <script>alert(1)</script>',
+      subtitle: 'Claim → evidence → limitation',
+      checks: { claim: true, evidence: true, limitation: false },
+      slides: [{ title: 'Pattern <b>', view: 'Map', narrative: '<script>bad</script>', evidence: 'Two mapped records', limitation: 'Small sample' }],
+      rows: [{ name: 'Site A', geometry: 'Point', value: 12 }]
+    });
+    expect(report).toContain('<html lang="en">');
+    expect(report).toContain('Accessible evidence trail');
+    expect(report).toContain('Claim → evidence → limitation');
+    expect(report).toContain('<ol class="trail">');
+    expect(report).toContain('<caption>Sample records referenced by the story map</caption>');
+    expect(report).toContain('&lt;script&gt;');
+    expect(report).not.toContain('<script>alert');
+  });
+
+  it('renders the Story Map workspace and capture/export controls', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'story' });
+    for (const text of ['Story Map Studio', 'Claim → evidence → limitation', 'Add current view to story', 'Add custom evidence frame', 'Accessible evidence trail', 'Download story map report', 'Print or save as PDF']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('Story Map');
+    expect(html).toContain('<progress');
+  });
+
+  it('scores data quality safeguards and normalizes review acknowledgements', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    expect(tool.testing.normalizeQualityReviewState({ privacy: true, provenance: 1 })).toEqual({ privacy: true, missingness: false, provenance: true, interpretation: false });
+    const review = tool.testing.buildDataQualityReview({
+      importedRows: [{ name: 'Site A', lat: 44, lon: -69, value: 12 }],
+      timeRows: [{ name: 'Site A', year: 2020, value: 12, unit: 'percent' }],
+      provenance: { datasetTitle: 'Maine access', source: 'Classroom survey', method: 'Annual sample', limitations: 'Learning data' },
+      privacyAssessment: { highPrecision: 0, identifierWarnings: 0 },
+      composerAudit: { errors: 0, warnings: 0 },
+      remoteSummary: { masked: 0, total: 36 },
+      storyProgress: { frames: 2, complete: 3, total: 3, percent: 100 }
+    });
+    expect(review.score).toBe(100);
+    expect(review.ready).toBe(true);
+    expect(review.checks.map((item) => item.status)).toEqual(['pass', 'pass', 'pass', 'pass', 'pass', 'pass', 'pass']);
+    const incomplete = tool.testing.buildDataQualityReview({ provenance: {}, importedRows: [{ name: 'Student home', lat: 44.12345, lon: -69.98765, value: null }] });
+    expect(incomplete.errors).toBeGreaterThan(0);
+    expect(incomplete.warnings).toBeGreaterThan(0);
+  });
+
+  it('builds an accessible quality review report with a checklist and table', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const review = tool.testing.buildDataQualityReview({ provenance: { source: 'Maine agency' }, remoteSummary: { masked: 1, total: 36 } });
+    const report = tool.testing.buildDataQualityReport({ review, reviewState: { privacy: true } });
+    expect(report).toContain('<html lang="en">');
+    expect(report).toContain('Data Quality and Uncertainty Review');
+    expect(report).toContain('Evidence readiness');
+    expect(report).toContain('Quality checks, messages, and next actions');
+    expect(report).toContain('Coordinate privacy reviewed');
+    expect(report).toContain('<caption>Quality checks, messages, and next actions</caption>');
+  });
+
+  it('renders the Quality Review workspace and export controls', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'quality' });
+    for (const text of ['Data Quality and Uncertainty Review', 'Learner review checklist', 'Coordinate privacy reviewed', 'Missing values reviewed', 'Accessible quality table', 'Download quality review', 'Print or save as PDF']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('Evidence readiness');
+    expect(html).toContain('<table');
+  });
+
+  it('builds a teacher-ready investigation packet from story and quality data', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    expect(tool.questHooks.some((hook) => hook.id === 'investigation_packet')).toBe(true);
+    const report = tool.testing.buildInvestigationPacketReport({
+      title: 'Maine watershed <script>alert(1)</script>',
+      storyMap: { subtitle: 'Does access follow the coast?', checks: { claim: true, evidence: true, limitation: true }, slides: [{ title: 'Map pattern', view: 'Map', metric: 'Access', narrative: 'Values cluster near the coast.', evidence: 'Three mapped records', limitation: 'Small sample.' }] },
+      qualityReview: { score: 86, errors: 0, warnings: 1, summary: 'Ready for a careful review.', checks: [{ id: 'source', label: 'Provenance', status: 'warning', message: 'Source is brief.', recommendation: 'Add a URL.' }] },
+      provenance: { datasetTitle: 'Watershed study', source: 'Maine agency', method: 'Annual survey', limitations: 'Learning sample' },
+      rows: [{ name: 'Site A', geometry: 'Point', value: 12 }]
+    });
+    expect(report).toContain('<html lang="en">');
+    expect(report).toContain('GIS STUDIO INVESTIGATION PACKET');
+    expect(report).toContain('Accessible evidence sequence');
+    expect(report).toContain('Quality and uncertainty review');
+    expect(report).toContain('Data-table twin');
+    expect(report).toContain('Maine agency');
+    expect(report).toContain('&lt;script&gt;');
+    expect(report).not.toContain('<script>alert');
+  });
+
+  it('renders the Investigation Packet workspace and handoff controls', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'packet' });
+    for (const text of ['Investigation Packet', 'Packet contents', 'Evidence readiness', 'Story frames', 'Quality and uncertainty', 'Download Investigation Packet', 'Print or save as PDF']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('teacher handoff');
+  });
+
+  it('normalizes inquiry templates and tracks planning progress', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    expect(Object.keys(tool.testing.inquiryTemplates)).toEqual(['distribution', 'comparison', 'change', 'impact', 'remote']);
+    const plan = tool.testing.normalizeInquiryPlan({ template: 'remote', checklist: { question: true, evidence: true } });
+    expect(plan.question).toContain('land-cover');
+    expect(tool.testing.inquiryPlanProgress(plan)).toEqual({ complete: 2, total: 4, percent: 50, ready: false });
+    expect(tool.testing.inquiryPlanProgress({ checklist: { question: true, evidence: true, alternative: true, nextStep: true } }).ready).toBe(true);
+  });
+
+  it('includes the investigation plan in the packet report', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const report = tool.testing.buildInvestigationPacketReport({
+      inquiryPlan: { template: 'comparison', question: 'Do measures differ?', claim: 'Access is higher near services.', evidencePlan: 'Compare synchronized maps.', alternative: 'Definitions differ.', nextStep: 'Align units.', checklist: { question: true, evidence: true, alternative: true, nextStep: true } },
+      qualityReview: { score: 90, errors: 0, warnings: 0, summary: 'Ready.', checks: [] },
+      storyMap: { slides: [] }, provenance: { source: 'Classroom data' }
+    });
+    expect(report).toContain('Investigation plan');
+    expect(report).toContain('Do measures differ?');
+    expect(report).toContain('Align units.');
+    expect(report).toContain('4 of 4 planning checks complete');
+  });
+
+  it('renders the Investigation Planner workspace', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'planner' });
+    for (const text of ['Investigation Planner', 'Question type', 'Testable spatial question', 'Working claim', 'Alternative explanation or confounder', 'Investigation planning progress', 'Open Map Workspace', 'Build Story Map', 'Review Investigation Packet']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('type="checkbox"');
+  });
+
+  it('normalizes teacher review ratings and tracks rubric progress', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const review = tool.testing.normalizeTeacherReview({ status: 'ready', reviewer: 'Dr. M', overall: 'Strong evidence.', ratings: { question: 3, evidence: 2, quality: 1, limitations: 3 } });
+    expect(review.ratings).toEqual({ question: 3, evidence: 2, quality: 1, limitations: 3 });
+    expect(tool.testing.teacherReviewProgress(review)).toEqual({ rated: 4, total: 4, points: 9, max: 12, percent: 75, ready: true });
+  });
+
+  it('builds an accessible teacher review report', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const report = tool.testing.buildTeacherReviewReport({ review: { reviewer: 'Dr. M', status: 'revise', overall: '<script>bad</script>', nextRevision: 'Add a comparison.', ratings: { question: 2, evidence: 1, quality: 2, limitations: 1 } } });
+    expect(report).toContain('<html lang="en">');
+    expect(report).toContain('Teacher Review');
+    expect(report).toContain('Accessible rubric table');
+    expect(report).toContain('Add a comparison.');
+    expect(report).toContain('&lt;script&gt;');
+    expect(report).not.toContain('<script>bad');
+  });
+
+  it('renders Teacher Review workspace and controls', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'review' });
+    for (const text of ['Teacher Review', 'Reviewer', 'Review status', 'Accessible review rubric', 'Overall feedback', 'Next revision', 'Download teacher review', 'Open Investigation Packet']) expect(html).toContain(text);
+    expect(html).toContain('Rating (0-3)');
+  });
+
   it('renders the projection lab from restored state', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'projection' });

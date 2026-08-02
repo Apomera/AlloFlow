@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 11;
+var VERSION = 12;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -221,6 +221,14 @@ function handle(p) {
   if (a === 'putpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return putPack(cache, p);
+  }
+  if (a === 'extendpack') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return extendPack(cache, p);
+  }
+  if (a === 'clonepack') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return clonePack(cache, p);
   }
   if (a === 'putsubmission') return putSubmission(cache, props, p, admin);
   if (a === 'getpack') return getPack(cache, p);
@@ -638,6 +646,19 @@ function validWsProbeResultValue(value) {
   if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
   return true;
 }
+function validLiveHostPresenceValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const allowed = { state: 1, heartbeatAt: 1, expiresAt: 1, leaseId: 1 };
+  const keys = Object.keys(value);
+  for (let i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (value.state !== 'online') return false;
+  if (!(typeof value.heartbeatAt === 'number' && isFinite(value.heartbeatAt) && value.heartbeatAt > 0)) return false;
+  if (!(typeof value.expiresAt === 'number' && isFinite(value.expiresAt) && value.expiresAt > value.heartbeatAt)) return false;
+  if (value.expiresAt - value.heartbeatAt > LIVE_HOST_LEASE_TTL_MS + 10000) return false;
+  if (value.leaseId !== null && !(typeof value.leaseId === 'string' && /^[A-Za-z0-9_-]{8,120}$/.test(value.leaseId))) return false;
+  return true;
+}
 function validParticipantRosterField(field, value, uid) {
   if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
   if (field === 'uid') return value === uid;
@@ -646,17 +667,18 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'status') return value === 'active';
   if (field === 'xp') return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 10000000;
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
-  if (field === 'signalAt' || field === 'viewingAt' || field === 'lastSeen') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0); // Presence heartbeat (2026-07-16): lastSeen is a ms timestamp, validated like signalAt/viewingAt
+  if (field === 'signalAt' || field === 'viewingAt' || field === 'viewingResourceAt' || field === 'lastSeen') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0); // Presence heartbeat (2026-07-16): lastSeen is a ms timestamp, validated like signalAt/viewingAt
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  if (field === 'viewingResourceStatus') return value === null || value === 'loading' || value === 'ready' || value === 'failed';
   if (field === 'wsProgress') return validWsProgressValue(value);
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
 function validQuizResponseReceipt(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  var allowed = { activityId: 1, questionIndex: 1, submittedAt: 1, flow: 1 };
+  var allowed = { activityId: 1, questionIndex: 1, questionIndexes: 1, submittedAt: 1, flow: 1 };
   var keys = Object.keys(value);
-  if (keys.length !== 4) return false;
+  if (keys.length !== 4 && keys.length !== 5) return false;
   for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
   if (!(typeof value.activityId === 'string'
       && value.activityId.length >= 1
@@ -666,6 +688,23 @@ function validQuizResponseReceipt(value) {
       && Math.floor(value.questionIndex) === value.questionIndex
       && value.questionIndex >= 0
       && value.questionIndex <= 9999)) return false;
+  if (Object.prototype.hasOwnProperty.call(value, 'questionIndexes')) {
+    if (!Array.isArray(value.questionIndexes)
+        || value.questionIndexes.length < 1
+        || value.questionIndexes.length > 128) return false;
+    var seen = {};
+    for (var q = 0; q < value.questionIndexes.length; q++) {
+      var questionIndex = value.questionIndexes[q];
+      if (!(typeof questionIndex === 'number'
+          && isFinite(questionIndex)
+          && Math.floor(questionIndex) === questionIndex
+          && questionIndex >= 0
+          && questionIndex <= 9999)) return false;
+      if (seen[questionIndex]) return false;
+      seen[questionIndex] = true;
+    }
+    if (!seen[value.questionIndex]) return false;
+  }
   if (!(typeof value.submittedAt === 'number'
       && isFinite(value.submittedAt)
       && value.submittedAt > 0)) return false;
@@ -674,19 +713,19 @@ function validQuizResponseReceipt(value) {
 function validQuizTeam(value) {
   return value === 'Red' || value === 'Blue' || value === 'Green' || value === 'Yellow';
 }
-function participantCanPatchSession(updates, uid) {
+function participantCanPatchSession(updates, uid, sessionData) {
   var keys = Object.keys(updates);
   var rosterRoot = 'roster.' + uid;
   var receiptRoot = 'quizState.responseReceipts.' + uid;
   var teamRoot = 'quizState.teams.' + uid;
+  var voteRoot = 'democracy.votes.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
-    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingResourceAt: 1, viewingResourceStatus: 1, viewingAt: 1,
     wsProgress: 1, wsProbeResult: 1, lastSeen: 1
   };
   var roots = [
     'bridgeReactions.' + uid,
-    'democracy.votes.' + uid,
     'escapeRoomState.teams.' + uid,
     'escapeRoomState.teamProgress'
   ];
@@ -719,6 +758,16 @@ function participantCanPatchSession(updates, uid) {
       if (!validQuizTeam(updates[key])) return false;
       continue;
     }
+    if (key === voteRoot) {
+      var democracy = sessionData && sessionData.democracy;
+      var vote = updates[key];
+      if (!democracy || democracy.isActive !== true || democracy.phase !== 'voting'
+          || !Array.isArray(democracy.activeOptions) || typeof vote !== 'string'
+          || vote.length < 1 || vote.length > 500 || democracy.activeOptions.indexOf(vote) === -1) return false;
+      continue;
+    }
+    // Democracy votes are one fixed-option leaf; maps and nested patches are denied.
+    if (pathStarts(key, voteRoot)) return false;
     // Team claims are one atomic enum leaf; maps and nested patches are denied.
     if (pathStarts(key, teamRoot)) return false;
     var allowed = false;
@@ -752,7 +801,7 @@ function docWrite(cache, code, action, p, actor) {
 
   if (actor.role === 'participant') {
     if (tok === 's') {
-      if (action !== 'dpatch' || !participantCanPatchSession(updates, actor.uid)) return out({ ok: false, e: 'denied' });
+      if (action !== 'dpatch') return out({ ok: false, e: 'denied' });
     } else if (!participantCanWritePeer(tok, actor, action, p)) {
       return out({ ok: false, e: 'denied' });
     }
@@ -766,6 +815,10 @@ function docWrite(cache, code, action, p, actor) {
       return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
     }
     var current = readDocEnvelope(cache, code, tok);
+    if (actor.role === 'participant' && tok === 's'
+        && !participantCanPatchSession(updates, actor.uid, current && current.d)) {
+      return out({ ok: false, e: 'denied' });
+    }
     if (p.xw !== undefined) {
       var actual = current ? (parseInt(current.w, 10) || 0) : 0;
       if ((parseInt(p.xw, 10) || 0) !== actual) return out({ ok: false, e: 'conflict', w: actual });
@@ -1448,6 +1501,91 @@ function putPack(cache, p) {
     }
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
     return out({ ok: true, id: id, chars: assembled.length, of: downloadParts, activities: packActivities.length });
+  } finally { lock.releaseLock(); }
+}
+
+function futurePackExpiry(value) {
+  var parsed = Date.parse(String(value || ''));
+  var now = Date.now();
+  if (!isFinite(parsed) || parsed <= now || parsed > now + 365 * 24 * 60 * 60 * 1000) return '';
+  return new Date(parsed).toISOString();
+}
+
+// v12: lifecycle mutations are admin-only and deliberately narrow. Extension
+// changes only an ACTIVE manifest's expiration; it never revives an expired
+// credential. Cloning copies content into a fresh id/secret and fresh empty
+// activity sidecars, so an expired assignment can be reused without carrying
+// participants or responses forward.
+function extendPack(cache, p) {
+  var id = String(p.id || '');
+  var expiresAt = futurePackExpiry(p.expiresAt);
+  if (!/^PK-[0-9a-f-]{36}$/i.test(id) || !expiresAt) return out({ ok: false, e: 'bad-request' });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var file = findPackFile(id);
+    if (!file) return out({ ok: false, e: 'no-pack' });
+    var manifest;
+    try { manifest = JSON.parse(file.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
+    var currentExpiry = Date.parse(String(manifest.expiresAt || ''));
+    if (isFinite(currentExpiry) && currentExpiry <= Date.now()) return out({ ok: false, e: 'expired' });
+    var nextExpiry = Date.parse(expiresAt);
+    if (isFinite(currentExpiry) && nextExpiry <= currentExpiry) return out({ ok: false, e: 'not-extension' });
+    var activities = assignmentActivitiesFromManifest(manifest);
+    for (var i = 0; i < activities.length; i++) activities[i].expiresAt = expiresAt;
+    manifest.expiresAt = expiresAt;
+    manifest.activities = activities;
+    delete manifest.activity;
+    manifest.t = Date.now();
+    file.setContent(JSON.stringify(manifest));
+    return out({ ok: true, id: id, expiresAt: expiresAt, activities: activities.length });
+  } finally { lock.releaseLock(); }
+}
+
+function clonePack(cache, p) {
+  var sourceId = String(p.sourceId || '');
+  var id = String(p.id || '');
+  var secret = String(p.k || '');
+  var expiresAt = futurePackExpiry(p.expiresAt);
+  if (!/^PK-[0-9a-f-]{36}$/i.test(sourceId)
+      || !/^PK-[0-9a-f-]{36}$/i.test(id)
+      || sourceId === id || !isToken(secret) || !expiresAt) return out({ ok: false, e: 'bad-request' });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    if (findPackFile(id)) return out({ ok: false, e: 'exists' });
+    var sourceFile = findPackFile(sourceId);
+    if (!sourceFile) return out({ ok: false, e: 'no-pack' });
+    var source;
+    try { source = JSON.parse(sourceFile.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
+    var parts = [];
+    if (source.data !== undefined) {
+      var legacy = String(source.data || '');
+      for (var offset = 0; offset < legacy.length; offset += GET_PART_CHARS) parts.push(legacy.slice(offset, offset + GET_PART_CHARS));
+      if (!parts.length) parts.push('');
+    } else {
+      var sourceCount = Math.max(1, parseInt(source.of, 10) || 1);
+      for (var part = 1; part <= sourceCount; part++) {
+        var chunk = findNamedPackFileV7(packChunkNameV7(sourceId, part));
+        if (!chunk) return out({ ok: false, e: 'corrupt', part: part });
+        parts.push(chunk.getBlob().getDataAsString());
+      }
+    }
+    var chars = parts.reduce(function(sum, value) { return sum + value.length; }, 0);
+    if (chars > MAX_PACK_CHARS) return out({ ok: false, e: 'too-big' });
+    for (var d = 0; d < parts.length; d++) replacePackFileV7(packChunkNameV7(id, d + 1), parts[d], 'text/plain');
+    var activities = assignmentActivitiesFromManifest(source);
+    for (var a = 0; a < activities.length; a++) activities[a].expiresAt = expiresAt;
+    replacePackFileV7('pack-' + id + '.json', JSON.stringify({
+      v: 3, k: secret, t: Date.now(), title: String(source.title || '').slice(0, 140),
+      expiresAt: expiresAt, chars: chars, of: parts.length, activities: activities
+    }), 'application/json');
+    for (var s = 0; s < activities.length; s++) {
+      writeAssignmentActivityState(newAssignmentActivityState({
+        packId: id, activityId: activities[s].activityId, config: activities[s]
+      }));
+    }
+    return out({ ok: true, id: id, expiresAt: expiresAt, title: String(source.title || '').slice(0, 140), chars: chars, of: parts.length, activities: activities.length });
   } finally { lock.releaseLock(); }
 }
 

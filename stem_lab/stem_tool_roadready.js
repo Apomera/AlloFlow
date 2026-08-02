@@ -1019,7 +1019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return true;
   }
   function isStaticObstacleCell(cell) {
-    return cell === 1 || cell === 5 || cell === 6 || cell === 7 || cell === 8;
+    return cell === 1 || cell === 5 || cell === 6 || cell === 7 || cell === 8 || cell === 9;
   }
 
   function vehicleGridCollision(car, size, getCell) {
@@ -1352,8 +1352,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Pseudo-3D raycaster. The world is a grid-based map with roads, buildings,
   // lanes, and waypoints. The "car" is a moving point with heading.
   // Map cell values: 0 = road, 1 = building wall, 2 = grass/shoulder,
-  // 3 = centerline (visual only), 4 = sidewalk, 5 = tree, 6 = building special.
-  // Only 1, 5, 6 block raycasts.
+  // 3 = centerline (visual only), 4 = sidewalk, 5 = tree, 6 = median barrier,
+  // 7 = landmark anchor, 8 = flexible work-zone cone, 9 = guardrail.
+  // Static collision uses the vehicle footprint; cone impacts receive a softer response.
 
   var MAP_SIZE = 96;
 
@@ -1412,6 +1413,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function scenarioRoadLayout(scenarioId) {
     return roadLayoutFor(getContinuousScenarioProfile(scenarioId) || {});
+  }
+
+  // Resolve geometry at the queried station. Free Explore deliberately has no
+  // single world.profile because biome widths and roadside activity change by
+  // chunk; consumers that fall back directly to world.profile silently use the
+  // narrow 3.5 m default on wider roads.
+  function roadProfileAt(world, worldY, fallbackProfile) {
+    if (world && typeof world.getChunk === 'function' &&
+        typeof worldY === 'number' && isFinite(worldY)) {
+      var localChunk = world.getChunk(Math.floor(worldY / CHUNK_SIZE));
+      if (localChunk) return localChunk;
+    }
+    return (world && world.profile) || fallbackProfile || {};
+  }
+
+  function pedestrianCountForRoad(profileOrChunk) {
+    var source = profileOrChunk || {};
+    if (typeof source.pedestrianCount === 'number' && isFinite(source.pedestrianCount)) {
+      return Math.max(0, Math.round(source.pedestrianCount));
+    }
+    var byBiome = { residential: 2, suburban: 2, commercial: 4, industrial: 1, rural: 0 };
+    return Object.prototype.hasOwnProperty.call(byBiome, source.biome) ? byBiome[source.biome] : 0;
   }
 
   // One-way streets use the full paved width for same-direction lanes. Keep
@@ -1746,7 +1769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return { required: false, sameCorridor: false, sameDirection: false,
         separatedByBarrier: false, ahead: Infinity, lateral: Infinity };
     }
-    var source = profileOrChunk || (world && world.profile) || {};
+    var source = profileOrChunk || roadProfileAt(world, observer && observer.y, null);
     var from = trafficRoadCoordinates(world, observer);
     var to = trafficRoadCoordinates(world, bus);
     var sameCorridor = !!(from && to && from.corridorKey === to.corridorKey);
@@ -1788,7 +1811,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var direction = vehicle._crossDirection || crossStreetTravelDirection(
       vehicle._crossPose, vehicle.heading || 0) || 1;
     var station = (Number(playerStation) || 0) + direction * MAP_SIZE * 0.55;
-    var layout = roadLayoutFor(profile || (world && world.profile) || {});
+    // An explicit destination profile is an authored override (used by
+    // scenario transitions); otherwise resolve the live Free Explore chunk.
+    var layout = roadLayoutFor(profile || roadProfileAt(world, station, null));
     var laneMagnitude = layout.laneCenters[layout.laneCenters.length - 1] || 1.5;
     var lateral = direction > 0 ? -laneMagnitude : laneMagnitude;
     var roadHeading = world.spline.headingAt(station);
@@ -1993,7 +2018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       crossStreetTravelDirection(vehicle._crossPose, vehicle.heading || 0) || 1;
     var intent = turnIntent === 'left' ? 'left' : 'right';
     var mainDirection = ((crossDirection > 0) === (intent === 'right')) ? 1 : -1;
-    var layout = roadLayoutFor(world.profile || {});
+    var layout = roadLayoutFor(roadProfileAt(world, endY, null));
     var laneMagnitude = layout.laneCenters[layout.laneCenters.length - 1] || 1.5;
     var laneOffset = mainDirection > 0 ? -laneMagnitude : laneMagnitude;
     var endY = signal.y + mainDirection * (6.5 * 0.5 + 2.2);
@@ -2048,7 +2073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var splineHeading = spline ? spline.headingAt(car.y) : 0;
     var splineCenter = spline ? spline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
     var lateral = (car.x - splineCenter) * Math.cos(splineHeading);
-    var layout = roadLayoutFor((world && world.profile) || {});
+    var layout = roadLayoutFor(roadProfileAt(world, car.y, null));
     var signalOnMain = !spline || Math.abs(signal.x - spline.centerAt(signal.y)) < 3;
     var mainControl = signal.type === 'flagger'
       ? workZoneStopLineForDirection(signal, travelSign)
@@ -2227,10 +2252,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var spline = world && world.spline;
     if (!spline) return { height: 0, bank: 0, heading: 0, lateralOffset: 0, crossStreet: false };
     var heading = spline.headingAt(y);
-    var bank = roadBankAngleAt(spline, y, world.profile || null);
+    var mainProfile = roadProfileAt(world, y, null);
+    var bank = roadBankAngleAt(spline, y, mainProfile);
     var lateralOffset = (x - spline.centerAt(y)) / Math.max(0.2, Math.cos(heading));
     var terrainHeight = spline.heightAt(y);
-    var mainProfile = world.profile || null;
     var mainLayout = roadLayoutFor(mainProfile || {});
     var mainHeight = terrainHeight + Math.sin(bank) * lateralOffset;
     if (Math.abs(lateralOffset) <= mainLayout.roadHalfWidth) {
@@ -2248,7 +2273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Away from the junction, the cross street follows terrain grade without
       // inheriting the main road's bank across an enormous lateral offset.
       // Blend the bank only through the paved junction for a seamless seam.
-      var mainHalfWidth = roadLayoutFor(world.profile || corridor.chunk).pavedHalfWidth;
+      var mainHalfWidth = roadLayoutFor(mainProfile || corridor.chunk).pavedHalfWidth;
       var junctionBlend = 1 - Math.max(0, Math.min(1,
         (Math.abs(corridor.local.longitudinal) - mainHalfWidth) / 2));
       // Smoothstep removes the slope kink where the cross-street grade meets
@@ -2264,14 +2289,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       lateralOffset: lateralOffset, crossStreet: false };
   }
 
-  // Superelevation depends on curvature, never on absolute compass heading.
-  function roadBankAngleAt(spline, worldY, profile) {
+  function signedRoadCurvatureAt(spline, worldY) {
     if (!spline || typeof spline.headingAt !== 'function') return 0;
     var before = spline.headingAt(worldY - 1), after = spline.headingAt(worldY + 1);
     var delta = after - before;
     while (delta > Math.PI) delta -= Math.PI * 2;
     while (delta < -Math.PI) delta += Math.PI * 2;
-    if (Math.abs(delta) < 1e-9) return 0;
+    return Math.abs(delta) < 1e-9 ? 0 : delta;
+  }
+
+  // Guardrails belong on the outside of genuinely sharp bends. Compass heading
+  // alone cannot identify a bend: a straight diagonal road has a large heading
+  // but zero curvature.
+  var GUARDRAIL_CURVATURE_THRESHOLD = 0.055;
+  function guardrailSideForRoad(spline, worldY) {
+    var curvature = signedRoadCurvatureAt(spline, worldY);
+    if (Math.abs(curvature) < GUARDRAIL_CURVATURE_THRESHOLD) return 0;
+    // Positive curvature turns toward the +perpendicular (driver-right) side,
+    // so the outside rail is on the opposite side.
+    return curvature > 0 ? -1 : 1;
+  }
+
+  // Superelevation depends on curvature, never on absolute compass heading.
+  function roadBankAngleAt(spline, worldY, profile) {
+    var delta = signedRoadCurvatureAt(spline, worldY);
+    if (!delta) return 0;
     var gain = profile && profile.highway ? 1.8 : 1.25;
     return Math.max(-0.06, Math.min(0.06, -delta * gain));
   }
@@ -2295,11 +2337,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return (hash >>> 0) || 1;
   }
 
-  function worldPostedLimitMph(world, chunk, fallbackMph) {
-    if (world && world.mode === 'scenario' && typeof world.postedLimitMph === 'number') {
+  // Active school zones extend far enough on both approaches for a learner to
+  // perceive the sign, brake smoothly, and hold the reduced limit through the
+  // school frontage. One world unit is approximately one metre.
+  var SCHOOL_ZONE_RADIUS_WORLD = 20;
+  function worldPostedLimitMph(world, chunk, fallbackMph, worldY) {
+    // Scripted lessons own their posted limit. This prevents an incidental
+    // streamed landmark from overriding a deliberately authored scenario.
+    if (world && typeof world.postedLimitMph === 'number' &&
+        (world.mode === 'scenario' || world.fixedPostedLimit)) {
       return world.postedLimitMph;
     }
-    return getBiomeSpeedLimitMph(chunk && chunk.biome, fallbackMph);
+    var baseLimit = getBiomeSpeedLimitMph(chunk && chunk.biome, fallbackMph);
+    if (!world || typeof world.getChunk !== 'function' ||
+        typeof worldY !== 'number' || !isFinite(worldY)) return baseLimit;
+
+    // A school can sit near a chunk boundary, so inspect the adjacent chunks as
+    // well as the vehicle's current chunk. This same query drives the player
+    // HUD/enforcement, AI target speeds, and roadside signs.
+    var vehicleChunk = Math.floor(worldY / CHUNK_SIZE);
+    for (var ci = vehicleChunk - 1; ci <= vehicleChunk + 1; ci++) {
+      var nearby = world.getChunk(ci);
+      var landmark = nearby && nearby.landmark;
+      if (!landmark || !landmark.type || landmark.type.contextRule !== 'school_zone_15mph') continue;
+      var schoolY = ci * CHUNK_SIZE + landmark.centerY;
+      if (Math.abs(worldY - schoolY) <= SCHOOL_ZONE_RADIUS_WORLD) return 15;
+    }
+    return baseLimit;
   }
 
   // ─────────────────────────────────────────────────────────
@@ -2342,8 +2406,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var samples = {};
     function biomeForY(y) {
       if (profile && profile.biome) return profile.biome;
-      // Mirror BIOME_PROGRESSION lookup so curvature matches the visible biome.
+      // Honor the setup-screen starting road through the initial three chunks,
+      // then resume the varied open-world progression.
       var ci = Math.floor(y / CHUNK_SIZE);
+      if (options.startBiome && Math.abs(ci) <= 1) return options.startBiome;
+      // Mirror BIOME_PROGRESSION lookup so curvature matches the visible biome.
       var pi = positiveModulo(ci, BIOME_PROGRESSION.length);
       return BIOME_PROGRESSION[pi];
     }
@@ -2533,8 +2600,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var rng = seededRandom(seed + chunkIndex * 7919);
     // Scripted worlds keep their scenario biome; Free Explore retains its varied progression.
     var progIndex = positiveModulo(chunkIndex, BIOME_PROGRESSION.length);
-    var biome = profile && profile.biome ? profile.biome : BIOME_PROGRESSION[progIndex];
-    if (!profile && rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
+    var inStartingRoad = !profile && options.startBiome && Math.abs(chunkIndex) <= 1;
+    var biome = profile && profile.biome ? profile.biome
+      : inStartingRoad ? options.startBiome : BIOME_PROGRESSION[progIndex];
+    if (!profile && !inStartingRoad && rng() < 0.2) biome = BIOMES[Math.floor(rng() * BIOMES.length)];
     var chunk = { index: chunkIndex, biome: biome, cells: [], objects3d: null, landmark: null };
     var isWorkZoneChunk = !!(profile && profile.workZone && positiveModulo(chunkIndex, 3) === 1);
     var obstacleRoadHalfWidth = profile ? roadsideOffsetFor(profile, 0) : MAX_ROAD_WIDTH;
@@ -2719,6 +2788,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
       }
     }
+    // Physical guardrails use the same curvature test and roadside offset as
+    // the renderer. A dedicated cell keeps the visible W-beam from behaving
+    // like pass-through grass. Leave a generous opening through cross streets.
+    var generatedRoadHalfWidth = profile ? profile.roadHalfWidth :
+      (biome === 'commercial' || biome === 'suburban' ? 4.5 : 3.5);
+    var generatedShoulderWidth = profile && profile.shoulderWidth ? profile.shoulderWidth : 0.6;
+    var guardrailLayoutSource = {
+      roadHalfWidth: generatedRoadHalfWidth,
+      shoulderWidth: generatedShoulderWidth,
+      highway: !!(profile && profile.highway),
+      isHighway: !!(profile && profile.highway)
+    };
+    var generatedGuardrailOffset = roadsideOffsetFor(guardrailLayoutSource, 0.25);
+    for (var gry = 2; gry < CHUNK_SIZE - 2; gry++) {
+      var guardrailWorldY = chunkBaseY + gry;
+      var generatedGuardrailSide = guardrailSideForRoad(spline, guardrailWorldY);
+      if (!generatedGuardrailSide) continue;
+      var guardrailWorldX = (spline ? spline.centerAt(guardrailWorldY) : roadCenters[gry]) +
+        generatedGuardrailSide * generatedGuardrailOffset;
+      var generatedGuardrailX = generatedGuardrailSide > 0
+        ? Math.ceil(guardrailWorldX) : Math.floor(guardrailWorldX);
+      if (generatedGuardrailX < 0 || generatedGuardrailX >= MAP_SIZE) continue;
+      if (intersectionPose) {
+        var guardrailCrossLocal = crossStreetLocalPoint(
+          intersectionPose, guardrailWorldX, guardrailWorldY);
+        if (Math.abs(guardrailCrossLocal.longitudinal) <= intersectionPose.length * 0.5 + 1.1 &&
+            Math.abs(guardrailCrossLocal.lateral) <= intersectionPose.width * 0.5 + 1.1) continue;
+      }
+      chunk.cells[gry][generatedGuardrailX] = 9;
+    }
+
     // Store metadata for 3D rendering and signal placement
     chunk.hasIntersection = hasIntersection;
     chunk.intersectionY = intersectionY;
@@ -2736,6 +2836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     chunk.medianWidth = profile && profile.medianWidth ? profile.medianWidth : 0;
     chunk.physicalMedianBarrier = !!(profile && profile.physicalMedianBarrier);
     chunk.shoulderWidth = profile && profile.shoulderWidth ? profile.shoulderWidth : 0.6;
+    chunk.pedestrianCount = pedestrianCountForRoad(profile || { biome: biome });
     chunk.oneWay = !!(profile && profile.oneWay);
     chunk.oneWayDirection = profile && Number(profile.oneWayDirection) < 0 ? -1 : 1;
     chunk.oneWayLanes = profile && profile.oneWayLanes ? profile.oneWayLanes : 0;
@@ -2779,6 +2880,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       scenarioId: options.scenarioId || null,
       profile: options.profile || null,
       postedLimitMph: options.postedLimitMph,
+      fixedPostedLimit: !!options.fixedPostedLimit,
+      roadType: options.roadType || null,
       chunks: {}, // chunkIndex → chunk data
       centerX: centerX,
       spline: spline,
@@ -2818,6 +2921,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         spline.cleanup(currentChunkIndex);
       }
     };
+  }
+
+  // Build the road promised by Free Explore setup. Local-road choices seed
+  // the first three chunks, then open into the varied world. Highway remains a
+  // coherent limited-access corridor; roundabout remains the bounded maneuver
+  // course instead of being silently replaced by a streamed suburban road.
+  function createFreeExploreWorld(seed, roadType) {
+    var selected = String(roadType || 'suburban');
+    if (selected === 'roundabout') return null;
+    if (selected === 'highway') {
+      return createInfiniteWorld(seed, {
+        mode: 'freeExplore', roadType: selected, scenarioId: selected,
+        profile: CONTINUOUS_SCENARIO_PROFILES.highway,
+        postedLimitMph: 65, fixedPostedLimit: true
+      });
+    }
+    var startBiome = ['residential', 'suburban', 'rural'].indexOf(selected) >= 0
+      ? selected : 'suburban';
+    return createInfiniteWorld(seed, {
+      mode: 'freeExplore', roadType: selected, scenarioId: selected,
+      startBiome: startBiome
+    });
   }
 
   function createScenarioWorld(scenario) {
@@ -3265,10 +3390,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return { state: state, events: events, pose: currentPose };
   }
 
+  function alignTrafficToStreamedWorld(world, traffic) {
+    if (!world || !world.spline) return traffic || [];
+    (traffic || []).forEach(function(vehicle) {
+      if (!vehicle || vehicle.crossStreet) return;
+      var direction = Math.sin(Number(vehicle.heading) || 0) >= 0 ? 1 : -1;
+      var profile = roadProfileAt(world, vehicle.y, null);
+      vehicle.laneOffset = nearestAuthoredTrafficLaneOffset(
+        profile, direction, vehicle.laneOffset);
+      var theta = world.spline.headingAt(vehicle.y);
+      vehicle.x = world.spline.centerAt(vehicle.y) + vehicle.laneOffset;
+      vehicle.heading = direction > 0 ? Math.PI / 2 - theta : -Math.PI / 2 - theta;
+    });
+    return traffic || [];
+  }
+
+  function bicycleLaneOffsetFor(profileOrChunk, travelSign) {
+    var layout = roadLayoutFor(profileOrChunk || {});
+    var magnitude = Math.max(1.8, layout.roadHalfWidth - 0.7);
+    return Number(travelSign) < 0 ? magnitude : -magnitude;
+  }
+
+  function alignCyclistsToStreamedWorld(world, cyclists) {
+    if (!world || !world.spline) return cyclists || [];
+    (cyclists || []).forEach(function(cyclist) {
+      if (!cyclist || cyclist.crossStreet) return;
+      var direction = Math.sin(Number(cyclist.heading) || 0) >= 0 ? 1 : -1;
+      var profile = roadProfileAt(world, cyclist.y, null);
+      cyclist._bikeLane = bicycleLaneOffsetFor(profile, direction);
+      var theta = world.spline.headingAt(cyclist.y);
+      cyclist.x = world.spline.centerAt(cyclist.y) + cyclist._bikeLane;
+      cyclist.heading = direction > 0 ? Math.PI / 2 - theta : -Math.PI / 2 - theta;
+    });
+    return cyclists || [];
+  }
+
+  function trafficCountForLevel(level) {
+    return level === 'light' ? 2 : level === 'medium' ? 4 : 7;
+  }
+
+  // Reconcile only the ambient main-road population. Cross-street actors are
+  // tied to loaded intersection chunks and cyclists have their own density;
+  // resetting either when the toolbar changes caused visible teleportation and
+  // could place a new actor directly in front of the learner.
+  function reconcileFreeExploreTrafficPopulation(world, traffic, scenario, level, playerCar, randomFn) {
+    traffic = Array.isArray(traffic) ? traffic : [];
+    if (!world || !world.spline || !playerCar) return traffic;
+    var desired = trafficCountForLevel(level);
+    var rng = typeof randomFn === 'function' ? randomFn : Math.random;
+    var ambient = traffic.filter(function(t) { return t && !t.crossStreet && !t._roundaboutState; });
+
+    if (ambient.length > desired) {
+      // Retire the farthest cars first. Existing nearby traffic retains its
+      // position, speed, intent, and stop-control state.
+      var removeCount = ambient.length - desired;
+      var farthest = ambient.slice().sort(function(a, b) {
+        var adx = a.x - playerCar.x, ady = a.y - playerCar.y;
+        var bdx = b.x - playerCar.x, bdy = b.y - playerCar.y;
+        return (bdx * bdx + bdy * bdy) - (adx * adx + ady * ady);
+      }).slice(0, removeCount);
+      return traffic.filter(function(t) { return farthest.indexOf(t) === -1; });
+    }
+
+    if (ambient.length < desired) {
+      var needed = desired - ambient.length;
+      var templates = spawnTraffic(Object.assign({}, scenario, { traffic: 'heavy' }));
+      for (var i = 0; i < needed; i++) {
+        var candidate = templates[i % templates.length];
+        candidate.id = (scenario.id || 'free') + '_live_' + Date.now().toString(36) + '_' + i + '_' + Math.floor(rng() * 1000000);
+        var accepted = false;
+        // Enter beyond a 24 m safety envelope. Alternating ahead/behind avoids
+        // concentrating all newly requested traffic in one direction.
+        for (var attempt = 0; attempt < 18; attempt++) {
+          var side = (i + attempt) % 2 === 0 ? 1 : -1;
+          candidate.y = playerCar.y + side * (24 + i * 8 + attempt * 5 + rng() * 4);
+          var direction = (i + attempt) % 3 === 0 ? -1 : 1;
+          candidate.heading = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
+          alignTrafficToStreamedWorld(world, [candidate]);
+          var pdx = candidate.x - playerCar.x, pdy = candidate.y - playerCar.y;
+          if (pdx * pdx + pdy * pdy < 24 * 24) continue;
+          if (!hasTrafficGap(traffic, candidate.x, candidate.y, null,
+            RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) continue;
+          traffic.push(candidate);
+          accepted = true;
+          break;
+        }
+        if (!accepted) break;
+      }
+    }
+    return traffic;
+  }
+
   function spawnTraffic(scenario) {
     if (scenario.id === 'roundabout') return spawnRoundaboutTraffic(scenario);
     var traffic = [];
-    var count = scenario.traffic === 'light' ? 2 : scenario.traffic === 'medium' ? 4 : 7;
+    var count = trafficCountForLevel(scenario.traffic);
     var centerX = Math.floor(MAP_SIZE / 2);
     // Road-curve offset: scenarios with curved roads (rural/snow/fog/dawn/highway)
     // shift the actual road center away from grid centerX. Must match the curves
@@ -3434,8 +3650,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   // Cyclists + motorcycles — vulnerable road users. Maine 3-foot passing law.
   function spawnStreamedPedestrians(scenario, world, chunk, chunkIndex) {
-    var profile = world && world.profile;
-    var count = profile && profile.pedestrianCount ? profile.pedestrianCount : 0;
+    var profile = chunk || roadProfileAt(world, chunkIndex * CHUNK_SIZE, null);
+    var count = pedestrianCountForRoad(profile);
     if (!count || !chunk || !chunk.hasIntersection) return [];
     var rng = seededRandom((world.seed || 1) + chunkIndex * 104729 + 43);
     var worldY = chunkIndex * CHUNK_SIZE + chunk.intersectionY;
@@ -6215,12 +6431,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var scn = Object.assign({}, _scnBase);
         var veh = VEHICLES.find(function(v) { return v.id === vehicleId; }) || VEHICLES[0];
         var continuousScenarioWorld = !d.freeExplore && scenarioUsesContinuousWorld(scn.id);
+        var streamedDrive = continuousScenarioWorld || (d.freeExplore && scn.id !== 'roundabout');
         mapRef.current = buildMap(scn.id);
         trafficRef.current = spawnTraffic(scn);
         // Streamed logical controls and pedestrians are created with their chunks.
-        // Keeping the finite-map copies would duplicate them near the starting tile.
-        pedsRef.current = continuousScenarioWorld ? [] : spawnPedestrians(scn);
-        signalsRef.current = continuousScenarioWorld ? [] : spawnSignals(scn);
+        // Free Explore previously kept finite-map actors too, duplicating controls
+        // and leaving pedestrians at positions unrelated to the visible spline.
+        pedsRef.current = streamedDrive ? [] : spawnPedestrians(scn);
+        signalsRef.current = streamedDrive ? [] : spawnSignals(scn);
         cyclistsRef.current = spawnCyclists(scn).concat(spawnMotorcycles(scn));
         wildlifeRef.current = null;
         skidRef.current = { active: false, intensity: 0 };
@@ -6263,6 +6481,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         infiniteWorldRef.current = null;
         if (continuousScenarioWorld) {
           infiniteWorldRef.current = createScenarioWorld(scn);
+          alignTrafficToStreamedWorld(infiniteWorldRef.current, trafficRef.current);
+          alignCyclistsToStreamedWorld(infiniteWorldRef.current, cyclistsRef.current);
         }
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {
@@ -6276,7 +6496,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Create infinite procedural world with seed
           var worldSeed = d.worldSeed || Math.floor(Math.random() * 100000);
           if (!d.worldSeed) upd('worldSeed', worldSeed);
-          infiniteWorldRef.current = createInfiniteWorld(worldSeed);
+          infiniteWorldRef.current = createFreeExploreWorld(worldSeed, fes.id || scn.id);
+          if (infiniteWorldRef.current) {
+            // Recreate after applying the user's traffic setting, then place all
+            // road users on the selected streamed geometry.
+            trafficRef.current = spawnTraffic(scn);
+            pedsRef.current = [];
+            signalsRef.current = [];
+            alignTrafficToStreamedWorld(infiniteWorldRef.current, trafficRef.current);
+            alignCyclistsToStreamedWorld(infiniteWorldRef.current, cyclistsRef.current);
+          }
           introMsg = '🌎 FREE EXPLORE — Infinite world. Z=look left, X=look right (shoulder check before lane changes!)';
         }
         eventToastRef.current = introMsg ? { msg: introMsg, until: 10 } : { msg: null, until: 0 };
@@ -7491,7 +7720,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Update currentScenario.speedLimit to match the biome the player is in,
                 // so the HUD speedometer color-zones and the enforcement match the signs.
                 if (currentBiome) {
-                  var newLimit = getBiomeSpeedLimitMph(currentBiome, 25);
+                  var newLimit = worldPostedLimitMph(
+                    infiniteWorldRef.current, biomeChunk, 25, carRef.current.y
+                  );
                   if (currentScenario.speedLimit !== newLimit) {
                     Object.assign(currentScenario, { speedLimit: newLimit });
                   }
@@ -8488,8 +8719,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
           // Auto-create the correct streamed world if initialization raced a React update.
-          if (d.freeExplore && (!infiniteWorldRef.current || infiniteWorldRef.current.mode !== 'freeExplore')) {
-            infiniteWorldRef.current = createInfiniteWorld(d.worldSeed || 12345);
+          if (d.freeExplore && scn.id !== 'roundabout' &&
+              (!infiniteWorldRef.current || infiniteWorldRef.current.mode !== 'freeExplore')) {
+            infiniteWorldRef.current = createFreeExploreWorld(d.worldSeed || 12345, scn.id);
+            alignTrafficToStreamedWorld(infiniteWorldRef.current, trafficRef.current);
+            alignCyclistsToStreamedWorld(infiniteWorldRef.current, cyclistsRef.current);
           } else if (!d.freeExplore && !infiniteWorldRef.current && scenarioUsesContinuousWorld(scn.id)) {
             infiniteWorldRef.current = createScenarioWorld(scn);
           }
@@ -8915,7 +9149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var worldForLimit = infiniteWorldRef.current;
               var ci = Math.floor(worldY / CHUNK_SIZE);
               var ch = worldForLimit.getChunk(ci);
-              if (ch && ch.biome) return worldPostedLimitMph(worldForLimit, ch, 25);
+              if (ch && ch.biome) return worldPostedLimitMph(worldForLimit, ch, 25, worldY);
             }
             if (scn && scn.id === 'school_zone') return 15;
             if (scn && typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) return scn.speedLimit;
@@ -9430,12 +9664,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Same-lane detection must be curve-safe: use laneOffset proximity, not world X.
               // Also require same-direction (otherwise oncoming traffic would trigger braking).
               if (!t.crossStreet && !other.crossStreet) {
-                var tDirSign2 = t.heading > 0 ? 1 : -1;
-                var oDirSign2 = other.heading > 0 ? 1 : -1;
-                if (oDirSign2 !== tDirSign2) return;
-                var otherLaneDelta = (other.laneOffset || 0) - (t.laneOffset || 0);
-                if (Math.abs(otherLaneDelta) > 1.0) return;
-                var otherAhead = (other.y - t.y) * tDirSign2;
+                // Use road station rather than raw world Y. Raw Y compresses
+                // distance on bends and can reverse ordering on a tight curve,
+                // which made AI brake late and stack into a leader.
+                var aiFollowState = followingVehicleRoadState(
+                  infiniteWorldRef.current, t, other, 1.0);
+                if (!aiFollowState.eligible || !aiFollowState.sameLane) return;
+                var otherAhead = aiFollowState.ahead;
                 if (otherAhead > 0 && otherAhead < followNear) slowFor = Math.max(slowFor, 2);
                 else if (otherAhead > 0 && otherAhead < followFar) slowFor = Math.max(slowFor, 1);
                 // ── AI-vs-AI emergency brake ──
@@ -9487,8 +9722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (j4 === idx || other4.type !== 'schoolbus' ||
                   !other4._stopArmActive) return;
               var busRequirement = schoolBusStopRequirement(
-                infiniteWorldRef.current,
-                getContinuousScenarioProfile(scn.id) || {}, t, other4);
+                infiniteWorldRef.current, getTrafficProfileAt(t.y), t, other4);
               if (!busRequirement.required || busRequirement.ahead <= 0) return;
               var busPlanDistance = schoolBusApproachDistanceWorld(
                 t.speed, scn.weather);
@@ -9502,23 +9736,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // and shouldn't AEB-brake for a main-road player who happens to share a
             // raw-X coordinate while transiting the intersection.
             var playerCar = carRef.current;
-            var playerSameLane = false;
-            if (!t.crossStreet) {
-              var aiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
-              if (aiSpline) {
-                var aiThetaForP = aiSpline.headingAt(t.y);
-                var aiCenterForP = aiSpline.centerAt(t.y);
-                var pThetaForP = aiSpline.headingAt(playerCar.y);
-                var pCenterForP = aiSpline.centerAt(playerCar.y);
-                var aiPerpForP = (t.x - aiCenterForP) * Math.cos(aiThetaForP);
-                var pPerpForP = (playerCar.x - pCenterForP) * Math.cos(pThetaForP);
-                playerSameLane = Math.abs(aiPerpForP - pPerpForP) < 1.0;
-              } else {
-                playerSameLane = Math.abs(playerCar.x - t.x) < 2;
-              }
-            }
+            var playerFollowState = !t.crossStreet
+              ? followingVehicleRoadState(infiniteWorldRef.current, t, playerCar, 1.0)
+              : null;
+            var playerSameLane = !!(playerFollowState && playerFollowState.eligible &&
+              playerFollowState.sameLane);
             if (playerSameLane && !t.crossStreet) {
-              var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
+              var playerAhead = playerFollowState.ahead;
               if (playerAhead > 0 && playerAhead < 3) {
                 // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
                 // Real modern cars brake at up to 1g when a collision is imminent.
@@ -10791,8 +11015,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Previously was 2.3 which placed cyclists slightly inside the painted lane —
               // they'd ride on the inner edge instead of in the center of the bike lane.
               var cyDirSign = cy.heading > 0 ? 1 : -1;
-              var bikeLaneOff = cyDirSign === 1 ? -2.8 : 2.8;
+              var cyProfile = roadProfileAt(infiniteWorldRef.current, cy.y, null);
+              var bikeLaneOff = bicycleLaneOffsetFor(cyProfile, cyDirSign);
               if (cy._bikeLane === undefined) cy._bikeLane = bikeLaneOff;
+              else cy._bikeLane += (bikeLaneOff - cy._bikeLane) * (1 - Math.exp(-dt / 0.8));
               // Target heading aligned with spline tangent ± π/2
               var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
               var cyDh = cyTargetHeading - cy.heading;
@@ -10814,7 +11040,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var cyRespawnSide = Math.random() < 0.5 ? -1 : 1;
                 cy.y = carRef.current.y + cyRespawnSide * (18 + Math.random() * MAP_SIZE * 0.35);
                 var cyRespawnDir = Math.sin(cy.heading) >= 0 ? 1 : -1;
-                cy._bikeLane = cyRespawnDir === 1 ? -2.8 : 2.8;
+                cy._bikeLane = bicycleLaneOffsetFor(
+                  roadProfileAt(infiniteWorldRef.current, cy.y, null), cyRespawnDir);
                 cy.x = cySpline.centerAt(cy.y) + cy._bikeLane;
                 var cyRespawnTheta = cySpline.headingAt(cy.y);
                 cy.heading = cyRespawnDir === 1 ? (Math.PI / 2 - cyRespawnTheta) : (-Math.PI / 2 - cyRespawnTheta);
@@ -10845,7 +11072,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             var busRequirement = schoolBusStopRequirement(
               infiniteWorldRef.current,
-              getContinuousScenarioProfile(currentScenario.id) || {}, car, bus);
+              roadProfileAt(infiniteWorldRef.current, car.y,
+                getContinuousScenarioProfile(currentScenario.id)), car, bus);
             if (!busRequirement.required) {
               bus._busCompArmed = false;
               bus._playerBusPreviousAhead = null;
@@ -15035,6 +15263,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // each despawned car group carries ~10-30 geometries/materials that
           // otherwise accumulate on the GPU over a long drive.
           var tGroup = s3.trafficGroup;
+          // Meshes used to be associated only by array index. Removing one car
+          // could therefore make the next sedan inherit a bus/truck body. Keep
+          // an entity identity on each mesh and rebuild only when membership or
+          // ordering changes; vehicle state itself remains uninterrupted.
+          var trafficMeshIdentityMismatch = tGroup.children.some(function(mesh, index) {
+            var entity = trafficRef.current[index];
+            return !entity || mesh.userData.rrTrafficId !== String(entity.id || index);
+          });
+          if (trafficMeshIdentityMismatch) {
+            while (tGroup.children.length) {
+              var staleTrafficMesh = tGroup.children[tGroup.children.length - 1];
+              tGroup.remove(staleTrafficMesh);
+              _disposeNode(staleTrafficMesh);
+            }
+          }
           while (tGroup.children.length > trafficRef.current.length) {
             var tDrop = tGroup.children[tGroup.children.length - 1];
             tGroup.remove(tDrop);
@@ -15047,6 +15290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else {
               // Build a proper low-poly vehicle group
               var cg = new T.Group();
+              cg.userData.rrTrafficId = String(t.id || ti);
               var isTruck = t.type === 'truck' || t.type === 'pickup';
               var isVan = t.type === 'van';
               var isBus = t.type === 'schoolbus';
@@ -17738,7 +17982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Pick signs appropriate for each landmark
                 if (lt.id === 'school') {
                   addRoadSign('diamond', 0xfacc15, 'SCHOOL\nZONE', 0x000000, 0);
-                  addRoadSign('rect', 0xffffff, '20\nMPH', 0x000000, 3);
+                  addRoadSign('rect', 0xffffff, '15\nMPH', 0x000000, 3);
                   // Amber beacons above the SCHOOL ZONE sign, twin fixtures one
                   // on each side of the post like real school-zone warning
                   // assemblies. Rendered at full opacity here; the per-frame
@@ -17822,7 +18066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
               // Teaches students to match their speed to the zone they're in.
               if (ci % 2 === 0 || (chunk.biome === 'rural' && ci % 3 === 0)) {
-                var biomeLimit = worldPostedLimitMph(iw, chunk, 25);
+                var biomeLimit = worldPostedLimitMph(iw, chunk, 25, ci * CHUNK_SIZE + 3);
                 var speedZ = chunkWorldZ + 3;
                 var speedSide = ci % 4 < 2 ? 1 : -1;
                 // SPLINE-RELATIVE placement (same pattern as mile markers and the
@@ -18040,9 +18284,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
                 var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
                 for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
-                  var grHd = iw.spline.headingAt(grZ - chunkWorldZ + chunkBY);
-                  if (Math.abs(grHd) < 0.18) continue;
-                  var grSide = grHd > 0 ? 1 : -1;
+                  var grGridY = grZ - chunkWorldZ + chunkBY;
+                  var grHd = iw.spline.headingAt(grGridY);
+                  var grSide = guardrailSideForRoad(iw.spline, grGridY);
+                  if (!grSide) continue;
                   var grCx = lookupCenterAtZ(grZ);
                   if (visualCrossStreetClearanceAt(
                     grCx + grSide * roadsideOffsetFor(chunk, 0.25), grZ, 1.1)) continue;
@@ -18052,6 +18297,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   chunkGroup.add(grPost);
                   var grRail = new T.Mesh(new T.BoxGeometry(0.06, 0.18, 2.0), grMat);
                   grRail.position.set(grCx + grSide * roadsideOffsetFor(chunk, 0.25), grHy + 0.55, grZ);
+                  // Follow the local tangent; otherwise every beam stays aligned
+                  // north-south and forms a visible sawtooth across a curved road.
+                  grRail.rotation.y = grHd;
                   chunkGroup.add(grRail);
                   // Crack on the outside wheel track — stress fractures form where
                   // tires track the tightest radius. Skip snow (covered anyway).
@@ -18393,7 +18641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Speed limit sign — one per chunk on alternating sides. The
                 // posted speed matches the biome so the player can self-check.
                 // White rectangle with black text, on a metal post.
-                var slBiomeMph = worldPostedLimitMph(iw, chunk, 25);
+                var slBiomeMph = worldPostedLimitMph(iw, chunk, 25, chunk.index * CHUNK_SIZE + 6);
                 (function() {
                   var slZ = chunkWorldZ + 6;
                   var slSide = (chunk.index % 2 === 0) ? 1 : -1;
@@ -24624,28 +24872,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   Object.assign(currentScenario, { traffic: t[0] });
                   var feNext = Object.assign({}, d.freeExploreScenario || {}, { traffic: t[0] });
                   updMulti({ freeExploreScenario: feNext });
-                  // Respawn traffic to match. Also clear the renderer's traffic mesh
-                  // group so old vehicle meshes (built for prior types) don't get
-                  // re-assigned to the new entities — that caused visual type mismatches
-                  // (e.g., a truck mesh "becoming" a car after a traffic toggle).
-                  trafficRef.current = spawnTraffic(currentScenario);
-                  cyclistsRef.current = spawnCyclists(currentScenario).concat(spawnMotorcycles(currentScenario));
-                  if (threeRef.current && threeRef.current.trafficGroup) {
-                    var tg = threeRef.current.trafficGroup;
-                    while (tg.children.length) {
-                      var oldM = tg.children[tg.children.length - 1];
-                      oldM.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                      tg.remove(oldM);
-                    }
-                  }
-                  if (threeRef.current && threeRef.current.cyclistGroup) {
-                    var cgY = threeRef.current.cyclistGroup;
-                    while (cgY.children.length) {
-                      var oldC = cgY.children[cgY.children.length - 1];
-                      oldC.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-                      cgY.remove(oldC);
-                    }
-                  }
+                  // Preserve live vehicle intent and intersection state. The
+                  // population reconciler adds/removes only ambient main-road
+                  // cars and keeps every new arrival safely away from the learner.
+                  trafficRef.current = reconcileFreeExploreTrafficPopulation(
+                    infiniteWorldRef.current, trafficRef.current, currentScenario,
+                    t[0], carRef.current);
                 },
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
@@ -33021,7 +33253,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       roadLaneArrowSpecs: roadLaneArrowSpecs, mainRoadLocalPoint: mainRoadLocalPoint,
       roadRelativeTarget: roadRelativeTarget, assessRoadLanePosition: assessRoadLanePosition,
       controlDistanceAhead: controlDistanceAhead,
+      signedRoadCurvatureAt: signedRoadCurvatureAt, guardrailSideForRoad: guardrailSideForRoad,
+      GUARDRAIL_CURVATURE_THRESHOLD: GUARDRAIL_CURVATURE_THRESHOLD,
       roadBankAngleAt: roadBankAngleAt,
+      roadProfileAt: roadProfileAt, pedestrianCountForRoad: pedestrianCountForRoad,
       roadSurfacePoseAt: roadSurfacePoseAt, roadsideOffsetFor: roadsideOffsetFor,
       highwayRampPoseAt: highwayRampPoseAt,
       assessHighwayMergeFrame: assessHighwayMergeFrame,
@@ -33040,15 +33275,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       buildWeakTest: buildWeakTest,
       // world generation
       seededRandom: seededRandom, createRoadSpline: createRoadSpline,
-      generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld, createScenarioWorld: createScenarioWorld,
+      generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld,
+      createFreeExploreWorld: createFreeExploreWorld, createScenarioWorld: createScenarioWorld,
       getContinuousScenarioProfile: getContinuousScenarioProfile, scenarioUsesContinuousWorld: scenarioUsesContinuousWorld,
       scenarioChunkHasIntersection: scenarioChunkHasIntersection, scenarioWorldSeed: scenarioWorldSeed,
-      worldPostedLimitMph: worldPostedLimitMph, positiveModulo: positiveModulo, clampFiniteCoursePosition: clampFiniteCoursePosition,
+      worldPostedLimitMph: worldPostedLimitMph, SCHOOL_ZONE_RADIUS_WORLD: SCHOOL_ZONE_RADIUS_WORLD,
+      positiveModulo: positiveModulo, clampFiniteCoursePosition: clampFiniteCoursePosition,
       buildMap: buildMap, pickLandmarkForBiome: pickLandmarkForBiome,
       getBiomeSpeedLimitMph: getBiomeSpeedLimitMph, townForChunk: townForChunk,
       scenarioRoadCenterX: scenarioRoadCenterX,
       // spawns + signals + events
       hasTrafficGap: hasTrafficGap, leftTurnGapState: leftTurnGapState,
+      alignTrafficToStreamedWorld: alignTrafficToStreamedWorld,
+      trafficCountForLevel: trafficCountForLevel,
+      reconcileFreeExploreTrafficPopulation: reconcileFreeExploreTrafficPopulation,
+      bicycleLaneOffsetFor: bicycleLaneOffsetFor, alignCyclistsToStreamedWorld: alignCyclistsToStreamedWorld,
       spawnTraffic: spawnTraffic, spawnRoundaboutTraffic: spawnRoundaboutTraffic,
       roundaboutPose: roundaboutPose, roundaboutApproach: roundaboutApproach, roundaboutGapSeconds: roundaboutGapSeconds,
       updateRoundaboutTrafficVehicle: updateRoundaboutTrafficVehicle, assessRoundaboutFrame: assessRoundaboutFrame,

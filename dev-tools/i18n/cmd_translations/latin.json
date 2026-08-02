@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio apertum.",
   "cmd.open_video_studio_hint": "Memora, subscribe et recense pelliculas demonstrantes",
   "palette.ctx.videoStudio": "Hic — Video Studio",
-  "palette.close": "Tabulam mandatorum claude"
+  "palette.close": "Tabulam mandatorum claude",
+  "cmd.apply_lesson_template": "Ex exemplari servato incipe",
+  "cmd.apply_lesson_template_done": "Ex hoc inceptum: ",
+  "cmd.apply_lesson_template_hint": "Novum consilium ex uno exemplarium tuorum servatorum incipit",
+  "cmd.apply_lesson_template_missing": "Exemplar nomine inventum non est: ",
+  "cmd.apply_lesson_template_which": "Quod exemplar?",
+  "cmd.rebuild_lesson_step": "Unum consilii gradum reconstrue",
+  "cmd.rebuild_lesson_step_done": "Gradus reficitur: ",
+  "cmd.rebuild_lesson_step_hint": "Unam tantum opem regenerat — numerum gradus dic",
+  "cmd.rebuild_lesson_step_missing": "Illum gradum in consilio invenire non potui.",
+  "cmd.rebuild_lesson_step_none": "consilium gradus nondum habet.",
+  "cmd.rebuild_lesson_step_which": "Quem gradum?",
+  "cmd.run_lesson_blueprint": "Consilium lectionis genera",
+  "cmd.run_lesson_blueprint_done": "Consilium nunc generatur — quemque gradum in charta videre potes.",
+  "cmd.run_lesson_blueprint_hint": "Omnes opes consilii praesentis generat",
+  "cmd.cancelled": "Cancellatio petita est. Operatio praesens desinet cum eius praebitor eam sustinebit."
 }

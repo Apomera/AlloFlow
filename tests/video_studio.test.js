@@ -64,9 +64,26 @@ describe('Scene builder popup wiring', () => {
     expect(moduleText).toContain('Optional AI tools may send reviewed text, prompts, or sampled frame sheets through AlloFlow');
     expect(html).toContain('function currentTake() { return (Array.isArray(takes) ? takes : [])');
   });
+it('makes local captioning and filler scans cancelable and stale-safe', () => {
+    const html = popup();
+    expect(html).toContain('id="autoCapCancelBtn" type="button" hidden');
+    expect(html).toContain('id="fillerScanCancelBtn" type="button" hidden');
+    expect(html).toContain('var asrJob = null;');
+    expect(html).toContain('function beginAsrJob(kind, take, statusEl, progressEl)');
+    expect(html).toContain('function cancelAsrJob()');
+    expect(html).toContain('function asrEnsureActive(job)');
+    expect(html).toContain('job.controller.abort()');
+    expect(html).toContain('inferenceOptions.signal = job.controller.signal');
+    expect(html).toContain('Auto-captioning canceled. No captions were changed.');
+    expect(html).toContain('Filler scan canceled. Nothing was changed.');
+    expect(html).toContain("$('autoCapCancelBtn').addEventListener('click', cancelAsrJob)");
+    expect(html).toContain("$('fillerScanCancelBtn').addEventListener('click', cancelAsrJob)");
+    expect(html).toContain('if (switchingTake && asrJob) cancelAsrJob();');
+    expect(html).toContain('if (asrJob !== job || job.cancelled) return;');
+  });
   it('starts the editor in lesson-polish focus instead of every tool', () => {
     const html = popup();
-    expect(html).toContain('id="editorFocusStatus">Lesson polish tools are visible.');
+    expect(html).toContain('id="editorFocusStatus" role="status" aria-live="polite" aria-atomic="true">Lesson polish tools are visible.');
     expect(html).toContain('<option value="record" selected>Lesson polish</option>');
     expect(html).toContain("var EDITOR_FOCUS_DEFAULT = 'record';");
     expect(html).toContain('setEditorFocusMode(EDITOR_FOCUS_DEFAULT, false);');
@@ -126,9 +143,29 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('transcript_words.json');
     expect(html).toContain('audio_edits.json');
     expect(html).toContain('project_readme.txt');
+    expect(html).toContain('demo_run_report.json');
+    expect(html).toContain("bundleType: 'alloflow-video-project'");
+    expect(html).toContain('bundleWarnings: bundleWarnings');
+    expect(html).toContain('demoRunReportText');
+    expect(html).toContain('id="demoRunReportResumeBtn"');
     expect(html).toContain('vsBuildAudioEditManifest');
     expect(html).toContain('vsBuildProjectBundleReadme');
     expect(html).toContain('vsBuildProjectImportSummary');
+    expect(html).toContain('var projectBundleInFlight = false');
+    expect(html).toContain('id="cancelProjectBundleBtn"');
+    expect(html).toContain('id="cancelProjectBundleResultBtn"');
+    expect(html).toContain('var projectBundleController = null');
+    expect(html).toContain('var projectBundleCancelRequested = false');
+    expect(html).toContain('function projectBundleEnsureActive(controller)');
+    expect(html).toContain('function cancelProjectBundle()');
+    expect(html).toContain("$('cancelProjectBundleBtn').addEventListener('click', cancelProjectBundle)");
+    expect(html).toContain("$('cancelProjectBundleResultBtn').addEventListener('click', cancelProjectBundle)");
+    expect(html).toContain('Project bundle cancelled. No file was downloaded.');
+    expect(html).toContain('projectBundleEnsureActive(bundleController)');
+    expect(html).toContain('function projectBundleStatus(message, kind)');
+    expect(html).toContain('data-project-bundle-save');
+    expect(html).toContain("querySelectorAll('[data-project-bundle-save]')");
+    expect(html).toContain('Packaging project metadata and media...');
     expect(html).toContain('id="importSummaryBox"');
     expect(html).toContain('id="editImportSummaryBox"');
     expect(html).toContain('class="restore-summary import-summary-box"');
@@ -277,10 +314,12 @@ describe('Scene builder popup wiring', () => {
     );
 
     const controller = new AbortController();
-    const pending = bridgeRequest('fixture-request', {}, 5000, { signal: controller.signal });
+    let canceledId = '';
+    const pending = bridgeRequest('fixture-request', {}, 5000, { signal: controller.signal, onCancel: (id) => { canceledId = id; } });
     expect(listeners.size).toBe(1);
     controller.abort();
     await expect(pending).resolves.toEqual({ error: 'cancelled', cancelled: true });
+    expect(canceledId).toMatch(/^nr/);
     expect(listeners.size).toBe(0);
 
     let timedOutId = '';
@@ -329,6 +368,8 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('id="sceneDefaultTransition"');
     expect(html).toContain('id="sceneApplyTransitionBtn"');
     expect(html).toContain('id="sceneExportBtn"');
+    expect(html).toContain('id="sceneExportCancelBtn"');
+    expect(html).toContain('id="sceneExportCancelBtn" type="button" hidden');
     expect(html).toContain('id="sceneDownloadPlanBtn"');
     expect(html).toContain('id="sceneLoadPlanBtn"');
     expect(html).toContain('id="scenePreviewBtn"');
@@ -340,6 +381,20 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('id="sceneUseBundledPlanBtn"');
     expect(html).toContain('id="sceneReadinessList"');
     expect(html).toContain('function exportSceneMontage()');
+  });
+  it('makes scene export cancellable across render and conversion stages', () => {
+    const html = popup();
+    expect(html).toContain('function cancelSceneExport()');
+    expect(html).toContain('function sceneExportEnsureActive()');
+    expect(html).toContain("if (sceneExportCancelRequested) throw exportAbortError('Scene export canceled');");
+    expect(html).toContain("if (sceneExportRecorder && sceneExportRecorder.state !== 'inactive') sceneExportRecorder.stop();");
+    expect(html).toContain("$('sceneExportCancelBtn').addEventListener('click', cancelSceneExport)");
+    expect(html).toContain('var sceneExportCancelRequested = false;');
+    expect(html).toContain('var sceneExportInFlight = false;');
+    expect(html).toContain('sceneExportRecorder = mr;');
+    expect((html.match(/sceneExportEnsureActive\(\);/g) || []).length).toBeGreaterThanOrEqual(8);
+    expect(html).toContain('sceneExportRecorder = null;');
+    expect(html).toContain('sceneExportInFlight = false;');
   });
   it('keeps combined scene metadata wired into exports', () => {
     const html = popup();
@@ -894,6 +949,12 @@ describe('vsBuildProjectImportSummary', () => {
     expect(summary.status).toBe('warn');
     expect(summary.text).toMatch(/Missing bundled audio/);
     expect(summary.text).toMatch(/audio\/narration\.webm/);
+  });
+  it('surfaces bundle manifest warnings separately from missing media', () => {
+    const summary = VS.vsBuildProjectImportSummary({ bundleWarnings: ['The video size differs from the manifest; verify playback before sharing.'] });
+    expect(summary.status).toBe('warn');
+    expect(summary.bundleWarnings).toHaveLength(1);
+    expect(summary.text).toMatch(/Bundle warning:/);
   });
   it('labels rendered bundle audio metadata as review-only', () => {
     const summary = VS.vsBuildProjectImportSummary({
@@ -1878,6 +1939,16 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.durationSec).toBe(0);
     expect(ref.thumb).toBeNull();
   });
+  it('identifies portable project bundle metadata without embedding bytes', () => {
+    const ref = VS.vsMakePackReference({ bundleType: 'alloflow-video-project', bundleVersion: 1, videoFileName: 'demo.webm', videoSizeBytes: 42, hasDemoRunReport: true, demoRunStatus: 'interrupted' });
+    expect(ref.bundleType).toBe('alloflow-video-project');
+    expect(ref.bundleVersion).toBe(1);
+    expect(ref.videoFileName).toBe('demo.webm');
+    expect(ref.videoSizeBytes).toBe(42);
+    expect(ref.hasDemoRunReport).toBe(true);
+    expect(ref.demoRunStatus).toBe('interrupted');
+    expect(Object.keys(ref)).not.toContain('blob');
+  });
   it('accepts only a single https hosted link (batch 3)', () => {
     expect(VS.vsMakePackReference({ hostedUrl: 'https://youtu.be/abc123' }).hostedUrl).toBe('https://youtu.be/abc123');
     expect(VS.vsMakePackReference({ hostedUrl: '  https://drive.google.com/file/d/x/view  ' }).hostedUrl).toBe('https://drive.google.com/file/d/x/view');
@@ -2168,7 +2239,26 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain("document.querySelector('.tabs').addEventListener('keydown'");
     expect(html).toContain("showTab('tabRecord');");
   });
-  it('popup take deletion asks for confirmation (batch 2)', () => {
+  it('announces async workflow progress through polite atomic status regions', () => {
+    const html = popup();
+    [
+      'id="projectStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="importStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="demoPreflightStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="demoScriptDraftStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="demoScriptDraftReviewStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="demoPlanSummary" role="status" aria-live="polite" aria-atomic="true"',
+      'id="demoStitchStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="aiNarrStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="visualStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="localizeStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="aiReviewStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="finishChecklistStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="exportStatus" role="status" aria-live="polite" aria-atomic="true"',
+      'id="resultStatus" role="status" aria-live="polite" aria-atomic="true"',
+    ].forEach((needle) => expect(html).toContain(needle));
+  });
+it('popup take deletion asks for confirmation (batch 2)', () => {
     const html = popup();
     expect(html).toContain('This removes the take and its saved draft from this device.');
   });
@@ -2266,8 +2356,15 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('demoPlanBridgeController.abort()');
     expect(html).toContain("onTimeout: function (id) { if (generation === demoPlanRequestGeneration) postToOpener({ type: 'allostudio-demoplan-cancel'");
     expect(html).toContain('var demoPreflightController = null');
+    expect(html).toContain('var demoPreflightCancelVersion = 0');
+    expect(html).toContain('id="demoPreflightCancelBtn"');
+    expect(html).toContain('function syncDemoPreflightControls()');
+    expect(html).toContain('function cancelDemoPreflight()');
+    expect(html).toContain('demoPreflightStaleResult(version)');
     expect(html).toContain('demoPreflightController.abort()');
     expect(html).toContain("{ signal: preflightController ? preflightController.signal : null }");
+    expect(html).toContain("$('demoPreflightCancelBtn').addEventListener('click', cancelDemoPreflight)");
+    expect(html).toContain('preflight.cancelled');
     expect(html).toContain('var demoPlanSourceBusy = false');
     expect(html).toContain('function syncDemoPlanSourceControls()');
     expect(html).toContain('function syncDemoExecutionControls()');
@@ -2378,6 +2475,10 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('canvasStreamLabel && hasAlloBridge');
     expect(html).toContain("displaySurface: 'browser'");
     expect(html).toContain("setMicEnabled(audioMode === 'mic')");
+expect(html).toContain("var recordingMicWarning = '';");
+    expect(html).toContain("recordingMicWarning = 'Microphone unavailable ('");
+    expect(html).toContain('var recordingStartWarning = recordingMicWarning ?');
+    expect(html).toContain('recordingCheckpointFailed || recordingCheckpointStorageWarning || !!recordingMicWarning ?');
     expect(html).toContain('vsScheduleDemoNarrationClip(cue, pcm.byteLength');
     expect(html).toContain('take.demoNarrationPending = true');
     expect(html).toContain("if (t.demoNarrationPending) { setStatus($('exportStatus')");
@@ -2398,7 +2499,18 @@ describe('take persistence + export hardening wiring', () => {
     // ON: it broke the JSON contract every one of these prompts asks for, and put
     // the teacher's transcript and captions into a search-grounded request.
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
-    expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
+    expect(m.match(/callGemini\(\w+, true, false(?:,|\))/g) || []).toHaveLength(7);
+  });
+  it('propagates Demo Autopilot cancellation through the bridge', () => {
+    const html = popup();
+    const m = moduleText();
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(m).toContain('var demoRunController = typeof AbortController');
+    expect(m).toContain('signal: demoRunController.signal');
+    expect(m).toContain('demoRunRef.current.controller.abort()');
+    expect(m).toContain('controller: null');
+    expect(anti).toContain('signal: options && options.signal');
+    expect(html).toContain('signal: runBridgeController ? runBridgeController.signal : null');
   });
   it('long-running export stages are cancellable and do not poison the next attempt', () => {
     const html = popup();
@@ -2427,6 +2539,38 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('function reportDraftSaveFailure(err)');
     expect(html).toContain('tx.onabort = function () { reportDraftSaveFailure(');
     expect(html).toContain('Autosave FAILED');
+  });
+  it('recordings and demos have crash recovery and durable execution reports', () => {
+    const html = popup();
+    expect(html).toContain("var CHECKPOINT_META_STORE = 'recording_checkpoint_meta'");
+    expect(html).toContain("var CHECKPOINT_CHUNK_STORE = 'recording_checkpoint_chunks'");
+    expect(html).toContain('var DB_VERSION = 3');
+    expect(html).toContain('persistRecordingCheckpointChunk(ev.data)');
+    expect(html).toContain('var CHECKPOINT_MAX_AGE_MS');
+    expect(html).toContain('function pruneRecordingCheckpoints(rows)');
+    expect(html).toContain('function flushRecordingCheckpoint()');
+    expect(html).toContain('var exportInFlight = false');
+    expect(html).toContain("document.addEventListener('visibilitychange'");
+    expect(html).toContain('function reportRecordingCheckpointFailure(err)');
+    expect(html).toContain('function checkRecordingCheckpointStorage()');
+    expect(html).toContain('Crash-recovery checkpoint unavailable');
+    expect(html).toContain('role="alert" aria-live="assertive"');
+    expect(html).toContain('function recoverRecordingCheckpoint(meta)');
+    expect(html).toContain('Recovered from an unfinished recording checkpoint');
+    expect(html).toContain('id="recordingRecoverBanner"');
+    expect(html).toContain('function cleanDemoRunReport(report)');
+    expect(html).toContain('beginDemoRunReport(steps)');
+    expect(html).toContain("normalized === 'failed'");
+    expect(html).toContain("normalized === 'stopped'");
+    expect(html).toContain("finishDemoRunReport('failed'");
+    expect(html).toContain('function resumeDemoFromReport(take)');
+    expect(html).toContain('function demoReportRemainingSteps(report)');
+    expect(html).toContain('demoRunReport: typeof cleanDemoRunReport');
+    expect(html).toContain('function demoRunReportText(report)');
+    expect(html).toContain('function copyDemoRunReportSummary(report)');
+    expect(html).toContain('id="demoRunReportCopyBtn"');
+    expect(html).toContain('id="demoRunReportDownloadBtn"');
+    expect(html).toContain("$('recordingRecoverBtn').focus()");
   });
   it('a playing video does not rebuild the timeline out from under the keyboard', () => {
     const html = popup();
@@ -2459,7 +2603,8 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain("framePrivacyOk('suggestPrivacyAck'");
     // Contact sheets must sample only the KEPT window — trim is export-only and
     // never applied to the blob, so raw sampling shipped frames already cut.
-    const sheet = html.slice(html.indexOf('function buildContactSheet'), html.indexOf('function buildContactSheet') + 1600);
+    const sheetStart = html.indexOf('function buildContactSheet');
+    const sheet = html.slice(sheetStart, html.indexOf('var AI_NARR_VOICES', sheetStart));
     expect(sheet).toContain("vsComputeSegments(dur, Number($('trimStart').value), Number($('trimEnd').value))");
     expect(sheet).toContain('times.push(lo + span * (i + 0.5) / n)');
     // The opener names its own origin, so recorded bytes need a gate for any
@@ -2494,6 +2639,25 @@ describe('take persistence + export hardening wiring', () => {
     const body = html.slice(start, start + 1400);
     expect(body).toContain('transcriptSelection = {}');
     expect(body).toContain('wordRippleSelection = {}');
+  });
+  it('take changes cancel hidden AI work and stale responses', () => {
+    const html = popup();
+    const selectStart = html.indexOf('function selectTake(id)');
+    const selectEnd = html.indexOf('function sceneNewId', selectStart);
+    expect(selectStart).toBeGreaterThan(-1);
+    expect(selectEnd).toBeGreaterThan(selectStart);
+    const selectBody = html.slice(selectStart, selectEnd);
+    expect(html).toContain('function cancelTakeScopedAiJobs(nextTake)');
+    expect(selectBody).toContain('var nextTake = takes.filter(function (take)');
+    expect(selectBody).toContain('if (switchingTake) cancelTakeScopedAiJobs(nextTake);');
+    expect(html).toContain('take: currentTake()');
+    expect(html).toContain('(job.take && currentTake() !== job.take)');
+    const cancelStart = html.indexOf('function cancelVideoAiJob(key)');
+    const cancelEnd = html.indexOf('function videoAiJobCancelled', cancelStart);
+    const cancelBody = html.slice(cancelStart, cancelEnd);
+    expect(cancelBody).toContain('job.controller.abort()');
+    expect(cancelBody).toContain('finishVideoAiJob(job);');
+    expect(html).toContain('demoNarrationJob.take !== nextTake');
   });
   it('export progress is announced on a throttle, not on every tick', () => {
     const html = popup();
@@ -2561,6 +2725,53 @@ describe('take persistence + export hardening wiring', () => {
     sceneTickMix(scene, 101, ac);
     expect(music._el.paused).toBe(true);
   });
+  it('exposes cancellation for long-running popup AI actions', () => {
+    const html = popup();
+    expect(html).toContain('var videoAiJobs = {}');
+    expect(html).toContain('function beginVideoAiJob(key, button, label)');
+    expect(html).toContain('function cancelVideoAiJob(key)');
+    expect(html).toContain("type: 'allostudio-ai-cancel'");
+    expect(html).toContain('videoAiJobOptions(job)');
+    expect(html).toContain('Visual card generation cancelled. Nothing was added.');
+    expect(html).toContain('Gemini suggestions cancelled. Nothing was changed.');
+    expect(html).toContain('videoAiJobs.localize');
+    expect(html).toContain('Localization cancelled. No draft was added.');
+    expect(html).toContain('videoAiJobs.visualDescribe');
+    expect(html).toContain('Visual description cancelled. Nothing was changed.');
+    expect(html).toContain('videoAiJobs.scriptStudioGenerate');
+    expect(html).toContain('Script generation cancelled. Nothing was changed.');
+    expect(html).toContain('scriptLine:');
+    expect(html).toContain('Line rewrite cancelled. Nothing was changed.');
+    expect(html).toContain('videoAiJobs.aiNarrate');
+    expect(html).toContain('AI narration cancelled. Nothing was changed.');
+    expect(html).toContain('videoAiJobs.narrTts');
+    expect(html).toContain('saved before cancellation.');
+    expect(html).toContain('Stopping automatic narration; completed lines will be kept...');
+    expect(html).toContain('demoNarrationJob.controller');
+    expect(html).toContain('videoAiJobs.localizeNarration');
+    expect(html).toContain('Interpreter audio cancelled after');
+    expect(html).toContain('demoRegen:');
+    expect(html).toContain('Narration line regeneration cancelled. Nothing was changed.');
+    expect(html).toContain('var demoRunBridgeController = null');
+    expect(html).toContain('signal: runBridgeController ? runBridgeController.signal : null');
+    expect(html).toContain('bridgeController.abort()');
+  });
+  it('cancels contact-sheet sampling before the AI bridge', () => {
+    const html = popup();
+    const start = html.indexOf('function buildContactSheet');
+    const end = html.indexOf('var AI_NARR_VOICES', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const helper = html.slice(start, end);
+    expect(helper).toContain('function buildContactSheet(t, count, shouldCancel)');
+    expect(helper).toContain("exportAbortError('Contact sheet canceled')");
+    expect(helper).toContain('var cancelWatch = null;');
+    expect(helper).toContain('setInterval(checkCanceled, 50)');
+    expect(helper).toContain('clearTimeout(died)');
+    expect(helper).toContain("v.removeAttribute('src'); v.load();");
+    expect(html.match(/buildContactSheet\(t, 12, function \(\) \{ return videoAiJobCancelled\(job\); \}\);/g) || []).toHaveLength(2);
+    expect(html).toContain("buildContactSheet(t, count, function () { return videoAiJobCancelled(job); });");
+  });
   it('the AI bridge also lives at module scope, so the popup keeps working once the panel closes', () => {
     const m = moduleText();
     // The popup's own Cinematic Studio button posts 'allostudio-open-cinematic',
@@ -2570,6 +2781,20 @@ describe('take persistence + export hardening wiring', () => {
     // opens a panel did the same, and the teacher must close the panel anyway to
     // record the app cleanly (it is a full-screen overlay on the recorded tab).
     expect(m).toContain('function vsAiBridgeReceiver(ev)');
+    expect(m).toContain('var vsAiAbortControllers = new Map()');
+    expect(m).toContain('var locAbort = vsAiBeginRequest(locReq.id)');
+    expect(m).toContain('locAbort.signal');
+    expect(m).toContain('var sgAbort = vsAiBeginRequest(sgReq.id)');
+    expect(m).toContain('var dAbort = vsAiBeginRequest(dreq.id)');
+    expect(m).toContain('sgAbort.signal');
+    expect(m).toContain('dAbort.signal');
+    expect(m).toContain('var slAbort = vsAiBeginRequest(slReq.id)');
+    expect(m).toContain('slAbort.signal');
+    expect(m).toContain('var nAbort = vsAiBeginRequest(nreq.id)');
+    expect(m).toContain('nAbort.signal');
+    expect(m).toContain('var tAbort = vsAiBeginRequest(treq.id)');
+    expect(m).toContain('tAbort.signal');
+    expect(m).toContain("ev.data.type === 'allostudio-ai-cancel'");
     expect(m).toContain("window.addEventListener('message', vsAiBridgeReceiver);");
     const reg = m.indexOf("window.addEventListener('message', vsAiBridgeReceiver);");
     [
@@ -2578,7 +2803,7 @@ describe('take persistence + export hardening wiring', () => {
       'allostudio-teaching-inserts-request', 'allostudio-frame-image-request',
       'allostudio-resource-cues-request', 'allostudio-transcript', 'allostudio-tts-request',
       'allostudio-script-line-request', 'allostudio-script-generate-request',
-      'allostudio-open-cinematic',
+      'allostudio-open-cinematic', 'allostudio-ai-cancel',
     ].forEach((type) => {
       const needle = "ev.data.type === '" + type + "'";
       expect(m.split(needle)).toHaveLength(2); // exactly one handler for each
@@ -2647,6 +2872,9 @@ describe('take persistence + export hardening wiring', () => {
   });
   it('ships the fixture-safe official Text Adaptation tutorial and narration recovery controls', () => {
     const html = popup();
+    [
+      'workflowStatus', 'capNote', 'recStatus', 'editorFocusStatus', 'waveStatus', 'editNavStatus', 'sceneStatus', 'trimStatus', 'zoomHint', 'insertStatus', 'audioPolishStatus', 'musicStatus', 'mediaCreditStatus', 'narrInfo', 'cueCount', 'takesEmpty', 'demoQualityStatus', 'demoRunReportStatus', 'editMapStatus', 'autoCapStatus', 'transcriptEditStatus', 'transcriptStatus', 'transcriptDecisionSummary', 'wordRippleStatus', 'wordCleanupStatus', 'chapterStatus', 'exportFormatStatus', 'exportContainerStatus', 'exportContainerHelp', 'thumbStatus',
+    ].forEach((id) => expect(html).toContain('id="' + id + '" role="status" aria-live="polite" aria-atomic="true"'));
     expect(html).toContain('id="demoOfficialTextBtn"');
     expect(html).toContain('id="demoPreflightBtn"');
     expect(html).toContain('id="demoRehearseBtn"');
@@ -2657,6 +2885,8 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('function estimateDemoPlanSeconds()');
     expect(html).toContain("review.setAttribute('aria-label', 'Review ' + check.label)");
     expect(html).toContain('id="demoQualityCard"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain("var statusLabel = item.status === 'ready' ? 'Ready'");
     expect(html).toContain('function runDemoPreflight()');
     expect(html).toContain('function renderDemoQuality(take)');
     expect(html).toContain('2 · Check readiness');
@@ -2697,11 +2927,11 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('var demoScriptDraftReviewItems = []');
     expect(html).toContain('function renderDemoScriptDraftReview()');
     expect(html).toContain('function applyDemoScriptDraftReview(applyAll)');
-    expect(html).toContain('function requestDemoScriptSuggestions(steps, focusIndex)');
+    expect(html).toContain('function requestDemoScriptSuggestions(steps, focusIndex, job)');
     expect(html).toContain('async function regenerateDemoScriptReviewItem(item, button)');
     expect(html).toContain("regenerate.textContent = 'Regenerate line'");
     expect(html).toContain('var focusIndex = approved.indexOf(item.step);');
-    expect(html).toContain('requestDemoScriptSuggestions(approved, focusIndex)');
+    expect(html).toContain('requestDemoScriptSuggestions(approved, focusIndex, job)');
     expect(html).toContain("item.text = line; item.selected = true;");
     expect(html).toContain('Nothing changes until you apply one.');
     expect(html).toContain('step: target, stepNumber:');
@@ -2720,6 +2950,14 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('Nothing changed yet.');
     expect(html).toContain('id="demoScriptDraftStatus"');
     expect(html).toContain("bridgeRequest('allostudio-demoscript-request'");
+    expect(html).toContain('id="demoScriptDraftCancelBtn"');
+    expect(html).toContain('function requestDemoScriptSuggestions(steps, focusIndex, job)');
+    expect(html).toContain("videoAiJobOptions(job, 'allostudio-demoscript-cancel')");
+    expect(html).toContain('videoAiJobCancelled(job, response)');
+    expect(moduleText()).toContain("'allostudio-demoscript-cancel'");
+    expect(moduleText()).toContain('var vsDemoScriptJobs = new Map()');
+    expect(moduleText()).toContain('dsJob.controller.signal');
+    expect(moduleText()).toContain('vsDemoScriptJobs.forEach(function (job)');
     expect(html).toContain('No video or audio is sent.');
     expect(html).toContain('applyDemoPacingFit(steps);');
     expect(html).toContain('id="demoPacingStatus"');
@@ -2834,7 +3072,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('var closingDur = closingCard ? 2.5 : 0');
     expect(html).toContain('var vttOffset = wantTitleCard ? 2.5 : 0');
     expect(html).toContain('take.demoPolish = cleanDemoPolish(demoState.activePolish)');
-    expect(html).toContain('function regenerateDemoNarrationClip(take, clip)');
+    expect(html).toContain('function regenerateDemoNarrationClip(take, clip, button)');
     expect(html).toContain('demoNarrationCue: { start: Number(cue.start)');
     const m = moduleText();
     expect(m).toContain("ev.data.type === 'allostudio-official-tutorial-request'");

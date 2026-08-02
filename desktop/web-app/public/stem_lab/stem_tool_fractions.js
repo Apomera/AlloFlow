@@ -3280,7 +3280,7 @@ window.StemLab = window.StemLab || {
                 choice.charAt(0).toUpperCase() + choice.slice(1)
               );
             })),
-            !signReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed') }, 'Check sign and reveal'),
+            !signReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-700 cursor-not-allowed') }, 'Check sign and reveal'),
             signFeedback && signFeedback.key === signExpressionKey && h(React.Fragment, null,
               h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-xs font-bold ' + (signFeedback.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') },
                 (signFeedback.correct ? 'Prediction confirmed. ' : 'Prediction review. ') + 'The exact result is ' + opSimplified[0] + '/' + opSimplified[1] + ', which is ' + opResultSign + '.'
@@ -3714,7 +3714,7 @@ window.StemLab = window.StemLab || {
             return h('button', {
               key: q,
               onClick: function() { upd({ aiQuestion: q }); },
-              className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+              className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
             }, q);
           })
         ),
@@ -3938,13 +3938,13 @@ window.StemLab = window.StemLab || {
             onClick: function() { upd({ craStage: Math.max(1, craStage - 1) }); },
             disabled: craStage <= 1,
             className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
-              (craStage > 1 ? 'bg-slate-200 text-slate-800 hover:bg-slate-300' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+              (craStage > 1 ? 'bg-slate-200 text-slate-800 hover:bg-slate-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, __alloT('stem.fractions.previous_stage', '← Previous stage')),
           h('button', {
             onClick: function() { upd({ craStage: Math.min(3, craStage + 1) }); },
             disabled: craStage >= 3,
             className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
-              (craStage < 3 ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+              (craStage < 3 ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, __alloT('stem.fractions.next_stage', 'Next stage →'))
         )
       );
@@ -4054,7 +4054,7 @@ window.StemLab = window.StemLab || {
                 },
                 disabled: wpHintLevel >= (problem.hints || []).length,
                 className: 'px-2 py-1 rounded text-[11px] font-bold ' +
-                  (wpHintLevel < (problem.hints || []).length ? 'transition-colors bg-amber-200 text-amber-900 hover:bg-amber-300' : 'bg-slate-100 text-slate-400')
+                  (wpHintLevel < (problem.hints || []).length ? 'transition-colors bg-amber-200 text-amber-900 hover:bg-amber-300' : 'bg-slate-100 text-slate-600')
               }, '💡 ' + (wpHintLevel === 0 ? 'Show hint' : 'Next hint (' + wpHintLevel + '/' + (problem.hints || []).length + ')')),
               h('button', {
                 onClick: function() { upd({ wpFeedback: { correct: false, msg: '📚 Worked solution: ' + problem.worked, hintRevealed: true } }); sfxClick(); },
@@ -4065,7 +4065,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { upd({ wpIdx: (wpIdx - 1 + filtered.length) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': __alloT('stem.fractions.previous_problem', 'Previous problem'),
-                className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200'
+                className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200'
               }, __alloT('stem.fractions.prev', '← Prev')),
               h('button', {
                 onClick: function() { upd({ wpIdx: (wpIdx + 1) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); sfxNewChallenge(); },
@@ -4322,7 +4322,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-sm text-red-800' }, 'Served: ', h('b', null, ps.served + ' / 10')),
           h('button', {
             onClick: startPizzaShop,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-red-200 text-red-800 hover:bg-red-300'
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-red-200 text-red-900 hover:bg-red-300'
           }, __alloT('stem.fractions.restart', '↺ Restart'))
         ),
         // Customer order
@@ -4966,7 +4966,7 @@ window.StemLab = window.StemLab || {
                 key: 'bc-' + i,
                 onClick: function() { markCell(i); },
                 className: 'aspect-square rounded text-sm font-bold font-mono border-2 transition-all ' +
-                  (marked ? 'bg-yellow-600 text-white border-yellow-700' : 'bg-white text-yellow-900 border-yellow-300 hover:bg-yellow-50')
+                  (marked ? 'bg-yellow-800 text-white border-yellow-900' : 'bg-white text-yellow-900 border-yellow-300 hover:bg-yellow-50')
               }, cell.n + '/' + cell.d);
             })
           )
@@ -5029,7 +5029,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🪢'),
           h('span', { className: 'font-bold text-orange-800' }, 'Wins: ' + tw.score),
           h('button', { onClick: startTug,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-orange-200 text-orange-800 hover:bg-orange-300' }, __alloT('stem.fractions.restart_6', '↺ Restart'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-orange-200 text-orange-900 hover:bg-orange-300' }, __alloT('stem.fractions.restart_6', '↺ Restart'))
         ),
         // Tug bar visualization
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4 space-y-2' },
@@ -5122,7 +5122,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '🔍'),
           h('span', { className: 'font-bold text-pink-800' }, 'Hints used: ' + hs.hintsShown + ' / 3'),
           h('button', { onClick: startHide,
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-pink-200 text-pink-800 hover:bg-pink-300' }, __alloT('stem.fractions.new_hunt', '↺ New hunt'))
+            className: 'transition-colors ml-auto px-3 py-1 rounded text-[11px] font-bold bg-pink-200 text-pink-900 hover:bg-pink-300' }, __alloT('stem.fractions.new_hunt', '↺ New hunt'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-4 space-y-2' },
           h('p', { className: 'text-sm font-bold text-pink-800' }, __alloT('stem.fractions.what_fraction_is_hiding', '🔮 What fraction is hiding?')),
@@ -5136,7 +5136,7 @@ window.StemLab = window.StemLab || {
           !hs.gameOver && h('button', {
             onClick: revealHint, disabled: hs.hintsShown >= 3,
             className: 'px-3 py-1 rounded text-[11px] font-bold ' +
-              (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-800 hover:bg-pink-300' : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+              (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-900 hover:bg-pink-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, '💡 Reveal clue ' + (hs.hintsShown + 1)),
           !hs.gameOver && h('div', { className: 'flex gap-2 mt-2' },
             h('input', {
@@ -5341,7 +5341,7 @@ window.StemLab = window.StemLab || {
       var toggleChip = function(key, label) {
         return h('button', { key: 'tg-' + key, onClick: function() { toggle(key); }, 'aria-pressed': !!g[key],
           className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
-            (g[key] ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50') },
+            (g[key] ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50') },
           (g[key] ? '☑ ' : '☐ ') + label);
       };
       var tempoSlider = h('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-600' },
@@ -5512,7 +5512,7 @@ window.StemLab = window.StemLab || {
             prChoices.map(function(c) {
               var sel = g.chosen === c;
               return h('button', { key: 'prc-' + c, onClick: function() { chooseShare(c); }, 'aria-pressed': sel,
-                className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-600 text-white ring-2 ring-green-700' : 'transition-colors bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
+                className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-700 text-white ring-2 ring-green-800' : 'transition-colors bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
             })
           ),
           (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
@@ -5607,7 +5607,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-[11px] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
           h('div', { className: 'ml-auto flex gap-1' },
             g.timed && h('button', { onClick: function() { toggle('holdFrozen'); }, 'aria-pressed': !!g.holdFrozen,
-              className: 'px-2 py-1 rounded text-[11px] font-bold ' + (g.holdFrozen ? 'bg-amber-500 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
+              className: 'px-2 py-1 rounded text-[11px] font-bold ' + (g.holdFrozen ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
             g.timed && h('button', { onClick: toZen, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.to_zen', 'To Zen')),
             h('button', { onClick: toMenu, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.menu', '↺ Menu'))
           )
@@ -6530,7 +6530,7 @@ window.StemLab = window.StemLab || {
                 if (!cell) return h('div', { key: 'cell-' + r + '-' + c, className: 'aspect-square bg-cyan-100 border border-cyan-200 rounded' });
                 return h('div', { key: 'cell-' + r + '-' + c,
                   className: 'aspect-square flex items-center justify-center font-bold font-mono text-xs rounded ' +
-                    (cell.player === 1 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white')
+                    (cell.player === 1 ? 'bg-rose-600 text-white' : 'bg-emerald-700 text-white')
                 }, cell.n + '/' + cell.d);
               });
             })
@@ -7512,13 +7512,13 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ mcfStep: Math.max(0, mcfStep - 1) }); },
               disabled: mcfStep <= 0,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
-                (mcfStep > 0 ? 'transition-colors bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-slate-100 text-slate-400')
+                (mcfStep > 0 ? 'transition-colors bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.previous_strategy', '← Previous strategy')),
             h('button', {
               onClick: function() { upd({ mcfStep: Math.min(mc.remediation.length - 1, mcfStep + 1) }); },
               disabled: mcfStep >= mc.remediation.length - 1,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
-                (mcfStep < mc.remediation.length - 1 ? 'transition-colors bg-rose-600 text-white hover:bg-rose-700' : 'bg-slate-100 text-slate-400')
+                (mcfStep < mc.remediation.length - 1 ? 'transition-colors bg-rose-600 text-white hover:bg-rose-700' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.next_strategy', 'Next strategy →'))
           )
         )
@@ -7713,7 +7713,7 @@ window.StemLab = window.StemLab || {
                 key: 'mp-' + d,
                 onClick: function() { addPiece(d); },
                 'aria-label': 'Add 1/' + d + ' piece',
-                className: 'transition-colors px-3 py-2 rounded text-sm font-bold bg-orange-100 text-orange-800 hover:bg-orange-300 border border-orange-300 font-mono'
+                className: 'transition-colors px-3 py-2 rounded text-sm font-bold bg-orange-100 text-orange-900 hover:bg-orange-300 border border-orange-300 font-mono'
               }, '1/' + d);
             })
           )
@@ -7723,7 +7723,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] font-bold text-orange-700' }, 'Workspace (' + manipPieces.length + ' pieces, total = ' + totalVal.toFixed(3) + '):'),
             h('button', { onClick: clearPieces, 'aria-label': __alloT('stem.fractions.clear_workspace', 'Clear workspace'),
               disabled: manipPieces.length === 0,
-              className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 disabled:opacity-40' },
+              className: 'transition-colors px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:opacity-40' },
               __alloT('stem.fractions.clear_2', '↺ Clear')
             )
           ),
@@ -8759,7 +8759,7 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ storyCh: Math.min(BAKERY_STORY.length, storyCh + 1), storyAnswer: '', storyFeedback: null }); },
               disabled: storyCh >= BAKERY_STORY.length,
               className: 'flex-1 px-3 py-2 rounded text-sm font-bold ' +
-                (storyCh < BAKERY_STORY.length ? 'transition-colors bg-orange-700 text-white hover:bg-orange-800' : 'bg-slate-100 text-slate-400')
+                (storyCh < BAKERY_STORY.length ? 'transition-colors bg-orange-700 text-white hover:bg-orange-800' : 'bg-slate-100 text-slate-600')
             }, storyCh < BAKERY_STORY.length ? 'Next chapter →' : 'Story complete! ✨')
           )
         )
@@ -8960,7 +8960,7 @@ window.StemLab = window.StemLab || {
               return h('div', { key: 'dp-' + i,
                 title: ds,
                 className: 'aspect-square rounded text-center text-[10px] flex flex-col items-center justify-center ' +
-                  (done ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500')
+                  (done ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700')
               },
                 h('span', null, d.getDate()),
                 done ? h('span', null, '✓') : null
@@ -9513,13 +9513,13 @@ window.StemLab = window.StemLab || {
               onClick: function() { upd({ weStepIdx: Math.max(0, weStepIdx - 1) }); },
               disabled: weStepIdx <= 0,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
-                (weStepIdx > 0 ? 'transition-colors bg-violet-100 text-violet-800 hover:bg-violet-200' : 'bg-slate-100 text-slate-400')
+                (weStepIdx > 0 ? 'transition-colors bg-violet-100 text-violet-800 hover:bg-violet-200' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.previous_step', '← Previous step')),
             h('button', {
               onClick: function() { upd({ weStepIdx: Math.min(we.steps.length - 1, weStepIdx + 1) }); },
               disabled: weStepIdx >= we.steps.length - 1,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
-                (weStepIdx < we.steps.length - 1 ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-100 text-slate-400')
+                (weStepIdx < we.steps.length - 1 ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.next_step', 'Next step →'))
           )
         )
@@ -10077,7 +10077,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 mt-3' },
             h('button', {
               onClick: function() { upd({ pbIdx: (pbIdx - 1 + items.length) % items.length }); },
-              className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-700 hover:bg-rose-200'
+              className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200'
             }, __alloT('stem.fractions.previous', '← Previous')),
             h('button', {
               onClick: function() { upd({ pbIdx: (pbIdx + 1) % items.length }); },
@@ -10944,7 +10944,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { setStrip(s.id, { d: clampD(e.target.value) }); },
               className: 'w-12 px-1 py-0.5 rounded border border-slate-300 text-center text-sm font-bold' }),
             h('button', { onClick: function() { removeStrip(s.id); }, 'aria-label': 'Remove ' + s.n + ' over ' + s.d + ' strip', title: __alloT('stem.fractions.remove_4', 'Remove'),
-              className: 'transition-colors ml-0.5 px-1.5 py-0.5 rounded text-rose-600 hover:bg-rose-100 text-sm font-bold' }, '×')
+              className: 'transition-colors ml-0.5 px-1.5 py-0.5 rounded text-rose-700 hover:bg-rose-100 text-sm font-bold' }, '×')
           ),
           h('div', { style: { position: 'relative', flex: '0 0 auto', width: BAR_W } },
             drawBar(Math.min(s.n, s.d), s.d, color),
@@ -10975,7 +10975,7 @@ window.StemLab = window.StemLab || {
           h('button', { onClick: seedExample,
             className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50' }, __alloT('stem.fractions.example_2', 'Example')),
           h('button', { onClick: clearStrips, disabled: strips.length === 0,
-            className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 disabled:opacity-40' }, __alloT('stem.fractions.clear_3', 'Clear')),
+            className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 disabled:opacity-40' }, __alloT('stem.fractions.clear_3', 'Clear')),
           toggleBtn(stripGrid, toggleGrid, (stripGrid ? '▣' : '□') + ' Common-denominator grid'),
           toggleBtn(stripLabels, toggleLabels, (stripLabels ? '▣' : '□') + ' Labels'),
           strips.length >= MAX_STRIPS && h('span', { className: 'text-[11px] text-slate-500' }, 'Max ' + MAX_STRIPS + ' strips')

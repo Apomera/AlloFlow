@@ -291,7 +291,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
     if (isProcessing) return;
     const targetGroup = fullPackTargetGroup;
@@ -347,10 +347,23 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     setGenerationStep(t('fullpack.status_init'));
     addToast(t('fullpack.status_start'), "info");
     try {
-        const lessonDNA = {
+        const standardsContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.StandardsContext
+        : null;
+    const resolvedStandardsContext = standardsContext && Array.isArray(standardsContext.standards)
+        ? standardsContext
+        : (standardsContextModule && typeof standardsContextModule.resolve === 'function'
+            ? standardsContextModule.resolve(standardsInput || targetStandards)
+            : null);
+    const activeStandardsContext = resolvedStandardsContext
+        && Array.isArray(resolvedStandardsContext.standards)
+        && resolvedStandardsContext.standards.length
+        ? resolvedStandardsContext
+        : null;
+    const lessonDNA = {
             grade: gradeLevel,
             topic: sourceTopic || "General Topic",
-            standard: standardsInput,
+            standard: (activeStandardsContext && activeStandardsContext.promptText) || standardsInput || '',
             concepts: [],
             keyTerms: [],
             visualContext: "",
@@ -474,6 +487,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 ...batchConfig,
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
+                standardsContext: activeStandardsContext,
                 historyOverride: currentSessionHistory
                 // Differentiation is deliberately NOT suppressed here (Aaron,
                 // 2026-07-29): differentiationTypes is opt-in per resource, so a

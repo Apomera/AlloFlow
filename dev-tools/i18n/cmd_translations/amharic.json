@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio ተከፍቷል።",
   "cmd.open_video_studio_hint": "ማሳያዎችን ቅረጽ፣ መግለጫ ጽሑፍ ጨምር እና አርትዕ",
   "palette.ctx.videoStudio": "እዚህ — Video Studio",
-  "palette.close": "የትዕዛዝ ፓሌቱን ዝጋ"
+  "palette.close": "የትዕዛዝ ፓሌቱን ዝጋ",
+  "cmd.apply_lesson_template": "በተቀመጠ አብነት ጀምር",
+  "cmd.apply_lesson_template_done": "ከዚህ ጀመረ: ",
+  "cmd.apply_lesson_template_hint": "ከተቀመጡ አብነቶችህ አንዱን በመጠቀም አዲስ ዕቅድ ይጀምራል",
+  "cmd.apply_lesson_template_missing": "በዚህ ስም የተጠራ አብነት አላገኘሁም: ",
+  "cmd.apply_lesson_template_which": "የትኛው አብነት?",
+  "cmd.rebuild_lesson_step": "የዕቅዱን አንድ ደረጃ እንደገና ገንባ",
+  "cmd.rebuild_lesson_step_done": "ደረጃውን እንደገና በመገንባት ላይ: ",
+  "cmd.rebuild_lesson_step_hint": "አንድ ምንጭ እንደገና ያመነጫል — የደረጃውን ቁጥር ይናገሩ",
+  "cmd.rebuild_lesson_step_missing": "ያንን ደረጃ በዕቅዱ ውስጥ አላገኘሁትም።",
+  "cmd.rebuild_lesson_step_none": "ዕቅዱ እስካሁን ደረጃዎች የሉትም።",
+  "cmd.rebuild_lesson_step_which": "የትኛው ደረጃ?",
+  "cmd.run_lesson_blueprint": "የትምህርት ዕቅዱን ፍጠር",
+  "cmd.run_lesson_blueprint_done": "ዕቅዱን በመፍጠር ላይ ነው — እያንዳንዱን ደረጃ በካርዱ ላይ ማየት ይችላሉ።",
+  "cmd.run_lesson_blueprint_hint": "በአሁኑ ዕቅድ ውስጥ ያሉ ሁሉንም ምንጮች ይፈጥራል",
+  "cmd.cancelled": "ስረዛ ተጠይቋል። አቅራቢው ሲደግፈው የአሁኑ ሥራ ይቆማል።"
 }

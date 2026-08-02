@@ -323,3 +323,315 @@ describe('ConceptGraphEngine — arrangements (persistable 3D placement + constr
     expect(E.nudgeNodeAxis(g, 'd', 'q', 1)).toBe(g);                // invalid axis ⇒ unchanged
   });
 });
+
+describe('ConceptGraphEngine — alignment audit projection', () => {
+  it('builds a provenance-aware graph without inventing artifact links', () => {
+    const graph = E.fromAlignmentAudit({
+      comprehensive: {
+        auditMetadata: { generatedAt: '2026-07-31T12:00:00.000Z' },
+        standards: {
+          status: 'Partially Aligned',
+          passCount: 1,
+          reviseCount: 1,
+          perStandard: [{
+            standard: 'NGSS 3-LS4-2',
+            standardBreakdown: { contentFocus: 'Inherited traits' },
+            analysis: {
+              textAlignment: { status: 'Aligned', evidence: 'The objective names inherited traits.', notes: 'Text evidence.' },
+              activityAlignment: { status: 'Partially Aligned', evidence: 'The sort addresses examples but needs extension.' }
+            },
+            overallDetermination: 'Pass',
+            gaps: ['Assessment evidence is missing.'],
+            adminRecommendation: 'Add an exit ticket.'
+          }]
+        }
+      }
+    }, {
+      provider: 'Pinned standards snapshot',
+      datasetVersion: 'fixture-v1',
+      provenance: { datasetVersion: 'fixture-v1', sourceUrl: 'https://example.test/standards' }
+    });
+
+    expect(graph.version).toBe('acg/v1');
+    expect(graph.meta.alignmentAudit).toMatchObject({
+      provider: 'Pinned standards snapshot',
+      datasetVersion: 'fixture-v1',
+      status: 'Partially aligned',
+      standardsCount: 1
+    });
+
+    const standard = graph.nodes.find((node) => node.type === 'standard');
+    expect(standard).toMatchObject({
+      label: 'NGSS 3-LS4-2',
+      status: 'Aligned',
+      standardBreakdown: { contentFocus: 'Inherited traits' }
+    });
+    expect(graph.nodes.find((node) => node.dimension === 'textAlignment')).toMatchObject({
+      type: 'auditEvidence',
+      status: 'Aligned',
+      evidence: 'The objective names inherited traits.'
+    });
+    expect(graph.nodes.find((node) => node.dimension === 'assessmentAlignment')).toMatchObject({
+      type: 'auditEvidence',
+      status: 'Not evaluated'
+    });
+    expect(graph.nodes.find((node) => node.type === 'auditFinding')).toMatchObject({
+      status: 'Not aligned',
+      finding: 'Assessment evidence is missing.'
+    });
+    expect(graph.nodes.find((node) => node.type === 'auditRecommendation')).toMatchObject({
+      recommendation: 'Add an exit ticket.'
+    });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: standard.id, type: 'evidencedBy', status: 'Aligned', provenance: 'alloflow-audit' }),
+      expect.objectContaining({ fromId: standard.id, type: 'assessedBy', status: 'Not evaluated', provenance: 'alloflow-audit' }),
+      expect.objectContaining({ fromId: standard.id, type: 'contains', status: 'Not aligned', provenance: 'alloflow-audit' })
+    ]));
+    expect(graph.nodes.some((node) => node.type === 'artifact')).toBe(false);
+    expect(graph.layers.map((lane) => lane.key)).toEqual(['Audit', 'Standards', 'Alignment evidence', 'Audit findings']);
+  });
+
+  it('adds exact local standards context without exposing structural nodes as targets', () => {
+    const target = { id: 'std:target', code: '5-ESS2-1', label: 'Earth systems', text: 'Develop a model of Earth systems.', kind: 'standard', resolvable: true, framework: 'Massachusetts Science', sourceUrl: 'https://example.test/ma-science' };
+    const group = { id: 'group:earth', code: null, label: 'Earth and Space Science', text: 'Earth and space science grouping.', kind: 'group', resolvable: false, framework: 'Massachusetts Science' };
+    const child = { id: 'std:child', code: '5-ESS2-2', label: 'Water distribution', text: 'Describe water distribution.', kind: 'standard', resolvable: true, framework: 'Massachusetts Science' };
+    const calls = [];
+    const provider = {
+      resolveStandard(query) {
+        return query === '5-ESS2-1' ? { status: 'resolved', match: target } : { status: 'not-found', match: null };
+      },
+      getNeighborhood(id, options) {
+        calls.push({ id, options });
+        return {
+          rootId: id,
+          depth: options.depth,
+          nodes: [target, group, child],
+          relationships: [
+            { fromId: group.id, toId: target.id, type: 'hasChild', source: 'https://example.test/ma-science' },
+            { fromId: target.id, toId: child.id, type: 'hasChild', source: 'https://example.test/ma-science' },
+          ],
+          truncated: false,
+        };
+      },
+    };
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{ standard: '5-ESS2-1', overallDetermination: 'Pass' }],
+      },
+    }, { standardsProvider: provider, standardsContextDepth: 2, standardsContextMaxNodes: 7, standardsContextMaxEdges: 8 });
+
+    const auditTarget = graph.nodes.find((node) => node.type === 'standard');
+    expect(auditTarget.standardsContext).toMatchObject({ contextId: target.id, code: target.code, framework: target.framework });
+    expect(graph.nodes.filter((node) => node.type === 'standardsContext')).toEqual(expect.arrayContaining([
+      expect.objectContaining({ contextId: group.id, kind: 'group', resolvable: false }),
+      expect.objectContaining({ contextId: child.id, kind: 'standard', resolvable: true }),
+    ]));
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: expect.stringContaining('standards-context-group-earth'), toId: auditTarget.id, relationType: 'hasChild', type: 'contains' }),
+      expect.objectContaining({ fromId: auditTarget.id, toId: expect.stringContaining('standards-context-std-child'), relationType: 'hasChild', type: 'contains' }),
+    ]));
+    expect(graph.meta.alignmentAudit.standardsGraph).toMatchObject({ enabled: true, matchedTargets: 1, contextNodes: 2, contextRelationships: 2, truncatedTargets: 0 });
+    expect(calls[0]).toMatchObject({ id: target.id, options: { depth: 2, maxNodes: 7, maxEdges: 8 } });
+  });
+  it('projects bounded audit-scope provenance into Alignment Map graph nodes', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{ standard: '5-ESS2-1', overallDetermination: 'Pass' }],
+      },
+    }, {
+      auditScope: {
+        selectionMode: 'explicit artifact IDs',
+        includedArtifactIds: ['lesson-1', 'quiz-1'],
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan', timestamp: '2026-07-31T12:00:00.000Z' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz', timestamp: '2026-07-31T12:05:00.000Z' },
+        ],
+      },
+    });
+
+    expect(graph.meta.alignmentMap).toMatchObject({
+      version: 'alloflow-alignment-map/v2',
+      targetNodeType: 'standard',
+      scopeNodeType: 'auditArtifact',
+      provenancePolicy: 'explicit-attribution-only',
+      attributionSources: ['audit-model', 'teacher', 'deterministic-check', 'unknown'],
+    });
+    expect(graph.meta.alignmentAudit.auditScopeGraph).toMatchObject({
+      nodeCount: 2,
+      truncated: false,
+      selectionMode: 'explicit artifact IDs',
+    });
+    expect(graph.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'auditArtifact', artifactId: 'lesson-1', artifactType: 'lesson-plan', label: 'Lesson Plan' }),
+      expect.objectContaining({ type: 'auditArtifact', artifactId: 'quiz-1', artifactType: 'quiz', label: 'Exit Quiz' }),
+    ]));
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'contains', relationType: 'auditScope', provenance: 'alloflow-audit', attributionSource: 'deterministic-check' }),
+    ]));
+  });
+  it('keeps evidence attribution explicit, bounded, and inside the audited scope', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{
+          standard: '5-ESS2-1',
+          overallDetermination: 'Pass',
+          analysis: {
+            textAlignment: { status: 'Aligned', evidence: 'The lesson explains Earth systems.', artifactIds: ['lesson-1', 'not-audited'] },
+          },
+          gaps: [{ text: 'Assessment evidence is missing.', artifactIds: ['quiz-1', 'not-audited'] }],
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+
+    const evidence = graph.nodes.find((node) => node.type === 'auditEvidence' && node.dimension === 'textAlignment');
+    const lessonArtifact = graph.nodes.find((node) => node.type === 'auditArtifact' && node.artifactId === 'lesson-1');
+    expect(evidence).toMatchObject({ artifactIds: ['lesson-1'], attribution: 'explicit', attributionSource: 'audit-model' });
+    expect(graph.meta.alignmentAudit.evidenceAttribution).toMatchObject({ mode: 'explicit-only', evidenceLinks: 1, findingLinks: 1, evidenceBySource: { 'audit-model': 1 }, findingBySource: { 'audit-model': 1 } });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        fromId: evidence.id,
+        toId: lessonArtifact.id,
+        type: 'supportedBy',
+        relationType: 'evidenceFrom',
+        artifactId: 'lesson-1',
+        attribution: 'explicit',
+        attributionSource: 'audit-model',
+      }),
+    ]));
+    expect(graph.edges.some((edge) => edge.artifactId === 'not-audited')).toBe(false);
+    const finding = graph.nodes.find((node) => node.type === 'auditFinding');
+    const quizArtifact = graph.nodes.find((node) => node.type === 'auditArtifact' && node.artifactId === 'quiz-1');
+    expect(finding).toMatchObject({ finding: 'Assessment evidence is missing.', artifactIds: ['quiz-1'], attribution: 'explicit', attributionSource: 'audit-model' });
+    expect(graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fromId: finding.id, toId: quizArtifact.id, type: 'supportedBy', relationType: 'findingFrom', artifactId: 'quiz-1', attribution: 'explicit', attributionSource: 'audit-model' }),
+    ]));
+  });
+  it('creates a non-mutating teacher confirmation projection for explicit artifact links', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Aligned',
+        perStandard: [{
+          standard: '5-ESS2-1',
+          overallDetermination: 'Pass',
+          analysis: { textAlignment: { status: 'Aligned', evidence: 'The lesson explains Earth systems.', artifactIds: ['lesson-1'] } },
+          gaps: [{ text: 'Assessment evidence is missing.', artifactIds: ['quiz-1'] }],
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+    const evidenceEdge = graph.edges.find((edge) => edge.relationType === 'evidenceFrom');
+    const structuralEdge = graph.edges.find((edge) => edge.relationType === 'auditScope');
+    const confirmed = E.confirmExplicitAttributions(graph, [{
+      edgeId: evidenceEdge.id,
+      confirmedAt: '2026-08-01T12:00:00.000Z',
+      confirmedBy: 'teacher-1',
+      note: 'Reviewed against the lesson plan.',
+    }]);
+
+    expect(confirmed).not.toBe(graph);
+    expect(graph.edges.find((edge) => edge.id === evidenceEdge.id)).toMatchObject({ attributionSource: 'audit-model' });
+    expect(confirmed.edges.find((edge) => edge.id === evidenceEdge.id)).toMatchObject({
+      attribution: 'explicit',
+      relationType: 'evidenceFrom',
+      attributionSource: 'teacher',
+      attributionHistory: [
+        { source: 'audit-model', role: 'producer', method: 'declared' },
+        { source: 'teacher', role: 'confirmation', method: 'teacher-confirmed', confirmedBy: 'teacher-1' },
+      ],
+    });
+    expect(confirmed.edges.find((edge) => edge.id === structuralEdge.id)).toMatchObject({ attributionSource: 'deterministic-check' });
+    expect(confirmed.meta.alignmentMap.attributionConfirmationPolicy).toBe('derived-copy-only');
+    expect(confirmed.meta.alignmentAudit.attributionConfirmations).toMatchObject({ mode: 'derived-copy-only', count: 1, edgeIds: [evidenceEdge.id] });
+  });
+
+  it('ignores confirmation requests that do not target explicit evidence or finding edges', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: { status: 'Aligned', perStandard: [{ standard: 'STD-1', overallDetermination: 'Pass' }] },
+      auditScope: { includedArtifactIds: ['lesson-1'] },
+    });
+    const projected = E.confirmExplicitAttributions(graph, [{ edgeId: 'missing-edge' }]);
+    expect(projected.meta.alignmentAudit.attributionConfirmations).toMatchObject({ count: 0, edgeIds: [] });
+    expect(projected.edges).toEqual(graph.edges);
+  });
+
+  it('validates and filters the exported alignment graph without inventing relationships', () => {
+    const graph = E.fromAlignmentAudit({
+      standards: {
+        status: 'Partially aligned',
+        perStandard: [{
+          standard: 'NGSS 5-LS1-1',
+          overallDetermination: 'Revise',
+          analysis: { textAlignment: { status: 'Aligned', evidence: 'Plants use structures to move materials.', artifactIds: ['lesson-1'] } },
+          gaps: [{ text: 'The exit ticket needs a stronger check.', artifactIds: ['quiz-1'] }],
+          adminRecommendation: 'Add one evidence-based exit question.',
+        }],
+      },
+    }, {
+      auditScope: {
+        includedArtifacts: [
+          { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan' },
+          { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz' },
+        ],
+      },
+    });
+    const evidenceEdge = graph.edges.find((edge) => edge.relationType === 'evidenceFrom');
+    const derived = E.confirmExplicitAttributions(graph, [{ edgeId: evidenceEdge.id, confirmedAt: '2026-08-01T12:00:00.000Z' }]);
+    const payload = {
+      schema: 'alloflow-alignment-graph-export/v1',
+      graph: derived,
+      originalGraph: graph,
+      audit: { status: 'Partially aligned' },
+    };
+
+    const normalized = E.normalizeAlignmentGraphExport(payload);
+    expect(normalized.ok).toBe(true);
+    expect(normalized.graph.version).toBe('acg/v1');
+    expect(normalized.originalGraph.version).toBe('acg/v1');
+    expect(E.normalizeAlignmentGraphExport({ schema: 'wrong/v1', graph: derived }).ok).toBe(false);
+
+    const teacherView = E.filterAlignmentGraph(payload, { attributionSources: ['teacher'] });
+    expect(teacherView.ok).toBe(true);
+    expect(teacherView.graph.edges).toEqual(expect.arrayContaining([
+      expect.objectContaining({ relationType: 'evidenceFrom', attributionSource: 'teacher' }),
+    ]));
+    expect(teacherView.graph.nodes.some((node) => node.type === 'auditEvidence')).toBe(true);
+    expect(teacherView.graph.nodes.some((node) => node.type === 'auditArtifact')).toBe(true);
+    expect(teacherView.graph.meta.alignmentView.filters.attributionSources).toEqual(['teacher']);
+
+    const findingView = E.filterAlignmentGraph(payload, { nodeTypes: ['auditFinding'] });
+    expect(findingView.graph.nodes.some((node) => node.type === 'auditFinding')).toBe(true);
+    expect(findingView.graph.nodes.some((node) => node.type === 'auditRecommendation')).toBe(false);
+    expect(findingView.graph.edges.every((edge) => {
+      const ids = new Set(findingView.graph.nodes.map((node) => node.id));
+      return ids.has(edge.fromId) && ids.has(edge.toId);
+    })).toBe(true);
+
+    const searchView = E.filterAlignmentGraph(payload, { query: 'exit ticket' });
+    expect(searchView.graph.nodes.some((node) => node.type === 'auditFinding')).toBe(true);
+    expect(searchView.graph.nodes.some((node) => node.type === 'auditRecommendation')).toBe(false);
+    expect(graph.edges.find((edge) => edge.id === evidenceEdge.id).attributionSource).toBe('audit-model');
+  });
+  it('fails closed to a root audit node when no standards are available', () => {
+    const graph = E.fromAlignmentAudit({ standards: { status: 'Not applicable', perStandard: [] } });
+    expect(graph.nodes).toEqual([
+      { id: 'alignment-audit', label: 'Curriculum alignment audit', type: 'audit', category: 'Audit', status: 'Not evaluated' }
+    ]);
+    expect(graph.edges).toEqual([]);
+  });
+});

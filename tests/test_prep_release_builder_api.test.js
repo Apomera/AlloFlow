@@ -23,6 +23,11 @@ describe('Test Prep Hub release-builder API parity', () => {
       'exportProgress: testPrepExportProgress',
       'importProgress: testPrepImportProgress',
       'normalizeReviewItems: normalizeTestPrepReviewItems',
+      'resolveLearnerDataIdentity: testPrepResolveLearnerDataIdentity',
+      'reviewItemsForPack: testPrepReviewItemsForPack',
+      'annotationsForPack: testPrepAnnotationsForPack',
+      'normalizeFlashcardStore: normalizeTestPrepFlashcardStore',
+      'normalizeChapterProgressStore: normalizeTestPrepNativeChapterProgressStore',
       'choicesSpeechText: testPrepChoicesSpeechText',
       'handsFreeHelpText: testPrepHandsFreeHelpText',
       'handsFreeStatusText: testPrepHandsFreeStatusText',
@@ -45,6 +50,12 @@ describe('Test Prep Hub release-builder API parity', () => {
       'preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy',
       'filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse',
       'buildClarificationPrompt: testPrepBuildClarificationPrompt',
+      'resolvePackContentIdentity: testPrepResolvePackContentIdentity',
+      'resolveLearnerDataIdentity: testPrepResolveLearnerDataIdentity',
+      'reviewItemsForPack: testPrepReviewItemsForPack',
+      'annotationsForPack: testPrepAnnotationsForPack',
+      'normalizeFlashcardStore: normalizeTestPrepFlashcardStore',
+      'normalizeChapterProgressStore: normalizeTestPrepNativeChapterProgressStore',
     ]) expect(legacyBuilder, entry).toContain(entry);
   });
 });

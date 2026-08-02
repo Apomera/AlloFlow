@@ -77,6 +77,7 @@ describe('Cell Atlas Lab scientific reasoning studio', () => {
     expect(html).toContain('Build a claim–evidence–reasoning argument');
     expect(html).toContain('Caution checkpoint');
     expect(html).toContain('cannot prove identity or lineage');
+    expect(html).toContain('Copy cross-tissue CER packet');
   });
 
   it('shows the six-step atlas pipeline and tissue-specific method context', () => {

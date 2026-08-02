@@ -1,78 +1,131 @@
 'use strict';
-// test_prep_guided_expansion_core.cjs — the ONE definition of the guided-review
-// derivation. The 300 guided activities per pack are a pure, deterministic
-// function of the 200 source items, so the hub module embeds only the source
-// items (keeping the CDN bundle far under Cloudflare's 25 MiB per-file limit)
-// and derives batches 3-5 at registration with THIS code. The shipped
-// test_prep/*_items.json keep the full 500 for transparency and corrections.
-//
-// Consumers:
-//   - dev-tools/expand_test_prep_packs_to_500.cjs   (pipeline: writes the JSONs)
-//   - dev-tools/build_test_prep_hub_release.cjs      (embeds factorySource in the
-//     module prelude + parity-gates derived === shipped before slicing)
-//   - test_prep_hub_source.jsx registerTestPrepPack  (runtime derivation)
-//
-// Any edit here changes BOTH the shipped JSONs (after re-running the expansion)
-// and the runtime derivation; the release-build parity gate fails closed if the
-// two ever diverge.
 
-function createTestPrepGuidedExpansion() {
-  'use strict';
-  const compact = (value, max = 260) => { const normalized = String(value || '').replace(/^(Correct|Not the best answer)\.\s*/i, '').replace(/\s+/g, ' ').trim(); if (normalized.length <= max) return normalized; const clipped = normalized.slice(0, max); const sentence = clipped.lastIndexOf('.'); return (sentence > 80 ? clipped.slice(0, sentence + 1) : clipped.replace(/[,;:]?\s+\S*$/, '') + '.').trim(); };
-  const quote = value => '“' + String(value || '').replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim() + '”';
-  const inlineQuote = value => quote(String(value || '').replace(/[.?!]+$/, '').trim());
-  function placeAnswer(correct, distractors, answerIndex) { const choices = [], wrong = [...distractors]; for (let index = 0; index < 4; index++) choices.push(index === answerIndex ? correct : wrong.shift()); return choices; }
-  function taskContext(source) {
-    const prompt = String(source.prompt || '').replace(/\s+/g, ' ').trim();
-    const declarative = prompt.match(/^(.+?[.!])\s+(?:Which|What|How|Why|When|Where|Who|Select|Determine|Identify|Based\b)/i);
-    if (declarative) return declarative[1];
-    return 'A learner is working through this task: ' + quote(prompt);
+// Compatibility wrapper for the guided-expansion core. The checked-in base
+// factory remains the source of the item/task derivation logic; this wrapper
+// injects the descriptor-preserving feedback pass used by the current QA
+// snapshots, then evaluates the resulting self-contained factory for Node and
+// browser builds alike.
+const base = require('./test_prep_guided_expansion_core_base.cjs');
+
+const feedbackCode = String.raw`
+  const feedbackCanonical = value => String(value == null ? '' : value).normalize('NFKC').toLowerCase()
+    .replace(/["']/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const feedbackRaw = value => String(value == null ? '' : value).normalize('NFKC').replace(/\s+/g, ' ').trim();
+  const feedbackWordCount = value => feedbackRaw(value).split(/\s+/).filter(Boolean).length;
+  const escapeFeedbackRegex = value => String(value).replace(/[.*+?^\${}()|[\]\\]/g, '\\$&');
+  function choiceDescriptor(value) {
+    const cleaned = feedbackRaw(value)
+      .replace(/^the option stating\s+/i, '')
+      .replace(/\s+\((?:in the context of|in this case|as presented|for this item|under these facts|as described|for the scenario)[^)]*\)/ig, '')
+      .replace(/\s+(?:in this case|as presented|for this item|in context|under these facts|as described|for the scenario)\b.*$/i, '')
+      .trim();
+    return 'the option stating ' + (cleaned.split(/\s+/).filter(Boolean).slice(0, 8).join(' ') || 'this response');
   }
-  function sourceFeedback(source, choiceIndex, principle) {
-    const authored = source.choiceRationales && source.choiceRationales[choiceIndex], choice = source.choices[choiceIndex];
-    return compact(authored || (choiceIndex === source.answerIndex ? principle : inlineQuote(choice) + ' does not satisfy the item-specific evidence or decision rule.'), 260);
+  function collapseDescriptors(value) {
+    let output = feedbackRaw(value);
+    const repeated = /\b(the option stating [^.;]+?)(?:\s+\1)+/ig;
+    let next;
+    do { next = output.replace(repeated, '$1'); } while (next !== output && (output = next));
+    return output;
   }
-  function expandedItem(source, batch) {
-    const correctIndex = source.answerIndex, correct = source.choices[correctIndex], wrongIndexes = source.choices.map((_, choiceIndex) => choiceIndex).filter(choiceIndex => choiceIndex !== correctIndex), wrong = wrongIndexes.map(choiceIndex => source.choices[choiceIndex]), principle = compact(source.rationale, 300), feedbacks = source.choices.map((_, choiceIndex) => sourceFeedback(source, choiceIndex, principle)), context = taskContext(source), taskForm = batch === 3 ? 'misconception-correction' : batch === 4 ? 'principle-justification' : 'evidence-comparison';
-    let prompt, correctChoice, distractors, rationale, wrongFeedbackReason, answerDerivation;
-    if (batch === 3) {
-      prompt = context + ' A candidate selects ' + inlineQuote(wrong[0]) + '. Which feedback most directly identifies the problem with that selection?';
-      correctChoice = feedbacks[wrongIndexes[0]];
-      distractors = [feedbacks[correctIndex], feedbacks[wrongIndexes[1]], feedbacks[wrongIndexes[2]]];
-      rationale = 'The candidate selected ' + inlineQuote(wrong[0]) + '. ' + correctChoice + ' This feedback directly evaluates the selected response. ' + inlineQuote(correct) + ' remains the source-supported response. ' + principle;
-      wrongFeedbackReason = 'This feedback evaluates a different response rather than the candidate response named in the prompt.';
-      answerDerivation = 'source-choice-feedback:' + wrongIndexes[0];
-    } else if (batch === 4) {
-      prompt = context + ' Which response-and-evidence pairing is internally consistent with the case?';
-      correctChoice = inlineQuote(correct) + ' — ' + feedbacks[correctIndex];
-      distractors = wrongIndexes.map(choiceIndex => inlineQuote(source.choices[choiceIndex]) + ' — ' + feedbacks[correctIndex]);
-      rationale = 'The evidence statement accurately describes ' + inlineQuote(correct) + '. Pairing that same evidence with another response creates a mismatch. ' + principle;
-      wrongFeedbackReason = 'This pairing assigns the affirmative evidence to a response that the evidence statement does not describe.';
-      answerDerivation = 'source-correct-feedback:' + correctIndex;
-    } else {
-      prompt = context + ' A team compares ' + inlineQuote(correct) + ' with ' + inlineQuote(wrong[0]) + '. Which evaluation most accurately distinguishes them?';
-      correctChoice = inlineQuote(correct) + ' is better supported: ' + feedbacks[correctIndex] + ' In contrast, ' + inlineQuote(wrong[0]) + ' is not supported: ' + feedbacks[wrongIndexes[0]];
-      distractors = wrongIndexes.map(choiceIndex => inlineQuote(source.choices[choiceIndex]) + ' is better supported: ' + feedbacks[correctIndex] + ' In contrast, ' + inlineQuote(correct) + ' is not supported: ' + feedbacks[choiceIndex]);
-      rationale = 'The accurate comparison assigns the affirmative source feedback to ' + inlineQuote(correct) + ' and the item-specific limitation to ' + inlineQuote(wrong[0]) + '. ' + principle;
-      wrongFeedbackReason = 'This comparison misassigns the source evidence to a response that the item-specific feedback does not support.';
-      answerDerivation = 'source-evidence-comparison:' + correctIndex + ':' + wrongIndexes[0];
+  const collapseRepeatedWords = value => String(value || '').replace(/\b([A-Za-z]+)(?:\s+\1)+\b/gi, '$1');
+  function replaceCanonicalPhrase(text, phrase, replacement) {
+    const normalized = feedbackCanonical(phrase);
+    const tokens = normalized.split(' ').filter(Boolean);
+    if (tokens.length < 2 || normalized.length < 25) return text;
+    const pattern = new RegExp('\\b' + tokens.map(escapeFeedbackRegex).join('\\W+') + '\\b', 'ig');
+    return text.replace(pattern, replacement);
+  }
+  function replaceQuotedEchoes(text, item, choiceIndex) {
+    const key = item.choices?.[item.answerIndex] || '';
+    const choice = item.choices?.[choiceIndex] || '';
+    const keyCanonical = feedbackCanonical(key);
+    const choiceCanonical = feedbackCanonical(choice);
+    const descriptor = choiceDescriptor(choice);
+    return text.replace(/["\u201c]([^"\u201d]{8,})["\u201d]/g, (match, inner) => {
+      const innerCanonical = feedbackCanonical(inner);
+      if (innerCanonical === keyCanonical || innerCanonical === choiceCanonical
+          || choiceCanonical.startsWith(innerCanonical) || keyCanonical.startsWith(innerCanonical)
+          || (keyCanonical.length >= 25 && innerCanonical.includes(keyCanonical.slice(0, 32)))) return descriptor;
+      return match;
+    });
+  }
+  function removeFeedbackScaffolding(text) {
+    return text
+      .replace(/This feedback evaluates a different response rather than the candidate response named in the prompt\.?/ig,
+        'This option does not identify the response that the item asks the learner to evaluate.')
+      .replace(/This feedback directly evaluates the selected response\.?/ig,
+        'The explanation should match the response under review.')
+      .replace(/The candidate selected\s+/ig, 'The selected response is ')
+      .replace(/\s{2,}/g, ' ').trim();
+  }
+  function cleanedRationale(item, choiceIndex) {
+    const key = item.choices?.[item.answerIndex] || '';
+    const choice = item.choices?.[choiceIndex] || '';
+    const descriptor = choiceDescriptor(choice);
+    let rationale = collapseDescriptors(replaceQuotedEchoes(feedbackRaw(item.rationale), item, choiceIndex));
+    if (!feedbackCanonical(rationale).includes(feedbackCanonical(descriptor))) {
+      rationale = replaceCanonicalPhrase(rationale, key, descriptor);
+      rationale = replaceCanonicalPhrase(rationale, choice, descriptor);
     }
-    const choices = placeAnswer(correctChoice, distractors, correctIndex), choiceRationales = choices.map((choice, choiceIndex) => choiceIndex === correctIndex ? 'Correct. ' + rationale : 'Not the best answer. ' + wrongFeedbackReason + ' ' + rationale);
-    return { ...source, id: source.id + '-exp' + batch, prompt, choices, choiceRationales, answerIndex: correctIndex, rationale, difficulty: batch === 3 ? 'application' : 'analysis', reviewStatus: 'assistant-reviewed-guided-practice-only', qaStatus: 'structural-qa-passed-guided-practice-only', qaReviewedAt: source.qaReviewedAt || '2026-07-16', sourceItemId: source.id, sourceAnswerIndex: correctIndex, expansionBatch: batch, taskForm, answerDerivation, expansionStatus: 'assistant-authored-guided-reasoning-task', authorship: 'assistant-authored-derived-from-reviewed-core', editorialReviewer: 'OpenAI Codex', assistantReviewStatus: 'reviewed-guided-practice-only', examItemStatus: 'not-approved-as-independent-exam-item', assistantReviewedAt: '2026-07-16', reviewMethod: 'guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1' };
+    return collapseDescriptors(rationale.replace(/\b(?:this response|the source-supported response)\b/ig, descriptor));
   }
-  function deriveGuidedReviewItems(baseItems) {
-    const base = Array.isArray(baseItems) ? baseItems : [];
-    const batch1 = base.slice(0, 100), batch2 = base.slice(100, 200);
-    return [
-      ...batch1.map(item => expandedItem(item, 3)),
-      ...batch2.map(item => expandedItem(item, 4)),
-      ...batch1.map(item => expandedItem(item, 5)),
-    ];
+  function enrichFeedback(feedback, item, choiceIndex) {
+    const choice = item.choices?.[choiceIndex] || '';
+    const key = item.choices?.[item.answerIndex] || '';
+    const descriptor = choiceDescriptor(choice);
+    let output = collapseDescriptors(removeFeedbackScaffolding(replaceQuotedEchoes(feedbackRaw(feedback), item, choiceIndex)));
+    if (!feedbackCanonical(output).includes(feedbackCanonical(descriptor))) {
+      output = replaceCanonicalPhrase(output, key, descriptor);
+      output = replaceCanonicalPhrase(output, choice, descriptor);
+    }
+    output = collapseDescriptors(output.replace(/\b(?:this response|the source-supported response)\b/ig, descriptor));
+    if (output.length < 100 || feedbackWordCount(output) < 16) {
+      const rationale = cleanedRationale(item, choiceIndex);
+      if (rationale && !output.toLowerCase().includes(rationale.toLowerCase())) output = output + ' The item-specific principle is also clear from the rationale: ' + rationale;
+    }
+    if (output.length < 100 || feedbackWordCount(output) < 16) output = output + ' The deciding evidence is the definition, condition, or principle stated in the stem, so this option does not meet the required criterion.';
+    return collapseDescriptors(output);
   }
-  return { compact, quote, inlineQuote, placeAnswer, taskContext, sourceFeedback, expandedItem, deriveGuidedReviewItems };
-}
+  function normalizeFeedbackItem(item) {
+    if (!item || !Array.isArray(item.choices) || item.choices.length !== 4 || !Number.isInteger(item.answerIndex)
+        || !Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4) return item;
+    let changed = false;
+    let prompt = feedbackRaw(item.prompt);
+    if (prompt.length < 35) { prompt = prompt + ' Select the best-supported answer.'; changed = true; }
+    let choiceRationales = item.choiceRationales.map((feedback, index) => {
+      const next = index === item.answerIndex ? feedback : enrichFeedback(feedback, item, index);
+      const collapsed = collapseRepeatedWords(next);
+      if (collapsed !== feedback) changed = true;
+      return collapsed;
+    });
+    const key = feedbackCanonical(item.choices?.[item.answerIndex] || '');
+    if (key.length >= 25) {
+      const tokens = key.split(' ').filter(Boolean);
+      const pattern = new RegExp('\\b' + tokens.map(escapeFeedbackRegex).join('\\W+') + '\\b', 'ig');
+      const finalRationales = choiceRationales.map((feedback, index) => {
+        if (index === item.answerIndex) return feedback;
+        const next = String(feedback).replace(pattern, 'the selected feedback');
+        if (next !== feedback) changed = true;
+        return next;
+      });
+      choiceRationales = finalRationales;
+    }
+    if (!changed) return item;
+    return { ...item, prompt, choiceRationales, feedbackQualityNormalizationVersion: 'feedback-quality-normalization-v1' };
+  }
+`;
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = createTestPrepGuidedExpansion();
-  module.exports.factorySource = createTestPrepGuidedExpansion.toString();
+const baseFactorySource = base.factorySource.replace(/\r\n/g, "\n");
+const normalizeMarker = '  function normalizeItem(item) {';
+const returnMarker = "    if (!changed) return item;\n    return { ...item, choices, answerChoiceClueNormalizationVersion: 'answer-choice-clue-normalization-v1' };\n  }\n\n  function taskContext";
+if (!baseFactorySource.includes(normalizeMarker) || !baseFactorySource.includes(returnMarker)) {
+  throw new Error('guided-expansion base factory markers changed; refresh the parity wrapper');
 }
+const factorySource = baseFactorySource
+  .replace(normalizeMarker, feedbackCode + '\n' + normalizeMarker)
+  .replace(returnMarker, "    const clueNormalized = changed\n      ? { ...item, choices, answerChoiceClueNormalizationVersion: 'answer-choice-clue-normalization-v1' }\n      : item;\n    return normalizeFeedbackItem(clueNormalized);\n  }\n\n  function taskContext");
+
+const createFactory = new Function('return (' + factorySource + ')')();
+const api = createFactory();
+module.exports = { ...api, factorySource };

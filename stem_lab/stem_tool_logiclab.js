@@ -1115,7 +1115,7 @@ window.StemLab = window.StemLab || {
                   }),
                   React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol', "Backspace last symbol"),
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg text-sm"
                   }, "\u232B"),
                   React.createElement("button", { "aria-label": t('stem.logiclab.clear', "Clear"),
                     onClick: function() { upd({ expression: '' }); },
@@ -1131,7 +1131,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ showEnglish: !showEnglish }); },
 
-                    className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all " + (showEnglish ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-600 hover:bg-violet-200")
+                    className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all " + (showEnglish ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-700 hover:bg-violet-200")
 
                   }, showEnglish ? "\uD83D\uDCDD English" : "\u2234 Formal")
 
@@ -1205,7 +1205,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg transition-all text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg transition-all text-sm"
 
                   }, "\u232B"),
 
@@ -1359,7 +1359,7 @@ window.StemLab = window.StemLab || {
 
                             }),
 
-                            React.createElement("td", { key: "result", className: "px-4 py-2 text-center font-black transition-colors " + (row.result ? "bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100" : "bg-red-50 text-red-600 group-hover:bg-red-100") },
+                            React.createElement("td", { key: "result", className: "px-4 py-2 text-center font-black transition-colors " + (row.result ? "bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100" : "bg-red-50 text-red-700 group-hover:bg-red-100") },
 
                               row.result ? "\u2705 T" : "\u274C F"
 
@@ -1815,7 +1815,7 @@ window.StemLab = window.StemLab || {
 
                   'aria-label': t('stem.logiclab.your_interests_for_ai_personalization', 'Your interests for AI personalization'),
 
-                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-500 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-500 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none"
 
                 }),
 
@@ -1872,7 +1872,7 @@ window.StemLab = window.StemLab || {
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
-                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
+                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
 
                     }, t('stem.logiclab.valid_2', "\u2705 Valid")),
 
@@ -1885,7 +1885,7 @@ window.StemLab = window.StemLab || {
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
-                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"
+                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"
 
                     }, t('stem.logiclab.invalid_fallacy_2', "\u274C Invalid (Fallacy)"))
 
@@ -1974,7 +1974,7 @@ window.StemLab = window.StemLab || {
 
                       onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
-                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
+                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
 
                     }, t('stem.logiclab.valid_4', "\u2705 Valid")),
 
@@ -1982,7 +1982,7 @@ window.StemLab = window.StemLab || {
 
                       onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
-                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
+                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
 
                     }, t('stem.logiclab.invalid_fallacy_4', "\u274C Invalid (Fallacy)"))
 
@@ -2100,7 +2100,7 @@ window.StemLab = window.StemLab || {
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = true; upd({ qfAnswers: a }); },
 
-                                    className: "px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded text-xs"
+                                    className: "px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded text-xs"
 
                                   }, "T"),
 
@@ -2108,7 +2108,7 @@ window.StemLab = window.StemLab || {
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
 
-                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded text-xs"
+                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded text-xs"
 
                                   }, "F")
 
@@ -2184,9 +2184,9 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
 
@@ -2256,9 +2256,9 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
 
@@ -2405,7 +2405,7 @@ window.StemLab = window.StemLab || {
                           return React.createElement("tr", { key:ri2, style:{background:isActive2?'#ede9fe':'transparent'} },
                             React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.A?"text-emerald-600":"text-slate-600")},r2.A?"T":"F"),
                             !isUnaryGate&&React.createElement("td",{className:"px-4 py-2 text-center font-bold bg-white "+(r2.B?"text-emerald-600":"text-slate-600")},r2.B?"T":"F"),
-                            React.createElement("td",{className:"px-4 py-2 text-center font-black "+(r2.out?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600")},r2.out?"\u2705 T":"\u274C F")
+                            React.createElement("td",{className:"px-4 py-2 text-center font-black "+(r2.out?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-700")},r2.out?"\u2705 T":"\u274C F")
                           );
                         })
                       )
@@ -2421,7 +2421,7 @@ window.StemLab = window.StemLab || {
                           upd({ mode:'truth', expression: fml });
                           if (addToast) addToast('Opened in Truth Table builder!','info');
                         },
-                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-700 font-bold rounded-full text-[11px]"
+                        className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[11px]"
                       }, t('stem.logiclab.open_in_truth_tables_2', "\uD83D\uDCCA Open in Truth Tables \u2192"))
                     )
                   );

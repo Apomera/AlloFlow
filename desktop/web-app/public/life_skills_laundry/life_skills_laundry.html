@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Laundry &amp; Clothing Care Lab</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  if (window.AFRAME) {
+    AFRAME.registerComponent('laundry-interactive', {
+      schema: { task: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsLaundry3D) window.lifeSkillsLaundry3D.activate(this.data.task, 'scene');
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsLaundry3D) window.lifeSkillsLaundry3D.focus(this.data.task, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root {
+    --laundry-bg: #111827;
+    --laundry-panel: #182337;
+    --laundry-panel-2: #21324b;
+    --laundry-line: #557095;
+    --laundry-text: #f8fbff;
+    --laundry-muted: #c8d6eb;
+    --laundry-accent: #67e8f9;
+    --laundry-good: #4ade80;
+    --laundry-warn: #facc15;
+    --laundry-danger: #fb7185;
+  }
+  :root[data-theme="light"] {
+    --laundry-bg: #eef4f8;
+    --laundry-panel: #ffffff;
+    --laundry-panel-2: #e5eef5;
+    --laundry-line: #7894af;
+    --laundry-text: #122236;
+    --laundry-muted: #3b526a;
+    --laundry-accent: #075985;
+    --laundry-good: #166534;
+    --laundry-warn: #854d0e;
+    --laundry-danger: #9f1239;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--laundry-bg); color: var(--laundry-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--laundry-warn); outline-offset: 2px; }
+  .laundry-app { min-height: 100vh; display: flex; flex-direction: column; }
+  .laundry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 18px; background: linear-gradient(115deg, #164e63, #0f766e 58%, #3730a3); border-bottom: 1px solid rgba(255,255,255,.24); }
+  .laundry-header h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .laundry-header p { margin: 4px 0 0; color: #effbff; font-size: 12px; line-height: 1.45; max-width: 700px; }
+  .header-mark { flex: 0 0 auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .laundry-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 12px; padding: 12px; }
+  .scene-panel, .coach-panel { min-width: 0; border: 1px solid var(--laundry-line); background: var(--laundry-panel); box-shadow: 0 16px 42px rgba(0,0,0,.2); }
+  .scene-panel { position: relative; min-height: 590px; overflow: hidden; border-radius: 14px; }
+  .scene-panel a-scene { display: block; width: 100%; height: 100%; min-height: 590px; }
+  .scene-help { position: absolute; left: 12px; bottom: 10px; z-index: 4; max-width: min(470px, calc(100% - 24px)); padding: 7px 9px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: rgba(17,24,39,.88); color: #eef8ff; font-size: 11px; line-height: 1.35; pointer-events: none; }
+  .coach-panel { border-radius: 14px; padding: 14px; overflow: auto; }
+  .coach-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .coach-panel h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .coach-panel h3 { margin: 16px 0 7px; color: var(--laundry-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .coach-panel p { margin: 0; color: var(--laundry-muted); font-size: 12px; line-height: 1.5; }
+  .mode-wrap { display: grid; gap: 4px; min-width: 132px; }
+  .mode-wrap label { color: var(--laundry-muted); font-size: 10px; font-weight: 800; }
+  .mode-wrap select { min-height: 32px; padding: 4px 7px; border: 1px solid var(--laundry-line); border-radius: 7px; background: var(--laundry-panel-2); color: var(--laundry-text); font-size: 11px; font-weight: 750; }
+  .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 9px; padding: 9px 10px; border-left: 4px solid var(--laundry-accent); background: var(--laundry-panel-2); }
+  .progress-line strong { font-size: 14px; }
+  .progress-line span { color: var(--laundry-muted); font-size: 11px; font-weight: 700; text-align: right; }
+  .view-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view-controls span { color: var(--laundry-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .view-button { padding: 5px 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: transparent; color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .view-button[aria-pressed="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.12); }
+  .prompt { margin: 0 0 10px !important; padding: 9px 10px; border: 1px solid var(--laundry-line); border-radius: 9px; background: rgba(103,232,249,.08); color: var(--laundry-text) !important; }
+  .feedback { min-height: 42px; margin: 0 0 11px !important; padding: 8px 10px; border-radius: 8px; background: rgba(250,204,21,.12); color: var(--laundry-warn) !important; font-weight: 700; }
+  .feedback.good { background: rgba(74,222,128,.13); color: var(--laundry-good) !important; }
+  .feedback.error { background: rgba(251,113,133,.13); color: var(--laundry-danger) !important; }
+  .scenario-panel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--laundry-line); border-left: 4px solid var(--laundry-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .scenario-kicker { color: var(--laundry-accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .scenario-panel strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.3; }
+  .scenario-situation { margin: 5px 0 8px !important; }
+  .scenario-choices { display: grid; gap: 6px; }
+  .scenario-button { width: 100%; padding: 7px 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: transparent; color: var(--laundry-text); font-size: 11px; line-height: 1.35; text-align: left; }
+  .scenario-button:hover, .scenario-button:focus-visible, .scenario-button[aria-pressed="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.12); }
+  .scenario-button:disabled { cursor: default; opacity: .76; }
+  .scenario-feedback { min-height: 30px; margin: 7px 0 0 !important; font-size: 11px !important; font-weight: 700; }
+  .scenario-feedback.good { color: var(--laundry-good) !important; }
+  .scenario-feedback.error { color: var(--laundry-danger) !important; }
+  .scenario-hint { margin-top: 7px; padding: 6px 8px; border: 1px solid var(--laundry-line); border-radius: 7px; background: transparent; color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .scenario-hint[aria-expanded="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.1); }
+  .scenario-hint-text { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 11px !important; }
+  .scenario-step { display: block; margin-top: 2px; color: var(--laundry-muted); font-size: 10px; font-weight: 700; }
+  .scenario-next { width: 100%; margin-top: 7px; padding: 7px 8px; border: 1px solid var(--laundry-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--laundry-text); font-size: 10px; font-weight: 800; }
+  .scenario-next:disabled { cursor: default; opacity: .7; }
+  .practice-summary { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 10px !important; font-weight: 700; }
+  .task-list { display: grid; gap: 7px; }
+  .task-button { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; width: 100%; padding: 9px 10px; border: 1px solid var(--laundry-line); border-radius: 9px; background: transparent; color: var(--laundry-text); text-align: left; }
+  .task-button:hover, .task-button.current { border-color: var(--laundry-accent); background: rgba(103,232,249,.09); }
+  .task-button.done { border-color: rgba(74,222,128,.75); background: rgba(74,222,128,.1); }
+  .task-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--laundry-panel-2); font-size: 15px; }
+  .task-button.done .task-icon { background: rgba(74,222,128,.2); }
+  .task-copy { min-width: 0; }
+  .task-copy strong { display: block; font-size: 11px; line-height: 1.25; }
+  .task-copy small { display: block; margin-top: 2px; color: var(--laundry-muted); font-size: 10px; line-height: 1.3; }
+  .task-room { align-self: start; color: var(--laundry-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .reset-button { width: 100%; margin-top: 11px; padding: 9px 10px; border: 1px solid var(--laundry-line); border-radius: 8px; background: var(--laundry-panel-2); color: var(--laundry-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button { width: 100%; margin-top: 7px; padding: 9px 10px; border: 1px solid var(--laundry-warn); border-radius: 8px; background: rgba(250,204,21,.1); color: var(--laundry-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button:hover { border-color: var(--laundry-accent); background: rgba(103,232,249,.12); }
+  .help-pause-text { margin: 6px 0 0 !important; color: var(--laundry-good) !important; font-size: 11px !important; font-weight: 700; }
+  .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--laundry-line); border-radius: 8px; background: transparent; color: var(--laundry-text); font-size: 11px; font-weight: 800; }
+  .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--laundry-accent); background: rgba(103,232,249,.1); }
+  .why-text { margin: 6px 0 0 !important; color: var(--laundry-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--laundry-line); font-size: 11px !important; }
+  .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--laundry-line); border-radius: 12px; background: var(--laundry-panel); color: var(--laundry-text); }
+  .scene-fallback strong { display: block; margin-bottom: 5px; }
+  .scene-fallback p { color: var(--laundry-muted); font-size: 12px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 840px) {
+    .laundry-layout { grid-template-columns: 1fr; }
+    .scene-panel { min-height: 500px; }
+    .scene-panel a-scene { min-height: 500px; }
+  }
+  @media (max-width: 520px) {
+    .laundry-header { padding: 12px; }
+    .laundry-header h1 { font-size: 17px; }
+    .header-mark { display: none; }
+    .laundry-layout { padding: 8px; gap: 8px; }
+    .scene-panel { min-height: 430px; }
+    .scene-panel a-scene { min-height: 430px; }
+    .coach-panel { padding: 11px; }
+    .coach-top { display: grid; }
+    .mode-wrap { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="laundry-app" id="laundryApp">
+  <header class="laundry-header">
+    <div>
+      <h1>Laundry &amp; Clothing Care Lab</h1>
+      <p>Practice sorting, reading care labels, measuring detergent, treating stains, choosing a cycle, and protecting the dryer.</p>
+    </div>
+    <div class="header-mark">Life Skills Lab · 3D practice</div>
+  </header>
+
+  <div class="laundry-layout">
+    <section class="scene-panel" aria-labelledby="sceneTitle">
+      <h2 class="sr-only" id="sceneTitle">Interactive 3D laundry room scene</h2>
+      <a-scene id="laundryScene" embedded renderer="antialias: true; colorManagement: true" background="color: #111827" fog="type: linear; color: #111827; near: 10; far: 32" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #d8e8ff; intensity: 1.5"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.6" position="-4 8 5"></a-entity>
+        <a-entity light="type: point; color: #67e8f9; intensity: .7; distance: 14" position="3 4 2"></a-entity>
+
+        <a-box position="0 -0.12 0" width="12" height=".2" depth="10" material="color: #263a4d; roughness: 1"></a-box>
+        <a-box position="0 3 -4.8" width="12" height="6" depth=".18" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="-5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+
+        <a-plane position="-3.7 .012 -1.8" rotation="-90 0 0" width="3.4" height="4.6" material="color: #245064; opacity: .55; transparent: true"></a-plane>
+        <a-plane position="0 .014 -1.8" rotation="-90 0 0" width="3.5" height="4.6" material="color: #33405e; opacity: .55; transparent: true"></a-plane>
+        <a-plane position="3.7 .016 -1.8" rotation="-90 0 0" width="3.4" height="4.6" material="color: #4b4264; opacity: .55; transparent: true"></a-plane>
+        <a-text value="SORT + CARE" position="-3.7 .035 -.15" rotation="-90 0 0" align="center" width="2.9" color="#b7f0f8" opacity=".85"></a-text>
+        <a-text value="WASH + TREAT" position="0 .035 -.15" rotation="-90 0 0" align="center" width="3.2" color="#d9d6ff" opacity=".85"></a-text>
+        <a-text value="DRY SAFELY" position="3.7 .035 -.15" rotation="-90 0 0" align="center" width="2.8" color="#f0d7ff" opacity=".85"></a-text>
+
+        <!-- Sorting baskets and care-label station. -->
+        <a-box position="-3.8 .75 -2.7" width="2.8" height="1.4" depth="1.5" material="color: #285066; roughness: .85"></a-box>
+        <a-box id="obj-sort" laundry-interactive="task: sort" position="-4.55 1.62 -2.22" width=".78" height=".42" depth=".7" material="color: #38bdf8; roughness: .4"></a-box>
+        <a-box position="-3.45 1.62 -2.22" width=".78" height=".42" depth=".7" material="color: #64748b; roughness: .4"></a-box>
+        <a-box position="-2.35 1.62 -2.22" width=".78" height=".42" depth=".7" material="color: #ef4444; roughness: .4"></a-box>
+        <a-text id="label-sort" value="LIGHTS + DARKS\nSORT FIRST" position="-4.55 2.42 -2.18" align="center" width="2.5" color="#cffafe" side="double"></a-text>
+        <a-box position="-2.2 1.15 -3.45" width="1.3" height=".12" depth=".85" material="color: #d6b48a; roughness: .55"></a-box>
+        <a-box id="obj-label" laundry-interactive="task: label" position="-2.2 1.7 -3.25" width=".82" height="1.08" depth=".08" rotation="0 0 -8" material="color: #f1f5f9; roughness: .5"></a-box>
+        <a-box position="-2.2 2.02 -3.17" width=".2" height=".18" depth=".1" material="color: #fbbf24; roughness: .4"></a-box>
+        <a-text id="label-label" value="READ THE\nCARE LABEL" position="-2.2 2.82 -3.12" align="center" width="2.35" color="#fef3c7" side="double"></a-text>
+
+        <!-- Washer, detergent, and stain-treatment station. -->
+        <a-box position="-.35 1.25 -3.1" width="2.7" height="2.5" depth=".9" material="color: #cbd5e1; roughness: .55"></a-box>
+        <a-cylinder position="-.35 1.35 -2.62" radius=".73" height=".16" rotation="90 0 0" material="color: #475569; roughness: .65"></a-cylinder>
+        <a-cylinder position="-.35 1.35 -2.52" radius=".56" height=".18" rotation="90 0 0" material="color: #0f172a; opacity: .75; transparent: true; roughness: .2"></a-cylinder>
+        <a-cylinder position="-.35 1.35 -2.4" radius=".43" height=".06" rotation="90 0 0" material="color: #60a5fa; opacity: .6; transparent: true; roughness: .1"></a-cylinder>
+        <a-box id="obj-cycle" laundry-interactive="task: cycle" position=".55 2.37 -2.55" width=".3" height=".3" depth=".12" material="color: #a855f7; roughness: .35"></a-box>
+        <a-text id="label-cycle" value="CHOOSE A\nSAFE CYCLE" position=".55 2.93 -2.47" align="center" width="2.2" color="#f3e8ff" side="double"></a-text>
+        <a-box position="1.5 2.1 -3.18" width=".72" height="1.5" depth=".65" material="color: #dbeafe; roughness: .35"></a-box>
+        <a-cylinder position="1.5 2.92 -3.18" radius=".16" height=".26" material="color: #22c55e; roughness: .3"></a-cylinder>
+        <a-box id="obj-detergent" laundry-interactive="task: detergent" position="1.5 2.45 -2.82" width=".27" height=".35" depth=".1" material="color: #22c55e; roughness: .35"></a-box>
+        <a-text id="label-detergent" value="MEASURE\nDETERGENT" position="1.5 3.42 -2.78" align="center" width="2.2" color="#dcfce7" side="double"></a-text>
+        <a-box position="-.5 .72 -2.32" width="1.2" height=".2" depth=".55" material="color: #d6b48a; roughness: .55"></a-box>
+        <a-box id="obj-stain" laundry-interactive="task: stain" position="-.5 1.18 -2.08" width=".58" height=".62" depth=".07" material="color: #f8fafc; roughness: .45"></a-box>
+        <a-sphere position="-.5 1.22 -2.03" radius=".12" material="color: #ef4444; roughness: .35"></a-sphere>
+        <a-text id="label-stain" value="PRETREAT\nBEFORE WASH" position="-.5 1.95 -2.02" align="center" width="2.25" color="#ffe4e6" side="double"></a-text>
+
+        <!-- Dryer and lint-safety station. -->
+        <a-box position="3.35 1.25 -3.1" width="2.75" height="2.5" depth=".9" material="color: #a78bfa; roughness: .55"></a-box>
+        <a-cylinder position="3.35 1.35 -2.62" radius=".73" height=".16" rotation="90 0 0" material="color: #475569; roughness: .65"></a-cylinder>
+        <a-cylinder position="3.35 1.35 -2.52" radius=".56" height=".18" rotation="90 0 0" material="color: #111827; opacity: .8; transparent: true; roughness: .2"></a-cylinder>
+        <a-box id="obj-lint" laundry-interactive="task: lint" position="4.25 2.28 -2.48" width=".52" height=".38" depth=".12" material="color: #f59e0b; roughness: .45"></a-box>
+        <a-text id="label-lint" value="CLEAR LINT\nBEFORE DRYING" position="4.25 3.02 -2.4" align="center" width="2.55" color="#fef3c7" side="double"></a-text>
+        <a-box position="3.4 2.42 -3.52" width="1.35" height=".12" depth=".72" material="color: #d6b48a; roughness: .55"></a-box>
+        <a-box position="3.4 2.77 -3.33" width=".82" height=".64" depth=".08" material="color: #60a5fa; roughness: .45"></a-box>
+
+        <a-ring id="marker-sort" position="-4.55 1.62 -1.85" radius-inner=".35" radius-outer=".5" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-label" position="-2.2 1.7 -3.05" radius-inner=".48" radius-outer=".62" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-detergent" position="1.5 2.45 -2.62" radius-inner=".23" radius-outer=".36" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-stain" position="-.5 1.18 -1.9" radius-inner=".32" radius-outer=".45" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-cycle" position=".55 2.37 -2.35" radius-inner=".22" radius-outer=".34" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-lint" position="4.25 2.28 -2.28" radius-inner=".28" radius-outer=".42" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-text id="sceneNote" value="Select a highlighted station or use the checklist." position="0 4.45 -3.95" align="center" width="5.8" color="#e7f2ff" side="double"></a-text>
+        <a-camera id="laundryCamera" position="0 3.45 9.4" rotation="-12 0 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+          <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30; interval: 100"></a-entity>
+        </a-camera>
+        <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 30"></a-entity>
+      </a-scene>
+      <div class="scene-help">Mouse: drag to look · WASD: move · click a station. Keyboard users can use the checklist.</div>
+      <div class="scene-fallback" id="sceneFallback" role="status">
+        <strong>The 3D view is unavailable.</strong>
+        <p>Use the accessible laundry checklist on the right to complete the same practice sequence.</p>
+      </div>
+      <p class="sr-only" id="sceneDescription">The scene shows sorting baskets, a care-label shirt, a washer, detergent and stain stations, a dryer, and a lint filter. Six clothing-care targets can be selected.</p>
+    </section>
+
+    <aside class="coach-panel" aria-labelledby="coachTitle">
+      <div class="coach-top">
+        <div>
+          <h2 id="coachTitle">Laundry coach</h2>
+          <p>Practice a safe, efficient load before using a real washer or dryer.</p>
+        </div>
+        <div class="mode-wrap">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect">
+            <option value="guided">Guided</option>
+            <option value="practice">Practice</option>
+            <option value="challenge">Challenge</option>
+          </select>
+        </div>
+      </div>
+      <div class="progress-line" aria-label="Laundry walkthrough progress">
+        <strong id="progressValue">0 / 6</strong>
+        <span id="progressMode">Guided · start with the first target</span>
+      </div>
+      <div class="view-controls" role="group" aria-label="3D scene view">
+        <span>Scene view</span>
+        <button class="view-button" type="button" data-view="left" aria-pressed="false">Left side</button>
+        <button class="view-button" type="button" data-view="center" aria-pressed="true">Center</button>
+        <button class="view-button" type="button" data-view="right" aria-pressed="false">Right side</button>
+      </div>
+      <p class="prompt" id="prompt" role="status">Start by sorting colors and fabrics.</p>
+      <p class="feedback" id="feedback" role="status" aria-live="polite">Select a highlighted station or use a checklist button.</p>
+
+      <section class="scenario-panel" aria-labelledby="scenarioTitle">
+        <div class="scenario-kicker">Decision practice</div>
+        <strong id="scenarioTitle"></strong>
+        <span class="scenario-step" id="scenarioStep"></span>
+        <p class="scenario-situation" id="scenarioSituation"></p>
+        <div class="scenario-choices" id="scenarioChoices" role="group" aria-label="Scenario responses"></div>
+        <button class="scenario-hint" id="scenarioHint" type="button" aria-expanded="false">Show a hint</button>
+        <p class="scenario-hint-text" id="scenarioHintText" role="status" aria-live="polite" hidden></p>
+        <button class="scenario-next" id="scenarioNext" type="button" hidden>Try another scenario</button>
+        <p class="scenario-feedback" id="scenarioFeedback" role="status" aria-live="polite"></p>
+        <p class="practice-summary" id="practiceSummary" role="status" aria-live="polite"></p>
+      </section>
+      <h3>Accessible laundry checklist</h3>
+      <div class="task-list" id="taskList" role="list" aria-label="Laundry care targets"></div>
+      <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
+      <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
+      <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
+      <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+      <button class="reset-button" id="resetButton" type="button">Start over</button>
+      <p class="note">Practice only. Read the garment label and product directions for each load. Use appropriate ventilation, keep the dryer lint area clear, and ask for help when a machine, fabric, stain, or chemical is unfamiliar.</p>
+      <p class="sr-only" id="srStatus" aria-live="polite"></p>
+    </aside>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var TASKS = [
+    { id: 'sort', icon: '🧺', room: 'Sort', label: 'Sort colors and fabrics', short: 'Separate lights, darks, reds, and delicate or heavy items.', why: 'Sorting protects color and fabric while helping the load clean evenly.', base: '#0ea5e9' },
+    { id: 'label', icon: '🏷️', room: 'Care', label: 'Read the care label', short: 'Check temperature, cycle, bleach, and drying symbols first.', why: 'The care label is the garment-specific starting point.', base: '#f59e0b' },
+    { id: 'detergent', icon: '🧴', room: 'Measure', label: 'Measure detergent', short: 'Use the product directions; extra detergent can leave residue.', why: 'Measured detergent supports cleaning without unnecessary buildup.', base: '#22c55e' },
+    { id: 'stain', icon: '🧪', room: 'Stain', label: 'Pretreat a stain', short: 'Blot or pretreat according to the fabric and product directions.', why: 'Pretreatment gives soil a chance to loosen before the main wash.', base: '#ef4444' },
+    { id: 'cycle', icon: '⚙️', room: 'Wash', label: 'Choose a safe cycle', short: 'Match water temperature and cycle movement to the load.', why: 'The right settings balance cleaning, fabric care, energy, and rinse time.', base: '#a855f7' },
+    { id: 'lint', icon: '🌀', room: 'Dry', label: 'Clear lint before drying', short: 'Check the lint filter and keep airflow clear before running the dryer.', why: 'Lint and blocked airflow increase heat and fire risk.', base: '#f97316' }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var SCENARIO = {"title":"The dryer feels unusually hot","situation":"The dryer is hot and the airflow seems weak. What is the safest next step?","instruction":"Choose the response that protects the machine and the home.","safeTask":"lint","choices":[{"id":"safe","label":"Stop the dryer, clear lint and airflow, and ask for help if heat or odor continues.","safe":true,"feedback":"Stopping first and checking lint and airflow reduces heat and fire risk."},{"id":"repeat","label":"Run another cycle so the clothes finish faster.","feedback":"Extra cycles can add heat. Stop, check airflow, and get help if the problem continues."},{"id":"detergent","label":"Add extra detergent to solve the problem.","feedback":"Detergent does not fix dryer airflow. Check the lint area and stop if the dryer stays hot."}],"hint":"Heat plus weak airflow is a stop signal. Check the lint filter and airflow before running the dryer again.","next":{"title":"The care label says cold wash and air dry","situation":"A favorite shirt has a cold-wash and air-dry label. Which choice protects the fabric?","instruction":"Choose the setting that follows the garment instructions.","safeTask":"label","choices":[{"id":"safe","label":"Choose a matching cold cycle and air dry it as the label directs.","safe":true,"feedback":"Following the care label protects the fabric and prevents avoidable damage."},{"id":"hot","label":"Use the hottest cycle so it gets extra clean.","feedback":"Hotter is not always better. Match the temperature and movement to the care label."},{"id":"dry","label":"Use high heat in the dryer to finish quickly.","feedback":"High heat can shrink or damage a garment marked for air drying."}],"hint":"The care label is the garment-specific instruction. Match temperature, movement, and drying method to its symbols.","next":{"title":"A stain remains after washing","situation":"A stain is still visible after washing, and the item has not been dried. What is the safer next move?","instruction":"Choose the response that protects the fabric and keeps the stain from setting.","safeTask":"stain","choices":[{"id":"safe","label":"Keep it out of the dryer, check the fabric and product directions, and pretreat or test before washing again.","safe":true,"feedback":"Avoiding heat and checking directions gives the stain a safer chance to loosen without damaging the fabric."},{"id":"heat","label":"Dry it on high heat so the stain is less noticeable.","feedback":"Heat can set some stains. Keep it out of the dryer while you check the fabric and treatment directions."},{"id":"scrub","label":"Scrub hard until the stain disappears.","feedback":"Aggressive scrubbing can damage fibers. Use a fabric-appropriate pretreatment and test first."}],"hint":"Do not add heat yet. Check the fabric and product directions, test a safe treatment, and wash again if appropriate."}}};
+  var activeScenario = SCENARIO;
+  var params = new URLSearchParams(window.location.search);
+  var storageKey = 'alloflow-life-laundry-3d-progress-v1';
+  function loadDone() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
+    } catch (_) { return {}; }
+  }
+  function saveProgress() {
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+  }
+  var state = {
+    mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
+    done: loadDone(),
+    focused: null,
+    feedback: 'Select a highlighted station or use a checklist button.',
+    feedbackTone: '',
+    missteps: 0,
+    scenarioChoice: null,
+    scenarioComplete: false,
+    scenarioMessage: '',
+    scenarioTone: '',
+    hintShown: false,
+    scenarioStep: 0,
+    scenarioMissteps: 0,
+    scenarioHintsUsed: 0
+  };
+  var modeSelect = document.getElementById('modeSelect');
+  var progressValue = document.getElementById('progressValue');
+  var progressMode = document.getElementById('progressMode');
+  var prompt = document.getElementById('prompt');
+  var feedback = document.getElementById('feedback');
+  var scenarioTitle = document.getElementById('scenarioTitle');
+  var scenarioSituation = document.getElementById('scenarioSituation');
+  var scenarioChoices = document.getElementById('scenarioChoices');
+  var scenarioFeedback = document.getElementById('scenarioFeedback');
+  var scenarioHint = document.getElementById('scenarioHint');
+  var scenarioHintText = document.getElementById('scenarioHintText');
+  var scenarioNext = document.getElementById('scenarioNext');
+  var scenarioStep = document.getElementById('scenarioStep');
+  var practiceSummary = document.getElementById('practiceSummary');
+  var taskList = document.getElementById('taskList');
+  var resetButton = document.getElementById('resetButton');
+  var helpPauseButton = document.getElementById('helpPauseButton');
+  var helpPauseText = document.getElementById('helpPauseText');
+  var whyButton = document.getElementById('whyButton');
+  var whyText = document.getElementById('whyText');
+  function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
+  function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-laundry-3d-why-reveal', task: target.id }); }
+  var srStatus = document.getElementById('srStatus');
+  var sceneFallback = document.getElementById('sceneFallback');
+  var scene = document.getElementById('laundryScene');
+  var camera = document.querySelector('a-camera');
+  var VIEW_PRESETS = {
+    left: { position: '-3.5 3.25 8.8', rotation: '-12 0 0', label: 'Left side' },
+    center: { position: '0 3.45 9.4', rotation: '-12 0 0', label: 'Center' },
+    right: { position: '3.5 3.25 8.8', rotation: '-12 0 0', label: 'Right side' }
+  };
+  function setView(view) {
+    var preset = VIEW_PRESETS[view] || VIEW_PRESETS.center;
+    var selectedView = VIEW_PRESETS[view] ? view : 'center';
+    if (camera) {
+      camera.setAttribute('position', preset.position);
+      camera.setAttribute('rotation', preset.rotation);
+    }
+    document.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === selectedView));
+    });
+    say('Scene view: ' + preset.label + '.');
+  }
+  document.querySelectorAll('[data-view]').forEach(function(button) {
+    button.addEventListener('click', function() { setView(button.getAttribute('data-view')); });
+  });
+  scenarioNext.addEventListener('click', loadNextScenario);
+  helpPauseButton.addEventListener('click', pauseForHelp);
+  whyButton.addEventListener('click', revealWhy);
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
+  }
+  setTheme(params.get('theme'));
+  function postToOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-laundry-3d' }, payload), '*');
+    } catch (ignore) {}
+  }
+  function say(message) {
+    srStatus.textContent = '';
+    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+  }
+  scenarioHint.addEventListener('click', function () {
+    if (!state.hintShown) state.scenarioHintsUsed += 1;
+    state.hintShown = true;
+    renderScenario();
+    say('Hint: ' + activeScenario.hint);
+  });
+  function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function guidedTarget() { return TASKS.find(function (task) { return !state.done[task.id]; }) || null; }
+  function setFeedback(message, tone) { state.feedback = message; state.feedbackTone = tone || ''; }
+  function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-laundry-3d-help-pause' }); }
+  function focusTask(id, announce) {
+    if (!BY_ID[id]) return;
+    state.focused = id;
+    clearWhy();
+    renderScene();
+    if (announce) say(BY_ID[id].label + '. ' + BY_ID[id].short);
+  }
+  function activateTask(id, source) {
+    var task = BY_ID[id];
+    if (!task) return;
+    var target = guidedTarget();
+    state.focused = id;
+    clearWhy();
+    if (state.done[id]) {
+      setFeedback('Already complete: ' + task.label + '.', 'good');
+      render();
+      say('Already complete: ' + task.label);
+      return;
+    }
+    if (state.mode === 'guided' && target && target.id !== id) {
+      state.missteps += 1;
+      setFeedback('Guided mode: start with “' + target.label + '.”', 'error');
+      render();
+      say('Guided mode. Start with ' + target.label);
+      return;
+    }
+    state.done[id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    setFeedback('Completed: ' + task.label + '. ' + task.why, 'good');
+    if (next && state.mode === 'guided') setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
+    if (!next) {
+      setFeedback('Laundry walkthrough complete. You practiced all six clothing-care decisions.', 'good');
+      postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
+      say('Laundry walkthrough complete. You practiced all six clothing-care decisions.');
+    } else {
+      postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
+    }
+    render();
+  }
+  function renderScene() {
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var object = document.getElementById('obj-' + task.id);
+      var label = document.getElementById('label-' + task.id);
+      var marker = document.getElementById('marker-' + task.id);
+      if (!object) return;
+      var done = !!state.done[task.id];
+      var focused = state.focused === task.id || (state.mode === 'guided' && target && target.id === task.id);
+      object.setAttribute('material', 'color: ' + (done ? '#22c55e' : task.base) + '; roughness: .62; metalness: .04; emissive: ' + (done ? '#166534' : (focused ? task.base : '#000000')) + '; emissiveIntensity: ' + (done || focused ? .72 : .04));
+      if (marker) marker.setAttribute('visible', focused && !done);
+      if (label) {
+        label.setAttribute('visible', state.mode !== 'challenge' || done || focused);
+        label.setAttribute('color', done ? '#dcfce7' : '#fff7ed');
+        if (done) label.setAttribute('value', 'DONE\\n' + task.label);
+        else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\\n' + task.label);
+        else if (state.mode === 'challenge') label.setAttribute('value', 'Clothing-care item');
+      }
+    });
+    var sceneNote = document.getElementById('sceneNote');
+    if (sceneNote) sceneNote.setAttribute('value', target ? (state.mode === 'guided' ? 'GUIDED TARGET\\n' + target.label : 'SELECT A LAUNDRY ITEM\\nScene + checklist both work') : 'WALKTHROUGH COMPLETE\\nAll six clothing-care decisions practiced');
+  }
+  function renderTaskList() {
+    taskList.innerHTML = '';
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var done = !!state.done[task.id];
+      var current = !!target && target.id === task.id && state.mode === 'guided';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-pressed', String(done));
+      if (current) button.setAttribute('aria-current', 'step');
+      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
+      button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span><span class="task-copy"><strong></strong><small></small></span><span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
+      button.querySelector('strong').textContent = task.label;
+      button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
+      button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
+      taskList.appendChild(button);
+    });
+  }
+  function completeScenarioTask() {
+    var task = BY_ID[activeScenario.safeTask];
+    if (!task || state.done[task.id]) return;
+    state.done[task.id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    if (!next) {
+      setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
+      postToOpener({ type: 'alloflow-life-laundry-3d-complete', score: TASKS.length, missteps: state.missteps });
+    } else {
+      setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
+      postToOpener({ type: 'alloflow-life-laundry-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+    }
+  }
+  function loadNextScenario() {
+    if (!activeScenario.next) return;
+    activeScenario = activeScenario.next;
+    state.scenarioStep += 1;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    setFeedback('New scenario ready. Choose a response and use a hint if you need one.', '');
+    render();
+    say('Next scenario: ' + activeScenario.title);
+  }
+  function chooseScenario(choiceId) {
+    var choice = activeScenario.choices.find(function (item) { return item.id === choiceId; });
+    if (!choice || state.scenarioComplete) return;
+    state.scenarioChoice = choiceId;
+    state.scenarioMessage = choice.feedback;
+    if (choice.safe) {
+      state.scenarioComplete = true;
+      state.scenarioTone = 'good';
+      focusTask(activeScenario.safeTask, false);
+      completeScenarioTask();
+      say('Good choice. ' + choice.feedback);
+    } else {
+      state.missteps += 1;
+      state.scenarioTone = 'error';
+      focusTask(activeScenario.safeTask, false);
+      state.scenarioMissteps += 1;
+      state.scenarioMessage += ' Try another response. The safer scene target is highlighted.';
+      setFeedback('Practice the scenario again: choose a safer first step.', 'error');
+      say('Try another response. ' + choice.feedback);
+    }
+    render();
+  }
+  function renderScenario() {
+    scenarioTitle.textContent = activeScenario.title;
+    scenarioSituation.textContent = activeScenario.situation;
+    scenarioChoices.innerHTML = '';
+    activeScenario.choices.forEach(function (choice) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'scenario-button';
+      button.textContent = choice.label;
+      button.setAttribute('aria-pressed', String(state.scenarioChoice === choice.id));
+      button.disabled = state.scenarioComplete;
+      button.addEventListener('click', function () { chooseScenario(choice.id); });
+      scenarioChoices.appendChild(button);
+    });
+    scenarioFeedback.textContent = state.scenarioChoice ? state.scenarioMessage : activeScenario.instruction;
+    scenarioFeedback.className = 'scenario-feedback' + (state.scenarioTone ? ' ' + state.scenarioTone : '');
+    scenarioHint.disabled = state.scenarioComplete;
+    scenarioHint.setAttribute('aria-expanded', String(state.hintShown));
+    scenarioHint.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    scenarioHintText.hidden = !state.hintShown;
+    scenarioHintText.textContent = state.hintShown ? activeScenario.hint : '';
+    scenarioStep.textContent = 'Scenario ' + (state.scenarioStep + 1) + ' of 3';
+    scenarioNext.hidden = !state.scenarioComplete || !activeScenario.next;
+    scenarioNext.disabled = !state.scenarioComplete || !activeScenario.next;
+    var completedScenarios = state.scenarioStep + (state.scenarioComplete ? 1 : 0);
+    var coachingText = state.scenarioMissteps === 0 ? 'no coaching moments' : state.scenarioMissteps + (state.scenarioMissteps === 1 ? ' coaching moment' : ' coaching moments');
+    var hintText = state.scenarioHintsUsed === 0 ? 'no hints used' : state.scenarioHintsUsed + (state.scenarioHintsUsed === 1 ? ' hint used' : ' hints used');
+    practiceSummary.textContent = 'Session: ' + completedScenarios + '/3 scenarios complete · ' + coachingText + ' · ' + hintText;
+  }
+  function render() {
+    var count = doneCount();
+    var target = guidedTarget();
+    var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    progressValue.textContent = count + ' / ' + TASKS.length;
+    progressMode.textContent = !target ? modeText + ' · complete' : state.mode === 'guided' ? modeText + ' · next target' : state.mode === 'practice' ? modeText + ' · choose any target' : modeText + ' · labels are reduced';
+    prompt.textContent = !target ? 'All decisions complete. Name one clothing-care habit you will practice.' : state.mode === 'guided' ? 'Start with: ' + target.label + '.' : state.mode === 'practice' ? 'Choose any item, then explain why the care step matters.' : 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
+    feedback.textContent = state.feedback;
+    feedback.className = 'feedback' + (state.feedbackTone ? ' ' + state.feedbackTone : '');
+    renderScenario();
+    modeSelect.value = state.mode;
+    renderTaskList();
+    renderScene();
+  }
+  modeSelect.addEventListener('change', function () {
+    state.mode = modeSelect.value;
+    state.focused = guidedTarget() ? guidedTarget().id : null;
+    setFeedback(state.mode === 'guided' ? 'Guided mode shows one next target at a time.' : state.mode === 'practice' ? 'Practice mode lets you choose the order.' : 'Challenge mode reduces scene labels. The checklist remains available.', '');
+    render();
+    say(modeSelect.options[modeSelect.selectedIndex].text + ' mode selected.');
+  });
+  resetButton.addEventListener('click', function () {
+    helpPauseText.hidden = true;
+    helpPauseText.textContent = '';
+    clearWhy();
+    state.done = {};
+    saveProgress();
+    state.focused = null;
+    state.missteps = 0;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    activeScenario = SCENARIO;
+    state.scenarioStep = 0;
+    state.scenarioMissteps = 0;
+    state.scenarioHintsUsed = 0;
+    setFeedback('Fresh start. Select the first clothing-care target.', '');
+    render();
+    say('Walkthrough reset. Select the first clothing-care target.');
+    postToOpener({ type: 'alloflow-life-laundry-3d-reset' });
+  });
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (data && data.type === 'alloflow-theme-change') setTheme(data.theme);
+  });
+  window.lifeSkillsLaundry3D = { activate: activateTask, focus: focusTask };
+  function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }
+  if (!window.AFRAME || !scene) showSceneFallback();
+  else if (scene.hasLoaded) sceneFallback.style.display = 'none';
+  else {
+    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    window.setTimeout(function () { if (!scene.canvas) showSceneFallback(); }, 1800);
+  }
+  render();
+  postToOpener({ type: 'alloflow-life-laundry-3d-hello' });
+}());
+</script>
+</body>
+</html>

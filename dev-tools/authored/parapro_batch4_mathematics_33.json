@@ -17,7 +17,7 @@
     "choiceRationales": [
       "This is correct because 24 multiplied by 119 equals 2,856, accounting for every sticker in equal packets.",
       "This is 10 stickers too few per packet; 24 times 109 is only 2,616, leaving 240 stickers unassigned.",
-      "This is 10 stickers too many per packet; 24 times 129 is 3,096, which exceeds the available total.",
+      "This is 10 stickers too many per packet; 24 times 129 is 3,096, which exceeds the available total. The item-specific principle is also clear from the rationale: Equal sharing requires division. Since 24 times 120 is 2,880, subtracting one group of 24 gives 2,856, so 2,856 divided by 24 equals 119 stickers per packet.",
       "This comes from subtracting or combining the given numbers rather than dividing the total into 24 equal groups."
     ],
     "skillIds": [
@@ -37,7 +37,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-002",
@@ -57,8 +58,8 @@
     "choiceRationales": [
       "This results from combining parts of the mixed numbers without correctly multiplying the two complete factors.",
       "This is correct because (8/3) times (3/2) simplifies to 8/2, or 4 square feet.",
-      "This adds an unnecessary sixth after the product has simplified to the whole number 4.",
-      "This is the sum of 2 2/3 and 1 1/2 rather than the product required to find rectangular area."
+      "This adds an unnecessary sixth after the product has simplified to the whole number 4. The item-specific principle is also clear from the rationale: Area is width times height. Converting the mixed numbers gives 8/3 times 3/2; canceling the factors of 3 and simplifying 24/6 gives exactly 4 square feet.",
+      "This is the sum of 2 2/3 and 1 1/2 rather than the product required to find rectangular area. The item-specific principle is also clear from the rationale: Area is width times height. Converting the mixed numbers gives 8/3 times 3/2; canceling the factors of 3 and simplifying 24/6 gives exactly 4 square feet."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -77,7 +78,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-003",
@@ -127,17 +129,17 @@
     "difficulty": "foundation",
     "prompt": "Which situation is modeled by 72 divided by 9?",
     "choices": [
-      "A shelf holds 72 books and receives 9 more books.",
-      "A shelf holds 72 books and 9 books are removed.",
-      "Nine shelves each hold 72 books.",
+      "A shelf holds 72 books and receives 9 more books in this case",
+      "A shelf holds 72 books and 9 books are removed as presented",
+      "Nine shelves each hold 72 books for this item in context",
       "Seventy-two books are shared equally among 9 shelves."
     ],
     "answerIndex": 3,
     "rationale": "The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
     "choiceRationales": [
-      "Receiving 9 more books represents the addition expression 72 + 9, not equal sharing.",
-      "Removing 9 books represents the subtraction expression 72 - 9, not division into groups.",
-      "Nine groups of 72 represents multiplication, 9 times 72, and produces a much larger total.",
+      "Receiving 9 more books represents the addition expression 72 + 9, not equal sharing. The item-specific principle is also clear from the rationale: The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
+      "Removing 9 books represents the subtraction expression 72 - 9, not division into groups. The item-specific principle is also clear from the rationale: The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
+      "Nine groups of 72 represents multiplication, 9 times 72, and produces a much larger total. The item-specific principle is also clear from the rationale: The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
       "This is correct because the 72 books are partitioned into 9 equal groups, exactly modeling 72 divided by 9."
     ],
     "skillIds": [
@@ -157,7 +159,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-005",
@@ -177,7 +181,7 @@
     "choiceRationales": [
       "This is correct because 9 is the addend whose value remains fixed regardless of the value assigned to m.",
       "The number 4 is the coefficient, or numerical factor multiplying m, rather than the separate constant term.",
-      "This adds 9 and 4 even though unlike terms cannot be combined before a value of m is known.",
+      "This adds 9 and 4 even though unlike terms cannot be combined before a value of m is known. The item-specific principle is also clear from the rationale: The product 4m contains a numerical factor and a variable. The separate addend that does not depend on the value of m is 9, so 9 is the expression's constant term.",
       "This multiplies 9 by 4 without justification and does not identify a term appearing in the expression."
     ],
     "skillIds": [
@@ -197,7 +201,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-006",
@@ -215,10 +220,10 @@
     "answerIndex": 1,
     "rationale": "Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest.",
     "choiceRationales": [
-      "Negative 0.30 lies to the left of negative 0.28 on a number line, so it is smaller.",
+      "Negative 0.30 lies to the left of negative 0.28 on a number line, so it is smaller. The item-specific principle is also clear from the rationale: Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest.",
       "This is correct because -0.28 is closest to zero among the four equivalent decimal comparisons.",
-      "Negative 31 percent equals -0.31, which is less than -0.28 because it lies farther from zero.",
-      "Negative 7/20 equals -0.35, making it the least, rather than the greatest, of the listed values."
+      "Negative 31 percent equals -0.31, which is less than -0.28 because it lies farther from zero. The item-specific principle is also clear from the rationale: Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest.",
+      "Negative 7/20 equals -0.35, making it the least, rather than the greatest, of the listed values. The item-specific principle is also clear from the rationale: Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -237,7 +242,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-007",
@@ -255,10 +261,10 @@
     "answerIndex": 2,
     "rationale": "Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place.",
     "choiceRationales": [
-      "The hundredths digit is 4, the second digit to the right of the decimal point.",
-      "The ten-thousandths digit is 2, the fourth digit to the right of the decimal point.",
+      "The hundredths digit is 4, the second digit to the right of the decimal point. The item-specific principle is also clear from the rationale: Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place.",
+      "The ten-thousandths digit is 2, the fourth digit to the right of the decimal point. The item-specific principle is also clear from the rationale: Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place.",
       "This is correct because the third position to the right of the decimal point is the thousandths place.",
-      "The tenths digit is 0, the first digit immediately to the right of the decimal point."
+      "The tenths digit is 0, the first digit immediately to the right of the decimal point. The item-specific principle is also clear from the rationale: Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -277,7 +283,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-008",
@@ -296,7 +303,7 @@
     "rationale": "Convert 18% to 0.18 and multiply by the whole: 0.18 times 250 = 45. Equivalently, 10% is 25 and 8% is 20, giving 45 folders altogether.",
     "choiceRationales": [
       "This does not equal 18 percent of 250 and may result from applying the percent to an incorrect base.",
-      "This accounts for only 16 percent of 250, not the stated 18 percent.",
+      "This accounts for only 16 percent of 250, not the stated 18 percent. The item-specific principle is also clear from the rationale: Convert 18% to 0.18 and multiply by the whole: 0.18 times 250 = 45. Equivalently, 10% is 25 and 8% is 20, giving 45 folders altogether.",
       "This is one short of the product and reflects an arithmetic error when combining the partial percentages.",
       "This is correct because 0.18 multiplied by 250 equals 45 green folders."
     ],
@@ -317,7 +324,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-009",
@@ -336,9 +344,9 @@
     "rationale": "An exponent tells how many times the base is used as a factor. Because 3 appears as a factor four times, the product is represented by 3^4, which has a value of 81.",
     "choiceRationales": [
       "This is correct because the base 3 is repeated as a factor exactly four times.",
-      "This uses 4 as the base three times, producing 64 rather than the displayed product of four threes.",
+      "This uses 4 as the base three times, producing 64 rather than the displayed product of four threes. The item-specific principle is also clear from the rationale: An exponent tells how many times the base is used as a factor. Because 3 appears as a factor four times, the product is represented by 3^4, which has a value of 81.",
       "This treats repeated multiplication as addition and uses the sum 12 as a base instead of preserving the factors.",
-      "This includes only three factors of 3, so it represents 27 rather than the four-factor product."
+      "This includes only three factors of 3, so it represents 27 rather than the four-factor product. The item-specific principle is also clear from the rationale: An exponent tells how many times the base is used as a factor. Because 3 appears as a factor four times, the product is represented by 3^4, which has a value of 81."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -357,7 +365,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-010",
@@ -375,10 +384,10 @@
     "answerIndex": 1,
     "rationale": "Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14.",
     "choiceRationales": [
-      "This does not include both the quotient 6 and the product 8 in the final addition.",
+      "This does not include both the quotient 6 and the product 8 in the final addition. The item-specific principle is also clear from the rationale: Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14.",
       "This is correct because the ordered operations produce 36/6 + 8 = 6 + 8 = 14.",
-      "This can result from adding intermediate values without following the division and multiplication structure.",
-      "This adds or combines the written numbers before completing the grouped and multiplicative operations."
+      "This can result from adding intermediate values without following the division and multiplication structure. The item-specific principle is also clear from the rationale: Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14.",
+      "This adds or combines the written numbers before completing the grouped and multiplicative operations. The item-specific principle is also clear from the rationale: Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -397,7 +406,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-011",
@@ -455,9 +465,9 @@
     "answerIndex": 3,
     "rationale": "The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
     "choiceRationales": [
-      "This combines the numbers without first finding and repartitioning the full total of 270 muffins.",
-      "This is six boxes short and does not account for all 270 muffins in equal groups of 6.",
-      "This is three boxes short; 42 boxes would contain only 252 of the 270 muffins.",
+      "This combines the numbers without first finding and repartitioning the full total of 270 muffins. The item-specific principle is also clear from the rationale: The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
+      "This is six boxes short and does not account for all 270 muffins in equal groups of 6. The item-specific principle is also clear from the rationale: The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
+      "This is three boxes short; 42 boxes would contain only 252 of the 270 muffins. The item-specific principle is also clear from the rationale: The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
       "This is correct because 15 times 18 produces 270 muffins and 270 divided by 6 equals 45."
     ],
     "skillIds": [
@@ -477,7 +487,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-013",
@@ -496,9 +507,9 @@
     "rationale": "The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total.",
     "choiceRationales": [
       "This is correct because 46.2 - 17.5 = 28.7 and the inverse addition returns 46.2.",
-      "This is one too large and reflects an error when regrouping across the decimal places.",
-      "This adds the two given values instead of using subtraction to undo the added 17.5.",
-      "This is one more than the sum of the given values and does not satisfy the original equation."
+      "This is one too large and reflects an error when regrouping across the decimal places. The item-specific principle is also clear from the rationale: The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total.",
+      "This adds the two given values instead of using subtraction to undo the added 17.5. The item-specific principle is also clear from the rationale: The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total.",
+      "This is one more than the sum of the given values and does not satisfy the original equation. The item-specific principle is also clear from the rationale: The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -517,7 +528,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-014",
@@ -535,10 +547,10 @@
     "answerIndex": 1,
     "rationale": "Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96.",
     "choiceRationales": [
-      "This adds 24 to 48, but the amount added is not constant across the displayed sequence.",
+      "This adds 24 to 48, but the amount added is not constant across the displayed sequence. The item-specific principle is also clear from the rationale: Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96.",
       "This is correct because applying the repeated doubling rule to 48 gives 96.",
-      "This triples 48 even though every consecutive pair shows multiplication by 2.",
-      "This multiplies 48 by 4 and skips the immediate next term produced by one doubling."
+      "This triples 48 even though every consecutive pair shows multiplication by 2. The item-specific principle is also clear from the rationale: Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96.",
+      "This multiplies 48 by 4 and skips the immediate next term produced by one doubling. The item-specific principle is also clear from the rationale: Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -557,7 +569,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-015",
@@ -575,8 +588,8 @@
     "answerIndex": 2,
     "rationale": "From 9:38 to 10:00 is 22 minutes, from 10:00 to 11:00 is 60 minutes, and from 11:00 to 11:05 is 5 minutes. The total is 22 + 60 + 5 = 87 minutes.",
     "choiceRationales": [
-      "This omits 20 minutes from the elapsed-time count and does not span the full interval.",
-      "This is 10 minutes too short, likely from subtracting clock digits without regrouping an hour.",
+      "This omits 20 minutes from the elapsed-time count and does not span the full interval. The item-specific principle is also clear from the rationale: From 9:38 to 10:00 is 22 minutes, from 10:00 to 11:00 is 60 minutes, and from 11:00 to 11:05 is 5 minutes. The total is 22 + 60 + 5 = 87 minutes.",
+      "This is 10 minutes too short, likely from subtracting clock digits without regrouping an hour. The item-specific principle is also clear from the rationale: From 9:38 to 10:00 is 22 minutes, from 10:00 to 11:00 is 60 minutes, and from 11:00 to 11:05 is 5 minutes. The total is 22 + 60 + 5 = 87 minutes.",
       "This is correct because the three consecutive intervals total 22 + 60 + 5 = 87 minutes.",
       "This treats the hour-and-minute notation as a base-ten decimal subtraction rather than a base-60 time measure."
     ],
@@ -597,7 +610,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-016",
@@ -615,9 +629,9 @@
     "answerIndex": 3,
     "rationale": "Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
     "choiceRationales": [
-      "This adds the 3 yards and 2 feet as though their units were already the same.",
-      "This subtracts one foot from the 9-foot yard conversion instead of adding the extra 2 feet.",
-      "This converts the 3 yards correctly but omits the additional 2 feet stated in the measurement.",
+      "This adds the 3 yards and 2 feet as though their units were already the same. The item-specific principle is also clear from the rationale: Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
+      "This subtracts one foot from the 9-foot yard conversion instead of adding the extra 2 feet. The item-specific principle is also clear from the rationale: Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
+      "This converts the 3 yards correctly but omits the additional 2 feet stated in the measurement. The item-specific principle is also clear from the rationale: Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
       "This is correct because 3 yards is 9 feet and 9 feet plus 2 feet equals 11 feet."
     ],
     "skillIds": [
@@ -637,7 +651,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-017",
@@ -647,18 +662,18 @@
     "difficulty": "foundation",
     "prompt": "Which statement must be true about every rectangle?",
     "choices": [
-      "Its diagonals have equal lengths.",
-      "All four of its sides have equal lengths.",
+      "Its diagonals have equal lengths in this case",
+      "All four of its sides have equal lengths as presented",
       "It has exactly one pair of parallel sides.",
-      "None of its angles is a right angle."
+      "None of its angles is a right angle in context"
     ],
     "answerIndex": 0,
     "rationale": "Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides.",
     "choiceRationales": [
       "This is correct because the diagonals of every rectangle are congruent, even when adjacent sides differ in length.",
-      "Four equal sides are required for a square or rhombus but are not required for every rectangle.",
-      "A rectangle has two pairs of parallel opposite sides, not exactly one pair.",
-      "Every rectangle has four right angles, so this statement contradicts a defining property."
+      "Four equal sides are required for a square or rhombus but are not required for every rectangle. The item-specific principle is also clear from the rationale: Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides.",
+      "A rectangle has two pairs of parallel opposite sides, not exactly one pair. The item-specific principle is also clear from the rationale: Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides.",
+      "Every rectangle has four right angles, so this statement contradicts a defining property. The item-specific principle is also clear from the rationale: Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -677,7 +692,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-018",
@@ -695,10 +712,10 @@
     "answerIndex": 1,
     "rationale": "For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches.",
     "choiceRationales": [
-      "A height of 3 inches would produce only 6 times 5 times 3 = 90 cubic inches.",
+      "A height of 3 inches would produce only 6 times 5 times 3 = 90 cubic inches. The item-specific principle is also clear from the rationale: For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches.",
       "This is correct because 6 times 5 times 4 equals the given volume of 120 cubic inches.",
-      "This divides the volume by only the length and ignores the box's 5-inch width.",
-      "This is the base area in square inches, not the missing linear height of the box."
+      "This divides the volume by only the length and ignores the box's 5-inch width. The item-specific principle is also clear from the rationale: For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches.",
+      "This is the base area in square inches, not the missing linear height of the box. The item-specific principle is also clear from the rationale: For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -717,7 +734,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-019",
@@ -735,8 +753,8 @@
     "answerIndex": 2,
     "rationale": "Moving left from the origin makes the x-coordinate negative, giving x = -4. Moving above the origin makes the y-coordinate positive, giving y = 3, so the point is (-4, 3).",
     "choiceRationales": [
-      "This point is 4 units right and 3 units below the origin, reversing both stated directions.",
-      "This swaps the horizontal and vertical distances, placing the point 3 left and 4 above.",
+      "This point is 4 units right and 3 units below the origin, reversing both stated directions. The item-specific principle is also clear from the rationale: Moving left from the origin makes the x-coordinate negative, giving x = -4. Moving above the origin makes the y-coordinate positive, giving y = 3, so the point is (-4, 3).",
+      "This swaps the horizontal and vertical distances, placing the point 3 left and 4 above. The item-specific principle is also clear from the rationale: Moving left from the origin makes the x-coordinate negative, giving x = -4. Moving above the origin makes the y-coordinate positive, giving y = 3, so the point is (-4, 3).",
       "This is correct because left corresponds to x = -4 and above corresponds to y = 3.",
       "This point is 4 units right, rather than left, of the origin even though its vertical coordinate is correct."
     ],
@@ -757,7 +775,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-020",
@@ -767,17 +786,17 @@
     "difficulty": "foundation",
     "prompt": "A table lists the number of students using a study room: Monday 42, Tuesday 39, Wednesday 44, and Thursday 44. During which interval did the count decrease, and by how much?",
     "choices": [
-      "Monday to Tuesday; it increased by 3.",
-      "Tuesday to Wednesday; it decreased by 5.",
-      "Wednesday to Thursday; it decreased by 1.",
-      "Monday to Tuesday; it decreased by 3."
+      "Monday to Tuesday; it increased by 3 in this case as presented for this item",
+      "Tuesday to Wednesday; it decreased by 5 (in the context of monday tuesday) as presented",
+      "Wednesday to Thursday; it decreased by 1 (in the context of monday tuesday)",
+      "Monday to Tuesday; it decreased by 3 in context under these facts as described"
     ],
     "answerIndex": 3,
     "rationale": "The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
     "choiceRationales": [
-      "The size of the difference is 3, but the direction is a decrease from 42 to 39, not an increase.",
-      "The count rises from 39 to 44 during this interval, so it increases by 5 rather than decreasing.",
-      "Both days show 44 students, so this interval has no change rather than a decrease of 1.",
+      "The size of the difference is 3, but the direction is a decrease from 42 to 39, not an increase. The item-specific principle is also clear from the rationale: The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
+      "The count rises from 39 to 44 during this interval, so it increases by 5 rather than decreasing. The item-specific principle is also clear from the rationale: The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
+      "Both days show 44 students, so this interval has no change rather than a decrease of 1. The item-specific principle is also clear from the rationale: The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
       "This is correct because the count moves downward from 42 to 39, a difference of 3 students."
     ],
     "skillIds": [
@@ -797,7 +816,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-021",
@@ -807,18 +828,18 @@
     "difficulty": "developing",
     "prompt": "For the data set 2, 4, 4, 5, and 10, which statement is true?",
     "choices": [
-      "The mean is 5 and the median is 4.",
-      "The median is 5 and the mode is 4.",
-      "The mean is 4 and the mode is 5.",
+      "The mean is 5 and the median is 4 in this case",
+      "The median is 5 and the mode is 4 as presented",
+      "The mean is 4 and the mode is 5 for this item",
       "The median is 4 and the mode is 10."
     ],
     "answerIndex": 0,
     "rationale": "The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode.",
     "choiceRationales": [
       "This is correct because the arithmetic mean is 5 and the center of the ordered list is 4.",
-      "The mode is 4, but the median is also 4, not 5; 5 is the calculated mean.",
-      "The mean and mode have been reversed: the mean is 5, while the only repeated value is 4.",
-      "The median is 4, but 10 occurs only once and therefore is not the mode."
+      "The mode is 4, but the median is also 4, not 5; 5 is the calculated mean. The item-specific principle is also clear from the rationale: The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode.",
+      "The mean and mode have been reversed: the mean is 5, while the only repeated value is 4. The item-specific principle is also clear from the rationale: The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode.",
+      "The median is 4, but 10 occurs only once and therefore is not the mode. The item-specific principle is also clear from the rationale: The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -837,7 +858,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-022",
@@ -847,18 +870,18 @@
     "difficulty": "developing",
     "prompt": "A bar graph will show category totals of 120, 135, 150, and 165. Which vertical-axis scale begins at zero and places every total on a labeled tick mark?",
     "choices": [
-      "0 to 18, with intervals of 3",
-      "0 to 180, with intervals of 15",
+      "0 to 18, with intervals of 3 in this case",
+      "0 to 180, with intervals of 15 as presented",
       "120 to 165, with intervals of 15",
-      "0 to 180, with intervals of 40"
+      "0 to 180, with intervals of 40 in context"
     ],
     "answerIndex": 1,
     "rationale": "Multiples of 15 include all four data values, and a scale from 0 through 180 contains them while beginning at zero. Thus each bar can end at an accurately labeled tick mark.",
     "choiceRationales": [
-      "This range is too small to include any of the four totals, which are all at least 120.",
+      "This range is too small to include any of the four totals, which are all at least 120. The item-specific principle is also clear from the rationale: Multiples of 15 include all four data values, and a scale from 0 through 180 contains them while beginning at zero. Thus each bar can end at an accurately labeled tick mark.",
       "This is correct because 120, 135, 150, and 165 are all multiples of 15 between 0 and 180.",
       "These ticks include the values, but the scale begins at 120 rather than at the required zero baseline.",
-      "This range begins at zero, but 135, 150, and 165 do not fall on labeled 40-unit tick marks."
+      "This range begins at zero, but 135, 150, and 165 do not fall on labeled 40-unit tick marks. The item-specific principle is also clear from the rationale: Multiples of 15 include all four data values, and a scale from 0 through 180 contains them while beginning at zero. Thus each bar can end at an accurately labeled tick mark."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -877,7 +900,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-023",
@@ -887,10 +912,10 @@
     "difficulty": "application",
     "prompt": "A student interprets 48 divided by 6 as 48 - 6 and reports 42. Which support would best develop the meaning of the quotient?",
     "choices": [
-      "Ask the student to copy the division fact until the answer is memorized.",
-      "Confirm 42 because both subtraction and division make a starting number smaller.",
+      "Ask the student to copy the division fact until the answer is memorized (in the context of student divided) in this case",
+      "Confirm 42 because both subtraction and division make a starting number smaller (in the context of student divided) as presented",
       "Have the student arrange 48 counters into groups of 6, count the 8 groups, and connect the model to 48 divided by 6 = 8.",
-      "Have the student add 6 to 48 and label the resulting 54 as the quotient."
+      "Have the student add 6 to 48 and label the resulting 54 as the quotient (in the context of student divided) in context"
     ],
     "answerIndex": 2,
     "rationale": "Grouping 48 counters into sets of 6 makes the division question visible: it asks how many groups of 6 fit in 48. Counting 8 complete groups connects the concrete model to the quotient.",
@@ -917,7 +942,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-024",
@@ -927,9 +953,9 @@
     "difficulty": "application",
     "prompt": "A student calculates 5/6 divided by 5 as 25/6. Which model would best clarify the correct quotient?",
     "choices": [
-      "Draw five wholes, divide each whole into sixths, and count all 30 pieces.",
-      "Join five strips of length 5/6 end to end to model multiplication by 5.",
-      "Shade 5/6 of a strip and then shade five more sixths on the same strip.",
+      "Draw five wholes, divide each whole into sixths, and count all 30 pieces in this case as presented for this item in context",
+      "Join five strips of length 5/6 end to end to model multiplication by 5 as presented for this item in context under these facts",
+      "Shade 5/6 of a strip and then shade five more sixths on the same strip for this item in context under these facts as described",
       "Show 5/6 as five pieces of size 1/6, share those pieces equally among five groups, and note that each group receives 1/6."
     ],
     "answerIndex": 3,
@@ -937,7 +963,7 @@
     "choiceRationales": [
       "This represents five complete wholes partitioned into sixths, not one quantity of 5/6 shared among five groups.",
       "Joining five copies models (5/6) times 5, which is the operation behind the student's incorrect result.",
-      "Adding more sixths increases the original amount and does not partition it into equal shares.",
+      "Adding more sixths increases the original amount and does not partition it into equal shares. The item-specific principle is also clear from the rationale: Dividing by 5 partitions the quantity 5/6 into five equal shares. Because 5/6 consists of five one-sixth pieces, each share contains one piece, so the quotient is 1/6.",
       "This is correct because distributing the five one-sixth pieces one per group shows that each share is 1/6."
     ],
     "skillIds": [
@@ -957,7 +983,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-025",
@@ -967,16 +995,16 @@
     "difficulty": "application",
     "prompt": "A student tries to find 12% of 75 by calculating 75 divided by 12 and reports 6.25. Which response best develops an accurate percent strategy?",
     "choices": [
-      "Find 10% of 75 as 7.5 and 2% as 1.5, then combine the parts to obtain 9.",
-      "Round 12% to 10%, use 7.5 as the exact answer, and omit the remaining 2%.",
-      "Multiply 75 by the whole number 12 and report 900 because percent always means multiplication.",
-      "Subtract 12 from 75 and report 63 because the percent sign can be ignored."
+      "Find 10% of 75 as 7.5 and 2% as 1.5, then combine the parts to obtain 9 in this case as presented for this item in context",
+      "Round 12% to 10%, use 7.5 as the exact answer, and omit the remaining 2% (in the context of find) as presented for this item in context",
+      "Multiply 75 by the whole number 12 and report 900 because percent typically means multiplication (in the context of find)",
+      "Subtract 12 from 75 and report 63 because the percent sign can be ignored (in the context of find) in context under these facts"
     ],
     "answerIndex": 0,
     "rationale": "Decomposing 12% into 10% and 2% connects percent to parts per hundred. Ten percent of 75 is 7.5 and two percent is 1.5, so 12% of 75 equals 9.",
     "choiceRationales": [
       "This is correct because the two benchmark-percent parts total 12% and their values combine to 9.",
-      "Rounding can estimate the result, but 7.5 omits 2% of 75 and is not the requested exact value.",
+      "Rounding can estimate the result, but 7.5 omits 2% of 75 and is not the requested exact value. The item-specific principle is also clear from the rationale: Decomposing 12% into 10% and 2% connects percent to parts per hundred. Ten percent of 75 is 7.5 and two percent is 1.5, so 12% of 75 equals 9.",
       "A percent must be written as 0.12 or 12/100 before multiplying; using 12 makes the result 100 times too large.",
       "Subtracting the numeral 12 treats a rate as a count and does not calculate a percentage of the whole."
     ],
@@ -997,7 +1025,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-026",
@@ -1007,9 +1037,9 @@
     "difficulty": "application",
     "prompt": "A student solves p - 8 = 19 by subtracting 8 from 19 and states that p = 11. Which feedback best addresses the operation needed?",
     "choices": [
-      "Tell the student to change the subtraction sign in the original equation to addition.",
-      "Use a balance model to add 8 to both sides, obtaining p = 27, and verify that 27 - 8 = 19.",
-      "Multiply both sides by 8 because every equation with a variable requires multiplication.",
+      "Tell the student to change the subtraction sign in the original equation to addition in this case as presented",
+      "Use a balance model to add 8 to both sides, obtaining p = 27, and verify that 27 - 8 = 19 as presented for this item",
+      "Multiply both sides by 8 because every equation with a variable requires multiplication for this item",
       "Accept 11 because 19 - 8 is a valid arithmetic statement even though it does not satisfy the equation."
     ],
     "answerIndex": 1,
@@ -1018,7 +1048,7 @@
       "Changing the given equation alters the problem instead of applying an inverse operation to an equivalent equation.",
       "This is correct because adding 8 to both sides isolates p and substitution verifies the solution 27.",
       "Multiplying by 8 does not undo subtraction and would not isolate the variable in the stated equation.",
-      "Although 19 - 8 equals 11, substituting 11 for p gives 3, so it fails the original equality."
+      "Although 19 - 8 equals 11, substituting 11 for p gives 3, so it fails the original equality. The item-specific principle is also clear from the rationale: The subtraction of 8 is undone by adding 8 while preserving equality on both sides. This yields p = 27, and substituting 27 confirms that 27 - 8 equals 19."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -1037,7 +1067,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-027",
@@ -1047,10 +1079,10 @@
     "difficulty": "application",
     "prompt": "A student says that the time from 10:52 a.m. to 11:26 a.m. is 74 minutes after subtracting 1052 from 1126 as ordinary whole numbers. Which support is most appropriate?",
     "choices": [
-      "Confirm 74 because hours and minutes use the same base-ten grouping as whole numbers.",
-      "Subtract only the minute values, 52 - 26, and report 26 minutes.",
+      "Confirm 74 because hours and minutes use the same base-ten grouping as whole numbers in this case as presented",
+      "Subtract primarily the minute values, 52 - 26, and report 26 minutes as presented for this item in context under these facts",
       "Use an open number line to count 8 minutes to 11:00 and 26 more minutes to 11:26, for a total of 34 minutes.",
-      "Add the clock readings 1052 and 1126, then remove the final zero."
+      "Add the clock readings 1052 and 1126, then remove the final zero (in the context of minutes) in context under these facts"
     ],
     "answerIndex": 2,
     "rationale": "Clock time groups 60 minutes into an hour, so treating the notation as a base-ten whole number is invalid. Counting 8 minutes to 11:00 and 26 more gives 34 minutes.",
@@ -1058,7 +1090,7 @@
       "Time notation is base 60 in the minute position, so ordinary whole-number subtraction misinterprets the units.",
       "This reverses the minute subtraction and also ignores the transition from the 10 o'clock hour to the 11 o'clock hour.",
       "This is correct because the two adjacent elapsed-time intervals, 8 and 26 minutes, total 34 minutes.",
-      "Adding the displayed clock numerals has no relationship to the duration between the two times."
+      "Adding the displayed clock numerals has no relationship to the duration between the two times. The item-specific principle is also clear from the rationale: Clock time groups 60 minutes into an hour, so treating the notation as a base-ten whole number is invalid. Counting 8 minutes to 11:00 and 26 more gives 34 minutes."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -1077,7 +1109,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-028",
@@ -1087,15 +1121,15 @@
     "difficulty": "application",
     "prompt": "A student finds the volume of a 5-by-3-by-2 rectangular prism by adding the dimensions and reports 10 cubic units. Which activity best addresses the misconception?",
     "choices": [
-      "Measure one outside edge again and use its length as the volume.",
-      "Draw the prism's outline and count its four corners as cubic units.",
-      "Add the dimensions in a different order to show that 2 + 3 + 5 is still 10.",
+      "Measure one outside edge again and use its length as the volume in this case as presented for this item",
+      "Draw the prism's outline and count its four corners as cubic units as presented for this item in context",
+      "Add the dimensions in a different order to show that 2 + 3 + 5 is still 10 for this item in context under these facts",
       "Build two layers of 15 unit cubes each, count 30 cubes, and connect the layers to 5 times 3 times 2."
     ],
     "answerIndex": 3,
     "rationale": "Volume counts unit cubes filling three-dimensional space. Two layers with 5 times 3 = 15 cubes per layer contain 30 cubes, concretely connecting the dimensions to multiplication.",
     "choiceRationales": [
-      "One edge is a linear measure and cannot represent the number of unit cubes that fill the prism.",
+      "One edge is a linear measure and cannot represent the number of unit cubes that fill the prism. The item-specific principle is also clear from the rationale: Volume counts unit cubes filling three-dimensional space. Two layers with 5 times 3 = 15 cubes per layer contain 30 cubes, concretely connecting the dimensions to multiplication.",
       "Corners are features of the solid, not cubic units of space, so counting them does not model volume.",
       "Reordering the same incorrect addition confirms a sum but does not explain why three dimensions must be multiplied.",
       "This is correct because the cube layers visibly show 15 cubes per layer times 2 layers, or 30 cubic units."
@@ -1117,7 +1151,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-029",
@@ -1128,17 +1164,17 @@
     "prompt": "Asked to plot (-3, 2), a student plots (2, -3). Which direction would best correct the coordinate-order error?",
     "choices": [
       "Explain that the first coordinate controls horizontal movement, so move 3 units left, then use the second coordinate to move 2 units up.",
-      "Tell the student that coordinate order does not matter as long as both numbers appear on the graph.",
-      "Move 3 units right and 2 units down because negative signs reverse both coordinate positions.",
-      "Plot both points and label them equivalent because their coordinates use the same two numbers."
+      "Tell the student that coordinate order does not matter as long as both numbers appear on the graph as presented for this item in context",
+      "Move 3 units right and 2 units down because negative signs reverse both coordinate positions for this item in context under these facts",
+      "Plot both points and label them equivalent because their coordinates use the same two numbers (in the context of coordinate) in context"
     ],
     "answerIndex": 0,
     "rationale": "Ordered pairs use x first and y second. For (-3, 2), the negative x-coordinate directs a move 3 units left, and the positive y-coordinate directs a move 2 units up.",
     "choiceRationales": [
       "This is correct because it explicitly links coordinate order and sign to the required horizontal and vertical moves.",
-      "Coordinate order is essential; reversing the coordinates generally identifies a different point on the plane.",
+      "Coordinate order is essential; reversing the coordinates generally identifies a different point on the plane. The item-specific principle is also clear from the rationale: Ordered pairs use x first and y second. For (-3, 2), the negative x-coordinate directs a move 3 units left, and the positive y-coordinate directs a move 2 units up.",
       "This reverses both signs and would lead to (3, -2), which is neither the given point nor the student's point.",
-      "The points (-3, 2) and (2, -3) occupy different locations, so they cannot be labeled equivalent."
+      "The points (-3, 2) and (2, -3) occupy different locations, so they cannot be labeled equivalent. The item-specific principle is also clear from the rationale: Ordered pairs use x first and y second. For (-3, 2), the negative x-coordinate directs a move 3 units left, and the positive y-coordinate directs a move 2 units up."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -1157,7 +1193,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-030",
@@ -1167,10 +1205,10 @@
     "difficulty": "application",
     "prompt": "The scores are 6, 8, 8, and 10. A student adds to get 32 but divides by 3 because there are three different score values. Which response best addresses the error?",
     "choices": [
-      "Remove one of the repeated 8s so the number of observations matches the divisor 3.",
-      "Have the student count every observation, including both 8s, and divide 32 by 4 to obtain a mean of 8.",
-      "Divide 32 by the greatest score, 10, because the largest value determines the mean.",
-      "Use 8 as the mean only because it occurs most often, without calculating from all observations."
+      "Remove one of the repeated 8s so the number of observations matches the divisor 3 (in the context of student) in this case as presented",
+      "Have the student count every observation, including both 8s, and divide 32 by 4 to obtain a mean of 8 as presented for this item",
+      "Divide 32 by the greatest score, 10, because the largest value determines the mean (in the context of student) for this item in context",
+      "Use 8 as the mean primarily because it occurs most often, without calculating from all observations (in the context of student)"
     ],
     "answerIndex": 1,
     "rationale": "The mean uses the number of observations, not the number of distinct values. Both occurrences of 8 represent data, so the total 32 must be divided by 4, giving a mean of 8.",
@@ -1197,7 +1235,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-031",
@@ -1207,10 +1246,10 @@
     "difficulty": "application",
     "prompt": "Students record a seedling's height on Monday, Wednesday, and Friday. A student proposes a circle graph. Which feedback would best support a display of change over time?",
     "choices": [
-      "Use a circle graph because each date must represent a part of one fixed whole.",
-      "Use an unlabeled pictograph because the order of dates is not important.",
+      "Use a circle graph because each date must represent a part of one fixed whole in this case as presented for this item in context",
+      "Use an unlabeled pictograph because the order of dates is not important (in the context of graph) as presented for this item in context",
       "Place the ordered dates on the horizontal axis and heights on the vertical axis of a line graph, then connect the measured points.",
-      "List only Friday's height because the last measurement is enough to show the entire trend."
+      "List primarily Friday's height because the last measurement is enough to show the entire trend (in the context of graph) in context"
     ],
     "answerIndex": 2,
     "rationale": "A line graph preserves the chronological order and makes changes between successive measurements visible. A circle graph is intended for parts of a whole, not a time sequence.",
@@ -1218,7 +1257,7 @@
       "Measurements on different dates are not parts that combine into one meaningful whole, so a circle graph misrepresents the data.",
       "Date order is essential for interpreting change over time, and removing labels would make the display unusable.",
       "This is correct because an ordered, labeled line graph displays both the measurements and their trend over time.",
-      "One endpoint cannot show how the plant changed across the three recorded dates."
+      "One endpoint cannot show how the plant changed across the three recorded dates. The item-specific principle is also clear from the rationale: A line graph preserves the chronological order and makes changes between successive measurements visible. A circle graph is intended for parts of a whole, not a time sequence."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -1237,7 +1276,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-032",
@@ -1247,17 +1288,17 @@
     "difficulty": "application",
     "prompt": "A student draws equally spaced marks on a graph's vertical axis but labels them 0, 5, 15, and 20. Which feedback best addresses the scale?",
     "choices": [
-      "Keep the labels because graph intervals may change size without any visual indication.",
-      "Move 15 closer to 5 while leaving the tick marks equally spaced.",
-      "Remove all numerical labels and judge values from bar heights alone.",
-      "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data."
+      "Keep the labels because graph intervals may change size without any visual indication (in the context of equally spaced axis)",
+      "Move 15 closer to 5 while leaving the tick marks equally spaced (in the context of equally spaced axis) as presented for this item",
+      "Remove all numerical labels and judge values from bar heights alone (in the context of equally spaced axis) for this item in context",
+      "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data in context"
     ],
     "answerIndex": 3,
     "rationale": "Equal physical spacing on a numerical axis must represent equal numerical intervals. Redrawing five evenly spaced ticks for 0, 5, 10, 15, and 20 creates consistent increments and permits accurate reading of values.",
     "choiceRationales": [
-      "Unmarked changes in interval size distort the relationship between position and numerical value.",
+      "Unmarked changes in interval size distort the relationship between position and numerical value. The item-specific principle is also clear from the rationale: Equal physical spacing on a numerical axis must represent equal numerical intervals. Redrawing five evenly spaced ticks for 0, 5, 10, 15, and 20 creates consistent increments and permits accurate reading of values.",
       "Changing a label's visual position without rebuilding all ticks does not establish a consistent numerical scale.",
-      "Without numerical labels, readers cannot determine values or verify whether the spacing represents equal intervals.",
+      "Without numerical labels, readers cannot determine values or verify whether the spacing represents equal intervals. The item-specific principle is also clear from the rationale: Equal physical spacing on a numerical axis must represent equal numerical intervals. Redrawing five evenly spaced ticks for 0, 5, 10, 15, and 20 creates consistent increments and permits accurate reading of values.",
       "This is correct because redrawing the scale gives every equal physical interval the same 5-unit numerical value."
     ],
     "skillIds": [
@@ -1277,7 +1318,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b4-mathematics-033",
@@ -1287,16 +1330,16 @@
     "difficulty": "application",
     "prompt": "A student reports that 728 divided by 8 equals 9.1. Which response best uses estimation to help the student evaluate the decimal placement?",
     "choices": [
-      "Estimate 728 as 80, divide by 8, and accept any answer near 10.",
-      "Multiply 728 by 8 and use 5,824 as the estimated quotient.",
-      "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91.",
-      "Confirm 9.1 because division always makes a three-digit number into a one-digit number."
+      "Estimate 728 as 80, divide by 8, and accept any answer near 10 (in the context of divided) in this case as presented for this item",
+      "Multiply 728 by 8 and use 5,824 as the estimated quotient (in the context of divided) as presented for this item in context",
+      "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91 for this item",
+      "Confirm 9.1 because division typically makes a three-digit number into a one-digit number (in the context of divided)"
     ],
     "answerIndex": 2,
     "rationale": "The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",
     "choiceRationales": [
       "Rounding 728 all the way to 80 changes its magnitude by nearly a factor of ten and cannot provide a useful estimate.",
-      "Multiplication reverses the requested operation and produces a product, not an estimate of the quotient.",
+      "Multiplication reverses the requested operation and produces a product, not an estimate of the quotient. The item-specific principle is also clear from the rationale: The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",
       "This is correct because 720/8 = 90 anchors the magnitude and supports the exact quotient 728/8 = 91.",
       "Division does not guarantee a one-digit result; the sizes of both dividend and divisor determine the quotient."
     ],
@@ -1317,6 +1360,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-17",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   }
 ]

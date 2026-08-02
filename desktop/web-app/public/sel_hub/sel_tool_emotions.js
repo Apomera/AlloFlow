@@ -332,6 +332,110 @@ window.SelHub = window.SelHub || {
   // ── Body Sensations Map ──
   // Where emotions are felt in the body
   // ══════════════════════════════════════════════════════════════
+  // Emotion Detective: a replayable, no-timer practice loop for reading a whole
+  // emotional signal (family + intensity + blend + body cue + next step).
+  var DETECTIVE_CASES = [
+    {
+      situation: 'A friend shares their lunch with you after noticing you forgot yours.',
+      clue: 'Notice the feeling, its volume, and what your body is doing.',
+      family: 'happy',
+      familyReason: 'Connection and generosity can bring warmth and relief.',
+      intensity: 3,
+      blend: 'grateful',
+      blendOptions: [
+        { id: 'grateful', label: 'Grateful' },
+        { id: 'relieved', label: 'Relieved' },
+        { id: 'connected', label: 'Connected' }
+      ],
+      bodyBest: 'warm',
+      bodyOptions: [
+        { id: 'warm', label: 'Warm chest or relaxed face' },
+        { id: 'buzz', label: 'Busy, energized hands' },
+        { id: 'heavy', label: 'Heavy shoulders or low energy' }
+      ],
+      strategyBest: 'thanks',
+      strategyOptions: [
+        { id: 'thanks', label: 'Name the kindness and say thank you', hint: 'Connect the feeling to the relationship.' },
+        { id: 'pause', label: 'Take a quiet pause and notice the feeling', hint: 'Let the feeling be present without rushing.' },
+        { id: 'move', label: 'Move your body to release extra energy', hint: 'Useful when a good feeling is very activated.' }
+      ]
+    },
+    {
+      situation: 'You find out a close friend made plans with others and did not invite you.',
+      clue: 'More than one feeling can be true at once.',
+      family: 'sad',
+      familyReason: 'Feeling left out often brings hurt or sadness, sometimes with anger or worry.',
+      intensity: 4,
+      blend: 'hurt',
+      blendOptions: [
+        { id: 'hurt', label: 'Hurt' },
+        { id: 'jealous', label: 'Jealous' },
+        { id: 'confused', label: 'Confused' }
+      ],
+      bodyBest: 'tight',
+      bodyOptions: [
+        { id: 'tight', label: 'Tight throat or chest' },
+        { id: 'hot', label: 'Hot face or clenched hands' },
+        { id: 'float', label: 'Light, buzzy body' }
+      ],
+      strategyBest: 'checkin',
+      strategyOptions: [
+        { id: 'checkin', label: 'Ask for context before deciding what it means', hint: 'Curiosity can protect the relationship.' },
+        { id: 'journal', label: 'Write the feeling before responding', hint: 'Make room for the first reaction.' },
+        { id: 'distance', label: 'Take a short pause from messages', hint: 'A pause can lower the intensity.' }
+      ]
+    },
+    {
+      situation: 'You have a big presentation tomorrow and keep imagining everything going wrong.',
+      clue: 'Intensity can rise even before anything has happened.',
+      family: 'scared',
+      familyReason: 'Uncertainty and imagined consequences can activate worry.',
+      intensity: 4,
+      blend: 'nervous',
+      blendOptions: [
+        { id: 'nervous', label: 'Nervous' },
+        { id: 'excited', label: 'Excited' },
+        { id: 'overwhelmed', label: 'Overwhelmed' }
+      ],
+      bodyBest: 'flutter',
+      bodyOptions: [
+        { id: 'flutter', label: 'Fluttery stomach or fast heartbeat' },
+        { id: 'warm', label: 'Warm, open chest' },
+        { id: 'heavy', label: 'Heavy, slowed body' }
+      ],
+      strategyBest: 'smallstep',
+      strategyOptions: [
+        { id: 'smallstep', label: 'Choose one small preparation step', hint: 'A concrete next step gives the energy somewhere to go.' },
+        { id: 'breathe', label: 'Use a longer-exhale breath', hint: 'Slow the body before solving the task.' },
+        { id: 'support', label: 'Tell a trusted person what you need', hint: 'Connection can reduce isolation.' }
+      ]
+    },
+    {
+      situation: 'You finish a difficult project after nearly giving up.',
+      clue: 'Notice the difference between quiet satisfaction and a very loud rush.',
+      family: 'happy',
+      familyReason: 'Accomplishment can bring pride, relief, and renewed confidence.',
+      intensity: 3,
+      blend: 'proud',
+      blendOptions: [
+        { id: 'proud', label: 'Proud' },
+        { id: 'relieved', label: 'Relieved' },
+        { id: 'accomplished', label: 'Accomplished' }
+      ],
+      bodyBest: 'open',
+      bodyOptions: [
+        { id: 'open', label: 'Open posture and easier breathing' },
+        { id: 'hot', label: 'Hot face and tight jaw' },
+        { id: 'flutter', label: 'Fluttery stomach' }
+      ],
+      strategyBest: 'reflect',
+      strategyOptions: [
+        { id: 'reflect', label: 'Write down what helped you persist', hint: 'Turn the experience into a future resource.' },
+        { id: 'share', label: 'Share the accomplishment with someone supportive', hint: 'Let connection reinforce the learning.' },
+        { id: 'rest', label: 'Let yourself rest without immediately starting more', hint: 'Recovery is part of accomplishment.' }
+      ]
+    }
+  ];
   var BODY_SENSATIONS = {
     happy: [
       { area: 'Face', icon: '\uD83D\uDE04', desc: { elementary: 'Big smile! Cheeks go up!', middle: 'Facial muscles relax, a natural smile appears', high: 'Zygomatic major activation \u2014 genuine Duchenne smile engages eyes + mouth' } },
@@ -17917,6 +18021,16 @@ window.SelHub = window.SelHub || {
       var scenarioAnswer  = d.scenarioAnswer || null;
       var scenarioRevealed = d.scenarioRevealed || false;
       var scenariosCompleted = d.scenariosCompleted || 0;
+      // Emotion Detective state
+      var detectiveIdx       = d.detectiveIdx || 0;
+      var detectiveFamily   = d.detectiveFamily || null;
+      var detectiveIntensity = d.detectiveIntensity != null ? d.detectiveIntensity : null;
+      var detectiveBlend    = d.detectiveBlend || null;
+      var detectiveBody     = d.detectiveBody || null;
+      var detectiveStrategy = d.detectiveStrategy || null;
+      var detectiveRevealed = d.detectiveRevealed || false;
+      var detectiveCompleted = d.detectiveCompleted || 0;
+      var detectiveScore    = d.detectiveScore || 0;
 
       // Journal state
       var journalEntries  = d.journalEntries || [];
@@ -18055,6 +18169,7 @@ window.SelHub = window.SelHub || {
         { id: 'face_builder', label: '\uD83C\uDFA8 Face Builder' },
         { id: 'micro',     label: '\uD83D\uDD0D Microexpressions' },
         { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+        { id: 'detective', label: '\uD83D\uDD0E Detective' },
         { id: 'empathy_mirror', label: '\uD83E\uDE9E Empathy Mirror' },
         { id: 'journal',   label: '\uD83D\uDCD3 Journal' },
         { id: 'mixer',     label: '\uD83E\uDDEA Mixer' },
@@ -18111,6 +18226,7 @@ window.SelHub = window.SelHub || {
           checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In \u2014 daily 1-minute pulse',                  hint: 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. RULER + Yale CSEI evidence base.' },
           faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: 'Face Reader \u2014 Ekman\u2019s 7 universal emotions',  hint: 'Anger, fear, disgust, surprise, sadness, happiness, contempt. Paul Ekman 1971 cross-cultural studies showed these are read the same in remote tribes as in Manhattan. Micro-expressions last 1/15\u20131/25 of a second.' },
           scenarios: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 \u201CWhat would YOU feel?\u201D',     hint: 'Theory-of-mind practice. Predict + reason + check. The same triggering event lands very different on different people, depending on history + interpretation \u2014 a core CBT insight (Beck 1960s).' },
+          detective:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83D\uDD0E', title: 'Emotion Detective \u2014 read the whole signal', hint: 'Practice family, intensity, blend, body cue, and next-step strategy. There is no single universal answer; the skill is noticing and checking.' },
           journal:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',   icon: '\uD83D\uDCD3', title: 'Journal \u2014 expressive writing as research',         hint: 'Pennebaker\u2019s 1986 expressive-writing studies: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism appears to be turning chaos into narrative.' },
           mixer:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDDEA', title: 'Mixer \u2014 emotions blend, they don\u2019t replace',  hint: 'Joy + trust = love. Fear + surprise = awe. Disgust + anger = contempt. Most real moments are blends, not pure feelings. The mixer makes that visible \u2014 your gut already knows; the wheel just gives you the words.' },
           history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'History \u2014 30 days of you',                          hint: 'Your check-ins as a chart. Look for triggers (school day vs weekend, before vs after lunch, before vs after sleep). Patterns you can SHOW someone (counselor, parent) are 10\u00d7 more useful than \u201CI just feel bad sometimes.\u201D' },
@@ -19110,6 +19226,212 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── TAB: Journal ──
       // ══════════════════════════════════════════════════════════
+      // ── Emotion Detective game ──
+      var detectiveContent = null;
+      if (activeTab === 'detective') {
+        var detectiveCases = DETECTIVE_CASES;
+        var currentDetective = detectiveCases[detectiveIdx % detectiveCases.length];
+        var detectiveSelectedCount = (detectiveFamily ? 1 : 0) +
+          (detectiveIntensity != null ? 1 : 0) +
+          (detectiveBlend ? 1 : 0) +
+          (detectiveBody ? 1 : 0) +
+          (detectiveStrategy ? 1 : 0);
+        var detectiveIntensityMatch = detectiveIntensity != null &&
+          Math.abs(Number(detectiveIntensity) - currentDetective.intensity) <= 1;
+        var detectiveFamilyMatch = detectiveFamily === currentDetective.family;
+        var detectiveBlendMatch = detectiveBlend === currentDetective.blend;
+        var detectiveBodyMatch = detectiveBody === currentDetective.bodyBest;
+        var detectiveStrategyMatch = detectiveStrategy === currentDetective.strategyBest;
+        var detectivePoints = detectiveRevealed ?
+          (detectiveFamilyMatch ? 1 : 0) +
+          (detectiveIntensityMatch ? 1 : 0) +
+          (detectiveBlendMatch ? 1 : 0) +
+          (detectiveBodyMatch ? 1 : 0) +
+          (detectiveStrategyMatch ? 1 : 0) : 0;
+        var detectiveBodyChoice = currentDetective.bodyOptions.find(function(option) { return option.id === detectiveBody; });
+        var detectiveStrategyChoice = currentDetective.strategyOptions.find(function(option) { return option.id === detectiveStrategy; });
+
+        function detectiveSelect(key, value) {
+          var change = {};
+          change[key] = value;
+          upd(change);
+          if (soundEnabled) sfxClick();
+        }
+
+        function detectiveRadioGroup(title, groupAria, options, selected, key, labelFn) {
+          return h('div', { style: { marginTop: 14 } },
+            h('div', { style: { color: P.text, fontSize: 12, fontWeight: 800, marginBottom: 6 } }, title),
+            h('div', {
+              role: 'radiogroup',
+              'aria-label': groupAria,
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 7 }
+            },
+              options.map(function(option) {
+                var optionId = String(option.id);
+                var isSelected = String(selected) === optionId;
+                return h('button', {
+                  key: optionId,
+                  type: 'button',
+                  role: 'radio',
+                  'aria-checked': isSelected,
+                  'aria-label': labelFn(option),
+                  disabled: detectiveRevealed,
+                  onClick: function() { detectiveSelect(key, option.id); },
+                  style: {
+                    padding: '9px 10px',
+                    borderRadius: 9,
+                    border: '1px solid ' + (isSelected ? '#8b5cf6' : P.borderDim),
+                    background: isSelected ? '#8b5cf622' : P.bg,
+                    color: isSelected ? P.text : P.text2,
+                    fontSize: 12,
+                    fontWeight: isSelected ? 800 : 600,
+                    cursor: detectiveRevealed ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    opacity: detectiveRevealed ? 0.78 : 1
+                  }
+                }, labelFn(option));
+              })
+            )
+          );
+        }
+
+        function detectiveNextCase() {
+          upd({
+            detectiveIdx: (detectiveIdx + 1) % detectiveCases.length,
+            detectiveFamily: null,
+            detectiveIntensity: null,
+            detectiveBlend: null,
+            detectiveBody: null,
+            detectiveStrategy: null,
+            detectiveRevealed: false
+          });
+          if (soundEnabled) sfxClick();
+        }
+
+        function detectiveCheck() {
+          if (detectiveSelectedCount < 5 || detectiveRevealed) return;
+          var points = (detectiveFamilyMatch ? 1 : 0) +
+            (detectiveIntensityMatch ? 1 : 0) +
+            (detectiveBlendMatch ? 1 : 0) +
+            (detectiveBodyMatch ? 1 : 0) +
+            (detectiveStrategyMatch ? 1 : 0);
+          upd({
+            detectiveRevealed: true,
+            detectiveCompleted: detectiveCompleted + 1,
+            detectiveScore: detectiveScore + points
+          });
+          awardXP(10);
+          if (soundEnabled) {
+            if (points >= 4) sfxCorrect();
+            else sfxReveal();
+          }
+          announceToSR('Emotion Detective case complete. You earned ' + points + ' of 5 guide points.');
+        }
+
+        var familyOptions = EMOTION_FAMILIES.map(function(family) {
+          return { id: family.id, label: family.emoji + ' ' + family.label };
+        });
+        var intensityOptions = [1, 2, 3, 4, 5].map(function(level) {
+          return { id: level, label: level + ' / 5' };
+        });
+        var blendOptions = currentDetective.blendOptions;
+        var bodyOptions = currentDetective.bodyOptions;
+        var strategyOptions = currentDetective.strategyOptions;
+        var familyLabel = (EMOTION_FAMILIES.find(function(family) { return family.id === detectiveFamily; }) || {}).label || 'not chosen';
+        var blendLabel = (blendOptions.find(function(option) { return option.id === detectiveBlend; }) || {}).label || 'not chosen';
+        var bodyLabel = detectiveBodyChoice ? detectiveBodyChoice.label : 'not chosen';
+        var strategyLabel = detectiveStrategyChoice ? detectiveStrategyChoice.label : 'not chosen';
+
+        detectiveContent = h('section', {
+          role: 'region',
+          'aria-label': 'Emotion Detective game',
+          style: { padding: '0 12px 28px' }
+        },
+          h('div', {
+            style: {
+              padding: 14,
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #8b5cf622 0%, ' + P.card + ' 55%)',
+              border: '1px solid #8b5cf655',
+              marginBottom: 12
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start', flexWrap: 'wrap' } },
+              h('div', { style: { minWidth: 220, flex: 1 } },
+                h('h2', { style: { margin: 0, color: P.text, fontSize: 20, fontWeight: 900 } }, 'Emotion Detective'),
+                h('p', { style: { margin: '5px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
+                  'Read the whole signal: family, intensity, blend, body clue, and a helpful next step. There is no timer, and more than one answer can make sense.'
+                )
+              ),
+              h('div', {
+                role: 'status',
+                'aria-label': 'Emotion Detective score',
+                style: { color: '#c4b5fd', fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap' }
+              }, detectiveCompleted + ' cases \u00B7 ' + detectiveScore + ' guide points')
+            ),
+            h('div', {
+              role: 'progressbar',
+              'aria-label': 'Emotion Detective progress',
+              'aria-valuemin': 0,
+              'aria-valuemax': 5,
+              'aria-valuenow': detectiveSelectedCount,
+              'aria-valuetext': detectiveSelectedCount + ' of 5 choices selected',
+              style: { height: 7, marginTop: 12, borderRadius: 8, background: P.borderDim, overflow: 'hidden' }
+            },
+              h('div', { style: { width: (detectiveSelectedCount / 5 * 100) + '%', height: '100%', background: '#8b5cf6', transition: 'width 180ms ease' } })
+            )
+          ),
+          h('div', {
+            style: { padding: 14, borderRadius: 12, background: P.card, border: '1px solid ' + P.border, marginBottom: 12 }
+          },
+            h('div', { style: { color: '#c4b5fd', fontSize: 10, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 } }, 'Case ' + ((detectiveIdx % detectiveCases.length) + 1) + ' of ' + detectiveCases.length),
+            h('p', { style: { margin: 0, color: P.text, fontSize: 17, lineHeight: 1.4, fontWeight: 800 } }, currentDetective.situation),
+            h('p', { style: { margin: '7px 0 0', color: P.textMuted, fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } }, 'Clue: ' + currentDetective.clue),
+            detectiveRadioGroup('1. Pick the broad emotion family', 'Choose an emotion family', familyOptions, detectiveFamily, 'detectiveFamily', function(option) { return option.label; }),
+            detectiveRadioGroup('2. Estimate the intensity', 'Choose an intensity from 1 to 5', intensityOptions, detectiveIntensity, 'detectiveIntensity', function(option) { return option.label; }),
+            detectiveRadioGroup('3. Add a possible blend', 'Choose a possible blend', blendOptions, detectiveBlend, 'detectiveBlend', function(option) { return option.label; }),
+            detectiveRadioGroup('4. Notice a body clue', 'Choose a body clue', bodyOptions, detectiveBody, 'detectiveBody', function(option) { return option.label; }),
+            detectiveRadioGroup('5. Choose a helpful next step', 'Choose a strategy', strategyOptions, detectiveStrategy, 'detectiveStrategy', function(option) { return option.label; }),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 } },
+              h('button', {
+                type: 'button',
+                className: detectiveSelectedCount === 5 && !detectiveRevealed ? 'btn btn-primary' : 'btn',
+                disabled: detectiveSelectedCount < 5 || detectiveRevealed,
+                'aria-label': 'Check my Emotion Detective read',
+                onClick: detectiveCheck
+              }, detectiveRevealed ? 'Read checked' : 'Check my read'),
+              detectiveRevealed ? h('button', {
+                type: 'button',
+                className: 'btn',
+                'aria-label': 'Try the next Emotion Detective case',
+                onClick: detectiveNextCase
+              }, 'Next case') : null
+            )
+          ),
+          detectiveRevealed ? h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            style: { padding: 14, borderRadius: 12, background: '#8b5cf611', border: '1px solid #8b5cf655', marginBottom: 12 }
+          },
+            h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 15, fontWeight: 900 } }, 'Case debrief: ' + detectivePoints + ' of 5 guide points'),
+            h('p', { style: { margin: '7px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } }, currentDetective.familyReason),
+            h('p', { style: { margin: '7px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
+              detectiveFamilyMatch ? 'Your family read matches the guide. ' : 'Your family read is a valid alternative. ',
+              detectiveIntensityMatch ? 'Your intensity is close to the guide. ' : 'Intensity depends on context and the person. ',
+              detectiveBlendMatch ? 'Your blend matches one likely label.' : 'Your blend is another thoughtful way to name it.'
+            ),
+            h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 7 } },
+              h('div', { style: { padding: 9, borderRadius: 8, background: P.bg, color: P.text2, fontSize: 11 } }, h('strong', { style: { color: P.text } }, 'Guide blend: '), currentDetective.blend),
+              h('div', { style: { padding: 9, borderRadius: 8, background: P.bg, color: P.text2, fontSize: 11 } }, h('strong', { style: { color: P.text } }, 'Your body clue: '), bodyLabel),
+              h('div', { style: { padding: 9, borderRadius: 8, background: P.bg, color: P.text2, fontSize: 11 } }, h('strong', { style: { color: P.text } }, 'Your strategy: '), strategyLabel)
+            ),
+            h('p', { style: { margin: '9px 0 0', color: P.textMuted, fontSize: 11, lineHeight: 1.45 } },
+              'Your read is information, not a verdict. If the feeling is strong or confusing, pause, check your body, and connect with a trusted person.'
+            )
+          ) : null
+        );
+      }
       var journalContent = null;
       if (activeTab === 'journal') {
         journalContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
@@ -21258,6 +21580,7 @@ if (activeTab === 'color') {
         checkinContent,
         facesContent,
         scenariosContent,
+        detectiveContent,
         journalContent,
         mixerContent,
         historyContent,

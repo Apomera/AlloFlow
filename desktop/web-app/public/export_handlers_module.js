@@ -1632,7 +1632,7 @@
         ? Promise.resolve(window.alloDeviceStorage)
         : new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager';
             s.onload = () => {
               if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
               else reject(new Error('device storage module missing after load'));

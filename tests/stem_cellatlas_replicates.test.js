@@ -96,12 +96,20 @@ describe('Cell Atlas Lab pseudonymous donor-replicate transfer', () => {
     expect(html).toContain('Replicate B has 2 endothelial cells');
     expect(html).toContain('Held-out here is internal, not external');
     expect(html).toContain('do not establish population coverage or clinical validity');
+    expect(html).toContain('External study status: not included');
+    expect(html).toContain('separate version-pinned pancreas study');
   });
 
   it('requires two replicates, both metrics, and cautious denominator reasoning', () => {
     const quest = window.StemLab._registry[TOOL_ID].questHooks.find(
       (item) => item.id === 'atlas_replicates',
     );
+    const reproducibilityQuest = window.StemLab._registry[TOOL_ID].questHooks.find(
+      (item) => item.id === 'atlas_reproducibility',
+    );
+    expect(reproducibilityQuest).toBeDefined();
+    expect(reproducibilityQuest.check({ reproducibilityInterpretation: 'external-study' })).toBe(true);
+    expect(reproducibilityQuest.check({ reproducibilityInterpretation: 'heldout' })).toBe(false);
     const complete = {
       replicatesVisited: { replicate_a: true, replicate_b: true },
       replicateMetricsSeen: { relativeMeanPct: true, detectionPct: true },

@@ -6,7 +6,28 @@ let createReadAloudLegacyBridge;
 let KaraokeAudioStore;
 let nextBlobId;
 
-const clipB64 = (label) => Buffer.from('audio:' + label).toString('base64');
+const clipB64 = (label) => {
+  const payload = Buffer.from(String(label || ''), 'utf8');
+  const length = Math.max(192, 120 + payload.length);
+  const buffer = Buffer.alloc(length);
+  buffer.write('RIFF', 0, 'ascii');
+  buffer.writeUInt32LE(length - 8, 4);
+  buffer.write('WAVE', 8, 'ascii');
+  buffer.write('fmt ', 12, 'ascii');
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(8000, 24);
+  buffer.writeUInt32LE(8000, 28);
+  buffer.writeUInt16LE(1, 32);
+  buffer.writeUInt16LE(8, 34);
+  buffer.write('data', 36, 'ascii');
+  buffer.writeUInt32LE(length - 44, 40);
+  buffer.set([0xff, 0xe3, 0x18, 0x00], 44);
+  buffer.set([0xff, 0xe3, 0x18, 0x00], 116);
+  payload.copy(buffer, 120);
+  return buffer.toString('base64');
+};
 
 const resourceAdapter = {
   enumerate: (resource) => resource?.parts || [],
@@ -20,7 +41,7 @@ const resourceAdapter = {
 
 beforeAll(() => {
   loadAlloModule('karaoke_audio_store_module.js');
-  loadAlloModule('read_aloud_audio_service_module.js');
+  loadAlloModule('read_aloud_audio_service_source.jsx');
   KaraokeAudioStore = window.AlloModules.KaraokeAudioStore;
   createReadAloudAudioService = window.AlloModules.createReadAloudAudioService;
   createReadAloudLegacyBridge = window.AlloModules.createReadAloudLegacyBridge;
@@ -115,7 +136,7 @@ describe('ReadAloudAudioService factory and adapters', () => {
   it('keeps module, resource, and synthesis profile lookups lazy and live', () => {
     const firstStore = KaraokeAudioStore.createStore();
     firstStore.put('First answer.', clipB64('kore'), 'audio/mpeg', 'ai', {
-      voice: 'Kore', language: 'English', speed: 1, voiceResolverVersion: 2,
+      voice: 'Kore', language: 'English', speed: 1, provider: 'gemini', voiceResolverVersion: 2,
     });
     const harness = makeHarness({ store: firstStore });
 
@@ -190,7 +211,7 @@ describe('ReadAloudAudioService compatibility and resolution', () => {
   it('classifies compatible, stale, human, and missing legacy-store entries', async () => {
     const store = KaraokeAudioStore.createStore();
     store.put('First answer.', clipB64('ready'), 'audio/mpeg', 'ai', {
-      voice: 'Kore', language: 'English', speed: 1, voiceResolverVersion: 2,
+      voice: 'Kore', language: 'English', speed: 1, provider: 'gemini', voiceResolverVersion: 2,
     });
     store.put('Second answer.', clipB64('stale'), 'audio/mpeg', 'ai', {
       voice: 'Puck', language: 'English', speed: 1, voiceResolverVersion: 2,
@@ -292,7 +313,7 @@ describe('ReadAloudAudioService bulk preparation', () => {
   it('skips compatible clips, replaces stale clips, fills missing clips, and reports progress', async () => {
     const store = KaraokeAudioStore.createStore();
     store.put('First answer.', clipB64('ready'), 'audio/mpeg', 'ai', {
-      voice: 'Kore', language: 'English', speed: 1, voiceResolverVersion: 2,
+      voice: 'Kore', language: 'English', speed: 1, provider: 'gemini', voiceResolverVersion: 2,
     });
     store.put('Second answer.', clipB64('stale'), 'audio/mpeg', 'ai', {
       voice: 'Puck', language: 'English', speed: 1, voiceResolverVersion: 2,
@@ -414,7 +435,7 @@ describe('ReadAloudAudioService structured store inspection', () => {
       persistencePolicy: 'durable',
     });
 
-    const inspection = controller.inspect('a');
+    const inspection = controller.inspect('a', { profile: { provider: 'kokoro', engine: 'local-wasm' } });
     expect(inspection).toMatchObject({
       status: 'stale',
       url: null,
@@ -422,10 +443,192 @@ describe('ReadAloudAudioService structured store inspection', () => {
       source: 'ai-generated',
       identity: { identityVersion: 4, segmentId: 'stable-segment' },
     });
-    expect(structuredStore.inspect).toHaveBeenCalledWith('Edited answer.', expect.objectContaining({ voice: 'Kore' }));
+    expect(structuredStore.inspect).toHaveBeenCalledWith('Edited answer.', expect.objectContaining({
+      voice: 'Kore', provider: 'kokoro', engine: 'local-wasm',
+    }));
     expect(structuredStore.get).toHaveBeenCalledWith('Edited answer.');
     expect(structuredStore.has).not.toHaveBeenCalled();
     expect(structuredStore.getCompatible).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('ReadAloudAudioService resilience contracts', () => {
+  it('propagates corrupt inspection state and includes it in summary accounting', () => {
+    const structuredStore = {
+      inspect: vi.fn(() => ({
+        status: 'corrupt',
+        url: null,
+        source: 'ai-generated',
+        quarantine: { code: 'media-error', reason: 'Decoder failure.' },
+      })),
+      get: vi.fn(() => null),
+    };
+    const resource = { id: 'corrupt-resource', parts: [{ id: 'a', text: 'Corrupt clip.' }] };
+    const service = createReadAloudAudioService({
+      getStoreModule: () => structuredStore,
+      getResource: () => resource,
+      getSynthesisProfile: () => ({ voice: 'Kore', provider: 'gemini', voiceResolverVersion: 2 }),
+    });
+    const controller = service.forResource({
+      resourceId: resource.id,
+      resourceType: 'faq',
+      adapter: resourceAdapter,
+      lane: 'reference',
+    });
+
+    expect(controller.inspect('a')).toMatchObject({
+      status: 'corrupt',
+      url: null,
+      quarantine: { code: 'media-error', reason: 'Decoder failure.' },
+    });
+    expect(controller.summary()).toMatchObject({
+      total: 1,
+      ready: 0,
+      stale: 0,
+      corrupt: 1,
+      missing: 0,
+    });
+  });
+
+  it('persists actual synthesis provenance, forwards controls, and aborts removal before mutation', async () => {
+    const controller = new AbortController();
+    const synthesize = vi.fn(async () => ({
+      url: 'blob:kokoro',
+      b64: clipB64('kokoro'),
+      mime: 'audio/mpeg',
+      provider: 'kokoro',
+      engine: 'local-wasm',
+      engineVersion: '3',
+      model: 'kokoro-82m',
+      modelVersion: '1.0',
+    }));
+    const harness = makeHarness({ synthesize });
+
+    await harness.bound.regenerate('a', {
+      signal: controller.signal,
+      reason: 'teacher-retry',
+      priority: 'interactive',
+      maxRetries: 3,
+      profile: { provider: 'gemini' },
+      metadata: { provider: 'stale-caller-value' },
+    });
+
+    expect(synthesize).toHaveBeenCalledWith(expect.objectContaining({
+      signal: controller.signal,
+      reason: 'teacher-retry',
+      priority: 'interactive',
+      maxRetries: 3,
+    }));
+    const payload = harness.bound.serialize();
+    const metadata = payload.metadata[KaraokeAudioStore.keyFor('First answer.')];
+    expect(metadata).toMatchObject({
+      provider: 'kokoro',
+      engine: 'local-wasm',
+      engineVersion: '3',
+      model: 'kokoro-82m',
+      modelVersion: '1.0',
+    });
+    expect(harness.persist).toHaveBeenCalledWith(expect.objectContaining({
+      signal: controller.signal,
+      reason: 'regenerate',
+    }));
+    expect(harness.bound.inspect('a').status).toBe('stale');
+
+    controller.abort();
+    await expect(harness.bound.remove('a', { signal: controller.signal })).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(harness.store.has(harness.bound.segments()[0].storageKey)).toBe(true);
+  });
+
+  it('reconciles unreachable AI clips before preparation and preserves human orphans', async () => {
+    const store = KaraokeAudioStore.createStore();
+    const compatible = {
+      voice: 'Kore',
+      language: 'English',
+      speed: 1,
+      provider: 'gemini',
+      voiceResolverVersion: 2,
+    };
+    store.put('First answer.', clipB64('ready'), 'audio/mpeg', 'ai-generated', compatible);
+    store.put('Old AI sentence.', clipB64('orphan-ai'), 'audio/mpeg', 'ai-generated', compatible);
+    store.put('Teacher keepsake.', clipB64('orphan-human'), 'audio/mpeg', 'human-teacher', compatible);
+    const harness = makeHarness({ store });
+
+    const result = await harness.bound.prepareAll();
+
+    expect(result.reconciliation).toMatchObject({
+      removedAi: 1,
+      preservedHuman: 1,
+      changed: true,
+    });
+    expect(result.reconciliation.humanOrphans[0]).not.toHaveProperty('b64');
+    expect(store.has('Old AI sentence.')).toBe(false);
+    expect(store.has('Teacher keepsake.')).toBe(true);
+    expect(result.summary).toMatchObject({ ready: 3, corrupt: 0, stale: 0, missing: 0 });
+    expect(harness.persist).toHaveBeenCalledWith(expect.objectContaining({ reason: 'prepare-reconcile' }));
+  });
+
+  it('forwards occurrence and options through bridge regenerate, recording, quarantine, and remove', async () => {
+    const repeated = [
+      { spokenText: 'Repeated bridge sentence.', segmentId: 'body/repeat/0', scopeId: 'main' },
+      { spokenText: 'Repeated bridge sentence.', segmentId: 'body/repeat/1', scopeId: 'main' },
+    ];
+    const harness = makeLegacyBridgeHarness({
+      enumerateResourceSegments: () => repeated,
+    });
+    const controller = new AbortController();
+
+    expect(await harness.bridge.regenerate('Repeated bridge sentence.', {
+      occurrence: 1,
+      signal: controller.signal,
+      reason: 'edit-audio',
+      priority: 'interactive',
+      maxRetries: 2,
+      profile: { voice: 'Aoede', provider: 'gemini', voiceResolverVersion: 2 },
+      metadata: { engine: 'cloud-tts' },
+      storeOptions: { maxClipBytes: 4096 },
+    })).toMatch(/^blob:stored-/);
+    expect(harness.synthesize).toHaveBeenCalledWith(expect.objectContaining({
+      segment: expect.objectContaining({ segmentId: 'body/repeat/1' }),
+      signal: controller.signal,
+      reason: 'edit-audio',
+      priority: 'interactive',
+      maxRetries: 2,
+      profile: expect.objectContaining({ voice: 'Aoede' }),
+    }));
+    expect(Object.values(harness.referenceStore.serialize().entries)[0]).toMatchObject({
+      identity: { segmentId: 'body/repeat/1' },
+      synthesisProfile: expect.objectContaining({ engine: 'cloud-tts' }),
+    });
+    const synthesisCount = harness.synthesize.mock.calls.length;
+    expect(await harness.bridge.regenerate('Repeated bridge sentence.', { occurrence: 2 })).toBeNull();
+    expect(harness.synthesize).toHaveBeenCalledTimes(synthesisCount);
+
+
+    expect(await harness.bridge.saveRecording(
+      'Repeated bridge sentence.',
+      new Blob(['teacher']),
+      { source: 'human-teacher', occurrence: 0, signal: controller.signal },
+    )).toBe(true);
+    expect(Object.values(harness.referenceStore.serialize().entries).map((entry) => entry.identity.segmentId).sort())
+      .toEqual(['body/repeat/0', 'body/repeat/1']);
+
+    expect(await harness.bridge.quarantine(
+      'Repeated bridge sentence.',
+      { code: 'media-error' },
+      { occurrence: 1, signal: controller.signal },
+    )).toBe(true);
+    expect(harness.bridge.inspect('Repeated bridge sentence.', 'reference', { occurrence: 1 }).status)
+      .toBe('corrupt');
+    expect(await harness.bridge.remove(
+      'Repeated bridge sentence.',
+      'reference',
+      { occurrence: 1, signal: controller.signal },
+    )).toBe(true);
+    expect(harness.bridge.inspect('Repeated bridge sentence.', 'reference', { occurrence: 0 }).source)
+      .toBe('human-teacher');
   });
 });
 

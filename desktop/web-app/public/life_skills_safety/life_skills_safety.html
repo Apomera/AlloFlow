@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Home Safety Walkthrough</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  /* Register before the scene is parsed. The page still works as an accessible
+     checklist if the optional 3D runtime cannot be loaded. */
+  if (window.AFRAME) {
+    AFRAME.registerComponent('safety-interactive', {
+      schema: { task: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.setAttribute('data-task', this.data.task);
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsSafety3D) window.lifeSkillsSafety3D.activate(this.data.task, 'scene');
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsSafety3D) window.lifeSkillsSafety3D.focus(this.data.task, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root {
+    --safety-bg: #071224;
+    --safety-panel: #0f1c31;
+    --safety-panel-2: #142642;
+    --safety-line: #3b5880;
+    --safety-text: #f7fbff;
+    --safety-muted: #c3d2e9;
+    --safety-accent: #7dd3fc;
+    --safety-good: #4ade80;
+    --safety-warn: #facc15;
+    --safety-danger: #fb7185;
+  }
+  :root[data-theme="light"] {
+    --safety-bg: #edf4fb;
+    --safety-panel: #ffffff;
+    --safety-panel-2: #e5eef8;
+    --safety-line: #7490b3;
+    --safety-text: #10213a;
+    --safety-muted: #344b68;
+    --safety-accent: #075985;
+    --safety-good: #166534;
+    --safety-warn: #854d0e;
+    --safety-danger: #9f1239;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--safety-bg); color: var(--safety-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--safety-warn); outline-offset: 2px; }
+  .safety-app { min-height: 100vh; display: flex; flex-direction: column; }
+  .safety-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 18px; background: linear-gradient(115deg, #0b3a5b, #0f766e 58%, #166534); border-bottom: 1px solid rgba(255,255,255,.22); }
+  .safety-header h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .safety-header p { margin: 4px 0 0; color: #e5f6ff; font-size: 12px; line-height: 1.45; max-width: 680px; }
+  .header-mark { flex: 0 0 auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; font-size: 11px; font-weight: 800; color: #fff; white-space: nowrap; }
+  .safety-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 12px; padding: 12px; }
+  .scene-panel, .coach-panel { min-width: 0; border: 1px solid var(--safety-line); background: var(--safety-panel); box-shadow: 0 16px 42px rgba(0,0,0,.18); }
+  .scene-panel { position: relative; min-height: 590px; overflow: hidden; border-radius: 14px; }
+  .scene-panel a-scene { width: 100%; height: 100%; min-height: 590px; display: block; }
+  .scene-help { position: absolute; left: 12px; bottom: 10px; z-index: 4; max-width: min(390px, calc(100% - 24px)); padding: 7px 9px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: rgba(7,18,36,.86); color: #e7f2ff; font-size: 11px; line-height: 1.35; pointer-events: none; }
+  .coach-panel { border-radius: 14px; padding: 14px; overflow: auto; }
+  .coach-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .coach-panel h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .coach-panel h3 { margin: 16px 0 7px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--safety-muted); }
+  .coach-panel p { margin: 0; color: var(--safety-muted); font-size: 12px; line-height: 1.5; }
+  .mode-wrap { display: grid; gap: 4px; min-width: 132px; }
+  .mode-wrap label { color: var(--safety-muted); font-size: 10px; font-weight: 800; }
+  .mode-wrap select { min-height: 32px; padding: 4px 7px; border: 1px solid var(--safety-line); border-radius: 7px; background: var(--safety-panel-2); color: var(--safety-text); font-size: 11px; font-weight: 750; }
+  .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 9px; padding: 9px 10px; border-left: 4px solid var(--safety-accent); background: var(--safety-panel-2); }
+  .progress-line strong { font-size: 14px; }
+  .progress-line span { color: var(--safety-muted); font-size: 11px; font-weight: 700; text-align: right; }
+  .view-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view-controls span { color: var(--safety-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .view-button { padding: 5px 8px; border: 1px solid var(--safety-line); border-radius: 7px; background: transparent; color: var(--safety-text); font-size: 10px; font-weight: 800; }
+  .view-button[aria-pressed="true"] { border-color: var(--safety-accent); background: rgba(103,232,249,.12); }
+  .prompt { margin: 0 0 10px !important; padding: 9px 10px; border: 1px solid var(--safety-line); border-radius: 9px; background: rgba(125,211,252,.08); color: var(--safety-text) !important; }
+  .feedback { min-height: 42px; margin: 0 0 11px !important; padding: 8px 10px; border-radius: 8px; background: rgba(250,204,21,.11); color: var(--safety-warn) !important; font-weight: 700; }
+  .feedback.good { background: rgba(74,222,128,.13); color: var(--safety-good) !important; }
+  .feedback.error { background: rgba(251,113,133,.13); color: var(--safety-danger) !important; }
+  .scenario-panel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--safety-line); border-left: 4px solid var(--safety-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .scenario-kicker { color: var(--safety-accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .scenario-panel strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.3; }
+  .scenario-situation { margin: 5px 0 8px !important; }
+  .scenario-choices { display: grid; gap: 6px; }
+  .scenario-button { width: 100%; padding: 7px 8px; border: 1px solid var(--safety-line); border-radius: 7px; background: transparent; color: var(--safety-text); font-size: 11px; line-height: 1.35; text-align: left; }
+  .scenario-button:hover, .scenario-button:focus-visible, .scenario-button[aria-pressed="true"] { border-color: var(--safety-accent); background: rgba(103,232,249,.12); }
+  .scenario-button:disabled { cursor: default; opacity: .76; }
+  .scenario-feedback { min-height: 30px; margin: 7px 0 0 !important; font-size: 11px !important; font-weight: 700; }
+  .scenario-feedback.good { color: var(--safety-good) !important; }
+  .scenario-feedback.error { color: var(--safety-danger) !important; }
+  .scenario-hint { margin-top: 7px; padding: 6px 8px; border: 1px solid var(--safety-line); border-radius: 7px; background: transparent; color: var(--safety-text); font-size: 10px; font-weight: 800; }
+  .scenario-hint[aria-expanded="true"] { border-color: var(--safety-accent); background: rgba(103,232,249,.1); }
+  .scenario-hint-text { margin: 6px 0 0 !important; color: var(--safety-muted) !important; font-size: 11px !important; }
+  .scenario-step { display: block; margin-top: 2px; color: var(--safety-muted); font-size: 10px; font-weight: 700; }
+  .scenario-next { width: 100%; margin-top: 7px; padding: 7px 8px; border: 1px solid var(--safety-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--safety-text); font-size: 10px; font-weight: 800; }
+  .scenario-next:disabled { cursor: default; opacity: .7; }
+  .practice-summary { margin: 6px 0 0 !important; color: var(--safety-muted) !important; font-size: 10px !important; font-weight: 700; }
+  .task-list { display: grid; gap: 7px; }
+  .task-button { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; width: 100%; padding: 9px 10px; border: 1px solid var(--safety-line); border-radius: 9px; background: transparent; color: var(--safety-text); text-align: left; }
+  .task-button:hover, .task-button.current { border-color: var(--safety-accent); background: rgba(125,211,252,.09); }
+  .task-button.done { border-color: rgba(74,222,128,.75); background: rgba(74,222,128,.10); }
+  .task-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--safety-panel-2); font-size: 15px; }
+  .task-button.done .task-icon { background: rgba(74,222,128,.2); }
+  .task-copy { min-width: 0; }
+  .task-copy strong { display: block; font-size: 11px; line-height: 1.25; }
+  .task-copy small { display: block; margin-top: 2px; color: var(--safety-muted); font-size: 10px; line-height: 1.3; }
+  .task-room { align-self: start; color: var(--safety-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .reset-button { width: 100%; margin-top: 11px; padding: 9px 10px; border: 1px solid var(--safety-line); border-radius: 8px; background: var(--safety-panel-2); color: var(--safety-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button { width: 100%; margin-top: 7px; padding: 9px 10px; border: 1px solid var(--safety-warn); border-radius: 8px; background: rgba(250,204,21,.1); color: var(--safety-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button:hover { border-color: var(--safety-accent); background: rgba(103,232,249,.12); }
+  .help-pause-text { margin: 6px 0 0 !important; color: var(--safety-good) !important; font-size: 11px !important; font-weight: 700; }
+  .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--safety-line); border-radius: 8px; background: transparent; color: var(--safety-text); font-size: 11px; font-weight: 800; }
+  .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--safety-accent); background: rgba(103,232,249,.1); }
+  .why-text { margin: 6px 0 0 !important; color: var(--safety-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--safety-line); font-size: 11px !important; }
+  .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--safety-line); border-radius: 12px; background: var(--safety-panel); color: var(--safety-text); }
+  .scene-fallback strong { display: block; margin-bottom: 5px; }
+  .scene-fallback p { color: var(--safety-muted); font-size: 12px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 840px) {
+    .safety-layout { grid-template-columns: 1fr; }
+    .scene-panel { min-height: 500px; }
+    .scene-panel a-scene { min-height: 500px; }
+    .coach-panel { max-height: none; }
+  }
+  @media (max-width: 520px) {
+    .safety-header { padding: 12px; }
+    .safety-header h1 { font-size: 17px; }
+    .header-mark { display: none; }
+    .safety-layout { padding: 8px; gap: 8px; }
+    .scene-panel { min-height: 430px; }
+    .scene-panel a-scene { min-height: 430px; }
+    .coach-panel { padding: 11px; }
+    .coach-top { display: grid; }
+    .mode-wrap { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="safety-app" id="safetyApp">
+  <header class="safety-header">
+    <div>
+      <h1>🛡️ Home Safety Walkthrough</h1>
+      <p>Practice finding hazards, keeping exits clear, and choosing calm next steps in a small apartment scene.</p>
+    </div>
+    <div class="header-mark">Life Skills Lab · 3D practice</div>
+  </header>
+
+  <div class="safety-layout">
+    <section class="scene-panel" aria-labelledby="sceneTitle">
+      <h2 class="sr-only" id="sceneTitle">Interactive 3D apartment scene</h2>
+      <a-scene id="safetyScene" embedded renderer="antialias: true; colorManagement: true" background="color: #071224" fog="type: linear; color: #071224; near: 10; far: 30" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #c7d8ff; intensity: 1.45"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.5" position="-4 8 5"></a-entity>
+        <a-entity light="type: point; color: #7dd3fc; intensity: 0.7; distance: 12" position="3 3 3"></a-entity>
+
+        <!-- Apartment shell: open-front rooms keep the hazards visible. -->
+        <a-box position="0 -0.12 0" width="12" height="0.2" depth="10" material="color: #1c3650; roughness: 1"></a-box>
+        <a-box position="0 2.8 -4.8" width="12" height="5.6" depth="0.18" material="color: #18304a; roughness: 1"></a-box>
+        <a-box position="-5.9 2.8 0" width="0.18" height="5.6" depth="10" material="color: #18304a; roughness: 1"></a-box>
+        <a-box position="5.9 2.8 0" width="0.18" height="5.6" depth="10" material="color: #18304a; roughness: 1"></a-box>
+        <a-box position="0 3.0 4.8" width="12" height="6" depth="0.18" material="color: #18304a; roughness: 1"></a-box>
+
+        <!-- Room dividers and floor cues. -->
+        <a-box position="0 1.45 -3.1" width="0.15" height="2.9" depth="3.4" material="color: #274766; roughness: 1"></a-box>
+        <a-box position="2.8 1.45 -1.4" width="2.9" height="2.9" depth="0.15" material="color: #274766; roughness: 1"></a-box>
+        <a-plane position="-3.2 0.012 -1.5" rotation="-90 0 0" width="4.8" height="4.5" material="color: #245064; opacity: .42; transparent: true"></a-plane>
+        <a-plane position="3.7 0.014 -2.3" rotation="-90 0 0" width="3.7" height="3.2" material="color: #46375e; opacity: .42; transparent: true"></a-plane>
+        <a-plane position="3.3 0.016 1.7" rotation="-90 0 0" width="4.3" height="4.2" material="color: #245b4a; opacity: .36; transparent: true"></a-plane>
+
+        <a-text value="KITCHEN" position="-3.2 0.035 -0.1" rotation="-90 0 0" align="center" width="3.5" color="#b6e7f5" opacity=".85"></a-text>
+        <a-text value="BATH" position="3.7 0.035 -2.5" rotation="-90 0 0" align="center" width="2.5" color="#d9c8ff" opacity=".85"></a-text>
+        <a-text value="ENTRY / OUTSIDE" position="3.3 0.035 2.7" rotation="-90 0 0" align="center" width="3.1" color="#b8f3d0" opacity=".85"></a-text>
+
+        <!-- Kitchen props. -->
+        <a-box position="-3.45 0.85 -1.55" width="4.0" height="1.45" depth="0.85" material="color: #5b4052; roughness: .9"></a-box>
+        <a-box position="-3.45 1.62 -1.55" width="4.15" height="0.12" depth="0.95" material="color: #b98964; roughness: .75"></a-box>
+        <a-box position="-3.05 2.4 -1.82" width="1.35" height="1.55" depth="0.18" material="color: #2b5369; roughness: .7"></a-box>
+        <a-box position="-4.75 1.95 -1.58" width="0.55" height="0.12" depth="0.6" material="color: #b8d9e4; roughness: .45"></a-box>
+        <a-cylinder position="-4.75 2.06 -1.58" radius="0.13" height="0.1" rotation="90 0 0" material="color: #d7eef5; roughness: .3"></a-cylinder>
+        <a-box position="-2.05 1.68 -1.62" width="1.0" height="0.06" depth="0.62" material="color: #202c3e; roughness: .6"></a-box>
+        <a-cylinder position="-2.3 1.75 -1.62" radius="0.18" height="0.05" rotation="90 0 0" material="color: #f97316; emissive: #7c2d12; emissiveIntensity: .45"></a-cylinder>
+        <a-cylinder position="-1.85 1.75 -1.62" radius="0.18" height="0.05" rotation="90 0 0" material="color: #f97316; emissive: #7c2d12; emissiveIntensity: .45"></a-cylinder>
+        <a-box position="-2.05 1.88 -1.62" width="0.7" height="0.05" depth="0.35" material="color: #a16207; roughness: .65"></a-box>
+
+        <!-- Door and exit obstacle. -->
+        <a-box position="4.25 2.25 -4.66" width="1.8" height="4.5" depth="0.12" material="color: #5c3f32; roughness: .85"></a-box>
+        <a-box position="4.25 2.25 -4.57" width="1.35" height="4.1" depth="0.04" material="color: #9a6a4e; roughness: .9"></a-box>
+        <a-box position="4.25 0.9 -3.68" width="1.55" height="0.95" depth="0.62" material="color: #c2410c; roughness: .85"></a-box>
+
+        <!-- Bathroom fixtures. -->
+        <a-box position="3.8 0.75 -2.45" width="1.45" height="1.15" depth="0.75" material="color: #d7e5ed; roughness: .55"></a-box>
+        <a-box position="3.8 1.38 -2.45" width="1.6" height="0.08" depth="0.85" material="color: #f2fbff; roughness: .35"></a-box>
+        <a-cylinder position="3.8 1.5 -2.45" radius="0.13" height="0.22" material="color: #94a3b8; roughness: .35"></a-cylinder>
+        <a-box position="4.65 1.45 -2.45" width="0.1" height="0.22" depth="0.28" material="color: #f97316; roughness: .65"></a-box>
+
+        <!-- Interactive safety targets. -->
+        <a-cylinder id="obj-alarm" safety-interactive="task: alarm" position="-3.9 4.08 -3.4" radius="0.3" height="0.12" material="color: #f97316; roughness: .55"></a-cylinder>
+        <a-text id="label-alarm" value="NEXT\nCheck alarm" position="-3.9 3.63 -3.37" align="center" width="2.2" color="#fff7ed" side="double"></a-text>
+        <a-ring id="marker-alarm" position="-3.9 4.0 -3.32" radius-inner="0.37" radius-outer="0.47" rotation="0 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-box id="obj-exit" safety-interactive="task: exit" position="4.25 1.02 -3.68" width="1.55" height="0.95" depth="0.62" material="color: #c2410c; roughness: .85"></a-box>
+        <a-text id="label-exit" value="Keep exit clear" position="4.25 1.72 -3.62" align="center" width="2.5" color="#fff1f2" side="double"></a-text>
+        <a-ring id="marker-exit" position="4.25 0.05 -3.68" radius-inner="0.7" radius-outer="0.82" rotation="0 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-cylinder id="obj-cleaners" safety-interactive="task: cleaners" position="-4.1 1.95 -1.52" radius="0.16" height="0.62" material="color: #a855f7; roughness: .62"></a-cylinder>
+        <a-text id="label-cleaners" value="Separate cleaners" position="-4.1 2.48 -1.5" align="center" width="2.4" color="#f3e8ff" side="double"></a-text>
+        <a-ring id="marker-cleaners" position="-4.1 1.98 -1.3" radius-inner="0.28" radius-outer="0.36" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-box id="obj-stove" safety-interactive="task: stove" position="-2.05 1.84 -1.62" width="1.06" height="0.18" depth="0.7" material="color: #f59e0b; roughness: .55"></a-box>
+        <a-text id="label-stove" value="Turn heat off\nHandle inward" position="-2.05 2.28 -1.58" align="center" width="2.8" color="#fffbeb" side="double"></a-text>
+        <a-ring id="marker-stove" position="-2.05 1.7 -1.12" radius-inner="0.42" radius-outer="0.52" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-cylinder id="obj-shutoff" safety-interactive="task: shutoff" position="4.75 0.62 -2.0" radius="0.25" height="0.12" rotation="90 0 0" material="color: #dc2626; roughness: .48"></a-cylinder>
+        <a-box position="4.75 0.92 -2.0" width="0.08" height="0.55" depth="0.08" material="color: #dc2626; roughness: .48"></a-box>
+        <a-text id="label-shutoff" value="Know the\nwater shutoff" position="4.75 1.35 -1.94" align="center" width="2.8" color="#ffe4e6" side="double"></a-text>
+        <a-ring id="marker-shutoff" position="4.75 0.62 -1.76" radius-inner="0.3" radius-outer="0.4" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-torus id="obj-meeting" safety-interactive="task: meeting" position="3.25 0.06 1.75" radius="0.72" radius-tubular="0.08" material="color: #22c55e; roughness: .55"></a-torus>
+        <a-cone position="3.25 0.38 1.75" radius-bottom="0.2" radius-top="0" height="0.48" material="color: #22c55e; roughness: .55"></a-cone>
+        <a-text id="label-meeting" value="Choose a meeting place" position="3.25 1.0 1.75" align="center" width="3.1" color="#dcfce7" side="double"></a-text>
+        <a-ring id="marker-meeting" position="3.25 0.05 1.75" radius-inner="0.9" radius-outer="1.02" rotation="0 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <!-- Decorative, non-interactive context objects. -->
+        <a-box position="-4.7 3.5 -3.65" width="1.7" height="0.12" depth="0.55" material="color: #294d69; roughness: .8"></a-box>
+        <a-box position="-4.7 3.82 -3.65" width="1.7" height="0.55" depth="0.1" material="color: #6d8fac; roughness: .8"></a-box>
+        <a-cylinder position="1.75 0.55 -3.85" radius="0.32" height="1.1" material="color: #365b42; roughness: .95"></a-cylinder>
+        <a-sphere position="1.75 1.45 -3.85" radius="0.82" material="color: #3f8a5a; roughness: .95"></a-sphere>
+        <a-text id="sceneRoomNote" value="Select an item in the scene or the checklist." position="0 4.45 -3.95" align="center" width="5.5" color="#e7f2ff" side="double"></a-text>
+
+        <a-camera id="safetyCamera" position="0 3.45 9.4" rotation="-12 0 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+          <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30; interval: 100"></a-entity>
+        </a-camera>
+        <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 30"></a-entity>
+      </a-scene>
+      <div class="scene-help">Mouse: drag to look · WASD: move · click a safety item. Keyboard users can use the checklist.</div>
+      <div class="scene-fallback" id="sceneFallback" role="status">
+        <strong>The 3D view is unavailable.</strong>
+        <p>Use the accessible safety checklist on the right to complete the same walkthrough. Your progress and feedback still work without the scene.</p>
+      </div>
+      <p class="sr-only" id="sceneDescription">The apartment has an open kitchen on the left, a bathroom on the right, an entry door at the back, and an outside meeting-place marker near the front. Six safety items can be selected.</p>
+    </section>
+
+    <aside class="coach-panel" aria-labelledby="coachTitle">
+      <div class="coach-top">
+        <div>
+          <h2 id="coachTitle">Safety coach</h2>
+          <p>Choose a mode, then complete the six safety targets.</p>
+        </div>
+        <div class="mode-wrap">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect">
+            <option value="guided">Guided</option>
+            <option value="practice">Practice</option>
+            <option value="challenge">Challenge</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="progress-line" aria-label="Walkthrough progress">
+        <strong id="progressValue">0 / 6</strong>
+        <span id="progressMode">Guided · start with the first target</span>
+      </div>
+      <div class="view-controls" role="group" aria-label="3D scene view">
+        <span>Scene view</span>
+        <button class="view-button" type="button" data-view="left" aria-pressed="false">Left side</button>
+        <button class="view-button" type="button" data-view="center" aria-pressed="true">Center</button>
+        <button class="view-button" type="button" data-view="right" aria-pressed="false">Right side</button>
+      </div>
+      <p class="prompt" id="prompt" role="status">Start by checking the smoke/CO alarm.</p>
+      <p class="feedback" id="feedback" role="status" aria-live="polite">Select a glowing item or use a checklist button.</p>
+
+      <section class="scenario-panel" aria-labelledby="scenarioTitle">
+        <div class="scenario-kicker">Decision practice</div>
+        <strong id="scenarioTitle"></strong>
+        <span class="scenario-step" id="scenarioStep"></span>
+        <p class="scenario-situation" id="scenarioSituation"></p>
+        <div class="scenario-choices" id="scenarioChoices" role="group" aria-label="Scenario responses"></div>
+        <button class="scenario-hint" id="scenarioHint" type="button" aria-expanded="false">Show a hint</button>
+        <p class="scenario-hint-text" id="scenarioHintText" role="status" aria-live="polite" hidden></p>
+        <button class="scenario-next" id="scenarioNext" type="button" hidden>Try another scenario</button>
+        <p class="scenario-feedback" id="scenarioFeedback" role="status" aria-live="polite"></p>
+        <p class="practice-summary" id="practiceSummary" role="status" aria-live="polite"></p>
+      </section>
+      <h3>Accessible safety checklist</h3>
+      <div class="task-list" id="taskList" role="list" aria-label="Home safety targets"></div>
+      <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
+      <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
+      <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
+      <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+      <button class="reset-button" id="resetButton" type="button">Start over</button>
+      <p class="note">Practice only. In a real emergency, leave when needed, call emergency help from a safe place, and tell a trusted person. This walkthrough does not replace local safety guidance.</p>
+      <p class="sr-only" id="srStatus" aria-live="polite"></p>
+    </aside>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var TASKS = [
+    { id: 'alarm', icon: '🔔', room: 'Entry', label: 'Check the smoke/CO alarm', short: 'Find the alarm and practice checking it.', why: 'Alarms give early warning so people can leave and get help.', base: '#f97316' },
+    { id: 'exit', icon: '🚪', room: 'Entry', label: 'Keep the exit clear', short: 'Notice the obstacle near the door.', why: 'A clear exit gives people a safer way out when time matters.', base: '#ef4444' },
+    { id: 'cleaners', icon: '🧴', room: 'Kitchen', label: 'Separate cleaning products', short: 'Keep products apart and never mix them.', why: 'Different cleaners can create dangerous fumes when mixed.', base: '#a855f7' },
+    { id: 'stove', icon: '🍳', room: 'Kitchen', label: 'Make the stove safer', short: 'Turn heat off and keep the pan handle inward.', why: 'Lower heat and an inward handle reduce burn and spill risk.', base: '#f59e0b' },
+    { id: 'shutoff', icon: '💧', room: 'Bath', label: 'Know the water shutoff', short: 'Locate the valve before a leak happens.', why: 'Knowing the shutoff can limit water damage while help is coming.', base: '#dc2626' },
+    { id: 'meeting', icon: '📍', room: 'Outside', label: 'Choose a meeting place', short: 'Pick a safe place outside to meet.', why: 'A meeting place helps people know who got out safely.', base: '#22c55e' }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var SCENARIO = {"title":"A pan starts smoking","situation":"You notice smoke from a pan while someone is distracted. What is the safest next move?","instruction":"Choose a response, then read the coaching.","safeTask":"stove","choices":[{"id":"safe","label":"Turn the heat off, keep the handle inward, and get help if needed.","safe":true,"feedback":"Lowering heat and reducing a handle bump makes the scene safer."},{"id":"carry","label":"Carry the hot pan to another room.","feedback":"Moving a hot pan increases spill and burn risk. Leave it stable and get help."},{"id":"ignore","label":"Leave it heating while you finish another task.","feedback":"Do not leave active heat unattended. Pause and make the stove safer first."}],"hint":"Heat and smoke need attention first: reduce heat, keep your hands and the handle away from the edge, and get help instead of carrying a hot pan.","next":{"title":"A cleaner bottle is unlabeled","situation":"You find a cleaner with no readable label beside another product. What is the safer response?","instruction":"Choose the response that prevents a chemical mistake.","safeTask":"cleaners","choices":[{"id":"safe","label":"Set it aside, read the label or ask for help, and never mix it with another product.","safe":true,"feedback":"Setting an unknown product aside and getting reliable information prevents dangerous fumes."},{"id":"mix","label":"Mix a small amount with another cleaner to make it stronger.","feedback":"Never mix cleaners. Different products can create dangerous fumes."},{"id":"guess","label":"Use it on a new surface and see what happens.","feedback":"Do not guess with an unlabeled product. Stop and get reliable information first."}],"hint":"Unknown chemicals need a pause. Keep products separate, read reliable directions, and ask for help when the label is unclear.","next":{"title":"The smoke alarm chirps at night","situation":"A smoke or CO alarm chirps and you are not sure why. What is the safer first step?","instruction":"Choose the response that keeps people informed and moving safely.","safeTask":"alarm","choices":[{"id":"safe","label":"Tell a responsible adult, check from a safe position, and leave or call emergency help if danger is possible.","safe":true,"feedback":"Treating an alarm as information and getting responsible help protects people."},{"id":"silence","label":"Remove the battery and ignore the chirp.","feedback":"Disabling an alarm can remove an important warning. Tell a responsible adult and investigate safely."},{"id":"climb","label":"Climb on furniture to reach it quickly.","feedback":"A fall adds risk. Get a responsible adult and use a safe plan for checking the alarm."}],"hint":"A chirp or alarm is a signal to pause, tell a responsible adult, and treat smoke or CO as an emergency."}}};
+  var activeScenario = SCENARIO;
+
+  var params = new URLSearchParams(window.location.search);
+  var storageKey = 'alloflow-life-safety-3d-progress-v1';
+  function loadDone() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
+    } catch (_) { return {}; }
+  }
+  function saveProgress() {
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+  }
+  var state = {
+    mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
+    done: loadDone(),
+    focused: null,
+    feedback: 'Select a glowing item or use a checklist button.',
+    feedbackTone: '',
+    missteps: 0,
+    scenarioChoice: null,
+    scenarioComplete: false,
+    scenarioMessage: '',
+    scenarioTone: '',
+    hintShown: false,
+    scenarioStep: 0,
+    scenarioMissteps: 0,
+    scenarioHintsUsed: 0
+  };
+
+  var modeSelect = document.getElementById('modeSelect');
+  var progressValue = document.getElementById('progressValue');
+  var progressMode = document.getElementById('progressMode');
+  var prompt = document.getElementById('prompt');
+  var feedback = document.getElementById('feedback');
+  var scenarioTitle = document.getElementById('scenarioTitle');
+  var scenarioSituation = document.getElementById('scenarioSituation');
+  var scenarioChoices = document.getElementById('scenarioChoices');
+  var scenarioFeedback = document.getElementById('scenarioFeedback');
+  var scenarioHint = document.getElementById('scenarioHint');
+  var scenarioHintText = document.getElementById('scenarioHintText');
+  var scenarioNext = document.getElementById('scenarioNext');
+  var scenarioStep = document.getElementById('scenarioStep');
+  var practiceSummary = document.getElementById('practiceSummary');
+  var taskList = document.getElementById('taskList');
+  var resetButton = document.getElementById('resetButton');
+  var helpPauseButton = document.getElementById('helpPauseButton');
+  var helpPauseText = document.getElementById('helpPauseText');
+  var whyButton = document.getElementById('whyButton');
+  var whyText = document.getElementById('whyText');
+  function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
+  function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-safety-3d-why-reveal', task: target.id }); }
+  var srStatus = document.getElementById('srStatus');
+  var sceneFallback = document.getElementById('sceneFallback');
+  var scene = document.getElementById('safetyScene');
+  var camera = document.querySelector('a-camera');
+  var VIEW_PRESETS = {
+    left: { position: '-3.5 3.25 8.8', rotation: '-12 0 0', label: 'Left side' },
+    center: { position: '0 3.45 9.4', rotation: '-12 0 0', label: 'Center' },
+    right: { position: '3.5 3.25 8.8', rotation: '-12 0 0', label: 'Right side' }
+  };
+  function setView(view) {
+    var preset = VIEW_PRESETS[view] || VIEW_PRESETS.center;
+    var selectedView = VIEW_PRESETS[view] ? view : 'center';
+    if (camera) {
+      camera.setAttribute('position', preset.position);
+      camera.setAttribute('rotation', preset.rotation);
+    }
+    document.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === selectedView));
+    });
+    say('Scene view: ' + preset.label + '.');
+  }
+  document.querySelectorAll('[data-view]').forEach(function(button) {
+    button.addEventListener('click', function() { setView(button.getAttribute('data-view')); });
+  });
+  scenarioNext.addEventListener('click', loadNextScenario);
+  helpPauseButton.addEventListener('click', pauseForHelp);
+  whyButton.addEventListener('click', revealWhy);
+
+  function setTheme(theme) {
+    var normalized = theme === 'light' || theme === 'contrast' ? theme : 'dark';
+    document.documentElement.setAttribute('data-theme', normalized);
+  }
+  setTheme(params.get('theme'));
+
+  function postToOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(Object.assign({ source: 'alloflow-life-safety-3d' }, payload), '*');
+      }
+    } catch (ignore) {}
+  }
+
+  function say(message) {
+    srStatus.textContent = '';
+    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+  }
+  scenarioHint.addEventListener('click', function () {
+    if (!state.hintShown) state.scenarioHintsUsed += 1;
+    state.hintShown = true;
+    renderScenario();
+    say('Hint: ' + activeScenario.hint);
+  });
+
+  function doneCount() {
+    return TASKS.filter(function (task) { return !!state.done[task.id]; }).length;
+  }
+
+  function guidedTarget() {
+    return TASKS.find(function (task) { return !state.done[task.id]; }) || null;
+  }
+
+  function setFeedback(message, tone) {
+    state.feedback = message;
+    state.feedbackTone = tone || '';
+  }
+  function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-safety-3d-help-pause' }); }
+
+  function focusTask(id, announce) {
+    if (!BY_ID[id]) return;
+    state.focused = id;
+    clearWhy();
+    renderScene();
+    if (announce) say(BY_ID[id].label + '. ' + BY_ID[id].short);
+  }
+
+  function activateTask(id, source) {
+    var task = BY_ID[id];
+    if (!task) return;
+    var target = guidedTarget();
+    state.focused = id;
+    clearWhy();
+    if (state.done[id]) {
+      setFeedback('Already complete: ' + task.label + '.', 'good');
+      render();
+      say('Already complete: ' + task.label);
+      return;
+    }
+
+    if (state.mode === 'guided' && target && target.id !== id) {
+      state.missteps += 1;
+      setFeedback('Guided mode: start with “' + target.label + '.”', 'error');
+      render();
+      say('Guided mode. Start with ' + target.label);
+      return;
+    }
+
+    state.done[id] = true;
+    saveProgress();
+    setFeedback('Completed: ' + task.label + '. ' + task.why, 'good');
+    var next = guidedTarget();
+    if (next && state.mode === 'guided') {
+      setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
+    }
+    if (!next) {
+      setFeedback('Walkthrough complete. You found all six safety targets.', 'good');
+      postToOpener({ type: 'alloflow-life-safety-3d-complete', score: TASKS.length, missteps: state.missteps });
+      say('Walkthrough complete. You found all six safety targets.');
+    } else {
+      postToOpener({ type: 'alloflow-life-safety-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
+    }
+    render();
+  }
+
+  function visualForTask(task) {
+    var object = document.getElementById('obj-' + task.id);
+    var label = document.getElementById('label-' + task.id);
+    var marker = document.getElementById('marker-' + task.id);
+    if (!object) return;
+    var done = !!state.done[task.id];
+    var focused = state.focused === task.id || (state.mode === 'guided' && guidedTarget() && guidedTarget().id === task.id);
+    var color = done ? '#22c55e' : task.base;
+    var emissive = done ? '#166534' : (focused ? task.base : '#000000');
+    var intensity = done || focused ? 0.72 : 0.04;
+    object.setAttribute('material', 'color: ' + color + '; roughness: .62; metalness: .04; emissive: ' + emissive + '; emissiveIntensity: ' + intensity);
+    if (marker) marker.setAttribute('visible', focused && !done);
+    if (label) {
+      var showLabel = state.mode !== 'challenge' || done || focused;
+      label.setAttribute('visible', showLabel);
+      if (done) label.setAttribute('value', 'DONE\n' + task.label);
+      else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\n' + task.label);
+      else if (state.mode === 'challenge') label.setAttribute('value', 'Safety item');
+      else label.setAttribute('value', task.label);
+      label.setAttribute('color', done ? '#dcfce7' : '#fff7ed');
+    }
+  }
+
+  function renderScene() {
+    TASKS.forEach(visualForTask);
+    var sceneNote = document.getElementById('sceneRoomNote');
+    var next = guidedTarget();
+    if (sceneNote) {
+      if (!next) sceneNote.setAttribute('value', 'WALKTHROUGH COMPLETE\nAll six targets found');
+      else if (state.mode === 'guided') sceneNote.setAttribute('value', 'GUIDED TARGET\n' + next.label);
+      else sceneNote.setAttribute('value', 'SELECT A SAFETY ITEM\nScene + checklist both work');
+    }
+  }
+
+  function renderTaskList() {
+    taskList.innerHTML = '';
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var button = document.createElement('button');
+      var done = !!state.done[task.id];
+      var current = !!target && target.id === task.id && state.mode === 'guided';
+      button.type = 'button';
+      button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-pressed', String(done));
+      if (current) button.setAttribute('aria-current', 'step');
+      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
+      button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span>'
+        + '<span class="task-copy"><strong></strong><small></small></span>'
+        + '<span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
+      button.querySelector('strong').textContent = task.label;
+      button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
+      button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
+      taskList.appendChild(button);
+    });
+  }
+
+  function completeScenarioTask() {
+    var task = BY_ID[activeScenario.safeTask];
+    if (!task || state.done[task.id]) return;
+    state.done[task.id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    if (!next) {
+      setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
+      postToOpener({ type: 'alloflow-life-safety-3d-complete', score: TASKS.length, missteps: state.missteps });
+    } else {
+      setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
+      postToOpener({ type: 'alloflow-life-safety-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+    }
+  }
+  function loadNextScenario() {
+    if (!activeScenario.next) return;
+    activeScenario = activeScenario.next;
+    state.scenarioStep += 1;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    setFeedback('New scenario ready. Choose a response and use a hint if you need one.', '');
+    render();
+    say('Next scenario: ' + activeScenario.title);
+  }
+  function chooseScenario(choiceId) {
+    var choice = activeScenario.choices.find(function (item) { return item.id === choiceId; });
+    if (!choice || state.scenarioComplete) return;
+    state.scenarioChoice = choiceId;
+    state.scenarioMessage = choice.feedback;
+    if (choice.safe) {
+      state.scenarioComplete = true;
+      state.scenarioTone = 'good';
+      focusTask(activeScenario.safeTask, false);
+      completeScenarioTask();
+      say('Good choice. ' + choice.feedback);
+    } else {
+      state.missteps += 1;
+      state.scenarioTone = 'error';
+      focusTask(activeScenario.safeTask, false);
+      state.scenarioMissteps += 1;
+      state.scenarioMessage += ' Try another response. The safer scene target is highlighted.';
+      setFeedback('Practice the scenario again: choose a safer first step.', 'error');
+      say('Try another response. ' + choice.feedback);
+    }
+    render();
+  }
+  function renderScenario() {
+    scenarioTitle.textContent = activeScenario.title;
+    scenarioSituation.textContent = activeScenario.situation;
+    scenarioChoices.innerHTML = '';
+    activeScenario.choices.forEach(function (choice) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'scenario-button';
+      button.textContent = choice.label;
+      button.setAttribute('aria-pressed', String(state.scenarioChoice === choice.id));
+      button.disabled = state.scenarioComplete;
+      button.addEventListener('click', function () { chooseScenario(choice.id); });
+      scenarioChoices.appendChild(button);
+    });
+    scenarioFeedback.textContent = state.scenarioChoice ? state.scenarioMessage : activeScenario.instruction;
+    scenarioFeedback.className = 'scenario-feedback' + (state.scenarioTone ? ' ' + state.scenarioTone : '');
+    scenarioHint.disabled = state.scenarioComplete;
+    scenarioHint.setAttribute('aria-expanded', String(state.hintShown));
+    scenarioHint.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    scenarioHintText.hidden = !state.hintShown;
+    scenarioHintText.textContent = state.hintShown ? activeScenario.hint : '';
+    scenarioStep.textContent = 'Scenario ' + (state.scenarioStep + 1) + ' of 3';
+    scenarioNext.hidden = !state.scenarioComplete || !activeScenario.next;
+    scenarioNext.disabled = !state.scenarioComplete || !activeScenario.next;
+    var completedScenarios = state.scenarioStep + (state.scenarioComplete ? 1 : 0);
+    var coachingText = state.scenarioMissteps === 0 ? 'no coaching moments' : state.scenarioMissteps + (state.scenarioMissteps === 1 ? ' coaching moment' : ' coaching moments');
+    var hintText = state.scenarioHintsUsed === 0 ? 'no hints used' : state.scenarioHintsUsed + (state.scenarioHintsUsed === 1 ? ' hint used' : ' hints used');
+    practiceSummary.textContent = 'Session: ' + completedScenarios + '/3 scenarios complete · ' + coachingText + ' · ' + hintText;
+  }
+  function render() {
+    var count = doneCount();
+    var target = guidedTarget();
+    var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    progressValue.textContent = count + ' / ' + TASKS.length;
+    if (!target) progressMode.textContent = modeText + ' · complete';
+    else if (state.mode === 'guided') progressMode.textContent = modeText + ' · next target';
+    else if (state.mode === 'practice') progressMode.textContent = modeText + ' · choose any target';
+    else progressMode.textContent = modeText + ' · labels are reduced';
+    if (!target) prompt.textContent = 'All targets complete. Take a breath and name one safety habit you can use at home.';
+    else if (state.mode === 'guided') prompt.textContent = 'Start with: ' + target.label + '.';
+    else if (state.mode === 'practice') prompt.textContent = 'Choose any item, then explain why the action helps.';
+    else prompt.textContent = 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
+    feedback.textContent = state.feedback;
+    feedback.className = 'feedback' + (state.feedbackTone ? ' ' + state.feedbackTone : '');
+    renderScenario();
+    modeSelect.value = state.mode;
+    renderTaskList();
+    renderScene();
+  }
+
+  modeSelect.addEventListener('change', function () {
+    state.mode = modeSelect.value;
+    state.focused = guidedTarget() ? guidedTarget().id : null;
+    setFeedback(state.mode === 'guided' ? 'Guided mode shows one next target at a time.' : state.mode === 'practice' ? 'Practice mode lets you choose the order.' : 'Challenge mode reduces scene labels. The checklist remains available.', '');
+    render();
+    say(modeSelect.options[modeSelect.selectedIndex].text + ' mode selected.');
+  });
+
+  resetButton.addEventListener('click', function () {
+    helpPauseText.hidden = true;
+    helpPauseText.textContent = '';
+    clearWhy();
+    state.done = {};
+    saveProgress();
+    state.focused = null;
+    state.missteps = 0;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    activeScenario = SCENARIO;
+    state.scenarioStep = 0;
+    state.scenarioMissteps = 0;
+    state.scenarioHintsUsed = 0;
+    setFeedback('Fresh start. Select the first safety item.', '');
+    render();
+    say('Walkthrough reset. Select the first safety item.');
+    postToOpener({ type: 'alloflow-life-safety-3d-reset' });
+  });
+
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'alloflow-theme-change') setTheme(data.theme);
+  });
+
+  window.lifeSkillsSafety3D = {
+    activate: activateTask,
+    focus: focusTask
+  };
+
+  function showSceneFallback() {
+    if (sceneFallback) sceneFallback.style.display = 'block';
+  }
+  if (!window.AFRAME || !scene) {
+    showSceneFallback();
+  } else if (scene.hasLoaded) {
+    sceneFallback.style.display = 'none';
+  } else {
+    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    window.setTimeout(function () {
+      if (!scene.canvas) showSceneFallback();
+    }, 1800);
+  }
+  render();
+  postToOpener({ type: 'alloflow-life-safety-3d-hello' });
+}());
+</script>
+</body>
+</html>

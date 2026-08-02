@@ -24,6 +24,29 @@ export type PdfUaNotRunReason =
   | "disabled_for_institution_pilot"
   | "independent_validator_not_packaged";
 
+export type PdfUaValidation =
+  | {
+      status: "not_run";
+      reason: PdfUaNotRunReason;
+    }
+  | {
+      status: "unavailable";
+      reason:
+        | "validator_not_available"
+        | "validator_timeout"
+        | "validator_error";
+    }
+  | {
+      status: "compliant" | "noncompliant";
+      validator: "veraPDF";
+      profile: "ua1";
+      validatorVersion: string | null;
+      failedRules: number;
+      failedChecks: number;
+      passedRules: number;
+      passedChecks: number;
+    };
+
 export interface RemediationReportExpectation {
   jobId: string;
   resultSizeBytes: number;
@@ -79,10 +102,7 @@ export interface PublicRemediationReport {
     size: number;
     sha256: string;
   };
-  pdfUaValidation: {
-    status: "not_run";
-    reason: PdfUaNotRunReason;
-  };
+  pdfUaValidation: PdfUaValidation;
 }
 
 export type RemediationReportErrorCode =
@@ -430,16 +450,63 @@ export function sanitizeRemediationReport(
   }
 
   const pdfUaValidation = record(report.pdfUaValidation);
+  let sanitizedPdfUaValidation: PublicRemediationReport["pdfUaValidation"];
   if (
-    pdfUaValidation.status !== "not_run" ||
+    pdfUaValidation.status === "compliant" ||
+    pdfUaValidation.status === "noncompliant"
+  ) {
+    if (
+      pdfUaValidation.validator !== "veraPDF" ||
+      pdfUaValidation.profile !== "ua1"
+    ) {
+      return fail("remediation_report_malformed");
+    }
+    const validatorVersion = pdfUaValidation.validatorVersion;
+    if (
+      validatorVersion !== null &&
+      (
+        typeof validatorVersion !== "string" ||
+        validatorVersion.length > 32
+      )
+    ) {
+      return fail("remediation_report_malformed");
+    }
+    sanitizedPdfUaValidation = {
+      status: pdfUaValidation.status,
+      validator: "veraPDF",
+      profile: "ua1",
+      validatorVersion,
+      failedRules: integer(pdfUaValidation.failedRules, 0, 1_000_000),
+      failedChecks: integer(pdfUaValidation.failedChecks, 0, 1_000_000),
+      passedRules: integer(pdfUaValidation.passedRules, 0, 1_000_000),
+      passedChecks: integer(pdfUaValidation.passedChecks, 0, 1_000_000),
+    };
+  } else if (pdfUaValidation.status === "unavailable") {
+    if (
+      pdfUaValidation.reason !== "validator_not_available" &&
+      pdfUaValidation.reason !== "validator_timeout" &&
+      pdfUaValidation.reason !== "validator_error"
+    ) {
+      return fail("remediation_report_malformed");
+    }
+    sanitizedPdfUaValidation = {
+      status: "unavailable",
+      reason: pdfUaValidation.reason,
+    };
+  } else if (
+    pdfUaValidation.status === "not_run" &&
     (
-      pdfUaValidation.reason !== "disabled_for_institution_pilot" &&
-      pdfUaValidation.reason !== "independent_validator_not_packaged"
+      pdfUaValidation.reason === "disabled_for_institution_pilot" ||
+      pdfUaValidation.reason === "independent_validator_not_packaged"
     )
   ) {
+    sanitizedPdfUaValidation = {
+      status: "not_run",
+      reason: pdfUaValidation.reason,
+    };
+  } else {
     return fail("remediation_report_malformed");
   }
-  const pdfUaReason: PdfUaNotRunReason = pdfUaValidation.reason;
 
   return {
     schema: 1,
@@ -485,9 +552,6 @@ export function sanitizeRemediationReport(
       size: artifactSize,
       sha256: artifactSha256,
     },
-    pdfUaValidation: {
-      status: "not_run",
-      reason: pdfUaReason,
-    },
+    pdfUaValidation: sanitizedPdfUaValidation,
   };
 }

@@ -17,6 +17,7 @@
 //     identity (voice/speed/language change) instead of trusting index-only
 //     warm state.
 
+import { validAudioBase64 } from './lib/audio_fixtures.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -320,7 +321,7 @@ describe('adventure prewarm/live request parity', () => {
 });
 
 describe('KaraokeAudioStore.getCompatible (stale stored-voice guard)', () => {
-  const AUDIO_B64 = Buffer.from('tiny clip bytes').toString('base64');
+  const AUDIO_B64 = validAudioBase64();
 
   function storeWith(source, metadata) {
     Object.defineProperty(URL, 'createObjectURL', {
@@ -454,7 +455,9 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     const second = await callTTS('Cache this resolved voice.', 'Kore', 1, 0, 'English');
 
     expect(second).toBe(first);
-    expect(Array.from(state.urlCache.keys())).toEqual(['cache this resolved voice.__Kore__1__English']);
+    expect(Array.from(state.urlCache.keys())).toEqual([
+      JSON.stringify(['Cache this resolved voice.', 'Kore', 'English', 'natural-rate-v1']),
+    ]);
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
   });
 

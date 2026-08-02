@@ -488,6 +488,49 @@ describe('stepQualityTier (adaptive quality governor)', () => {
   });
 });
 
+describe('getSceneryQualityBudget (Canvas world budgets)', () => {
+  it('reduces every repeated scenery census monotonically', () => {
+    const full = FS.getSceneryQualityBudget(0);
+    const reduced = FS.getSceneryQualityBudget(1);
+    const minimal = FS.getSceneryQualityBudget(2);
+    for (const key of ['fieldRadius', 'lakeRadius', 'townRadius', 'treeRadius', 'forestRadius', 'canopyFactor', 'shadowCount', 'sparkleRadius']) {
+      expect(reduced[key], key).toBeLessThanOrEqual(full[key]);
+      expect(minimal[key], key).toBeLessThanOrEqual(reduced[key]);
+    }
+    expect(full.microDetails).toBe(true);
+    expect(reduced.microDetails).toBe(true);
+    expect(minimal.microDetails).toBe(false);
+    expect(minimal.sparkleRadius).toBe(0);
+  });
+
+  it('clamps invalid tiers to a safe 0-2 budget', () => {
+    expect(FS.getSceneryQualityBudget(-10)).toEqual(FS.getSceneryQualityBudget(0));
+    expect(FS.getSceneryQualityBudget(99)).toEqual(FS.getSceneryQualityBudget(2));
+    expect(FS.getSceneryQualityBudget(Number.NaN)).toEqual(FS.getSceneryQualityBudget(0));
+  });
+});
+
+describe('getTerrainSunLight (shared relief shading)', () => {
+  it('returns bounded, finite lighting across day phases and terrain', () => {
+    for (const hour of [0, 6, 12, 18, 23.5]) {
+      const light = FS.getTerrainSunLight(39, -105, false, hour, 0.8);
+      expect(Number.isFinite(light.shade)).toBe(true);
+      expect(Number.isFinite(light.warm)).toBe(true);
+      expect(light.shade).toBeGreaterThanOrEqual(0.68);
+      expect(light.shade).toBeLessThanOrEqual(1.18);
+      expect(light.warm).toBeGreaterThanOrEqual(0);
+      expect(light.warm).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('keeps water neutral while still exposing dawn/dusk warmth', () => {
+    const water = FS.getTerrainSunLight(0, 0, true, 6, 1);
+    const noon = FS.getTerrainSunLight(0, 0, true, 12, 1);
+    expect(water.shade).toBeCloseTo(noon.shade, 6);
+    expect(water.warm).toBeGreaterThan(noon.warm);
+  });
+});
+
 describe('isWaterMask (Natural Earth 0.1° land/water mask)', () => {
   it('knows the continents', () => {
     expect(FS.isWaterMask(38, -98)).toBe(false);    // Kansas

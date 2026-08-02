@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio відкрито.",
   "cmd.open_video_studio_hint": "Записуйте, субтитруйте та монтуйте навчальні відео",
   "palette.ctx.videoStudio": "Тут — Video Studio",
-  "palette.close": "Закрити командну палітру"
+  "palette.close": "Закрити командну палітру",
+  "cmd.apply_lesson_template": "Почати зі збереженого шаблону",
+  "cmd.apply_lesson_template_done": "Розпочато з ",
+  "cmd.apply_lesson_template_hint": "Починає новий план з одного зі збережених шаблонів",
+  "cmd.apply_lesson_template_missing": "Не вдалося знайти шаблон із назвою ",
+  "cmd.apply_lesson_template_which": "Який шаблон?",
+  "cmd.rebuild_lesson_step": "Перебудувати один крок плану",
+  "cmd.rebuild_lesson_step_done": "Перебудову кроку розпочато: ",
+  "cmd.rebuild_lesson_step_hint": "Повторно створює один ресурс — назвіть номер кроку",
+  "cmd.rebuild_lesson_step_missing": "Не вдалося знайти цей крок у плані.",
+  "cmd.rebuild_lesson_step_none": "у плані ще немає кроків.",
+  "cmd.rebuild_lesson_step_which": "Який крок?",
+  "cmd.run_lesson_blueprint": "Створити план уроку",
+  "cmd.run_lesson_blueprint_done": "План створюється — ви можете стежити за кожним кроком на картці.",
+  "cmd.run_lesson_blueprint_hint": "Створює всі ресурси поточного плану",
+  "cmd.cancelled": "Запит на скасування надіслано. Поточна операція зупиниться, коли постачальник її підтримає."
 }

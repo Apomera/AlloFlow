@@ -12,6 +12,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { validAudioBase64 } from './lib/audio_fixtures.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
@@ -457,7 +458,7 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
 
     const KS = window.AlloModules.KaraokeAudioStore;
     const writer = KS.createStore();
-    writer.put('Already saved.', Buffer.from('saved audio').toString('base64'), 'audio/mpeg', 'ai-played', {
+    writer.put('Already saved.', validAudioBase64(), 'audio/mpeg', 'ai-played', {
       voice: 'Kore',
       speed: 1,
       language: 'English',

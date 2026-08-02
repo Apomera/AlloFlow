@@ -23,7 +23,11 @@ function run(spec) {
   if (!validItemCount) add('inventory', 'Pack must contain either the 200-item source stage or 500 expanded learning activities');
   for (let batch = 0; batch < learningActivityBanks; batch += 1) {
     const selection = pack.items.slice(batch * 100, batch * 100 + 100);
-    for (const [domain, count] of Object.entries(diagnostic)) {
+    const sectionKind = pack.sections?.[batch]?.kind;
+    const expectedBlueprint = sectionKind === 'independent-diagnostic'
+      ? (spec.independentDiagnostic || diagnostic)
+      : diagnostic;
+    for (const [domain, count] of Object.entries(expectedBlueprint)) {
       if (selection.filter(item => item.domainId === domain).length !== count) add('blueprint', `Bank ${batch + 1} ${domain} count must equal ${count}`);
     }
     if ([0, 1, 2, 3].some(answer => selection.filter(item => item.answerIndex === answer).length !== 25)) add('balance', `Bank ${batch + 1} answer positions must be 25/25/25/25`);
@@ -49,7 +53,9 @@ function run(spec) {
   const itemFindingIds = new Set(findings.filter(finding => finding.id).map(finding => finding.id));
   const distinctSourceContentKernels = pack.distinctSourceContentKernels || 100;
   const parallelSourceVariants = pack.parallelSourceVariants || 100;
-  const guidedReasoningItems = Math.max(0, totalItems - 200);
+  const guidedReasoningItems = Number.isInteger(pack.guidedReviewItems)
+    ? pack.guidedReviewItems
+    : Math.max(0, totalItems - 200 - (Number(pack.assistantAuthoredIndependentItems) || 0));
   const newIndependentItemsNeeded = pack.newIndependentItemsNeeded ?? 300;
   const assistantReviewVerdict = pack.assistantReview?.verdict || 'reviewed-target-not-met';
   const summary = {
@@ -69,7 +75,7 @@ function run(spec) {
     diagnosticBanks: learningActivityBanks,
     diagnosticBanksSemantics: 'legacy-total-learning-activity-bank-alias',
     sourceDiagnosticBanks: pack.sourceDiagnosticBatchCount || 2,
-    guidedReviewBanks: pack.guidedReviewBatchCount || Math.max(0, learningActivityBanks - 2),
+    guidedReviewBanks: pack.guidedReviewBatchCount ?? Math.max(0, learningActivityBanks - 2),
     learningActivityBanks,
     packIntegrity,
     libraryIntegrity,
@@ -107,7 +113,11 @@ function run(spec) {
     summary: { ...library.summary, packIntegrity, libraryIntegrity, findings, status },
   };
 
-  const stageNote = totalItems === 500 ? 'Three additional 100-item banks are source-derived guided review, not independent exam-item banks.' : 'The corrected 200-item source stage is ready for central guided-review expansion.';
+  const stageNote = totalItems === 500
+    ? (guidedReasoningItems > 0
+      ? `${guidedReasoningItems} activities are source-derived guided review, not independent exam-item banks.`
+      : 'The remaining 300 activities are assistant-authored independent practice, not official exam items.')
+    : 'The corrected 200-item source stage is ready for central guided-review expansion.';
   const nativeMarkdown = `# ${spec.displayName} QA\n\n- Status: **${status.toUpperCase()}**\n- Items: ${summary.passedItems}/${totalItems}\n- Pack credential gate: ${packIntegrity.negativeGates.toUpperCase()}; reviewed ${packIntegrity.allItemsReviewed} activities with foreign-code/K-6/out-of-band/malformed-band counts ${packIntegrity.foreignCodeOccurrences}/${packIntegrity.k6ContaminationOccurrences}/${packIntegrity.outOfBandOccurrences}/${packIntegrity.malformedBandOccurrences}.\n- Library source gate: ${libraryIntegrity.officialSourceReferenceSets}/${libraryIntegrity.referenceSets} reference sets cite the official ${spec.code} Study Companion; foreign-code, K-6, and out-of-band counts are ${libraryIntegrity.foreignCodeOccurrences}/${libraryIntegrity.k6ContaminationOccurrences}/${libraryIntegrity.outOfBandOccurrences}.\n\n> ${spec.standard.limitation}\n\n- Assistant audit: 200 source questions contain ${pack.distinctSourceContentKernels} distinct source content kernels and ${pack.parallelSourceVariants} parallel variants under the normalized answer-set/rationale/reference test. ${stageNote} The 500-distinct-question target is not met.\n`;
   const libraryMarkdown = `# ${spec.displayName} library QA\n\n- Status: **${status.toUpperCase()}**\n- Inventory: 12 chapters, 60 checks, 75 flashcards, 20 memory aids, 8 workshops\n- Official source coverage: ${libraryIntegrity.officialSourceReferenceSets}/${libraryIntegrity.referenceSets} reference sets\n- Pack credential-scope gate: **${packIntegrity.negativeGates.toUpperCase()}**\n- Library contamination gate: **${libraryIntegrity.negativeGates.toUpperCase()}**\n\n> ${spec.standard.limitation}\n`;
 

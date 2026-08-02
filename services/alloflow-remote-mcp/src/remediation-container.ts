@@ -257,9 +257,6 @@ export class RemediationContainer extends Container<PilotDeploymentEnv> {
   allowedHosts = [
     "r2.internal",
     "gemini.internal",
-    "cdn.jsdelivr.net",
-    "cdnjs.cloudflare.com",
-    "unpkg.com",
   ];
 
   static override outboundHandlers = {
@@ -282,6 +279,7 @@ export class RemediationContainer extends Container<PilotDeploymentEnv> {
     this.envVars = {
       ALLOFLOW_RUNNER_TOKEN: runnerToken,
       ALLOFLOW_MCP_NO_KEY_FILES: "1",
+      ALLOFLOW_MCP_OFFLINE_ASSETS: "1",
       ALLOFLOW_MCP_GEMINI_BASE:
         "http://gemini.internal/v1beta/models",
       ALLOFLOW_MCP_GEMINI_MODEL: this.env.GEMINI_MODEL || "",

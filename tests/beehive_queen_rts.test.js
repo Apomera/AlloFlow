@@ -106,6 +106,8 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(host.querySelector('[data-beehive-command-sequence="true"]')).toBeTruthy();
     expect(host.querySelectorAll('[data-command-ready]').length).toBeGreaterThan(0);
     expect(host.querySelectorAll('[data-structure-ready]').length).toBeGreaterThan(0);
+    expect(host.querySelector('[data-structure-preview="brood"]').textContent).toContain('nurse and forager capacity');
+    expect(host.querySelector('[data-structure-ready="true"][aria-label*="Effect:"]')).toBeTruthy();
     expect(host.textContent).toContain('TACTICAL PAUSE');
     expect(host.textContent).toContain('PLACE GUARD POST');
     expect(host.textContent).toContain('1 active threat');
@@ -136,6 +138,8 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     const scout = dock.querySelector('[data-quick-command="scout_rival"]');
     expect(scout).toBeTruthy();
     expect(scout.disabled).toBe(false);
+    expect(scout.getAttribute('aria-label')).toContain('Effect: Reveal rival power; shift forage +2% immediately.');
+    expect(dock.querySelector('[data-command-preview="scout_rival"]').textContent).toContain('Reveal rival power');
     await act(async () => { scout.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
     expect(host.textContent).toContain('Rival intel');
@@ -282,7 +286,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(latest.beehive.queen.difficulty).toBe('expert');
     expect(latest.beehive.queen.rival.name).toBe('Nightshade Wing');
     expect(latest.beehive.queen.rival.strength).toBe(430);
-    expect(latest.beehive.queen.resources.wax).toBe(9);
+    expect(latest.beehive.queen.resources.wax).toBe(11); // Expert start wax 9 + prepared field report +2
   });
 
   it('records an RTS victory once and preserves it as a journey milestone', async () => {

@@ -253,6 +253,12 @@ describe('Space Explorer mission dossier contract', () => {
     expect(applied.applied).toBe(true);
     expect(applied.resources.science).toBe(15);
     expect(applied.resources.power).toBe(69);
+    const revision = pure.reviseMissionProtocol(protocol, 'The oxygen margin is falling faster than predicted, so I will prioritize life support because survival comes first.', dossier, dest);
+    expect(revision.accepted).toBe(true);
+    expect(revision.changed).toBe(true);
+    expect(revision.protocol.id).toBe('life_support_thesis');
+    expect(revision.protocol.revision.fromLabel).toBe('Evidence-first protocol');
+    expect(revision.protocol.revision.justification).toContain('oxygen');
 
     const lens = pure.buildProtocolEventLens(protocol, dossier, 0, []);
     expect(lens.category).toBe('science');
@@ -284,6 +290,39 @@ describe('Space Explorer mission dossier contract', () => {
     const reasoning = pure.summarizeDecisionReasoning('Because oceanography evidence is uncertain, I will spend power to protect hull and improve data quality.', { quality: 'optimal' }, { stemConcepts: ['oceanography', 'ice mechanics'] });
     expect(reasoning.hasReasoning).toBe(true);
     expect(reasoning.tag).toMatch(/evidence|science|tradeoff/);
+    expect(reasoning.qualityScore).toBeGreaterThanOrEqual(3);
+    const scaffold = pure.buildReasoningScaffold({ category: 'science', stemConcepts: ['oceanography'] }, protocol);
+    expect(scaffold.focus).toContain('observation');
+    expect(scaffold.stems.map((x) => x.label)).toEqual(['Evidence', 'Tradeoff', 'Prediction']);
+    const progress = pure.evaluateReasoningProgress([
+      { reasoningSummary: reasoning },
+      { reasoningSummary: { hasReasoning: false, qualityScore: 0 } }
+    ]);
+    expect(progress.written).toBe(1);
+    expect(progress.percent).toBe(50);
+    const crewReport = pure.buildCrewConsultReport([
+      { name: 'Dr. Mira Chen', role: 'Scientist', specialty: 'geology', emoji: '🧬' },
+      { name: 'Sgt. Tomoko Ishida', role: 'Medic', specialty: 'medical', emoji: '🏥' }
+    ], [
+      { name: 'Dr. Mira Chen', role: 'Scientist', specialty: 'geology', emoji: '🧬', matchesRelevant: true, unlocks: true, line: 'I found a cleaner sampling path.' }
+    ]);
+    expect(crewReport.uniqueCount).toBe(1);
+    expect(crewReport.helpfulCount).toBe(1);
+    expect(crewReport.unlockCount).toBe(1);
+    expect(crewReport.summary).toContain('1 consultation');
+    const causal = pure.buildDecisionCausalSummary([
+      { turn: 1, title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', resourceDelta: { power: -4, science: 19 }, protocolEffect: { science: 3 }, consultedCrew: { name: 'Dr. Mira Chen' }, reasoningSummary: { tag: 'evidence + tradeoff' } },
+      { turn: 2, title: 'Departure Window', chosen: 'Return', quality: 'adequate', resourceDelta: { fuel: -2, hull: 3 } }
+    ]);
+    expect(causal.mapped).toBe(2);
+    expect(causal.netResourceDelta.science).toBe(19);
+    expect(causal.rows[0].protocol).toEqual({ science: 3 });
+    expect(causal.summary).toContain('2/2');
+    const blueprint = pure.buildNextMissionBlueprint(dossier, assessment, protocol, causal, crewReport, 'I would test oxygen earlier.');
+    expect(blueprint.title).toBe('Next Expedition Blueprint');
+    expect(blueprint.carryForward).toContain('Evidence-first protocol');
+    expect(blueprint.nextTest).toContain('Test');
+    expect(blueprint.reflectionSeed).toContain('oxygen earlier');
   });
 
   it('renders dossier, evidence tracker, and debrief review surfaces', () => {
@@ -310,8 +349,10 @@ describe('Space Explorer mission dossier contract', () => {
     expect(briefing).toContain('data-spaceexplorer-objectives');
     expect(briefing).toContain('Optional Mission Objectives');
 
-    const allocate = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, { missionPhase: 'allocate', powerAllocation: { life: 0, science: 2, shields: 0, comms: 0 } }) });
+    const allocate = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, { missionPhase: 'allocate', turn: 3, powerAllocation: { life: 0, science: 2, shields: 0, comms: 0 } }) });
     expect(allocate).toContain('data-spaceexplorer-forecast');
+    expect(allocate).toContain('data-spaceexplorer-protocol-checkpoint');
+    expect(allocate).toContain('Protocol Checkpoint');
     expect(allocate).toContain('Mission Forecast');
 
     const eventHtml = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
@@ -320,6 +361,7 @@ describe('Space Explorer mission dossier contract', () => {
     }) });
     expect(eventHtml).toContain('data-spaceexplorer-reasoning');
     expect(eventHtml).toContain('Commander reasoning');
+    expect(eventHtml).toContain('Reasoning starters');
 
     const explore = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
       missionPhase: 'explore',
@@ -330,6 +372,8 @@ describe('Space Explorer mission dossier contract', () => {
     expect(explore).toContain('Latest observation');
     expect(explore).toContain('Hypothesis status');
     expect(explore).toContain('data-spaceexplorer-objectives-live');
+    expect(explore).toContain('data-spaceexplorer-crew-ledger');
+    expect(explore).toContain('Crew perspectives');
 
     const debrief = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
       missionPhase: 'debrief',
@@ -338,7 +382,9 @@ describe('Space Explorer mission dossier contract', () => {
       protocolLog: [{ turn: 1, protocol: 'Evidence-first protocol', effects: { science: 3, power: -1 }, note: 'Protocol applied.' }],
       objectiveBonusScience: 20,
       decisionLog: [{ title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', optimal: 'Map it', lesson: 'Evidence before action.', reasoning: 'Because oceanography evidence is uncertain, I will spend power to protect hull and improve data quality.', reasoningSummary: { tag: 'evidence + tradeoff', feedback: 'Strong reasoning.' } }],
-      missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
+      missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }],
+      protocolRevisionApplied: true,
+      missionProtocolOverride: { icon: '*', label: 'Evidence-first protocol', ruleText: 'Evidence-first protocol: on adequate or optimal decisions, apply science +3, power -1.', revision: { summary: 'Evidence changed the mission rule.', justification: 'The signal favored science evidence.' } },
     }) });
     expect(debrief).toContain('data-spaceexplorer-dossier-review');
     expect(debrief).toContain('MISSION DOSSIER REVIEW');
@@ -349,5 +395,15 @@ describe('Space Explorer mission dossier contract', () => {
     expect(debrief).toContain('MISSION OBJECTIVES');
     expect(debrief).toContain('data-spaceexplorer-reasoning-review');
     expect(debrief).toContain('Reasoning:');
+    expect(debrief).toContain('data-spaceexplorer-reasoning-progress');
+    expect(debrief).toContain('data-spaceexplorer-crew-review');
+    expect(debrief).toContain('data-spaceexplorer-causal-map');
+    expect(debrief).toContain('data-spaceexplorer-protocol-revision');
+    expect(debrief).toContain('PROTOCOL REVISION REVIEW');
+    expect(debrief).toContain('data-spaceexplorer-next-blueprint');
+    expect(debrief).toContain('NEXT EXPEDITION BLUEPRINT');
+    expect(debrief).toContain('CAUSAL MAP');
+    expect(debrief).toContain('CREW EXPERTISE USED');
+    expect(debrief).toContain('REASONING PRACTICE');
   });
 });

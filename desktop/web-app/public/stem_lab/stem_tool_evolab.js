@@ -1086,7 +1086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       onClick: function() { setPopSize(n); },
                       'aria-pressed': popSize === n,
                       'aria-label': 'Set population size to ' + n,
-                      className: 'py-2 rounded-lg font-bold text-sm transition-colors ' + (popSize === n ? 'bg-rose-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                      className: 'py-2 rounded-lg font-bold text-sm transition-colors ' + (popSize === n ? 'bg-rose-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
                     }, 'N = ' + n);
                   })
                 ),
@@ -1614,7 +1614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
                 'aria-pressed': autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg transition-colors ' + (autoRun ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg transition-colors ' + (autoRun ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-cyan-700 hover:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
                 onClick: function() { initPopulation(); },
@@ -1954,7 +1954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setDrought(!drought); },
                 'aria-pressed': drought,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (drought ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-500 hover:bg-cyan-600 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (drought ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, drought ? '🌵 Drought ON' : '🌧️ Trigger Drought'),
               h('button', {
                 onClick: function() { setShowGrant(!showGrant); },
@@ -2159,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('button', {
                   onClick: function() { setShowHints(!showHints); },
                   'aria-pressed': showHints,
-                  className: 'text-xs font-bold px-3 py-1 rounded-full ' + (showHints ? 'bg-violet-500 text-white' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200')
+                  className: 'text-xs font-bold px-3 py-1 rounded-full ' + (showHints ? 'bg-violet-600 text-white' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200')
                 }, showHints ? '✓ Hints ON' : '💡 Show Trait Hints')
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2' },
@@ -3256,12 +3256,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { for (var i = 0; i < 10; i++) stepOne(); },
                 disabled: autoRun,
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-fuchsia-500 hover:bg-fuchsia-600 disabled:bg-fuchsia-300 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-fuchsia-700 hover:bg-fuchsia-800 disabled:bg-fuchsia-800 text-white shadow-lg'
               }, t('stem.evolab.step_10_3', '⏭⏭ Step 10')),
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
                 'aria-pressed': autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-500 hover:bg-rose-600 text-white' : 'transition-colors bg-cyan-500 hover:bg-cyan-600 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
                 onClick: function() { setAntibiotic(!antibiotic); },
@@ -3740,7 +3740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
                 'aria-pressed': autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-500 hover:bg-rose-600 text-white' : 'transition-colors bg-cyan-500 hover:bg-cyan-600 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
                 onClick: initPopulations,
@@ -4147,7 +4147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setCostEnabled(!costEnabled); },
                 'aria-pressed': costEnabled,
-                className: 'px-4 py-2 rounded-lg font-bold ' + (costEnabled ? 'transition-colors bg-emerald-500 hover:bg-emerald-600 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
+                className: 'px-4 py-2 rounded-lg font-bold ' + (costEnabled ? 'transition-colors bg-emerald-700 hover:bg-emerald-800 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
               }, costEnabled ? '✓ Cost Enabled' : 'Cost Disabled')
             ),
             // Controls
@@ -4165,7 +4165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
                 'aria-pressed': autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-500 hover:bg-rose-600 text-white' : 'transition-colors bg-cyan-500 hover:bg-cyan-600 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
                 onClick: initPopulations,
@@ -4780,7 +4780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onClick: function() { setAutoRun(!autoRun); },
                 disabled: extinct,
                 'aria-pressed': autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-500 hover:bg-rose-600 text-white' : 'transition-colors bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-300 text-white')
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (autoRun ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 disabled:bg-cyan-800 text-white')
               }, autoRun ? '⏸ Stop Auto-Run' : '▶ Auto-Run'),
               h('button', {
                 onClick: initPopulation,
@@ -5083,7 +5083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setPredatorCost(!predatorCost); },
                 'aria-pressed': predatorCost,
-                className: 'px-4 py-2 rounded-lg font-bold ' + (predatorCost ? 'transition-colors bg-rose-500 hover:bg-rose-600 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
+                className: 'px-4 py-2 rounded-lg font-bold ' + (predatorCost ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
               }, predatorCost ? '✓ Cost Enabled' : 'Cost Disabled')
             ),
             // Phase controls
@@ -5590,7 +5590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             phase === 'intro' && h('div', { className: 'flex justify-center' },
               h('button', {
                 onClick: startHunt,
-                className: 'transition-colors px-7 py-3 rounded-xl font-bold bg-lime-600 hover:bg-lime-700 text-white shadow-lg text-lg'
+                className: 'transition-colors px-7 py-3 rounded-xl font-bold bg-lime-700 hover:bg-lime-800 text-white shadow-lg text-lg'
               }, t('stem.evolab.start_hunting', '▶ Start Hunting'))
             ),
             phase === 'hunting' && h('div', { className: 'flex justify-center gap-3' },
@@ -6430,7 +6430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   var isDone = i < step;
                   return h('div', { key: i, className: 'flex items-center flex-1 ' + (i === STEPS.length - 1 ? '' : 'after:flex-1') },
                     h('div', { className: 'flex flex-col items-center flex-1' },
-                      h('div', { className: 'w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm ' + (isCurrent ? 'bg-emerald-600 text-white shadow' : isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-600') }, isDone ? '✓' : (i + 1)),
+                      h('div', { className: 'w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm ' + (isCurrent ? 'bg-emerald-700 text-white shadow' : isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-600') }, isDone ? '✓' : (i + 1)),
                       h('div', { className: 'text-[10px] font-bold mt-1 ' + (isCurrent ? 'text-emerald-700' : 'text-slate-600') }, stepName)
                     ),
                     i < STEPS.length - 1 && h('div', { 'aria-hidden': true, className: 'h-0.5 flex-1 ' + (i < step ? 'bg-emerald-300' : 'bg-slate-200') })
@@ -6459,7 +6459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 },
                 disabled: !canAdvance(),
                 'aria-label': step === 3 ? 'Generate the final report' : 'Advance to the next step',
-                className: 'px-5 py-2.5 rounded-lg font-bold ' + (canAdvance() ? 'transition-colors bg-emerald-600 hover:bg-emerald-700 text-white shadow' : 'bg-slate-200 text-slate-700 cursor-not-allowed')
+                className: 'px-5 py-2.5 rounded-lg font-bold ' + (canAdvance() ? 'transition-colors bg-emerald-700 hover:bg-emerald-800 text-white shadow' : 'bg-slate-200 text-slate-700 cursor-not-allowed')
               }, step === 3 ? '🎓 Generate Report →' : 'Continue →')
             ),
             // Teacher Notes

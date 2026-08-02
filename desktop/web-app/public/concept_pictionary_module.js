@@ -234,7 +234,7 @@ const rasterizeSketchForVision = (strokes, canvasFactory) => {
   try {
     const makeCanvas = typeof canvasFactory === "function" ? canvasFactory : () => typeof document !== "undefined" ? document.createElement("canvas") : null;
     const canvas = makeCanvas();
-    if (typeof canvas.setAttribute === 'function') canvas.setAttribute('aria-hidden', 'true');
+    if (typeof canvas.setAttribute === "function") canvas.setAttribute("aria-hidden", "true");
     if (!canvas || typeof canvas.getContext !== "function" || typeof canvas.toDataURL !== "function") return null;
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;

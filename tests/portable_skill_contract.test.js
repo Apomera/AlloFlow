@@ -1,11 +1,19 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { createRequire } from 'node:module';
+import JSZip from 'jszip';
 
 const ROOT = process.cwd();
 const SKILL_NAME = 'alloflow-portable-remediation';
@@ -13,6 +21,25 @@ const CANONICAL = resolve(ROOT, 'agent_skills', SKILL_NAME);
 const OPENAI_PLUGIN = resolve(ROOT, 'plugins/alloflow-pdf-remediation');
 const CLAUDE_PLUGIN = resolve(ROOT, 'platform_packages/claude-alloflow');
 let checkReceipt;
+const requireCjs = createRequire(import.meta.url);
+const { packageBuffers } = requireCjs(resolve(ROOT, 'dev-tools/build_alloflow_portable_packages.cjs'));
+const PYTHON = process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+const scratchDirectories = [];
+
+async function extractZip(buffer, destination) {
+  const archive = await JSZip.loadAsync(buffer);
+  const root = resolve(destination);
+  for (const [name, entry] of Object.entries(archive.files)) {
+    if (entry.dir) continue;
+    const target = resolve(destination, ...name.split('/'));
+    const rel = relative(root, target);
+    if (rel === '..' || rel.startsWith('..' + sep) || isAbsolute(rel)) {
+      throw new Error('ZIP entry escaped the clean-install directory: ' + name);
+    }
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, await entry.async('nodebuffer'));
+  }
+}
 
 function files(directory, base = directory) {
   return readdirSync(directory)
@@ -40,6 +67,10 @@ beforeAll(() => {
     { cwd: ROOT, encoding: 'utf8' },
   );
   checkReceipt = JSON.parse(stdout);
+});
+
+afterEach(() => {
+  while (scratchDirectories.length) rmSync(scratchDirectories.pop(), { recursive: true, force: true });
 });
 
 describe('AlloFlow portable skill distribution contract', () => {
@@ -89,4 +120,34 @@ describe('AlloFlow portable skill distribution contract', () => {
       expect(item.file).toContain('v0.1.0.zip');
     }
   });
-});
+
+  it('runs from an extracted clean-install ZIP with no account or model key', async () => {
+    const build = packageBuffers(checkReceipt.version).find((item) => item.kind === 'agent-skill');
+    const cleanRoot = mkdtempSync(join(tmpdir(), 'alloflow-portable-clean-install-'));
+    scratchDirectories.push(cleanRoot);
+    await extractZip(build.buffer, cleanRoot);
+
+    const skillRoot = join(cleanRoot, SKILL_NAME);
+    const engine = join(skillRoot, 'scripts', 'alloflow_portable.py');
+    const env = { ...process.env };
+    for (const name of [
+      'GEMINI_API_KEY', 'GOOGLE_API_KEY', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY',
+      'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID',
+    ]) delete env[name];
+
+    const output = execFileSync(PYTHON, [engine, 'capabilities', '--json'], {
+      cwd: cleanRoot,
+      env,
+      encoding: 'utf8',
+    });
+    const capabilities = JSON.parse(output);
+    expect(capabilities).toMatchObject({
+      alloflowServiceUsed: false,
+      modelApiKeyRequired: false,
+      networkPolicy: 'deny',
+      semanticHtml: true,
+      staticHtmlAudit: true,
+    });
+    expect(readFileSync(join(skillRoot, 'SKILL.md'), 'utf8')).toMatch(/no paid Worker/i);
+    expect(existsSync(join(skillRoot, 'LICENSE'))).toBe(true);
+  });});

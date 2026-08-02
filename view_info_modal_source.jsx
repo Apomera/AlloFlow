@@ -101,6 +101,8 @@ const OSS_CREDITS = [
     items: [
       { name: 'math.js', use: 'math engine', license: 'Apache-2.0', url: 'https://mathjs.org' },
       { name: 'jStat', use: 'statistics library', license: 'MIT', url: 'https://github.com/jstat/jstat' },
+      { name: 'DuckDB-Wasm', use: 'local analytical SQL over Data Studio tables', license: 'MIT', url: 'https://duckdb.org/docs/stable/clients/wasm/overview' },
+      { name: 'Apache Arrow', use: 'columnar data protocol bundled with DuckDB-Wasm', license: 'Apache-2.0', url: 'https://arrow.apache.org' },
       { name: 'Acorn', use: 'JavaScript parser (code sandbox)', license: 'MIT', url: 'https://github.com/acornjs/acorn' },
       { name: 'CircuitJS1', use: 'electronic-circuit simulator (Circuit Shelf) — Paul Falstad & Iain Sharp', license: 'GPLv2', url: 'https://github.com/pfalstad/circuitjs1',
         featured: 4, owner: 'Paul Falstad & Iain Sharp',

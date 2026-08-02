@@ -68,6 +68,7 @@
         gradeLevel: req.gradeLevel || '',
         language: req.language || '',
         standards: req.standards || '',
+        standardsContext: req.standardsContext || null,
         interests: req.interests || '',
         provenance: req.provenance
       };
@@ -128,6 +129,7 @@
         blueprintId: b.blueprintId,
         audience: ch.audience ? Object.assign({}, b.audience, ch.audience) : b.audience,
         standards: typeof ch.standards === 'string' ? ch.standards : b.standards,
+        standardsContext: ch.standardsContext !== undefined ? ch.standardsContext : b.standardsContext,
         sourcePolicy: b.sourcePolicy,
         lessonDNA: ch.lessonDNA ? Object.assign({}, b.lessonDNA, ch.lessonDNA) : b.lessonDNA,
         globalSettings: ch.globalSettings ? Object.assign({}, b.globalSettings, ch.globalSettings) : b.globalSettings,
@@ -159,6 +161,7 @@
           language: b.audience.language,
           interests: b.audience.interests,
           standards: b.standards,
+          standardsContext: b.standardsContext,
           provenance: b.provenance
         });
         // The legacy shape cannot represent every Blueprint field. Preserve

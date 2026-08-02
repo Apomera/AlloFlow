@@ -22,6 +22,12 @@ offline preflight before Wrangler can deploy it.
 No remote MCP Worker or supporting Cloudflare resource has been provisioned or
 deployed from this service.
 
+The production remediation container stages a hash-verified browser asset bundle
+from `desktop/mcp/vendor/` and sets `ALLOFLOW_MCP_OFFLINE_ASSETS=1`. The main
+PDF remediation path therefore has no public CDN asset dependency; the bundle
+currently includes English OCR data, while other OCR languages remain a declared
+coverage gap.
+
 See [INSTITUTION_PILOT.md](./INSTITUTION_PILOT.md) for the architecture,
 identity flow, retention policy, provisioning sequence, security exceptions,
 and acceptance gates. The working local MCPB under `desktop/mcp/` remains
@@ -94,10 +100,12 @@ or duplicating the work.
 fields and fields that might contain document-derived content are discarded.
 The tagged PDF and private JSON report are each checked against their R2
 SHA-256 metadata, and the report's artifact digest must match the published
-PDF. Independent PDF/UA validation is intentionally reported as `not_run`:
-the validator JAR is not packaged while licensing/provenance and a separately
-bounded validation timeout architecture remain unresolved. No PDF/UA or WCAG
-conformance claim is made.
+PDF. The runner executes the pinned veraPDF 1.30.2 CLI locally with the ua1
+profile after the tagged PDF is written. Reports expose only bounded status,
+validator version, and rule/check counts; they do not include document
+content or raw validator output. If Java or the staged JAR is unavailable, the
+report uses unavailable rather than implying a pass. This is validation
+evidence for review, not a legal PDF/UA or WCAG conformance certificate.
 
 Workload admission is enforced atomically in D1. Defaults are three open
 uploads per user, 20 upload attempts per user and 100 per institution per
@@ -110,11 +118,10 @@ daily admission budget. Operators may lower or raise the bounded defaults with t
 `upload_quota_exceeded`; rejected job admission returns
 `remediation_quota_exceeded`. Both are stable 429 errors.
 
-The next high-value remote coverage is an independently licensed offline PDF/UA
-validation step with its own timeout, followed by accessible HTML, an explicit
-artifact table, and selected alternative formats. Batch and PII-heavy remote
-tools stay deferred because they materially increase data, abuse, retention,
-and review scope.
+The next high-value remote coverage is accessible HTML, an explicit artifact
+table, and selected alternative formats. Batch and PII-heavy remote tools stay
+deferred because they materially increase data, abuse, retention, and review
+scope.
 
 ## Why stateless does not mean storage-free
 

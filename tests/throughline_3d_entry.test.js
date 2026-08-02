@@ -6,7 +6,7 @@
 // reading-order outline with resolved lesson titles (jsdom has no WebGL, so the
 // renderer degrades to the outline — which is exactly the a11y contract).
 
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -39,6 +39,32 @@ function btn(host, needle) {
 }
 
 describe('Throughline — View in 3D entry point', () => {
+
+  it('routes the normal 2D semantic derivation through shared graph engine', async () => {
+    seedStorage(sampleUnit());
+    const engine = window.AlloModules.ConceptGraphEngine;
+    const bridgeSpy = vi.spyOn(engine, 'fromThroughlineUnit');
+    const outlineSpy = vi.spyOn(engine, 'deriveOutline');
+    const lanesSpy = vi.spyOn(engine, 'deriveLanes');
+    const C = setupThroughline();
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+
+    try {
+      await act(async () => {
+        root.render(React.createElement(C, baseProps({ history: sampleHistory(), units: sampleUnits(), onOpenLesson: noop })));
+      });
+      expect(bridgeSpy).toHaveBeenCalled();
+      expect(outlineSpy).toHaveBeenCalled();
+      expect(lanesSpy).toHaveBeenCalled();
+    } finally {
+      try { act(() => root.unmount()); } catch (_) {}
+      bridgeSpy.mockRestore();
+      outlineSpy.mockRestore();
+      lanesSpy.mockRestore();
+      host.remove();
+    }
+  });
   it('shows the button for a populated unit and opens a 3D overlay (outline fallback under jsdom)', async () => {
     seedStorage(sampleUnit());
     const C = setupThroughline();

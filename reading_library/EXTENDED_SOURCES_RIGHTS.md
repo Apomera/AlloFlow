@@ -42,3 +42,21 @@ Contact is recommended before requesting bulk access, using a non-public feed,
 or proposing a larger mirror. Contact is not required merely to link to public
 records or to use CC0 metadata. Any provider response should be recorded beside
 the relevant audit before import behavior changes.
+## Catalog maintenance audit
+
+Run `npm run audit:reading` before publishing a catalog change. The local audit
+checks both generated indexes, every referenced book file, source and license
+URLs, index/book drift, mirrored-text presence, and the distinction between
+link-only permissions and actual local mirror provenance. Use
+`node dev-tools/audit_reading_catalog.cjs --json` for CI or
+`--report reading_library/catalog_health.json` for a saved machine-readable
+snapshot. It never fetches provider URLs; network reachability should be tested
+separately when a source is refreshed.
+## Reading sets
+
+Teacher reading sets use the `allo-reading-set@1` contract. A set stores an
+ordered list of catalog slugs plus title, source, attribution, language, level,
+license, and audio metadata. It deliberately does not include page text,
+images, audio, or AI-generated adaptations. Saving a set to lesson resources
+or downloading its JSON therefore preserves each title's source-level rights
+review; opening a title still follows that title's own usage policy.

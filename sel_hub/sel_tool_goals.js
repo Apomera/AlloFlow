@@ -1201,10 +1201,10 @@ window.SelHub = window.SelHub || {
 
           // Tabs
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('goals', h, ctx) : null),
-          h('div', { role: 'tablist', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
+          h('div', { role: 'tablist', 'aria-label': 'Goal Setter sections', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
             [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;
-              return h('button', { 'aria-label': 'nowrap', key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
+              return h('button', { 'aria-label': tb.label, key: tb.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxClick(); upd({ tab: tb.id }); }, style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 } }, tb.label);
             })
           ),
 
@@ -1304,7 +1304,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   templates.map(function(tmpl, ti) {
                     var cat = GOAL_CATEGORIES.find(function(c) { return c.id === tmpl.cat; }) || GOAL_CATEGORIES[0];
-                    return h('button', { 'aria-label': 'left', key: ti, onClick: function() { addGoal(tmpl.text, tmpl.cat); upd({ showTemplates: false }); }, title: tmpl.hint, style: { padding: '6px 12px', borderRadius: 8, background: cat.color + '15', border: '1px solid ' + cat.color + '33', color: cat.color, fontSize: 11, cursor: 'pointer', textAlign: 'left' } },
+                    return h('button', { 'aria-label': 'Add goal template: ' + tmpl.text, key: ti, onClick: function() { addGoal(tmpl.text, tmpl.cat); upd({ showTemplates: false }); }, title: tmpl.hint, style: { padding: '6px 12px', borderRadius: 8, background: cat.color + '15', border: '1px solid ' + cat.color + '33', color: cat.color, fontSize: 11, cursor: 'pointer', textAlign: 'left' } },
                       cat.emoji + ' ' + tmpl.text
                     );
                   })
@@ -1321,6 +1321,7 @@ window.SelHub = window.SelHub || {
                 var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
                 var isEditing = editingGoal === goal.id;
                 var goalDiff = goal.difficulty || 1;
+                var stepInputId = 'goal-step-input-' + goal.id;
                 return h('div', { key: goal.id, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid ' + cat.color + '33', transition: 'all 0.15s' } },
                   // Goal header
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
@@ -1330,11 +1331,11 @@ window.SelHub = window.SelHub || {
                       h('span', { style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' }, role: 'button', tabIndex: 0, 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ editingGoal: goal.id }); } }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
                     // Difficulty indicator (flames)
                     h('span', { title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
-                    h('select', { value: goal.category, 'aria-label': 'Goal category', onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } },
+                    h('select', { value: goal.category, 'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal'), onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
-                    h('button', { onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
-                    h('button', { 'aria-label': 'Difficulty:', onClick: function() { deleteGoal(goal.id); }, style: { background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
+                    h('button', { 'aria-label': 'Share goal: ' + (goal.text || 'unnamed goal'), onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
+                    h('button', { 'aria-label': 'Delete goal: ' + (goal.text || 'unnamed goal'), onClick: function() { deleteGoal(goal.id); }, style: { minWidth: 24, minHeight: 24, background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
                   ),
                   // Difficulty selector (shown when editing)
                   isEditing ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
@@ -1342,7 +1343,7 @@ window.SelHub = window.SelHub || {
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
-                      return h('button', { 'aria-label': 'x XP)', key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
+                      return h('button', { 'aria-label': 'Set difficulty: ' + info.label, key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
                     })
                   ) : null,
                   // Progress bar with milestone markers
@@ -1380,8 +1381,8 @@ window.SelHub = window.SelHub || {
                   }),
                   // Add step input
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
-                    h('input', { type: 'text', 'aria-label': 'Add a goal step', placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11 } }),
-                    h('button', { 'aria-label': 'Add step', onClick: function() { var inp = document.querySelector('[placeholder*="step"]'); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
+                    h('input', { id: stepInputId, type: 'text', 'aria-label': 'Add a step to goal: ' + (goal.text || 'unnamed goal'), placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11 } }),
+                    h('button', { 'aria-label': 'Add step to goal: ' + (goal.text || 'unnamed goal'), onClick: function() { var inp = document.getElementById(stepInputId); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
                   )
                 );
               }),

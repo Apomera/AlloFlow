@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio खोलियो।",
   "cmd.open_video_studio_hint": "वाकथ्रू रेकर्ड गर्नुहोस्, क्याप्सन थप्नुहोस् र सम्पादन गर्नुहोस्",
   "palette.ctx.videoStudio": "यहाँ — Video Studio",
-  "palette.close": "कमाण्ड प्यालेट बन्द गर्नुहोस्"
+  "palette.close": "कमाण्ड प्यालेट बन्द गर्नुहोस्",
+  "cmd.apply_lesson_template": "सुरक्षित गरिएको टेम्प्लेटबाट सुरु गर्नुहोस्",
+  "cmd.apply_lesson_template_done": "यसबाट सुरु गरियो: ",
+  "cmd.apply_lesson_template_hint": "तपाईंले सुरक्षित गर्नुभएको टेम्प्लेटमध्ये एउटाबाट नयाँ योजना सुरु गर्छ",
+  "cmd.apply_lesson_template_missing": "यस नामको टेम्प्लेट भेटिएन: ",
+  "cmd.apply_lesson_template_which": "कुन टेम्प्लेट?",
+  "cmd.rebuild_lesson_step": "योजनाको एउटा चरण पुनर्निर्माण गर्नुहोस्",
+  "cmd.rebuild_lesson_step_done": "चरण पुनर्निर्माण हुँदैछ: ",
+  "cmd.rebuild_lesson_step_hint": "एउटा स्रोत मात्र पुनःसिर्जना गर्छ — चरण नम्बर भन्नुहोस्",
+  "cmd.rebuild_lesson_step_missing": "योजनामा त्यो चरण भेटिएन।",
+  "cmd.rebuild_lesson_step_none": "योजनामा अझै कुनै चरण छैन।",
+  "cmd.rebuild_lesson_step_which": "कुन चरण?",
+  "cmd.run_lesson_blueprint": "पाठ योजना सिर्जना गर्नुहोस्",
+  "cmd.run_lesson_blueprint_done": "योजना सिर्जना हुँदैछ — कार्डमा प्रत्येक चरण हेर्न सक्नुहुन्छ।",
+  "cmd.run_lesson_blueprint_hint": "हालको योजनाका सबै स्रोतहरू सिर्जना गर्छ",
+  "cmd.cancelled": "रद्द गर्न अनुरोध गरिएको छ। प्रदायकले यसलाई समर्थन गरेपछि हालको कार्य रोकिनेछ।"
 }

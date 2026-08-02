@@ -115,17 +115,138 @@ const _normalizeRequiredTtsBytes = (result, segmentNumber) => {
     return bytes;
 };
 
+
+const _extractMonoPcm16WavBytes = (buffer, segmentNumber) => {
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer || 0);
+    if (bytes.byteLength < 44 || String.fromCharCode(...bytes.subarray(0, 4)) !== 'RIFF' || String.fromCharCode(...bytes.subarray(8, 12)) !== 'WAVE') {
+        throw new Error(`Local TTS returned a non-WAV clip for segment ${segmentNumber}`);
+    }
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    let offset = 12;
+    let format = null;
+    while (offset + 8 <= bytes.byteLength) {
+        const id = String.fromCharCode(...bytes.subarray(offset, offset + 4));
+        const size = view.getUint32(offset + 4, true);
+        const bodyOffset = offset + 8;
+        if (bodyOffset + size > bytes.byteLength) break;
+        if (id === 'fmt ' && size >= 16) {
+            format = {
+                encoding: view.getUint16(bodyOffset, true),
+                channels: view.getUint16(bodyOffset + 2, true),
+                sampleRate: view.getUint32(bodyOffset + 4, true),
+                bits: view.getUint16(bodyOffset + 14, true),
+            };
+        } else if (id === 'data') {
+            if (!format || format.encoding !== 1 || format.channels !== 1 || format.sampleRate !== 24000 || format.bits !== 16) {
+                throw new Error(`Local TTS returned an incompatible WAV format for segment ${segmentNumber}`);
+            }
+            return bytes.slice(bodyOffset, bodyOffset + size);
+        }
+        offset = bodyOffset + size + (size % 2);
+    }
+    throw new Error(`Local TTS returned no PCM data for segment ${segmentNumber}`);
+};
+
+const DOWNLOAD_AUDIO_CHUNK_CHARS = 2500;
+const DOWNLOAD_AUDIO_MAX_REQUESTS = 250;
+const DOWNLOAD_AUDIO_MAX_PCM_BYTES = 64 * 1024 * 1024;
+const DOWNLOAD_AUDIO_COMBINE_PCM_BYTES = 32 * 1024 * 1024;
+const DOWNLOAD_AUDIO_MAX_TEXT_CHARS = 250000;
+
+const splitDownloadAudioChunks = (value, maxChars = DOWNLOAD_AUDIO_CHUNK_CHARS) => {
+    const text = String(value || '').trim();
+    const limit = Math.max(64, Number(maxChars) || DOWNLOAD_AUDIO_CHUNK_CHARS);
+    if (!text) return [];
+    const sentenceUnits = text.match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g) || [text];
+    const chunks = [];
+    let current = '';
+    const flushCurrent = () => {
+        const ready = current.trim();
+        if (ready) chunks.push(ready);
+        current = '';
+    };
+    for (const rawUnit of sentenceUnits) {
+        let unit = String(rawUnit || '').trim();
+        if (!unit) continue;
+        while (unit.length > limit) {
+            flushCurrent();
+            let cut = unit.lastIndexOf(' ', limit);
+            if (cut <= 0) cut = limit;
+            const piece = unit.slice(0, cut).trim();
+            if (piece) chunks.push(piece);
+            unit = unit.slice(cut).trim();
+        }
+        if (!unit) continue;
+        const candidate = current ? `${current} ${unit}` : unit;
+        if (candidate.length > limit) flushCurrent();
+        current = current ? `${current} ${unit}` : unit;
+    }
+    flushCurrent();
+    return chunks;
+};
+
+const _downloadAbortError = () => {
+    const error = new Error('Audio download cancelled');
+    error.name = 'AbortError';
+    return error;
+};
+
+const _waitForDownloadDelay = (delayMs, signal) => {
+    if (!signal) return new Promise(resolve => setTimeout(resolve, delayMs));
+    if (signal.aborted) return Promise.reject(_downloadAbortError());
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => { cleanup(); resolve(); }, delayMs);
+        const onAbort = () => { cleanup(); reject(_downloadAbortError()); };
+        const cleanup = () => {
+            clearTimeout(timer);
+            try { signal.removeEventListener('abort', onAbort); } catch (_) {}
+        };
+        try { signal.addEventListener('abort', onAbort, { once: true }); } catch (_) {}
+    });
+};
+
+const _pcmChunksToWavBlob = (chunks, totalBytes, sampleRate = 24000) => {
+    const header = new ArrayBuffer(44);
+    const view = new DataView(header);
+    const write = (offset, value) => { for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i)); };
+    write(0, 'RIFF');
+    view.setUint32(4, 36 + totalBytes, true);
+    write(8, 'WAVE');
+    write(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    write(36, 'data');
+    view.setUint32(40, totalBytes, true);
+    return new Blob([header, ...chunks], { type: 'audio/wav' });
+};
 const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
-  const { AVAILABLE_VOICES, fetchTTSBytes, downloadingContentId, selectedVoice, textFormat, setDownloadingContentId, persistentVoiceMapRef, addToast, t, warnLog, pcmToMp3, pcmToWav } = deps;
+  const { AVAILABLE_VOICES, fetchTTSBytes, callTTS, downloadingContentId, selectedVoice, textFormat, setDownloadingContentId, persistentVoiceMapRef, addToast, t, warnLog, pcmToMp3, pcmToWav } = deps;
   try { if (window._DEBUG_AUDIO_HELPERS) console.log("[AudioHelpers] handleDownloadAudio fired"); } catch(_) {}
     if (!rawText || downloadingContentId) return;
+    const activeController = window.__alloActiveAudioDownloadController;
+    if (activeController && !activeController.signal?.aborted) return;
+    const downloadController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const downloadSignal = downloadController?.signal || null;
+    if (downloadController) {
+        window.__alloActiveAudioDownloadController = downloadController;
+        window.__alloCancelAudioDownload = () => {
+            try { downloadController.abort(); } catch (_) {}
+        };
+    }
     setDownloadingContentId(contentId);
     addToast(t('common.audio_generating'), "info");
     try {
         const cleanText = prepareDownloadAudioText(rawText);
         if (!cleanText) throw new Error('No speakable text remains after removing citations and references');
         const pcmChunks = [];
+        if (cleanText.length > DOWNLOAD_AUDIO_MAX_TEXT_CHARS) throw new Error('Text is too long for one audio download');
         const voicePool = AVAILABLE_VOICES.filter(v => v !== selectedVoice);
+        if (voicePool.length === 0) voicePool.push(selectedVoice || 'Kore');
         if (!persistentVoiceMapRef.current) {
             persistentVoiceMapRef.current = { "Narrator": selectedVoice, _poolIndex: 0 };
         }
@@ -186,10 +307,34 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             throw new Error('No speakable audio segments were created');
         }
         let requestedSegmentCount = 0;
+        let totalPcmBytes = 0;
         const fetchRequiredPcm = async (text, voice) => {
+            if (downloadSignal?.aborted) throw _downloadAbortError();
+            if (requestedSegmentCount >= DOWNLOAD_AUDIO_MAX_REQUESTS) throw new Error('Audio download needs too many TTS segments');
             requestedSegmentCount += 1;
-            const result = await fetchTTSBytes(text, voice);
-            return _normalizeRequiredTtsBytes(result, requestedSegmentCount);
+            let result;
+            const localKokoroVoice = /^(af_|am_|bf_|bm_)/i.test(String(voice || ''));
+            if (localKokoroVoice && typeof callTTS === 'function') {
+                if (!window._kokoroTTS?.ready && typeof window.__loadKokoroTTS === 'function') {
+                    await window.__loadKokoroTTS();
+                }
+                if (!window._kokoroTTS?.ready) throw new Error('The selected local voice is not ready for download');
+                const audioUrl = await callTTS(text, voice, 1, {
+                    maxRetries: 0,
+                    signal: downloadSignal,
+                    priority: 'normal',
+                    reason: 'download-audio',
+                });
+                if (!audioUrl) throw new Error(`Local TTS returned no audio for segment ${requestedSegmentCount}`);
+                const response = await fetch(audioUrl, { signal: downloadSignal || undefined });
+                if (!response.ok) throw new Error(`Local TTS clip could not be read for segment ${requestedSegmentCount}`);
+                result = { bytes: _extractMonoPcm16WavBytes(await response.arrayBuffer(), requestedSegmentCount) };
+            } else result = await fetchTTSBytes(text, voice, 1, null, downloadSignal, 'normal');
+            if (downloadSignal?.aborted) throw _downloadAbortError();
+            const bytes = _normalizeRequiredTtsBytes(result, requestedSegmentCount);
+            totalPcmBytes += bytes.byteLength;
+            if (totalPcmBytes > DOWNLOAD_AUDIO_MAX_PCM_BYTES) throw new Error('Generated audio is too large for one download');
+            return bytes;
         };
         for (const segment of segments) {
             if (!segment.text.trim()) continue;
@@ -201,39 +346,29 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             } else {
                  targetVoice = getVoiceFor(segment.speaker);
             }
-            const CHUNK_SIZE = 2500;
-            if (segment.text.length > CHUNK_SIZE) {
-                const sentences = segment.text.match(/[^.!?]+[.!?]+["']?|[\s\S]+$/g) || [segment.text];
-                let currentChunk = "";
-                for (const s of sentences) {
-                    if ((currentChunk.length + s.length) > CHUNK_SIZE) {
-                        pcmChunks.push(await fetchRequiredPcm(currentChunk.trim(), targetVoice));
-                        currentChunk = s;
-                        await new Promise(r => setTimeout(r, 100));
-                    } else {
-                        currentChunk += s + " ";
-                    }
-                }
-                if (currentChunk.trim()) {
-                    pcmChunks.push(await fetchRequiredPcm(currentChunk.trim(), targetVoice));
-                }
-            } else {
-                pcmChunks.push(await fetchRequiredPcm(segment.text, targetVoice));
-                await new Promise(r => setTimeout(r, 100));
+            const chunks = splitDownloadAudioChunks(segment.text);
+            for (const chunk of chunks) {
+                pcmChunks.push(await fetchRequiredPcm(chunk, targetVoice));
+                await _waitForDownloadDelay(100, downloadSignal);
             }
         }
         const totalLength = pcmChunks.reduce((acc, c) => acc + c.length, 0);
         if (requestedSegmentCount === 0 || pcmChunks.length !== requestedSegmentCount || totalLength === 0) {
             throw new Error('TTS did not return complete audio');
         }
+        if (downloadSignal?.aborted) throw _downloadAbortError();
+        let blob;
+        let extension;
+        if (totalLength > DOWNLOAD_AUDIO_COMBINE_PCM_BYTES) {
+            blob = _pcmChunksToWavBlob(pcmChunks, totalLength);
+            extension = "wav";
+        } else {
         const combinedPCM = new Uint8Array(totalLength);
         let offset = 0;
         for (const c of pcmChunks) {
             combinedPCM.set(c, offset);
             offset += c.length;
         }
-        let blob;
-        let extension;
         if (window.lamejs) {
             try {
                 blob = pcmToMp3(combinedPCM);
@@ -258,6 +393,8 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             blob = new Blob([wavBuffer], { type: 'audio/wav' });
             extension = "wav";
         }
+        }
+        if (downloadSignal?.aborted) throw _downloadAbortError();
         if (!blob || !Number.isFinite(blob.size) || blob.size === 0) {
             throw new Error('Audio encoder returned an empty file');
         }
@@ -268,13 +405,21 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(audioUrl), 1000);
+        setTimeout(() => URL.revokeObjectURL(audioUrl), 60000);
         addToast(t('common.audio_success', { ext: extension.toUpperCase() }), "success");
     } catch (err) {
-        warnLog("Download Audio Error:", err);
-        addToast(t('common.audio_failed'), "error");
+        if (err?.name === 'AbortError') {
+            addToast(t('common.audio_cancelled'), "info");
+        } else {
+            warnLog("Download Audio Error:", err);
+            addToast(t('common.audio_failed'), "error");
+        }
     } finally {
         setDownloadingContentId(null);
+        if (window.__alloActiveAudioDownloadController === downloadController) {
+            window.__alloActiveAudioDownloadController = null;
+            try { delete window.__alloCancelAudioDownload; } catch (_) { window.__alloCancelAudioDownload = null; }
+        }
     }
 };
 
@@ -473,6 +618,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.AudioHelpers = {
   handleDownloadAudio,
   prepareDownloadAudioText,
+  splitDownloadAudioChunks,
   handleCardAudioSequence,
   pcmToWav,
   pcmToMp3,

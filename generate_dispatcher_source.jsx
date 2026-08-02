@@ -490,6 +490,11 @@ function _artifactCurriculumKey(artifact) {
   return artifact.curriculumId || artifact.projectId || d.curriculumId || d.projectId || d.auditGroupId || null;
 }
 
+function formatAuditArtifactTitle(artifact) {
+  if (artifact && artifact.title) return String(artifact.title).slice(0, 160);
+  const type = String(artifact && artifact.type || 'artifact').replace(/[-_]+/g, ' ').trim();
+  return type.replace(/\b\w/g, (character) => character.toUpperCase()).slice(0, 160);
+}
 function selectCurriculumArtifacts(history, config) {
   const safe = (Array.isArray(history) ? history : []).filter(function (artifact) {
     return artifact && artifact.type && !AUDIT_EXCLUDED_TYPES.has(artifact.type);
@@ -528,6 +533,14 @@ function selectCurriculumArtifacts(history, config) {
       curriculumId: curriculumKey || null,
       requestedArtifactIds: requestedIds,
       includedArtifactIds: selected.map(function (artifact) { return artifact.id || null; }).filter(Boolean),
+      includedArtifacts: selected.map(function (artifact) {
+        return {
+          id: artifact.id || null,
+          title: String(artifact.title || formatAuditArtifactTitle(artifact) || artifact.type || 'Artifact').slice(0, 160),
+          type: String(artifact.type || 'unknown').slice(0, 80),
+          timestamp: artifact.timestamp || null,
+        };
+      }).filter(function (artifact) { return artifact.id; }).slice(0, 100),
       includedTypes: Array.from(new Set(selected.map(function (artifact) { return artifact.type; }))),
       excludedArtifactCount: safe.length - selected.length,
       warnings: warnings,
@@ -1340,7 +1353,31 @@ function computeVocabularyFit(artifacts, gradeLevel, language) {
     notes: 'sourceWords = primary source text only (matches teacher intuition); auditedTextWords = across the full curriculum bundle (used for tier classification). Tier expectations scaled to bundle size (×' + Number(scale.toFixed(2)) + ').',
   };
 }
-function normalizeStandardsDimension(rawReports, configuredStandards) {
+function normalizeExplicitArtifactIds(value, allowedIds) {
+  const allowed = new Set((Array.isArray(allowedIds) ? allowedIds : []).map((id) => String(id || '').trim()).filter(Boolean));
+  if (!allowed.size || !Array.isArray(value)) return [];
+  return Array.from(new Set(value.map((id) => String(id || '').trim()).filter((id) => allowed.has(id)))).slice(0, 12);
+}
+function normalizeAttributionSource(value, fallback) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'audit-model' || normalized === 'teacher' || normalized === 'deterministic-check' || normalized === 'unknown') return normalized;
+  return fallback || 'unknown';
+}
+function normalizeFindingAttributions(rawReport, allowedIds) {
+  const records = [];
+  const add = (value) => {
+    if (!value || typeof value !== 'object') return;
+    const text = String(value.text || value.finding || value.label || '').trim();
+    const artifactIds = normalizeExplicitArtifactIds(value.artifactIds || value.findingArtifactIds, allowedIds);
+    if (!text || !artifactIds.length || records.some((record) => record.text === text)) return;
+    records.push({ text, artifactIds, attributionSource: normalizeAttributionSource(value.attributionSource, 'audit-model') });
+  };
+  (Array.isArray(rawReport && rawReport.findingAttributions) ? rawReport.findingAttributions : []).forEach(add);
+  (Array.isArray(rawReport && rawReport.gaps) ? rawReport.gaps : []).forEach(add);
+  return records.slice(0, 8);
+}
+function normalizeStandardsDimension(rawReports, configuredStandards, options) {
+  const attributionOptions = options && typeof options === 'object' ? options : {};
   const expected = (Array.isArray(configuredStandards) ? configuredStandards : []).map(function (standard) {
     if (typeof standard === 'string') return standard;
     if (!standard || typeof standard !== 'object') return String(standard || '');
@@ -1370,10 +1407,12 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
         notEvaluated: true,
         overallDetermination: 'Not evaluated',
         gaps: ['The AI response did not include a valid report for this configured standard.'],
+        findingAttributions: [],
         adminRecommendation: 'Regenerate the audit or review this standard manually.',
       };
     }
     const analysis = raw.analysis && typeof raw.analysis === 'object' ? raw.analysis : {};
+    const findingAttributions = normalizeFindingAttributions(raw, attributionOptions.artifactIds);
     const keys = ['textAlignment', 'activityAlignment', 'assessmentAlignment'];
     let invalid = false;
     const normalizedAnalysis = {};
@@ -1381,10 +1420,13 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
       const part = analysis[key] && typeof analysis[key] === 'object' ? analysis[key] : {};
       const status = normalizeAuditStatus(part.status, 'Not evaluated');
       if (AUDIT_STATUS_RANK[status] === undefined) invalid = true;
+      const artifactIds = normalizeExplicitArtifactIds(part.artifactIds || part.evidenceArtifactIds, attributionOptions.artifactIds);
       normalizedAnalysis[key] = {
         status: status,
         evidence: typeof part.evidence === 'string' ? part.evidence : '',
         notes: typeof part.notes === 'string' ? part.notes : '',
+        artifactIds: artifactIds,
+        attributionSource: artifactIds.length ? normalizeAttributionSource(part.attributionSource, 'audit-model') : null,
       };
       return status;
     });
@@ -1396,6 +1438,8 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
         status: 'Not evaluated',
         notEvaluated: true,
         overallDetermination: 'Not evaluated',
+        gaps: Array.isArray(raw.gaps) ? raw.gaps.slice(0, 8).map(function (gap) { return gap && typeof gap === 'object' ? String(gap.text || gap.finding || gap.label || '').trim() : String(gap || '').trim(); }).filter(Boolean) : [],
+        findingAttributions: findingAttributions,
         adminRecommendation: raw.adminRecommendation || 'One or more required alignment components were missing or invalid; review manually.',
       });
     }
@@ -1410,7 +1454,8 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
       analysis: normalizedAnalysis,
       status: status,
       overallDetermination: overallDetermination,
-      gaps: Array.isArray(raw.gaps) ? raw.gaps.slice(0, 8) : [],
+      gaps: Array.isArray(raw.gaps) ? raw.gaps.slice(0, 8).map(function (gap) { return gap && typeof gap === 'object' ? String(gap.text || gap.finding || gap.label || '').trim() : String(gap || '').trim(); }).filter(Boolean) : [],
+      findingAttributions: findingAttributions,
       adminRecommendation: typeof raw.adminRecommendation === 'string' ? raw.adminRecommendation : '',
     });
   });
@@ -1436,7 +1481,7 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
     // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
     // Dynamic Assessment supports (visual organizers, sentence frames) route
@@ -1458,7 +1503,24 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // exactly what it was before. Arrays stay arrays (call sites use .length
     // and .join), strings stay strings.
     const _isolatedContext = !!(configOverride && configOverride.isolatedContext);
-    const standardsPromptString = _isolatedContext ? '' : _ambientStandardsPromptString;
+    const _standardsContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.StandardsContext
+        : null;
+    const _standardsContextInput = configOverride && configOverride.standardsContext
+        ? configOverride.standardsContext
+        : (_ambientStandardsContext || standardsInput || targetStandards);
+    const _standardsContext = _isolatedContext
+        ? null
+        : (_standardsContextModule && typeof _standardsContextModule.resolve === 'function'
+            ? _standardsContextModule.resolve(_standardsContextInput)
+            : null);
+    const _activeStandardsContext = _standardsContext
+        && Array.isArray(_standardsContext.standards)
+        && _standardsContext.standards.length
+        ? _standardsContext
+        : null;
+    const ambientStandardsPromptString = _isolatedContext ? '' : _ambientStandardsPromptString;
+    const standardsPromptString = (_standardsContext && _standardsContext.promptText) || ambientStandardsPromptString;
     const selectedConcepts = _isolatedContext ? [] : _ambientSelectedConcepts;
     const studentInterests = _isolatedContext ? [] : _ambientStudentInterests;
     const usesLocalTextBackend = (() => {
@@ -3936,6 +3998,11 @@ ${_itemsBlock}`;
              }
          };
          const failedTypes = [];
+         const auditArtifactRoster = artifactsToAudit.map((item) => JSON.stringify({
+             id: item && item.id ? String(item.id) : '',
+             title: String(item && (item.title || getDefaultTitle(item.type)) || item.type || 'Artifact'),
+             type: String(item && item.type || 'unknown')
+         })).filter(Boolean).join("\n");
          const safeGetAuditText = (item) => {
              try {
                  const txt = getAuditText(item);
@@ -3976,7 +4043,12 @@ ${_itemsBlock}`;
             Your goal is to certify if the ENTIRE COLLECTION of generated resources aligns with the Target Standards.
             TARGET STANDARDS: "${standardsPromptString}"
             TARGET GRADE LEVEL: ${gradeLevel}
+            --- EXACT ARTIFACT ID ROSTER (use these IDs only) ---
+            ${auditArtifactRoster}
+            Use artifactIds only when evidence clearly comes from those exact artifacts. Never invent or guess IDs; return [] when attribution is unclear.
+            When artifactIds are present, set attributionSource to "audit-model". Do not use "teacher" or "deterministic-check" unless the input explicitly supplies that source label.
             --- LESSON ARTIFACTS SUBMITTED FOR AUDIT ---
+
             ${comprehensiveContext}
             --- AUDIT PROTOCOL ---
             Perform the Audit Protocol for EACH standard provided:
@@ -3995,22 +4067,29 @@ ${_itemsBlock}`;
                     "analysis": {
                         "textAlignment": {
                             "status": "Aligned" | "Partially Aligned" | "Not Aligned",
+                            "artifactIds": ["exact artifact ID from roster"],
+                            "attributionSource": "audit-model",
                             "evidence": "Cites specific artifacts (e.g. 'The Lesson Plan Hook covers...')",
                             "notes": "...",
                         },
                         "activityAlignment": {
                             "status": "Aligned" | "Partially Aligned" | "Not Aligned",
+                            "artifactIds": ["exact artifact ID from roster"],
+                            "attributionSource": "audit-model",
                             "evidence": "Cites specific artifacts (e.g. 'The Concept Sort requires distinguishing...', 'The Timeline builds sequence...')",
                             "notes": "Evaluation of how these activities practice the standard's skills.",
                         },
                         "assessmentAlignment": {
                             "status": "Aligned" | "Partially Aligned" | "Not Aligned",
+                            "artifactIds": ["exact artifact ID from roster"],
+                            "attributionSource": "audit-model",
                             "evidence": "Cites specific artifacts (e.g. 'Quiz Question 3 tests...')",
                             "notes": "...",
                         }
                     },
                     "overallDetermination": "Pass" | "Revise",
                     "gaps": ["List of specific missing elements or rigor gaps..."],
+                    "findingAttributions": [{ "text": "Exact gap text from gaps", "artifactIds": ["exact artifact ID from roster"], "attributionSource": "audit-model" }],
                     "adminRecommendation": "Formal paragraph recommending next steps...",
                 }
               ]
@@ -4068,7 +4147,7 @@ ${_itemsBlock}`;
          // counts toward the readiness score and renders in the same dimension
          // framework as the others. content.reports is kept as a back-compat
          // alias but the canonical shape going forward is comprehensive.standards.
-         const normalizedStandards = normalizeStandardsDimension(content.reports, targetStandards);
+         const normalizedStandards = normalizeStandardsDimension(content.reports, targetStandards, { artifactIds: artifactsToAudit.map((item) => item && item.id).filter(Boolean) });
          content.reports = normalizedStandards.reports;
          content.comprehensive.standards = normalizedStandards.dimension;
 

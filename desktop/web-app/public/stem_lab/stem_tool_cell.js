@@ -268,7 +268,169 @@ window.StemLab = window.StemLab || {
     pili: 'PILIN SUBUNITS | SURFACE ANCHOR',
     flagellum: 'FILAMENT | HOOK | ROTARY MOTOR'
   };
+  // Guided routes turn the static cross-section into a short, traceable lesson.
+  var INTERIOR_GUIDES = {
+    secretory: {
+      label: 'Protein export', types: ['animal', 'plant'],
+      steps: [
+        { key: 'nucleus', title: '1. Read the instructions', body: 'DNA in the nucleus provides the message that will be copied into an RNA template.' },
+        { key: 'roughER', title: '2. Build the protein', body: 'Ribosomes on the rough ER read the message while the growing protein enters the ER lumen.' },
+        { key: 'golgi', title: '3. Sort and modify', body: 'The Golgi receives cargo at its cis face, modifies it through the stack, and sorts it at the trans face.' },
+        { key: 'cellMembrane', title: '4. Deliver the cargo', body: 'A transport vesicle fuses with the plasma membrane to release cargo or add membrane proteins.' }
+      ]
+    },
+    geneExpression: {
+      label: 'Gene expression', types: ['animal', 'plant'],
+      steps: [
+        { key: 'nucleus', title: '1. Store the genome', body: 'The nuclear envelope protects chromatin while selected genes become accessible for transcription.' },
+        { key: 'nucleolus', title: '2. Assemble ribosomes', body: 'The nucleolus builds ribosomal RNA and combines it with proteins into ribosome subunits.' },
+        { key: 'ribosomes', title: '3. Translate the message', body: 'Ribosomes join amino acids in the order specified by messenger RNA.' },
+        { key: 'roughER', title: '4. Fold and quality-check', body: 'Secreted and membrane proteins enter the rough ER, where chaperones help them fold correctly.' }
+      ]
+    },
+    energy: {
+      label: 'Energy and redox', types: ['animal', 'plant'],
+      steps: [
+        { key: 'chloroplast', title: '1. Capture light', body: 'In plant cells, chloroplast grana capture light energy and build carbohydrate from carbon dioxide.' },
+        { key: 'peroxisome', title: '2. Control oxidation', body: 'Peroxisomes process selected lipids and reactive molecules, using catalase to remove hydrogen peroxide.' },
+        { key: 'mitochondria', title: '3. Make ATP', body: 'Mitochondrial cristae provide membrane area for electron transport and ATP production.' }
+      ]
+    },
+    plantTransport: {
+      label: 'Plant water and signaling', types: ['plant'],
+      steps: [
+        { key: 'vacuole', title: '1. Build turgor', body: 'The tonoplast regulates cell sap so the central vacuole can press outward on the cell wall.' },
+        { key: 'plasmodesmata', title: '2. Cross the wall', body: 'Plasmodesmata connect neighboring plant-cell cytoplasm through membrane-lined channels.' },
+        { key: 'cellWall', title: '3. Resist pressure', body: 'Cellulose microfibrils and the surrounding wall convert water pressure into tissue support.' }
+      ]
+    },
+    bacterialInfo: {
+      label: 'Bacterial DNA to protein', types: ['bacterium'],
+      steps: [
+        { key: 'nucleoid', title: '1. Access the chromosome', body: 'The bacterial chromosome occupies a nucleoid region without a nuclear envelope.' },
+        { key: 'plasmid', title: '2. Carry accessory genes', body: 'Small circular plasmids can copy independently and may carry useful traits between cells.' },
+        { key: 'ribosomes', title: '3. Translate immediately', body: 'Bacterial ribosomes can begin making protein while the RNA message is still being transcribed.' }
+      ]
+    },
+    bacterialSurface: {
+      label: 'Bacterial surface and motility', types: ['bacterium'],
+      steps: [
+        { key: 'capsule', title: '1. Protect the envelope', body: 'A hydrated capsule can reduce drying, improve adhesion, and make engulfment more difficult.' },
+        { key: 'pili', title: '2. Attach or connect', body: 'Pili and fimbriae help cells attach to surfaces, move across them, or transfer DNA.' },
+        { key: 'flagellum', title: '3. Rotate toward better conditions', body: 'A proton-powered motor turns the flagellar filament so the bacterium can swim and perform chemotaxis.' }
+      ]
+    }
+  };
+  var INTERIOR_SPECIALIZATIONS = {
+    animal: [
+      { id: 'general', label: 'General animal cell', note: 'A flexible cell with the shared eukaryotic toolkit.' },
+      { id: 'neuron', label: 'Neuron', note: 'Long neurites move electrical signals; mitochondria cluster near synapses to power ion pumps.' },
+      { id: 'muscle', label: 'Muscle fiber', note: 'Contractile bands, calcium-handling membranes, and many mitochondria support repeated force.' }
+    ],
+    plant: [
+      { id: 'general', label: 'General plant cell', note: 'A walled cell with a large vacuole and photosynthetic machinery.' },
+      { id: 'leaf', label: 'Leaf mesophyll', note: 'Chloroplast-rich tissue maximizes light capture and gas-exchange chemistry.' },
+      { id: 'root', label: 'Root cell', note: 'A root surface emphasizes wall contact, water uptake, and mineral transport rather than photosynthesis.' }
+    ],
+    bacterium: [
+      { id: 'general', label: 'General bacterium', note: 'A compact prokaryote with a nucleoid, ribosomes, envelope, and optional surface structures.' },
+      { id: 'biofilm', label: 'Biofilm bacterium', note: 'Extracellular matrix, capsules, pili, and neighbors create a protected cooperative community.' }
+    ]
+  };  var INTERIOR_CHECKS = [
+    { id: 'animal-general', type: 'animal', specialization: 'general', prompt: 'Which structure packages proteins for delivery to the cell surface?', options: ['Nucleolus', 'Golgi apparatus', 'Centriole'], answer: 1, key: 'golgi', explanation: 'The Golgi receives cargo from the ER, modifies it, and sorts it at the trans face.' },
+    { id: 'neuron-check', type: 'animal', specialization: 'neuron', prompt: 'Why do neuron terminals need many mitochondria?', options: ['To store chromosomes', 'To power ion pumps and vesicle release', 'To build a cellulose wall'], answer: 1, key: 'mitochondria', explanation: 'Synapses spend ATP restoring ion gradients and moving neurotransmitter vesicles.' },
+    { id: 'muscle-check', type: 'animal', specialization: 'muscle', prompt: 'What provides the ATP for repeated contraction?', options: ['Plasmodesmata', 'Capsules', 'Mitochondria'], answer: 2, key: 'mitochondria', explanation: 'Muscle fibers contain many mitochondria so respiration can keep supplying ATP.' },
+    { id: 'plant-general', type: 'plant', specialization: 'general', prompt: 'Which structure creates turgor pressure against the plant cell wall?', options: ['Nucleolus', 'Central vacuole', 'Pili'], answer: 1, key: 'vacuole', explanation: 'Water-filled vacuoles press outward on the wall and help keep plant tissues firm.' },
+    { id: 'leaf-check', type: 'plant', specialization: 'leaf', prompt: 'Where is most light energy captured in a leaf cell?', options: ['Chloroplast grana', 'Lysosome lumen', 'Bacterial plasmid'], answer: 0, key: 'chloroplast', explanation: 'Thylakoid membranes stacked into grana contain the light-capturing machinery.' },
+    { id: 'root-check', type: 'plant', specialization: 'root', prompt: 'Which feature helps a root cell exchange water and minerals with its surroundings?', options: ['A flagellar motor', 'A selective membrane and wall interface', 'A nuclear pore only'], answer: 1, key: 'cellMembrane', explanation: 'The membrane controls transport while the wall gives the root surface strength and shape.' },
+    { id: 'bacterium-general', type: 'bacterium', specialization: 'general', prompt: 'Where is the bacterial chromosome located?', options: ['Nucleus', 'Golgi stack', 'Nucleoid region'], answer: 2, key: 'nucleoid', explanation: 'Bacteria lack a nuclear envelope; their chromosome occupies a nucleoid region.' },
+    { id: 'biofilm-check', type: 'bacterium', specialization: 'biofilm', prompt: 'What helps biofilm bacteria stick together and resist drying?', options: ['Capsule and extracellular matrix', 'A chloroplast', 'A centriole pair'], answer: 0, key: 'capsule', explanation: 'Hydrated extracellular material helps cells attach, retain water, and form a protected community.' }
+  ];  var INTERIOR_GROUPS = [
+    { id: 'information', label: 'Information + expression', note: 'DNA storage, copying, and translation.', keys: ['nucleus', 'nucleolus', 'nucleoid', 'plasmid', 'ribosomes'], color: '#c4b5fd' },
+    { id: 'energy', label: 'Energy + redox', note: 'ATP production, photosynthesis, and chemical cleanup.', keys: ['mitochondria', 'chloroplast', 'peroxisome'], color: '#fde68a' },
+    { id: 'trafficking', label: 'Trafficking + shipping', note: 'Build, modify, and route proteins, lipids, and vesicles.', keys: ['roughER', 'smoothER', 'golgi', 'vesicle'], color: '#67e8f9' },
+    { id: 'boundary', label: 'Boundary + exchange', note: 'Selective barriers, walls, channels, and surface attachment.', keys: ['cellMembrane', 'cellWall', 'plasmodesmata', 'capsule', 'pili', 'flagellum'], color: '#93c5fd' },
+    { id: 'structure', label: 'Shape + movement', note: 'Internal scaffolds and force-generating architecture.', keys: ['cytoskeleton', 'centriole', 'flagellum'], color: '#f0abfc' },
+    { id: 'storage', label: 'Storage + recycling', note: 'Water balance, digestion, and controlled reuse.', keys: ['vacuole', 'lysosome'], color: '#5eead4' }
+  ];
+  // Versioned, per-cell-type progress keeps learning state durable without mixing plant, animal, and bacterial work.
+  var CELL_PROGRESS_SCHEMA_VERSION = 1;
+  var CELL_PROGRESS_TYPES = ['animal', 'plant', 'bacterium'];
+  function cellProgressKeys(value, type) {
+    var seen = [];
+    if (!Array.isArray(value)) return seen;
+    value.forEach(function (key) { if (typeof key === 'string' && interiorHas(type, key) && seen.indexOf(key) < 0) seen.push(key); });
+    return seen;
+  }
+  function createCellProgressRecord(type) {
+    return { type: type, seen: [], mastered: [], review: [], quizAttempts: 0, quizCorrect: 0, checkCorrect: 0, guideId: null, guideStep: 0, specialization: 'general', selected: null, adaptiveActive: false, quizKey: null, quizChoice: null, quizRevealed: false };
+  }
+  function sanitizeCellProgressRecord(raw, type) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var rec = createCellProgressRecord(type);
+    rec.seen = cellProgressKeys(raw.seen, type);
+    rec.mastered = cellProgressKeys(raw.mastered, type);
+    rec.review = cellProgressKeys(raw.review, type);
+    rec.mastered = rec.mastered.filter(function (key) { return rec.review.indexOf(key) < 0; });
+    rec.quizAttempts = Math.max(0, Number(raw.quizAttempts) || 0);
+    rec.quizCorrect = Math.max(0, Math.min(rec.quizAttempts, Number(raw.quizCorrect) || 0));
+    rec.checkCorrect = Math.max(0, Number(raw.checkCorrect) || 0);
+    var guideId = typeof raw.guideId === 'string' ? raw.guideId : '';
+    rec.guideId = guideId && INTERIOR_GUIDES[guideId] && INTERIOR_GUIDES[guideId].types.indexOf(type) >= 0 ? guideId : null;
+    rec.guideStep = rec.guideId ? Math.max(0, Math.min(INTERIOR_GUIDES[rec.guideId].steps.length - 1, Number(raw.guideStep) || 0)) : 0;
+    var specialization = typeof raw.specialization === 'string' ? raw.specialization : 'general';
+    var specOptions = INTERIOR_SPECIALIZATIONS[type] || [];
+    rec.specialization = specOptions.some(function (option) { return option.id === specialization; }) ? specialization : 'general';
+    rec.selected = typeof raw.selected === 'string' && interiorHas(type, raw.selected) ? raw.selected : null;
+    rec.adaptiveActive = raw.adaptiveActive === true;
+    rec.quizKey = typeof raw.quizKey === 'string' && interiorHas(type, raw.quizKey) ? raw.quizKey : null;
+    rec.quizChoice = raw.quizChoice == null ? null : Math.max(0, Number(raw.quizChoice) || 0);
+    rec.quizRevealed = raw.quizRevealed === true;
+    return rec;
+  }
+  function normalizeCellProgress(raw, legacyCell) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    legacyCell = legacyCell && typeof legacyCell === 'object' ? legacyCell : {};
+    var source = Number(raw.schemaVersion) === CELL_PROGRESS_SCHEMA_VERSION && raw.byCellType && typeof raw.byCellType === 'object' ? raw.byCellType : {};
+    var legacy = { seen: legacyCell.interiorSeen, mastered: legacyCell.interiorMastered, review: legacyCell.interiorReview, quizAttempts: legacyCell.interiorQuizAttempts, quizCorrect: legacyCell.interiorQuizCorrect, checkCorrect: legacyCell.interiorCheckCorrect, guideId: legacyCell.interiorGuide, guideStep: legacyCell.interiorGuideStep, specialization: legacyCell.interiorSpecialization, selected: legacyCell.interiorSel, adaptiveActive: legacyCell.interiorAdaptiveQuiz, quizKey: legacyCell.interiorQuizKey, quizChoice: legacyCell.interiorQuizChoice, quizRevealed: legacyCell.interiorQuizRevealed };
+    var byCellType = {};
+    CELL_PROGRESS_TYPES.forEach(function (type) { byCellType[type] = sanitizeCellProgressRecord(source[type] || (Number(raw.schemaVersion) === CELL_PROGRESS_SCHEMA_VERSION ? {} : legacy), type); });
+    var currentType = typeof raw.currentType === 'string' && CELL_PROGRESS_TYPES.indexOf(raw.currentType) >= 0 ? raw.currentType : (CELL_PROGRESS_TYPES.indexOf(legacyCell.interiorCellType) >= 0 ? legacyCell.interiorCellType : 'animal');
+    return { schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, schemaId: 'cell-studio-progress', currentType: currentType, updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : null, byCellType: byCellType };
+  }
+  function extractCellProgress(cell, type, prior) {
+    var rec = sanitizeCellProgressRecord(prior, type), source = cell && typeof cell === 'object' ? cell : {};
+    if (Array.isArray(source.interiorSeen)) rec.seen = cellProgressKeys(source.interiorSeen, type);
+    if (Array.isArray(source.interiorMastered)) rec.mastered = cellProgressKeys(source.interiorMastered, type);
+    if (Array.isArray(source.interiorReview)) rec.review = cellProgressKeys(source.interiorReview, type);
+    rec.mastered = rec.mastered.filter(function (key) { return rec.review.indexOf(key) < 0; });
+    if (source.interiorQuizAttempts != null) rec.quizAttempts = Math.max(0, Number(source.interiorQuizAttempts) || 0);
+    if (source.interiorQuizCorrect != null) rec.quizCorrect = Math.max(0, Math.min(rec.quizAttempts, Number(source.interiorQuizCorrect) || 0));
+    if (source.interiorCheckCorrect != null) rec.checkCorrect = Math.max(0, Number(source.interiorCheckCorrect) || 0);
+    if (source.interiorGuide !== undefined) rec.guideId = typeof source.interiorGuide === 'string' && INTERIOR_GUIDES[source.interiorGuide] && INTERIOR_GUIDES[source.interiorGuide].types.indexOf(type) >= 0 ? source.interiorGuide : null;
+    if (source.interiorGuideStep != null) rec.guideStep = rec.guideId ? Math.max(0, Math.min(INTERIOR_GUIDES[rec.guideId].steps.length - 1, Number(source.interiorGuideStep) || 0)) : 0;
+    if (source.interiorSpecialization !== undefined) rec.specialization = sanitizeCellProgressRecord({ specialization: source.interiorSpecialization }, type).specialization;
+    if (source.interiorSel !== undefined) rec.selected = typeof source.interiorSel === 'string' && interiorHas(type, source.interiorSel) ? source.interiorSel : null;
+    if (source.interiorAdaptiveQuiz !== undefined) rec.adaptiveActive = source.interiorAdaptiveQuiz === true;
+    if (source.interiorQuizKey !== undefined) rec.quizKey = typeof source.interiorQuizKey === 'string' && interiorHas(type, source.interiorQuizKey) ? source.interiorQuizKey : null;
+    if (source.interiorQuizChoice !== undefined) rec.quizChoice = source.interiorQuizChoice == null ? null : Math.max(0, Number(source.interiorQuizChoice) || 0);
+    if (source.interiorQuizRevealed !== undefined) rec.quizRevealed = source.interiorQuizRevealed === true;
+    return rec;
+  }
+  function applyCellProgressToCell(cell, record, type) {
+    var next = Object.assign({}, cell || {}), rec = sanitizeCellProgressRecord(record, type);
+    next.interiorCellType = type; next.interiorSeen = rec.seen.slice(); next.interiorMastered = rec.mastered.slice(); next.interiorReview = rec.review.slice();
+    next.interiorQuizAttempts = rec.quizAttempts; next.interiorQuizCorrect = rec.quizCorrect; next.interiorCheckCorrect = rec.checkCorrect;
+    next.interiorGuide = rec.guideId; next.interiorGuideStep = rec.guideStep; next.interiorSpecialization = rec.specialization; next.interiorSel = rec.selected;
+    next.interiorAdaptiveQuiz = rec.adaptiveActive; next.interiorQuizKey = rec.quizKey; next.interiorQuizChoice = rec.quizChoice; next.interiorQuizRevealed = rec.quizRevealed;
+    return next;
+  }
+  function createEmptyCellProgress() {
+    var byCellType = {}; CELL_PROGRESS_TYPES.forEach(function (type) { byCellType[type] = createCellProgressRecord(type); });
+    return { schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, schemaId: 'cell-studio-progress', currentType: 'animal', updatedAt: null, byCellType: byCellType };
+  }
   function interiorHas(type, key) { var o = CELL_ORGANELLES[key]; return !!(o && o.types.indexOf(type) >= 0); }
+
   function interiorOrganelles(type) { return Object.keys(CELL_ORGANELLES).filter(function (k) { return interiorHas(type, k); }); }
   // Deterministic layout (positions in a 0..1 box) per cell type \u2014 drives drawing + click hit-testing.
   function interiorLayout(type) {
@@ -305,17 +467,20 @@ window.StemLab = window.StemLab || {
     for (var r2 = 0; r2 < 18; r2++) L.push({ key: 'ribosomes', x: 0.2 + (r2 * 0.17 % 0.62), y: 0.18 + ((r2 * 0.29) % 0.66), r: 0.011, dot: true });
     return L;
   }
-  function interiorGeometry(W, H, type) {
+  function interiorGeometry(W, H, type, zoom) {
     var pad = Math.min(W, H) * 0.06;
+    var zoomFactor = Math.max(0.82, Math.min(1.35, Number(zoom) || 1));
+    var baseRX = type === 'bacterium' ? W * 0.34 : W / 2 - pad;
+    var baseRY = type === 'bacterium' ? H * 0.28 : H / 2 - pad;
     return {
       pad: pad,
+      zoom: zoomFactor,
       cx: W / 2,
       cy: H / 2,
-      RX: type === 'bacterium' ? W * 0.34 : W / 2 - pad,
-      RY: type === 'bacterium' ? H * 0.28 : H / 2 - pad
+      RX: baseRX * zoomFactor,
+      RY: baseRY * zoomFactor
     };
-  }
-  function traceInteriorBoundary(cx2d, geometry, type, inset) {
+  }  function traceInteriorBoundary(cx2d, geometry, type, inset) {
     inset = Number(inset) || 0; inset = Math.max(-Math.min(geometry.RX, geometry.RY) * 0.14, inset);
     var left = geometry.cx - geometry.RX + inset, right = geometry.cx + geometry.RX - inset;
     var top = geometry.cy - geometry.RY + inset, bottom = geometry.cy + geometry.RY - inset;
@@ -331,9 +496,9 @@ window.StemLab = window.StemLab || {
     } else cx2d.ellipse(geometry.cx, geometry.cy, Math.max(1, geometry.RX - inset), Math.max(1, geometry.RY - inset), 0, 0, 6.2832);
     cx2d.closePath();
   }
-  function interiorHitTest(type, nx, ny, W, H) {     // canvas-normalized click \u2192 internal layout \u2192 structure
+  function interiorHitTest(type, nx, ny, W, H, zoom) {     // canvas-normalized click \u2192 internal layout \u2192 structure
     if (Number(W) > 0 && Number(H) > 0) {
-      var geometry = interiorGeometry(Number(W), Number(H), type);
+      var geometry = interiorGeometry(Number(W), Number(H), type, zoom);
       var pixelX = nx * Number(W), pixelY = ny * Number(H);
       nx = 0.5 + (pixelX - geometry.cx) / (2 * geometry.RX);
       ny = 0.5 + (pixelY - geometry.cy) / (2 * geometry.RY);
@@ -351,8 +516,149 @@ window.StemLab = window.StemLab || {
     return 'cytoplasm';
   }
   function _ih(i) { var s = Math.sin(i * 12.9898) * 43758.5453; return s - Math.floor(s); }   // deterministic hash 0..1
-  function drawCellInterior(cx2d, W, H, type, t, sel, reduced) {
-    var geometry = interiorGeometry(W, H, type), pad = geometry.pad, cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
+  // A second-scale inset keeps the contextual cell view while making the selected
+  // structure's defining membranes, fibers, or DNA architecture visible.
+  function drawUltrastructureInset(cx2d, W, H, type, sel, reduced, t) {
+    if (!sel || !CELL_ORGANELLES[sel] || !CELL_ULTRASTRUCTURE[sel]) return;
+    var boxW = 246, boxH = 92, boxX = Math.max(14, Math.min(W - boxW - 14, W / 2 - boxW / 2)), boxY = H - boxH - 44;
+    var color = CELL_ORGANELLES[sel].color || '#67e8f9';
+    cx2d.save();
+    cx2d.fillStyle = 'rgba(2,6,23,0.94)'; cx2d.fillRect(boxX, boxY, boxW, boxH);
+    cx2d.strokeStyle = color; cx2d.lineWidth = 1.5; cx2d.beginPath(); cx2d.moveTo(boxX, boxY); cx2d.lineTo(boxX + boxW, boxY); cx2d.lineTo(boxX + boxW, boxY + boxH); cx2d.lineTo(boxX, boxY + boxH); cx2d.closePath(); cx2d.stroke();
+    cx2d.fillStyle = color; cx2d.fillRect(boxX, boxY, 5, boxH);
+    cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#94a3b8'; cx2d.fillText('ULTRASTRUCTURE INSET', boxX + 13, boxY + 14);
+    cx2d.font = '800 11px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(CELL_ORGANELLES[sel].name, boxX + 13, boxY + 29);
+    var ix = boxX + 58, iy = boxY + 62, ir = 22;
+    cx2d.save(); cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
+    if (sel === 'nucleus') {
+      cx2d.fillStyle = '#7c5cd6'; cx2d.strokeStyle = '#ede9fe'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.arc(ix, iy, ir, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+      cx2d.strokeStyle = '#c4b5fd'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.arc(ix, iy, ir * 0.78, 0, 6.2832); cx2d.stroke();
+      for (var ip = 0; ip < 8; ip++) { var ipa = ip / 8 * 6.2832; cx2d.fillStyle = '#4c1d95'; cx2d.beginPath(); cx2d.arc(ix + Math.cos(ipa) * ir, iy + Math.sin(ipa) * ir, 2, 0, 6.2832); cx2d.fill(); }
+    } else if (sel === 'mitochondria') {
+      cx2d.fillStyle = '#9f1239'; cx2d.strokeStyle = '#fda4af'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.ellipse(ix, iy, ir * 1.28, ir * 0.66, -0.15, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+      cx2d.strokeStyle = '#fecdd3'; cx2d.lineWidth = 1.5; for (var mi = -2; mi <= 2; mi++) { cx2d.beginPath(); cx2d.moveTo(ix + mi * 6, iy - ir * 0.48); cx2d.quadraticCurveTo(ix + mi * 6 + 5, iy, ix + mi * 6, iy + ir * 0.48); cx2d.stroke(); }
+    } else if (sel === 'chloroplast') {
+      cx2d.fillStyle = '#166534'; cx2d.strokeStyle = '#86efac'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.ellipse(ix, iy, ir * 1.30, ir * 0.68, 0, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+      for (var gs = -2; gs <= 2; gs++) { cx2d.fillStyle = '#4ade80'; cx2d.beginPath(); cx2d.ellipse(ix + gs * 8, iy, 4, 11, 0, 0, 6.2832); cx2d.fill(); }
+      cx2d.strokeStyle = '#86efac'; cx2d.lineWidth = 1; cx2d.beginPath(); cx2d.moveTo(ix - 18, iy + 13); cx2d.lineTo(ix + 18, iy + 13); cx2d.stroke();
+    } else if (sel === 'roughER' || sel === 'smoothER') {
+      cx2d.strokeStyle = color; cx2d.lineWidth = 2; for (var es = 0; es < 4; es++) { cx2d.beginPath(); cx2d.moveTo(ix - 28, iy + (es - 1.5) * 9); cx2d.bezierCurveTo(ix - 10, iy + (es - 1.5) * 9 - 7, ix + 10, iy + (es - 1.5) * 9 + 7, ix + 28, iy + (es - 1.5) * 9); cx2d.stroke(); }
+      if (sel === 'roughER') { cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; for (var eb = 0; eb < 10; eb++) { cx2d.beginPath(); cx2d.arc(ix - 25 + eb * 5.5, iy - 13 + (eb % 2) * 8, 2, 0, 6.2832); cx2d.fill(); } }
+    } else if (sel === 'golgi') {
+      cx2d.strokeStyle = color; cx2d.lineWidth = 2; for (var gi = 0; gi < 4; gi++) { cx2d.beginPath(); cx2d.arc(ix, iy + (gi - 1.5) * 8, 26 - gi * 2, -0.65, 0.65); cx2d.stroke(); }
+      cx2d.fillStyle = '#fde68a'; for (var gv = 0; gv < 3; gv++) { cx2d.beginPath(); cx2d.arc(ix + 31, iy - 12 + gv * 12, 2.8, 0, 6.2832); cx2d.fill(); }
+    } else if (sel === 'vacuole' || sel === 'lysosome' || sel === 'vesicle') {
+      cx2d.fillStyle = sel === 'vacuole' ? 'rgba(94,234,212,0.30)' : color; cx2d.strokeStyle = color; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.arc(ix, iy, ir, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+      cx2d.strokeStyle = 'rgba(226,252,250,0.68)'; cx2d.lineWidth = 1; cx2d.beginPath(); cx2d.arc(ix, iy, ir * 0.86, 0, 6.2832); cx2d.stroke();
+      for (var vs = 0; vs < 7; vs++) { var va = vs / 7 * 6.2832; cx2d.fillStyle = vs % 2 ? '#fef08a' : '#cffafe'; cx2d.beginPath(); cx2d.arc(ix + Math.cos(va) * ir * 0.5, iy + Math.sin(va) * ir * 0.5, 1.8, 0, 6.2832); cx2d.fill(); }
+    } else if (sel === 'plasmid' || sel === 'nucleoid') {
+      cx2d.strokeStyle = color; cx2d.lineWidth = 2; cx2d.beginPath();
+      for (var dn = 0; dn <= 36; dn++) { var da = dn / 36 * 6.2832 * (sel === 'plasmid' ? 1 : 2.5), dr = sel === 'plasmid' ? ir * 0.82 : ir * (0.45 + 0.30 * Math.sin(dn * 0.7)); var dx = ix + Math.cos(da) * dr, dy = iy + Math.sin(da) * dr * 0.62; if (dn === 0) cx2d.moveTo(dx, dy); else cx2d.lineTo(dx, dy); } cx2d.stroke();
+      cx2d.strokeStyle = '#fde68a'; cx2d.lineWidth = 1; cx2d.beginPath(); cx2d.moveTo(ix - ir * 0.75, iy - 9); cx2d.lineTo(ix + ir * 0.75, iy + 9); cx2d.stroke();
+    } else if (sel === 'cellMembrane' || sel === 'cellWall' || sel === 'capsule') {
+      for (var ly = 0; ly < 5; ly++) { cx2d.strokeStyle = ly % 2 ? '#67e8f9' : color; cx2d.lineWidth = ly === 2 ? 4 : 2; cx2d.beginPath(); cx2d.moveTo(ix - 30, iy - 18 + ly * 9); cx2d.lineTo(ix + 30, iy - 18 + ly * 9); cx2d.stroke(); }
+      if (sel === 'cellMembrane') { cx2d.fillStyle = '#fbbf24'; for (var mh = 0; mh < 7; mh++) { cx2d.beginPath(); cx2d.arc(ix - 25 + mh * 8, iy - 22, 2, 0, 6.2832); cx2d.fill(); cx2d.beginPath(); cx2d.arc(ix - 25 + mh * 8, iy + 22, 2, 0, 6.2832); cx2d.fill(); } }
+    } else if (sel === 'flagellum' || sel === 'pili' || sel === 'cytoskeleton') {
+      cx2d.strokeStyle = color; cx2d.lineWidth = sel === 'pili' ? 2 : 3; for (var fi = 0; fi < 5; fi++) { cx2d.beginPath(); cx2d.moveTo(ix - 24, iy + (fi - 2) * 6); for (var fw = 0; fw <= 12; fw++) { cx2d.lineTo(ix - 24 + fw * 5, iy + (fi - 2) * 6 + Math.sin(fw * 0.7 + fi) * (sel === 'cytoskeleton' ? 9 : 4)); } cx2d.stroke(); }
+    } else {
+      cx2d.fillStyle = color; cx2d.strokeStyle = '#f8fafc'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.arc(ix, iy, ir, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+    }
+    cx2d.restore();
+    cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1';
+    cx2d.fillText(CELL_ULTRASTRUCTURE[sel].replace(/\|/g, '\u2022'), boxX + 92, boxY + 62);
+    cx2d.restore();
+  }
+  function drawCellSpecializationOverlay(cx2d, W, H, type, specialization, t, reduced, zoom) {
+    var options = INTERIOR_SPECIALIZATIONS[type] || [], preset = options.find(function(item) { return item.id === specialization; });
+    if (!preset || preset.id === 'general') return;
+    var geometry = interiorGeometry(W, H, type, zoom), cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
+    var palette = preset.id === 'neuron' ? '#f0abfc' : preset.id === 'muscle' ? '#fb7185' : preset.id === 'leaf' ? '#bef264' : preset.id === 'root' ? '#fbbf24' : '#bfdbfe';
+    cx2d.save(); cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
+    if (preset.id === 'neuron') {
+      cx2d.strokeStyle = palette; cx2d.lineWidth = 5; cx2d.shadowColor = palette; cx2d.shadowBlur = 8; cx2d.beginPath(); cx2d.moveTo(cx - RX * 0.42, cy); cx2d.bezierCurveTo(cx - RX * 0.80, cy - RY * 0.04, cx - RX * 1.03, cy + RY * 0.16, 18, cy + RY * 0.04); cx2d.stroke(); cx2d.shadowBlur = 0;
+      cx2d.lineWidth = 2.5; [[0.22, -0.18], [0.36, 0.22], [0.52, -0.30]].forEach(function(branch) { cx2d.beginPath(); cx2d.moveTo(cx - RX * branch[0], cy); cx2d.bezierCurveTo(cx - RX * (branch[0] + 0.12), cy + RY * branch[1], cx - RX * (branch[0] + 0.25), cy + RY * branch[1] * 1.4, cx - RX * (branch[0] + 0.35), cy + RY * branch[1] * 1.55); cx2d.stroke(); });
+      cx2d.fillStyle = '#fef08a'; for (var ns = 0; ns < 5; ns++) { cx2d.beginPath(); cx2d.arc(22 + ns * 8, cy + RY * 0.04 + Math.sin(ns) * 3, 2.5, 0, 6.2832); cx2d.fill(); }
+    } else if (preset.id === 'muscle') {
+      traceInteriorBoundary(cx2d, geometry, type, 0); cx2d.clip(); cx2d.globalAlpha = 0.30; cx2d.strokeStyle = palette; cx2d.lineWidth = 2;
+      for (var ms = -6; ms <= 6; ms++) { var mx = cx + ms * RX * 0.16; cx2d.beginPath(); cx2d.moveTo(mx, cy - RY); cx2d.lineTo(mx, cy + RY); cx2d.stroke(); }
+      cx2d.globalAlpha = 0.85; cx2d.strokeStyle = '#fecdd3'; cx2d.lineWidth = 1.5; for (var mb = -4; mb <= 4; mb++) { var my = cy + mb * RY * 0.18; cx2d.beginPath(); cx2d.moveTo(cx - RX, my); cx2d.lineTo(cx + RX, my); cx2d.stroke(); }
+    } else if (preset.id === 'leaf') {
+      traceInteriorBoundary(cx2d, geometry, type, 0); cx2d.clip(); cx2d.fillStyle = '#bef264'; cx2d.shadowColor = '#bef264'; cx2d.shadowBlur = 7;
+      for (var lc = 0; lc < 24; lc++) { var la = lc / 24 * 6.2832, lr = 0.40 + (lc % 4) * 0.11; cx2d.beginPath(); cx2d.arc(cx + Math.cos(la) * RX * lr, cy + Math.sin(la) * RY * lr, 2.4, 0, 6.2832); cx2d.fill(); }
+      cx2d.shadowBlur = 0; cx2d.strokeStyle = '#fef08a'; cx2d.lineWidth = 1.4; cx2d.beginPath(); cx2d.moveTo(cx - RX * 0.70, cy - RY * 0.75); cx2d.lineTo(cx - RX * 0.45, cy - RY * 0.95); cx2d.moveTo(cx - RX * 0.45, cy - RY * 0.95); cx2d.lineTo(cx - RX * 0.52, cy - RY * 0.78); cx2d.stroke();
+    } else if (preset.id === 'root') {
+      cx2d.strokeStyle = '#fef08a'; cx2d.lineWidth = 4; traceInteriorBoundary(cx2d, geometry, type, -3); cx2d.stroke();
+      cx2d.strokeStyle = palette; cx2d.lineWidth = 3; cx2d.beginPath(); cx2d.moveTo(cx + RX, cy + RY * 0.28); cx2d.bezierCurveTo(cx + RX * 1.20, cy + RY * 0.30, cx + RX * 1.30, cy + RY * 0.10, cx + RX * 1.48, cy + RY * 0.18); cx2d.stroke();
+      cx2d.fillStyle = '#fde68a'; for (var rt = 0; rt < 5; rt++) { cx2d.beginPath(); cx2d.arc(cx + RX * (1.05 + rt * 0.07), cy + RY * (0.26 - rt * 0.02), 2.3, 0, 6.2832); cx2d.fill(); }
+    } else if (preset.id === 'biofilm') {
+      cx2d.strokeStyle = 'rgba(191,219,254,0.60)'; cx2d.lineWidth = 18; traceInteriorBoundary(cx2d, geometry, type, -10); cx2d.stroke();
+      cx2d.fillStyle = 'rgba(191,219,254,0.58)'; for (var bm = 0; bm < 18; bm++) { var ba = bm / 18 * 6.2832, br = 0.80 + (bm % 3) * 0.08; cx2d.beginPath(); cx2d.arc(cx + Math.cos(ba) * RX * br, cy + Math.sin(ba) * RY * br, 2.5, 0, 6.2832); cx2d.fill(); }
+      cx2d.globalAlpha = 0.55; cx2d.strokeStyle = '#cbd5e1'; cx2d.lineWidth = 2; [0.34, 0.58, 0.82].forEach(function(offset) { cx2d.beginPath(); cx2d.ellipse(cx + RX * 1.12, cy + (offset - 0.5) * RY * 1.2, RX * 0.10, RY * 0.16, 0, 0, 6.2832); cx2d.stroke(); });
+    }
+    cx2d.restore();
+    var tagW = 220, tagX = Math.max(252, Math.min(W - tagW - 14, W / 2 - tagW / 2));
+    cx2d.save(); cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(tagX, 44, tagW, 24); cx2d.fillStyle = palette; cx2d.fillRect(tagX, 44, 5, 24); cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText('SPECIALIZATION • ' + preset.label.toUpperCase(), tagX + 13, 59); cx2d.restore();
+  }
+  function drawInteriorStudyLabels(cx2d, W, H, type, geometry, layout, contrast) {
+    var entries = [], seen = {};
+    layout.forEach(function (entry) {
+      if (entry.dot || seen[entry.key] || !CELL_ORGANELLES[entry.key]) return;
+      seen[entry.key] = true;
+      entries.push({ key: entry.key, x: entry.x, y: entry.y });
+    });
+    ['cellWall', 'cellMembrane', 'cytoplasm'].forEach(function (key) {
+      if (!seen[key] && CELL_ORGANELLES[key] && (key === 'cytoplasm' || interiorHas(type, key))) {
+        seen[key] = true;
+        entries.push({ key: key, x: key === 'cellWall' ? 0.975 : key === 'cellMembrane' ? 0.945 : 0.5, y: key === 'cytoplasm' ? 0.82 : 0.5 });
+      }
+    });
+    var left = entries.filter(function (entry) { return entry.x < 0.5; }).sort(function (a, b) { return a.y - b.y; });
+    var right = entries.filter(function (entry) { return entry.x >= 0.5; }).sort(function (a, b) { return a.y - b.y; });
+    var compact = W < 640; var labelW = compact ? 118 : 148, labelH = compact ? 17 : 19, top = compact ? 78 : 84, bottom = H - 48;
+    function drawColumn(items, side) {
+      if (!items.length) return;
+      var labelX = side ? W - labelW - 12 : 12;
+      var gap = items.length > 1 ? Math.min(compact ? 24 : 32, Math.max(compact ? 19 : 24, (bottom - top) / (items.length - 1))) : 0;
+      items.forEach(function (entry, index) {
+        var org = CELL_ORGANELLES[entry.key], pointX = geometry.cx + (entry.x - 0.5) * 2 * geometry.RX, pointY = geometry.cy + (entry.y - 0.5) * 2 * geometry.RY;
+        var labelY = Math.max(compact ? 72 : 78, Math.min(bottom, top + index * gap));
+        var edgeX = side ? labelX : labelX + labelW;
+        cx2d.save();
+        cx2d.strokeStyle = org.color || '#67e8f9'; cx2d.lineWidth = contrast ? 2 : 1.3; cx2d.setLineDash([3, 3]);
+        cx2d.beginPath(); cx2d.moveTo(pointX, pointY); cx2d.lineTo(edgeX, labelY + labelH / 2); cx2d.stroke(); cx2d.setLineDash([]);
+        cx2d.fillStyle = org.color || '#67e8f9'; cx2d.beginPath(); cx2d.arc(pointX, pointY, contrast ? 4 : 3, 0, 6.2832); cx2d.fill();
+        cx2d.fillStyle = contrast ? 'rgba(15,23,42,0.98)' : 'rgba(2,6,23,0.92)'; cx2d.fillRect(labelX, labelY, labelW, labelH);
+        cx2d.fillStyle = org.color || '#67e8f9'; cx2d.fillRect(labelX, labelY, 4, labelH);
+        cx2d.font = '800 ' + (compact ? 7 : 8) + 'px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(org.name, labelX + (compact ? 8 : 10), labelY + (compact ? 12 : 13));
+        cx2d.restore();
+      });
+    }
+    cx2d.save();
+    cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(W / 2 - 96, 76, 192, 17);
+    cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#bae6fd'; cx2d.fillText('STUDY LABELS • ALL STRUCTURES', W / 2 - 84, 88);
+    cx2d.restore();
+    drawColumn(left, false); drawColumn(right, true);
+  }
+  function drawInteriorOpticalSection(cx2d, W, H, type, geometry, depthLevel, contrast) {
+    var depth = Math.max(0, Math.min(100, Number(depthLevel) || 0)), planeY = geometry.cy - geometry.RY + (depth / 100) * geometry.RY * 2;
+    cx2d.save();
+    traceInteriorBoundary(cx2d, geometry, type, 0); cx2d.clip();
+    cx2d.fillStyle = contrast ? 'rgba(254,240,138,0.13)' : 'rgba(56,189,248,0.10)'; cx2d.fillRect(0, planeY - 12, W, 24);
+    cx2d.restore();
+    cx2d.save(); cx2d.strokeStyle = contrast ? 'rgba(254,240,138,0.92)' : 'rgba(125,211,252,0.88)'; cx2d.lineWidth = contrast ? 2 : 1.5; cx2d.setLineDash([8, 5]);
+    cx2d.beginPath(); cx2d.moveTo(geometry.cx - geometry.RX * 1.08, planeY); cx2d.lineTo(geometry.cx + geometry.RX * 1.08, planeY); cx2d.stroke(); cx2d.setLineDash([]); cx2d.restore();
+    cx2d.save(); cx2d.fillStyle = 'rgba(2,6,23,0.88)'; cx2d.fillRect(W / 2 - 86, H - 31, 172, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = contrast ? '#fef08a' : '#bae6fd'; cx2d.fillText('OPTICAL SECTION • DEPTH ' + Math.round(depth) + '%', W / 2 - 75, H - 19); cx2d.restore();
+  }
+  function drawCellInterior(cx2d, W, H, type, t, sel, reduced, contrast, zoom, specialization, showLabels, depthMode, depthLevel, guideKeys, guideStep, guideColor) {
+    specialization = specialization || 'general';
+    contrast = !!contrast;
+    showLabels = !!showLabels;
+    depthMode = !!depthMode;
+    depthLevel = depthLevel == null || !isFinite(Number(depthLevel)) ? 50 : Math.max(0, Math.min(100, Number(depthLevel)));
+    guideKeys = Array.isArray(guideKeys) ? guideKeys.filter(function (key) { return interiorHas(type, key); }) : [];
+    guideStep = guideKeys.length ? Math.max(0, Math.min(guideKeys.length - 1, Number(guideStep) || 0)) : 0;
+    guideColor = guideColor || '#fbbf24';
+    var geometry = interiorGeometry(W, H, type, zoom), pad = geometry.pad, cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
     function P(nx, ny) { return [cx + (nx - 0.5) * 2 * RX, cy + (ny - 0.5) * 2 * RY]; }
     function S(nr) { return nr * 2 * Math.min(RX, RY); }
     var typeMeta = type === 'plant'
@@ -379,7 +685,7 @@ window.StemLab = window.StemLab || {
     var drift = reduced ? 0 : t;
     for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
     // Cytoskeleton: faint structural fibers beneath the organelles.
-    cx2d.save(); cx2d.globalAlpha = sel === 'cytoskeleton' ? 0.46 : 0.13; cx2d.lineWidth = Math.max(sel === 'cytoskeleton' ? 2.2 : 1, S(sel === 'cytoskeleton' ? 0.007 : 0.004));
+    cx2d.save(); cx2d.globalAlpha = contrast ? (sel === 'cytoskeleton' ? 0.72 : 0.30) : (sel === 'cytoskeleton' ? 0.46 : 0.13); cx2d.lineWidth = Math.max(contrast ? 1.8 : 1, S(sel === 'cytoskeleton' ? (contrast ? 0.010 : 0.007) : (contrast ? 0.006 : 0.004)));
     if (sel === 'cytoskeleton') { cx2d.shadowColor = '#22d3ee'; cx2d.shadowBlur = 10; }
     for (var cf = 0; cf < 9; cf++) {
       var cfa = cf / 9 * 6.2832 + (reduced ? 0 : t * 0.025);
@@ -393,7 +699,7 @@ window.StemLab = window.StemLab || {
     // Fluid-mosaic membrane: two phospholipid head layers with hydrophobic tails.
     var memInset = Math.max(2, S(0.008));
     var membraneSelected = sel === 'cellMembrane';
-    cx2d.lineWidth = Math.max(1, S(membraneSelected ? 0.009 : 0.004)); cx2d.strokeStyle = membraneSelected ? '#fef08a' : '#22d3ee'; cx2d.globalAlpha = membraneSelected ? 1 : 0.72;
+    cx2d.lineWidth = Math.max(contrast ? 1.5 : 1, S((membraneSelected ? 0.009 : 0.004) * (contrast ? 1.35 : 1))); cx2d.strokeStyle = membraneSelected || contrast ? '#fef08a' : '#22d3ee'; cx2d.globalAlpha = membraneSelected || contrast ? 1 : 0.72;
     if (membraneSelected) { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 14; }
     traceInteriorBoundary(cx2d, geometry, type, memInset); cx2d.stroke();
     traceInteriorBoundary(cx2d, geometry, type, memInset * 2.7); cx2d.stroke();
@@ -409,16 +715,21 @@ window.StemLab = window.StemLab || {
       cx2d.beginPath(); cx2d.arc(ix, iy, ml % 11 === 0 ? 2.7 : 1.7, 0, 6.2832); cx2d.fill();
     }
     cx2d.globalAlpha = 1; cx2d.shadowBlur = 0;
+    if (contrast) { cx2d.save(); traceInteriorBoundary(cx2d, geometry, type, -2); cx2d.strokeStyle = '#fef08a'; cx2d.lineWidth = 2; cx2d.setLineDash([6, 4]); cx2d.stroke(); cx2d.setLineDash([]); cx2d.restore(); }
     var L = interiorLayout(type);
     // dot clusters first (ribosomes) so organelles sit on top
     L.forEach(function (o) { if (!o.dot) return; var p = P(o.x, o.y); cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; cx2d.globalAlpha = 0.9; cx2d.beginPath(); cx2d.arc(p[0], p[1], Math.max(1.3, S(o.r)), 0, 6.2832); cx2d.fill(); });
     cx2d.globalAlpha = 1;
+    var opticalSlice = depthLevel / 100;
     L.forEach(function (o) {
       if (o.dot) return;
       var ph = (o.phase || 0), wob = reduced ? 0 : Math.sin(t * 0.7 + ph * 1.3) * 0.006;
       var p = P(o.x + wob, o.y - wob), R = S(o.r), org = CELL_ORGANELLES[o.key], col = org.color;
       var on = sel === o.key;
-      if (on) { cx2d.save(); cx2d.shadowColor = '#fff'; cx2d.shadowBlur = 16; }
+      var opticalDepth = _ih(o.x * 127 + o.y * 311 + ph * 17 + o.key.length * 19);
+      var opticalDistance = Math.abs(opticalDepth - opticalSlice);
+      var depthAlpha = depthMode ? (on ? 1 : 0.28 + Math.max(0, 1 - opticalDistance / 0.58) * 0.72) : 1;
+      cx2d.save(); cx2d.globalAlpha = depthAlpha; if (on) { cx2d.shadowColor = '#fff'; cx2d.shadowBlur = 16; }
       cx2d.lineWidth = Math.max(1, R * 0.12);
       if (o.key === 'nucleus') {
         var ng = cx2d.createRadialGradient(p[0], p[1], R * 0.2, p[0], p[1], R); ng.addColorStop(0, '#c4b5fd'); ng.addColorStop(1, '#7c5cd6');
@@ -428,7 +739,7 @@ window.StemLab = window.StemLab || {
         cx2d.strokeStyle = 'rgba(76,29,149,0.5)'; cx2d.lineWidth = R * 0.05;   // chromatin
         for (var ch = 0; ch < 5; ch++) { cx2d.beginPath(); for (var s2 = 0; s2 <= 8; s2++) { var aa = ch + s2 * 0.6 + t * 0.1, rr2 = R * (0.2 + 0.5 * _ih(ch * 9 + s2)); var xx = p[0] + Math.cos(aa) * rr2, yy = p[1] + Math.sin(aa) * rr2; if (s2 === 0) cx2d.moveTo(xx, yy); else cx2d.lineTo(xx, yy); } cx2d.stroke(); }
       } else if (o.key === 'nucleolus') {
-        cx2d.fillStyle = col; cx2d.globalAlpha = 0.85; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = 1;
+        cx2d.fillStyle = col; cx2d.globalAlpha = depthAlpha * 0.85; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = depthAlpha;
       } else if (o.key === 'mitochondria') {
         var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(t * 2 + ph));
         cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(ph * 1.1);
@@ -528,7 +839,7 @@ window.StemLab = window.StemLab || {
       } else if (o.key === 'lysosome' || o.key === 'vesicle') {
         var vp = (o.key === 'vesicle' && !reduced) ? (t * 0.3 + ph) % 1 : 0;
         var vx = p[0] + vp * S(0.12), vy = p[1] - vp * S(0.06);
-        cx2d.fillStyle = col; cx2d.globalAlpha = 0.85; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = 1;
+        cx2d.fillStyle = col; cx2d.globalAlpha = depthAlpha * 0.85; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = depthAlpha;
         if (o.key === 'lysosome') { cx2d.fillStyle = '#831843'; for (var ly = 0; ly < 4; ly++) { cx2d.beginPath(); cx2d.arc(vx + (_ih(ly) - 0.5) * R, vy + (_ih(ly + 2) - 0.5) * R, R * 0.18, 0, 6.2832); cx2d.fill(); } }
       } else if (o.key === 'peroxisome') {
         var pg = cx2d.createRadialGradient(p[0] - R * 0.25, p[1] - R * 0.25, 1, p[0], p[1], R);
@@ -562,7 +873,7 @@ window.StemLab = window.StemLab || {
         cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.3; cx2d.beginPath();
         for (var fl = 0; fl <= 24; fl++) { var fx = p[0] - fl / 24 * S(0.16), fy = p[1] + Math.sin(fl * 0.6 + (reduced ? 0 : t * 4)) * R * 1.2; if (fl === 0) cx2d.moveTo(fx, fy); else cx2d.lineTo(fx, fy); } cx2d.stroke();
       }
-      if (on) cx2d.restore();
+      cx2d.restore();
     });
     // Process lens: selecting a structure reveals the living pathway that connects it to its partners.
     var processLens = null;
@@ -602,7 +913,49 @@ window.StemLab = window.StemLab || {
         cx2d.restore();
       }
     }
+    // Guided pathway trace: a spatial route with numbered stops and a moving pulse.
+    if (guideKeys.length > 1) {
+      function guidePoint(key) {
+        if (key === 'cellMembrane') return P(0.92, 0.50);
+        if (key === 'cellWall') return P(0.975, 0.50);
+        if (key === 'capsule') return P(0.50, 0.045);
+        if (key === 'pili') return P(0.70, 0.055);
+        if (key === 'flagellum') return P(0.04, 0.50);
+        if (key === 'plasmodesmata') return P(0.965, 0.70);
+        var entry = L.find(function (item) { return item.key === key; });
+        return entry ? P(entry.x, entry.y) : null;
+      }
+      var guidePoints = guideKeys.map(guidePoint).filter(function (point) { return !!point; });
+      if (guidePoints.length > 1) {
+        cx2d.save(); cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
+        for (var gs = 0; gs < guidePoints.length - 1; gs++) {
+          var gsStart = guidePoints[gs], gsEnd = guidePoints[gs + 1], gsDone = gs < guideStep, gsCurrent = gs === guideStep;
+          cx2d.strokeStyle = guideColor; cx2d.globalAlpha = gsDone ? 0.92 : (gsCurrent ? 0.82 : 0.25); cx2d.lineWidth = gsCurrent ? 4 : 2.2;
+          if (!gsDone && !gsCurrent) cx2d.setLineDash([5, 6]);
+          cx2d.beginPath(); cx2d.moveTo(gsStart[0], gsStart[1]); cx2d.lineTo(gsEnd[0], gsEnd[1]); cx2d.stroke(); cx2d.setLineDash([]);
+          var guideAngle = Math.atan2(gsEnd[1] - gsStart[1], gsEnd[0] - gsStart[0]);
+          cx2d.fillStyle = guideColor; cx2d.globalAlpha = gsDone ? 0.92 : (gsCurrent ? 0.82 : 0.35);
+          cx2d.beginPath(); cx2d.moveTo(gsEnd[0], gsEnd[1]); cx2d.lineTo(gsEnd[0] - Math.cos(guideAngle - 0.5) * 10, gsEnd[1] - Math.sin(guideAngle - 0.5) * 10); cx2d.lineTo(gsEnd[0] - Math.cos(guideAngle + 0.5) * 10, gsEnd[1] - Math.sin(guideAngle + 0.5) * 10); cx2d.closePath(); cx2d.fill();
+        }
+        for (var gn = 0; gn < guidePoints.length; gn++) {
+          var node = guidePoints[gn], nodeActive = gn === guideStep;
+          cx2d.globalAlpha = gn <= guideStep ? 1 : 0.42; cx2d.fillStyle = nodeActive ? '#fff7ed' : guideColor; cx2d.strokeStyle = guideColor; cx2d.lineWidth = nodeActive ? 3 : 1.5;
+          if (nodeActive) { cx2d.shadowColor = guideColor; cx2d.shadowBlur = reduced ? 4 : 14; }
+          cx2d.beginPath(); cx2d.arc(node[0], node[1], nodeActive ? 9 : 6, 0, 6.2832); cx2d.fill(); cx2d.stroke(); cx2d.shadowBlur = 0;
+          cx2d.fillStyle = '#172033'; cx2d.font = '900 9px Inter, system-ui, sans-serif'; cx2d.textAlign = 'center'; cx2d.textBaseline = 'middle'; cx2d.fillText(String(gn + 1), node[0], node[1]);
+        }
+        if (!reduced) {
+          var pulseSegment = Math.min(guideStep, guidePoints.length - 2), pulseStart = guidePoints[pulseSegment], pulseEnd = guidePoints[pulseSegment + 1], pulsePhase = (t * 0.24) % 1;
+          var pulseX = pulseStart[0] + (pulseEnd[0] - pulseStart[0]) * pulsePhase, pulseY = pulseStart[1] + (pulseEnd[1] - pulseStart[1]) * pulsePhase;
+          cx2d.globalAlpha = 1; cx2d.fillStyle = guideColor; cx2d.shadowColor = guideColor; cx2d.shadowBlur = 12; cx2d.beginPath(); cx2d.arc(pulseX, pulseY, 4.5, 0, 6.2832); cx2d.fill(); cx2d.shadowBlur = 0;
+        }
+        cx2d.textAlign = 'left'; cx2d.textBaseline = 'alphabetic'; cx2d.globalAlpha = 0.95; cx2d.fillStyle = guideColor; cx2d.font = '900 9px Inter, system-ui, sans-serif'; cx2d.fillText('GUIDED TRACE • ' + (guideStep + 1) + '/' + guidePoints.length, 18, 26);
+        cx2d.restore();
+      }
+    }
     cx2d.restore();   // un-clip
+    if (depthMode) drawInteriorOpticalSection(cx2d, W, H, type, geometry, depthLevel, contrast);
+    if (showLabels) drawInteriorStudyLabels(cx2d, W, H, type, geometry, L, contrast);
     if (processLens) {
       cx2d.save(); var lensW = 248, lensX = W - lensW - 14;
       cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(lensX, 14, lensW, 25);
@@ -679,6 +1032,8 @@ window.StemLab = window.StemLab || {
       cx2d.restore();
     }
 
+    drawCellSpecializationOverlay(cx2d, W, H, type, specialization, t, reduced, zoom);
+    drawUltrastructureInset(cx2d, W, H, type, sel, reduced, t);
     // Diagram chrome: cell identity, scale caveat, and a leader-line callout.
     cx2d.save();
     cx2d.fillStyle = 'rgba(2,6,23,0.86)'; cx2d.fillRect(14, 14, 230, 58);
@@ -687,6 +1042,8 @@ window.StemLab = window.StemLab || {
     cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText(typeMeta.detail, 25, 60);
     cx2d.fillStyle = 'rgba(2,6,23,0.72)'; cx2d.fillRect(W - 164, H - 31, 150, 18);
     cx2d.font = '700 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText('SCHEMATIC \u2022 NOT TO SCALE', W - 153, H - 19);
+    cx2d.fillStyle = 'rgba(2,6,23,0.84)'; cx2d.fillRect(14, H - 31, 132, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#bae6fd'; cx2d.fillText('DETAIL ZOOM \u2022 ' + Math.round((Number(zoom) || 1) * 100) + '%', 22, H - 19);
+    if (contrast) { cx2d.fillStyle = 'rgba(2,6,23,0.84)'; cx2d.fillRect(W - 330, H - 31, 154, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#fef08a'; cx2d.fillText('HIGH CONTRAST \u2022 PATTERN + SHAPE', W - 321, H - 19); }
     if (sel && CELL_ORGANELLES[sel]) {
       var focusEntry = L.find(function(entry) { return !entry.dot && entry.key === sel; });
       var focusNorm = focusEntry ? [focusEntry.x, focusEntry.y]
@@ -770,11 +1127,38 @@ window.StemLab = window.StemLab || {
       cx2d.fillStyle = stainColor; cx2d.beginPath(); cx2d.arc(W - 181, 71, 4, 0, 6.2832); cx2d.fill();
       cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#e2e8f0'; cx2d.fillText('CONTRAST LABEL \u2022 ' + stainName, W - 171, 74);
     }
-    cx2d.restore();
+    // Sampling evidence: turn the selected target into a readable microscope-style specimen.
+    if (stageIndex >= 4 && sel && CELL_ORGANELLES[sel]) {
+      var evidenceW = 218, evidenceH = 96, evidenceX = 18, evidenceY = H - evidenceH - 56;
+      var evidenceColor = CELL_ORGANELLES[sel].color || '#facc15';
+      cx2d.save(); cx2d.fillStyle = 'rgba(2,6,23,0.94)'; cx2d.fillRect(evidenceX, evidenceY, evidenceW, evidenceH);
+      cx2d.strokeStyle = evidenceColor; cx2d.lineWidth = 1.5; cx2d.beginPath(); cx2d.moveTo(evidenceX, evidenceY); cx2d.lineTo(evidenceX + evidenceW, evidenceY); cx2d.lineTo(evidenceX + evidenceW, evidenceY + evidenceH); cx2d.lineTo(evidenceX, evidenceY + evidenceH); cx2d.closePath(); cx2d.stroke();
+      cx2d.fillStyle = evidenceColor; cx2d.fillRect(evidenceX, evidenceY, 5, evidenceH);
+      cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#94a3b8'; cx2d.fillText('EVIDENCE SAMPLE', evidenceX + 13, evidenceY + 14);
+      cx2d.font = '800 10px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(CELL_ORGANELLES[sel].name, evidenceX + 13, evidenceY + 29);
+      cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText(String(stain || 'none').toUpperCase() + ' STAIN • TARGET ISOLATED', evidenceX + 13, evidenceY + 42);
+      var ex = evidenceX + 57, ey = evidenceY + 69, er = 20;
+      cx2d.fillStyle = 'rgba(15,23,42,0.90)'; cx2d.beginPath(); cx2d.arc(ex, ey, er + 5, 0, 6.2832); cx2d.fill();
+      if (sel === 'nucleus' || sel === 'nucleoid' || sel === 'plasmid') {
+        cx2d.strokeStyle = evidenceColor; cx2d.lineWidth = 2; cx2d.beginPath();
+        for (var en = 0; en <= 30; en++) { var ea = en / 30 * 6.2832 * (sel === 'nucleus' ? 2 : 3), ed = er * (0.45 + 0.28 * Math.sin(en * 0.7)), enx = ex + Math.cos(ea) * ed, eny = ey + Math.sin(ea) * ed * 0.65; if (en === 0) cx2d.moveTo(enx, eny); else cx2d.lineTo(enx, eny); } cx2d.stroke();
+      } else if (sel === 'mitochondria') {
+        cx2d.fillStyle = '#9f1239'; cx2d.strokeStyle = evidenceColor; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.ellipse(ex, ey, er * 1.25, er * 0.62, 0, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+        cx2d.strokeStyle = '#fecdd3'; cx2d.lineWidth = 1.3; for (var ec = -2; ec <= 2; ec++) { cx2d.beginPath(); cx2d.moveTo(ex + ec * 5, ey - er * 0.42); cx2d.quadraticCurveTo(ex + ec * 5 + 4, ey, ex + ec * 5, ey + er * 0.42); cx2d.stroke(); }
+      } else if (sel === 'cellMembrane' || sel === 'cellWall' || sel === 'capsule') {
+        for (var el = 0; el < 5; el++) { cx2d.strokeStyle = el === 2 ? evidenceColor : '#67e8f9'; cx2d.lineWidth = el === 2 ? 4 : 1.7; cx2d.beginPath(); cx2d.moveTo(ex - 25, ey - 16 + el * 8); cx2d.lineTo(ex + 25, ey - 16 + el * 8); cx2d.stroke(); }
+      } else {
+        cx2d.fillStyle = evidenceColor; cx2d.strokeStyle = '#f8fafc'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.arc(ex, ey, er, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+        for (var ep = 0; ep < 6; ep++) { var epa = ep / 6 * 6.2832; cx2d.fillStyle = '#fef08a'; cx2d.beginPath(); cx2d.arc(ex + Math.cos(epa) * er * 0.54, ey + Math.sin(epa) * er * 0.54, 1.7, 0, 6.2832); cx2d.fill(); }
+      }
+      cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText('Sample center', evidenceX + 102, evidenceY + 64); cx2d.fillText('Depth ' + Math.round(Number(sectionDepth) || 0) + '%', evidenceX + 102, evidenceY + 78);
+      cx2d.strokeStyle = evidenceColor; cx2d.lineWidth = 1.2; cx2d.setLineDash([4, 3]); cx2d.beginPath(); cx2d.moveTo(targetX, targetY); cx2d.lineTo(evidenceX + evidenceW, evidenceY + evidenceH / 2); cx2d.stroke(); cx2d.setLineDash([]);
+      cx2d.restore();
+    }    cx2d.restore();
   }
 
   try {
-    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection };
+    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -844,6 +1228,17 @@ var d = labToolData.cell || {};
           }
 
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+          React.useEffect(function() {
+            if (labToolData._cellProgressHydrated) return;
+            if (labToolData._persisted !== true && !(typeof labToolData._persisted === 'undefined' && labToolData.cellProgress)) return;
+            setLabToolData(function(prev) {
+              var p = prev || {}, current = Object.assign({}, p.cell || {}), progress = normalizeCellProgress(p.cellProgress, current);
+              var type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : progress.currentType;
+              var restored = applyCellProgressToCell(current, progress.byCellType[type], type);
+              progress.currentType = type; progress.updatedAt = new Date().toISOString();
+              return Object.assign({}, p, { cell: restored, cellProgress: progress, _cellProgressHydrated: true });
+            });
+          }, [labToolData._persisted, labToolData._cellProgressHydrated, labToolData.cellProgress]);
 
       // ── Sound Effects (Web Audio) ──
       // ── Cell Biology Audio System (singleton context) ──
@@ -985,10 +1380,16 @@ var d = labToolData.cell || {};
       var cellStudyVocabKey = Object.keys(d._studiedVocab || {}).sort().join('|');
       function updateCellDataFunctional(mutator) {
         setLabToolData(function(prev) {
-          var p = prev || {};
-          var cel = Object.assign({}, p.cell || {});
-          var nextCell = mutator(cel) || cel;
-          return Object.assign({}, p, { cell: nextCell });
+          var p = prev || {}, previousCell = Object.assign({}, p.cell || {});
+          var previousType = CELL_PROGRESS_TYPES.indexOf(previousCell.interiorCellType) >= 0 ? previousCell.interiorCellType : 'animal';
+          var progress = normalizeCellProgress(p.cellProgress, previousCell);
+          var baseline = p._cellProgressHydrated ? previousCell : applyCellProgressToCell(previousCell, progress.byCellType[previousType], previousType);
+          var nextCell = mutator(Object.assign({}, baseline)) || baseline;
+          var nextType = CELL_PROGRESS_TYPES.indexOf(nextCell.interiorCellType) >= 0 ? nextCell.interiorCellType : previousType;
+          progress.byCellType[previousType] = extractCellProgress(nextCell, previousType, progress.byCellType[previousType]);
+          if (nextType !== previousType) nextCell = applyCellProgressToCell(nextCell, progress.byCellType[nextType], nextType);
+          progress.currentType = nextType; progress.updatedAt = new Date().toISOString();
+          return Object.assign({}, p, { cell: nextCell, cellProgress: progress, _cellProgressHydrated: true });
         });
       }
       function updateCellExtFunctional(mutator) {
@@ -21923,6 +22324,8 @@ var d = labToolData.cell || {};
               var ctype = d.interiorCellType || 'animal';
               var sel = d.interiorSel || null;
               var seen = d.interiorSeen || [];
+              var masteredKeys = Array.isArray(d.interiorMastered) ? d.interiorMastered : [];
+              var reviewKeys = Array.isArray(d.interiorReview) ? d.interiorReview : [];
               var reducedMo = false; try { reducedMo = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
               var CTYPES = [
                 { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell: a flexible membrane surrounding the nucleus, mitochondria, ER, Golgi, lysosomes, peroxisomes, and a dynamic cytoskeleton. It has no cell wall or chloroplasts.' },
@@ -21932,32 +22335,381 @@ var d = labToolData.cell || {};
               var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
               var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
               var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
+              var directoryOpen = !!d.interiorDirectoryOpen;
+              var directoryGroup = d.interiorDirectoryGroup || 'all';
+              var directoryGroups = INTERIOR_GROUPS.filter(function (group) { return group.keys.some(function (key) { return orgKeys.indexOf(key) >= 0; }); });
+              if (directoryGroup !== 'all' && !directoryGroups.some(function (group) { return group.id === directoryGroup; })) directoryGroup = 'all';
+              var directoryKeys = directoryGroup === 'all' ? orgKeys : ((directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).keys || []).filter(function (key) { return orgKeys.indexOf(key) >= 0; });
+              var directoryQuery = String(d.interiorDirectoryQuery || '').trim().toLowerCase();
+              var directoryUnexploredOnly = !!d.interiorDirectoryUnexploredOnly;
+              var directoryReviewOnly = !!d.interiorDirectoryReviewOnly;
+              var directoryVisibleKeys = directoryKeys.filter(function (key) { var item = CELL_ORGANELLES[key], hay = [item.name, item.fn, item.structure, item.connections].join(' ').toLowerCase(); return (!directoryQuery || hay.indexOf(directoryQuery) >= 0) && (!directoryUnexploredOnly || seen.indexOf(key) < 0) && (!directoryReviewOnly || reviewKeys.indexOf(key) >= 0); });
+              var directoryExploredCount = orgKeys.filter(function (key) { return seen.indexOf(key) >= 0; }).length;
+              var directoryMasteredCount = orgKeys.filter(function (key) { return masteredKeys.indexOf(key) >= 0; }).length;
+              var directoryReviewCount = orgKeys.filter(function (key) { return reviewKeys.indexOf(key) >= 0; }).length;
+              var directoryProgressPct = orgKeys.length ? Math.round(directoryMasteredCount / orgKeys.length * 100) : 0;
+              var adaptiveAccuracy = adaptiveQuizAttempts ? Math.round(adaptiveQuizCorrect / adaptiveQuizAttempts * 100) : null;
+              var progressTransfer = String(d.interiorProgressTransfer || '');
+              var progressNotice = String(d.interiorProgressNotice || '');
+              var durableProgress = normalizeCellProgress(labToolData.cellProgress, d);
+              var portfolioOverview = CELL_PROGRESS_TYPES.map(function (type) {
+                var record = durableProgress.byCellType[type] || createCellProgressRecord(type), keys = interiorOrganelles(type).filter(function (key) { return key !== 'cytoplasm'; });
+                return { type: type, label: ((CTYPES.find(function (item) { return item.id === type; }) || {}).label || type), total: keys.length, explored: keys.filter(function (key) { return record.seen.indexOf(key) >= 0; }).length, mastered: keys.filter(function (key) { return record.mastered.indexOf(key) >= 0; }).length, review: keys.filter(function (key) { return record.review.indexOf(key) >= 0; }).length };
+              });
+              var compareMode = !!d.interiorCompare;
+              var contrastMode = !!d.interiorHighContrast;
+              var showLabels = !!d.interiorShowLabels;
+              var depthMode = !!d.interiorDepthMode;
+              var depthLevel = Number(d.interiorDepthLevel); if (!isFinite(depthLevel)) depthLevel = 50; depthLevel = Math.max(0, Math.min(100, depthLevel));
+              var zoomLevel = Math.max(0.85, Math.min(1.25, Number(d.interiorZoom) || 1));
+              var specializationId = d.interiorSpecialization || 'general';
+              var specializationOptions = INTERIOR_SPECIALIZATIONS[ctype] || INTERIOR_SPECIALIZATIONS.animal;
+              if (!specializationOptions.some(function (item) { return item.id === specializationId; })) specializationId = 'general';
+                            var currentCheck = INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === specializationId; }) || INTERIOR_CHECKS.find(function (item) { return item.type === ctype && item.specialization === 'general'; });
+              var checkChoice = d.interiorCheckChoice == null ? null : Number(d.interiorCheckChoice);
+              var checkRevealed = !!d.interiorCheckRevealed;
+              var adaptiveQuizActive = !!d.interiorAdaptiveQuiz;
+              var adaptiveQuizKey = d.interiorQuizKey && interiorHas(ctype, d.interiorQuizKey) ? d.interiorQuizKey : null;
+              var adaptiveQuizChoice = d.interiorQuizChoice == null ? null : Number(d.interiorQuizChoice);
+              var adaptiveQuizRevealed = !!d.interiorQuizRevealed;
+              var adaptiveQuizAttempts = Number(d.interiorQuizAttempts) || 0;
+              var adaptiveQuizCorrect = Number(d.interiorQuizCorrect) || 0;
+              var adaptiveQuizItem = adaptiveQuizKey && CELL_ORGANELLES[adaptiveQuizKey] ? CELL_ORGANELLES[adaptiveQuizKey] : null;
+              function adaptiveOptionKeys(key) {
+                if (!key) return [];
+                var rest = orgKeys.filter(function (candidate) { return candidate !== key; });
+                var seed = String(key).split('').reduce(function (sum, ch) { return sum + ch.charCodeAt(0); }, 0);
+                var picks = [], cursor = rest.length ? seed % rest.length : 0;
+                while (picks.length < Math.min(3, rest.length)) {
+                  var candidate = rest[cursor % rest.length];
+                  if (picks.indexOf(candidate) < 0) picks.push(candidate);
+                  cursor += 7;
+                }
+                return [key].concat(picks).sort(function (a, b) { return CELL_ORGANELLES[a].name.localeCompare(CELL_ORGANELLES[b].name); });
+              }
+              var adaptiveOptions = adaptiveOptionKeys(adaptiveQuizKey);
+              var adaptiveAnswer = adaptiveOptions.indexOf(adaptiveQuizKey);
+              var guideId = d.interiorGuide || null;
+              var guide = guideId && INTERIOR_GUIDES[guideId] && INTERIOR_GUIDES[guideId].types.indexOf(ctype) >= 0 ? INTERIOR_GUIDES[guideId] : null;
+              var guideStep = guide ? Math.max(0, Math.min(guide.steps.length - 1, Number(d.interiorGuideStep) || 0)) : 0;
+              var guideItem = guide ? guide.steps[guideStep] : null;
+              var availableGuides = Object.keys(INTERIOR_GUIDES).filter(function (id) { return INTERIOR_GUIDES[id].types.indexOf(ctype) >= 0; });
+              function markSeen(cel, key) {
+                if (CELL_ORGANELLES[key]) {
+                  var nextSeen = (cel.interiorSeen || []).slice();
+                  if (nextSeen.indexOf(key) < 0) nextSeen.push(key);
+                  cel.interiorSeen = nextSeen;
+                }
+                return cel;
+              }
               function pick(key) {
                 updateCellDataFunctional(function(cel) {
-                  cel.interiorSel = key;
-                  if (CELL_ORGANELLES[key]) {
-                    var nextSeen = (cel.interiorSeen || []).slice();
-                    if (nextSeen.indexOf(key) < 0) nextSeen.push(key);
-                    cel.interiorSeen = nextSeen;
-                  }
+                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSel = key;
+                  return markSeen(cel, key);
+                });
+              }
+              function setMasteryOnCell(cel, key, status) {
+                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return cel;
+                var mastered = Array.isArray(cel.interiorMastered) ? cel.interiorMastered.slice() : [];
+                var review = Array.isArray(cel.interiorReview) ? cel.interiorReview.slice() : [];
+                var list = status === 'mastered' ? mastered : review;
+                var other = status === 'mastered' ? review : mastered;
+                if (list.indexOf(key) < 0) list.push(key);
+                var otherIndex = other.indexOf(key); if (otherIndex >= 0) other.splice(otherIndex, 1);
+                cel.interiorMastered = mastered; cel.interiorReview = review;
+                return cel;
+              }
+              function markMastery(key, status) {
+                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return;
+                updateCellDataFunctional(function(cel) { return markSeen(setMasteryOnCell(cel, key, status), key); });
+              }
+              function adaptiveCandidates(excludeKey) {
+                var ordered = reviewKeys.filter(function (key) { return orgKeys.indexOf(key) >= 0 && key !== excludeKey; });
+                ordered = ordered.concat(orgKeys.filter(function (key) { return masteredKeys.indexOf(key) < 0 && ordered.indexOf(key) < 0 && key !== excludeKey; }));
+                ordered = ordered.concat(orgKeys.filter(function (key) { return ordered.indexOf(key) < 0 && key !== excludeKey; }));
+                return ordered;
+              }
+              function startAdaptiveQuiz() {
+                var pool = adaptiveCandidates(null), key = pool[0] || orgKeys[0] || null;
+                if (!key) return;
+                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = true; cel.interiorQuizKey = key; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; cel.interiorGuide = null; cel.interiorSel = key; return markSeen(cel, key); });
+              }
+              function openReviewQueue() {
+                updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = true; cel.interiorDirectoryReviewOnly = true; cel.interiorDirectoryQuery = ''; return cel; });
+              }
+              function stopAdaptiveQuiz() {
+                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
+              }
+              function nextAdaptiveQuiz() {
+                var pool = adaptiveCandidates(adaptiveQuizKey), key = pool[0] || adaptiveQuizKey || orgKeys[0] || null;
+                if (!key) return;
+                updateCellDataFunctional(function(cel) { cel.interiorAdaptiveQuiz = true; cel.interiorQuizKey = key; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; cel.interiorSel = key; return markSeen(cel, key); });
+              }
+              function answerAdaptiveQuiz(index) {
+                if (!adaptiveQuizActive || !adaptiveQuizItem || adaptiveQuizRevealed || index < 0 || index >= adaptiveOptions.length) return;
+                var correct = index === adaptiveAnswer;
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorQuizChoice = index; cel.interiorQuizRevealed = true;
+                  cel.interiorQuizAttempts = (Number(cel.interiorQuizAttempts) || 0) + 1;
+                  cel.interiorQuizCorrect = (Number(cel.interiorQuizCorrect) || 0) + (correct ? 1 : 0);
+                  return markSeen(setMasteryOnCell(cel, adaptiveQuizKey, correct ? 'mastered' : 'review'), adaptiveQuizKey);
+                });
+              }              function startGuide(id) {
+                var chosen = INTERIOR_GUIDES[id]; if (!chosen || chosen.types.indexOf(ctype) < 0) return;
+                updateCellDataFunctional(function(cel) { cel.interiorGuide = id; cel.interiorGuideStep = 0; cel.interiorSel = chosen.steps[0].key; return markSeen(cel, chosen.steps[0].key); });
+              }
+              function moveGuide(delta) {
+                if (!guide) return;
+                var next = Math.max(0, Math.min(guide.steps.length - 1, guideStep + delta));
+                updateCellDataFunctional(function(cel) { cel.interiorGuideStep = next; cel.interiorSel = guide.steps[next].key; return markSeen(cel, guide.steps[next].key); });
+              }
+              function answerCheck(index) {
+                if (!currentCheck || checkRevealed || index < 0 || index >= currentCheck.options.length) return;
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorCheckChoice = index;
+                  cel.interiorCheckRevealed = true;
+                  cel.interiorCheckCorrect = (cel.interiorCheckCorrect || 0) + (index === currentCheck.answer ? 1 : 0);
+                  cel.interiorSel = currentCheck.key;
+                  return markSeen(cel, currentCheck.key);
+                });
+              }
+              function resetCheck() {
+                updateCellDataFunctional(function(cel) { cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; });
+              }
+              function resetInteriorView() {
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorZoom = 1; cel.interiorHighContrast = false; cel.interiorShowLabels = false; cel.interiorDepthMode = false; cel.interiorDepthLevel = 50; cel.interiorCompare = false;
+                  cel.interiorDirectoryOpen = false; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryQuery = ''; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryReviewOnly = false;
+                  cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
                   return cel;
                 });
               }
-              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
+              function exportCellProgress() {
+                var payload = { app: 'microdissection-cell-studio', schemaVersion: CELL_PROGRESS_SCHEMA_VERSION, exportedAt: new Date().toISOString(), progress: normalizeCellProgress(labToolData.cellProgress, d) };
+                var text = JSON.stringify(payload, null, 2);
+                upd('interiorProgressTransfer', text);
+                upd('interiorProgressNotice', 'Progress JSON prepared. Copy it to move this study record to another session or device.');
+                try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) {}
+              }
+              function importCellProgress() {
+                var text = String(d.interiorProgressTransfer || '').trim(), parsed;
+                if (!text) { upd('interiorProgressNotice', 'Paste a progress JSON record first.'); return; }
+                try { parsed = JSON.parse(text); } catch (e) { upd('interiorProgressNotice', 'Import failed: this is not valid JSON.'); return; }
+                var candidate = parsed && typeof parsed === 'object' ? (parsed.progress || parsed) : null;
+                if (!candidate || typeof candidate !== 'object') { upd('interiorProgressNotice', 'Import failed: expected a progress object.'); return; }
+                if (candidate.schemaVersion != null && Number(candidate.schemaVersion) > CELL_PROGRESS_SCHEMA_VERSION) { upd('interiorProgressNotice', 'Import failed: this progress record was created by a newer version.'); return; }
+                setLabToolData(function(prev) {
+                  var p = prev || {}, current = Object.assign({}, p.cell || {}), imported = normalizeCellProgress(candidate, current), type = imported.currentType;
+                  var restored = applyCellProgressToCell(current, imported.byCellType[type], type);
+                  restored.interiorProgressTransfer = ''; restored.interiorProgressNotice = 'Progress imported and restored for ' + type + ' cell.';
+                  imported.updatedAt = new Date().toISOString();
+                  return Object.assign({}, p, { cell: restored, cellProgress: imported, _cellProgressHydrated: true });
+                });
+              }
+              function resetAllCellProgress() {
+                var confirmed = typeof window.confirm !== 'function' || window.confirm('Reset all cell-studio learning progress for animal, plant, and bacterial cells?');
+                if (!confirmed) return;
+                setLabToolData(function(prev) {
+                  var p = prev || {}, current = Object.assign({}, p.cell || {}), type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : 'animal', reset = createEmptyCellProgress();
+                  reset.currentType = type; reset.updatedAt = new Date().toISOString();
+                  var restored = applyCellProgressToCell(current, reset.byCellType[type], type);
+                  restored.interiorProgressNotice = 'All cell-studio learning progress was reset.'; restored.interiorProgressTransfer = '';
+                  return Object.assign({}, p, { cell: restored, cellProgress: reset, _cellProgressHydrated: true });
+                });
+              }
+              function switchInteriorType(nextType) {
+                if (CELL_PROGRESS_TYPES.indexOf(nextType) < 0) return;
+                updateCellDataFunctional(function(cel) { cel.mode = 'interior'; cel.interiorCellType = nextType; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; });
+              }
+              function moveToMicrodissection() {
+                var carryTarget = sel && interiorHas(ctype, sel) ? sel : (orgKeys[0] || null);
+                var nuclearTargets = ['nucleus', 'nucleolus', 'nucleoid', 'plasmid'];
+                var membraneTargets = ['cellMembrane', 'cellWall', 'capsule', 'pili', 'plasmodesmata'];
+                var carryStain = nuclearTargets.indexOf(carryTarget) >= 0 ? 'nuclear' : membraneTargets.indexOf(carryTarget) >= 0 ? 'membrane' : 'fluorescence';
+                var carryDepth = depthMode ? depthLevel : 50;
+                updateCellDataFunctional(function(cel) {
+                  cel.mode = 'microdissection'; cel.microCellType = ctype; cel.microTarget = carryTarget; cel.microStage = 0; cel.microTool = 'objective'; cel.microStain = carryStain; cel.microSectionDepth = carryDepth;
+                  cel.microFromInterior = true; cel.microSourceType = ctype; cel.microSourceTarget = carryTarget; cel.microSourceDepth = carryDepth;
+                  cel.microFeedback = 'Interior setup carried into microdissection: ' + (CELL_ORGANELLES[carryTarget] ? CELL_ORGANELLES[carryTarget].name : 'cell region') + ' at depth ' + Math.round(carryDepth) + '%.';
+                  return cel;
+                });
+              }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
                 h('p', { className: 'text-[13px] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
                 // cell-type toggle
                 h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
                   CTYPES.map(function (c) {
                     var on = c.id === ctype;
-                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
+                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
                   })),
-                h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),
+                h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': 'Study progress' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[11px] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
+                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
+                  ),
+                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': 'Mastery progress' }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
+                    h('span', null, 'Mastery ' + directoryProgressPct + '%'),
+                    h('span', null, 'Explored ' + directoryExploredCount + '/' + orgKeys.length),
+                    h('span', null, adaptiveQuizAttempts ? 'Adaptive accuracy ' + adaptiveAccuracy + '%' : 'Adaptive check ready')
+                  )
+                ),
+                h('details', { className: 'mb-2 rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-cell-progress-portability': true },
+                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Portable progress record'),
+                  h('p', { className: 'mt-1 text-[11px] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
+                  h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 font-mono text-[10px] leading-snug text-slate-800', 'aria-label': 'Portable cell progress JSON' }),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
+                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
+                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[11px] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
+                  ),
+                  progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
+                  h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': 'Progress across cell types' },
+                    h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
+                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
+                      var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
+                      return h('button', { key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[11px] font-black text-slate-800' }, item.label), h('span', { className: 'text-[10px] font-black text-sky-800' }, mastery + '%')) ,
+                        h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100' }, h('div', { className: 'h-full rounded-full bg-sky-500', style: { width: mastery + '%' } })),
+                        h('div', { className: 'mt-1 text-[10px] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
+                      );
+                    }))
+                  )
+                ),
+                h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': 'Cell comparison and guided pathways' },
+                  h('button', { 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
+                  h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
+                  h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
+                  h('button', { 'data-cell-reset-view': true, onClick: resetInteriorView, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition-colors active:scale-[0.97]' }, 'Reset view'),
+                  h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
+                  h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
+                  h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
+                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-400' }, 'Guided pathways:'),
+                  availableGuides.map(function (id) {
+                    var g = INTERIOR_GUIDES[id], active = id === guideId;
+                    return h('button', { key: id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { startGuide(id); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-amber-700 text-white border-amber-800' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100') }, g.label);
+                  })
+                ),
+                h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
+                  h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
+                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': 'Cell diagram detail zoom' }),
+                  h('span', { className: 'text-[10px] text-sky-800' }, '85%–125% • centered on the cell')
+                ),
+                depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
+                  h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
+                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': 'Optical section depth' }),
+                  h('span', { className: 'text-[10px] text-amber-800' }, 'Focal slice • structures outside this plane fade')
+                ),
+                h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('span', { className: 'text-xs font-black text-lime-900' }, 'Specialization lens'),
+                    specializationOptions.map(function (option) {
+                      var active = option.id === specializationId;
+                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
+                    })
+                  ),
+                  h('p', { className: 'mt-1 text-[11px] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
+                ),
+                h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
+                  h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
+                  directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': 'Structure directory' },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[10px] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                      h('input', { type: 'search', value: directoryQuery, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[11px] text-slate-800', 'aria-label': 'Search structure directory' }),
+                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[11px] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
+                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[11px] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                      h('span', { className: 'mr-1 text-[11px] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
+                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
+                      directoryGroups.map(function (group) {
+                        var active = directoryGroup === group.id;
+                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (active ? 'text-white' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
+                      })
+                    ),
+                    h('p', { className: 'mt-2 text-[11px] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
+                    directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[11px] text-violet-900' }, 'No structures match this search and filter.'),
+                    h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' }, directoryVisibleKeys.map(function (key) {
+                      var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
+                      return h('button', { key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[10px] font-bold text-slate-400' }, 'New')),
+                        h('p', { className: 'mt-1 text-[11px] leading-snug text-slate-700' }, item.fn),
+                        h('p', { className: 'mt-1 text-[10.5px] leading-snug text-slate-500' }, 'Mechanism: ' + item.structure)
+                      );
+                    }))
+                  )
+                ),
+                currentCheck && h('div', { className: 'mb-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2', 'data-cell-prediction-check': true, role: 'region', 'aria-label': 'Prediction check' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null,
+                      h('span', { className: 'text-xs font-black uppercase tracking-wide text-orange-900' }, 'Predict before reveal'),
+                      h('p', { className: 'mt-1 text-[12px] leading-snug text-orange-950' }, currentCheck.prompt)
+                    ),
+                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[11px] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
+                  ),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Prediction answers' },
+                    currentCheck.options.map(function (option, index) {
+                      var chosen = checkChoice === index;
+                      var correct = checkRevealed && index === currentCheck.answer;
+                      var wrong = checkRevealed && chosen && !correct;
+                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
+                    })
+                  ),
+                  checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-orange-950', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Correct. ' : 'Not quite. ') + currentCheck.explanation)
+                ),
+                adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, role: 'region', 'aria-label': 'Adaptive organelle check' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[10px] font-bold text-fuchsia-800' }, 'Review-first retrieval • ' + adaptiveQuizCorrect + ' correct / ' + adaptiveQuizAttempts + ' attempts')),
+                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[11px] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
+                  ),
+                  h('p', { className: 'mt-2 text-[12px] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
+                  h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-fuchsia-950' }, adaptiveQuizItem.fn),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Adaptive check answers' }, adaptiveOptions.map(function (key, index) {
+                    var chosen = adaptiveQuizChoice === index;
+                    var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
+                    var wrong = adaptiveQuizRevealed && chosen && !correct;
+                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
+                  })),
+                  adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[12px] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
+                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-fuchsia-800' }, 'Next review item')
+                ),
+                compareMode && h('div', { className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3', 'data-cell-comparison': true },
+                  h('div', { className: 'flex items-center justify-between mb-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-indigo-800' }, 'Compare cell architectures'), h('p', { className: 'text-[11px] text-indigo-700' }, 'The same schematic scale and color language make shared and unique structures easier to spot.')),
+                    h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-black text-indigo-700' }, '3 cell types')
+                  ),
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
+                    var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
+                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': 'Open ' + c.label + ' in the main cell view' },
+                      h('canvas', { key: 'compare-canvas-' + c.id + '-' + (compareSel || 'none'), width: 300, height: 190, role: 'img', 'aria-label': c.label + ' comparison diagram', style: { width: '100%', height: 'auto', display: 'block', borderRadius: '0.6rem' }, ref: function (cv) { if (!cv) return; var ctx = cv.getContext && cv.getContext('2d'); if (ctx) drawCellInterior(ctx, cv.width, cv.height, c.id, 0, compareSel, true); } }),
+                      h('div', { className: 'px-1 pt-1 text-xs font-black text-indigo-900' }, c.label, compareSel ? ' • ' + (CELL_ORGANELLES[compareSel] ? CELL_ORGANELLES[compareSel].name : '') : '')
+                    );
+                  }))
+                ),
+                guide && h('div', { className: 'mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3', 'data-cell-guided-pathway': guideId, role: 'region', 'aria-label': guide.label + ' guided pathway' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, guide.label), h('p', { className: 'text-[11px] text-amber-800' }, 'Step ' + (guideStep + 1) + ' of ' + guide.steps.length + ' • ' + guideItem.title)),
+                    h('div', { className: 'flex gap-1.5' },
+                      h('button', { onClick: function () { moveGuide(-1); }, disabled: guideStep === 0, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-300 bg-white text-amber-900 disabled:opacity-40' }, 'Previous'),
+                      h('button', { onClick: function () { moveGuide(1); }, disabled: guideStep >= guide.steps.length - 1, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-800 bg-amber-700 text-white disabled:opacity-40' }, 'Next')
+                    )
+                  ),
+                  h('p', { className: 'mt-2 text-[12.5px] leading-relaxed text-amber-950' }, guideItem.body)
+                ),
                 // the living cell
                 h('div', { className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
                   h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
-                    'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
+                    'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
+                    tabIndex: 0, 'aria-keyshortcuts': 'ArrowRight ArrowLeft Enter Space',
+                    onKeyDown: function (e) {
+                      var navKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+                      if (navKeys.indexOf(e.key) < 0 && e.key !== 'Enter' && e.key !== ' ') return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); return; }
+                      var current = orgKeys.indexOf(sel); if (current < 0) current = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? 0 : -1;
+                      var delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+                      pick(orgKeys[(current + delta + orgKeys.length) % orgKeys.length]); e.preventDefault();
+                    },
                     style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
-                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); },
+                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height, zoomLevel)); },
                     ref: function (cv) {
                       if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
                       if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
@@ -21969,7 +22721,7 @@ var d = labToolData.cell || {};
                       function cancelInteriorFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
                       function drawInteriorFrame() {
                         if (!alive || !cv.isConnected) return;
-                        try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo); } catch (e) {}
+                        try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo, contrastMode, zoomLevel, specializationId, showLabels, depthMode, depthLevel, guide ? guide.steps.map(function (step) { return step.key; }) : [], guideStep, guide ? '#fbbf24' : null); } catch (e) {}
                       }
                       function scheduleInteriorFrame() {
                         if (!alive || reducedMo || frameId) return;
@@ -21999,7 +22751,19 @@ var d = labToolData.cell || {};
                       drawInteriorFrame();
                       scheduleInteriorFrame();
                     } })),
-                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
+                h('details', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2', 'data-cell-structure-transcript': true },
+                  h('summary', { className: 'cursor-pointer text-xs font-black text-slate-800' }, 'Text transcript of cell diagram'),
+                  h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, 'A ' + ctype + ' cell diagram with ' + orgKeys.length + ' selectable structures. ' + (depthMode ? 'Optical section depth: ' + Math.round(depthLevel) + '%. ' : 'Optical section is off. ') + (selOrg ? 'Selected structure: ' + selOrg.name + '.' : 'No structure selected.')),
+                  h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': 'Text descriptions of cell structures' }, orgKeys.map(function (key) {
+                    var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
+                    return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[11px] leading-relaxed', style: { borderColor: item.color } },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[10px] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-400') }, explored ? 'Explored' : 'Not explored')),
+                      h('p', { className: 'mt-1 text-slate-700' }, item.fn),
+                      h('p', { className: 'mt-1 text-slate-600' }, 'Mechanism: ' + item.structure),
+                      h('p', { className: 'mt-1 text-slate-500' }, 'Connections: ' + item.connections)
+                    );
+                  }))
+                ),                h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
                 // organelle legend (keyboard-accessible selection)
                 h('div', { className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': 'Organelles — tap to inspect' },
                   orgKeys.map(function (k) {
@@ -22018,6 +22782,11 @@ var d = labToolData.cell || {};
                   h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[13px] text-slate-700 leading-relaxed' },
                     h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
                     selOrg.fn),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-2', 'data-cell-mastery-controls': true },
+                    h('span', { className: 'mr-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Study status'),
+                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
+                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
+                  ),
                   h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
                       h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Structure and mechanism'),
@@ -22049,6 +22818,10 @@ var d = labToolData.cell || {};
               var microDepth = d.microSectionDepth == null ? 50 : Math.max(0, Math.min(100, Number(d.microSectionDepth) || 0));
               var microStain = d.microStain || 'none';
               var microEvidence = Array.isArray(d.microEvidence) ? d.microEvidence.slice(-6) : [];
+              var microFromInterior = !!d.microFromInterior;
+              var microSourceType = d.microSourceType || null;
+              var microSourceTarget = d.microSourceTarget || null;
+              var microSourceDepth = d.microSourceDepth == null ? microDepth : Math.max(0, Math.min(100, Number(d.microSourceDepth) || 0));
               var procedureSpecimen = d.procedureSpecimen && typeof d.procedureSpecimen === 'object' && !Array.isArray(d.procedureSpecimen) && d.procedureSpecimen.source === 'anatomy-procedure' ? d.procedureSpecimen : null;
               var linkedAnatomyProcedure = labToolData.anatomy && labToolData.anatomy.procedure && typeof labToolData.anatomy.procedure === 'object' ? labToolData.anatomy.procedure : {};
               var targetDef = microTarget && CELL_ORGANELLES[microTarget] ? CELL_ORGANELLES[microTarget] : null;
@@ -22069,7 +22842,10 @@ var d = labToolData.cell || {};
                 microPatch({ microTarget: key, microFeedback: 'Target selected: ' + CELL_ORGANELLES[key].name + '.' });
                 if (typeof announceToSR === 'function') announceToSR('Microdissection target: ' + CELL_ORGANELLES[key].name);
               }
-              function microMessage(message, kind) {
+              function returnToInterior() {
+                microPatch({ mode: 'interior', interiorCellType: microSourceType || microType, interiorSel: microTarget, interiorDepthMode: true, interiorDepthLevel: microDepth, interiorShowLabels: true, microFromInterior: true, microSourceDepth: microDepth });
+                if (typeof announceToSR === 'function') announceToSR('Returned to inside the cell at optical depth ' + Math.round(microDepth) + '%.');
+              }              function microMessage(message, kind) {
                 microPatch({ microFeedback: message });
                 if (typeof addToast === 'function') addToast(message, kind || 'info');
                 if (typeof announceToSR === 'function') announceToSR(message);
@@ -22111,11 +22887,21 @@ var d = labToolData.cell || {};
                     h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Integrated procedure specimen'), h('div', { className: 'text-sm font-black text-rose-950' }, procedureSpecimen.targetName || 'Synthetic tissue target'), h('p', { className: 'mt-1 text-xs text-rose-900' }, 'Specimen ' + procedureSpecimen.id + ' · preserved integrity ' + Math.round(Number(procedureSpecimen.sampleIntegrity) || 0) + '% · planned at CT slice ' + Math.round(Number(procedureSpecimen.planSlice) || 0))),
                     microStage >= 5 ? h('button', { type: 'button', onClick: function() { openCellScaleDestination('anatomy', 'anatomy', { _activeTab: 'procedure', procedure: Object.assign({}, linkedAnatomyProcedure, { stage: 6, microscopyStarted: true, microscopyComplete: true, evidenceId: (microEvidence[microEvidence.length - 1] || {}).id || linkedAnatomyProcedure.evidenceId, feedback: 'Evidence chain complete. Review the performance breakdown.' }) }, 'Procedure debrief'); }, className: 'rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white hover:bg-rose-900' }, 'Return to procedure debrief \u2192') : h('span', { className: 'rounded-full border border-rose-200 bg-white px-2 py-1 text-[10px] font-bold text-rose-800' }, 'Complete all 5 stages')
                   )
-                ) : null,                h('div', { className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-sky-950' }, h('strong', null, 'Scientific model: '), 'At cell scale, researchers use microtomes, optical sectioning, micropipettes, probes, and laser-capture systems—not a hand-held scalpel. The drawing is schematic; the scale bar and procedure order carry the measurement meaning.'),
+                ) : null,
+                microFromInterior && h('div', { className: 'mt-3 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3', 'data-cell-optical-handoff': true, role: 'status', 'aria-live': 'polite' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                    h('div', null,
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-800' }, 'Carried from Inside the Cell'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-950' }, (microSourceTarget && CELL_ORGANELLES[microSourceTarget] ? CELL_ORGANELLES[microSourceTarget].name : 'Cell region') + ' at optical depth ' + Math.round(microSourceDepth) + '%. The target, specimen type, and section depth are synchronized with the interior study.' )
+                    ),
+                    h('button', { type: 'button', onClick: returnToInterior, className: 'rounded-md border border-cyan-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100' }, 'Return inside the cell')
+                  )
+                ),
+                h('div', { className: 'mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs leading-relaxed text-sky-950' }, h('strong', null, 'Scientific model: '), 'At cell scale, researchers use microtomes, optical sectioning, micropipettes, probes, and laser-capture systems—not a hand-held scalpel. The drawing is schematic; the scale bar and procedure order carry the measurement meaning.'),
                 h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'aria-label': 'Microdissection protocol progress' }, MICRO_STEPS.map(function(label, index) { var done = microStage > index, active = microStage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-xs font-bold', style: { borderColor: done || active ? '#8b5cf6' : '#cbd5e1', background: done ? '#ede9fe' : active ? '#f5f3ff' : '#fff', color: done || active ? '#5b21b6' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
                 h('div', { className: 'mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]' },
                   h('div', null,
-                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell specimen type' }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
+                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell specimen type' }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFromInterior: false, microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
                     h('div', { className: 'overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-xl' },
                       h('canvas', { key: 'cell-micro-canvas', 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); }, ref: microCanvasRefCb })
                     ),
@@ -22127,7 +22913,7 @@ var d = labToolData.cell || {};
                     h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Microscopy label' }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
                     h('button', { type: 'button', onClick: runMicroStep, disabled: microStage >= 5, className: 'w-full rounded-xl bg-violet-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-emerald-700', 'data-micro-action': microStage }, actionLabels[microStage]),
                     h('div', { role: 'status', 'aria-live': 'polite', className: 'min-h-[48px] rounded-lg border border-slate-200 bg-white p-2 text-xs leading-relaxed text-slate-700' }, d.microFeedback || 'Start by selecting the objective and calibrating the field of view.'),
-                    h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
+                    h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFromInterior: false, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
                   )
                 ),
                 h('div', { className: 'mt-4 grid gap-3 lg:grid-cols-2' },

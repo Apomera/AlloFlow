@@ -283,6 +283,86 @@ describe('Weather Systems science kernel', () => {
   });
 
 
+  it('redacts shared locations while preserving safe session round trips and handoffs', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const capture = {
+      feature: { label: 'Cloud layer' }, location: { label: 'Boston, MA' }, source: 'Teaching model', validAt: 'T+6 hours',
+      focus: 'clouds', cameraPreset: 'close', values: { temperature: 18, humidity: 82, cloudCover: 76, precipitation: 3, pressure: 1008, windSpeed: 22, windDir: 245 },
+      note: 'Clouds thicken as the moist air rises.', limitation: 'A teaching model is not satellite imagery.'
+    };
+    const redacted = kernel.immersiveSessionSharePayload({ liveLocationQuery: 'Boston, MA', immersiveEvidenceCaptures: [capture] }, { includeLocation: false });
+    expect(redacted.weatherSystems.liveLocationQuery).toBeUndefined();
+    expect(redacted.weatherSystems.immersiveEvidenceCaptures[0].location.label).toBe('Location redacted for sharing.');
+    const included = kernel.immersiveSessionSharePayload({ liveLocationQuery: 'Boston, MA', immersiveEvidenceCaptures: [capture] }, { includeLocation: true });
+    expect(included.weatherSystems.liveLocationQuery).toBe('Boston, MA');
+    expect(included.weatherSystems.immersiveEvidenceCaptures[0].location.label).toBe('Boston, MA');
+    const validated = kernel.validateImmersiveSessionPayload({ schema: 'weather-immersive-session-v1', scenario: 'summerStorm', currentState: { simHour: 36, temperature: 12 }, weatherSystems: { liveLocationCity: 'Boston', liveWeatherTimeline: Array.from({ length: 60 }, (_, index) => ({ hour: index })), liveWeatherTimelineIndex: 4 } });
+    expect(validated.liveLocationCity).toBe('Boston');
+    expect(validated.scenario).toBe('summerStorm');
+    expect(validated.simHour).toBe(24);
+    expect(validated.temp).toBe(12);
+    expect(validated.liveWeatherTimeline).toHaveLength(48);
+    expect(validated.liveWeatherTimelineIndex).toBe(4);
+    expect(kernel.validateImmersiveSessionPayload({ schema: 'unknown', weatherSystems: {} })).toBeNull();
+    const handoff = kernel.immersiveEvidenceHandoffText(capture);
+    expect(handoff).toContain('Feature: Cloud layer');
+    expect(handoff).toContain('Location: Boston, MA');
+    expect(handoff).toContain('Temperature: 18');
+    expect(handoff).toContain('A teaching model is not satellite imagery.');
+  });
+
+  it('flags incomplete evidence captures before a teacher hands them off', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const ready = kernel.immersiveEvidenceCaptureReview({ feature: { label: 'Cloud layer' }, source: 'Teaching model', validAt: 'T+6 hours', values: { humidity: 80 }, note: 'I notice thicker clouds.' });
+    expect(ready.ready).toBe(true);
+    expect(ready.score).toBe(100);
+    expect(ready.label).toBe('Ready to hand off');
+    const needsReview = kernel.immersiveEvidenceCaptureReview({ feature: { label: 'Cloud layer' }, source: 'Teaching model', validAt: 'T+6 hours', values: {} });
+    expect(needsReview.ready).toBe(false);
+    expect(needsReview.missing).toEqual(expect.arrayContaining(['values', 'learner note']));
+    const summary = kernel.immersiveEvidenceReviewSummary([{ feature: { label: 'Cloud layer' }, source: 'Teaching model', validAt: 'T+6 hours', values: { humidity: 80 }, note: 'I notice thicker clouds.' }, { feature: { label: 'Cloud layer' }, source: 'Teaching model', validAt: 'T+6 hours', values: {} }, { feature: { label: 'Terrain' }, source: 'Teaching model', validAt: 'T+6 hours', location: { label: 'Location redacted for sharing.' }, values: { humidity: 60 } }]);
+    expect(summary.count).toBe(3);
+    expect(summary.readyCount).toBe(1);
+    expect(summary.noteCount).toBe(2);
+    expect(summary.redactedCount).toBe(1);
+  });
+
+  it('turns two captures into bounded Claim Evidence Reasoning prompts', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const baseline = { id: 'baseline', feature: { id: 'cloudLayer', label: 'Cloud layer' }, validAt: 'T+0 hours', values: { temperature: 18, humidity: 80, cloudCover: 60, pressure: 1008, windSpeed: 20 } };
+    const comparison = { id: 'comparison', feature: { id: 'cloudLayer', label: 'Cloud layer' }, validAt: 'T+6 hours', values: { temperature: 21, humidity: 70, cloudCover: 84, pressure: 1003, windSpeed: 28 } };
+    const result = kernel.immersiveCaptureComparison(baseline, comparison);
+    expect(result.changedMetrics.map((metric) => metric.id)).toEqual(expect.arrayContaining(['temperature', 'humidity', 'cloudCover', 'pressure', 'windSpeed']));
+    expect(result.summary).toContain('Temperature +3');
+    expect(result.claimPrompt).toContain('T+0 hours');
+    expect(result.evidencePrompt).toContain('Cloud cover');
+    expect(result.reasoningPrompt).toContain('remains uncertain');
+    expect(kernel.immersiveCaptureComparison(baseline, baseline)).toBeNull();
+    expect(kernel.immersiveCaptureClaimHandoffText(result)).toContain('Measured changes');
+    expect(kernel.immersiveCaptureClaimHandoffText(result)).toContain('Reasoning prompt');
+  });
+
+  it('sanitizes and round-trips local immersive lesson presets', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const preset = kernel.immersiveLessonPresetPayload({
+      immersiveSceneMode: 'conceptual', immersiveDataSource: 'model', immersiveFocus: 'front', immersiveCameraPreset: 'front',
+      liveLocationCity: 'Boston', immersiveEvidenceCaptures: [{ id: 'capture-1', note: 'Do not copy captures into presets.' }]
+    }, '  Front   warm-up  ', { id: 'preset-1', savedAt: '2026-08-01T12:00:00Z' });
+    expect(preset.name).toBe('Front warm-up');
+    expect(preset.weatherSystems.immersiveEvidenceCaptures).toBeUndefined();
+    expect(preset.weatherSystems.liveLocationCity).toBe('Boston');
+    const imported = kernel.validateImmersiveLessonPreset(preset);
+    expect(imported.id).toBe('preset-1');
+    expect(kernel.immersiveLessonPresetDescription(imported)).toContain('Front dynamics');
+    expect(kernel.immersiveLessonPresetList([preset, preset, { schema: 'bad' }])).toHaveLength(1);
+    const session = kernel.immersiveSessionDownloadPayload({ immersiveLessonPresets: [preset], immersiveLessonPresetActiveId: 'preset-1' });
+    expect(session.immersiveLessonPresets).toHaveLength(1);
+    expect(session.weatherSystems.immersiveLessonPresetActiveId).toBe('preset-1');
+    const restored = kernel.validateImmersiveSessionPayload(session);
+    expect(restored.immersiveLessonPresets).toHaveLength(1);
+    expect(restored.immersiveLessonPresetActiveId).toBe('preset-1');
+  });
+
   it('provides grade-responsive immersive feature definitions and truthful scene narration', () => {
     const kernel = window.WeatherSystemsKernel;
     const secondary = kernel.immersiveFeatureGlossary('conceptual', '9-12');
@@ -455,6 +535,49 @@ it('returns a sequenced immersive investigation tour step', () => {
     expect(front.nextId).toBe('moisture');
     expect(front.prompt).toContain('air being lifted');
     expect(kernel.immersiveTourStep('unknown').id).toBe('scan');
+  });
+
+  it('tracks guided immersive completion and links captures to investigation steps', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const progress = kernel.immersiveTourProgress({
+      immersiveTourStep: 'front',
+      immersiveTourCompletedSteps: ['scan', 'front', 'front', 'unknown'],
+      immersiveEvidenceCaptures: [{ tourStepId: 'front', note: 'The boundary rises.' }, { tourStepId: 'front', note: '' }]
+    });
+    expect(progress.activeStep.id).toBe('front');
+    const handoff = kernel.immersiveTourHandoffText({
+      scenario: 'coldFront', immersiveSceneMode: 'conceptual', immersiveDataSource: 'model', immersiveTourStep: 'front',
+      immersiveTourCompletedSteps: ['scan'], immersiveReflection: 'The learner connects the boundary to cloud growth.'
+    });
+    expect(handoff).toContain('Weather Systems Guided Investigation Brief');
+    expect(handoff).toContain('[x] 1. Scan the system');
+    expect(handoff).toContain('[ ] 2. Inspect the front');
+    expect(handoff).toContain('Progress: 1/4 steps complete');
+    expect(handoff).toContain('Location: Excluded by default for privacy');
+    expect(handoff).toContain('The learner connects the boundary to cloud growth.');
+    expect(progress.completedCount).toBe(2);
+    expect(progress.steps.find((step) => step.id === 'front').captureCount).toBe(2);
+    expect(progress.steps.find((step) => step.id === 'front').noteCount).toBe(1);
+    expect(kernel.immersiveTourCompletedStepList(['scan', 'unknown', 'scan'])).toEqual(['scan']);
+    const shared = kernel.immersiveSessionSharePayload({ immersiveTourStep: 'front', immersiveTourCompletedSteps: ['scan', 'front', 'unknown'], immersiveReflection: 'A concise evidence note.' });
+    expect(shared.weatherSystems.immersiveTourStep).toBe('front');
+    expect(shared.weatherSystems.immersiveTourCompletedSteps).toEqual(['scan', 'front']);
+    expect(shared.weatherSystems.immersiveReflection).toBe('A concise evidence note.');
+    const staged = kernel.immersiveSessionSharePayload({ immersiveStageMode: true });
+    expect(staged.weatherSystems.immersiveStageMode).toBe(true);
+    const localPayload = kernel.immersiveLocalWorkspacePayload({
+      immersiveTourStep: 'front', immersiveTourCompletedSteps: ['scan'], immersiveReflection: 'Resume this local investigation.', immersiveLessonPresets: []
+    });
+    expect(localPayload.schema).toBe('weather-immersive-local-v1');
+    const localRestored = kernel.validateImmersiveLocalWorkspacePayload(localPayload);
+    expect(localRestored.immersiveTourStep).toBe('front');
+    expect(localRestored.immersiveTourCompletedSteps).toEqual(['scan']);
+    expect(localRestored.immersiveReflection).toBe('Resume this local investigation.');
+    expect(kernel.validateImmersiveLocalWorkspacePayload({ schema: 'bad' })).toBeNull();
+    const preset = kernel.immersiveLessonPresetPayload({ immersiveTourStep: 'front', immersiveTourCompletedSteps: ['scan'], immersiveReflection: 'Keep learner reasoning out of reusable presets.' }, 'Scene only', { id: 'scene-only' });
+    expect(preset.weatherSystems.immersiveTourStep).toBeUndefined();
+    expect(preset.weatherSystems.immersiveTourCompletedSteps).toBeUndefined();
+    expect(preset.weatherSystems.immersiveReflection).toBeUndefined();
   });
 
   it('normalizes geographic metadata and safely resolves the immersive scene mode', () => {
@@ -659,6 +782,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
         tab: 'immersive',
         scenario: 'coldFront',
         immersiveTourStep: 'moisture',
+        immersiveTourCompletedSteps: ['scan'],
         immersiveReflection: 'Clouds are building near the boundary.'
       }
     }, { gradeLevel: '8th Grade' });
@@ -667,12 +791,66 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Guided investigation');
     expect(html).toContain('Trace moisture');
     expect(html).toContain('3D investigation step 3 of 4');
+    expect(html).toContain('1/4 complete');
+    expect(html).toContain('data-weather-tour-progress');
+    expect(html).toContain('Mark step complete');
     expect(html).toContain('How do clouds or precipitation connect to humidity and lift?');
     expect(html).toContain('Connect cloud cover, particles, and the wind field.');
     expect(html).toContain('aria-label="Immersive guided investigation steps"');
     expect(html).toContain('Next investigation step');
     expect(html).toContain('3D evidence note');
     expect(html).toContain('Clouds are building near the boundary.');
+    const teacherHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveAudienceMode: 'teacher', immersiveTourStep: 'front' }
+    }, { gradeLevel: '8th Grade' });
+    expect(teacherHtml).toContain('data-weather-tour-handoff');
+    expect(teacherHtml).toContain('Copy teacher brief');
+    expect(teacherHtml).toContain('Download teacher brief');
+    expect(teacherHtml).toContain('data-weather-local-persistence');
+    expect(teacherHtml).toContain('Remember this workspace on this device');
+    expect(teacherHtml).toContain('Clear local copy');
+    const stageHtml = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveStageMode: true, immersiveTourStep: 'front' }
+    }, { gradeLevel: '8th Grade' });
+    expect(stageHtml).toContain('data-weather-stage-mode="on"');
+    expect(stageHtml).toContain('data-weather-immersive-layout="stage"');
+    expect(stageHtml).toContain('Exit stage mode');
+    expect(stageHtml).toContain('data-weather-stage-legend');
+    expect(stageHtml).toContain('Visible 3D channels');
+    expect(stageHtml).toContain('Air masses');
+    const stageTimelineHtml = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'immersive',
+        immersiveStageMode: true,
+        immersiveDataSource: 'live',
+        liveWeather: {
+          label: 'Boston', latitude: 42.36, longitude: -71.06,
+          temperature: 18, humidity: 70, cloudCover: 50, pressure: 1008,
+          windSpeed: 20, windDir: 240, condition: 'Cloudy',
+          observedAt: '2026-08-01T12:00:00Z', timezone: 'America/New_York'
+        },
+        liveWeatherTimeline: [
+          {
+            validAt: '2026-08-01T12:00:00Z', role: 'current', offsetHours: 0,
+            temperature: 18, humidity: 70, cloudCover: 50, pressure: 1008,
+            windSpeed: 20, windDir: 240, condition: 'Cloudy'
+          },
+          {
+            validAt: '2026-08-01T13:00:00Z', role: 'forecast', offsetHours: 1,
+            temperature: 19, humidity: 68, cloudCover: 55, pressure: 1006,
+            windSpeed: 22, windDir: 245, condition: 'Cloudy'
+          }
+        ],
+        liveWeatherTimelineIndex: 1
+      }
+    }, { gradeLevel: '8th Grade' });
+    expect(stageTimelineHtml).toContain('data-weather-stage-timeline');
+    expect(stageTimelineHtml).toContain('Move the 3D scene through time');
+    expect(stageTimelineHtml).toContain('Previous hour');
+    expect(stageTimelineHtml).toContain('weather-stage-timeline-slider');
+    expect(stageTimelineHtml).toContain('data-weather-stage-timeline-context');
+    expect(stageTimelineHtml).toContain('Forecast hour');
+    expect(stageTimelineHtml).toContain('Scene time');
   });
 
   it('renders optional structured location fields with address autocomplete semantics', () => {
@@ -801,6 +979,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Frontal lift can cool moist air toward cloud formation.');
     expect(html).toContain('data-weather-feature-evidence="frontBoundary"');
     expect(html).toContain('data-weather-feature-evidence-source="model"');
+    expect(html).toContain('data-weather-audience-mode="student"');
+    expect(html).toContain('Student focus');
+    expect(html).toContain('data-weather-accessible-data-table');
+    expect(html).toContain('weather-accessible-data-content');
+    expect(html).toContain('data-weather-orientation-controls');
     expect(html).toContain('data-weather-evidence-kind="model"');
     expect(html).toContain('aria-label="Model value"');
     expect(html).toContain('Evidence snapshot');
@@ -3097,6 +3280,111 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain('data-weather-hover-inspector');
     expect(source).toContain('data-weather-feature-connections');
     expect(source).toContain('data-weather-object-explorer');
+    expect(source).toContain('function immersiveTimelineDelta(current, comparison)');
+    expect(source).toContain('function immersiveTourCompletedStepList(stepIds)');
+    expect(source).toContain('function immersiveTourProgress(data)');
+    expect(source).toContain('function immersiveTourHandoffText(data)');
+    expect(source).toContain('function copyImmersiveTourHandoff()');
+    expect(source).toContain('function downloadImmersiveTourHandoff()');
+    expect(source).toContain('data-weather-tour-handoff');
+    expect(source).toContain('function toggleImmersiveStageMode()');
+    expect(source).toContain('function setLiveWeatherTimelineIndex(index)');
+    expect(source).toContain('data-weather-stage-timeline');
+    expect(source).toContain('weather-stage-timeline-slider');
+    expect(source).toContain('data-weather-stage-timeline-context');
+    expect(source).toContain('timelineStageContext');
+    expect(source).toContain('data-weather-stage-legend');
+    expect(source).toContain('stageLegendItems');
+    expect(source).toContain('var IMMERSIVE_LOCAL_WORKSPACE_KEY =');
+    expect(source).toContain('function immersiveLocalWorkspacePayload(data)');
+    expect(source).toContain('function validateImmersiveLocalWorkspacePayload(payload)');
+    expect(source).toContain('setImmersiveLocalPersistenceEnabled');
+    expect(source).toContain('data-weather-local-persistence');
+    expect(source).toContain('data-weather-stage-mode');
+    expect(source).toContain('data-weather-immersive-layout');
+    expect(source).toContain("tourStepId: sceneMode === 'conceptual' ? immersiveTourStep(d.immersiveTourStep).id : '',");
+    expect(source).toContain('function toggleImmersiveTourStepCompletion(stepId)');
+    expect(source).toContain('data-weather-tour-progress');
+    expect(source).toContain('function immersiveSessionSharePayload(data, options)');
+    expect(source).toContain('function immersiveSessionDownloadPayload(data)');
+    expect(source).toContain('function validateImmersiveSessionPayload(payload)');
+    expect(source).toContain('function immersiveEvidenceHandoffText(capture)');
+    expect(source).toContain('function immersiveEvidenceCaptureReview(capture)');
+    expect(source).toContain('function immersiveEvidenceReviewSummary(captures)');
+    expect(source).toContain('function immersiveCaptureComparison(primary, comparison)');
+    expect(source).toContain('function immersiveCaptureClaimHandoffText(comparison)');
+    expect(source).toContain('data-weather-capture-to-claim');
+    expect(source).toContain('data-weather-capture-claim-result');
+    expect(source).toContain('data-weather-evidence-review-summary');
+    expect(source).toContain('immersiveEvidenceCaptureShowAll');
+    expect(source).toContain('function immersiveLessonPresetPayload(data, name, metadata)');
+    expect(source).toContain('function validateImmersiveLessonPreset(preset)');
+    expect(source).toContain('function immersiveLessonPresetList(presets)');
+    expect(source).toContain('data-weather-lesson-presets');
+    expect(source).toContain('weather-lesson-preset-name');
+    expect(source).toContain('Save current scene');
+    expect(source).toContain('function decodeWeatherSession(hash)');
+    expect(source).toContain('function setImmersiveAudienceMode(mode)');
+    expect(source).toContain('function captureImmersiveEvidence()');
+    expect(source).toContain('function copyImmersiveSessionLink()');
+    expect(source).toContain('function downloadImmersiveSession()');
+    expect(source).toContain('function importImmersiveSessionFile(event)');
+    expect(source).toContain('function copyImmersiveEvidenceHandoff(capture)');
+    expect(source).toContain('function downloadImmersiveEvidenceHandoff(capture)');
+    expect(source).toContain('immersiveShareIncludeLocation');
+    expect(source).toContain('weather-immersive-session-import');
+    expect(source).toContain('function setImmersiveTimelineComparison(index)');
+    expect(source).toContain('function resetImmersiveOrientation()');
+    expect(source).toContain('data-weather-evidence-capture-workspace');
+    expect(source).toContain('data-weather-accessible-data-table');
+    expect(source).toContain('data-weather-timeline-comparison');
+    expect(source).toContain('data-weather-live-fallback');
+    expect(source).toContain('Location is excluded by default; session downloads include the full local context.');
+  });
+
+  it('opens teacher evidence tools with a structured data alternative and saved capture list', () => {
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveAudienceMode: 'teacher', immersiveExplainerFeature: 'airMasses',
+        immersiveEvidenceCaptures: [{ id: 'capture-1', feature: { label: 'Air masses' }, source: 'teaching model', location: { label: 'Boston' }, validAt: 'T+0 hours', note: 'I see contrasting layers.' }],
+        immersiveEvidenceStatus: 'Captured Air masses at T+0 hours.'
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-audience-mode="teacher"');
+    expect(html).toContain('Teacher tools');
+    expect(html).toContain('data-weather-evidence-capture-workspace');
+    expect(html).toContain('Capture current view');
+    expect(html).toContain('Copy share link');
+    expect(html).toContain('Download session JSON');
+    expect(html).toContain('Import session JSON');
+    expect(html).toContain('Include location and coordinates in share links');
+    expect(html).toContain('data-weather-evidence-capture-list');
+    expect(html).toContain('Copy handoff');
+    expect(html).toContain('Download handoff');
+    expect(html).toContain('data-weather-evidence-review-summary');
+    expect(html).toContain('Needs review');
+    expect(html).toContain('I see contrasting layers.');
+    expect(html).toContain('data-weather-accessible-data');
+    expect(html).toContain('Accessible data view');
+    const expandedHtml = renderTool('weatherSystems', { _threeLoaded: true, weatherSystems: { tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveAudienceMode: 'teacher', immersiveEvidenceCaptures: Array.from({ length: 4 }, (_, index) => ({ id: 'capture-' + index, feature: { label: 'Air masses' }, source: 'teaching model', location: { label: 'Boston' }, validAt: 'T+' + index + ' hours', values: { humidity: 70 }, note: 'Observation ' + index })) } }, { gradeLevel: '10th Grade' });
+    expect(expandedHtml).toContain('Show all 4 captures');
+    const presetHtml = renderTool('weatherSystems', { _threeLoaded: true, weatherSystems: {
+      tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveAudienceMode: 'teacher', immersiveLessonPresetDraftName: 'Rainy day', immersiveLessonPresetActiveId: 'preset-1',
+      immersiveLessonPresets: [{ schema: 'weather-immersive-preset-v1', id: 'preset-1', name: 'Front warm-up', savedAt: '2026-08-01T12:00:00Z', weatherSystems: { immersiveSceneMode: 'conceptual', immersiveDataSource: 'model', immersiveFocus: 'front', immersiveCameraPreset: 'front' } }]
+    } }, { gradeLevel: '10th Grade' });
+    expect(presetHtml).toContain('data-weather-lesson-presets');
+    expect(presetHtml).toContain('Save current scene');
+    expect(presetHtml).toContain('Apply preset');
+    expect(presetHtml).toContain('Front warm-up');
+    expect(presetHtml).toContain('Active');
+    const claimHtml = renderTool('weatherSystems', { _threeLoaded: true, weatherSystems: { tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveAudienceMode: 'teacher', immersiveEvidenceCaptures: [{ id: 'capture-a', feature: { id: 'cloudLayer', label: 'Cloud layer' }, source: 'teaching model', validAt: 'T+0 hours', values: { temperature: 18, humidity: 80 }, note: 'Baseline.' }, { id: 'capture-b', feature: { id: 'cloudLayer', label: 'Cloud layer' }, source: 'teaching model', validAt: 'T+6 hours', values: { temperature: 21, humidity: 70 }, note: 'Comparison.' }] } }, { gradeLevel: '10th Grade' });
+    expect(claimHtml).toContain('data-weather-capture-to-claim');
+    expect(claimHtml).toContain('Copy CER handoff');
+    expect(claimHtml).toContain('Download CER handoff');
+    expect(claimHtml).toContain('Open 3D comparison');
+    expect(claimHtml).toContain('Claim');
+    expect(claimHtml).toContain('Reasoning');
   });
 
   it('tries multiple CDNs with a timeout instead of a single point of failure', () => {

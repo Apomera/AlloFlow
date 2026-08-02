@@ -179,6 +179,7 @@
     aiAvailable: false,
     hostOrigin: bridgeBootstrap.hostOrigin,
     bridgeToken: bridgeBootstrap.bridgeToken,
+    pairingExpiresAt: 0,
     connectedHost: '',
     connectedOrigin: '',
     hostAiTrusted: isTrustedAlloFlowHostOrigin(bridgeBootstrap.hostOrigin),
@@ -224,6 +225,8 @@
     allRowsSelected: false,
     analysisBinding: null,
     analysisModel: null,
+    analysisProfileBinding: null,
+    analysisProfile: null,
     analysisControlTableBinding: '',
     analysisColumnTypes: Object.create(null)
   };
@@ -493,9 +496,22 @@
     if (!data || typeof data !== 'object') return;
     if (!state.hostOrigin || event.origin !== state.hostOrigin) return;
     if (data.version !== 1 || !state.bridgeToken || data.bridgeToken !== state.bridgeToken) return;
+    if (data.type === 'allosheet-pairing-expired') {
+      state.bridgeReady = false;
+      state.aiAvailable = false;
+      state.hostReportsAi = false;
+      state.pairingExpiresAt = 0;
+      state.canvasValidated = false;
+      state.canvasMode = false;
+      updateHostAiDisclosure();
+      updateAgentAvailability();
+      announce('AlloSheet pairing expired. Reopen this window from AlloFlow.');
+      return;
+    }
     if (data.type === 'allosheet-ready') {
       state.bridgeReady = true;
       state.connectedOrigin = event.origin;
+      state.pairingExpiresAt = Number.isFinite(Number(data.pairingExpiresAt)) ? Number(data.pairingExpiresAt) : 0;
       state.hostReportsAi = data.ai === true;
       state.aiAvailable = state.hostReportsAi && state.hostAiTrusted;
       try { state.connectedHost = new URL(event.origin).hostname; } catch (_) {}
@@ -1949,6 +1965,8 @@
   function resetAnalysisResults(message) {
     state.analysisBinding = null;
     state.analysisModel = null;
+    byId('downloadAnalysisButton').disabled = true;
+    text(byId('analysisExportStatus'), 'Run an analysis before downloading its grouped result.');
     clear(byId('analysisVisual'));
     byId('analysisVisual').hidden = true;
     clear(byId('analysisHead'));
@@ -1979,6 +1997,50 @@
       : 'managed|' + String(state.loadedDocId || '') + '|' + String(currentTableId() || '');
   }
 
+  function formatAnalysisProfileValue(value) {
+    if (value === null || value === undefined) return 'Not available';
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      if (Math.abs(value - Math.round(value)) < 0.0000001) return String(Math.round(value));
+      return String(Math.round(value * 1000000) / 1000000);
+    }
+    return String(value);
+  }
+
+  function renderAnalysisProfile(profile) {
+    var head = byId('analysisProfileHead');
+    var body = byId('analysisProfileBody');
+    if (!head || !body) return;
+    clear(head);
+    clear(body);
+    text(byId('analysisProfileNarrative'), profile.narrative);
+    text(byId('analysisProfileCaption'), profile.columns.length + ' column'
+      + (profile.columns.length === 1 ? '' : 's') + ' profiled across '
+      + profile.sourceRowCount + ' loaded row' + (profile.sourceRowCount === 1 ? '' : 's') + '.');
+    var headerRow = document.createElement('tr');
+    ['Column', 'Inferred type', 'Filled', 'Blank', 'Distinct nonblank', 'Range'].forEach(function (label) {
+      var cell = make('th', label, '');
+      cell.scope = 'col';
+      headerRow.appendChild(cell);
+    });
+    head.appendChild(headerRow);
+    profile.columns.forEach(function (item) {
+      var row = document.createElement('tr');
+      var column = make('th', item.column, '');
+      column.scope = 'row';
+      row.appendChild(column);
+      var typeLabel = item.type + (item.identifierLike ? ' (identifier-like)' : '');
+      row.appendChild(make('td', typeLabel, ''));
+      row.appendChild(make('td', item.filledCount + ' / ' + profile.sourceRowCount, ''));
+      row.appendChild(make('td', item.blankCount, ''));
+      row.appendChild(make('td', item.distinctCount, ''));
+      var range = item.range
+        ? formatAnalysisProfileValue(item.range.minimum) + ' to ' + formatAnalysisProfileValue(item.range.maximum)
+        : 'Not applicable';
+      row.appendChild(make('td', range, ''));
+      body.appendChild(row);
+    });
+  }
+
   function configureAnalysisControls() {
     var columns = state.columns.slice();
     var tableBinding = currentAnalysisTableBinding();
@@ -1988,6 +2050,13 @@
       columns,
       analysisColumnDetails()
     );
+    state.analysisProfile = Analysis.buildColumnProfile(
+      state.records,
+      columns,
+      analysisColumnDetails()
+    );
+    state.analysisProfileBinding = currentDataBinding();
+    renderAnalysisProfile(state.analysisProfile);
     var filter = byId('analysisFilterColumn');
     var group = byId('analysisGroupColumn');
     var measure = byId('analysisMeasureColumn');
@@ -2209,6 +2278,8 @@
   function renderAnalysis(model) {
     state.analysisModel = model;
     state.analysisBinding = currentDataBinding();
+    byId('downloadAnalysisButton').disabled = false;
+    text(byId('analysisExportStatus'), 'Download this grouped result as a local CSV if you need a portable summary.');
     text(byId('analysisNarrative'), model.narrative);
     renderAnalysisTable(model);
     var visual = byId('analysisVisual');
@@ -2226,6 +2297,49 @@
     } else {
       renderBarAnalysis(model, visual);
     }
+  }
+
+  function downloadAnalysisCsv() {
+    var model = state.analysisModel;
+    var status = byId('analysisExportStatus');
+    if (!model || !dataBindingMatches(state.analysisBinding)) {
+      text(status, 'The analysis result is stale. Run the local analysis again before downloading.');
+      announce('The analysis result is stale. Run it again before downloading.');
+      return;
+    }
+    var usedHeading = model.spec.calculation === 'count'
+      ? 'Numeric values used'
+      : model.spec.measureColumn + ' values used';
+    var headers = [model.spec.groupColumn, 'Rows in group', usedHeading, model.metricLabel];
+    var lines = [headers.map(formulaHardenedCsvCell).join(',')];
+    model.groups.forEach(function (group) {
+      lines.push([
+        group.label,
+        group.rowCount,
+        model.spec.calculation === 'count' ? 'Not applicable' : group.numericCount,
+        group.metric === null ? 'Not available' : formatAnalysisMetric(group.metric)
+      ].map(formulaHardenedCsvCell).join(','));
+    });
+    var rawName = state.canvasMode
+      ? (state.canvasFileName || state.localWorkspaceTitle)
+      : currentTableId();
+    var base = Sheet.safeText(rawName || 'allosheet', 100)
+      .replace(/\.csv$/i, '')
+      .replace(/[^A-Za-z0-9._-]+/g, '_')
+      .replace(/^\.+|\.+$/g, '')
+      .slice(0, 100) || 'allosheet';
+    var blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = base + '_analysis.csv';
+    link.hidden = true;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    text(status, 'Analysis result downloaded. It contains grouped labels and calculated metrics only; store it securely.');
+    announce('Analysis result CSV downloaded.');
   }
 
   function runLocalAnalysis(event) {
@@ -3189,6 +3303,7 @@
       resetAnalysisResults('Analysis results cleared. Workbook data was not changed.');
       byId('analysisGroupColumn').focus();
     });
+    byId('downloadAnalysisButton').addEventListener('click', downloadAnalysisCsv);
     ['analysisFilterColumn', 'analysisFilterOperator', 'analysisGroupColumn',
       'analysisMeasureColumn', 'analysisCalculation', 'analysisRepresentation']
       .forEach(function (id) { byId(id).addEventListener('change', markAnalysisStale); });

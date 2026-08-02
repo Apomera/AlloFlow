@@ -383,7 +383,12 @@ function buildAcknowledgedLiveResourceOverrides(roster, limit = 25) {
     const viewingResourceId = boundedLiveActivityText(entry.viewingResourceId, 128);
     const resourceAt = boundedLiveActivityCount(entry.resourceAt, Number.MAX_SAFE_INTEGER);
     const viewingAt = boundedLiveActivityCount(entry.viewingAt, Number.MAX_SAFE_INTEGER);
-    if (!uid || seen.has(uid) || !resourceId || resourceId !== viewingResourceId || resourceAt <= 0 || viewingAt < resourceAt) return;
+    const hasAssignmentNonce = Object.prototype.hasOwnProperty.call(entry, "viewingResourceAt");
+    const viewingResourceAt = boundedLiveActivityCount(entry.viewingResourceAt, Number.MAX_SAFE_INTEGER);
+    const statusMatchesAssignment = hasAssignmentNonce && viewingResourceAt === resourceAt;
+    const deliveryStatus = statusMatchesAssignment ? entry.viewingResourceStatus : null;
+    const acknowledgedThisAssignment = statusMatchesAssignment ? deliveryStatus !== "loading" && deliveryStatus !== "failed" && resourceId === viewingResourceId : resourceId === viewingResourceId && viewingAt >= resourceAt;
+    if (!uid || seen.has(uid) || !resourceId || resourceAt <= 0 || !acknowledgedThisAssignment) return;
     seen.add(uid);
     acknowledged.push(uid);
   });
@@ -468,9 +473,30 @@ const LIVE_ATTENTION_REASON_LABELS = Object.freeze({
   activity_waiting: "awaiting activity response",
   activity_working_long: "working for a while",
   resource_unopened: "assigned resource not opened",
-  resource_elsewhere: "on a different resource"
+  resource_elsewhere: "on a different resource",
+  resource_loading: "assigned resource still loading",
+  resource_failed: "assigned resource could not load"
 });
 const LIVE_ATTENTION_REASON_CODES = new Set(Object.keys(LIVE_ATTENTION_REASON_LABELS));
+const LIVE_ATTENTION_REASON_SOURCES = Object.freeze({
+  signal_stuck: "student_signal",
+  signal_repeat: "student_signal",
+  signal_slow: "student_signal",
+  presence_disconnected: "connection_status",
+  presence_quiet: "connection_status",
+  activity_waiting: "activity_status",
+  activity_working_long: "activity_status",
+  resource_unopened: "delivery_status",
+  resource_elsewhere: "delivery_status",
+  resource_loading: "delivery_status",
+  resource_failed: "delivery_status"
+});
+const LIVE_ATTENTION_SOURCE_LABELS = Object.freeze({
+  student_signal: "Student signal",
+  connection_status: "Connection status",
+  activity_status: "Activity status",
+  delivery_status: "Delivery status"
+});
 const LIVE_ATTENTION_INSTRUCTIONAL_REASON_CODES = /* @__PURE__ */ new Set([
   "signal_stuck",
   "signal_repeat",
@@ -504,6 +530,122 @@ function buildLiveActivityTimeline(snapshots, limit = 8) {
     endedAt: item.endedAt,
     durationMs: item.durationMs
   }));
+}
+const LIVE_CLASS_DEBRIEF_MODERATION_KINDS = /* @__PURE__ */ new Set([
+  "free_text",
+  "word_cloud",
+  "feedback_response",
+  "sketch_response",
+  "session_qa"
+]);
+function buildLiveClassDebrief(input, limit = 8) {
+  const sourceValue = input && typeof input === "object" ? input : {};
+  const byId = /* @__PURE__ */ new Map();
+  (Array.isArray(sourceValue.activitySnapshots) ? sourceValue.activitySnapshots : []).forEach((raw) => {
+    const safe = sanitizeLiveActivitySnapshot(raw);
+    if (!safe) return;
+    const previous = byId.get(safe.activityId);
+    if (!previous || safe.updatedAt >= previous.updatedAt) byId.set(safe.activityId, safe);
+  });
+  const findings = [];
+  Array.from(byId.values()).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 20).forEach((activity) => {
+    const reviewPhase = activity.phase === "review";
+    const finalPhase = activity.phase === "revealed" || activity.phase === "closed";
+    if (!reviewPhase && !finalPhase) return;
+    const statusEntries = activity.audienceUids.map((uid) => ({
+      uid,
+      status: normalizeLiveActivityParticipantStatus(activity.participantStatus[uid])
+    }));
+    const participationUids = statusEntries.filter((entry) => entry.status === "waiting" || entry.status === "working").map((entry) => entry.uid).slice(0, 250);
+    const submittedWithoutRevisionUids = statusEntries.filter((entry) => entry.status === "submitted").map((entry) => entry.uid).slice(0, 250);
+    const invited = activity.counts.invited;
+    const submitted = activity.counts.submitted;
+    const approved = activity.counts.approved;
+    const hidden = activity.counts.hidden;
+    const feedbackSent = activity.counts.feedbackSent;
+    const revised = activity.counts.revised;
+    let activityHasFollowUp = false;
+    if (reviewPhase && LIVE_CLASS_DEBRIEF_MODERATION_KINDS.has(activity.kind)) {
+      const pendingReview = Math.max(0, submitted - approved - hidden);
+      if (pendingReview > 0) {
+        activityHasFollowUp = true;
+        findings.push({
+          id: activity.activityId + ":moderation",
+          kind: "awaiting_review",
+          tone: "review",
+          priority: 140,
+          label: "Awaiting review",
+          detail: pendingReview + " submitted response" + (pendingReview === 1 ? " still needs" : "s still need") + " moderation.",
+          count: pendingReview,
+          uids: [],
+          activityId: activity.activityId,
+          family: activity.family,
+          activityKind: activity.kind,
+          phase: activity.phase,
+          canOpenActivity: true,
+          updatedAt: activity.updatedAt
+        });
+      }
+    }
+    if (participationUids.length > 0) {
+      activityHasFollowUp = true;
+      findings.push({
+        id: activity.activityId + ":participation",
+        kind: "participation_follow_up",
+        tone: "support",
+        priority: 120,
+        label: "Participation follow-up",
+        detail: participationUids.length + " of " + invited + " invited student" + (invited === 1 ? "" : "s") + " did not submit before this activity moved to " + (reviewPhase ? "review" : "completed") + ".",
+        count: participationUids.length,
+        uids: participationUids,
+        activityId: activity.activityId,
+        family: activity.family,
+        activityKind: activity.kind,
+        phase: activity.phase,
+        canOpenActivity: reviewPhase,
+        updatedAt: activity.updatedAt
+      });
+    }
+    if ((activity.kind === "feedback_response" || activity.kind === "sketch_response") && feedbackSent > revised && submittedWithoutRevisionUids.length > 0) {
+      activityHasFollowUp = true;
+      findings.push({
+        id: activity.activityId + ":revision",
+        kind: "revision_opportunity",
+        tone: "support",
+        priority: 110,
+        label: "Revision opportunity",
+        detail: feedbackSent + " feedback send" + (feedbackSent === 1 ? "" : "s") + " and " + revised + " recorded revision" + (revised === 1 ? "" : "s") + "; " + submittedWithoutRevisionUids.length + " current participant" + (submittedWithoutRevisionUids.length === 1 ? " remains" : "s remain") + " submitted rather than revised.",
+        count: submittedWithoutRevisionUids.length,
+        uids: submittedWithoutRevisionUids,
+        activityId: activity.activityId,
+        family: activity.family,
+        activityKind: activity.kind,
+        phase: activity.phase,
+        canOpenActivity: reviewPhase,
+        updatedAt: activity.updatedAt
+      });
+    }
+    if (!activityHasFollowUp && finalPhase && invited > 0 && submitted / invited >= 0.8) {
+      findings.push({
+        id: activity.activityId + ":ready",
+        kind: "ready_to_advance",
+        tone: "ready",
+        priority: 20,
+        label: "Ready to advance",
+        detail: submitted + " of " + invited + " invited student" + (invited === 1 ? "" : "s") + " submitted before completion.",
+        count: submitted,
+        uids: [],
+        activityId: activity.activityId,
+        family: activity.family,
+        activityKind: activity.kind,
+        phase: activity.phase,
+        canOpenActivity: false,
+        updatedAt: activity.updatedAt
+      });
+    }
+  });
+  const safeLimit = Math.max(1, Math.min(20, boundedLiveActivityCount(limit, 20) || 8));
+  return findings.sort((a, b) => b.priority - a.priority || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id)).slice(0, safeLimit).map(({ priority, updatedAt, ...finding }) => finding);
 }
 const LIVE_COMPANION_STATUS_LABELS = Object.freeze({
   waiting: "Waiting",
@@ -639,11 +781,19 @@ function buildLiveAttentionQueue(input) {
       source.currentResourceId,
       source.sessionMode
     );
-    if (target.resourceId && target.assignedAt && entry.viewingResourceId !== target.resourceId) {
+    if (target.resourceId && target.assignedAt) {
       const viewingAt = boundedLiveActivityCount(entry.viewingAt, Number.MAX_SAFE_INTEGER);
-      const assignmentAcknowledged = viewingAt >= target.assignedAt;
+      const hasAssignmentNonce = Object.prototype.hasOwnProperty.call(entry, "viewingResourceAt");
+      const viewingResourceAt = boundedLiveActivityCount(entry.viewingResourceAt, Number.MAX_SAFE_INTEGER);
+      const statusMatchesAssignment = hasAssignmentNonce && viewingResourceAt === target.assignedAt;
+      const deliveryStatus = statusMatchesAssignment ? entry.viewingResourceStatus : null;
+      const assignmentAcknowledged = statusMatchesAssignment ? deliveryStatus !== "loading" && deliveryStatus !== "failed" && entry.viewingResourceId === target.resourceId : viewingAt >= target.assignedAt;
       const assignmentIsLate = now - target.assignedAt >= LIVE_ATTENTION_RESOURCE_GRACE_MS;
-      if (!assignmentAcknowledged && assignmentIsLate) {
+      if (deliveryStatus === "failed") {
+        addReason("resource_failed", 116);
+      } else if (deliveryStatus === "loading" && assignmentIsLate) {
+        addReason("resource_loading", 64);
+      } else if (!assignmentAcknowledged && assignmentIsLate) {
         addReason(entry.viewingResourceId ? "resource_elsewhere" : "resource_unopened", entry.viewingResourceId ? 52 : 62);
       }
     }
@@ -653,6 +803,9 @@ function buildLiveAttentionQueue(input) {
       uid,
       score: reasons.reduce((sum, reason) => sum + reason.weight, 0),
       reasons: reasons.map((reason) => reason.code),
+      evidenceSources: Array.from(new Set(
+        reasons.map((reason) => LIVE_ATTENTION_REASON_SOURCES[reason.code]).filter(Boolean)
+      )),
       activityStatus: LIVE_ACTIVITY_PARTICIPANT_STATUSES.has(activityStatus) ? activityStatus : null,
       targetResourceId: target.resourceId
     });
@@ -714,6 +867,9 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
 }
 function liveAttentionReasonLabel(code) {
   return LIVE_ATTENTION_REASON_LABELS[code] || "needs attention";
+}
+function liveAttentionSourceLabel(code) {
+  return LIVE_ATTENTION_SOURCE_LABELS[code] || "Status metadata";
 }
 function formatLiveActivityDuration(durationMs) {
   const ms = boundedLiveActivityCount(durationMs, 24 * 60 * 60 * 1e3);
@@ -837,6 +993,8 @@ function LiveLessonRunPanel(props) {
   const [attentionSendStatus, setAttentionSendStatus] = React.useState("");
   const [attentionReleasing, setAttentionReleasing] = React.useState(false);
   const [attentionReleaseStatus, setAttentionReleaseStatus] = React.useState("");
+  const [debriefSendingId, setDebriefSendingId] = React.useState("");
+  const [debriefSendStatus, setDebriefSendStatus] = React.useState("");
   const steps = React.useMemo(
     () => buildLiveLessonSteps(history, getStudentSafeResources),
     [history, getStudentSafeResources]
@@ -950,6 +1108,10 @@ function LiveLessonRunPanel(props) {
     () => buildLiveActivityTimeline(activitySnapshots, 8),
     [activitySnapshots]
   );
+  const classDebrief = React.useMemo(
+    () => buildLiveClassDebrief({ activitySnapshots }, 8),
+    [activitySnapshots]
+  );
   const attentionUidSet = new Set(attentionQueue.map((item) => item.uid));
   const validAttentionSelectedUids = attentionSelectedUids.filter((uid) => attentionUidSet.has(uid));
   const currentCompanionActivityId = boundedLiveActivityText(
@@ -1004,6 +1166,34 @@ function LiveLessonRunPanel(props) {
       }
       return { activityId, byStatus };
     });
+  };
+  const sendDebriefFinding = async (finding) => {
+    if (!finding || !focusItem || debriefSendingId) return;
+    const currentUids = Array.from(new Set(
+      (Array.isArray(finding.uids) ? finding.uids : []).filter((uid) => Object.prototype.hasOwnProperty.call(roster, uid))
+    )).slice(0, 25);
+    if (currentUids.length === 0) {
+      setDebriefSendStatus("Those students are no longer connected. Use the saved finding to plan the next lesson.");
+      return;
+    }
+    setDebriefSendingId(finding.id);
+    setDebriefSendStatus("");
+    try {
+      if (typeof onSendToStudents === "function") {
+        const result = await onSendToStudents(currentUids, focusItem);
+        const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : currentUids.length;
+        const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
+        const disconnected = Math.max(0, currentUids.length - sent - failed);
+        setDebriefSendStatus(disconnected > 0 ? sent + " assigned; " + disconnected + " no longer connected" + (failed ? "; " + failed + " could not be assigned." : ".") : failed > 0 ? sent + " assigned; " + failed + " could not be assigned." : "Assigned " + attentionResourceTitle + " to " + sent + " student" + (sent === 1 ? "" : "s") + ".");
+      } else if (typeof onSendToStudent === "function") {
+        await Promise.all(currentUids.map((uid) => onSendToStudent(uid, focusItem)));
+        setDebriefSendStatus("Assigned " + attentionResourceTitle + " to " + currentUids.length + " student" + (currentUids.length === 1 ? "" : "s") + ".");
+      }
+    } catch (error) {
+      setDebriefSendStatus("Could not assign that follow-up resource. Please try again.");
+    } finally {
+      setDebriefSendingId("");
+    }
   };
   const sendAttentionSelection = async () => {
     const selectedUids = validSelectedUids;
@@ -1529,6 +1719,7 @@ function LiveLessonRunPanel(props) {
         const name = String(entry.name || "Student");
         const selected = validAttentionSelectedUids.includes(item.uid);
         const sendingThisStudent = attentionSendingUid === item.uid;
+        const evidenceSources = (Array.isArray(item.evidenceSources) ? item.evidenceSources : []).filter((source) => Object.prototype.hasOwnProperty.call(LIVE_ATTENTION_SOURCE_LABELS, source));
         return /* @__PURE__ */ React.createElement(
           "div",
           {
@@ -1555,7 +1746,15 @@ function LiveLessonRunPanel(props) {
               style: { width: 18, height: 18 }
             }
           ),
-          /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 900, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, name), /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveAttentionReasonLabel(item.reasons[0]), item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : "")),
+          /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 900, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, name), /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveAttentionReasonLabel(item.reasons[0]), item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : ""), evidenceSources.length > 0 && /* @__PURE__ */ React.createElement(
+            "div",
+            {
+              "data-live-attention-provenance": "status-metadata-only",
+              "aria-label": "Evidence sources: " + evidenceSources.map(liveAttentionSourceLabel).join(", "),
+              style: { display: "flex", flexWrap: "wrap", gap: 3, marginTop: 3 }
+            },
+            evidenceSources.map((source) => /* @__PURE__ */ React.createElement("span", { key: source, style: { border: "1px solid #d6d3d1", borderRadius: 999, background: "#fafaf9", color: "#57534e", padding: "0.05rem 0.3rem", fontSize: "0.5rem", fontWeight: 800 } }, liveAttentionSourceLabel(source)))
+          )),
           focusItem && typeof onSendToStudent === "function" && /* @__PURE__ */ React.createElement(
             "button",
             {
@@ -1607,6 +1806,39 @@ function LiveLessonRunPanel(props) {
         attentionReleaseStatus && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", style: { margin: "0.3rem 0 0", color: "#57534e", fontSize: "0.59rem" } }, attentionReleaseStatus)
       ),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0.4rem 0 0", color: "#78716c", fontSize: "0.57rem", lineHeight: 1.3 } }, t("live_lesson.attention_privacy") || "Uses status metadata only; no response content is copied into this queue.")
+    ),
+    !preparationOnly && classDebrief.length > 0 && /* @__PURE__ */ React.createElement(
+      "details",
+      {
+        "data-live-class-debrief": "derived-status-only",
+        "aria-label": t("live_lesson.class_debrief") || "Class debrief",
+        style: { marginTop: 7, padding: "0.5rem", border: "1px solid #a5b4fc", borderRadius: 9, background: "#f5f3ff" }
+      },
+      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 36, display: "flex", alignItems: "center", color: "#4338ca", cursor: "pointer", fontSize: "0.7rem", fontWeight: 900 } }, t("live_lesson.class_debrief") || "Class debrief", " (", classDebrief.length, ")"),
+      /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 0.4rem", color: "#5b21b6", fontSize: "0.58rem", lineHeight: 1.35 } }, t("live_lesson.class_debrief_hint") || "Derived from participation, moderation, and revision statuses. It does not infer correctness or misconceptions."),
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 5 } }, classDebrief.map((finding) => {
+        const tone = {
+          review: { border: "#fbbf24", background: "#fffbeb", text: "#92400e" },
+          support: { border: "#c4b5fd", background: "#faf5ff", text: "#6d28d9" },
+          ready: { border: "#86efac", background: "#f0fdf4", text: "#166534" }
+        }[finding.tone] || { border: "#cbd5e1", background: "white", text: "#334155" };
+        const currentTargetCount = finding.uids.filter((uid) => Object.prototype.hasOwnProperty.call(roster, uid)).length;
+        const activityItem = activityTimeline.find((item) => item.activityId === finding.activityId) || finding;
+        const canSend = currentTargetCount > 0 && !!focusItem && (typeof onSendToStudents === "function" || typeof onSendToStudent === "function");
+        return /* @__PURE__ */ React.createElement("article", { key: finding.id, "data-live-debrief-kind": finding.kind, style: { border: "1px solid " + tone.border, borderRadius: 8, background: tone.background, padding: "0.42rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: tone.text, fontSize: "0.64rem" } }, finding.label), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: tone.text, fontSize: "0.56rem", fontWeight: 900 } }, liveActivityKindLabel(finding.activityKind))), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.2rem 0 0", color: tone.text, fontSize: "0.58rem", lineHeight: 1.35 } }, finding.detail), (canSend || finding.canOpenActivity && typeof onOpenActivity === "function") && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, finding.canOpenActivity && typeof onOpenActivity === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenActivity(activityItem), "aria-label": "Open " + liveActivityKindLabel(finding.activityKind) + " review from class debrief", style: { ...buttonBase, minHeight: 34, borderColor: tone.border, color: tone.text, fontSize: "0.57rem" } }, t("live_lesson.open_review") || "Open review"), canSend && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            disabled: !!debriefSendingId,
+            onClick: () => sendDebriefFinding(finding),
+            "aria-label": "Send " + attentionResourceTitle + " to " + currentTargetCount + " debrief student" + (currentTargetCount === 1 ? "" : "s"),
+            style: { ...buttonBase, minHeight: 34, borderColor: tone.border, background: "white", color: tone.text, fontSize: "0.57rem", opacity: debriefSendingId ? 0.65 : 1 }
+          },
+          debriefSendingId === finding.id ? t("common.sending") || "Sending..." : (t("live_lesson.send_follow_up") || "Send selected follow-up") + " (" + currentTargetCount + ")"
+        )));
+      })),
+      debriefSendStatus && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", style: { margin: "0.4rem 0 0", color: "#5b21b6", fontSize: "0.6rem" } }, debriefSendStatus),
+      /* @__PURE__ */ React.createElement("p", { style: { margin: "0.4rem 0 0", color: "#6d28d9", fontSize: "0.55rem", lineHeight: 1.3 } }, t("live_lesson.class_debrief_privacy") || "Teacher-memory status only; no prompts, answers, feedback text, drawings, scores, or student labels are copied into this debrief.")
     ),
     !preparationOnly && activityTimeline.length > 0 && /* @__PURE__ */ React.createElement(
       "details",
@@ -1995,11 +2227,13 @@ function LiveLessonRunPanel(props) {
     upsertLiveActivitySnapshot: upsertLiveActivitySnapshot,
     selectLiveActivityPulse: selectLiveActivityPulse,
     buildLiveActivityTimeline: buildLiveActivityTimeline,
+    buildLiveClassDebrief: buildLiveClassDebrief,
     buildLiveCompanionModel: buildLiveCompanionModel,
     buildLiveAttentionQueue: buildLiveAttentionQueue,
     buildLiveAttentionCohorts: buildLiveAttentionCohorts,
     buildAcknowledgedLiveResourceOverrides: buildAcknowledgedLiveResourceOverrides,
     liveAttentionReasonLabel: liveAttentionReasonLabel,
+    liveAttentionSourceLabel: liveAttentionSourceLabel,
     buildLiveQuizActivitySnapshot: buildLiveQuizActivitySnapshot,
     liveActivityKindLabel: liveActivityKindLabel,
     liveActivityPhaseLabel: liveActivityPhaseLabel,

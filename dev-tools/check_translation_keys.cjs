@@ -130,7 +130,7 @@ const sourceFiles = [
   HOST,
   ...listFiles(ROOT, f => /^[^_].*_module\.js$/.test(f)),
   ...listFiles(ROOT, f => /^[^_].*_source\.jsx$/.test(f)),
-  ...listFiles(path.join(ROOT, 'stem_lab'), f => f.endsWith('.js') && !f.startsWith('_')),
+  ...listFiles(path.join(ROOT, 'stem_lab'), f => f.endsWith('.js') && !f.startsWith('_') && f !== 'blockly_runtime.bundle.js'),
   ...listFiles(path.join(ROOT, 'sel_hub'), f => f.endsWith('.js') && !f.startsWith('_')),
 ];
 

@@ -208,6 +208,10 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     ], {});
     expect(result.metadata.selectionMode).toBe('latest analysis anchor');
     expect(result.metadata.includedArtifactIds).toEqual(['new-analysis', 'new-text']);
+    expect(result.metadata.includedArtifacts).toEqual([
+      expect.objectContaining({ id: 'new-analysis', title: 'Analysis', type: 'analysis' }),
+      expect.objectContaining({ id: 'new-text', title: 'Simplified', type: 'simplified' })
+    ]);
   });
 
   it('derives standard outcomes from required component statuses and flags missing reports', () => {
@@ -227,6 +231,21 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     expect(normalized.dimension.notEvaluated).toBe(true);
   });
 
+  it('keeps only explicit evidence artifact IDs that are in the audit scope', () => {
+    const normalized = helpers.normalizeStandardsDimension([{
+      standard: 'AI supplied label',
+      analysis: {
+        textAlignment: { status: 'Aligned', evidence: 'The lesson explains the target.', artifactIds: ['lesson-1', 'not-audited'], attributionSource: 'invented-source' },
+      },
+      gaps: [{ text: 'The quiz needs a stronger check.', artifactIds: ['quiz-1', 'not-audited'], attributionSource: 'teacher' }],
+      overallDetermination: 'Pass',
+    }], ['STD-1'], { artifactIds: ['lesson-1', 'quiz-1'] });
+
+    expect(normalized.dimension.perStandard[0].analysis.textAlignment.artifactIds).toEqual(['lesson-1']);
+    expect(normalized.dimension.perStandard[0].analysis.textAlignment.attributionSource).toBe('audit-model');
+    expect(normalized.dimension.perStandard[0].gaps).toEqual(['The quiz needs a stronger check.']);
+    expect(normalized.dimension.perStandard[0].findingAttributions).toEqual([{ text: 'The quiz needs a stronger check.', artifactIds: ['quiz-1'], attributionSource: 'teacher' }]);
+  });
   it('stores valid BCP 47 language tags without treating display names as tags', () => {
     expect(helpers.normalizeAuditLanguageTag('English')).toBe('en');
     expect(helpers.normalizeAuditLanguageTag('Spanish (Latin America)')).toBe('es');

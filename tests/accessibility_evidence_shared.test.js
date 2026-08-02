@@ -116,6 +116,135 @@ describe('shared finding contracts', () => {
   });
 });
 
+describe('evidence provenance and replay', () => {
+  it('creates a binding-aware replay key and deterministic evidence digests', () => {
+    const binding = Evidence.createArtifactBinding({ title: 'Remediation fixture', body: '<main />' }, {
+      rendererRevision: 'doc-renderer-v2',
+      scope: 'full-output',
+    });
+    const provenance = Evidence.createEvidenceProvenance({
+      profile: 'document-remediation',
+      artifactBinding: binding,
+      capturedAt: '2026-08-01T12:00:00Z',
+      evidence: {
+        ai: { score: 96, issues: [], runAt: '2026-08-01T11:59:00Z' },
+        axe: { score: 100, totalViolations: 0, totalIncomplete: 0, engine: 'axe-core', version: '4.12.1', runAt: '2026-08-01T11:59:30Z' },
+        equalAccess: { score: 98, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0, runAt: '2026-08-01T12:00:00Z' },
+      },
+      findings: [{ source: 'axe', ruleId: 'image-alt', issue: 'Missing alt text' }],
+    });
+    expect(provenance).toMatchObject({
+      provenanceVersion: 1,
+      schemaVersion: 1,
+      profile: 'document-remediation',
+      standard: 'WCAG 2.2 AA',
+      artifactFingerprint: `sha256:${binding.digest}`,
+      capturedAt: '2026-08-01T12:00:00.000Z',
+    });
+    expect(provenance.lanes).toMatchObject({
+      ai: { executed: true, findingCount: 0 },
+      axe: { executed: true, findingCount: 0, version: '4.12.1' },
+      equalAccess: { executed: true, findingCount: 0 },
+    });
+    expect(provenance.evidenceDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(provenance.findingDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(provenance.replayKey).toContain('document-remediation:sha256:');
+  });
+
+  it('creates and verifies a tamper-evident evidence manifest', () => {
+    const binding = Evidence.createArtifactBinding({ title: 'Manifest fixture' }, { rendererRevision: 'lab-v2' });
+    const attached = Evidence.attachEvidenceProvenance({
+      verificationState: 'complete',
+      executionState: 'complete',
+      outcomeState: 'pass',
+      fullyVerifiedSuccess: true,
+      requiresManualReview: false,
+      knownFindingCount: 0,
+      reviewCount: 0,
+      reasons: [],
+    }, {
+      profile: 'accessibility-lab',
+      artifactBinding: binding,
+      evidence: {
+        manual: { executed: true, findingCount: 0, reviewCount: 0 },
+        axe: { executed: true, findingCount: 0, reviewCount: 0, version: '4.12.1' },
+      },
+    }, 'accessibility-lab');
+    expect(attached.evidenceManifest).toMatchObject({
+      manifestVersion: 1,
+      evidenceProfile: 'accessibility-lab',
+      manifestDigest: expect.stringMatching(/^sha256:/),
+      manifestId: expect.stringContaining('accessibility-lab:sha256:'),
+    });
+    expect(Evidence.verifyEvidenceManifest(attached.evidenceManifest)).toMatchObject({ valid: true });
+    const tampered = { ...attached.evidenceManifest, verification: { ...attached.evidenceManifest.verification, outcomeState: 'fail' } };
+    expect(Evidence.verifyEvidenceManifest(tampered)).toMatchObject({ valid: false, reason: 'manifest-digest-mismatch' });
+  });
+  it('classifies actionable evidence changes without treating timestamps as staleness', () => {
+    const base = {
+      provenanceVersion: 1,
+      profile: 'accessibility-lab',
+      artifactFingerprint: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      rendererRevision: 'lab-v1',
+      evidenceDigest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      findingDigest: 'sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+      replayKey: 'accessibility-lab:base',
+      capturedAt: '2026-08-01T10:00:00.000Z',
+    };
+    const timestampOnly = Evidence.compareEvidenceProvenance(base, { ...base, capturedAt: '2026-08-01T11:00:00.000Z' });
+    expect(timestampOnly).toMatchObject({ changed: false, stale: false, reasons: [] });
+    const changed = Evidence.compareEvidenceProvenance(base, {
+      ...base,
+      artifactFingerprint: 'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+      evidenceDigest: 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      replayKey: 'accessibility-lab:changed',
+    });
+    expect(changed).toMatchObject({ changed: true, stale: true });
+    expect(changed.reasons).toEqual(expect.arrayContaining(['artifact-binding-changed', 'engine-evidence-changed']));
+  });
+  it('attaches provenance to canonical verification results', () => {
+    const result = Evidence.deriveVerificationState({
+      profile: 'document-remediation',
+      evidence: {
+        ai: { score: 96, issues: [] },
+        axe: { score: 100, totalViolations: 0, totalIncomplete: 0 },
+        equalAccess: { score: 98, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+      },
+    });
+    expect(result).toMatchObject({
+      evidenceSchemaVersion: 1,
+      evidenceProfile: 'document-remediation',
+      evidenceProvenance: { profile: 'document-remediation', evidenceDigest: expect.stringMatching(/^sha256:/) },
+    });
+  });
+});
+describe('canonical VerificationPolicy facade', () => {
+  it('delegates the standalone policy to shared evidence when available', () => {
+    loadAlloModule('verification_policy_module.js');
+    const originalDerive = Evidence.deriveVerificationState;
+    let sharedCalls = 0;
+    Evidence.deriveVerificationState = (...args) => {
+      sharedCalls += 1;
+      return originalDerive(...args);
+    };
+    let result;
+    try {
+      result = window.AlloModules.VerificationPolicy.deriveVerificationState({
+        ai: { score: 96, issues: [] },
+        axe: { score: 100, totalViolations: 0, totalIncomplete: 0 },
+        equalAccess: { score: 98, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+      });
+    } finally {
+      Evidence.deriveVerificationState = originalDerive;
+    }
+    expect(sharedCalls).toBe(1);
+    expect(result).toMatchObject({
+      verificationState: 'complete',
+      afterScoreVerified: true,
+      requiresManualReview: false,
+    });
+  });
+});
 describe('profile-aware verification', () => {
   const manualPass = { executed: true, findingCount: 0, reviewCount: 0 };
   const axePass = { executed: true, findingCount: 0, reviewCount: 0 };

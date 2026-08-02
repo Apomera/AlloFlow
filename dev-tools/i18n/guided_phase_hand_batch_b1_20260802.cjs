@@ -1,0 +1,95 @@
+const keys = [
+  'phase_access', 'phase_access_description', 'phase_assess', 'phase_assess_description',
+  'phase_assign', 'phase_assign_description', 'phase_deliver', 'phase_deliver_description',
+  'phase_finish', 'phase_finish_description', 'phase_organize', 'phase_organize_description',
+  'phase_participate', 'phase_participate_description', 'phase_plan', 'phase_plan_description',
+  'phase_understand', 'phase_understand_description', 'phase_context', 'phase_progress', 'phase_of',
+];
+const make = (values) => Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+
+module.exports = {
+  french: make([
+    'Rendre accessible', 'Proposer plusieurs façons de percevoir et de comprendre le contenu.', 'Vérifier les apprentissages', 'Rassembler des preuves et vérifier l’alignement.',
+    'Attribuer', 'Rédiger les consignes, objectifs et critères de réussite destinés aux élèves.', 'Prévisualiser et diffuser', 'Choisir le bon mode d’exportation, de partage ou de séance en direct.',
+    'Réviser et terminer', 'Relire la leçon et enregistrer le résumé de fin.', 'Organiser', 'Relier les ressources en une séquence enseignable.',
+    'Favoriser la participation', 'Ajouter des façons de pratiquer, discuter, explorer et créer.', 'Planifier', 'Choisir la source et le résultat attendu.',
+    'Comprendre', 'Repérer les obstacles, les concepts et les priorités pédagogiques.', 'Étape guidée', 'Progression des étapes guidées', 'Étape {current} sur {total}',
+  ]),
+  german: make([
+    'Zugänglich machen', 'Mehrere Möglichkeiten schaffen, Inhalte wahrzunehmen und zu verstehen.', 'Lernen prüfen', 'Nachweise sammeln und die Übereinstimmung prüfen.',
+    'Zuweisen', 'Aufgaben, Ziele und Erfolgskriterien für die Lernenden formulieren.', 'Vorschau und Bereitstellung', 'Den passenden Export-, Freigabe- oder Live-Sitzungsweg auswählen.',
+    'Überprüfen und abschließen', 'Die Lektion prüfen und die Abschlusszusammenfassung speichern.', 'Organisieren', 'Ressourcen zu einer unterrichtbaren Abfolge verbinden.',
+    'Beteiligung aufbauen', 'Möglichkeiten zum Üben, Diskutieren, Erkunden und Gestalten ergänzen.', 'Planen', 'Quelle und gewünschtes Ergebnis auswählen.',
+    'Verstehen', 'Barrieren, Konzepte und pädagogische Prioritäten erkennen.', 'Geführte Phase', 'Fortschritt der geführten Phasen', 'Phase {current} von {total}',
+  ]),
+  spanish_castilian: make([
+    'Hacer accesible', 'Crear varias formas de percibir y comprender el contenido.', 'Comprobar el aprendizaje', 'Recopilar pruebas y verificar la alineación.',
+    'Asignar', 'Escribir instrucciones, objetivos y criterios de éxito para el alumnado.', 'Previsualizar y entregar', 'Elegir la vía adecuada de exportación, uso compartido o sesión en directo.',
+    'Revisar y terminar', 'Revisar la lección y guardar el resumen de finalización.', 'Organizar', 'Conectar los recursos en una secuencia que se pueda enseñar.',
+    'Crear participación', 'Añadir formas de practicar, debatir, explorar y crear.', 'Planificar', 'Elegir la fuente y el resultado previsto.',
+    'Comprender', 'Encontrar barreras, conceptos y prioridades didácticas.', 'Fase guiada', 'Progreso de la fase guiada', 'Fase {current} de {total}',
+  ]),
+  italian: make([
+    'Rendere accessibile', 'Creare più modi per percepire e comprendere il contenuto.', 'Verificare l’apprendimento', 'Raccogliere prove e verificare l’allineamento.',
+    'Assegnare', 'Scrivere istruzioni, obiettivi e criteri di successo rivolti agli studenti.', 'Anteprima e distribuzione', 'Scegliere il percorso corretto per esportare, condividere o svolgere una sessione dal vivo.',
+    'Rivedere e terminare', 'Rivedere la lezione e salvare il riepilogo del completamento.', 'Organizzare', 'Collegare le risorse in una sequenza insegnabile.',
+    'Costruire la partecipazione', 'Aggiungere modi per esercitarsi, discutere, esplorare e creare.', 'Pianificare', 'Scegliere la fonte e il risultato previsto.',
+    'Comprendere', 'Individuare barriere, concetti e priorità didattiche.', 'Fase guidata', 'Avanzamento della fase guidata', 'Fase {current} di {total}',
+  ]),
+  portuguese_brazil: make([
+    'Tornar acessível', 'Criar várias formas de perceber e compreender o conteúdo.', 'Verificar a aprendizagem', 'Reunir evidências e verificar o alinhamento.',
+    'Atribuir', 'Escrever instruções, objetivos e critérios de sucesso para os estudantes.', 'Visualizar e entregar', 'Escolher a melhor rota de exportação, compartilhamento ou sessão ao vivo.',
+    'Revisar e concluir', 'Revisar a lição e salvar o resumo de conclusão.', 'Organizar', 'Conectar os recursos em uma sequência ensinável.',
+    'Criar participação', 'Adicionar formas de praticar, discutir, explorar e criar.', 'Planejar', 'Escolher a fonte e o resultado pretendido.',
+    'Compreender', 'Encontrar barreiras, conceitos e prioridades instrucionais.', 'Etapa guiada', 'Progresso da etapa guiada', 'Etapa {current} de {total}',
+  ]),
+  arabic: make([
+    'إتاحة الوصول', 'إنشاء طرق متعددة لإدراك المحتوى وفهمه.', 'التحقق من التعلم', 'جمع الأدلة والتحقق من المواءمة.',
+    'تعيين', 'كتابة التعليمات والأهداف ومعايير النجاح الموجهة إلى الطلاب.', 'المعاينة والتسليم', 'اختيار مسار التصدير أو المشاركة أو الجلسة المباشرة المناسب.',
+    'المراجعة والإنهاء', 'مراجعة الدرس وحفظ ملخص الإكمال.', 'التنظيم', 'ربط الموارد في تسلسل قابل للتدريس.',
+    'بناء المشاركة', 'إضافة طرق للممارسة والمناقشة والاستكشاف والإبداع.', 'التخطيط', 'اختيار المصدر والنتيجة المقصودة.',
+    'الفهم', 'العثور على العوائق والمفاهيم والأولويات التعليمية.', 'مرحلة موجّهة', 'تقدم المرحلة الموجّهة', 'المرحلة {current} من {total}',
+  ]),
+  chinese_simplified: make([
+    '无障碍化', '提供多种感知和理解内容的方式。', '检查学习情况', '收集证据并验证一致性。',
+    '布置', '编写面向学生的说明、目标和成功标准。', '预览并交付', '选择合适的导出、分享或实时课堂路径。',
+    '复习并完成', '复习课程并保存完成摘要。', '组织', '将资源连接成可教学的顺序。',
+    '促进参与', '添加练习、讨论、探索和创作的方式。', '规划', '选择来源和预期成果。',
+    '理解', '找出障碍、概念和教学重点。', '引导阶段', '引导阶段进度', '第 {current} 阶段，共 {total} 个阶段',
+  ]),
+  japanese: make([
+    'アクセシブルにする', '内容を知覚し理解するための複数の方法を用意します。', '学習を確認', '証拠を集め、整合性を確認します。',
+    '課題を割り当てる', '学習者向けの指示、目標、成功基準を作成します。', 'プレビューと配布', '適切なエクスポート、共有、ライブセッションの方法を選びます。',
+    '確認して完了', 'レッスンを確認し、完了サマリーを保存します。', '整理', '教材を教えやすい順序につなげます。',
+    '参加をつくる', '練習、話し合い、探究、創作の方法を追加します。', '計画', 'ソースと目指す成果を選びます。',
+    '理解', '障壁、概念、指導上の優先事項を見つけます。', 'ガイド付きフェーズ', 'ガイド付きフェーズの進捗', '{total} フェーズ中 {current} フェーズ',
+  ]),
+  hindi: make([
+    'सुलभ बनाएँ', 'सामग्री को देखने और समझने के कई तरीके बनाएँ।', 'सीखने की जाँच करें', 'प्रमाण एकत्र करें और संरेखण की पुष्टि करें।',
+    'असाइन करें', 'विद्यार्थियों के लिए निर्देश, लक्ष्य और सफलता के मानदंड लिखें।', 'पूर्वावलोकन और वितरण', 'उचित निर्यात, साझाकरण या लाइव सत्र का मार्ग चुनें।',
+    'समीक्षा करें और पूरा करें', 'पाठ की समीक्षा करें और पूर्णता सारांश सहेजें।', 'व्यवस्थित करें', 'संसाधनों को पढ़ाने योग्य क्रम में जोड़ें।',
+    'भागीदारी बनाएँ', 'अभ्यास, चर्चा, अन्वेषण और रचना के तरीके जोड़ें।', 'योजना बनाएँ', 'स्रोत और इच्छित परिणाम चुनें।',
+    'समझें', 'बाधाएँ, अवधारणाएँ और शिक्षण प्राथमिकताएँ खोजें।', 'निर्देशित चरण', 'निर्देशित चरण की प्रगति', '{total} में से चरण {current}',
+  ]),
+  swahili: make([
+    'Fanya ipatikane', 'Jenga njia nyingi za kutambua na kuelewa maudhui.', 'Kagua ujifunzaji', 'Kusanya ushahidi na uthibitishe ulinganifu.',
+    'Wagawia', 'Andika maelekezo, malengo na vigezo vya mafanikio kwa wanafunzi.', 'Hakiki na toa', 'Chagua njia inayofaa ya kuhamisha, kushiriki au kipindi cha moja kwa moja.',
+    'Kagua na umalize', 'Kagua somo na uhifadhi muhtasari wa kukamilisha.', 'Panga', 'Unganisha rasilimali katika mfuatano wa kufundishika.',
+    'Jenga ushiriki', 'Ongeza njia za kufanya mazoezi, kujadili, kuchunguza na kuunda.', 'Panga', 'Chagua chanzo na matokeo yaliyokusudiwa.',
+    'Elewa', 'Tafuta vikwazo, dhana na vipaumbele vya mafundisho.', 'Awamu iliyoongozwa', 'Maendeleo ya awamu iliyoongozwa', 'Awamu {current} kati ya {total}',
+  ]),
+  ukrainian: make([
+    'Зробити доступним', 'Створити кілька способів сприймати й розуміти вміст.', 'Перевірити навчання', 'Зібрати докази й перевірити узгодженість.',
+    'Призначити', 'Написати інструкції, цілі та критерії успіху для учнів.', 'Перегляд і передавання', 'Вибрати потрібний спосіб експорту, поширення або прямого сеансу.',
+    'Переглянути й завершити', 'Переглянути урок і зберегти підсумок завершення.', 'Упорядкувати', 'Поєднати ресурси в послідовність для викладання.',
+    'Створити участь', 'Додати способи практикуватися, обговорювати, досліджувати й творити.', 'Планувати', 'Вибрати джерело та очікуваний результат.',
+    'Зрозуміти', 'Знайти бар’єри, поняття та навчальні пріоритети.', 'Керований етап', 'Перебіг керованого етапу', 'Етап {current} із {total}',
+  ]),
+  vietnamese: make([
+    'Tạo khả năng tiếp cận', 'Tạo nhiều cách để cảm nhận và hiểu nội dung.', 'Kiểm tra việc học', 'Thu thập bằng chứng và xác minh sự phù hợp.',
+    'Giao nhiệm vụ', 'Viết hướng dẫn, mục tiêu và tiêu chí thành công cho học sinh.', 'Xem trước và phân phối', 'Chọn cách xuất, chia sẻ hoặc tổ chức phiên trực tiếp phù hợp.',
+    'Xem lại và hoàn tất', 'Xem lại bài học và lưu bản tóm tắt hoàn tất.', 'Sắp xếp', 'Kết nối tài nguyên thành trình tự có thể giảng dạy.',
+    'Xây dựng sự tham gia', 'Thêm cách luyện tập, thảo luận, khám phá và sáng tạo.', 'Lập kế hoạch', 'Chọn nguồn và kết quả mong muốn.',
+    'Hiểu', 'Tìm các rào cản, khái niệm và ưu tiên giảng dạy.', 'Giai đoạn có hướng dẫn', 'Tiến độ giai đoạn có hướng dẫn', 'Giai đoạn {current}/{total}',
+  ]),
+};

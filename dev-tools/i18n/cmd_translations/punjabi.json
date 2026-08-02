@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio ਖੁੱਲ੍ਹ ਗਿਆ।",
   "cmd.open_video_studio_hint": "ਵਾਕਥਰੂ ਰਿਕਾਰਡ ਕਰੋ, ਕੈਪਸ਼ਨ ਲਾਓ ਅਤੇ ਸੰਪਾਦਿਤ ਕਰੋ",
   "palette.ctx.videoStudio": "ਇੱਥੇ — Video Studio",
-  "palette.close": "ਕਮਾਂਡ ਪੈਲੇਟ ਬੰਦ ਕਰੋ"
+  "palette.close": "ਕਮਾਂਡ ਪੈਲੇਟ ਬੰਦ ਕਰੋ",
+  "cmd.apply_lesson_template": "ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਟੈਂਪਲੇਟ ਤੋਂ ਸ਼ੁਰੂ ਕਰੋ",
+  "cmd.apply_lesson_template_done": "ਇਸ ਤੋਂ ਸ਼ੁਰੂ ਕੀਤਾ: ",
+  "cmd.apply_lesson_template_hint": "ਤੁਹਾਡੇ ਸੁਰੱਖਿਅਤ ਟੈਂਪਲੇਟਾਂ ਵਿੱਚੋਂ ਇੱਕ ਤੋਂ ਨਵੀਂ ਯੋਜਨਾ ਸ਼ੁਰੂ ਕਰਦਾ ਹੈ",
+  "cmd.apply_lesson_template_missing": "ਮੈਨੂੰ ਇਸ ਨਾਮ ਦਾ ਟੈਂਪਲੇਟ ਨਹੀਂ ਮਿਲਿਆ: ",
+  "cmd.apply_lesson_template_which": "ਕਿਹੜਾ ਟੈਂਪਲੇਟ?",
+  "cmd.rebuild_lesson_step": "ਯੋਜਨਾ ਦਾ ਇੱਕ ਕਦਮ ਮੁੜ ਬਣਾਓ",
+  "cmd.rebuild_lesson_step_done": "ਕਦਮ ਮੁੜ ਬਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ: ",
+  "cmd.rebuild_lesson_step_hint": "ਇੱਕ ਸਰੋਤ ਮੁੜ ਬਣਾਉਂਦਾ ਹੈ — ਕਦਮ ਦਾ ਨੰਬਰ ਦੱਸੋ",
+  "cmd.rebuild_lesson_step_missing": "ਮੈਨੂੰ ਯੋਜਨਾ ਵਿੱਚ ਉਹ ਕਦਮ ਨਹੀਂ ਮਿਲਿਆ।",
+  "cmd.rebuild_lesson_step_none": "ਯੋਜਨਾ ਵਿੱਚ ਅਜੇ ਕੋਈ ਕਦਮ ਨਹੀਂ ਹਨ।",
+  "cmd.rebuild_lesson_step_which": "ਕਿਹੜਾ ਕਦਮ?",
+  "cmd.run_lesson_blueprint": "ਪਾਠ ਯੋਜਨਾ ਬਣਾਓ",
+  "cmd.run_lesson_blueprint_done": "ਯੋਜਨਾ ਬਣ ਰਹੀ ਹੈ — ਤੁਸੀਂ ਕਾਰਡ ਉੱਤੇ ਹਰ ਕਦਮ ਦੇਖ ਸਕਦੇ ਹੋ।",
+  "cmd.run_lesson_blueprint_hint": "ਮੌਜੂਦਾ ਯੋਜਨਾ ਦੇ ਸਾਰੇ ਸਰੋਤ ਬਣਾਉਂਦਾ ਹੈ",
+  "cmd.cancelled": "ਰੱਦ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਗਈ ਹੈ। ਪ੍ਰਦਾਤਾ ਇਸਨੂੰ ਸਮਰਥਨ ਦੇਣ ’ਤੇ ਮੌਜੂਦਾ ਕਾਰਵਾਈ ਰੁਕ ਜਾਵੇਗੀ।"
 }

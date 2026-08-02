@@ -52,6 +52,15 @@ describe('AlloCommandPalette accessibility', () => {
     expect(source).toContain("const COMMAND_USAGE_KEY = 'allo_command_usage_v1'");
     expect(source).toContain('Pin selected command to favorites');
     expect(source).toContain('Dismiss progress for ');
+expect(source).toContain('{!pending && <button type="button" onClick={() => dismiss(item.progressKey)}');
+    expect(source).toContain('function cancelCommand(ctx, commandOrId, opts = {})');
+    expect(source).toContain("const cancelLabel = (t('cmd.cancel', 'Cancel') + ' ' + commandLabel).trim()");
+    expect(source).toContain("aria-label={cancelLabel}");
+    expect(source).toContain("const retryLabel = (t('cmd.retry', 'Retry') + ' ' + commandLabel).trim()");
+    expect(source).toContain("aria-label={retryLabel}");
+    expect(source).toContain('>Cancel</button>');
+expect(source).toContain("const reason = cmd.unavailableReason || t('palette.unavailable', 'This command is not available in the current context.')");
+    expect(source).toContain("announce(reason, 'info')");
   });
 });
 
@@ -857,7 +866,111 @@ describe('runCommandById (executes a confirmed, previewed command)', () => {
     expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'success']);
   });
 
-  it('turns asynchronous command rejection into an announced lifecycle failure', async () => {
+  it('cancels a pending async command and suppresses its late completion', async () => {
+    let finish;
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const started = AC.runCommandById(ctx, 'create_activity_rubric', {});
+    expect(started).toMatchObject({ pending: true, cancellable: true });
+    const canceled = AC.cancelCommand(ctx, 'create_activity_rubric', { startedAt: started.startedAt });
+    expect(canceled).toMatchObject({ handled: true, cancelled: true });
+    finish(true);
+    await expect(started.completion).resolves.toMatchObject({ handled: true, cancelled: true, ok: false });
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'cancelled']);
+  });
+  it('keeps async commands cancellable without AbortController', async () => {
+    const originalAbortController = globalThis.AbortController;
+    vi.stubGlobal('AbortController', undefined);
+    let finish;
+    let cancellationProbe;
+    const generateCurrentRubric = vi.fn(function () {
+      cancellationProbe = () => this.isCommandCancelled();
+      return new Promise((resolve) => { finish = resolve; });
+    });
+    const onCommandState = vi.fn();
+    try {
+      const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+      const started = AC.runCommandById(ctx, 'create_activity_rubric', {});
+      expect(started).toMatchObject({ pending: true, cancellable: true });
+      const cancelled = AC.cancelCommand(ctx, 'create_activity_rubric', { startedAt: started.startedAt });
+      expect(cancelled).toMatchObject({ handled: true, cancelled: true });
+      expect(cancellationProbe()).toBe(true);
+      finish(true);
+      await expect(started.completion).resolves.toMatchObject({ handled: true, cancelled: true, ok: false });
+    } finally {
+      if (finish) finish(true);
+      vi.stubGlobal('AbortController', originalAbortController);
+    }
+  });
+it('cancels an active command even after its current availability changes', async () => {
+    let finish;
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const initialCtx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const started = AC.runCommandById(initialCtx, 'create_activity_rubric', {});
+    expect(started).toMatchObject({ pending: true, cancellable: true });
+
+    // The command may disappear from the visible registry after a panel or
+    // capability changes, but its progress card still needs to cancel it.
+    const changedCtx = { canGenerateCurrentRubric: false, onCommandState };
+    const cancelled = AC.cancelCommand(changedCtx, 'create_activity_rubric', { startedAt: started.startedAt });
+    expect(cancelled).toMatchObject({ handled: true, cancelled: true });
+    finish(true);
+    await expect(started.completion).resolves.toMatchObject({ handled: true, cancelled: true, ok: false });
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'cancelled']);
+  });
+  it('runPlan cancels an active async command when stop is requested mid-step', async () => {
+    let finish;
+    let stop = false;
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const running = AC.runPlan(ctx, [{ commandId: 'create_activity_rubric', params: {} }], {
+      shouldStop: () => stop,
+      timeoutMs: 1000,
+    });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    stop = true;
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'cancelled']);
+    finish(true);
+    await expect(running).resolves.toMatchObject({ ok: false, stopped: true, cancelled: true, failedStep: 0 });
+  });
+  it('runPlan accepts an AbortSignal and cancels the active command', async () => {
+    let finish;
+    const controller = new AbortController();
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const running = AC.runPlan(ctx, [{ commandId: 'create_activity_rubric', params: {} }], {
+      signal: controller.signal,
+      timeoutMs: 1000,
+    });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    controller.abort();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'cancelled']);
+    finish(true);
+    await expect(running).resolves.toMatchObject({ ok: false, stopped: true, cancelled: true, failedStep: 0 });
+  });
+  it('runPlan stop cancels a deduplicated command already in flight', async () => {
+    let finish;
+    let stop = false;
+    const generateCurrentRubric = vi.fn(() => new Promise((resolve) => { finish = resolve; }));
+    const onCommandState = vi.fn();
+    const ctx = { canGenerateCurrentRubric: true, generateCurrentRubric, onCommandState };
+    const original = AC.runCommandById(ctx, 'create_activity_rubric', {});
+    const running = AC.runPlan(ctx, [{ commandId: 'create_activity_rubric', params: {} }], { shouldStop: () => stop, timeoutMs: 1000 });
+    expect(original).toMatchObject({ pending: true });
+    expect(generateCurrentRubric).toHaveBeenCalledTimes(1);
+    stop = true;
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(onCommandState.mock.calls.map(([state]) => state.status)).toEqual(['pending', 'cancelled']);
+    finish(true);
+    await expect(running).resolves.toMatchObject({ ok: false, stopped: true, cancelled: true, failedStep: 0 });
+    await expect(original.completion).resolves.toMatchObject({ ok: false, cancelled: true });
+  });  it('turns asynchronous command rejection into an announced lifecycle failure', async () => {
     const addToast = vi.fn();
     const onCommandState = vi.fn();
     const generateCurrentRubric = vi.fn(async () => { throw new Error('offline'); });

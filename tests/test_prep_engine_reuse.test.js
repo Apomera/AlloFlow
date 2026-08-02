@@ -153,12 +153,14 @@ describe('reusable Test Prep Hub learning engine', () => {
     const progress = Hub.recordAttempt({ attempts: [] }, fixture, { 'alpha-1': 0, 'alpha-2': 1, 'beta-1': 0, 'beta-2': 1 }, {}, 4567, { mode: 'review', itemIds: fixture.items.map((item) => item.id) });
     const annotations = Hub.upsertAnnotation({}, { packId: fixture.id, targetType: 'general', targetLabel: 'General pack note', text: 'Portable note' }, 9000);
     const studyPlans = { byPack: { [fixture.id]: { weeklyQuestions: 80, weeklySets: 4, activeDays: 3 } } };
-    const payload = Hub.exportProgress(progress, { 'engine-reuse-fixture': ['alpha-1', 'alpha-1', 'beta-2'] }, 9999, { annotations, studyPlans });
+    const contentIdentity = Hub.resolvePackContentIdentity(fixture);
+    const savedReviews = Hub.setReviewItemsForPack({}, fixture.id, contentIdentity, ['alpha-1', 'alpha-1', 'beta-2']);
+    const payload = Hub.exportProgress(progress, savedReviews, 9999, { annotations, studyPlans });
     const restored = Hub.importProgress(JSON.stringify(payload));
 
-    expect(payload).toMatchObject({ schemaVersion: 3, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
+    expect(payload).toMatchObject({ schemaVersion: 4, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
     expect(restored.progress).toEqual(Hub.normalizeProgress(progress));
-    expect(restored.reviewItems['engine-reuse-fixture']).toEqual(['alpha-1', 'beta-2']);
+    expect(Hub.reviewItemsForPack(restored.reviewItems, fixture.id, contentIdentity)).toEqual(['alpha-1', 'beta-2']);
     expect(restored.annotations).toEqual(Hub.normalizeAnnotations(annotations));
     expect(restored.studyPlans).toEqual(Hub.normalizeStudyPlans(studyPlans));
     const legacy = Hub.importProgress(JSON.stringify({ schemaVersion: 1, kind: 'alloflow-test-prep-progress', progress, reviewItems: {} }));

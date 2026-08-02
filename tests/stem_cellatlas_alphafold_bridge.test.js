@@ -130,6 +130,8 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
       prefillMetricLabel: 'Within-gene relative mean',
       prefillEvidenceValue: 100,
       prefillCellCount: 448,
+      prefillAtlasDatasetVersion: 'ac56150b-add4-4336-9059-6d3d3ce17f3b',
+      prefillAtlasAssetSha256: '183673651cfa8c473a26641d42011d43be44eb2fea44e6e6ab8e2b0065d07483',
     });
     expect(latestState._alphaFoldExplorer.prefillEvidenceDetail).toContain(
       'detected in 97.5% of 448 mapped cells',
@@ -180,6 +182,10 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     expect(container.textContent).toContain('Learner structural observation');
     expect(container.textContent).toContain('compact core beside a more flexible model region');
     expect(container.textContent).toContain('Source atlas observation (Within-gene relative mean)');
+    expect(container.textContent).toContain('Atlas provenance: dataset version ac56150b-add4-4336-9059-6d3d3ce17f3b');
+    expect(container.textContent).toContain('Copy learner evidence record');
+    expect(container.querySelector('a.cal-provenance-link')?.getAttribute('href')).toBe('https://datasets.cellxgene.cziscience.com/ac56150b-add4-4336-9059-6d3d3ce17f3b.h5ad');
+    expect(container.textContent).toContain('SHA-256 183673651cfa8c473a26641d42011d43be44eb2fea44e6e6ab8e2b0065d07483');
     expect(container.textContent).toContain('No amino-acid sequence is stored');
     const recordQuest = window.StemLab._registry.cellAtlasLab.questHooks.find(
       (quest) => quest.id === 'atlas_scale_record',
@@ -207,6 +213,10 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
           prefillMetricLabel: 'Within-gene relative mean',
           prefillEvidenceDetail: 'INS was detected in 97.5% of 448 mapped beta cells.',
           prefillEvidenceBoundary: 'RNA does not directly measure protein abundance or function.',
+          prefillAtlasDatasetVersion: 'ac56150b-add4-4336-9059-6d3d3ce17f3b',
+          prefillAtlasAssetSha256: '183673651cfa8c473a26641d42011d43be44eb2fea44e6e6ab8e2b0065d07483',
+          prefillAtlasSourceTitle: 'A Single-Cell Transcriptome Atlas of the Human Pancreas',
+          prefillAtlasCitation: 'Muraro et al. (2016), Cell Systems',
         },
       });
       latestState = toolData;
@@ -230,6 +240,10 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
       accession: 'P01308',
       gene: 'INS',
       cellType: 'Beta cell',
+      atlasProvenance: {
+        datasetVersion: 'ac56150b-add4-4336-9059-6d3d3ce17f3b',
+        assetSha256: '183673651cfa8c473a26641d42011d43be44eb2fea44e6e6ab8e2b0065d07483',
+      },
     });
     expect(ready.cellAtlasHandoff).not.toHaveProperty('sequence');
 
@@ -315,6 +329,7 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     const cellConfig = window.StemLab._registry.cellAtlasLab;
     function ReturnedCellAtlas() {
       const [toolData, setToolData] = React.useState(savedToolData);
+      latestState = toolData;
       return cellConfig.render(makeCtx({ toolData, setToolData, theme: 'dark', lang: 'en' }));
     }
     await act(async () => root.render(React.createElement(ReturnedCellAtlas)));
@@ -322,6 +337,12 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     expect(container.textContent).toContain('successfully loaded before this explicit handoff');
     expect(container.textContent).toContain('reported summary score 91.4');
     expect(container.textContent).toContain('Selected PAE pair: residues 24 and 75');
+    expect(container.textContent).toContain('Teacher review packet');
+    expect(container.textContent).toContain('Draft total: 16/16');
+    expect(container.textContent).toContain('Atlas provenance: dataset version ac56150b-add4-4336-9059-6d3d3ce17f3b');
+    await fill('cal-af-teacher-feedback', 'Strong separation of model evidence from function; specify the assay timing next.');
+    expect(latestState.cellAtlasLab.alphaFoldTeacherNote).toContain('Strong separation');
+    expect(container.textContent).toContain('specify the assay timing next');
   });
 
   it('keeps the companion handoff explicit, public-record-only, sequence-free, and mirrored', () => {

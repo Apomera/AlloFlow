@@ -62,13 +62,220 @@ const resolvePersonaSpeakingChar = (personaState, activeSpeaker, speakerName) =>
 };
 
 const READ_ALOUD_STORE_CONTENT_IDS = new Set(['simplified-main', 'faq-active']);
+// Ordinary read-aloud used to identify a clip by sentence text alone. That is
+// ambiguous as soon as the same sentence occurs twice (and especially across a
+// bilingual source/English pair). Strings remain accepted for adventure,
+// script, persona, and legacy callers; leveled-text callers can carry the
+// occurrence/language identity alongside the display text.
+const readAloudUnitText = (unit) => {
+    if (unit && typeof unit === 'object' && !Array.isArray(unit)) {
+        return String(unit.text ?? unit.sentence ?? '');
+    }
+    return String(unit || '');
+};
 
+const readAloudUnitLanguage = (unit, fallback = 'English') => {
+    const language = unit && typeof unit === 'object' && !Array.isArray(unit)
+        ? unit.language
+        : null;
+    return String(language || fallback || 'English').trim() || 'English';
+};
+
+const readAloudUnitOccurrence = (unit, fallback = 0) => {
+    const occurrence = unit && typeof unit === 'object' && !Array.isArray(unit)
+        ? Number(unit.occurrence)
+        : Number(fallback);
+    return Number.isInteger(occurrence) && occurrence >= 0 ? occurrence : 0;
+};
+
+const _pkClampVolume = (value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.max(0, Math.min(1, numeric)) : 1;
+};
+const _pkPlaybackRuntimeByRef = new WeakMap();
+const _pkFallbackPlaybackRef = {};
+
+const _pkAbortController = (controller) => {
+    try { if (controller && !controller.signal.aborted) controller.abort(); } catch (_) {}
+};
+
+const _pkGetPlaybackRuntime = (playbackSessionRef) => {
+    const key = playbackSessionRef && (typeof playbackSessionRef === 'object' || typeof playbackSessionRef === 'function')
+        ? playbackSessionRef
+        : _pkFallbackPlaybackRef;
+    let runtime = _pkPlaybackRuntimeByRef.get(key);
+    if (runtime) return runtime;
+    runtime = {
+        sessionCounter: 0,
+        controller: null,
+        directController: null,
+        directToken: 0,
+        retryTimer: null,
+        browserUtterance: null,
+        browserPaused: false,
+        corruptStoredKeys: new Set(),
+        cleanup: null,
+    };
+    _pkPlaybackRuntimeByRef.set(key, runtime);
+    try {
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+            window.addEventListener('alloflow:playback-stopped', () => {
+                _pkAbortController(runtime.controller);
+                _pkAbortController(runtime.directController);
+                runtime.controller = null;
+                runtime.directController = null;
+                if (runtime.retryTimer) clearTimeout(runtime.retryTimer);
+                runtime.retryTimer = null;
+                runtime.browserUtterance = null;
+                runtime.browserPaused = false;
+                try { if (typeof runtime.cleanup === 'function') runtime.cleanup(); } catch (_) {}
+            });
+        }
+    } catch (_) {}
+    return runtime;
+};
+
+const _pkReadTtsConfig = () => {
+    try {
+        const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+        return {
+            provider: String(config.ttsProvider || '').trim().toLowerCase(),
+            browserFallback: config.browserTtsFallback === true,
+        };
+    } catch (_) {
+        return { provider: '', browserFallback: false };
+    }
+};
+
+const _pkBrowserLanguageTag = (language) => {
+    const raw = String(language || 'English').trim();
+    if (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(raw)) return raw;
+    const tags = {
+        english: 'en-US', spanish: 'es-ES', french: 'fr-FR', german: 'de-DE',
+        italian: 'it-IT', portuguese: 'pt-BR', chinese: 'zh-CN', japanese: 'ja-JP',
+        korean: 'ko-KR', arabic: 'ar', hindi: 'hi-IN', russian: 'ru-RU',
+        ukrainian: 'uk-UA', dutch: 'nl-NL', polish: 'pl-PL', turkish: 'tr-TR',
+        vietnamese: 'vi-VN', thai: 'th-TH', hebrew: 'he-IL', swahili: 'sw-KE',
+    };
+    const normalized = raw.toLowerCase();
+    const match = Object.keys(tags).find(name => normalized === name || normalized.startsWith(name + ' '));
+    return match ? tags[match] : 'en-US';
+};
+const _pkAwaitWithTimeout = (promise, timeoutMs, signal) => new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (fn, value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        try { if (signal) signal.removeEventListener('abort', onAbort); } catch (_) {}
+        fn(value);
+    };
+    const onAbort = () => {
+        const error = new Error('Playback request was aborted');
+        error.name = 'AbortError';
+        finish(reject, error);
+    };
+    const timer = setTimeout(() => finish(reject, new Error('Audio load timeout')), timeoutMs);
+    if (signal && signal.aborted) return onAbort();
+    try { if (signal) signal.addEventListener('abort', onAbort, { once: true }); } catch (_) {}
+    Promise.resolve(promise).then(value => finish(resolve, value), error => finish(reject, error));
+});
+
+const _pkStartBrowserSpeech = (text, options = {}) => {
+    const { runtime, language, rate, volume, selectedVoice, audioRef, sessionValid, onStart, onEnd, onError, onPauseChange } = options;
+    try {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+        const Utterance = window.SpeechSynthesisUtterance || (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
+        if (!Utterance) return null;
+        const utterance = new Utterance(String(text || ''));
+        const lang = _pkBrowserLanguageTag(language);
+        utterance.lang = lang;
+        utterance.rate = Math.max(0.1, Math.min(10, Number(rate) || 1));
+        utterance.volume = _pkClampVolume(volume);
+        try {
+            const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+            const prefix = lang.toLowerCase().split('-')[0];
+            const sameLanguage = voices.filter(voice => String(voice.lang || '').toLowerCase().split('-')[0] === prefix);
+            utterance.voice = sameLanguage.find(voice => String(voice.name || '').toLowerCase() === String(selectedVoice || '').toLowerCase()) || sameLanguage.find(voice => voice.default) || sameLanguage[0] || null;
+        } catch (_) {}
+        let started = false;
+        let settled = false;
+        const adapter = {
+            _alloBrowserSpeech: true,
+            _alloUtterance: utterance,
+            muted: false,
+            get paused() { return !!(runtime && runtime.browserPaused); },
+            pause() {
+                try { window.speechSynthesis.pause(); } catch (_) {}
+                if (runtime) runtime.browserPaused = true;
+                if (typeof onPauseChange === 'function') onPauseChange(true);
+            },
+            play() {
+                if (runtime && runtime.browserPaused) {
+                    runtime.browserPaused = false;
+                    try { window.speechSynthesis.resume(); } catch (_) {}
+                    if (typeof onPauseChange === 'function') onPauseChange(false);
+                    return Promise.resolve();
+                }
+                if (!started) { started = true; window.speechSynthesis.speak(utterance); }
+                return Promise.resolve();
+            },
+        };
+        const finish = (kind, event) => {
+            if (settled) return;
+            settled = true;
+            if (runtime && runtime.browserUtterance === utterance) {
+                runtime.browserUtterance = null;
+                runtime.browserPaused = false;
+            }
+            if (typeof sessionValid === 'function' && !sessionValid()) return;
+            if (kind === 'end') {
+                if (typeof onEnd === 'function') onEnd(event);
+            } else if (typeof onError === 'function') onError(event);
+        };
+        utterance.onstart = () => {
+            if (typeof sessionValid === 'function' && !sessionValid()) {
+                try { window.speechSynthesis.cancel(); } catch (_) {}
+                return;
+            }
+            if (typeof onStart === 'function') onStart();
+        };
+        utterance.onend = event => finish('end', event);
+        utterance.onerror = event => finish('error', event);
+        if (runtime) { runtime.browserUtterance = utterance; runtime.browserPaused = false; }
+        if (audioRef) audioRef.current = adapter;
+        return adapter;
+    } catch (_) { return null; }
+};
 const shouldUseReadAloudStore = (contentId, mode) => {
     return mode === 'standard' && READ_ALOUD_STORE_CONTENT_IDS.has(contentId || '');
 };
 
-const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
+const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice, options = {}) => {
     try {
+        const occurrence = readAloudUnitOccurrence(options, 0);
+        const language = readAloudUnitLanguage(options, 'English');
+        const profile = Object.assign({
+            voice: currentVoice,
+            speed: Number(options.synthesisRate) || 1,
+            synthesisRate: Number(options.synthesisRate) || 1,
+            language,
+            voiceResolverVersion: 2,
+        }, options.profile || {});
+        const identityKey = `${String(spokenSentence || storeSentence || '').toLowerCase().replace(/\s+/g, ' ').trim()}\u241f${occurrence}\u241f${String(currentVoice || '')}\u241f${language}`;
+        if (options.corruptStoredKeys && options.corruptStoredKeys.has(identityKey)) return null;
+        const inspect = typeof window.__alloInspectReadAloudAudio === 'function' ? window.__alloInspectReadAloudAudio : null;
+        if (inspect) {
+            const inspectOptions = { occurrence, identity: options.identity || null, profile };
+            const inspectOne = (sentence) => {
+                if (!sentence) return null;
+                const result = inspect(sentence, 'reference', inspectOptions);
+                if (!result || (result.status && result.status !== 'ready')) return null;
+                return result.storedUrl || result.url || null;
+            };
+            const inspected = inspectOne(spokenSentence) || (storeSentence !== spokenSentence ? inspectOne(storeSentence) : null);
+            if (inspected) return { url: inspected, identityKey, occurrence, profile };
+        }
         const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
         if (!st) return null;
         // A stored AI take only counts as a hit for the voice it was
@@ -82,7 +289,7 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
             // Shared guard (2026-07-17): the store owns compatibility logic so
             // this path and the karaoke overlay can never drift apart again.
             if (typeof st.getCompatible === 'function') {
-                return st.getCompatible(s, currentVoice ? { voice: currentVoice } : {});
+                return st.getCompatible(s, Object.assign({}, profile, { occurrence, identity: options.identity || null }));
             }
             const url = st.get(s);
             if (!url) return null;
@@ -95,7 +302,8 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
             }
             return url;
         };
-        return urlFor(storeSentence) || (spokenSentence && spokenSentence !== storeSentence ? urlFor(spokenSentence) : null);
+        const stored = urlFor(spokenSentence) || (storeSentence && spokenSentence !== storeSentence ? urlFor(storeSentence) : null);
+        return stored ? { url: stored, identityKey, occurrence, profile } : null;
     } catch (_) {
         return null;
     }
@@ -145,7 +353,7 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
     return typeof window.__alloCaptureKaraokeAudio === 'function';
 };
 
-const captureReadAloudClip = (contentId, mode, sentence, url) => {
+const captureReadAloudClip = (contentId, mode, sentence, url, options = {}) => {
     if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) {
         _pkTrace('pk:capture-skip', {
             contentId: _pkTraceId(contentId),
@@ -159,7 +367,11 @@ const captureReadAloudClip = (contentId, mode, sentence, url) => {
     // __alloCaptureKaraokeAudio snapshots the bytes up front and defers the
     // heavy MP3 encode to an idle slot itself.
     try {
-        const result = window.__alloCaptureKaraokeAudio(sentence, url);
+        const result = window.__alloCaptureKaraokeAudio(sentence, url, {
+            occurrence: readAloudUnitOccurrence(options, 0),
+            identity: options.identity || null,
+            profile: options.profile || null,
+        });
         if (result && typeof result.then === 'function') {
             result.then(
                 (saved) => _pkTrace('pk:capture-result', { saved: !!saved, sentence: String(sentence || '').substring(0, 40) }),
@@ -177,7 +389,7 @@ const captureReadAloudClip = (contentId, mode, sentence, url) => {
 const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap, selectedVoice) => {
     let currentVoice = activeSpeaker || selectedVoice;
     let nextSpeaker = activeSpeaker;
-    const text = sentences[index].trim();
+    const text = readAloudUnitText(sentences[index]).trim();
     const hasOpen = /["“]/.test(text);
     const hasClose = /["”]/.test(text);
     const speakerTagMatch = text.match(/^(\*\*|__)?([A-Za-z0-9\s]+)(\*\*|__)?:\s*["“]/);
@@ -195,7 +407,7 @@ const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap
     if (!activeSpeaker && !explicitVoiceFound) {
         if (hasOpen) {
             let speakerVoice = null;
-            const prevText = index > 0 ? sentences[index - 1] : "";
+            const prevText = index > 0 ? readAloudUnitText(sentences[index - 1]) : "";
             const combinedContext = prevText + " " + text;
             const charNames = Object.keys(voiceMap).sort((a, b) => b.length - a.length);
             for (const name of charNames) {
@@ -255,6 +467,26 @@ const sanitizeTtsText = (text) => String(text || '')
 // resource answered for sentence 0 of the next. Keying on the spoken text
 // makes stale reuse structurally impossible. Live playback and look-ahead
 // MUST both use this builder (same contract as the tts urlCache key).
+const createReadAloudDescriptors = (units, options = {}) => {
+    const counts = options.occurrenceByText instanceof Map ? options.occurrenceByText : new Map();
+    const scope = String(options.scope || 'body');
+    return (Array.isArray(units) ? units : []).map((unit, index) => {
+        const text = readAloudUnitText(unit);
+        const spokenText = sanitizeTtsText(text);
+        const prior = counts.get(spokenText) || 0;
+        const explicit = unit && typeof unit === 'object' && Number.isInteger(Number(unit.occurrence))
+            ? Math.max(0, Number(unit.occurrence))
+            : null;
+        const occurrence = explicit == null ? prior : explicit;
+        counts.set(spokenText, Math.max(prior, occurrence + 1));
+        return Object.assign({}, unit && typeof unit === 'object' ? unit : {}, {
+            text,
+            language: readAloudUnitLanguage(unit, options.language || 'English'),
+            occurrence,
+            identity: (unit && typeof unit === 'object' && unit.identity) || `${scope}:${index}:${occurrence}`,
+        });
+    });
+};
 const sequenceBufferKey = (index, voice, spokenText, synthesisIdentity = '') => {
     const fullText = String(spokenText || '');
     const fullIdentity = `${fullText}\u241f${String(synthesisIdentity || '')}`;
@@ -273,7 +505,8 @@ const chunkPersonaSentences = (sentences) => {
     const weights = [];
     let current = '';
     let currentStart = 0;
-    displaySentences.forEach((sentence, index) => {
+    displaySentences.forEach((sentenceUnit, index) => {
+        const sentence = readAloudUnitText(sentenceUnit);
         if (current && (current.length + sentence.length + 1) > 280) {
             chunks.push(current);
             ranges.push([currentStart, index]);
@@ -403,10 +636,16 @@ const prewarmSequenceAudio = (text, opts) => {
 const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, deps, contentId = null) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] playSequence fired"); } catch(_) {}
+      const playbackRuntime = _pkGetPlaybackRuntime(playbackSessionRef);
+      if (!playbackRuntime.controller || playbackRuntime.controller.signal.aborted) {
+          playbackRuntime.controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      }
+      const sessionSignal = playbackRuntime.controller ? playbackRuntime.controller.signal : null;
       if (playbackSessionRef.current !== sessionId || index >= sentences.length) {
           if (playbackSessionRef.current === sessionId) stopPlayback('ended', contentId, sessionId);
           return;
       }
+      let sequenceErrorHandler = null;
       try {
           let currentVoice = activeSpeaker || selectedVoice;
           let nextSpeaker = activeSpeaker;
@@ -417,7 +656,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               currentVoice = _resolved.currentVoice;
               nextSpeaker = _resolved.nextSpeaker;
           } else if (mode === 'script') {
-              const text = sentences[index].trim();
+              const text = readAloudUnitText(sentences[index]).trim();
               const match = text.match(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/);
               if (match) {
                   const name = match[2];
@@ -435,9 +674,10 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           } else {
               currentVoice = selectedVoice;
           }
+          const currentUnit = sentences[index];
           let audio;
           let audioUrl;
-          let textToSpeak = sentences[index];
+          let textToSpeak = readAloudUnitText(currentUnit);
           if (mode === 'script') {
                textToSpeak = textToSpeak.replace(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/, '');
           }
@@ -470,105 +710,184 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               };
           });
           if (!preloadedAudio) setIsGeneratingAudio(true);
-          const personaTtsLanguage = mode === 'persona'
+          const fallbackTtsLanguage = mode === 'persona'
               ? resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage)
-              : null;
+              : (leveledTextLanguage || 'English');
+          const segmentLanguage = readAloudUnitLanguage(currentUnit, fallbackTtsLanguage);
           const personaTtsSpeed = mode === 'persona' ? resolvePersonaTtsSpeed(voiceSpeed) : 1;
-          const personaSynthesisIdentity = mode === 'persona'
-              ? `${personaTtsSpeed}\u241f${personaTtsLanguage}`
-              : '';
+          const synthesisIdentity = `${personaTtsSpeed}\u241f${segmentLanguage}`;
+          const segmentOccurrence = readAloudUnitOccurrence(currentUnit, 0);
+          const segmentIdentity = currentUnit && typeof currentUnit === 'object' ? currentUnit.identity : null;
+          const segmentProfile = {
+              voice: currentVoice,
+              speed: personaTtsSpeed,
+              synthesisRate: personaTtsSpeed,
+              language: segmentLanguage,
+              voiceResolverVersion: 2,
+          };
           // Key AFTER text finalization so the buffer identity includes the
           // spoken text (see sequenceBufferKey).
-          const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak, personaSynthesisIdentity);
+          const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak, synthesisIdentity);
           let audioStoreSentence = textToSpeak;
           let usingStoredReadAloud = false;
-          const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode)
-              ? getStoredReadAloudUrl(sentences[index], audioStoreSentence, currentVoice)
+          const ttsConfig = _pkReadTtsConfig();
+          const storedReadAloud = (ttsConfig.provider !== 'off' && ttsConfig.provider !== 'browser' && shouldUseReadAloudStore(contentId, mode))
+              ? getStoredReadAloudUrl(readAloudUnitText(currentUnit), audioStoreSentence, currentVoice, {
+                  occurrence: segmentOccurrence,
+                  identity: segmentIdentity,
+                  language: segmentLanguage,
+                  synthesisRate: personaTtsSpeed,
+                  profile: segmentProfile,
+                  corruptStoredKeys: playbackRuntime.corruptStoredKeys,
+              })
               : null;
-          const _browserTtsFallbackEnabled = (() => {
-              try {
-                  const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                  return cfg.browserTtsFallback === true;
-              } catch { return false; }
-          })();
+          const storedReadAloudUrl = storedReadAloud && storedReadAloud.url;
+          const _browserTtsFallbackEnabled = ttsConfig.provider === 'browser' || (ttsConfig.provider !== 'off' && ttsConfig.browserFallback);
           let _errorHandled = false;
+          const terminatePlayback = (reason, error) => {
+              if (playbackSessionRef.current !== sessionId) return;
+              _pkTrace('pk:terminal', { idx: index, reason, error: String(error && (error.message || error.error || error.name) || '').substring(0, 100) });
+              setIsGeneratingAudio(false);
+              setIsPlaying(false);
+              setIsPaused(false);
+              setPlayingContentId(null);
+              isPlayingRef.current = false;
+              isSystemAudioActiveRef.current = false;
+              try { stopPlayback(reason || 'error', contentId, sessionId); } catch (_) {}
+          };
+          const advance = () => {
+              if (playbackSessionRef.current !== sessionId) return;
+              playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
+          };
           const speakViaBrowserFallback = (reason) => {
               warnLog(`Browser-TTS fallback at index ${index} (${reason})`);
-              try {
-                  if (!('speechSynthesis' in window)) {
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
-                      return;
-                  }
-                  const utter = new SpeechSynthesisUtterance(textToSpeak);
-                  utter.rate = playbackRateRef.current || 1;
-                  const advance = () => {
-                      if (playbackSessionRef.current !== sessionId) return;
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
-                  };
-                  utter.onend = advance;
-                  utter.onerror = advance;
-                  setPlaybackState(prev => ({ ...prev, currentIdx: index }));
-                  setIsPlaying(true);
-                  setIsGeneratingAudio(false);
-                  window.speechSynthesis.speak(utter);
-              } catch (e) {
-                  warnLog('Browser-TTS fallback threw:', e);
-                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
+              if (ttsConfig.provider === 'off') {
+                  terminatePlayback('tts-off');
+                  return false;
               }
+              const adapter = _pkStartBrowserSpeech(textToSpeak, {
+                  runtime: playbackRuntime,
+                  language: segmentLanguage,
+                  rate: playbackRateRef.current || 1,
+                  volume: voiceVolume,
+                  selectedVoice: currentVoice,
+                  audioRef,
+                  sessionValid: () => playbackSessionRef.current === sessionId && !(sessionSignal && sessionSignal.aborted),
+                  onStart: () => {
+                      setPlaybackState(prev => ({ ...prev, currentIdx: index }));
+                      setIsPlaying(true);
+                      setIsPaused(false);
+                      setIsGeneratingAudio(false);
+                  },
+                  onPauseChange: paused => {
+                      if (playbackSessionRef.current === sessionId) {
+                          setIsPaused(paused);
+                          setIsPlaying(!paused);
+                      }
+                  },
+                  onEnd: advance,
+                  onError: event => {
+                      const code = String(event && (event.error || event.name) || '').toLowerCase();
+                      if (code === 'not-allowed' || code === 'notallowederror') {
+                          terminatePlayback('not-allowed', event);
+                      } else {
+                          advance();
+                      }
+                  },
+              });
+              if (!adapter) {
+                  terminatePlayback('browser-tts-unavailable');
+                  return false;
+              }
+              setIsGeneratingAudio(false);
+              setIsPlaying(true);
+              setIsPaused(false);
+              adapter.play().catch(error => terminatePlayback('browser-play-failed', error));
+              return true;
           };
           const handlePlaybackError = (err) => {
               if (_errorHandled) return;
               _errorHandled = true;
               warnLog(`Playback error at index ${index} (Retry ${retryCount}):`, err);
+              if (audioUrl && !usingStoredReadAloud) releaseBlob(audioUrl);
+              delete audioBufferRef.current[bufferKey];
+              if (playbackSessionRef.current !== sessionId) return;
+              const errorName = String(err && err.name || '');
+              const errorCode = String(err && (err.code || err.error) || '').toLowerCase();
+              const requiresBrowser = ttsConfig.provider === 'browser' || !!(err && err.useBrowserTts) || errorCode === 'browser-tts-required';
+              const isNotAllowed = errorName === 'NotAllowedError' || errorCode === 'not-allowed';
+              const isAbort = errorName === 'AbortError';
+              const isRefusal = !!(err && err.isModelRefusal === true);
+              const canRetryMedia = !!audioUrl && !usingStoredReadAloud && !requiresBrowser && !isAbort && !isNotAllowed && retryCount < 1;
               _pkTrace('pk:error', {
                   idx: index,
                   retry: retryCount,
+                  stored: usingStoredReadAloud,
                   error: String((err && err.message) || (err && err.type) || err).substring(0, 120),
-                  willRetry: retryCount < 3,
+                  willRetry: canRetryMedia,
               });
-              if (audioUrl) {
-                  releaseBlob(audioUrl);
+              if (isNotAllowed) {
+                  terminatePlayback('not-allowed', err);
+                  return;
               }
-              delete audioBufferRef.current[bufferKey];
-              if (playbackSessionRef.current === sessionId) {
-                  const isRefusal = err && err.isModelRefusal === true;
-                  const isAbort = err && (err.name === 'AbortError' || err.name === 'NotAllowedError');
-                  if (isAbort) return;
-                  if (isRefusal) {
-                      if (_browserTtsFallbackEnabled) {
-                          warnLog(`Segment ${index} refused by Gemini safety filter — using browser TTS fallback.`);
-                          speakViaBrowserFallback('refusal');
-                      } else {
-                          warnLog(`Segment ${index} refused by Gemini safety filter — skipping (enable browserTtsFallback to hear sentence via system voice).`);
-                          playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
+              if (isAbort) {
+                  terminatePlayback('aborted', err);
+                  return;
+              }
+              if (usingStoredReadAloud) {
+                  const corruptKey = (audio && audio._alloStoredIdentityKey) || (storedReadAloud && storedReadAloud.identityKey);
+                  if (corruptKey) playbackRuntime.corruptStoredKeys.add(corruptKey);
+                  _pkTrace('pk:stored-quarantined', { idx: index, occurrence: segmentOccurrence });
+                  try {
+                      const quarantine = window.__alloQuarantineReadAloudAudio;
+                      if (typeof quarantine === 'function') {
+                          Promise.resolve(quarantine(textToSpeak, {
+                              code: 'media-playback-failed',
+                              reason: String((err && err.message) || 'Stored audio could not be decoded or played.'),
+                          }, { occurrence: segmentOccurrence, identity: segmentIdentity, profile: segmentProfile, lane: 'reference', reason: 'media-playback-failed' })).catch(() => {});
                       }
-                      return;
-                  }
-                  if (retryCount < 3) {
-                      const backoffMs = 1000 * Math.pow(2, retryCount);
-                      debugLog(`Retrying segment ${index} in ${backoffMs}ms (attempt ${retryCount + 1}/3)...`);
-                      setTimeout(() => {
-                          if (playbackSessionRef.current === sessionId) {
-                              playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
-                          }
-                      }, backoffMs);
-                  } else if (_browserTtsFallbackEnabled) {
-                      warnLog(`Segment ${index} exhausted Gemini retries — using browser TTS fallback.`);
-                      speakViaBrowserFallback('retries-exhausted');
-                  } else {
-                      warnLog(`Segment ${index} exhausted Gemini retries — skipping.`);
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
-                  }
+                  } catch (_) {}
+                  playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount, speakerName, deps, contentId);
+                  return;
+              }
+              if (ttsConfig.provider === 'off') {
+                  terminatePlayback('tts-off', err);
+                  return;
+              }
+              if (requiresBrowser) {
+                  speakViaBrowserFallback('provider-contract');
+                  return;
+              }
+              if (isRefusal) {
+                  if (_browserTtsFallbackEnabled) speakViaBrowserFallback('refusal');
+                  else advance();
+                  return;
+              }
+              if (canRetryMedia) {
+                  const backoffMs = 500;
+                  debugLog(`Retrying media for segment ${index} in ${backoffMs}ms (attempt 2/2)...`);
+                  try { window.__alloInvalidateTtsUrl?.(audioUrl); } catch (_) {}
+                  if (playbackRuntime.retryTimer) clearTimeout(playbackRuntime.retryTimer);
+                  playbackRuntime.retryTimer = setTimeout(() => {
+                      playbackRuntime.retryTimer = null;
+                      if (playbackSessionRef.current === sessionId && !(sessionSignal && sessionSignal.aborted)) {
+                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
+                      }
+                  }, backoffMs);
+              } else if (_browserTtsFallbackEnabled) {
+                  speakViaBrowserFallback('retries-exhausted');
+              } else {
+                  advance();
               }
           };
+          sequenceErrorHandler = handlePlaybackError;
           if (preloadedAudio) {
               _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'preloaded' });
               audio = preloadedAudio;
               if (audio instanceof Promise) {
                   try {
                       const _tOut = _pkAudioLoadTimeoutMs();
-                      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut));
-                      audio = await Promise.race([audio, timeoutPromise]);
+                      audio = await _pkAwaitWithTimeout(audio, _tOut, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'preloaded' });
                       handlePlaybackError(e);
@@ -584,17 +903,18 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               audioStoreSentence = audio._alloStoreSentence || audioStoreSentence;
               audio.playbackRate = playbackRateRef.current;
               audio.muted = false;
+              audio.volume = _pkClampVolume(voiceVolume);
           } else {
               if (storedReadAloudUrl) {
                   _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'stored' });
                   audioUrl = storedReadAloudUrl;
                   usingStoredReadAloud = true;
+                  audioStoreSentence = textToSpeak;
               } else if (audioBufferRef.current[bufferKey]) {
                   _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'buffer' });
                   try {
                       const _tOut2 = _pkAudioLoadTimeoutMs();
-                      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
-                      audioUrl = await Promise.race([audioBufferRef.current[bufferKey], timeoutPromise]);
+                      audioUrl = await _pkAwaitWithTimeout(audioBufferRef.current[bufferKey], _tOut2, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'buffer' });
                       handlePlaybackError(e);
@@ -605,22 +925,34 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   // The ACTIVE sentence rides the interactive lane so it never
                   // queues behind bulk preloads (AlloBot greetings, Word Sounds
                   // warm-ups, our own look-aheads all share the normal lane).
-                  const promise = callTTS(
-                      textToSpeak,
-                      currentVoice,
-                      personaTtsSpeed,
-                      mode === 'persona'
-                          ? { language: personaTtsLanguage, priority: 'interactive', reason: 'read-aloud-active' }
-                          : { maxRetries: 2, priority: 'interactive', reason: 'read-aloud-active' }
-                  ).then(url => {
-                      addBlobUrl(url);
-                      return url;
-                  });
+                  if (ttsConfig.provider === 'browser') {
+                      speakViaBrowserFallback('configured-provider');
+                      return;
+                  }
+                  if (ttsConfig.provider === 'off') {
+                      terminatePlayback('tts-off');
+                      return;
+                  }
+                  let promise;
+                  try {
+                      const requestOptions = Object.assign({
+                          language: segmentLanguage,
+                          priority: 'interactive',
+                          reason: 'read-aloud-active',
+                          signal: sessionSignal,
+                      }, mode === 'persona' ? {} : { maxRetries: 1 });
+                      promise = Promise.resolve(callTTS(textToSpeak, currentVoice, personaTtsSpeed, requestOptions)).then(url => {
+                          if (url) addBlobUrl(url);
+                          return url;
+                      });
+                  } catch (error) {
+                      handlePlaybackError(error);
+                      return;
+                  }
                   audioBufferRef.current[bufferKey] = promise;
                   try {
                       const _tOut3 = _pkAudioLoadTimeoutMs();
-                      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut3));
-                      audioUrl = await Promise.race([promise, timeoutPromise]);
+                      audioUrl = await _pkAwaitWithTimeout(promise, _tOut3, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'fresh' });
                       handlePlaybackError(e);
@@ -641,6 +973,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               }
               audio = new Audio(audioUrl);
               audio.playbackRate = playbackRateRef.current;
+              audio.volume = _pkClampVolume(voiceVolume);
               audio.preload = 'auto';
           }
           if (audioRef.current && audioRef.current !== audio) {
@@ -655,8 +988,12 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           for (let offset = 1; offset <= maxPreloadAhead; offset++) {
               const targetIdx = index + offset;
               if (targetIdx >= sentences.length) break;
+              const targetUnit = sentences[targetIdx];
               let targetVoice = selectedVoice;
-              let targetText = sentences[targetIdx].trim();
+              let targetText = readAloudUnitText(targetUnit).trim();
+              const targetLanguage = readAloudUnitLanguage(targetUnit, fallbackTtsLanguage);
+              const targetOccurrence = readAloudUnitOccurrence(targetUnit, 0);
+              const targetIdentity = targetUnit && typeof targetUnit === 'object' ? targetUnit.identity : null;
               // Preload text mirrors playback's textToSpeak EXACTLY: mode
               // shaping first, then the ONE shared sanitizer (below, after
               // the mode branches). The inline sanitizer copy that lived here
@@ -669,7 +1006,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   if (!simulatedSpeaker) {
                       if (hasOpen) {
                            let speakerVoice = "Aoede";
-                           const prevText = sentences[targetIdx - 1] || "";
+                           const prevText = readAloudUnitText(sentences[targetIdx - 1]);
                            const combinedContext = prevText + " " + targetText;
                            const charNames = Object.keys(voiceMap).sort((a, b) => b.length - a.length);
                            for (const name of charNames) {
@@ -711,39 +1048,66 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   _pkTrace('pk:preload-skip-empty', { idx: targetIdx, mode, contentId: _pkTraceId(contentId) });
                   continue;
               }
-              const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload, personaSynthesisIdentity);
-              const storedPreloadUrl = isReadAloudStorePlayback
-                  ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice)
+              const targetSynthesisIdentity = `${personaTtsSpeed}\u241f${targetLanguage}`;
+              const targetProfile = {
+                  voice: targetVoice,
+                  speed: personaTtsSpeed,
+                  synthesisRate: personaTtsSpeed,
+                  language: targetLanguage,
+                  voiceResolverVersion: 2,
+              };
+              const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload, targetSynthesisIdentity);
+              const storedPreload = isReadAloudStorePlayback
+                  ? getStoredReadAloudUrl(readAloudUnitText(targetUnit), textToPreload, targetVoice, {
+                      occurrence: targetOccurrence,
+                      identity: targetIdentity,
+                      language: targetLanguage,
+                      synthesisRate: personaTtsSpeed,
+                      profile: targetProfile,
+                      corruptStoredKeys: playbackRuntime.corruptStoredKeys,
+                  })
                   : null;
+              const storedPreloadUrl = storedPreload && storedPreload.url;
               if (storedPreloadUrl) {
                   if (offset === 1) {
                       nextAudioElementPromise = Promise.resolve((() => {
                           const a = new Audio(storedPreloadUrl);
                           a.playbackRate = playbackRateRef.current;
+                          a.volume = _pkClampVolume(voiceVolume);
                           a.preload = 'auto';
                           a.muted = true;
                           a._alloStoredReadAloud = true;
+                          a._alloStoredIdentityKey = storedPreload.identityKey;
                           a._alloStoreSentence = textToPreload;
+                          a._alloCaptureOptions = { occurrence: targetOccurrence, identity: targetIdentity, profile: targetProfile };
                           a.load();
                           return a;
                       })());
                   }
                   continue;
               }
+              if (ttsConfig.provider === 'browser' || ttsConfig.provider === 'off') continue;
               if (!audioBufferRef.current[nextBufferKey]) {
-                  audioBufferRef.current[nextBufferKey] = callTTS(
+                  const preloadOptions = {
+                      language: targetLanguage,
+                      priority: 'normal',
+                      reason: 'read-aloud-preload',
+                      signal: sessionSignal,
+                  };
+                  audioBufferRef.current[nextBufferKey] = Promise.resolve().then(() => callTTS(
                       textToPreload,
                       targetVoice,
                       personaTtsSpeed,
-                      mode === 'persona' ? { language: personaTtsLanguage } : 2
-                  )
+                      preloadOptions
+                  ))
                       .then(url => {
-                          addBlobUrl(url);
+                          if (url) addBlobUrl(url);
                           return url;
                       })
                       .catch(e => {
-                          warnLog(`Preload failed for index ${targetIdx}`, e);
+                          if (!e || e.name !== 'AbortError') warnLog(`Preload failed for index ${targetIdx}`, e);
                           delete audioBufferRef.current[nextBufferKey];
+                          return null;
                       });
               }
               if (offset === 1) {
@@ -752,9 +1116,11 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                           if (!url) return null;
                           const a = new Audio(url);
                           a.playbackRate = playbackRateRef.current;
+                          a.volume = _pkClampVolume(voiceVolume);
                           a.preload = 'auto';
                           a.muted = true;
                           a._alloStoreSentence = textToPreload;
+                          a._alloCaptureOptions = { occurrence: targetOccurrence, identity: targetIdentity, profile: targetProfile };
                           a.load();
                           return a;
                       })
@@ -763,20 +1129,21 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           }
           audio.onended = async () => {
               if (watchdogTimer) clearTimeout(watchdogTimer);
-              releaseBlob(audioUrl);
+              if (!usingStoredReadAloud) releaseBlob(audioUrl);
               delete audioBufferRef.current[bufferKey];
               let nextPreloadedAudio = null;
               if (nextAudioElementPromise) {
                   try {
-                      const raceTimeout = new Promise(r => setTimeout(() => r(null), 300));
-                      nextPreloadedAudio = await Promise.race([nextAudioElementPromise, raceTimeout]);
+                      nextPreloadedAudio = await _pkAwaitWithTimeout(nextAudioElementPromise, 300, sessionSignal).catch(() => null);
                       if (nextPreloadedAudio) {
                           nextPreloadedAudio.muted = false;
                       }
                   } catch (e) {
                   }
               }
-              playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreloadedAudio, 0, speakerName, deps, contentId);
+              if (playbackSessionRef.current === sessionId && !(sessionSignal && sessionSignal.aborted)) {
+                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreloadedAudio, 0, speakerName, deps, contentId);
+              }
           };
           audio.onerror = (e) => {
               if (watchdogTimer) clearTimeout(watchdogTimer);
@@ -823,10 +1190,18 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           if (playPromise !== undefined) {
               playPromise
                   .then(() => {
+                      if (playbackSessionRef.current !== sessionId || (sessionSignal && sessionSignal.aborted)) {
+                          try { audio.pause(); } catch (_) {}
+                          return;
+                      }
                       if (!isPaused) setIsPlaying(true);
                       setIsGeneratingAudio(false);
                       if (!usingStoredReadAloud) {
-                          captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl);
+                          captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl, {
+                              occurrence: segmentOccurrence,
+                              identity: segmentIdentity,
+                              profile: segmentProfile,
+                          });
                       }
                       const armWatchdog = (ms) => {
                           if (watchdogTimer) clearTimeout(watchdogTimer);
@@ -860,27 +1235,22 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   .catch(error => {
                       if (watchdogTimer) clearTimeout(watchdogTimer);
                       _pkTrace('pk:play-fail', { idx: index, error: String(error && error.message || error).substring(0, 100) });
-                      if (error.name !== 'AbortError') {
-                          handlePlaybackError(error);
-                      }
+                      handlePlaybackError(error);
                   });
           }
       } catch (err) {
-          if (playbackSessionRef.current === sessionId) {
-              if (err.message && err.message.includes("finishReason: OTHER")) {
-                  setTimeout(() => {
-                        playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
-                  }, 500);
-              } else {
-                  warnLog("Critical Playback Error:", err);
-                  if (retryCount < 2) {
-                      setTimeout(() => {
-                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
-                      }, 500);
-                  } else {
-                      playSequence(index + 1, sentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, speakerName, deps, contentId);
-                  }
-              }
+          if (playbackSessionRef.current !== sessionId) return;
+          if (typeof sequenceErrorHandler === 'function') {
+              sequenceErrorHandler(err);
+          } else {
+              warnLog('Critical Playback Error:', err);
+              setIsGeneratingAudio(false);
+              setIsPlaying(false);
+              setIsPaused(false);
+              setPlayingContentId(null);
+              isPlayingRef.current = false;
+              isSystemAudioActiveRef.current = false;
+              try { stopPlayback('error', contentId, sessionId); } catch (_) {}
           }
       }
 };
@@ -898,6 +1268,23 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     }
     lastHandleSpeakRef.current = { id: contentId, index: startIndex, time: now };
     console.log("[handleSpeak] Called with:", { contentId, textLen: text?.length, startIndex });
+    const playbackRuntime = _pkGetPlaybackRuntime(playbackSessionRef);
+    _pkAbortController(playbackRuntime.controller);
+    _pkAbortController(playbackRuntime.directController);
+    playbackRuntime.controller = null;
+    playbackRuntime.directController = null;
+    playbackRuntime.directToken += 1;
+    playbackRuntime.corruptStoredKeys = new Set();
+    if (playbackRuntime.retryTimer) clearTimeout(playbackRuntime.retryTimer);
+    playbackRuntime.retryTimer = null;
+    playbackRuntime.cleanup = () => {
+        setIsGeneratingAudio(false);
+        setIsPlaying(false);
+        setIsPaused(false);
+        setPlayingContentId(null);
+        isPlayingRef.current = false;
+        isSystemAudioActiveRef.current = false;
+    };
     if (recognitionRef.current) {
         recognitionRef.current.abort();
     }
@@ -910,7 +1297,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     if (alloBotRef.current && alloBotRef.current.stopSpeaking) {
         alloBotRef.current.stopSpeaking();
     }
-    window.speechSynthesis.cancel();
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
     if (audioRef.current || playingContentId) {
         const wasPlayingThis = playingContentId === contentId;
         stopPlayback('superseded');
@@ -929,6 +1316,11 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             playbackTimeoutRef.current = null;
         }
     }
+    // Invalidate every prior async path (sequence or direct) before this click
+    // can yield. Anchor to the live ref too so tokens never move backwards.
+    playbackRuntime.sessionCounter = Math.max(playbackRuntime.sessionCounter, Number(playbackSessionRef.current) || 0) + 1;
+    const requestSessionId = playbackRuntime.sessionCounter;
+    playbackSessionRef.current = requestSessionId;
     if (!text) {
         isPlayingRef.current = false;
         isSystemAudioActiveRef.current = false;
@@ -943,6 +1335,11 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         // clicking an emoji in the FAQ. Fall back to the raw text.
         const _looksLikeTranslationKey = !text.includes(' ') && text.length < 100;
         const effectiveText = (_looksLikeTranslationKey ? t(text) : text) || text;
+        const handleSpeakTtsConfig = _pkReadTtsConfig();
+        if (handleSpeakTtsConfig.provider === 'off') {
+            playbackRuntime.cleanup();
+            return;
+        }
         // For the SEQUENCE readers (leveled text, FAQ, adventure, persona) the
         // clicked text is only a POSITION — the sentence list is rebuilt from
         // the resource below — so a decorative token there must still start
@@ -973,78 +1370,49 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
     if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
         if (glossaryAudioCache.current.has(effectiveText)) {
             console.log("[handleSpeak] ⚡ Glossary CACHE HIT:", effectiveText.substring(0, 30));
+            const cacheToken = ++playbackRuntime.directToken;
             const audio = new Audio(glossaryAudioCache.current.get(effectiveText));
             audio.playbackRate = 0.85;
+            audio.volume = _pkClampVolume(voiceVolume);
+            audioRef.current = audio;
             setPlayingContentId(contentId);
             setIsPlaying(true);
+            setIsPaused(false);
             isPlayingRef.current = true;
-            audio.onended = () => {
+            const finishCached = () => {
+                 if (playbackRuntime.directToken !== cacheToken) return;
                  setIsPlaying(false);
+                 setIsPaused(false);
                  isPlayingRef.current = false;
+                 isSystemAudioActiveRef.current = false;
                  setPlayingContentId(null);
+                 if (audioRef.current === audio) audioRef.current = null;
             };
-            audio.play().catch(e => warnLog("Cached playback failed", e));
+            audio.onended = finishCached;
+            audio.onerror = finishCached;
+            audio.play().catch(e => { warnLog('Cached playback failed', e); finishCached(); });
             return;
         }
     }
     if (contentId && (contentId === 'simplified-main' || contentId === 'adventure-active' || contentId === 'faq-active' || contentId.startsWith('persona-message-'))) {
         let cleanSentences = [];
-        const isTable = (p) => p.trim().startsWith('|') || p.includes('\n|');
+        let sourceSentenceCount = null;
+        const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
         const parts = getSideBySideContent(effectiveText);
         if (parts) {
             const sourceSentences = parts.source.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
             const targetSentences = parts.target.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
+            sourceSentenceCount = sourceSentences.length;
             cleanSentences = [...sourceSentences, ...targetSentences];
         } else {
-            const paragraphs = effectiveText.split(/\n{2,}/);
-            cleanSentences = paragraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
+            cleanSentences = effectiveText.split(/\n{2,}/).flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
         }
         if (contentId === 'adventure-active' && adventureState.currentScene && adventureState.currentScene.options) {
-             const optionTexts = adventureState.currentScene.options.map(opt =>
-                 typeof opt === 'object' && opt?.action ? opt.action : (typeof opt === 'string' ? opt : String(opt))
-             );
-             cleanSentences = [...cleanSentences, ...optionTexts];
+            const optionTexts = adventureState.currentScene.options.map(opt =>
+                typeof opt === 'object' && opt?.action ? opt.action : (typeof opt === 'string' ? opt : String(opt))
+            );
+            cleanSentences = [...cleanSentences, ...optionTexts];
         }
-        if (cleanSentences.length === 0) {
-            isPlayingRef.current = false;
-            return;
-        }
-        const sessionId = Date.now();
-        playbackSessionRef.current = sessionId;
-        let personaSpeakerName = null;
-        if (contentId.startsWith('persona-message-')) {
-            const _msgIdx = parseInt(contentId.replace('persona-message-', ''), 10);
-            const _msg = personaState.chatHistory[_msgIdx];
-            if (_msg && _msg.speakerName) personaSpeakerName = _msg.speakerName;
-        }
-        let effectiveStartIndex = startIndex;
-        let personaChunkRanges = null;
-        let personaChunkWeights = null;
-        if (contentId.startsWith('persona-message-')) {
-            // One Gemini TTS request per SENTENCE re-rolls the character voice
-            // on every call — merge sentences into ~280-char chunks so the
-            // accent can only change at chunk boundaries (most replies become
-            // 1-2 calls). chunkRanges maps chunk index → [firstSentence,
-            // lastSentence) so the chat view can keep sentence-level highlight
-            // and click-to-play (a click starts at the containing chunk).
-            const _personaChunks = chunkPersonaSentences(cleanSentences);
-            const _ranges = _personaChunks.ranges;
-            effectiveStartIndex = (_ranges.findIndex(r => startIndex >= r[0] && startIndex < r[1])) || 0;
-            if (effectiveStartIndex < 0) effectiveStartIndex = 0;
-            personaChunkRanges = _ranges;
-            personaChunkWeights = _personaChunks.weights;
-            cleanSentences = _personaChunks.chunks;
-        }
-        setPlayingContentId(contentId);
-        setIsPlaying(true);
-        setIsPaused(false);
-        setPlaybackState({
-            sentences: cleanSentences,
-            currentIdx: effectiveStartIndex,
-            chunkRanges: personaChunkRanges,
-            chunkSentenceWeights: personaChunkWeights,
-            currentSentenceIdx: personaChunkRanges ? (personaChunkRanges[effectiveStartIndex]?.[0] ?? startIndex) : effectiveStartIndex
-        });
         let mode = 'standard';
         let voiceMap = {};
         let activeSpeaker = selectedVoice;
@@ -1052,73 +1420,157 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             mode = 'adventure';
             voiceMap = adventureState.voiceMap;
         } else if (textFormat === 'Podcast Script' && contentId === 'simplified-main') {
-             mode = 'script';
-             voiceMap = { "Alex": "Fenrir", "Sam": "Aoede" };
+            mode = 'script';
+            voiceMap = { Alex: 'Fenrir', Sam: 'Aoede' };
         } else if (contentId === 'faq-active') {
-             cleanSentences = [];
-             mode = 'standard';
-             if (generatedContent && generatedContent?.data && Array.isArray(generatedContent?.data)) {
-                  generatedContent?.data.forEach(item => {
-                      if (item.question) cleanSentences.push(...splitTextToSentences(item.question).filter(s => s.trim().length > 0));
-                      if (item.answer) cleanSentences.push(...splitTextToSentences(item.answer).filter(s => s.trim().length > 0));
-                  });
-             } else {
-                  warnLog("FAQ Data missing in handleSpeak, using raw text fallback");
-                  if (effectiveText) {
-                      const sections = effectiveText.split(/\n{2,}/);
-                      cleanSentences = sections.flatMap(s => splitTextToSentences(s)).filter(s => s.trim().length > 0);
-                  }
-             }
-        } else if (contentId.startsWith('persona-message-')) {
-             mode = 'persona';
-             const msgIdx = parseInt(contentId.replace('persona-message-', ''), 10);
-             const resolvedPersonaVoice = resolvePersonaMessageVoice(personaState, msgIdx, selectedVoice, AVAILABLE_VOICES);
-             activeSpeaker = resolvedPersonaVoice.voice;
-        }
-        console.log("[handleSpeak] Using playSequence(, deps) - mode:", mode, "sentences:", cleanSentences.length, "speaker:", personaSpeakerName);
-        playSequence(effectiveStartIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, personaSpeakerName, deps, contentId);
-    } else {
-        setIsGeneratingAudio(true);
-        setPlayingContentId(contentId);
-        try {
-            // Persona translation blocks are always English — don't apply the
-            // target-language phonology hint that leveledTextLanguage carries.
-            const _ttsLang = (contentId && String(contentId).startsWith('persona-translation-')) ? 'English' : leveledTextLanguage;
-            const audioUrl = await callTTS(effectiveText, selectedVoice, 1, 2, _ttsLang);
-            addBlobUrl(audioUrl);
-            const audio = new Audio(audioUrl);
-            if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
-                audio.playbackRate = 0.85;
+            cleanSentences = [];
+            sourceSentenceCount = null;
+            if (generatedContent && generatedContent.data && Array.isArray(generatedContent.data)) {
+                generatedContent.data.forEach(item => {
+                    if (item.question) cleanSentences.push(...splitTextToSentences(item.question).filter(s => s.trim()));
+                    if (item.answer) cleanSentences.push(...splitTextToSentences(item.answer).filter(s => s.trim()));
+                });
+            } else {
+                warnLog('FAQ Data missing in handleSpeak, using raw text fallback');
+                cleanSentences = effectiveText.split(/\n{2,}/).flatMap(s => splitTextToSentences(s)).filter(s => s.trim());
             }
-            audioRef.current = audio;
-            audio.onended = () => {
-                setIsPlaying(false);
-                isPlayingRef.current = false;
-                setPlayingContentId(null);
-                URL.revokeObjectURL(audioUrl);
-                activeBlobUrlsRef.current.delete(audioUrl);
-            };
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    if (error.name !== 'AbortError') {
-                        warnLog("Audio play failed:", error);
-                    }
-                    if (error.name !== 'AbortError') {
-                        setIsPlaying(false);
-                        isPlayingRef.current = false;
-                        setPlayingContentId(null);
-                    }
+        } else if (contentId.startsWith('persona-message-')) {
+            mode = 'persona';
+            const msgIdx = parseInt(contentId.replace('persona-message-', ''), 10);
+            activeSpeaker = resolvePersonaMessageVoice(personaState, msgIdx, selectedVoice, AVAILABLE_VOICES).voice;
+        }
+        if (!cleanSentences.length) {
+            playbackRuntime.cleanup();
+            return;
+        }
+        let personaSpeakerName = null;
+        if (contentId.startsWith('persona-message-')) {
+            const msgIdx = parseInt(contentId.replace('persona-message-', ''), 10);
+            const message = personaState.chatHistory[msgIdx];
+            if (message && message.speakerName) personaSpeakerName = message.speakerName;
+        }
+        let effectiveStartIndex = Math.max(0, Math.min(Number(startIndex) || 0, cleanSentences.length - 1));
+        let personaChunkRanges = null;
+        let personaChunkWeights = null;
+        if (mode === 'persona') {
+            const personaChunks = chunkPersonaSentences(cleanSentences);
+            personaChunkRanges = personaChunks.ranges;
+            personaChunkWeights = personaChunks.weights;
+            const chunkIndex = personaChunkRanges.findIndex(range => effectiveStartIndex >= range[0] && effectiveStartIndex < range[1]);
+            effectiveStartIndex = chunkIndex < 0 ? 0 : chunkIndex;
+            cleanSentences = personaChunks.chunks;
+        } else if (mode === 'standard' || mode === 'script') {
+            const occurrenceByText = new Map();
+            if (sourceSentenceCount != null) {
+                const sourceUnits = createReadAloudDescriptors(cleanSentences.slice(0, sourceSentenceCount), {
+                    language: leveledTextLanguage || 'English', scope: 'source', occurrenceByText,
+                });
+                const targetUnits = createReadAloudDescriptors(cleanSentences.slice(sourceSentenceCount), {
+                    language: 'English', scope: 'target', occurrenceByText,
+                });
+                cleanSentences = [...sourceUnits, ...targetUnits];
+            } else {
+                cleanSentences = createReadAloudDescriptors(cleanSentences, {
+                    language: leveledTextLanguage || 'English', scope: contentId === 'faq-active' ? 'faq' : 'body', occurrenceByText,
                 });
             }
-            setIsPlaying(true);
-        } catch (err) {
-            setError(t('errors.speech_generation_failed'));
-            setIsPlaying(false);
-            isPlayingRef.current = false;
-            setPlayingContentId(null);
-        } finally {
+        }
+        const sessionId = requestSessionId;
+        playbackRuntime.controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        setPlayingContentId(contentId);
+        setIsPlaying(true);
+        setIsPaused(false);
+        setPlaybackState({
+            sentences: cleanSentences.map(readAloudUnitText),
+            currentIdx: effectiveStartIndex,
+            chunkRanges: personaChunkRanges,
+            chunkSentenceWeights: personaChunkWeights,
+            currentSentenceIdx: personaChunkRanges ? (personaChunkRanges[effectiveStartIndex]?.[0] ?? startIndex) : effectiveStartIndex,
+        });
+        console.log('[handleSpeak] Using playSequence - mode:', mode, 'sentences:', cleanSentences.length, 'speaker:', personaSpeakerName);
+        playSequence(effectiveStartIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, personaSpeakerName, deps, contentId);
+    } else {
+        const directToken = ++playbackRuntime.directToken;
+        playbackRuntime.directController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const directSignal = playbackRuntime.directController ? playbackRuntime.directController.signal : null;
+        const directIsCurrent = () => playbackRuntime.directToken === directToken && !(directSignal && directSignal.aborted);
+        let directFinished = false;
+        const finishDirect = () => {
+            if (directFinished || !directIsCurrent()) return;
+            directFinished = true;
             setIsGeneratingAudio(false);
+            setIsPlaying(false);
+            setIsPaused(false);
+            setPlayingContentId(null);
+            isPlayingRef.current = false;
+            isSystemAudioActiveRef.current = false;
+            playbackRuntime.directController = null;
+        };
+        const ttsLanguage = contentId && String(contentId).startsWith('persona-translation-') ? 'English' : (leveledTextLanguage || 'English');
+        const speakDirectViaBrowser = reason => {
+            if (!directIsCurrent() || handleSpeakTtsConfig.provider === 'off') return false;
+            warnLog(`Direct browser-TTS fallback (${reason})`);
+            const adapter = _pkStartBrowserSpeech(sanitizeTtsText(effectiveText), {
+                runtime: playbackRuntime, language: ttsLanguage,
+                rate: contentId && (contentId.startsWith('term-') || contentId.startsWith('def-')) ? 0.85 : 1,
+                volume: voiceVolume, selectedVoice, audioRef, sessionValid: directIsCurrent,
+                onStart: () => { if (directIsCurrent()) { setIsGeneratingAudio(false); setIsPlaying(true); setIsPaused(false); } },
+                onPauseChange: paused => { if (directIsCurrent()) { setIsPaused(paused); setIsPlaying(!paused); } },
+                onEnd: finishDirect, onError: finishDirect,
+            });
+            if (!adapter) return false;
+            setIsGeneratingAudio(false);
+            setIsPlaying(true);
+            setIsPaused(false);
+            adapter.play().catch(finishDirect);
+            return true;
+        };
+        setIsGeneratingAudio(true);
+        setPlayingContentId(contentId);
+        if (handleSpeakTtsConfig.provider === 'browser') {
+            if (!speakDirectViaBrowser('configured-provider')) finishDirect();
+            return;
+        }
+        let audioUrl = null;
+        try {
+            audioUrl = await callTTS(effectiveText, selectedVoice, 1, {
+                language: ttsLanguage, maxRetries: 1, priority: 'interactive',
+                reason: 'direct-read-aloud', signal: directSignal,
+            });
+            if (!directIsCurrent()) return;
+            if (!audioUrl) {
+                if (handleSpeakTtsConfig.browserFallback && speakDirectViaBrowser('null-provider-result')) return;
+                throw new Error('TTS returned no audio (provider unavailable)');
+            }
+            addBlobUrl(audioUrl);
+            const audio = new Audio(audioUrl);
+            audio.volume = _pkClampVolume(voiceVolume);
+            if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) audio.playbackRate = 0.85;
+            audioRef.current = audio;
+            const finishAudio = () => {
+                releaseBlob(audioUrl);
+                if (audioRef.current === audio) audioRef.current = null;
+                finishDirect();
+            };
+            audio.onended = finishAudio;
+            audio.onerror = finishAudio;
+            await audio.play();
+            if (!directIsCurrent()) { try { audio.pause(); } catch (_) {} return; }
+            setIsGeneratingAudio(false);
+            setIsPlaying(true);
+            setIsPaused(false);
+        } catch (err) {
+            if (!directIsCurrent()) return;
+            const code = String(err && (err.code || err.error) || '').toLowerCase();
+            const requiresBrowser = !!(err && err.useBrowserTts) || code === 'browser-tts-required';
+            if (requiresBrowser && speakDirectViaBrowser('provider-contract')) return;
+            if (err && err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                setError(t('errors.speech_generation_failed'));
+                warnLog('Direct TTS failed:', err);
+            }
+            finishDirect();
+        } finally {
+            if (directIsCurrent() && !playbackRuntime.browserUtterance && !(audioRef.current && !audioRef.current.paused)) setIsGeneratingAudio(false);
         }
     }
 };
@@ -3167,6 +3619,11 @@ window.AlloModules.PhaseKHelpers = {
   sanitizeTtsText,
   toSpokenText: sanitizeTtsText,
   sequenceBufferKey,
+  createReadAloudDescriptors,
+  readAloudUnitText,
+  readAloudUnitLanguage,
+  readAloudUnitOccurrence,
+  browserLanguageTag: _pkBrowserLanguageTag,
   resolveAdventureSentenceVoice,
   resolvePersonaMessageVoice,
   syncProgressToFirestore,

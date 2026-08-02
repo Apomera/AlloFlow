@@ -21,7 +21,7 @@ const require = createRequire(import.meta.url);
 // Tools known to call keys that are not yet in ui_strings. Shrink this list as
 // each is extracted; never add to it.
 const BASELINE_UNREGISTERED = new Set([
-  'alphafold', 'arithmetic', 'circuitshelf', 'freeforms', 'magnetism',
+  'arithmetic', 'circuitshelf', 'freeforms', 'magnetism',
   'moleculeshelf', 'ratios', 'simshelf', 'spacestation', 'timeline',
   'timeschedule', 'zoomgallery',
 ]);

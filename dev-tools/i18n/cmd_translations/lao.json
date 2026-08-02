@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "ເປີດ Video Studio ແລ້ວ.",
   "cmd.open_video_studio_hint": "ບັນທຶກ, ໃສ່ຄຳບັນຍາຍ ແລະ ແກ້ໄຂວິດີໂອແນະນຳ",
   "palette.ctx.videoStudio": "ນີ້ — Video Studio",
-  "palette.close": "ປິດແຜງຄຳສັ່ງ"
+  "palette.close": "ປິດແຜງຄຳສັ່ງ",
+  "cmd.apply_lesson_template": "ເລີ່ມຈາກແມ່ແບບທີ່ບັນທຶກໄວ້",
+  "cmd.apply_lesson_template_done": "ເລີ່ມຈາກ ",
+  "cmd.apply_lesson_template_hint": "ເລີ່ມແຜນໃໝ່ຈາກແມ່ແບບໜຶ່ງທີ່ທ່ານບັນທຶກໄວ້",
+  "cmd.apply_lesson_template_missing": "ບໍ່ພົບແມ່ແບບຊື່ ",
+  "cmd.apply_lesson_template_which": "ແມ່ແບບໃດ?",
+  "cmd.rebuild_lesson_step": "ສ້າງຂັ້ນຕອນໜຶ່ງຂອງແຜນຄືນໃໝ່",
+  "cmd.rebuild_lesson_step_done": "ກຳລັງສ້າງຂັ້ນຕອນຄືນໃໝ່: ",
+  "cmd.rebuild_lesson_step_hint": "ສ້າງຊັບພະຍາກອນດຽວຄືນໃໝ່ — ບອກໝາຍເລກຂັ້ນຕອນ",
+  "cmd.rebuild_lesson_step_missing": "ບໍ່ພົບຂັ້ນຕອນນັ້ນໃນແຜນ.",
+  "cmd.rebuild_lesson_step_none": "ແຜນຍັງບໍ່ມີຂັ້ນຕອນ.",
+  "cmd.rebuild_lesson_step_which": "ຂັ້ນຕອນໃດ?",
+  "cmd.run_lesson_blueprint": "ສ້າງແຜນບົດຮຽນ",
+  "cmd.run_lesson_blueprint_done": "ກຳລັງສ້າງແຜນ — ທ່ານສາມາດເບິ່ງແຕ່ລະຂັ້ນຕອນໃນບັດ.",
+  "cmd.run_lesson_blueprint_hint": "ສ້າງຊັບພະຍາກອນທັງໝົດໃນແຜນປັດຈຸບັນ",
+  "cmd.cancelled": "ຮ້ອງຂໍຍົກເລີກແລ້ວ. ການດຳເນີນງານປັດຈຸບັນຈະຢຸດເມື່ອຜູ້ໃຫ້ບໍລິການຮອງຮັບການຍົກເລີກ."
 }

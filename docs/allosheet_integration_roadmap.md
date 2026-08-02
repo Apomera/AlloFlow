@@ -16,8 +16,9 @@ Current implementation status (July 2026): the shared deny-by-default adapter,
 authenticated transfer-ID/receipt queue, independently meaningful destination
 review, BehaviorLens handoff, aggregate-only Quiz item-analysis handoff, and the
 reviewed Student Analytics / RTI and Submission Inbox adapters are implemented.
-AlloSheet also now has explicit multi-table workspace save/reopen and
-deterministic local analysis. Dynamic Assessment is the next candidate.
+AlloSheet also now has explicit multi-table workspace save/reopen, a local
+column profile, deterministic local analysis, and grouped-result CSV export. The reviewed Dynamic Assessment, Live Polling, and Fluency handoffs are now
+implemented; Accessibility Lab and Research Hub are now implemented.
 
 ## Shared integration shape
 
@@ -60,12 +61,12 @@ was omitted and use “reduced-data copy” when that is the accurate claim.
 | ---: | --- | --- | --- | --- |
 | 1 | Student Analytics / RTI | **Implemented:** reviewed `probe_trends`, `intervention_summary`, `goal_progress`, and `group_tier_counts` copies with class, active-learner, and intervention-group scopes. | Class summary defaults to aggregate-only. Individual scopes use fresh transfer-local opaque codes. Names, notes, raw uploads, narrative, safety/SEL data, audio/transcripts, program labels, and decisions are excluded; small tier cells suppress the full distribution. | No return exists. Only a future separately versioned, educator-reviewed contract could propose goal or intervention parameters; it must never change a tier, goal, or student automatically. |
 | 2 | Quiz Analytics / Live Gradebook | **Aggregate item analysis is implemented.** The current one-table copy contains bounded item type, response/scoring counts, rate, sample status, and signal codes. Option distributions, standards mastery, completion counts, and any selected-student score table remain future work. | The implemented adapter excludes names, UIDs, prompts, option wording, raw answers, reflections, AI feedback, session/resource IDs, and cohorts. It enforces the existing five-respondent signal floor again at the transfer boundary. | A later contract could return a reviewed score correction or item exclusion. It must not post grades automatically. |
-| 3 | Submission Inbox Gradebook | **Implemented:** reviewed `saved_submission_summary` and `saved_score_summary` copies of explicitly teacher-saved gradebook records, with assignment selection, 30/90/all date windows (90 days by default), and latest saved per normalized class-name + nickname within each normalized class-name + document-title group or all saved. | Source-only assignment/class labels become transfer-local `A###` codes. Stable learner and assignment IDs are unavailable, so counts represent unique saved class nicknames; reused nicknames may merge, changed nicknames may split, and repeated same-title documents in one class may merge. Names, class names, titles, responses, feedback, rubric prose, keys, and files are excluded. Small score samples and distributions with a nonzero cell below five are suppressed. Saved records may include AI-assisted scoring and do not attest human review; no due-date, late, missing, or criterion claims are made. | No return exists. A future separately versioned contract would require exact allowlisted fields and final confirmation in Submission Inbox; it must never silently replace a submission, feedback, or grade. |
-| 4 | Dynamic Assessment | Dynamic Assessment to AlloSheet: probe/item results, attempt counts, mediation or scaffold level, elapsed time, and progress by skill. | Use coded learner and item IDs, derived scores, and reviewed results. Exclude verbatim answers, observation narrative, generated content, and accommodation or IEP narrative. | A later return could propose a reviewed next probe or goal target; it must not launch an assessment or alter a learner plan automatically. |
-| 5 | Live Polling | Live Polling to AlloSheet after a session: option counts, response rates, correctness by item, and time-window summaries. | Export aggregates only, preserve small-group suppression, and omit participant names, peer identifiers, signaling data, and free-text responses. Do not stream a live roster into AlloSheet. | No return is needed initially. If added later, restrict it to a reviewed poll-item analysis or reusable aggregate report, not live-session state. |
-| 6 | Reading and Math Fluency | Fluency tools to AlloSheet: reviewed date, measure, benchmark context, words correct per minute or math rate, accuracy, duration, and categorized error counts. | Include only educator-reviewed score summaries with a pseudonymous ID. Exclude audio, full transcripts, source passages, word-level response sequences, and student names. | Prefer no return. A future goal-target return would require the same narrow, reviewed contract as Student Analytics. |
-| 7 | Accessibility Lab | Accessibility Lab to AlloSheet: issue counts by WCAG criterion and impact, affected artifact region, audit status, and remediation status. | Exclude full page content, student-entered content, DOM dumps, and long code excerpts. Use bounded issue descriptions and safe element/region labels. | A reviewed priority, owner, or resolution-status update could return later. Automated DOM or document changes remain in the Accessibility Lab's own preview workflow. |
-| 8 | Research Hub / Evidence Graph | Research Hub to AlloSheet: source metadata, evidence-health fields, claim-to-evidence links, method tags, uncertainty, and provenance receipts. | Use metadata and short approved summaries. Exclude full documents, credentials, direct identifiers, restricted cultural material, and unapproved learner interpretation. Follow the existing Tool Integration Contract and SDK review inbox. | If justified, return only reviewed tags, weights, or short interpretations through the Research Hub approval flow. Do not bypass learner interpretation and approval. |
+| 3 | Submission Inbox Gradebook | **Implemented v2:** reviewed `saved_submission_summary` and `saved_score_summary` copies of explicitly teacher-saved gradebook records, with assignment selection, 30/90/all date windows, stable-first identity grouping, legacy fallback, and explicit revision-sensitive human-review attestation. | Source-only labels become transfer-local `A###` codes. Stable class, assignment, and confirmed roster-learner IDs remain local; the artifact reports only coverage counts. Names, IDs, titles, responses, feedback, rubric prose, keys, and files are excluded. Score, review-state, and late/on-time distributions use small-group suppression. Missing work is not inferred because there is no roster denominator. | No return exists. A future separately versioned contract would require exact allowlisted fields and final confirmation in Submission Inbox; it must never silently replace a submission, feedback, or grade. |
+| 4 | Dynamic Assessment | **Implemented:** reviewed `da-session-summary`, optional detailed `da-probe-results`, and `da-progress-summary` tables with date range, summary/detailed mode, and dataset review. | Coded learner/session/item IDs and bounded derived results only. Verbatim answers, examiner observations, session notes, intake/referral data, prompts, answer keys, transcripts, and accommodation/IEP narrative are excluded. Derived progress rates remain explicitly suppressed until at least five sessions exist. | A later return could propose a reviewed next probe or goal target; it must not launch an assessment or alter a learner plan automatically. |
+| 5 | Live Polling | **Implemented:** reviewed post-session `lp-session-summary`, `lp-item-summary`, coded `lp-answer-distribution`, and `lp-time-summary` tables. | Aggregate-only by default; coded session/item/answer IDs, five-person suppression for totals and nonzero buckets, no prompts, codenames, peer IDs, signaling, routing, feedback, Q&A, or free-text responses. Teacher-authored choice labels are an explicit opt-in. | No return is needed. A future reusable report remains one-way and cannot change live-session state. |
+| 6 | Reading and Math Fluency | **Implemented:** reviewed `fluency-measures`, `fluency-trend-summary`, and `fluency-error-summary` tables for WCPM/DCPM, accuracy, timing, benchmark context, and categorized counts. | Transfer-local session codes only; no student IDs, passage/source content, audio, transcripts, word-level sequences, problem text, answers, notes, or reviewer identity. Per-family aggregate suppression applies below three sessions; calibrated benchmark claims require three parallel forms. | Prefer no return. A future goal-target return would require the same narrow, reviewed contract as Student Analytics. |
+| 7 | Accessibility Lab | **Implemented:** reviewed `a11y-review-summary`, `a11y-criterion-summary`, and `a11y-trend-summary` tables with WCAG/impact counts, audit status, remediation status, and bounded trends. | Transfer-local artifact codes only; exclude page content, student text, DOM/HTML, selectors, code excerpts, descriptions, notes, fingerprints, and bindings. | A reviewed priority, owner, or resolution-status update could return later. Automated DOM or document changes remain in the Accessibility Lab's own preview workflow. |
+| 8 | Research Hub / Evidence Graph | Implemented: reviewed research-overview, research-claim-summary, research-evidence-summary, and research-provenance-summary tables with date windows and dataset selection. | Reduced-data metadata only: counts, relationship shape, method tags, status, and receipt health. Claim/evidence text, citations, files, credentials, notes, stable IDs, and unapproved learner interpretation are excluded. | A future return may propose reviewed tags or weights through the Research Hub approval flow; it must never bypass learner interpretation or approval. |
 
 ### 1. Student Analytics / RTI
 
@@ -103,13 +104,14 @@ latest saved record for each normalized class-name + nickname key within a
 normalized class-name + document-title group. Latest saved is the default. The
 fixed tables are `saved_submission_summary` and `saved_score_summary`.
 
-Stable learner and assignment IDs are unavailable. `unique_class_nickname_count`
-therefore reports unique saved class nicknames rather than verified unique
-learners. Reused nicknames may merge different people, changed nicknames may
-split one person, and repeated documents with the same title in one class may
-merge into one assignment group. The source review visibly discloses the limit
-of 2,000 source records and 200 grade results per source record and reports any
-truncation.
+New v2 records use stable class and assignment IDs and a roster learner ID
+after an exact match or explicit confirmation of a normalized match. Legacy and
+unresolved records retain the prior normalized class/title/nickname fallback.
+The artifact never contains those internal IDs; it reports stable and fallback
+coverage instead. `unique_class_nickname_count` remains for compatibility but
+is labeled as unique saved learner groups. The source review visibly discloses
+the limit of 2,000 source records and 200 grade results per source record and
+reports any truncation.
 
 Source-only assignment/class labels distinguish same-titled assignments in the
 review. Each selected assignment/class group becomes a fresh transfer-local
@@ -120,11 +122,97 @@ than five scored responses are available and whenever a
 nonzero score band or result-status cell is smaller than five.
 
 Saving a record does not establish human review: the stored score may be
-AI-assisted. The source also has no reliable due-date field, structured rubric
-criteria, or human-review attestation. The adapter therefore makes no missing,
-late, criterion-level, or human-verified claims. It is a one-way copy with AI
-and writeback disabled. Any future return would require a separately versioned
+AI-assisted. The educator can attest the current grade revision, and regrading
+invalidates that attestation. Review-state counts use the same five-record
+small-group floor. The source now accepts an optional validated ISO due instant
+plus IANA timezone. The adapter derives late only when both timestamps exist,
+applies the five-record small-group rule to on-time/late/unknown buckets, and
+still makes no missing-work or structured-criterion claims. It is a one-way copy
+with AI and writeback disabled. Any future return would require a separately versioned
 allowlist and an exact source-side review before saving.
+
+### 4. Dynamic Assessment
+
+The reviewed Dynamic Assessment adapter is implemented. From a completed
+session summary, the educator can open a nested accessible review, choose a
+date range, summary or detailed mode, and include the session summary, probe
+results, or progress summary tables. The default is a summary transfer with
+the probe table off. The envelope uses fresh coded learner, session, and item
+identifiers, and an optional student identifier is opt-in and disclosed.
+
+`da-session-summary` contains reviewed session-level counts and duration;
+`da-probe-results` is available only in detailed mode and contains coded probe
+outcomes, attempts, mediation level, elapsed time, and bounded skill labels;
+`da-progress-summary` contains descriptive skill-level aggregates. No raw
+responses, examiner observations, notes, intake/referral fields, prompts,
+answer keys, generated content, transcripts, or accommodation/IEP narrative
+cross the boundary. Progress rates and sensitivity are null, with an explicit
+`suppressed (<5 sessions)` status, until the aggregate contains five sessions.
+The adapter declares AI and writeback disabled and records the exclusions and
+limits in provenance. Canvas and Desktop use the same popup bridge callback.
+
+### 5. Live Polling
+
+The reviewed Live Polling adapter is implemented as a post-session aggregate
+snapshot. While the host panel is open, or after completed polls are retained
+for the current session, the educator can open an accessible nested review and
+choose the session, item, coded answer, and 15-minute time-summary tables. The
+default is aggregate-only with teacher-authored choice labels off.
+
+`lp-session-summary` reports bounded duration, poll count, and privacy-aware
+participant/response totals. `lp-item-summary` contains coded poll rows, type,
+duration, response rate, optional aggregate correctness when a poll explicitly
+provides a key, and a text-suppressed status for free-text or word-cloud polls.
+`lp-answer-distribution` uses coded rating/choice rows; nonzero buckets below
+five are suppressed, and labels require explicit opt-in. `lp-time-summary`
+aggregates response volume into 15-minute UTC buckets. No prompt text, learner
+response text, codenames, peer IDs, routing groups, feedback, Q&A, peer
+showcase, or signaling metadata crosses the boundary. AI and writeback are
+disabled, missing work is not inferred, and Canvas/Desktop use the same popup
+bridge callback.
+
+### 6. Reading and Math Fluency
+
+The reviewed Reading and Math Fluency adapter is implemented. From the educator’s
+Fluency panel, an accessible nested review lets the educator choose a 30-day,
+90-day, or all-record window and select session measures, trend summaries, and
+error categories. Reading rows carry WCPM, accuracy, duration, running-record
+error counts, reading level, and explicitly documented benchmark context. Math
+rows carry DCPM, accuracy, duration, operation, difficulty, and bounded attempt
+counts.
+
+Session codes are fresh transfer-local labels. Passage text and titles, source
+and reference text, audio, transcripts, feedback, word-level classifications,
+inserted or “student said” text, problem text, student answers, attempt logs,
+and reviewer identity are excluded. Trend and error aggregates are suppressed
+per measure family until three sessions exist; reading benchmark-ready status
+still requires three calibrated, distinct parallel forms from one passage set.
+The handoff is one-way with `aiEnabled: false`, `writeBack: false`,
+and `transferEnablesAI: false`, and Canvas/Desktop use the same popup bridge.
+
+### 7. Accessibility Lab
+
+The reviewed Accessibility Lab adapter is implemented. From the artifact list,
+an accessible nested review lets the educator choose a 30-day, 90-day, or
+all-review window and select artifact review, WCAG criterion, and monthly trend
+tables. Review rows carry transfer-local artifact codes, artifact type, audit
+status, remediation status, manual check counts, automated violation counts,
+finding counts, and review-history counts.
+
+Criterion rows use bounded rule and WCAG codes with impact, evidence source,
+remediation status, and counts. Artifact titles and content, student-entered
+text, DOM/HTML, selectors, code excerpts, descriptions, notes, fingerprints,
+bindings, replay keys, and stable history IDs are excluded. The handoff is
+one-way with `aiEnabled: false`, `writeBack: false`, and
+`transferEnablesAI: false`, and Canvas/Desktop use the same popup bridge.
+
+### 8. Research Hub / Evidence Graph
+
+The reviewed Research Hub adapter is implemented. From the educator-mode Research Hub header, an accessible nested review lets the educator choose a 30-day, 90-day, or all-record window and include the overview, claim relationship, evidence metadata, and provenance-health tables. The source builds fresh transfer-local C001-style and E001-style codes; stable claim, evidence, source, artifact, relationship, episode, and receipt IDs remain local.
+
+The overview reports inquiry status, method/lane metadata, bounded counts, evidence-graph status, audit status, and integration-health counts. Claim rows report relationship shape and warrant presence without claim text. Evidence rows report type, linked-claim counts, tags, citation/summary presence, reproducibility status, and integration status without content. Provenance rows report family-level completeness and review counts. The handoff excludes claim/evidence text, citations, files, credentials, notes, stable IDs, and unapproved learner interpretation.
+
+The copy is one-way with AI disabled, writeback disabled, and transfer-time AI disabled. Canvas and Desktop use the same authenticated AlloSheet popup bridge.
 
 ### 4–6. Assessment and live-result tools
 
@@ -188,9 +276,14 @@ for that decision.
   probe/intervention/goal/tier tables, random transfer-local codes, and
   all-tier small-cell suppression.
 - **Implemented:** Submission Inbox teacher-saved submission and score
-  summaries with assignment selection, attempt and date controls,
-  transfer-local `A###` assignment codes, and small-group score suppression.
-- **Next candidate:** Dynamic Assessment reviewed results.
+  summaries with stable-first identity, explicit human-review provenance,
+  assignment/date/attempt controls, transfer-local `A###` codes, and
+  small-group score and review-state suppression.
+- **Implemented:** Dynamic Assessment reviewed results with coded bounded
+  tables, optional detailed probes, and five-session suppression for derived
+  progress measures.
+- **Implemented:** Live Polling post-session aggregates with coded answer
+  distributions, time buckets, and five-person suppression.
 
 Phase 1 integrations remain one-way. Each source has a keyboard- and
 screen-reader-operable review, AlloSheet has a second review, and privacy
@@ -198,17 +291,18 @@ fixtures prove excluded fields never enter the envelope.
 
 ### Phase 2 — reviewed measures
 
-- Add Dynamic Assessment reviewed results.
-- Add post-session Live Polling aggregates.
-- Add reviewed reading and math fluency summaries.
+- **Complete:** Add Dynamic Assessment reviewed results.
+- **Complete:** Add post-session Live Polling aggregates.
+- **Complete:** Add reviewed reading and math fluency summaries.
+- **Next candidate:** Add Accessibility Lab issue/status tables.
 
 These integrations should reuse the Phase 1 utility but keep separate source
 allowlists. A generic “export all tool state” method is not acceptable.
 
 ### Phase 3 — workflow and research tables
 
-- Add Accessibility Lab issue/status tables.
-- Add Research Hub metadata and evidence-relationship tables through the
+- **Complete:** Add Accessibility Lab issue/status tables.
+- Complete: Add Research Hub metadata and evidence-relationship tables through the
   existing integration contract and learner approval model.
 
 ### Phase 4 — optional narrow return contracts

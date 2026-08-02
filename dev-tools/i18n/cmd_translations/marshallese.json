@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio emōj kapeḷḷọk.",
   "cmd.open_video_studio_hint": "Rekooti, likūt jeje im kōkōṃanṃan video in tōl ko",
   "palette.ctx.videoStudio": "Ijin — Video Studio",
-  "palette.close": "Kiili command palette eo"
+  "palette.close": "Kiili command palette eo",
+  "cmd.apply_lesson_template": "Jino jen juon template eo kōjparok",
+  "cmd.apply_lesson_template_done": "Jino jen ",
+  "cmd.apply_lesson_template_hint": "Jino juon plan ekāāl jen juon iaan template ko am kōjparok",
+  "cmd.apply_lesson_template_missing": "Jaab loe template eo etan ",
+  "cmd.apply_lesson_template_which": "Template et?",
+  "cmd.rebuild_lesson_step": "Kōṃṃan bar juon step ilo plan",
+  "cmd.rebuild_lesson_step_done": "Kōṃṃan bar step ",
+  "cmd.rebuild_lesson_step_hint": "Kōṃṃan bar juon resource — kwalok nomba eo step",
+  "cmd.rebuild_lesson_step_missing": "Jaab loe step eo ilo plan.",
+  "cmd.rebuild_lesson_step_none": "Plan eo ej jab maroñ step jidik.",
+  "cmd.rebuild_lesson_step_which": "Step et?",
+  "cmd.run_lesson_blueprint": "Kōṃṃan lesson plan",
+  "cmd.run_lesson_blueprint_done": "Plan eo ej kōṃṃan — kwōmaroñ kile kajjojo step ilo card.",
+  "cmd.run_lesson_blueprint_hint": "Kōṃṃan resource ko aolep ilo plan eo kiiō",
+  "cmd.cancelled": "Kōjerbal kōṃṃan bwe en jako. Kōṃṃan eo an jānṃōṃṃan enaaj bōk jān ñe provider eo ej jipan kōjerbal bwe en jako."
 }

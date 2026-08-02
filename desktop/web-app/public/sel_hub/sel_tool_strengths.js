@@ -955,6 +955,32 @@ window.SelHub = window.SelHub || {
         var quizDone = d.quizDone || false;
         // Tab tracking for explorer badge
         var tabsVisited = d.tabsVisited || [];
+        var strengthTabs = [
+          { id: 'discover', label: '\u2B50 Discover' },
+          { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' },
+          { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
+          { id: 'quiz', label: '\uD83E\uDDE9 Quiz' },
+          { id: 'reflect', label: '\uD83D\uDCDD Reflect' },
+          { id: 'stories', label: '\uD83D\uDCD6 Stories' },
+          { id: 'compare', label: '\uD83D\uDD0D Compare' },
+          { id: 'challenge', label: '\u26A1 Challenge' },
+          { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' },
+          { id: 'planner', label: '\uD83D\uDCCB Planner' },
+          { id: 'peers', label: '\uD83D\uDC65 Peers' },
+          { id: 'affirm', label: '\uD83D\uDCAC Affirm' },
+          { id: 'coach', label: '\uD83E\uDD16 Coach' },
+          { id: 'profile', label: '\uD83D\uDCCA Profile' },
+          { id: 'print', label: '\uD83D\uDDA8 Print' }
+        ];
+
+        var selectStrengthTab = function(nextTab) {
+          var next = strengthTabs.find(function(item) { return item.id === nextTab; });
+          if (!next) return;
+          sfxSelect();
+          var tv = tabsVisited.indexOf(next.id) < 0 ? tabsVisited.concat([next.id]) : tabsVisited;
+          upd({ tab: next.id, tabsVisited: tv });
+          if (announceToSR) announceToSR(next.label + ' tab selected');
+        };
 
         // ── Badge check on state change ──
         React.useEffect(function() {
@@ -973,6 +999,7 @@ window.SelHub = window.SelHub || {
             next = selectedStrengths.concat([{ id: strength.id, label: strength.label, emoji: strength.emoji, category: categoryId }]);
           }
           upd({ selectedStrengths: next });
+          if (announceToSR) announceToSR(strength.label + (exists ? ' deselected' : ' selected') + '. ' + next.length + ' strengths selected');
         };
 
         var isSelected = function(strengthId, categoryId) {
@@ -1068,7 +1095,7 @@ window.SelHub = window.SelHub || {
         var bgDark = _strFg('#0f172a');
 
         return h('div', { className: 'selh-strengths', style: { display: 'flex', flexDirection: 'column', height: '100%', background: bgDark, color: _strFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
           // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
           (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 
@@ -1081,17 +1108,41 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _strFg('#fbbf24'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\u2B50 ' + selectedStrengths.length + ' strengths'),
-              h('button', { 'aria-label': 'Export', onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#c4b5fd'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount),
-              h('button', { 'aria-label': 'Export', onClick: exportProfile, style: { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#6ee7b7'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Export')
+              h('button', { 'aria-label': 'Show strengths badges', 'aria-expanded': showBadges, onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#c4b5fd'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount),
+              h('button', { 'aria-label': 'Export strengths profile', onClick: exportProfile, style: { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#6ee7b7'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Export')
             )
           ),
 
           // Tabs (scrollable row)
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('strengths', h, ctx) : null),
-          h('div', { role: 'tablist', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
-            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'stories', label: '\uD83D\uDCD6 Stories' }, { id: 'compare', label: '\uD83D\uDD0D Compare' }, { id: 'challenge', label: '\u26A1 Challenge' }, { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }, { id: 'print', label: '\uD83D\uDDA8 Print' }].map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Strengths Finder activities', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
+            strengthTabs.map(function(t) {
               var active = tab === t.id;
-              return h('button', { 'aria-label': 'nowrap', key: t.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? _strFg('#fbbf24') : _strFg('#94a3b8'), background: active ? 'rgba(245,158,11,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
+              return h('button', {
+                'aria-label': t.label,
+                'aria-controls': 'strengths-tab-panel',
+                key: t.id,
+                id: 'strengths-tab-' + t.id,
+                'data-strength-tab': t.id,
+                role: 'tab',
+                'aria-selected': active,
+                'tabIndex': active ? 0 : -1,
+                onClick: function() { selectStrengthTab(t.id); },
+                onKeyDown: function(e) {
+                  if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                  e.preventDefault();
+                  var currentIdx = strengthTabs.findIndex(function(item) { return item.id === t.id; });
+                  var nextIdx;
+                  if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = strengthTabs.length - 1;
+                  else nextIdx = (currentIdx + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + strengthTabs.length) % strengthTabs.length;
+                  var nextTab = strengthTabs[nextIdx];
+                  selectStrengthTab(nextTab.id);
+                  var nextButton = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-strength-tab="' + nextTab.id + '"]') : null;
+                  if (nextButton && nextButton.focus) nextButton.focus();
+                },
+                style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? _strFg('#fbbf24') : _strFg('#94a3b8'), background: active ? 'rgba(245,158,11,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' }
+              }, t.label);
             })
           ),
 
@@ -1149,7 +1200,7 @@ window.SelHub = window.SelHub || {
           ) : null,
 
           // Content area
-          h('div', { style: { flex: 1, overflow: 'auto', padding: 16 } },
+          h('div', { id: 'strengths-tab-panel', role: 'tabpanel', 'aria-labelledby': 'strengths-tab-' + tab, style: { flex: 1, overflow: 'auto', padding: 16 } },
 
             // ── DISCOVER TAB ──
             tab === 'discover' ? h('div', null,
@@ -1167,7 +1218,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                     strengths.map(function(s) {
                       var sel = isSelected(s.id, cat.id);
-                      return h('button', { 'aria-label': 'Toggle option', key: s.id, onClick: function() { toggleStrength(s, cat.id); }, title: s.desc, style: {
+                      return h('button', { 'aria-label': s.label + (sel ? ' selected' : ' not selected'), 'aria-pressed': sel, key: s.id, onClick: function() { toggleStrength(s, cat.id); }, title: s.desc, style: {
                         display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12,
                         background: sel ? cat.color + '22' : 'rgba(255,255,255,0.04)',
                         border: sel ? '2px solid ' + cat.color : '1px solid rgba(99,102,241,0.15)',
@@ -2257,7 +2308,7 @@ window.SelHub = window.SelHub || {
                   'What careers match my strengths?',
                   'How can I turn a weakness into a strength?'
                 ]).map(function(q) {
-                  return h('button', { 'aria-label': '5px 10px', key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)', color: _strFg('#fbbf24'), fontSize: 10, cursor: 'pointer' } }, q);
+                  return h('button', { 'aria-label': q, key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)', color: _strFg('#fbbf24'), fontSize: 10, cursor: 'pointer' } }, q);
                 })
               )
             ) : null,

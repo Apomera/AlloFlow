@@ -27,5 +27,21 @@ describe('Restorative Circle field label accessibility', () => {
 
   it('keeps the conditional comparison reflection explicitly named', () => {
     expect(source()).toContain("h('textarea', {\n                        'aria-label': 'Comparison reflection'");
+  });it('surfaces the active session phase and live role-play updates', () => {
+    const text = source();
+    expect(text).toContain("role: 'progressbar'");
+    expect(text).toContain("'aria-valuetext': 'Step ' + (harmStep + 1) + ' of ' + HARM_REPAIR_STEPS.length");
+    expect(text).toContain("role: 'log'");
+    expect(text).toContain("'aria-label': 'Your next response'");
+    expect(text).toContain("'aria-label': 'Restorative role-play conversation'");
+  });
+
+  it('uses task-specific names for phase and choice controls', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': labels[t]");
+    expect(text).toContain("'aria-label': secLabels[sec]");
+    expect(text).toContain("'aria-label': (isAdded ? 'Added agreement: ' : 'Add agreement: ') + sug");
+    expect(text).not.toContain("'aria-label': 'Choose the type of circle you want to facilitate today.'");
+    expect(text).not.toContain("'aria-label': 'Next',");
   });
 });

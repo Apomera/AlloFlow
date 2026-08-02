@@ -4525,7 +4525,7 @@ window.StemLab = window.StemLab || {
                     }, solved ? ('➡ ' + t('stem.geosandbox.next_challenge', 'Next')) : ('🔄 ' + t('stem.geosandbox.new_challenge', 'New'))),
                     h('button', {
                       onClick: clearBuildChallenge,
-                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-400 hover:bg-slate-700'
+                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-300 hover:bg-slate-700'
                     }, '✕')
                   ),
                   (gd._geoExt && gd._geoExt._bldHint) && h('p', { className: 'text-[10px] text-emerald-200/70 italic' }, buildChallenge.hint)

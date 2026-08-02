@@ -22,4 +22,23 @@ describe('Strengths Finder coach and chart accessibility', () => {
     expect(text).toContain("role: 'img', 'aria-label': 'Strengths radar chart. '");
     expect(text).toContain("catCounts.map(function(c) { return c.label + ': ' + c.count; }).join(', ')");
   });
+
+  it('provides named roving tabs linked to one tab panel', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Strengths Finder activities'");
+    expect(text).toContain("'data-strength-tab': t.id");
+    expect(text).toContain("'tabIndex': active ? 0 : -1");
+    expect(text).toContain("onKeyDown: function(e)");
+    expect(text).toContain("id: 'strengths-tab-panel', role: 'tabpanel'");
+    expect(text).not.toContain("'aria-label': 'nowrap'");
+  });
+
+  it('exposes selection state and descriptive action labels', () => {
+    const text = source();
+    expect(text).toContain("'aria-pressed': sel");
+    expect(text).toContain("'aria-label': s.label + (sel ? ' selected' : ' not selected')");
+    expect(text).toContain("announceToSR(strength.label + (exists ? ' deselected' : ' selected')");
+    expect(text).toContain("'aria-label': 'Show strengths badges'");
+    expect(text).toContain("'aria-expanded': showBadges");
+  });
 });

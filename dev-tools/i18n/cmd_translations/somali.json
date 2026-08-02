@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio waa la furay.",
   "cmd.open_video_studio_hint": "Duub, qoraal ku dar oo tafatir muuqaallo hagitaan ah",
   "palette.ctx.videoStudio": "Halkan — Video Studio",
-  "palette.close": "Xir liiska amarrada"
+  "palette.close": "Xir liiska amarrada",
+  "cmd.apply_lesson_template": "Ka bilow template la kaydiyey",
+  "cmd.apply_lesson_template_done": "Waxaa laga bilaabay ",
+  "cmd.apply_lesson_template_hint": "Waxay ka bilaabaysaa qorshe cusub mid ka mid ah template-yada aad kaydisay",
+  "cmd.apply_lesson_template_missing": "Ma helin template la yiraahdo ",
+  "cmd.apply_lesson_template_which": "Template kee?",
+  "cmd.rebuild_lesson_step": "Dib u dhis hal tallaabo oo qorshaha ah",
+  "cmd.rebuild_lesson_step_done": "Dib ayaa loo dhisayaa tallaabada ",
+  "cmd.rebuild_lesson_step_hint": "Waxay dib u abuuraysaa hal kheyraad — sheeg lambarka tallaabada",
+  "cmd.rebuild_lesson_step_missing": "Ma helin tallaabadaas qorshaha.",
+  "cmd.rebuild_lesson_step_none": "qorshuhu weli ma laha tallaabooyin.",
+  "cmd.rebuild_lesson_step_which": "Tallaabadee?",
+  "cmd.run_lesson_blueprint": "Samee qorshaha casharka",
+  "cmd.run_lesson_blueprint_done": "Qorshaha ayaa la samaynayaa — waxaad ka daawan kartaa tallaabo kasta kaarka.",
+  "cmd.run_lesson_blueprint_hint": "Waxay samaynaysaa dhammaan kheyraadka qorshaha hadda",
+  "cmd.cancelled": "Joojinta ayaa la codsaday. Hawsha hadda socota way istaagi doontaa marka adeeg-bixiyuhu taageero."
 }

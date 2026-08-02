@@ -19,6 +19,30 @@ way `tests/e2e/remediation_fault_injection_golden.spec.ts` drives it.
                             generativelanguage.googleapis.com
 ```
 
+## No-account mode
+
+`remediation_capabilities` reports two distinct states. `fullAiPipelineReady` describes the
+optional Gemini-powered app pipeline. `keylessModeAvailable` remains true without a key and
+`keylessToolNames` is derived from the actual tool registry, so clients can offer local
+validation, extraction, redaction, structure checks, exports, reports, and job inspection
+instead of treating `ready: false` as “the connector is unusable.” Neither mode requires an
+AlloFlow account, paid Worker, or institution account.
+
+The same response now separates privacy from cost/account status. `dataHandling.offlineToolNames`
+make no external network request. `publicDependencyDownloadToolNames` contains only
+`remediation_setup`, `export_accessible_office`, and `export_alt_format`: they download Chromium
+or pinned exporter libraries, but do not intentionally include document content in those
+requests (the provider can still see ordinary connection metadata such as IP address and
+timing). `geminiDocumentEgressToolNames` is the exact list that sends a document or derived
+content to Gemini. The three lists are exhaustive and disjoint; server startup fails if a future
+tool is left unclassified.
+
+`onboarding` is the machine-readable first-run decision. A client should follow its `nextTool`
+when `actionRequired` is true. `setup-required` means call `remediation_setup` once;
+`reinstall-required` means the package or its integrity-checked assets are incomplete.
+`keyless-ready` is a usable state, not a failure. `remediation_selftest` is recommended but
+optional once the browser is installed.
+
 **Isolation:** one fresh browser page per run — a fresh pipeline instance per document, so runs
 can never collide on the pipeline's ambient globals. **Single-flight:** one audit/remediation at
 a time; concurrent calls get a clean busy error.
@@ -40,8 +64,12 @@ never logged or returned by tools — `remediation_capabilities` reports only it
 ⚠ 2026-07-16: the key currently in the maintainer file was **disabled by Google as leaked**
 (the June Prismflow incident) — mint a fresh one at aistudio.google.com and replace it there.
 
-Requires network: the Gemini API (**document content is sent to it**) and public CDNs
-(pdf.js, Tesseract, pdf-lib, axe) that the pipeline loads at runtime.
+The full AI audit/remediation path requires the Gemini API (**document content is sent to it**).
+Core browser libraries and veraPDF are bundled and run locally. The one-time setup downloads
+Chromium, and the editable-Office/ePub/DAISY/Braille exporters fetch pinned public libraries.
+Those dependency requests do not intentionally include document content. All other tools listed
+in `dataHandling.offlineToolNames` need no network, AlloFlow, Cloudflare, paid Worker, or
+institution account.
 
 ### Claude Code
 
@@ -95,11 +123,12 @@ The Canvas app never needs this — only this connector does.
 
 | Tool | What it does | Writes | Typical time |
 | --- | --- | --- | --- |
-| `remediation_capabilities` | Honest environment report (key present, playwright package AND Chromium **binary** present, modules found, models, limits). Call first — a fresh packaged install reports `chromiumInstalled: false` with a hint. | nothing | instant |
+| `remediation_capabilities` | Honest environment report (key present, Playwright package AND Chromium **binary** present, pipeline modules found, hash-verified local vendor assets, models, limits). Call first — a fresh packaged install reports `chromiumInstalled: false` with a hint. | nothing | instant |
 | `remediation_selftest` | Proves this install can actually **remediate**, not merely have the parts: runs the real pipeline, in the real browser, through the real `fixAndVerifyPdf`, against a generated one-page PDF and a **scripted loopback model**. **No Gemini key, no quota, nothing leaves the machine.** On failure it names the stage (`assets` / `browser` / `module-boot` / `ownership-gate` / `audit-contract`) so a broken install is never confused with a bad key. | nothing kept | 20–60 s |
+| `generate_resource_pack` | Calls the normal app's existing `generateFullPackHTML` exporter with app-shaped JSON to produce the same student/teacher resource pack. **No Gemini key, account, Worker, or upload.** This is a transport adapter, not a second renderer. | collision-safe `.html` | seconds |
 | `remediation_setup` | One-time environment setup: downloads the Chromium binary via Playwright (~200MB, 1–5 min). Idempotent — returns instantly when already installed. No key needed. | Playwright browser cache | 1–5 min once |
 | `pdf_audit` | Accessibility audit: score, per-severity issues, scanned/searchable detection, language, page count. Accepts `.pdf`, `.docx`, `.pptx` (Office files audit deterministically from extracted text). | nothing | 1–3 min |
-| `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via veraPDF — a real JVM in headless Chromium, served from the repo's own `verapdf/` assets (a local loopback server provides the HTTP Range support CheerpJ requires; the CDN copy fails that at some edges). **Needs no Gemini key.** Runs outside the single-flight lane, so it works even while a remediation job is running. A lone `clause 5, test 1` failure = the pipeline deliberately withheld the PDF/UA claim, not a forgotten stamp. | nothing | ~1–2 min (JVM boot 40–90s cold) |
+| `pdf_validate_ua` | Independent **PDF/UA-1 (ISO 14289-1)** validation via the packaged veraPDF CLI and local Java, with the bundled browser JVM as fallback. **No Gemini key, account, Worker, or upload.** | nothing | ~30–120 s |
 | `pdf_remediate` | Full pipeline, **synchronous**: audit → accessible HTML rebuild → AI fix passes to `target_score` → honesty-gated verification → tagged-PDF export. Blocks until done — use the job tools if your client enforces tool timeouts. | `<stem>-accessible.html`, `<stem>-tagged.pdf`, `<stem>-remediation-report.json` (collision-safe names, never overwrites) | 5–30 min |
 | `pdf_remediate_start` | Same run as a **background job**; returns a `jobId` immediately. Jobs run one at a time in start order. | same as above | instant return |
 | `pdf_batch_audit_start` | Background job **auditing** every document in a folder (non-recursive, ≤200 files) into one triage scoreboard. The cheap pass before remediating: find out *which* files need work instead of remediating a folder blind. Resumable (`skip_existing`, default true) and carries prior rows forward so a resumed scoreboard stays complete. | `accessibility-audit-scoreboard.json` + `.csv` (collision-safe) | instant return; 1–3 min per document |
@@ -108,6 +137,13 @@ The Canvas app never needs this — only this connector does.
 | `remediation_job_status` | Job state, a batch `progress` block (files done/remaining, observed mean per file, estimated minutes left), and the last pipeline telemetry lines (throttle waits show here — a slow job is distinguishable from a stuck one). | nothing | instant |
 | `remediation_job_result` | The completed job's summary (per-file summaries for batches). | nothing | instant |
 | `remediation_job_cancel` | Cancels a queued job, or kills the running one (its browser context closes; in-flight AI calls die in seconds). Files already written stay. | nothing | instant |
+
+`generate_resource_pack` reads `{ "items": [...], "topic": "...", "isWorksheet": false,
+"responses": {}, "config": {} }` from `resource_pack_json` and writes `output_path`. Those are the
+normal app exporter's native inputs; the connector deliberately does not define a second resource
+schema or rendering pipeline. Existing output files are never overwritten.
+
+Maintainers: run `npm run verify:mcp-parity`. It fails if a transport-capable app area disappears from MCP and compares this tool's generated HTML against the production pipeline output, normalizing only the intentional `generatedAt` timestamp.
 
 Remediate options (same on all three remediate tools): `output_dir`, `target_score` (default
 95), `fix_passes` (default 2), `polish_passes` (default 0), `tagged_pdf` (default true),
@@ -135,8 +171,12 @@ Vision pass). Office inputs skip the tagged-PDF export; the accessible HTML is t
 etiquette and how to relay the honesty fields without overstating them — install it alongside
 the connector for best results.
 
-**Recommended flow for a client like Claude:** `remediation_capabilities` → `pdf_remediate_start`
-→ poll `remediation_job_status` every 30–60 s → `remediation_job_result`. Job records persist
+**Recommended Gemini-powered remediation flow for a client like Claude:**
+`remediation_capabilities` -> follow `onboarding` -> confirm the requested tool's
+`dataHandling` tier -> `pdf_remediate_start` -> poll `remediation_job_status` every 30-60 s
+-> `remediation_job_result`. The Gemini key is optional for every tool named in
+`keylessToolNames`; do not route those requests away merely because `fullAiPipelineReady` is
+false. Job records persist
 locally for 30 days and survive a server restart; a job that was actively running returns as
 `interrupted` because its browser process cannot survive the restart. See **Jobs survive a
 restart** below.
@@ -252,7 +292,8 @@ connector only looks where I point it" from a promise into something a district 
 
 ## When it says ready but nothing works
 
-`remediation_capabilities` is a **presence** check: key, Playwright, Chromium, module files. It
+`remediation_capabilities` is a **presence** check: key, Playwright, Chromium, module files, and
+hash-verified local vendor assets. It
 cannot tell you the pipeline will accept a run, and on 2026-07-28 it reported `ready: true` for a
 connector where every remediation died at the pipeline's document-ownership gate. The field now
 carries a `readyMeans` caveat saying exactly that.
@@ -349,21 +390,64 @@ no retry grind); 429s are classified per-minute (throttle, retried/deferred) vs 
 ## Packaging (MCPB bundle for Claude Desktop)
 
 ```bash
-node desktop/mcp/build_mcpb.cjs          # → desktop/dist/mcpb/alloflow-remediation.mcpb (~18MB)
+node desktop/mcp/build_mcpb.cjs          # → desktop/dist/mcpb/alloflow-remediation.mcpb
 ```
 
-The bundle stages the server, the three pipeline modules, `verapdf/`, `PRIVACY.md`, a
-playwright `node_modules`, and an MCPB manifest whose `user_config` prompts the installer for
-their Gemini API key (stored by Claude Desktop, injected as `GEMINI_API_KEY`; never in the
-bundle). Install by dragging the `.mcpb` into Claude Desktop → Settings → Extensions. Host
-machines still need Node 18+ on PATH and a one-time `npx playwright install chromium` —
-`remediation_capabilities` reports honestly when either is missing. `--lean` skips
-`node_modules` for personal installs where the repo checkout is present. Packed with the
-official `@anthropic-ai/mcpb` CLI when available (validates the manifest), else plain zip.
+The bundle stages the server, all five shipped pipeline/view modules, `verapdf/`, the complete
+hash-verified `vendor/` browser runtime plus its third-party notices, `PRIVACY.md`, Playwright
+`node_modules`, the MCPB manifest, and the exact canonical
+`agent_skills/alloflow-pdf-remediation/SKILL.md`. The server advertises the bounded
+`io.modelcontextprotocol/skills` extension and serves that file through `skills/list`,
+`skills/get`, `resources/list`, and `resources/read` with a SHA-256 digest. Supporting clients can
+therefore import the safe workflow without a separately maintained copy; other clients ignore the
+extension and keep using the same 28 tools. The installer may accept an optional Gemini API key
+(stored by Claude Desktop and injected as `GEMINI_API_KEY`; never embedded in the bundle).
+Install by dragging the `.mcpb` into Claude Desktop Settings > Extensions. Host machines
+still need Node 18+ on PATH and a one-time `npx playwright install chromium`; capabilities
+report separately on Playwright, Chromium, pipeline modules, and vendor hash integrity.
+`--lean` skips `node_modules` for personal development. Distribution builds require the official
+pinned MCPB validator; `--allow-unvalidated` creates only an explicitly labelled diagnostic ZIP.
+
+## Releases
+
+The public distribution lane is .github/workflows/mcpb-release.yml. A manual run builds and retains
+a verified Actions artifact without publishing a release. Pushing a tag that exactly matches the
+manifest version (for example, mcpb-v0.3.0) additionally creates a GitHub Release containing the
+installable MCPB, SHA-256 checksum, CycloneDX npm-dependency SBOM, vendor hash manifest, third-party
+notices, privacy policy, and installation guide. GitHub build-provenance and SBOM attestations bind
+the downloadable MCPB bytes to the workflow that produced them; users can verify them with:
+
+    gh attestation verify alloflow-remediation.mcpb -R Apomera/AlloFlow
+
+The release job processes no user documents and requires no Worker, AlloFlow account, institution
+account, or Gemini key.
+
+## Official MCP Registry
+
+The same GitHub-hosted MCPB can be submitted directly to the official MCP Registry; a second npm
+package or hosted server is not required. The release build generates server.json from the exact
+MCPB bytes, including its SHA-256 and immutable GitHub Release URL. Registry publication is kept in
+the separate, manual mcp-registry-publish workflow because published versions are immutable and
+currently cannot be unpublished. The workflow requires an existing attested release, verifies its
+checksum and provenance, regenerates server.json byte-for-byte, validates it with a checksum-pinned
+official publisher, and requires the exact confirmation phrase before GitHub-OIDC publication.
+
+Registry discovery does not turn this into a remote connector: it remains the same local Claude
+Desktop extension, and documents stay local unless the user deliberately invokes a Gemini-dependent
+tool.
 
 ## Tests
 
-`npx vitest run tests/mcp_remediation_stdio_smoke.test.js` — protocol + validation smoke
-(no key, no browser: pins that bad arguments and a missing key are rejected **before** Chromium
-launches or quota is spent). The pipeline behavior itself is covered by the existing
-fault-injection and corpus e2e goldens, which drive the identical headless recipe.
+`npm run verify:mcp-parity` runs the capability regression gate plus protocol, validation, direct
+production-output parity, and clean staged-package launch tests. It uses no Gemini key or quota;
+when Chromium is installed it also compares deterministic MCP artifacts against direct production
+pipeline calls. The clean-package fixture launches from a temporary directory with `NODE_PATH`
+removed, verifies every vendored runtime hash, and confirms the bundle cannot silently borrow
+assets or dependencies from the repository checkout.
+
+Every build also extracts the exact emitted .mcpb into a fresh temporary directory, clears
+NODE_PATH, launches only the shipped server, and verifies all 28 tools, manifest/server parity,
+pipeline modules, keyless mode, and every bundled vendor-file hash. Repeat that acceptance check
+without rebuilding with npm run verify:mcpb-artifact (which also requires packaged Playwright),
+or pass a lean diagnostic artifact directly to
+node desktop/mcp/verify_mcpb_artifact.cjs path/to/alloflow-remediation.mcpb.

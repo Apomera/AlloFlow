@@ -377,6 +377,7 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
     unplacedBubbles: 0,
     gutterRiskPanels: 0,
     emptyPanels: 0,
+    missingAltText: 0,
     customLayouts: 0,
     attention: 0,
     status: 'Setup',
@@ -392,6 +393,7 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
     const hasBubbles = comicDialogueHasBubbles(dialogue);
     const hasText = String(paragraph?.text || paragraph?.scaffoldFrame || '').trim();
     if (image.imageUrl) stats.artPanels += 1;
+    if (image.imageUrl && !String(thumbnail.altText || '').trim()) stats.missingAltText += 1;
     if (hasBubbles) stats.bubblePanels += 1;
     if (hasBubbles && space && space !== 'none') stats.placedBubbles += 1;
     if (hasBubbles && (!space || space === 'none')) stats.unplacedBubbles += 1;
@@ -403,6 +405,238 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
   stats.attention = stats.unplacedBubbles + stats.gutterRiskPanels + stats.crowdedBubbles + stats.emptyPanels;
   stats.status = stats.attention > 0 ? 'Review' : stats.artPanels === total && total > 0 ? 'Ready' : 'Clean';
   return stats;
+};
+const getComicExportProof = (pages = [], context = {}) => {
+  const pageList = Array.isArray(pages) ? pages : [];
+  const printSafety = sanitizeComicPrintSafety(context.comicPrintSafety);
+  const globalIssues = [];
+  if (printSafety.format !== 'digital' && !printSafety.includeBleed) {
+    globalIssues.push({
+      key: 'bleed-off',
+      label: 'Print bleed is off',
+      detail: 'Enable bleed before sending a print layout to production.',
+      blocking: false,
+    });
+  }
+  const rows = pageList.map((page) => {
+    const proofContext = { ...context, comicPrintSafety: printSafety, pageCount: pageList.length };
+    const stats = getComicPageProductionStats(page, proofContext);
+    const panels = Array.isArray(page.panels) ? page.panels : [];
+    const targetPanels = (predicate) => panels
+      .map(({ paragraph }, panelIndex) => ({ paragraph, number: panelIndex + 1 }))
+      .filter(({ paragraph, number }) => predicate(paragraph, number))
+      .map(({ paragraph, number }) => ({ id: paragraph?.id, number }))
+      .filter(target => target.id);
+
+    const missingDirectionPanels = panels.filter(({ paragraph }) => {
+      const direction = (context.panelDirections || {})[paragraph?.id] || {};
+      return !(direction.shot && direction.angle && direction.mood && direction.transition);
+    }).length;
+    const missingRoughPanels = panels.filter(({ paragraph }) => {
+      const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
+      return !(rough.focalPoint && rough.composition && rough.letteringSpace);
+    }).length;
+
+    const emptyPanelTargets = targetPanels((paragraph) => !String(paragraph?.text || paragraph?.scaffoldFrame || '').trim());
+    const missingArtTargets = targetPanels((paragraph) => !((context.illustrations || {})[paragraph?.id] || {}).imageUrl);
+    const missingAltTextTargets = targetPanels((paragraph) => {
+      const image = (context.illustrations || {})[paragraph?.id] || {};
+      const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
+      return Boolean(image.imageUrl) && !String(rough.altText || '').trim();
+    });
+    const missingDirectionTargets = targetPanels((paragraph) => {
+      const direction = (context.panelDirections || {})[paragraph?.id] || {};
+      return !(direction.shot && direction.angle && direction.mood && direction.transition);
+    });
+    const missingRoughTargets = targetPanels((paragraph) => {
+      const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
+      return !(rough.focalPoint && rough.composition && rough.letteringSpace);
+    });
+    const unplacedLetteringTargets = targetPanels((paragraph) => {
+      const dialogue = (context.panelDialogue || {})[paragraph?.id] || {};
+      const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
+      const space = normalizeComicLetteringSpace(rough.letteringSpace);
+      return comicDialogueHasBubbles(dialogue) && (!space || space === 'none');
+    });
+    const gutterConflictTargets = targetPanels((paragraph) => {
+      const dialogue = (context.panelDialogue || {})[paragraph?.id] || {};
+      const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
+      return comicDialogueHasBubbles(dialogue) && letteringTouchesSide(rough.letteringSpace, gutterSide);
+    });
+    const crowdedLetteringTargets = targetPanels((paragraph) => {
+      const dialogue = (context.panelDialogue || {})[paragraph?.id] || {};
+      return getComicLetteringStats(dialogue).level === 'crowded';
+    });
+    const issues = [];
+    if (stats.emptyPanels > 0) issues.push({ key: 'empty-panels', label: `${stats.emptyPanels} empty panel${stats.emptyPanels === 1 ? '' : 's'}`, detail: 'Add a caption or scaffold to every panel before export.', blocking: true });
+    if (stats.artPanels < stats.total) issues.push({ key: 'missing-art', label: `${stats.total - stats.artPanels} panel${stats.total - stats.artPanels === 1 ? '' : 's'} missing art`, detail: 'Add or intentionally mark the art brief before final delivery.', blocking: false });
+    if (stats.missingAltText > 0) issues.push({ key: 'missing-alt-text', label: `${stats.missingAltText} art description${stats.missingAltText === 1 ? '' : 's'} missing`, detail: 'Add accessible descriptions for illustrated panels.', blocking: false });
+    if (missingDirectionPanels > 0) issues.push({ key: 'missing-direction', label: `${missingDirectionPanels} visual direction${missingDirectionPanels === 1 ? '' : 's'} incomplete`, detail: 'Set shot, angle, mood, and pacing move for the art team.', blocking: false });
+    if (missingRoughPanels > 0) issues.push({ key: 'missing-rough', label: `${missingRoughPanels} thumbnail rough${missingRoughPanels === 1 ? '' : 's'} incomplete`, detail: 'Reserve composition and lettering space before final art.', blocking: false });
+    if (stats.unplacedBubbles > 0) issues.push({ key: 'unplaced-lettering', label: `${stats.unplacedBubbles} lettering anchor${stats.unplacedBubbles === 1 ? '' : 's'} missing`, detail: 'Place bubble anchors inside a safe readable zone.', blocking: true });
+    if (stats.gutterRiskPanels > 0) issues.push({ key: 'gutter-conflict', label: `${stats.gutterRiskPanels} gutter conflict${stats.gutterRiskPanels === 1 ? '' : 's'}`, detail: 'Move lettering away from the binding edge.', blocking: true });
+    if (stats.crowdedBubbles > 0) issues.push({ key: 'crowded-lettering', label: `${stats.crowdedBubbles} crowded bubble panel${stats.crowdedBubbles === 1 ? '' : 's'}`, detail: 'Trim or split dialogue so lettering remains readable.', blocking: false });
+    if (page.page < pageList.length && !String(page.turn || '').trim()) issues.push({ key: 'page-turn-unset', label: 'Page-turn intent unset', detail: 'Mark the reveal, pause, cliffhanger, action surge, or resolve for this page break.', blocking: false });
+
+    const panelTargetsByIssue = {
+      'empty-panels': emptyPanelTargets,
+      'missing-art': missingArtTargets,
+      'missing-alt-text': missingAltTextTargets,
+      'missing-direction': missingDirectionTargets,
+      'missing-rough': missingRoughTargets,
+      'unplaced-lettering': unplacedLetteringTargets,
+      'gutter-conflict': gutterConflictTargets,
+      'crowded-lettering': crowdedLetteringTargets,
+    };
+    issues.forEach((issue) => { issue.panelTargets = panelTargetsByIssue[issue.key] || []; });
+    return {
+      page: page.page,
+      startPanel: page.startPanel,
+      endPanel: page.endPanel,
+      layout: page.layout,
+      status: issues.length ? 'Review' : 'Ready',
+      issues,
+      stats,
+    };
+  });
+  const issueCount = globalIssues.length + rows.reduce((sum, row) => sum + row.issues.length, 0);
+  return {
+    status: issueCount ? 'Review' : 'Ready',
+    pageCount: pageList.length,
+    readyPages: rows.filter(row => row.status === 'Ready').length,
+    reviewPages: rows.filter(row => row.status !== 'Ready').length,
+    issueCount,
+    blockingCount: globalIssues.filter(issue => issue.blocking).length + rows.reduce((sum, row) => sum + row.issues.filter(issue => issue.blocking).length, 0),
+    globalIssues,
+    rows,
+  };
+};
+
+const getComicContinuityAudit = (paragraphs = [], context = {}) => {
+  const list = Array.isArray(paragraphs) ? paragraphs.slice(0, MAX_DRAFT_PARAGRAPHS) : [];
+  const continuity = sanitizeComicContinuity(context.comicContinuity);
+  const references = continuity.references.filter(reference => String(reference.name || '').trim()).map(reference => ({
+    id: reference.id,
+    name: String(reference.name || '').trim(),
+    aliases: String(reference.aliases || '').split(/[,;\n]+/).map(alias => alias.trim()).filter(Boolean).slice(0, 8),
+    key: String(reference.name || '').trim().toLowerCase().replace(/[:.]+$/g, '').replace(/\s+/g, ' '),
+  }));
+  const pageByPanelId = {};
+  (Array.isArray(context.comicPages) ? context.comicPages : []).forEach(page => {
+    (Array.isArray(page.panels) ? page.panels : []).forEach(({ paragraph }) => {
+      if (paragraph?.id) pageByPanelId[paragraph.id] = page.page;
+    });
+  });
+  const panelRows = list.map((paragraph, index) => {
+    const dialogue = (context.panelDialogue || {})[paragraph?.id] || {};
+    const direction = (context.panelDirections || {})[paragraph?.id] || {};
+    const searchText = [paragraph?.text, paragraph?.scaffoldFrame, dialogue.speech, dialogue.thought]
+      .map(value => String(value || '').trim())
+      .filter(Boolean)
+      .join(' ');
+    return {
+      id: paragraph?.id || '',
+      panel: index + 1,
+      speaker: String(dialogue.speaker || '').trim().replace(/[:.]+$/g, ''),
+      searchText,
+      shot: direction.shot || '',
+      angle: direction.angle || '',
+      mood: direction.mood || '',
+    };
+  });
+  const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/[:.]+$/g, '').replace(/\s+/g, ' ');
+  const namesMatch = (left, right) => {
+    const a = normalizeName(left);
+    const b = normalizeName(right);
+    if (!a || !b) return false;
+    return a === b || (a.length >= 3 && b.length >= 3 && (a.includes(b) || b.includes(a)));
+  };
+  const matchesReference = (value, reference) => [reference.name, ...(reference.aliases || [])].some(name => namesMatch(value, name));
+  const textMentionsReference = (text, reference) => {
+    const haystack = normalizeName(text);
+    return [reference.name, ...(reference.aliases || [])].some(name => {
+      const needle = normalizeName(name);
+      return needle.length >= 3 && haystack.includes(needle);
+    });
+  };
+  const getTargets = (rows) => rows.map(row => ({
+    id: row.id,
+    number: row.panel,
+    page: pageByPanelId[row.id] || null,
+  })).filter(target => target.id).slice(0, MAX_DRAFT_PARAGRAPHS);
+  const issues = [];
+  const addIssue = (key, severity, label, detail, rows = []) => {
+    issues.push({ key, severity, label, detail, panelTargets: getTargets(rows) });
+  };
+  const ignoredSpeakers = new Set(['narrator', 'narration', 'voiceover', 'voice-over', 'sfx']);
+  const speakerRows = panelRows.filter(row => row.speaker && !ignoredSpeakers.has(normalizeName(row.speaker)));
+  if (references.length > 0) {
+    const untrackedRows = speakerRows.filter(row => !references.some(reference => matchesReference(row.speaker, reference)));
+    const untrackedNames = Array.from(new Set(untrackedRows.map(row => row.speaker)));
+    if (untrackedRows.length) {
+      addIssue(
+        'untracked-speakers',
+        'watch',
+        untrackedNames.length + ' speaker' + (untrackedNames.length === 1 ? '' : 's') + ' outside cast references',
+        'Panels ' + untrackedRows.map(row => row.panel).join(', ') + ' use speaker names that are not matched to a cast reference.',
+        untrackedRows,
+      );
+    }
+    const usedReferences = references.filter(reference => panelRows.some(row => (
+      matchesReference(row.speaker, reference) ||
+      textMentionsReference(row.searchText, reference)
+    )));
+    const unusedReferences = references.filter(reference => !usedReferences.includes(reference));
+    if (unusedReferences.length > 0 && references.length > 1) {
+      addIssue(
+        'unused-cast-references',
+        'low',
+        unusedReferences.length + ' cast reference' + (unusedReferences.length === 1 ? '' : 's') + ' not surfaced',
+        unusedReferences.map(reference => reference.name).join(', ') + ' does not appear in current panel dialogue or captions.',
+      );
+    }
+  }
+  const sameDirection = (left, right) => Boolean(
+    left && right &&
+    left.shot && left.angle && left.mood &&
+    left.shot === right.shot &&
+    left.angle === right.angle &&
+    left.mood === right.mood
+  );
+  let lockStart = panelRows.length ? 0 : -1;
+  for (let index = 1; index <= panelRows.length; index += 1) {
+    if (index < panelRows.length && sameDirection(panelRows[index - 1], panelRows[index])) continue;
+    const runLength = index - lockStart;
+    if (lockStart >= 0 && runLength >= 3) {
+      const lockedRows = panelRows.slice(lockStart, index);
+      addIssue(
+        'repeated-camera-setup-' + lockedRows[0].panel,
+        'low',
+        'Repeated camera setup',
+        'Panels ' + lockedRows[0].panel + '-' + lockedRows[lockedRows.length - 1].panel + ' repeat the same shot, angle, and mood.',
+        lockedRows,
+      );
+    }
+    lockStart = index;
+  }
+  const referenceNames = references.map(reference => reference.name);
+  const usedReferenceCount = references.filter(reference => panelRows.some(row => (
+    matchesReference(row.speaker, reference) ||
+    textMentionsReference(row.searchText, reference)
+  ))).length;
+  return {
+    status: issues.length ? 'Review' : 'Clear',
+    issueCount: issues.length,
+    referenceCount: references.length,
+    usedReferenceCount,
+    referenceNames,
+    summary: issues.length
+      ? 'Review cast naming and repeated visual setups before locking final panel art.'
+      : references.length
+        ? 'Cast references and the current visual sequence are internally consistent.'
+        : 'Add named cast references to unlock speaker continuity checks.',
+    rows: issues.slice(0, 12),
+  };
 };
 const getStoryForgeProjectReadiness = (context = {}) => {
   const paragraphs = Array.isArray(context.paragraphs) ? context.paragraphs : [];
@@ -443,6 +677,7 @@ const getStoryForgeProjectReadiness = (context = {}) => {
     unplacedBubbles: 0,
     gutterRiskPanels: 0,
     emptyPanels: 0,
+    missingAltText: 0,
   });
   const blockers = [];
   const warnings = [];
@@ -472,6 +707,7 @@ const getStoryForgeProjectReadiness = (context = {}) => {
     if (printSafety.format !== 'digital' && !printSafety.includeBleed) {
       addIssue(warnings, 'export', 'missing-print-bleed', 'Enable print bleed', 'Print layouts are safer with bleed enabled.');
     }
+    if (comicStats.missingAltText > 0) addIssue(warnings, 'export', 'missing-panel-alt-text', 'Describe the panel art', `${comicStats.missingAltText} illustrated panel${comicStats.missingAltText === 1 ? '' : 's'} still need an accessibility description.`);
     const continuity = sanitizeComicContinuity(context.comicContinuity);
     const continuityFields = Object.values(continuity).filter(value => String(value || '').trim()).length;
     if (continuityFields < 2) {
@@ -566,17 +802,121 @@ const sanitizeParagraphs = (arr) => {
 // Only inline data-image URIs or http(s) URLs are allowed; everything else (javascript:,
 // quote-bearing breakout attempts, etc.) becomes '' so it can't poison the export <img src>.
 const safeImageUrl = (u) => (typeof u === 'string' && /^(data:image\/|https?:\/\/)/i.test(u)) ? u : '';
+const getImageBase64Payload = (value) => {
+  const url = safeImageUrl(value);
+  if (!/^data:image\//i.test(url)) return '';
+  const separator = url.indexOf(',');
+  return separator >= 0 ? url.slice(separator + 1) : '';
+};
 const sanitizeIllustrations = (obj) => {
   if (!obj || typeof obj !== 'object') return {};
   const out = {};
-  Object.keys(obj).forEach((k) => {
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
     const v = obj[k];
     if (!v || typeof v !== 'object') return;
     const url = safeImageUrl(v.imageUrl);
-    if (url) out[k] = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt : '' };
+    if (url && url.length <= 15000000) out[String(k).slice(0, 64)] = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt.slice(0, 1200) : '' };
   });
   return out;
 };
+
+const sanitizeAudioSegments = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
+    const value = obj[k];
+    if (!value || typeof value !== 'object') return;
+    const clean = {};
+    const safeAudio = (url) => typeof url === 'string' && /^(data:audio\/|https?:\/\/)/i.test(url) && url.length <= 20000000 ? url : '';
+    const aiAudioUrl = safeAudio(value.aiAudioUrl);
+    const studentAudioBase64 = typeof value.studentAudioBase64 === 'string' && value.studentAudioBase64.length <= 20000000 ? value.studentAudioBase64 : '';
+    const sentenceAudios = Array.isArray(value.sentenceAudios) ? value.sentenceAudios.slice(0, 120).map(safeAudio).map(url => url || null) : [];
+    if (aiAudioUrl) clean.aiAudioUrl = aiAudioUrl;
+    if (sentenceAudios.some(Boolean)) clean.sentenceAudios = sentenceAudios;
+    if (Array.isArray(value.sentences)) clean.sentences = value.sentences.slice(0, 120).filter(s => typeof s === 'string').map(s => s.slice(0, 500));
+    if (studentAudioBase64) {
+      clean.studentAudioBase64 = studentAudioBase64;
+      clean.studentAudioMimeType = typeof value.studentAudioMimeType === 'string' && /^audio\//i.test(value.studentAudioMimeType) ? value.studentAudioMimeType.slice(0, 80) : 'audio/webm';
+    }
+    if (Object.keys(clean).length) out[String(k).slice(0, 64)] = clean;
+  });
+  return out;
+};
+
+const sanitizeContinuityReferences = (arr) => Array.isArray(arr)
+  ? arr.slice(0, 12).map((item, index) => {
+      const value = item && typeof item === 'object' ? item : {};
+      return {
+        id: typeof value.id === 'string' && value.id.trim() ? value.id.trim().slice(0, 64) : `cast-${index + 1}`,
+        name: typeof value.name === 'string' ? value.name.slice(0, 80) : '',
+        aliases: typeof value.aliases === 'string' ? value.aliases.slice(0, 240) : '',
+        role: typeof value.role === 'string' ? value.role.slice(0, 120) : '',
+        appearance: typeof value.appearance === 'string' ? value.appearance.slice(0, 360) : '',
+        wardrobe: typeof value.wardrobe === 'string' ? value.wardrobe.slice(0, 240) : '',
+        props: typeof value.props === 'string' ? value.props.slice(0, 240) : '',
+        imageUrl: safeImageUrl(value.imageUrl).slice(0, 15000000),
+      };
+    }).filter(item => item.name || item.aliases || item.role || item.appearance || item.wardrobe || item.props || item.imageUrl)
+  : [];
+
+const STORYFORGE_PROJECT_VERSION = 3;
+const STORYFORGE_VAULT_DB_NAME = 'alloflow_storyforge_vault_v1';
+const STORYFORGE_VAULT_STORE = 'projects';
+
+const openStoryForgeVault = () => {
+  if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.open(STORYFORGE_VAULT_DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains(STORYFORGE_VAULT_STORE)) request.result.createObjectStore(STORYFORGE_VAULT_STORE, { keyPath: 'key' });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+    } catch (error) { resolve(null); }
+  });
+};
+
+const storyForgeVaultRead = async (key) => {
+  const db = await openStoryForgeVault();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const request = db.transaction(STORYFORGE_VAULT_STORE, 'readonly').objectStore(STORYFORGE_VAULT_STORE).get(key);
+      request.onsuccess = () => { db.close(); resolve(request.result || null); };
+      request.onerror = () => { db.close(); resolve(null); };
+    } catch (error) { try { db.close(); } catch (_) {} resolve(null); }
+  });
+};
+
+const storyForgeVaultWrite = async (key, snapshot, revisions = []) => {
+  const db = await openStoryForgeVault();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const transaction = db.transaction(STORYFORGE_VAULT_STORE, 'readwrite');
+      transaction.objectStore(STORYFORGE_VAULT_STORE).put({ key, snapshot, revisions: Array.isArray(revisions) ? revisions.slice(0, 12) : [] });
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); resolve(false); };
+      transaction.onabort = () => { db.close(); resolve(false); };
+    } catch (error) { try { db.close(); } catch (_) {} resolve(false); }
+  });
+};
+
+const storyForgeVaultDelete = async (key) => {
+  const db = await openStoryForgeVault();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const transaction = db.transaction(STORYFORGE_VAULT_STORE, 'readwrite');
+      transaction.objectStore(STORYFORGE_VAULT_STORE).delete(key);
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); resolve(false); };
+      transaction.onabort = () => { db.close(); resolve(false); };
+    } catch (error) { try { db.close(); } catch (_) {} resolve(false); }
+  });
+};
+
 const sanitizeVocabTerms = (arr) => Array.isArray(arr)
   ? arr.slice(0, 64).filter((v) => v && typeof v.term === 'string' && v.term.trim()).map((v) => ({
       term: v.term.trim().slice(0, 120),
@@ -619,15 +959,31 @@ const sanitizePanelDirections = (obj) => {
 };
 
 const sanitizeComicContinuity = (obj) => {
-  if (!obj || typeof obj !== 'object') return { cast: '', setting: '', palette: '', styleNotes: '' };
+  if (!obj || typeof obj !== 'object') return { cast: '', setting: '', palette: '', styleNotes: '', references: [] };
   return {
     cast: typeof obj.cast === 'string' ? obj.cast.slice(0, 900) : '',
     setting: typeof obj.setting === 'string' ? obj.setting.slice(0, 600) : '',
     palette: typeof obj.palette === 'string' ? obj.palette.slice(0, 300) : '',
     styleNotes: typeof obj.styleNotes === 'string' ? obj.styleNotes.slice(0, 600) : '',
+    references: sanitizeContinuityReferences(obj.references),
   };
 };
-
+const renderContinuityReferencesHtml = (references = []) => {
+  const safeReferences = sanitizeContinuityReferences(references);
+  if (!safeReferences.length) return '';
+  return `<div style="border-top:1px solid #ddd6fe;padding:12px"><h3 style="margin:0 0 8px;font-size:.9rem">Cast references</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${safeReferences.map((reference, index) => {
+    const identity = [reference.name, reference.role].filter(Boolean).join(' — ') || `Cast ${index + 1}`;
+    const aliases = String(reference.aliases || '').trim();
+    const details = [
+      aliases ? `Also known as: ${aliases}` : '',
+      reference.appearance,
+      reference.wardrobe,
+      reference.props,
+    ].filter(Boolean).join('; ');
+    const image = reference.imageUrl ? `<img src="${escapeHtml(reference.imageUrl)}" alt="Reference art for ${escapeHtml(identity)}" loading="lazy" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #c4b5fd;flex:none" />` : '';
+    return `<article style="display:flex;gap:10px;align-items:flex-start;border:1px solid #ddd6fe;border-radius:6px;padding:9px;background:#fff"><div><strong>${escapeHtml(identity)}</strong>${details ? `<div style="margin-top:4px;color:#475569;font-size:.82rem">${escapeHtml(details)}</div>` : ''}</div>${image}</article>`;
+  }).join('')}</div></div>`;
+};
 const sanitizePanelThumbnails = (obj) => {
   if (!obj || typeof obj !== 'object') return {};
   const out = {};
@@ -639,6 +995,7 @@ const sanitizePanelThumbnails = (obj) => {
     if (typeof v.focalPoint === 'string' && v.focalPoint.trim()) clean.focalPoint = v.focalPoint.slice(0, 180);
     if (typeof v.composition === 'string' && v.composition.trim()) clean.composition = v.composition.slice(0, 240);
     if (typeof v.sketchNote === 'string' && v.sketchNote.trim()) clean.sketchNote = v.sketchNote.slice(0, 260);
+    if (typeof v.altText === 'string' && v.altText.trim()) clean.altText = v.altText.slice(0, 360);
     const space = normalizeComicLetteringSpace(v.letteringSpace);
     if (space) clean.letteringSpace = space;
     if (isFiniteComicLetteringValue(v.letteringWidth)) clean.letteringWidth = clampComicLetteringWidth(v.letteringWidth);
@@ -983,6 +1340,12 @@ const COMIC_PAGE_LAYOUTS = {
   manga: { label: 'Manga Flow', desc: 'Right-to-left panel flow for manga-style reading practice.' },
 };
 const getComicPageLayoutLabel = (layout) => (COMIC_PAGE_LAYOUTS[layout]?.label || COMIC_PAGE_LAYOUTS.grid.label);
+const COMIC_PAGE_PRESETS = {
+  classic: { label: 'Classic grid', layout: 'grid', panelsPerPage: 4 },
+  cinematic: { label: 'Cinematic reveal', layout: 'splash', panelsPerPage: 3 },
+  strip: { label: 'Reading strip', layout: 'strip', panelsPerPage: 4 },
+  manga: { label: 'Manga flow', layout: 'manga', panelsPerPage: 6 },
+};
 const buildComicPageGroups = (paragraphs = [], composer = {}, fallbackLayout = 'grid') => {
   const clean = sanitizeComicPageComposer(composer);
   const safeLayout = COMIC_PAGE_LAYOUTS[fallbackLayout] ? fallbackLayout : 'grid';
@@ -1009,6 +1372,54 @@ const buildComicPageGroups = (paragraphs = [], composer = {}, fallbackLayout = '
   return groups;
 };
 
+const STORYFORGE_MAX_IMPORT_BYTES = 120 * 1024 * 1024;
+const isStoryForgeRecord = (value) => Boolean(value && typeof value === 'object' && !Array.isArray(value));
+const validateStoryForgeImport = (value) => {
+  if (!isStoryForgeRecord(value)) return { valid: false, code: 'invalid-package' };
+  const rawVersion = value._storyForgeVersion;
+  const version = rawVersion === undefined && value._storyForgePackage === 'project' ? 1 : Number(rawVersion);
+  if (!Number.isInteger(version) || version < 1) return { valid: false, code: 'invalid-version' };
+  if (version > STORYFORGE_PROJECT_VERSION) return { valid: false, code: 'newer-version', version };
+  const snapshot = isStoryForgeRecord(value.snapshot) ? value.snapshot : value;
+  const hasStoryData = ['storyTitle', 'storyPrompt', 'paragraphs', 'layoutMode'].some((key) => Object.prototype.hasOwnProperty.call(snapshot, key));
+  if (!hasStoryData) return { valid: false, code: 'missing-snapshot' };
+  const layoutMode = snapshot.layoutMode === 'comic' ? 'comic' : 'prose';
+  const paragraphs = Array.isArray(snapshot.paragraphs) ? snapshot.paragraphs.slice(0, MAX_DRAFT_PARAGRAPHS) : [];
+  const comicPages = layoutMode === 'comic'
+    ? buildComicPageGroups(paragraphs, snapshot.comicPageComposer, snapshot.comicPageLayout)
+    : [];
+  const manifest = isStoryForgeRecord(value.manifest) ? value.manifest : {};
+  const manifestStory = isStoryForgeRecord(manifest.story) ? manifest.story : {};
+  const title = String(manifestStory.title || snapshot.storyTitle || 'Untitled story').trim().slice(0, 120) || 'Untitled story';
+  const exportedAt = typeof value.exportedAt === 'string' && Number.isFinite(Date.parse(value.exportedAt))
+    ? new Date(value.exportedAt).toISOString()
+    : '';
+  const importedReview = isStoryForgeRecord(value.review) ? value.review : value;
+  const importedComicFlowReport = isStoryForgeRecord(value.comicFlowReport)
+    ? value.comicFlowReport
+    : isStoryForgeRecord(snapshot.comicFlowReport)
+      ? snapshot.comicFlowReport
+      : isStoryForgeRecord(importedReview.comicFlowReport)
+        ? importedReview.comicFlowReport
+        : null;
+  return {
+    valid: true,
+    version,
+    snapshot,
+    review: importedReview,
+    comicFlowReport: importedComicFlowReport,
+    isProject: value._storyForgePackage === 'project' || isStoryForgeRecord(value.snapshot),
+    hasReviewData: version >= 2 && (isStoryForgeRecord(value.analytics) || isStoryForgeRecord(value.review)),
+    summary: {
+      title,
+      layoutMode,
+      pageCount: comicPages.length,
+      panelCount: layoutMode === 'comic' ? paragraphs.length : 0,
+      exportedBy: typeof value.exportedBy === 'string' ? value.exportedBy.trim().slice(0, 80) : '',
+      exportedAt,
+    },
+  };
+};
 const VOICE_POOL = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda', 'Orus', 'Zephyr'];
 
 const ART_STYLE_MAP = {
@@ -1271,6 +1682,131 @@ const sanitizeStoryForgeDraft = (value = {}) => {
   };
 };
 
+
+const sanitizeComicContinuityAudit = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { status: 'Clear', issueCount: 0, referenceCount: 0, usedReferenceCount: 0, referenceNames: [], summary: '', rows: [] };
+  }
+  const source = value;
+  const cleanString = (input, max) => typeof input === 'string' ? input.slice(0, max) : '';
+  const cleanCount = (input, max = 999) => {
+    const number = Number(input);
+    return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.round(number))) : 0;
+  };
+  const rows = Array.isArray(source.rows)
+    ? source.rows.slice(0, 12).map((row) => {
+      const item = row && typeof row === 'object' && !Array.isArray(row) ? row : {};
+      const panelTargets = Array.isArray(item.panelTargets)
+        ? item.panelTargets.slice(0, MAX_DRAFT_PARAGRAPHS).map((target) => {
+          const entry = target && typeof target === 'object' && !Array.isArray(target) ? target : {};
+          return {
+            id: cleanString(entry.id, 80),
+            number: cleanCount(entry.number, MAX_DRAFT_PARAGRAPHS),
+            page: cleanCount(entry.page, MAX_DRAFT_PARAGRAPHS) || null,
+          };
+        }).filter(target => target.id && target.number > 0)
+        : [];
+      return {
+        key: cleanString(item.key, 100),
+        severity: ['watch', 'low'].includes(item.severity) ? item.severity : 'watch',
+        label: cleanString(item.label, 180),
+        detail: cleanString(item.detail, 360),
+        panelTargets,
+      };
+    }).filter(row => row.label || row.detail)
+    : [];
+  return {
+    status: source.status === 'Review' ? 'Review' : 'Clear',
+    issueCount: cleanCount(source.issueCount, 99),
+    referenceCount: cleanCount(source.referenceCount, MAX_DRAFT_PARAGRAPHS),
+    usedReferenceCount: cleanCount(source.usedReferenceCount, MAX_DRAFT_PARAGRAPHS),
+    referenceNames: Array.isArray(source.referenceNames) ? source.referenceNames.slice(0, MAX_DRAFT_PARAGRAPHS).map(name => cleanString(name, 80)).filter(Boolean) : [],
+    summary: cleanString(source.summary, 360),
+    rows,
+  };
+};
+const sanitizeComicFlowReport = (value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value;
+  const cleanString = (input, max) => typeof input === 'string' ? input.slice(0, max) : '';
+  const cleanCount = (input, fallback = 0, max = 999) => {
+    const number = Number(input);
+    return Number.isFinite(number) ? Math.max(0, Math.min(max, Math.round(number))) : fallback;
+  };
+  const cleanTextList = (input, maxItems, maxLength) => Array.isArray(input)
+    ? input.slice(0, maxItems).map(item => cleanString(item, maxLength)).filter(Boolean)
+    : [];
+  const cleanNotes = (input, maxItems) => Array.isArray(input)
+    ? input.slice(0, maxItems).map(note => {
+      const item = note && typeof note === 'object' && !Array.isArray(note) ? note : {};
+      return {
+        panel: Number.isFinite(Number(item.panel)) ? Math.max(1, Math.min(MAX_DRAFT_PARAGRAPHS, Math.round(Number(item.panel)))) : null,
+        issue: cleanString(item.issue, 140),
+        suggestion: cleanString(item.suggestion, 260),
+        priority: ['high', 'medium', 'low'].includes(item.priority) ? item.priority : 'medium',
+      };
+    }).filter(note => note.issue || note.suggestion)
+    : [];
+  const cleanChecks = Array.isArray(source.checks)
+    ? source.checks.slice(0, 32).map(check => {
+      const item = check && typeof check === 'object' && !Array.isArray(check) ? check : {};
+      return {
+        key: cleanString(item.key, 80),
+        label: cleanString(item.label, 140),
+        value: cleanString(item.value, 80),
+        detail: cleanString(item.detail, 260),
+        status: ['strong', 'watch', 'needs-work'].includes(item.status) ? item.status : 'watch',
+      };
+    }).filter(check => check.label || check.detail)
+    : [];
+  const rawMetrics = source.metrics && typeof source.metrics === 'object' && !Array.isArray(source.metrics) ? source.metrics : {};
+  const metrics = {};
+  ['panels', 'pages', 'pageTurns', 'layoutFrames', 'gutterRisks', 'safeLetteringRisks', 'captions', 'images', 'directions', 'thumbnailRoughs', 'shotTypes', 'transitionTypes', 'bubblePanels', 'continuityFields'].forEach(key => {
+    metrics[key] = cleanCount(rawMetrics[key]);
+  });
+  metrics.bleedReady = Boolean(rawMetrics.bleedReady);
+  metrics.printFormat = cleanString(rawMetrics.printFormat, 80);
+  return {
+    score: cleanCount(source.score, 0, 100),
+    summary: cleanString(source.summary, 500),
+    metrics,
+    checks: cleanChecks,
+    strengths: cleanTextList(source.strengths, 6, 180),
+    globalSuggestions: cleanTextList(source.globalSuggestions, 6, 240),
+    panelNotes: cleanNotes(source.panelNotes, 8),
+    suggestions: cleanNotes(source.suggestions, 12),
+    continuityAudit: sanitizeComicContinuityAudit(source.continuityAudit),
+  };
+};
+const sanitizeStoryForgeProject = (value = {}) => {
+  const source = value && typeof value === 'object' ? value : {};
+  const draft = sanitizeStoryForgeDraft(source);
+  return {
+    ...draft,
+    _storyForgeProjectVersion: STORYFORGE_PROJECT_VERSION,
+    illustrations: sanitizeIllustrations(source.illustrations),
+    coverArt: safeImageUrl(source.coverArt).slice(0, 15000000),
+    audioSegments: sanitizeAudioSegments(source.audioSegments),
+    comicFlowReport: source.layoutMode === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,
+  };
+};
+
+const hydrateStoryForgeAudioSegments = (value) => Object.fromEntries(
+  Object.entries(sanitizeAudioSegments(value)).map(([key, segment]) => {
+    const hydrated = { ...segment };
+    if (hydrated.studentAudioBase64 && !hydrated.studentAudioUrl) {
+      hydrated.studentAudioUrl = `data:${hydrated.studentAudioMimeType || 'audio/webm'};base64,${hydrated.studentAudioBase64}`;
+    }
+    return [key, hydrated];
+  })
+);
+
+const isStoryForgeProjectMeaningful = (value = {}) => Boolean(
+  isStoryForgeDraftMeaningful(value) ||
+  Object.keys(sanitizeIllustrations(value.illustrations)).length > 0 ||
+  Boolean(safeImageUrl(value.coverArt)) ||
+  Object.keys(sanitizeAudioSegments(value.audioSegments)).length > 0
+);
 const isStoryForgeDraftMeaningful = (value = {}) => {
   const draft = sanitizeStoryForgeDraft(value);
   const continuityHasContent = Object.values(draft.comicContinuity).some(item => String(item || '').trim());
@@ -1423,10 +1959,17 @@ const StoryForge = React.memo(({
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
   const [bubbleDrag, setBubbleDrag] = useState(null);
   const [panelSequenceDrag, setPanelSequenceDrag] = useState(null);
-  const [comicContinuity, setComicContinuity] = useState({ cast: '', setting: '', palette: '', styleNotes: '' });
+  const [comicContinuity, setComicContinuity] = useState({ cast: '', setting: '', palette: '', styleNotes: '', references: [] });
   const [comicPageComposer, setComicPageComposer] = useState({ panelsPerPage: 4, pages: {} });
   const [comicPrintSafety, setComicPrintSafety] = useState({ format: 'letter', gutter: 'standard', showGuides: true, includeBleed: true });
   const [comicPreviewPage, setComicPreviewPage] = useState(1);
+  const [comicProofFocus, setComicProofFocus] = useState(null);
+
+  const [revisionHistory, setRevisionHistory] = useState([]);
+  const revisionHistoryRef = useRef([]);
+  const [vaultStorageMode, setVaultStorageMode] = useState('checking');
+  const [revisionLabel, setRevisionLabel] = useState('');
+  useEffect(() => { revisionHistoryRef.current = revisionHistory; }, [revisionHistory]);
   const updatePanelDialogue = (pId, field, value) => {
     setPanelDialogue(prev => ({ ...prev, [pId]: { ...(prev[pId] || {}), [field]: value } }));
   };
@@ -1467,7 +2010,7 @@ const StoryForge = React.memo(({
       } else if (field === 'resetLetteringWidth') {
         delete current.letteringWidth;
       } else {
-        const cleanValue = String(value || '').slice(0, 260);
+        const cleanValue = String(value || '').slice(0, field === 'altText' ? 360 : 260);
         if (cleanValue) current[field] = cleanValue;
         else delete current[field];
       }
@@ -1698,9 +2241,69 @@ const StoryForge = React.memo(({
   const updateComicContinuity = (field, value) => {
     setComicContinuity(prev => sanitizeComicContinuity({ ...prev, [field]: value }));
   };
+  const updateContinuityReference = (referenceId, field, value) => {
+    const maxLength = field === 'imageUrl' ? 15000000 : field === 'name' ? 80 : field === 'aliases' ? 240 : field === 'role' ? 120 : field === 'appearance' ? 360 : 240;
+    setComicContinuity(prev => sanitizeComicContinuity({
+      ...prev,
+      references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, [field]: String(value || '').slice(0, maxLength) } : reference),
+    }));
+    setIsDirty(true);
+  };
+  const handleContinuityReferenceImage = (referenceId, event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!String(file.type || '').toLowerCase().startsWith('image/')) {
+      if (addToast) addToast('Choose an image file for the cast reference.', 'error');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      if (addToast) addToast('Reference art must be 8 MB or smaller.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageUrl = safeImageUrl(String(reader.result || '')).slice(0, 15000000);
+      if (!imageUrl) return;
+      setComicContinuity(prev => sanitizeComicContinuity({
+        ...prev,
+        references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, imageUrl } : reference),
+      }));
+      setIsDirty(true);
+      sfAnnounce('Cast reference art attached');
+    };
+    reader.onerror = () => { if (addToast) addToast('Reference art could not be read.', 'error'); };
+    reader.readAsDataURL(file);
+  };
+  const addContinuityReference = () => {
+    setComicContinuity(prev => sanitizeComicContinuity({
+      ...prev,
+      references: [...(prev.references || []), { id: `cast-${Date.now()}`, name: '', aliases: '', role: '', appearance: '', wardrobe: '', props: '', imageUrl: '' }],
+    }));
+    setIsDirty(true);
+    sfAnnounce('Cast reference added');
+  };
+  const removeContinuityReference = (referenceId) => {
+    setComicContinuity(prev => sanitizeComicContinuity({ ...prev, references: (prev.references || []).filter(reference => reference.id !== referenceId) }));
+    setIsDirty(true);
+    sfAnnounce('Cast reference removed');
+  };
   const updateComicPanelsPerPage = (value) => {
     const panelsPerPage = COMIC_PANELS_PER_PAGE_OPTIONS.includes(Number(value)) ? Number(value) : 4;
     setComicPageComposer(prev => sanitizeComicPageComposer({ ...prev, panelsPerPage }));
+    setIsDirty(true);
+  };
+  const applyComicPagePreset = (presetKey) => {
+    const preset = COMIC_PAGE_PRESETS[presetKey];
+    if (!preset) return;
+    const composer = sanitizeComicPageComposer({ panelsPerPage: preset.panelsPerPage, pages: {} });
+    const groups = buildComicPageGroups(paragraphs, composer, preset.layout);
+    composer.pages = Object.fromEntries(groups.map(page => [String(page.page), { layout: preset.layout }]));
+    setComicPageComposer(composer);
+    setComicPageLayout(preset.layout);
+    setComicPreviewPage(1);
+    setIsDirty(true);
+    sfAnnounce(`${preset.label} page preset applied`);
   };
   const updateComicPageMeta = (pageNo, field, value) => {
     setComicPageComposer(prev => {
@@ -1724,6 +2327,7 @@ const StoryForge = React.memo(({
       else delete pages[key];
       return sanitizeComicPageComposer({ ...clean, pages });
     });
+    setIsDirty(true);
   };
   const updateComicPrintSafety = (field, value) => {
     setComicPrintSafety(prev => {
@@ -1749,6 +2353,23 @@ const StoryForge = React.memo(({
     setComicPreviewPage(prev => Math.max(1, Math.min(maxPage, Number(prev) || 1)));
   }, [comicPageGroups.length]);
   const focusedComicPreviewPage = comicPageGroups.find(page => page.page === comicPreviewPage) || comicPageGroups[0] || null;
+  const focusComicProofTarget = (page, panelId = '') => {
+    setComicPreviewPage(page);
+    setComicProofFocus(panelId ? { page, panelId } : null);
+  };
+  useEffect(() => {
+    if (!comicProofFocus || comicProofFocus.page !== comicPreviewPage || typeof document === 'undefined') return undefined;
+    const focusTimer = window.setTimeout(() => {
+      const target = document.getElementById('sf-comic-preview-panel-' + comicProofFocus.panelId);
+      if (target) {
+        target.focus();
+        target.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      }
+      setComicProofFocus(null);
+    }, 0);
+    return () => window.clearTimeout(focusTimer);
+  }, [comicProofFocus, comicPreviewPage]);
+
   const applyComicLetteringPlacement = (pages, scopeLabel = 'comic') => {
     const pageList = Array.isArray(pages) ? pages.filter(Boolean) : [pages].filter(Boolean);
     const assignments = {};
@@ -1796,15 +2417,39 @@ const StoryForge = React.memo(({
       layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity,
       panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers,
     }),
+    comicFlowReport: layoutMode === 'comic' ? sanitizeComicFlowReport(comicFlowReport) : null,
     _storyForgeAutosaveVersion: 2,
     savedAt: new Date().toISOString(),
   });
 
   // ── Illustrate state ──
+  const createProjectSnapshot = () => sanitizeStoryForgeProject({
+    ...createDraftSnapshot(),
+    illustrations,
+    coverArt,
+    audioSegments,
+    comicFlowReport,
+  });
+
+  const createRevisionCheckpoint = (label = 'Production checkpoint') => ({
+    id: `revision-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    label: String(label || 'Production checkpoint').slice(0, 100),
+    savedAt: new Date().toISOString(),
+    snapshot: createProjectSnapshot(),
+  });
   const [illustrations, setIllustrations] = useState({});
   const [coverArt, setCoverArt] = useState(null);
   const [coverArtLoading, setCoverArtLoading] = useState(false);
   const characterPortraitRef = useRef(null);
+  const getComicConsistencyReference = (idx) => {
+    const castReference = layoutMode === 'comic'
+      ? sanitizeComicContinuity(comicContinuity).references.find(reference => getImageBase64Payload(reference.imageUrl))
+      : null;
+    const castBase64 = getImageBase64Payload(castReference?.imageUrl);
+    if (castBase64) return { base64: castBase64, source: 'uploaded cast reference' };
+    if (idx > 0 && characterPortraitRef.current) return { base64: characterPortraitRef.current, source: 'first generated panel' };
+    return null;
+  };
 
   // ── Ref for async loops (prevents stale closure over paragraphs) ──
   const paragraphsRef = useRef(paragraphs);
@@ -2119,8 +2764,8 @@ const StoryForge = React.memo(({
   const closeConfirmDialogRef = useRef(null);
   const restorePromptDialogRef = useRef(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
-  const hasMeaningfulDraft = () => isStoryForgeDraftMeaningful(createDraftSnapshot());
-  const persistDraftToStorage = ({ announce = false, allowDuringHydration = false } = {}) => {
+  const hasMeaningfulDraft = () => isStoryForgeProjectMeaningful(createProjectSnapshot());
+  const persistDraftToStorage = async ({ announce = false, allowDuringHydration = false } = {}) => {
     if (!allowDuringHydration && (draftHydrationState !== 'ready' || showRestorePrompt)) {
       setDraftSaveState('paused');
       if (draftHydrationState === 'awaiting' && !showRestorePrompt) setShowRestorePrompt(true);
@@ -2128,24 +2773,17 @@ const StoryForge = React.memo(({
       return false;
     }
     setDraftSaveState('saving');
+    const snapshot = createProjectSnapshot();
+    let legacySaved = false;
     try {
-      const snapshot = createDraftSnapshot();
-      localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
-      const savedAt = Date.parse(snapshot.savedAt) || Date.now();
-      hasCommittedDraftRef.current = true;
-      setLastDraftSavedAt(savedAt);
-      setDraftSaveState('saved');
-      setDraftSaveError('');
-      setIsDirty(false);
-      if (announce) {
-        if (addToast) addToast(t('toasts.draft_saved'), 'success');
-        sfAnnounce('Story draft saved');
-      }
-      return true;
+      localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot()));
+      legacySaved = true;
     } catch (error) {
-      const reason = error?.name === 'QuotaExceededError'
-        ? 'Browser storage is full. Export a draft file to preserve this work.'
-        : 'Draft could not be saved in this browser.';
+      // The vault may still have room even when the legacy string store is full.
+    }
+    const vaultSaved = await storyForgeVaultWrite(SAVE_KEY, snapshot, revisionHistoryRef.current);
+    if (!vaultSaved && !legacySaved) {
+      const reason = 'Project storage is unavailable. Export a .storyforge package to preserve this work.';
       setDraftSaveState('error');
       setDraftSaveError(reason);
       setIsDirty(true);
@@ -2153,6 +2791,55 @@ const StoryForge = React.memo(({
       sfAnnounce(reason);
       return false;
     }
+    const savedAt = Date.parse(snapshot.savedAt) || Date.now();
+    hasCommittedDraftRef.current = true;
+    setLastDraftSavedAt(savedAt);
+    setVaultStorageMode(vaultSaved ? 'vault' : 'browser');
+    setDraftSaveState('saved');
+    setDraftSaveError(vaultSaved ? '' : 'Saved writing to browser storage. Export a .storyforge package to preserve media on another device.');
+    setIsDirty(false);
+    if (announce) {
+      if (addToast) addToast(vaultSaved ? 'Project saved to the Story Forge vault.' : t('toasts.draft_saved'), 'success');
+      sfAnnounce(vaultSaved ? 'Project saved to the Story Forge vault' : 'Story draft saved');
+    }
+    return true;
+  };
+
+  const saveRevisionCheckpoint = async (label = revisionLabel) => {
+    if (draftHydrationState !== 'ready' || showRestorePrompt) {
+      setDraftSaveState('paused');
+      if (addToast) addToast('Review the recovered project before creating a checkpoint.', 'info');
+      return false;
+    }
+    const checkpoint = createRevisionCheckpoint(String(label || `${phase} checkpoint`).trim().slice(0, 100));
+    const next = [checkpoint, ...revisionHistoryRef.current].slice(0, 12);
+    const saved = await storyForgeVaultWrite(SAVE_KEY, createProjectSnapshot(), next);
+    if (!saved) {
+      setDraftSaveState('error');
+      setDraftSaveError('Checkpoint could not be saved. Export a .storyforge package before continuing.');
+      if (addToast) addToast('Checkpoint could not be saved.', 'error');
+      return false;
+    }
+    setRevisionHistory(next);
+    setVaultStorageMode('vault');
+    setDraftSaveState('saved');
+    setDraftSaveError('');
+    setRevisionLabel('');
+    setLastDraftSavedAt(Date.parse(checkpoint.snapshot.savedAt) || Date.now());
+    setIsDirty(false);
+    if (addToast) addToast(`Checkpoint saved: ${checkpoint.label}`, 'success');
+    sfAnnounce(`Checkpoint saved: ${checkpoint.label}`);
+    return true;
+  };
+
+  const restoreRevisionCheckpoint = (revision) => {
+    if (!revision?.snapshot) return;
+    applySanitizedProject(revision.snapshot);
+    setPhase(revision.snapshot.phase || 'export');
+    setIsDirty(true);
+    setDraftSaveState('saving');
+    if (addToast) addToast(`Checkpoint restored: ${revision.label || 'Production checkpoint'}`, 'success');
+    sfAnnounce(`Checkpoint restored: ${revision.label || 'Production checkpoint'}`);
   };
   const draftSaveLabel = draftHydrationState === 'awaiting'
     ? 'Review draft'
@@ -2166,13 +2853,17 @@ const StoryForge = React.memo(({
           ? 'Saved'
           : 'Save draft';
   const draftSaveDescription = draftSaveError || (lastDraftSavedAt
-    ? `Last saved at ${new Date(lastDraftSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    ? `${vaultStorageMode === 'vault' ? 'Project vault' : 'Browser storage'} · Last saved at ${new Date(lastDraftSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : draftHydrationState !== 'ready' || showRestorePrompt
       ? 'Choose whether to restore the saved draft first'
-      : 'Save this draft in the browser');
+      : 'Save this project in the browser vault');
   const [exportConsent, setExportConsent] = useState(null);
   const exportConsentDialogRef = useRef(null);
   const exportConsentResolveRef = useRef(null);
+  const [importConfirmation, setImportConfirmation] = useState(null);
+  const importConfirmationDialogRef = useRef(null);
+  const importCandidateRef = useRef(null);
+  const importConfirmationResolveRef = useRef(null);
   const requestExportConsent = (options) => new Promise(resolve => {
     exportConsentResolveRef.current = resolve;
     setExportConsent(options);
@@ -2182,6 +2873,21 @@ const StoryForge = React.memo(({
     exportConsentResolveRef.current = null;
     setExportConsent(null);
     if (resolve) resolve(accepted);
+  };
+  const requestImportConfirmation = (candidate) => new Promise(resolve => {
+    if (importConfirmationResolveRef.current) importConfirmationResolveRef.current(false);
+    importCandidateRef.current = candidate;
+    importConfirmationResolveRef.current = resolve;
+    setImportConfirmation(candidate.summary);
+  });
+  const finishImportConfirmation = (decision) => {
+    const resolve = importConfirmationResolveRef.current;
+    const candidate = importCandidateRef.current;
+    const action = decision === true ? 'replace' : decision === 'checkpoint' ? 'checkpoint' : 'cancel';
+    importConfirmationResolveRef.current = null;
+    importCandidateRef.current = null;
+    setImportConfirmation(null);
+    if (resolve) resolve({ accepted: action !== 'cancel', action, candidate });
   };
   const safeClose = () => {
     if (isDirty && hasMeaningfulDraft()) {
@@ -2313,6 +3019,15 @@ const StoryForge = React.memo(({
 
   const vocabUsedCount = useMemo(() => Object.values(vocabUsage).filter(Boolean).length, [vocabUsage]);
   const totalWords = useMemo(() => paragraphs.reduce((sum, p) => sum + p.text.trim().split(/\s+/).filter(Boolean).length, 0), [paragraphs]);
+  const comicExportProof = useMemo(() => layoutMode === 'comic'
+    ? getComicExportProof(comicPageGroups, { panelDialogue, panelDirections, panelThumbnails, panelLayouts, illustrations, comicPrintSafety })
+    : null,
+  [layoutMode, comicPageGroups, panelDialogue, panelDirections, panelThumbnails, panelLayouts, illustrations, comicPrintSafety]);
+
+  const comicContinuityAudit = useMemo(() => layoutMode === 'comic'
+    ? getComicContinuityAudit(paragraphs, { panelDialogue, panelDirections, comicContinuity, comicPages: comicPageGroups })
+    : null,
+  [layoutMode, paragraphs, panelDialogue, panelDirections, comicContinuity, comicPageGroups]);
   const projectReadiness = useMemo(() => getStoryForgeProjectReadiness({
     storyTitle,
     storyPrompt,
@@ -2479,6 +3194,7 @@ const StoryForge = React.memo(({
       }
       if (e.key === 'Escape' && isOpen) {
         if (exportConsent) finishExportConsent(false);
+        else if (importConfirmation) finishImportConfirmation(false);
         else if (showCloseConfirm) setShowCloseConfirm(false);
         else if (showRestorePrompt) setShowRestorePrompt(false);
         else safeClose();
@@ -2486,12 +3202,12 @@ const StoryForge = React.memo(({
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
-        persistDraftToStorage({ announce: true });
+        void persistDraftToStorage({ announce: true });
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
+  }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -2538,40 +3254,64 @@ const StoryForge = React.memo(({
   _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
   _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
   _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
+  _storyForgeUseFocusTrap(importConfirmationDialogRef, !!importConfirmation, () => finishImportConfirmation(false));
 
   // Hydrate before autosave is allowed to run. This prevents a blank initial render
   // from replacing a recoverable draft while the restore decision is still open.
   useEffect(() => {
+    let active = true;
     savedDraftRef.current = null;
     hasCommittedDraftRef.current = false;
     setDraftHydrationState('checking');
     setDraftSaveState('idle');
     setDraftSaveError('');
     setLastDraftSavedAt(null);
+    setRevisionHistory([]);
     setShowRestorePrompt(false);
-    try {
-      const saved = localStorage.getItem(SAVE_KEY);
-      if (saved) {
-        const data = sanitizeStoryForgeDraft(JSON.parse(saved));
-        if (isStoryForgeDraftMeaningful(data)) {
-          savedDraftRef.current = data;
-          hasCommittedDraftRef.current = true;
-          const savedAt = Date.parse(data.savedAt);
-          if (Number.isFinite(savedAt)) setLastDraftSavedAt(savedAt);
-          setDraftHydrationState('awaiting');
-          setDraftSaveState('paused');
-          setShowRestorePrompt(true);
-          return;
+    (async () => {
+      let legacyProject = null;
+      try {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (saved) legacyProject = sanitizeStoryForgeProject(JSON.parse(saved));
+      } catch (error) {
+        if (active) {
+          setDraftSaveState('error');
+          setDraftSaveError('The older browser draft could not be read. A new project vault copy can replace it.');
         }
       }
+      const vaultRecord = await storyForgeVaultRead(SAVE_KEY);
+      if (!active) return;
+      const vaultProject = vaultRecord?.snapshot ? sanitizeStoryForgeProject(vaultRecord.snapshot) : null;
+      const data = vaultProject || legacyProject;
+      setVaultStorageMode(vaultProject ? 'vault' : 'browser');
+      if (Array.isArray(vaultRecord?.revisions)) {
+        const cleanRevisions = vaultRecord.revisions.slice(0, 12).filter(item => item && item.snapshot).map(item => ({
+          id: String(item.id || `revision-${Date.now()}`).slice(0, 80),
+          label: String(item.label || 'Production checkpoint').slice(0, 100),
+          savedAt: typeof item.savedAt === 'string' && Number.isFinite(Date.parse(item.savedAt)) ? new Date(item.savedAt).toISOString() : new Date().toISOString(),
+          snapshot: sanitizeStoryForgeProject(item.snapshot),
+        }));
+        setRevisionHistory(cleanRevisions);
+      }
+      if (data && isStoryForgeProjectMeaningful(data)) {
+        savedDraftRef.current = data;
+        hasCommittedDraftRef.current = true;
+        const savedAt = Date.parse(data.savedAt);
+        if (Number.isFinite(savedAt)) setLastDraftSavedAt(savedAt);
+        setDraftHydrationState('awaiting');
+        setDraftSaveState('paused');
+        setShowRestorePrompt(true);
+        return;
+      }
       setDraftHydrationState('ready');
-    } catch (error) {
+    })().catch(() => {
+      if (!active) return;
       setDraftHydrationState('ready');
       setDraftSaveState('error');
-      setDraftSaveError('The saved draft could not be read. Saving again will replace it with a clean copy.');
-    }
-  }, []);
-
+      setDraftSaveError('The saved project could not be opened. Export a project package before continuing.');
+    });
+    return () => { active = false; };
+  }, [SAVE_KEY]);
   useEffect(() => {
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
@@ -2591,17 +3331,25 @@ const StoryForge = React.memo(({
     }
     if (!hasMeaningfulDraft()) {
       if (hasCommittedDraftRef.current) {
-        try {
-          localStorage.removeItem(SAVE_KEY);
+        setDraftSaveState('saving');
+        void (async () => {
+          let legacyRemoved = false;
+          try { localStorage.removeItem(SAVE_KEY); legacyRemoved = true; } catch (error) {}
+          const vaultRemoved = await storyForgeVaultDelete(SAVE_KEY);
+          if (!legacyRemoved && !vaultRemoved) {
+            setDraftSaveState('error');
+            setDraftSaveError('The cleared project could not be removed from browser storage.');
+            setIsDirty(true);
+            return;
+          }
           hasCommittedDraftRef.current = false;
           setLastDraftSavedAt(null);
           setDraftSaveError('');
-        } catch (error) {
-          setDraftSaveState('error');
-          setDraftSaveError('The cleared draft could not be removed from browser storage.');
-          setIsDirty(true);
-          return undefined;
-        }
+          setVaultStorageMode(vaultRemoved ? 'vault' : 'browser');
+          setDraftSaveState('idle');
+          setIsDirty(false);
+        })();
+        return undefined;
       }
       setDraftSaveState('idle');
       setIsDirty(false);
@@ -2611,12 +3359,12 @@ const StoryForge = React.memo(({
     setDraftSaveState('saving');
     saveTimerRef.current = setTimeout(() => {
       saveTimerRef.current = null;
-      persistDraftToStorage();
+      void persistDraftToStorage();
     }, 1200);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, coverArt, audioSegments]);
 
   const applySanitizedDraft = (value) => {
     const draft = sanitizeStoryForgeDraft(value);
@@ -2650,9 +3398,18 @@ const StoryForge = React.memo(({
     return draft;
   };
 
+  const applySanitizedProject = (value) => {
+    const project = sanitizeStoryForgeProject(value);
+    const draft = applySanitizedDraft(project);
+    setIllustrations(project.illustrations);
+    setCoverArt(project.coverArt || null);
+    setAudioSegments(hydrateStoryForgeAudioSegments(project.audioSegments));
+    setComicFlowReport(project.comicFlowReport || null);
+    return draft;
+  };
   const restoreDraft = () => {
     if (!savedDraftRef.current) return;
-    const draft = applySanitizedDraft(savedDraftRef.current);
+    const draft = applySanitizedProject(savedDraftRef.current);
     skipNextAutosaveRef.current = true;
     hasCommittedDraftRef.current = true;
     savedDraftRef.current = null;
@@ -2667,16 +3424,12 @@ const StoryForge = React.memo(({
     sfAnnounce('Draft restored');
   };
 
-  const discardDraft = () => {
+  const discardDraft = async () => {
     resetComicHistory();
-    let removed = false;
-    try {
-      localStorage.removeItem(SAVE_KEY);
-      removed = true;
-    } catch (error) {
-      setDraftSaveState('error');
-      setDraftSaveError('The saved draft could not be removed from browser storage.');
-    }
+    let legacyRemoved = false;
+    try { localStorage.removeItem(SAVE_KEY); legacyRemoved = true; } catch (error) {}
+    const vaultRemoved = await storyForgeVaultDelete(SAVE_KEY);
+    const removed = legacyRemoved || vaultRemoved;
     hasCommittedDraftRef.current = !removed;
     savedDraftRef.current = null;
     setLastDraftSavedAt(null);
@@ -2684,12 +3437,15 @@ const StoryForge = React.memo(({
     if (removed) {
       setDraftSaveState('idle');
       setDraftSaveError('');
+      setVaultStorageMode(vaultRemoved ? 'vault' : 'browser');
+    } else {
+      setDraftSaveState('error');
+      setDraftSaveError('The saved project could not be removed from browser storage.');
     }
-    setIsDirty(false);
+    setIsDirty(!removed);
     setShowRestorePrompt(false);
-    sfAnnounce('Starting a fresh StoryForge draft');
+    sfAnnounce(removed ? 'Starting a fresh StoryForge draft' : 'Could not clear the saved project');
   };
-
   // ── Load initial config from teacher assignment ──
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
@@ -2809,7 +3565,7 @@ const StoryForge = React.memo(({
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
       comicContinuity: sanitizeComicContinuity(comicContinuity),
-      comicFlowReport: layoutMode === 'comic' ? comicFlowReport : null,
+      comicFlowReport: layoutMode === 'comic' ? sanitizeComicFlowReport(comicFlowReport) : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
       panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
@@ -3275,7 +4031,12 @@ Rules:
   mood: one of ${COMIC_MOOD_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
   transition: one of ${COMIC_TRANSITION_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
 - Keep language appropriate for school and for the student's grade level.
+- When a speaker matches a cast reference or alias, prefer the canonical cast name in the speaker field.
+- Do not invent a new speaker name when an existing cast reference fits.
 ${langInstruction}
+
+Cast references:
+${getComicContinuityPrompt() || 'No named cast references yet.'}
 
 Panels:
 ${JSON.stringify(panelBrief, null, 2)}
@@ -3684,8 +4445,20 @@ Return ONLY JSON:
     if (notes.setting.trim()) lines.push(`Setting continuity: ${notes.setting.trim()}`);
     if (notes.palette.trim()) lines.push(`Color palette: ${notes.palette.trim()}`);
     if (notes.styleNotes.trim()) lines.push(`Style rules: ${notes.styleNotes.trim()}`);
-    return lines.join('\n');
-  };
+    if (notes.references.length) {
+      notes.references.forEach((reference) => {
+        const identity = [reference.name, reference.role].filter(Boolean).join(' — ');
+        const aliases = String(reference.aliases || '').trim();
+    const details = [
+      aliases ? `Also known as: ${aliases}` : '',
+      reference.appearance,
+      reference.wardrobe,
+      reference.props,
+    ].filter(Boolean).join('; ');
+        if (identity || details) lines.push(`Cast reference: ${identity}${details ? ` — ${details}` : ''}`);
+      });
+    }
+    return lines.join('\n');  };
 
   const finalizeImagePrompt = (prompt) => {
     const base = String(prompt || '').trim();
@@ -3740,6 +4513,7 @@ Return ONLY JSON:
         ? value.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join('; ')
         : (typeof value === 'string' ? value : '');
       const clean = sanitizeComicContinuity({
+        ...currentNotes,
         cast: compact(data.cast || data.characters || data.characterNotes),
         setting: compact(data.setting || data.world || data.props),
         palette: compact(data.palette || data.colors),
@@ -3899,19 +4673,20 @@ Return ONLY JSON:
       const style = getStyleDesc();
       let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
 
-      if (imageUrl && characterPortraitRef.current && idx > 0 && onCallGeminiImageEdit) {
+      const consistencyReference = getComicConsistencyReference(idx);
+      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
         try {
-          const rawBase64 = imageUrl.split(',')[1];
+          const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
             `Refine this illustration to maintain consistent character appearance with the reference. ${style}. Remove any text or labels.`,
-            rawBase64, 400, 0.8, characterPortraitRef.current
+            rawBase64, 400, 0.8, consistencyReference.base64
           );
           if (refined) imageUrl = refined;
         } catch (e) { /* consistency pass is best-effort */ }
       }
 
       if (imageUrl && idx === 0 && !characterPortraitRef.current) {
-        characterPortraitRef.current = imageUrl.split(',')[1];
+        characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
       setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, isLoading: false } }));
@@ -3941,19 +4716,20 @@ Return ONLY JSON:
       }
       let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
 
-      if (imageUrl && characterPortraitRef.current && idx > 0 && onCallGeminiImageEdit) {
+      const consistencyReference = getComicConsistencyReference(idx);
+      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
         try {
-          const rawBase64 = imageUrl.split(',')[1];
+          const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
             `Refine this illustration to maintain consistent character appearance with the reference. ${style}. Remove any text or labels.`,
-            rawBase64, 400, 0.8, characterPortraitRef.current
+            rawBase64, 400, 0.8, consistencyReference.base64
           );
           if (refined) imageUrl = refined;
         } catch (e) { /* consistency pass is best-effort */ }
       }
 
       if (imageUrl && idx === 0 && !characterPortraitRef.current) {
-        characterPortraitRef.current = imageUrl.split(',')[1];
+        characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
       setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, isLoading: false } }));
@@ -4136,6 +4912,7 @@ Return ONLY JSON:
           ...prev[recordingParagraphId],
           studentAudioUrl: result.url,
           studentAudioBase64: result.base64,
+          studentAudioMimeType: result.mimeType || 'audio/webm',
         }
       }));
     }
@@ -4349,7 +5126,7 @@ Return JSON:
     "title": "<title>",
     "author": "<author>",
     "year": <number or null>,
-    "text": "<exact excerpt with line breaks as \\\\n; BLANK if uncertain>",
+    "text": "<exact excerpt with line breaks as \\\n; BLANK if uncertain>",
     "sourceUrl": "<URL from search results, or null>",
     "uncertain": false
   },
@@ -4671,6 +5448,13 @@ Return ONLY JSON:
       turnLabel: getComicPageTurnLabel(page.turn),
       note: page.note || '',
     }));
+
+    const continuityAudit = getComicContinuityAudit(paragraphs, {
+      panelDialogue,
+      panelDirections,
+      comicContinuity,
+      comicPages: pageGroups,
+    });
     const total = Math.max(1, panelRows.length);
     const pageTotal = Math.max(1, pageRows.length);
     const count = (predicate) => panelRows.filter(predicate).length;
@@ -4791,6 +5575,14 @@ Return ONLY JSON:
         status: continuityFields >= 3 ? 'strong' : continuityFields >= 2 ? 'watch' : 'needs-work',
         detail: continuityFields >= 3 ? 'Continuity notes are ready for consistent panel art.' : 'Add cast, setting, palette, and style notes before final art.',
       },
+
+      {
+        key: 'continuity-audit',
+        label: 'Cast and visual continuity',
+        value: continuityAudit.issueCount ? continuityAudit.issueCount + ' review' : 'clear',
+        status: continuityAudit.issueCount === 0 ? 'strong' : continuityAudit.issueCount <= 2 ? 'watch' : 'needs-work',
+        detail: continuityAudit.summary,
+      },
     ];
     const issuePenalty = (
       missingCaptionPanels.length * 12 +
@@ -4805,6 +5597,7 @@ Return ONLY JSON:
       heavyBubblePanels.length * 5 +
       (shotSet.size <= 1 && total > 2 ? 10 : 0) +
       (transitionSet.size <= 1 && total > 3 ? 6 : 0) +
+      continuityAudit.issueCount * 3 +
       (continuityFields < 2 ? 8 : 0)
     );
     const score = Math.max(0, Math.min(100, 100 - issuePenalty));
@@ -4824,6 +5617,7 @@ Return ONLY JSON:
     return {
       score,
       summary: score >= 85 ? 'Comic flow is production-ready with only minor polish.' : score >= 65 ? 'Comic flow is close, with a few production notes to tighten.' : 'Comic flow needs another pass before final export.',
+      continuityAudit,
       metrics: {
         panels: panelRows.length,
         pages: pageRows.length,
@@ -5177,7 +5971,7 @@ Return ONLY JSON:
         chaptersHtml += `<article class="panel ${escapeHtml(getComicPanelFrameClass(panelLayout.frame))}" style="${escapeHtml(getComicPanelGridStyleText(panelLayout, panelPageLayout, panelPageIndex))}" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         chaptersHtml += `<span class="panel-order-badge" aria-hidden="true">${idx + 1}</span>`;
         if (img) chaptersHtml += `<div class="panel-img-wrap ${escapeHtml(spaceClass)}">`;
-        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="panel-img" loading="lazy" alt="${escapeHtml(rough.altText || `Comic panel ${idx + 1} illustration`)}" />`;
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (hasOverlayBubble) {
@@ -5331,11 +6125,11 @@ main{display:block}
 .panel-caption{font-size:0.85em;color:#475569;font-style:italic}
 .speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative;background:#fff}
 @media (max-width:700px){.comic-grid{grid-template-columns:1fr}.comic-layout-splash .panel:first-child{grid-column:auto}}
-@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@page{size:${storybookPrintSafety.format === 'letter' ? 'Letter portrait' : storybookPrintSafety.format === 'comic' ? '6.625in 10.25in' : 'auto'};margin:0}@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
 <a class="skip-link" href="#story-content">${escapeHtml(t("ui_common.skip_to_story"))}</a>
-<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">🖨️¨ï¸ Print</button>
+<button type="button" class="print-btn" onclick="window.print()" aria-label="${escapeHtml(t("a11y.story_print"))}">Print-ready PDF</button>
 <header class="cover" role="banner">
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
@@ -5380,8 +6174,9 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
       ['Palette', continuity.palette],
       ['Style Rules', continuity.styleNotes],
     ].filter(([, value]) => value && value.trim());
-    const continuityHtml = continuityRows.length
-      ? `<section class="continuity-sheet"><h2>Continuity Sheet</h2><dl>${continuityRows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value).replace(/\n/g, '<br/>')}</dd>`).join('')}</dl></section>`
+    const continuityReferencesHtml = renderContinuityReferencesHtml(continuity.references);
+    const continuityHtml = continuityRows.length || continuityReferencesHtml
+      ? `<section class="continuity-sheet"><h2>Continuity Sheet</h2><dl>${continuityRows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value).replace(/\n/g, '<br/>')}</dd>`).join('')}</dl>${continuityReferencesHtml}</section>`
       : '';
     const scriptPages = buildComicPageGroups(paragraphs, comicPageComposer, comicLayout);
     const pagePlanHtml = `<section class="page-plan"><h2>Page Composer</h2>${scriptPages.map((page) => {
@@ -5464,6 +6259,101 @@ ${panelsHtml}
       : snapshot;
     const packPrintSafety = sanitizeComicPrintSafety(comicPrintSafety);
     const packPages = buildComicPageGroups(paragraphs, comicPageComposer, comicLayout);
+    const proof = getComicExportProof(packPages, {
+      panelDialogue,
+      panelDirections,
+      panelThumbnails,
+      panelLayouts,
+      illustrations,
+      comicPrintSafety: packPrintSafety,
+    });
+
+    const continuityAudit = getComicContinuityAudit(paragraphs, {
+      panelDialogue,
+      panelDirections,
+      comicContinuity,
+      comicPages: packPages,
+    });
+    const continuityAuditHtml = continuityAudit.rows.map((row) => {
+      const targets = row.panelTargets.length
+        ? 'Panels ' + row.panelTargets.map(target => target.number).join(', ')
+        : 'Comic-wide';
+      return '<div class="proof-row review">' +
+        '<div><strong>' + escapeHtml(row.label) + '</strong><span>' + escapeHtml(targets) + '</span></div>' +
+        '<b>' + escapeHtml(row.severity === 'low' ? 'Polish' : 'Review') + '</b>' +
+        '<p>' + escapeHtml(row.detail) + '</p>' +
+        '</div>';
+    }).join('');
+    const pageProofHtml = proof.rows.map((row) => {
+      const issueText = row.issues.length
+        ? row.issues.slice(0, 3).map(issue => issue.label).join(' - ')
+        : 'All page checks clear.';
+      return `<div class="proof-row ${row.status === 'Ready' ? 'ready' : 'review'}">
+        <div><strong>Page ${row.page}</strong><span>Panels ${row.startPanel}-${row.endPanel}</span></div>
+        <b>${escapeHtml(row.status)}</b>
+        <p>${escapeHtml(issueText)}</p>
+      </div>`;
+    }).join('');
+    const globalProofHtml = proof.globalIssues.length
+      ? `<div class="proof-global">${proof.globalIssues.map(issue => `<div><strong>${escapeHtml(issue.label)}</strong><span>${escapeHtml(issue.detail)}</span></div>`).join('')}</div>`
+      : '';
+    const pageProofVisualHtml = packPages.map((page) => {
+      const row = proof.rows.find((item) => item.page === page.page) || { status: 'Review', issues: [] };
+      const gutterSide = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
+      const panelVisualHtml = (page.panels || []).map(({ paragraph, idx: panelIdx }, pageIndex) => {
+        const p = paragraph || {};
+        const dialogue = panelDialogue[p.id] || {};
+        const rough = panelThumbnails[p.id] || {};
+        const layoutFrame = panelLayouts[p.id] || {};
+        const imageUrl = illustrations[p.id]?.imageUrl || '';
+        const caption = String(p.text || p.scaffoldFrame || '').trim();
+        const speech = String(dialogue.speech || '').trim();
+        const thought = String(dialogue.thought || '').trim();
+        const bubbleText = speech || thought;
+        const bubbleKind = speech ? 'speech' : 'thought';
+        const letteringSpace = normalizeComicLetteringSpace(rough.letteringSpace);
+        const hasCustomPosition = hasComicLetteringPosition(rough);
+        const bubbleStyle = (hasCustomPosition ? getComicLetteringPositionStyleText(rough, letteringSpace) : '') + getComicLetteringWidthStyleText(rough);
+        const bubbleClass = 'page-proof-bubble ' + bubbleKind + ' ' + (hasCustomPosition ? 'custom' : '') + ' ' + (letteringSpace ? 'space-' + letteringSpace : 'unplaced');
+        const altText = rough.altText || 'Panel ' + (panelIdx + 1) + ' illustration';
+        const panelStyle = getComicPanelGridStyleText(layoutFrame, page.layout, pageIndex);
+        const frameClass = getComicPanelFrameClass(layoutFrame.frame);
+        const bubbleMarkup = bubbleText
+          ? '<div class="' + escapeHtml(bubbleClass) + '" style="' + escapeHtml(bubbleStyle) + '">' +
+            (bubbleKind === 'speech' && dialogue.speaker ? '<strong>' + escapeHtml(dialogue.speaker) + ':</strong> ' : '') +
+            (bubbleKind === 'thought' ? '<span aria-hidden="true">Thought: </span>' : '') +
+            escapeHtml(bubbleText) + '</div>'
+          : letteringSpace
+            ? '<div class="page-proof-lettering-reserve space-' + escapeHtml(letteringSpace) + '">Lettering space</div>'
+            : '';
+        const panelMarkup = '<article class="page-proof-panel ' + escapeHtml(frameClass) + '" style="' + escapeHtml(panelStyle) + '" aria-label="' + escapeHtml('Panel ' + (panelIdx + 1)) + '">\n' +
+          '<span class="page-proof-number" aria-hidden="true">' + (panelIdx + 1) + '</span>' +
+          (imageUrl ? '<img class="page-proof-art" src="' + escapeHtml(imageUrl) + '" alt="' + escapeHtml(altText) + '" />' : '<div class="page-proof-empty">Art pending</div>') +
+          bubbleMarkup +
+          (panelStickers[p.id] ? '<span class="page-proof-sticker" aria-hidden="true">' + escapeHtml(panelStickers[p.id]) + '</span>' : '') +
+          (dialogue.sfx ? '<span class="page-proof-sfx" aria-label="Sound effect">' + escapeHtml(dialogue.sfx) + '</span>' : '') +
+          (caption ? '<div class="page-proof-caption">' + escapeHtml(caption).replace(/\n/g, '<br/>') + '</div>' : '') +
+          '</article>';
+        return panelMarkup;
+      }).join('');
+      const issueSummary = row.issues.length
+        ? row.issues.slice(0, 3).map(issue => issue.label).join(' - ')
+        : 'All page checks clear.';
+      const guideMarkup = (packPrintSafety.showGuides ? '<div class="page-proof-guide page-proof-safe" aria-hidden="true"></div>' : '') +
+        (packPrintSafety.showGuides && packPrintSafety.includeBleed && packPrintSafety.format !== 'digital' ? '<div class="page-proof-guide page-proof-bleed" aria-hidden="true"></div>' : '') +
+        (packPrintSafety.showGuides && gutterSide ? '<div class="page-proof-guide page-proof-gutter page-proof-gutter-' + escapeHtml(gutterSide) + '" aria-hidden="true"></div>' : '');
+      return '<article class="page-proof-sheet" data-page-proof-status="' + escapeHtml(row.status) + '">\n' +
+        '<div class="page-proof-header"><div><h3>Page ' + escapeHtml(page.page) + '</h3><span>' +
+        escapeHtml(getComicPageLayoutLabel(page.layout)) + ' - Panels ' + escapeHtml(page.startPanel) + '-' + escapeHtml(page.endPanel) + ' - ' +
+        escapeHtml(getComicReadingOrderLabel(page.layout)) + '</span></div><strong class="page-proof-status ' +
+        (row.status === 'Ready' ? 'ready' : 'review') + '">' + escapeHtml(row.status) + '</strong></div>\n' +
+        '<div class="page-proof-canvas format-' + escapeHtml(packPrintSafety.format) + ' layout-' + escapeHtml(page.layout) + '">' +
+        (panelVisualHtml || '<div class="page-proof-empty-page">No panels assigned</div>') + guideMarkup +
+        '</div>\n' +
+        '<div class="page-proof-footer"><span>' + escapeHtml(getComicPrintFormatLabel(packPrintSafety.format)) +
+        (gutterSide ? ' - ' + escapeHtml(gutterSide) + ' gutter' : '') + '</span><span>' + escapeHtml(issueSummary) + '</span></div>\n' +
+        '</article>';
+    }).join('');
     const pagePlanHtml = packPages.map((page) => {
       const turnLabel = getComicPageTurnLabel(page.turn);
       const gutterSide = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
@@ -5486,12 +6376,13 @@ ${panelsHtml}
       ['Palette', continuity.palette],
       ['Style Rules', continuity.styleNotes],
     ];
+    const continuityReferencesHtml = renderContinuityReferencesHtml(continuity.references);
     const continuityHtml = continuityRows.map(([label, value]) => `
       <div class="field ${value && value.trim() ? 'filled' : 'missing'}">
         <strong>${escapeHtml(label)}</strong>
         <span>${value && value.trim() ? escapeHtml(value).replace(/\n/g, '<br/>') : 'Missing'}</span>
       </div>
-    `).join('');
+    `).join('') + continuityReferencesHtml;
     const checksHtml = (report.checks || []).map((check) => `
       <div class="check ${escapeHtml(check.status || 'watch')}">
         <strong>${escapeHtml(check.label || 'Check')}</strong>
@@ -5549,7 +6440,7 @@ ${panelsHtml}
           </header>
           <div class="panel-grid">
             <div class="thumb">
-              ${image.imageUrl ? `<img src="${escapeHtml(image.imageUrl)}" alt="Panel ${idx + 1} illustration" />` : '<div class="empty-art">No art yet</div>'}
+              ${image.imageUrl ? `<img src="${escapeHtml(image.imageUrl)}" alt="${escapeHtml(rough.altText || `Panel ${idx + 1} illustration`)}" />` : '<div class="empty-art">No art yet</div>'}
             </div>
             <dl>
               <dt>Caption</dt><dd>${caption ? escapeHtml(caption).replace(/\n/g, '<br/>') : '<em>Not written yet</em>'}</dd>
@@ -5576,7 +6467,9 @@ ${panelsHtml}
 <style>
 *{box-sizing:border-box}body{font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.45;color:#0f172a;max-width:1100px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 6px}.meta{color:#475569;font-size:.92rem;margin-bottom:22px}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#0f172a;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer;z-index:10}.pack-section{background:white;border:2px solid #e2e8f0;border-radius:10px;margin:16px 0;padding:16px;break-inside:avoid}.pack-section h2{font-size:1rem;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;color:#1d4ed8}.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.metric{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px}.metric strong{display:block;font-size:1.45rem;color:#1e40af}.metric span{font-size:.78rem;color:#475569;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.field{border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc}.field strong{display:block;margin-bottom:5px}.field.missing span{color:#991b1b;font-style:italic}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.check{border-radius:8px;padding:10px;border:1px solid #e2e8f0;background:#f8fafc}.check strong{display:block}.check span{font-weight:900;color:#0f172a}.check p{margin:5px 0 0;color:#475569;font-size:.86rem}.check.strong{border-color:#86efac;background:#f0fdf4}.check.watch{border-color:#fcd34d;background:#fffbeb}.check.needs-work{border-color:#fca5a5;background:#fef2f2}ul{margin:0;padding-left:20px}li{margin:7px 0}li span{display:block;color:#475569}.panel-card{background:white;border:2px solid #0f172a;border-radius:10px;margin:16px 0;overflow:hidden;break-inside:avoid}.panel-card header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0f172a;color:white;padding:10px 14px}.panel-card h2{font-size:1rem;margin:0}.beat{display:inline-block;color:#fde68a;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}.status{font-size:.75rem;font-weight:900;border-radius:999px;padding:4px 10px;background:#e2e8f0;color:#0f172a}.status.ready{background:#bbf7d0;color:#14532d}.status.needs{background:#fed7aa;color:#7c2d12}.panel-grid{display:grid;grid-template-columns:220px 1fr;gap:0}.thumb{background:#f1f5f9;min-height:180px;display:flex;align-items:center;justify-content:center;border-right:1px solid #e2e8f0}.thumb img{width:100%;height:100%;max-height:260px;object-fit:cover;display:block}.empty-art{color:#64748b;font-weight:800;text-transform:uppercase;font-size:.8rem}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:900;background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}.dir-chip{display:inline-block;margin:0 5px 5px 0;padding:3px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.78rem;font-weight:800}em{color:#64748b}.footer{color:#64748b;text-align:center;font-size:.8rem;margin:28px 0 4px}@media(max-width:760px){.panel-grid{grid-template-columns:1fr}.thumb{border-right:0;border-bottom:1px solid #e2e8f0}.panel-card header{align-items:flex-start;flex-direction:column}dl{grid-template-columns:1fr}dt{padding-bottom:2px}dd{padding-top:2px}}@media print{body{background:white}.print-btn{display:none}.pack-section,.panel-card{break-inside:avoid}}
 </style></head><body>
-<style>.page-plan-row{display:grid;grid-template-columns:90px 1fr 110px 1.4fr;gap:8px;align-items:start;border:1px solid #dbeafe;background:#eff6ff;border-radius:8px;padding:9px 10px;margin:8px 0}.page-plan-row strong{color:#0f172a}.page-plan-row span{font-weight:800;color:#1d4ed8}.page-plan-row em{font-style:normal;color:#475569}@media(max-width:760px){.page-plan-row{grid-template-columns:1fr}}</style>
+<style>.page-plan-row{display:grid;grid-template-columns:90px 1fr 110px 1.4fr;gap:8px;align-items:start;border:1px solid #dbeafe;background:#eff6ff;border-radius:8px;padding:9px 10px;margin:8px 0}.page-plan-row strong{color:#0f172a}.page-plan-row span{font-weight:800;color:#1d4ed8}.page-plan-row em{font-style:normal;color:#475569}@media(max-width:760px){.page-plan-row{grid-template-columns:1fr}} .proof-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:8px;padding:10px 12px;border:1px solid #fcd34d;background:#fffbeb;color:#92400e}.proof-summary.ready{border-color:#86efac;background:#f0fdf4;color:#166534}.proof-summary strong{text-transform:uppercase;letter-spacing:.08em}.proof-summary span{font-size:.86rem}.proof-global{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin:10px 0}.proof-global div{border:1px solid #fcd34d;border-radius:8px;padding:9px 10px;background:#fffbeb}.proof-global strong,.proof-global span{display:block}.proof-global span{color:#92400e;font-size:.84rem;margin-top:3px}.proof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px;margin-top:10px}.proof-row{border:1px solid #fca5a5;border-radius:8px;padding:10px;background:#fef2f2}.proof-row.ready{border-color:#86efac;background:#f0fdf4}.proof-row>div{display:flex;justify-content:space-between;gap:8px}.proof-row strong{color:#0f172a}.proof-row span{color:#475569;font-size:.82rem}.proof-row b{display:block;margin-top:4px;color:#166534;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}.proof-row.review b{color:#9a3412}.proof-row p{margin:5px 0 0;color:#475569;font-size:.84rem}@media(max-width:760px){.proof-summary{align-items:flex-start;flex-direction:column}}
+.page-proof-sheet{border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin:12px 0;background:#fff;break-inside:avoid}.page-proof-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px}.page-proof-header h3{font-size:1rem;margin:0 0 3px}.page-proof-header span{display:block;color:#475569;font-size:.78rem}.page-proof-status{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:4px 9px;background:#fed7aa;color:#9a3412;white-space:nowrap}.page-proof-status.ready{background:#bbf7d0;color:#166534}.page-proof-canvas{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(88px,1fr);gap:6px;padding:24px;background:#cbd5e1;overflow:hidden;aspect-ratio:8.5/11}.page-proof-canvas.format-comic{aspect-ratio:6.625/10.25}.page-proof-canvas.format-digital{aspect-ratio:4/5}.page-proof-canvas.layout-strip{grid-template-columns:1fr}.page-proof-canvas.layout-manga{direction:rtl}.page-proof-panel{position:relative;min-width:0;min-height:0;overflow:hidden;background:#f8fafc;border:2px solid #0f172a;direction:ltr}.page-proof-panel.panel-frame-inset{margin:5px}.page-proof-art{width:100%;height:100%;object-fit:cover;display:block}.page-proof-empty{display:flex;align-items:center;justify-content:center;height:100%;min-height:70px;color:#64748b;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;background:#f1f5f9}.page-proof-number{position:absolute;top:4px;left:4px;z-index:5;min-width:19px;height:19px;padding:0 4px;border-radius:999px;background:#0f172a;color:#fff;font-size:.64rem;font-weight:900;line-height:19px;text-align:center}.page-proof-caption{position:absolute;left:4px;right:4px;bottom:4px;z-index:3;max-height:34%;overflow:hidden;padding:4px 6px;border:1px solid #f59e0b;border-radius:4px;background:rgba(255,251,235,.94);color:#92400e;font-size:.62rem;line-height:1.2}.page-proof-bubble{position:absolute;z-index:4;max-width:72%;max-height:48%;overflow:hidden;padding:5px 7px;border:2px solid #0f172a;border-radius:999px;background:rgba(255,255,255,.95);color:#0f172a;font-size:.62rem;line-height:1.2;overflow-wrap:anywhere;box-shadow:0 2px 4px rgba(15,23,42,.2)}.page-proof-bubble.thought{border-style:dashed;background:rgba(245,243,255,.95);color:#6b21a8;font-style:italic}.page-proof-bubble.unplaced{left:5px;right:5px;bottom:5px;max-width:none;border-color:#dc2626;border-style:dashed}.page-proof-bubble.space-top,.page-proof-lettering-reserve.space-top{left:50%;top:18%;transform:translate(-50%,-50%)}.page-proof-bubble.space-bottom,.page-proof-lettering-reserve.space-bottom{left:50%;top:82%;transform:translate(-50%,-50%)}.page-proof-bubble.space-left,.page-proof-lettering-reserve.space-left{left:22%;top:50%;transform:translate(-50%,-50%)}.page-proof-bubble.space-right,.page-proof-lettering-reserve.space-right{left:78%;top:50%;transform:translate(-50%,-50%)}.page-proof-bubble.space-top-left,.page-proof-lettering-reserve.space-top-left{left:24%;top:22%;transform:translate(-50%,-50%)}.page-proof-bubble.space-top-right,.page-proof-lettering-reserve.space-top-right{left:76%;top:22%;transform:translate(-50%,-50%)}.page-proof-bubble.space-bottom-left,.page-proof-lettering-reserve.space-bottom-left{left:24%;top:78%;transform:translate(-50%,-50%)}.page-proof-bubble.space-bottom-right,.page-proof-lettering-reserve.space-bottom-right{left:76%;top:78%;transform:translate(-50%,-50%)}.page-proof-lettering-reserve{position:absolute;z-index:3;max-width:62%;padding:4px 6px;border:1px dashed #0f766e;border-radius:7px;background:rgba(240,253,250,.88);color:#0f766e;font-size:.58rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;text-align:center}.page-proof-sticker{position:absolute;top:4px;right:5px;z-index:4;font-size:1.35rem;line-height:1;transform:rotate(10deg);filter:drop-shadow(0 2px 2px rgba(15,23,42,.25))}.page-proof-sfx{position:absolute;top:28px;left:5px;z-index:4;color:#dc2626;font-size:.76rem;font-weight:900;line-height:1;transform:rotate(-8deg);text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff;overflow-wrap:anywhere}.page-proof-guide{position:absolute;z-index:10;pointer-events:none}.page-proof-bleed{inset:4px;border:2px solid rgba(245,158,11,.62)}.page-proof-safe{inset:16px;border:1px dashed rgba(21,128,61,.88)}.page-proof-gutter{top:0;bottom:0;width:12px;background:rgba(244,63,94,.2);border-left:1px solid rgba(190,24,93,.55);border-right:1px solid rgba(190,24,93,.55)}.page-proof-gutter-left{left:0}.page-proof-gutter-right{right:0}.page-proof-empty-page{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:900;text-transform:uppercase}.page-proof-footer{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#475569;font-size:.74rem}.page-proof-footer span:last-child{text-align:right}@media(max-width:760px){.page-proof-header{align-items:flex-start;flex-direction:column}.page-proof-footer{align-items:flex-start;flex-direction:column}.page-proof-footer span:last-child{text-align:left}}@media print{.page-proof-sheet{break-inside:avoid}.page-proof-canvas{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style>
 <button type="button" class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
 <div class="meta">Comic production pack by ${author} - Layout: ${escapeHtml(layoutLabel)} - Pages: ${escapeHtml(packPages.length || 1)} - Print: ${escapeHtml(getComicPrintFormatLabel(packPrintSafety.format))} - ${escapeHtml(getComicReadingOrderLabel(comicLayout))} - ${escapeHtml(new Date().toLocaleDateString())}</div>
@@ -5584,6 +6477,8 @@ ${panelsHtml}
   <h2>Production Snapshot</h2>
   <div class="summary-grid">
     <div class="metric"><strong>${Math.round(Number(report.score) || 0)}</strong><span>Flow score</span></div>
+    <div class="metric"><strong>${proof.readyPages}/${proof.pageCount}</strong><span>Pages clear</span></div>
+    <div class="metric"><strong>${proof.issueCount}</strong><span>Proof notes</span></div>
     <div class="metric"><strong>${escapeHtml(report.metrics?.pages || packPages.length || 1)}</strong><span>Pages</span></div>
     <div class="metric"><strong>${escapeHtml(report.metrics?.pageTurns || 0)}</strong><span>Page turns</span></div>
     <div class="metric"><strong>${escapeHtml(report.metrics?.layoutFrames || 0)}</strong><span>Custom layouts</span></div>
@@ -5598,6 +6493,20 @@ ${panelsHtml}
   <p>${escapeHtml(report.summary || snapshot.summary || '')}</p>
 </section>
 <section class="pack-section">
+  <h2>Export Proof</h2>
+  <div class="proof-summary ${proof.status === 'Ready' ? 'ready' : 'review'}">
+    <strong>${escapeHtml(proof.status)}</strong>
+    <span>${proof.readyPages} of ${proof.pageCount} pages clear - ${proof.issueCount} proof note${proof.issueCount === 1 ? '' : 's'}${proof.blockingCount ? ` - ${proof.blockingCount} blocking` : ''}</span>
+  </div>
+  ${globalProofHtml}
+  <div class="proof-grid">${pageProofHtml || '<p>No pages to proof yet.</p>'}</div>
+</section>
+<section class="pack-section">
+  <h2>Rendered Page Proofs</h2>
+  ${pageProofVisualHtml || '<p>No pages to proof yet.</p>'}
+</section>
+
+<section class="pack-section">
   <h2>Page Composer</h2>
   ${pagePlanHtml || '<p>No page plan yet.</p>'}
 </section>
@@ -5608,6 +6517,16 @@ ${panelsHtml}
 <section class="pack-section">
   <h2>Continuity Sheet</h2>
   <div class="fields">${continuityHtml}</div>
+</section>
+
+<section class="pack-section">
+  <h2>Continuity Audit</h2>
+  <div class="proof-summary ${continuityAudit.status === 'Clear' ? 'ready' : 'review'}">
+    <strong>${escapeHtml(continuityAudit.status)}</strong>
+    <span>${continuityAudit.usedReferenceCount} of ${continuityAudit.referenceCount} cast references surfaced - ${continuityAudit.issueCount} continuity note${continuityAudit.issueCount === 1 ? '' : 's'}</span>
+  </div>
+  <p>${escapeHtml(continuityAudit.summary)}</p>
+  <div class="proof-grid">${continuityAuditHtml || '<p>No continuity drift signals found.</p>'}</div>
 </section>
 <section class="pack-section">
   <h2>Production Checks</h2>
@@ -5793,6 +6712,101 @@ show();
   // COLLABORATIVE JSON SAVE / LOAD ("Pass the Torch")
   // ═══════════════════════════════════════════════════════════
 
+  const exportStoryForgeProject = async () => {
+    if (!(await requestExportConsent({ title: 'Export Story Forge project?', message: 'This project package contains the complete writing project, visual assets, continuity notes, and any stored narration data. Save it only to a school-approved location.', confirmLabel: 'Export project' }))) return;
+    const exportedAt = new Date().toISOString();
+    const snapshot = createProjectSnapshot();
+    const continuity = sanitizeComicContinuity(snapshot.comicContinuity);
+    const printSafety = sanitizeComicPrintSafety(snapshot.comicPrintSafety);
+    const comicPages = snapshot.layoutMode === 'comic'
+      ? buildComicPageGroups(snapshot.paragraphs, snapshot.comicPageComposer, snapshot.comicPageLayout)
+      : [];
+    const proof = snapshot.layoutMode === 'comic'
+      ? getComicExportProof(comicPages, {
+        panelDialogue: snapshot.panelDialogue,
+        panelDirections: snapshot.panelDirections,
+        panelThumbnails: snapshot.panelThumbnails,
+        panelLayouts: snapshot.panelLayouts,
+        illustrations: snapshot.illustrations,
+        comicPrintSafety: printSafety,
+      })
+      : null;
+
+    const continuityAudit = snapshot.layoutMode === 'comic'
+      ? getComicContinuityAudit(snapshot.paragraphs, {
+        panelDialogue: snapshot.panelDialogue,
+        panelDirections: snapshot.panelDirections,
+        comicContinuity: continuity,
+        comicPages,
+      })
+      : null;
+    const manifest = {
+      format: 'storyforge-project',
+      version: STORYFORGE_PROJECT_VERSION,
+      exportedAt,
+      story: {
+        title: snapshot.storyTitle || 'Untitled story',
+        genre: snapshot.genre,
+        layoutMode: snapshot.layoutMode,
+      },
+      production: {
+        pageCount: comicPages.length,
+        panelCount: snapshot.layoutMode === 'comic' ? snapshot.paragraphs.length : 0,
+        wordCount: projectReadiness.metrics.totalWords,
+        illustratedSectionCount: projectReadiness.metrics.illustratedSections,
+        narratedSectionCount: projectReadiness.metrics.narratedSections,
+        continuityReferenceCount: continuity.references.length,
+        comicStats: snapshot.layoutMode === 'comic' ? projectReadiness.comicStats : null,
+        comicFlowScore: snapshot.layoutMode === 'comic' ? (snapshot.comicFlowReport?.score ?? null) : null,
+        comicFlowNoteCount: snapshot.layoutMode === 'comic' ? ((snapshot.comicFlowReport?.panelNotes || snapshot.comicFlowReport?.suggestions || []).length) : 0,
+        proofStatus: proof?.status || null,
+        proofReadyPages: proof?.readyPages || 0,
+        proofIssueCount: proof?.issueCount || 0,
+        proofBlockingCount: proof?.blockingCount || 0,
+        continuityAuditStatus: continuityAudit?.status || null,
+        continuityAuditIssueCount: continuityAudit?.issueCount || 0,
+        continuityReferencesUsed: continuityAudit?.usedReferenceCount || 0,
+
+      },
+      readiness: {
+        percent: projectReadiness.percent,
+        readyPhases: projectReadiness.readyCount,
+        totalPhases: PHASES.length,
+        blockerCount: projectReadiness.blockers.length,
+        warningCount: projectReadiness.warnings.length,
+      },
+      print: snapshot.layoutMode === 'comic' ? {
+        format: printSafety.format,
+        gutter: printSafety.gutter,
+        includeBleed: Boolean(printSafety.includeBleed),
+        showGuides: Boolean(printSafety.showGuides),
+      } : null,
+    };
+    const project = {
+      _storyForgePackage: 'project',
+      _storyForgeVersion: STORYFORGE_PROJECT_VERSION,
+      exportedAt,
+      exportedBy: authorName || 'Student',
+      snapshot,
+      manifest,
+      review: {
+        gradingResult,
+        grammarResults: Object.keys(grammarResults).length > 1 ? grammarResults : null,
+        characters: Array.isArray(characters) ? characters.slice(0, 32) : [],
+      },
+    };
+    const blob = new Blob([JSON.stringify(project)], { type: 'application/vnd.storyforge+json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(storyTitle || 'storyforge-project').replace(/[^a-zA-Z0-9]/g, '_')}.storyforge`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    if (addToast) addToast('Story Forge project package exported.', 'success');
+    sfAnnounce('Story Forge project package exported');
+  };
   const exportDraftJSON = async () => {
     // FERPA reminder: this draft is de-identified (codename, never a real name), but it still
     // carries the student's full writing, the AI feedback/grade, and progress analytics — so a
@@ -5807,7 +6821,7 @@ show();
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
       comicContinuity: sanitizeComicContinuity(comicContinuity),
-      comicFlowReport: layoutMode === 'comic' ? comicFlowReport : null,
+      comicFlowReport: layoutMode === 'comic' ? sanitizeComicFlowReport(comicFlowReport) : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
       panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
@@ -5859,42 +6873,79 @@ show();
     if (addToast) addToast(t('toasts.draft_exported_as_json_share'), 'success');
   };
 
+  const applyImportedPackage = (validated) => {
+    const importedPhase = validated.hasReviewData ? 'review' : 'write';
+    applySanitizedProject({
+      ...validated.snapshot,
+      phase: importedPhase,
+      comicFlowReport: validated.comicFlowReport,
+    });
+    const review = validated.review;
+    if (review.gradingResult) setGradingResult(review.gradingResult);
+    if (review.grammarResults) setGrammarResults(review.grammarResults);
+    if (Array.isArray(review.characters)) setCharacters(review.characters.slice(0, 32));
+    const summary = validated.summary;
+    const packageDetail = summary.layoutMode === 'comic'
+      ? ` ${summary.pageCount} page${summary.pageCount === 1 ? '' : 's'} · ${summary.panelCount} panel${summary.panelCount === 1 ? '' : 's'}.`
+      : '';
+    if (addToast) {
+      addToast(importedPhase === 'review'
+        ? `Student progress loaded from ${summary.exportedBy || 'student'} — review their work!${packageDetail}`
+        : `Draft loaded from ${summary.exportedBy || 'classmate'} — keep writing!${packageDetail}`, 'success');
+    }
+    sfAnnounce(`Imported ${summary.title}.${packageDetail}`);
+  };
+
   const importDraftJSON = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.setAttribute('aria-label', 'Import Story Forge draft file');
-    input.accept = '.json';
+    input.accept = '.json,.storyforge,.storyforge.json';
     input.onchange = (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      if (file.size > STORYFORGE_MAX_IMPORT_BYTES) {
+        if (addToast) addToast('This Story Forge package is larger than 120 MB and was not imported.', 'error');
+        sfAnnounce('Story Forge import rejected because the file is too large');
+        return;
+      }
       const reader = new FileReader();
-      reader.onload = (ev) => {
+      reader.onload = async (ev) => {
         try {
           const d = JSON.parse(ev.target.result);
-          if (!d._storyForgeVersion) { if (addToast) addToast(t('toasts.invalid_storyforge_file'), 'error'); return; }
-          const importedPhase = d._storyForgeVersion >= 2 && d.analytics ? 'review' : 'write';
-          applySanitizedDraft({ ...d, phase: importedPhase });
-          // authorName is derived from the codename prop and is never restored from a file.
-          if (d.comicFlowReport && typeof d.comicFlowReport === 'object') setComicFlowReport(d.comicFlowReport);
-          if (d.illustrations) setIllustrations(sanitizeIllustrations(d.illustrations));
-          if (d.coverArt) { const cov = safeImageUrl(d.coverArt); if (cov) setCoverArt(cov); }
-          if (d.gradingResult) setGradingResult(d.gradingResult);
-          if (d.grammarResults) setGrammarResults(d.grammarResults);
-          if (Array.isArray(d.characters)) setCharacters(d.characters.slice(0, 32));
-          if (importedPhase === 'review') {
-            if (addToast) addToast(`Student progress loaded from ${d.exportedBy || 'student'} — review their work!`, 'success');
-          } else if (addToast) {
-            addToast(`Draft loaded from ${d.exportedBy || 'classmate'} — keep writing!`, 'success');
+          const validated = validateStoryForgeImport(d);
+          if (!validated.valid) {
+            if (addToast) addToast(validated.code === 'newer-version'
+              ? `This package uses Story Forge format v${validated.version}, newer than this editor supports.`
+              : t('toasts.invalid_storyforge_file'), 'error');
+            sfAnnounce('Story Forge import rejected because the package is not supported');
+            return;
           }
+          if (hasMeaningfulDraft()) {
+            const decision = await requestImportConfirmation(validated);
+            if (!decision.accepted || !decision.candidate) {
+              sfAnnounce('Story Forge import cancelled');
+              return;
+            }
+          }
+          if (decision.action === 'checkpoint' && !(await saveRevisionCheckpoint('Before import'))) {
+            sfAnnounce('Import cancelled because the checkpoint could not be saved');
+            return;
+          }
+          applyImportedPackage(validated);
         } catch (err) {
           if (addToast) addToast(t('toasts.could_read_file'), 'error');
+          sfAnnounce('Story Forge import could not be read');
         }
+      };
+      reader.onerror = () => {
+        if (addToast) addToast(t('toasts.could_read_file'), 'error');
+        sfAnnounce('Story Forge import could not be read');
       };
       reader.readAsText(file);
     };
     input.click();
   };
-
   // ═══════════════════════════════════════════════════════════
   // ACHIEVEMENT BADGES
   // ═══════════════════════════════════════════════════════════
@@ -5928,6 +6979,11 @@ show();
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
   const primaryReadinessIssue = projectReadiness.blockers[0] || projectReadiness.warnings[0] || null;
   const exportReadinessIssues = [...projectReadiness.blockers, ...projectReadiness.warnings];
+const comicAltCoverageLabel = layoutMode === 'comic'
+    ? projectReadiness.comicStats.artPanels > 0
+      ? `${Math.max(0, projectReadiness.comicStats.artPanels - projectReadiness.comicStats.missingAltText)}/${projectReadiness.comicStats.artPanels}`
+      : '0/0'
+    : 'n/a';
   const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null) => {
     const layoutFrame = panelLayouts[p.id] || {};
     const resizingPanel = panelResizeDrag?.pId === p.id;
@@ -5935,7 +6991,7 @@ show();
     const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
     const gutterSide = pageForPanel ? getComicPageGutterSide(pageForPanel.page, previewLayout, printSafety) : '';
     return (
-      <div key={p.id} className={`sf-comic-page-panel bg-white rounded-lg overflow-hidden shadow-md relative ${getComicPanelFramePreviewClass(layoutFrame.frame)} ${!normalizeComicPanelFrame(layoutFrame.frame) && previewLayout === 'splash' && pageIndex === 0 ? 'col-span-2' : ''}`} style={{ ...getComicPanelGridStyle(layoutFrame, previewLayout, pageIndex), border: '3px solid #1e293b', direction: 'ltr' }}>
+      <div key={p.id} id={'sf-comic-preview-panel-' + p.id} tabIndex={-1} data-sf-comic-panel-proof-target="true" className={`sf-comic-page-panel bg-white rounded-lg overflow-hidden shadow-md relative ${getComicPanelFramePreviewClass(layoutFrame.frame)} ${!normalizeComicPanelFrame(layoutFrame.frame) && previewLayout === 'splash' && pageIndex === 0 ? 'col-span-2' : ''}`} style={{ ...getComicPanelGridStyle(layoutFrame, previewLayout, pageIndex), border: '3px solid #1e293b', direction: 'ltr' }}>
         <div className={`absolute top-2 ${mangaFlow ? 'right-2' : 'left-2'} z-20 w-7 h-7 rounded-full bg-slate-950 text-white border-2 border-white shadow-md flex items-center justify-center text-xs font-black`}>
           {idx + 1}
         </div>
@@ -6004,7 +7060,7 @@ show();
           ) : null;
           return (
             <div className="relative" data-sf-comic-art-layer="true">
-              <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? 'aspect-video' : 'aspect-square'}`} />
+              <img src={illustrations[p.id].imageUrl} alt={panelThumbnails[p.id]?.altText || `Panel ${idx + 1}`} className={`w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? 'aspect-video' : 'aspect-square'}`} />
               {showPlacedBubble && (
                 customLetteringPosition ? (
                   <div className="absolute inset-2 z-10 pointer-events-none">{letteringBubble}</div>
@@ -6188,7 +7244,7 @@ show();
             {draftSaveError && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-700">{draftSaveError}</p>}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button type="button" data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button type="button" data-sf-focusable data-sf-save-close onClick={() => { if (persistDraftToStorage({ announce: true, allowDuringHydration: true })) { setShowCloseConfirm(false); onClose(); } }} className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button type="button" data-sf-focusable data-sf-save-close onClick={async () => { if (await persistDraftToStorage({ announce: true, allowDuringHydration: true })) { setShowCloseConfirm(false); onClose(); } }} className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors">{t("ui_common.save_draft_close")}</button>
               <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
@@ -6209,6 +7265,34 @@ show();
         </div>
       )}
       {/* ── Header ── */}
+      {importConfirmation && (
+        <div role="presentation" className="fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4">
+          <div ref={importConfirmationDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="sf-import-confirm-title" aria-describedby="sf-import-confirm-message" tabIndex={-1} className="sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-amber-100 p-2 text-amber-700" aria-hidden="true"><RefreshCw size={18} /></div>
+              <div>
+                <h3 id="sf-import-confirm-title" className="text-lg font-black text-slate-900">Replace current project?</h3>
+                <p id="sf-import-confirm-message" className="mt-2 text-sm leading-relaxed text-slate-700">Importing this file replaces the current writing, artwork, narration, and production details. Save a checkpoint first if you may need the current project later.</p>
+              </div>
+            </div>
+            <dl className="mt-5 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs sm:grid-cols-2">
+              <div className="min-w-0"><dt className="font-bold uppercase tracking-wide text-amber-800">Incoming project</dt><dd className="mt-1 truncate font-black text-slate-900">{importConfirmation.title}</dd></div>
+              <div><dt className="font-bold uppercase tracking-wide text-amber-800">Format</dt><dd className="mt-1 font-bold text-slate-800">v{importConfirmation.version || STORYFORGE_PROJECT_VERSION} · {importConfirmation.layoutMode === 'comic' ? 'Comic' : 'Story'}</dd></div>
+              {importConfirmation.layoutMode === 'comic' && <>
+                <div><dt className="font-bold uppercase tracking-wide text-amber-800">Pages</dt><dd className="mt-1 font-bold text-slate-800">{importConfirmation.pageCount}</dd></div>
+                <div><dt className="font-bold uppercase tracking-wide text-amber-800">Panels</dt><dd className="mt-1 font-bold text-slate-800">{importConfirmation.panelCount}</dd></div>
+              </>}
+              <div><dt className="font-bold uppercase tracking-wide text-amber-800">Source</dt><dd className="mt-1 truncate font-bold text-slate-800">{importConfirmation.exportedBy || 'Not provided'}</dd></div>
+              <div><dt className="font-bold uppercase tracking-wide text-amber-800">Exported</dt><dd className="mt-1 font-bold text-slate-800">{importConfirmation.exportedAt ? new Date(importConfirmation.exportedAt).toLocaleDateString() : 'Not provided'}</dd></div>
+            </dl>
+            <div className="mt-5 flex flex-wrap justify-end gap-3">
+              <button type="button" data-sf-focusable onClick={() => finishImportConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Keep current project</button>
+              <button type="button" data-sf-focusable onClick={() => finishImportConfirmation('checkpoint')} className="rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50">Save checkpoint &amp; import</button>
+              <button type="button" data-sf-focusable onClick={() => finishImportConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Replace and import</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
         <div className="flex items-center gap-3">
           <BookOpen size={24} />
@@ -7210,6 +8294,14 @@ show();
                           placeholder={t("placeholders.panel_narrator")}
                           aria-label={`Panel ${idx + 1} narration`}
                         />
+                        <textarea
+                          value={(panelThumbnails[p.id] || {}).altText || ''}
+                          onChange={(e) => updatePanelThumbnail(p.id, 'altText', e.target.value)}
+                          className="mt-2 w-full p-2 text-[11px] resize-y border border-teal-100 rounded-lg bg-white focus:border-teal-400"
+                          style={{ minHeight: '42px' }}
+                          placeholder="Accessibility description: who or what is visible, action, and setting..."
+                          aria-label={`Panel ${idx + 1} accessibility description`}
+                        />
                       </div>
                       {/* Speech bubble */}
                       <div>
@@ -7535,11 +8627,7 @@ show();
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="text-[11px] font-bold text-purple-600 uppercase tracking-widest">Comic Continuity</div>
                     {onCallGemini && (
-                      <button type="button"
-                        onClick={draftComicContinuity}
-                        disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
-                        className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1"
-                      >
+                      <button type="button" onClick={draftComicContinuity} disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1">
                         <Sparkles size={12} /> Draft Notes
                       </button>
                     )}
@@ -7553,19 +8641,109 @@ show();
                     ].map(({ field, label, placeholder }) => (
                       <label key={field} className="block">
                         <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</span>
-                        <textarea
-                          value={comicContinuity[field] || ''}
-                          onChange={(e) => updateComicContinuity(field, e.target.value)}
-                          placeholder={placeholder}
-                          className="w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none"
-                          aria-label={`Comic continuity ${label.toLowerCase()}`}
-                        />
+                        <textarea value={comicContinuity[field] || ''} onChange={(e) => updateComicContinuity(field, e.target.value)} placeholder={placeholder} className="w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none" aria-label={`Comic continuity ${label.toLowerCase()}`} />
                       </label>
                     ))}
                   </div>
+                  <div className="mt-4 border-t border-purple-100 pt-4" data-sf-cast-references>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div>
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cast references</div>
+                        <p className="text-[11px] text-slate-500 mt-1">Lock recurring appearance, wardrobe, props, and reference art for more consistent panels. Uploaded reference art will guide generated comic panels.</p>
+                      </div>
+                      <button type="button" onClick={addContinuityReference} className="px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100" aria-label="Add cast reference"><Plus size={12} aria-hidden="true" /> Add cast</button>
+                    </div>
+                    {comicContinuity.references.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-purple-200 bg-purple-50/30 p-3 text-[11px] text-slate-500">Add a cast reference when a character’s visual identity should stay stable across panels.</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {comicContinuity.references.map((reference, referenceIndex) => (
+                          <div key={reference.id} className="rounded-xl border border-purple-100 bg-purple-50/30 p-3">
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">Cast {referenceIndex + 1}</span>
+                              <button type="button" onClick={() => removeContinuityReference(reference.id)} className="p-1 rounded-md text-rose-600 hover:bg-rose-50" aria-label={`Remove cast reference ${referenceIndex + 1}`} title="Remove cast reference"><Trash2 size={13} aria-hidden="true" /></button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {[['name','Name','Mina'],['aliases','Also known as','Min, Captain M'],['role','Role','Explorer'],['appearance','Appearance','Round glasses, warm brown skin, short curls'],['wardrobe','Wardrobe','Red jacket with a silver compass'],['props','Props','Brass compass and canvas satchel']].map(([field, label, placeholder]) => (
+                                <label key={field} className={field === 'appearance' || field === 'wardrobe' || field === 'props' ? 'sm:col-span-2' : ''}>
+                                  <span className="block text-[10px] font-bold text-slate-500 mb-1">{label}</span>
+                                  {field === 'name' || field === 'aliases' || field === 'role' ? (
+                                    <input value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={`Cast reference ${label.toLowerCase()}`} />
+                                  ) : (
+                                    <textarea value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full h-14 px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700 resize-y" aria-label={`Cast reference ${label.toLowerCase()}`} />
+                                  )}
+                                </label>
+                              ))}
+                              <div className="sm:col-span-2 rounded-lg border border-purple-100 bg-white p-2">
+                                <div className="flex flex-wrap items-end gap-2">
+                                  <label className="flex-1 min-w-[180px]">
+                                    <span className="block text-[10px] font-bold text-slate-500 mb-1">Reference art URL</span>
+                                    <input type="url" value={reference.imageUrl || ''} onChange={(e) => updateContinuityReference(reference.id, 'imageUrl', e.target.value)} placeholder="https://..." className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={`Cast reference art URL ${referenceIndex + 1}`} />
+                                  </label>
+                                  <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100 cursor-pointer">
+                                    <ImageIcon size={12} aria-hidden="true" /> Upload art
+                                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleContinuityReferenceImage(reference.id, e)} aria-label={`Upload cast reference art ${referenceIndex + 1}`} />
+                                  </label>
+                                  {reference.imageUrl && (
+                                    <button type="button" onClick={() => updateContinuityReference(reference.id, 'imageUrl', '')} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100" aria-label={`Remove cast reference art ${referenceIndex + 1}`}>
+                                      <X size={12} aria-hidden="true" /> Remove art
+                                    </button>
+                                  )}
+                                </div>
+                                {safeImageUrl(reference.imageUrl) && (
+                                  <img src={safeImageUrl(reference.imageUrl)} alt={`Reference art for ${reference.name || 'cast ' + (referenceIndex + 1)}`} className="mt-2 h-20 w-20 rounded-md border border-purple-100 object-cover" />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
-
+              {layoutMode === 'comic' && comicContinuityAudit && (
+                <div data-sf-continuity-audit className="mt-4 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <div className="text-[11px] font-black text-cyan-700 uppercase tracking-widest">Continuity Audit</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {comicContinuityAudit.referenceCount
+                          ? comicContinuityAudit.usedReferenceCount + '/' + comicContinuityAudit.referenceCount + ' cast references surfaced'
+                          : 'Add cast references to check speaker continuity'}
+                        {comicContinuityAudit.issueCount ? ' - ' + comicContinuityAudit.issueCount + ' review note' + (comicContinuityAudit.issueCount === 1 ? '' : 's') : ''}
+                      </div>
+                    </div>
+                    <span className={'self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ' + (comicContinuityAudit.status === 'Clear' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700')}>
+                      {comicContinuityAudit.status}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-slate-600">{comicContinuityAudit.summary}</p>
+                  {comicContinuityAudit.rows.length > 0 && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {comicContinuityAudit.rows.map((row) => {
+                        const target = row.panelTargets?.[0];
+                        return (
+                          <button
+                            key={row.key}
+                            type="button"
+                            onClick={() => focusComicProofTarget(target?.page || 1, target?.id)}
+                            className="rounded-lg border border-cyan-200 bg-cyan-50/60 px-3 py-2 text-left hover:bg-cyan-100"
+                            aria-label={row.label + (target ? ' for panel ' + target.number : '')}
+                            title={target ? 'Focus panel ' + target.number : 'Review continuity audit'}
+                          >
+                            <div className="flex items-center justify-between gap-2 text-[11px] font-black text-cyan-900">
+                              <span>{row.label}</span>
+                              {target && <span className="shrink-0 text-cyan-700">Panel {target.number}</span>}
+                            </div>
+                            <div className="mt-1 text-[10px] leading-relaxed text-cyan-800">{row.detail}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
               {/* Image Prompt Preview Modal */}
               {promptPreview && (
                 <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg">
@@ -8724,11 +9902,12 @@ show();
                     </div>
                     <p className="mt-1 text-xs font-medium text-slate-600">{projectReadiness.summary}</p>
                   </div>
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600" aria-label="Production coverage">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600" aria-label="Production coverage">
                     <span>Words <strong className="text-slate-900">{projectReadiness.metrics.totalWords}</strong></span>
                     <span>Art <strong className="text-slate-900">{projectReadiness.metrics.illustratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
                     <span>Audio <strong className="text-slate-900">{projectReadiness.metrics.narratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
                     <span>Review <strong className="text-slate-900">{projectReadiness.metrics.reviewSignalCount ? 'Done' : 'Open'}</strong></span>
+                    <span>Alt <strong className="text-slate-900">{comicAltCoverageLabel}</strong></span>
                   </div>
                 </div>
                 {exportReadinessIssues.length > 0 ? (
@@ -8788,7 +9967,10 @@ show();
                           {value}
                         </button>
                       ))}
-                      <button
+                      <select value="" onChange={(e) => applyComicPagePreset(e.target.value)} className="px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700" aria-label="Comic page preset">
+                        <option value="">Page preset</option>
+                        {Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+                      </select>                      <button
                         type="button"
                         onClick={() => applyComicLetteringPlacement(comicPageGroups, 'Comic')}
                         className="sf-comic-action px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 flex items-center gap-1"
@@ -8869,6 +10051,67 @@ show();
                       );
                     })}
                   </div>
+                </div>
+              )}
+              {layoutMode === 'comic' && comicExportProof && (
+                <div data-sf-comic-export-proof className="mt-4 border-t-2 border-blue-100 pt-4" aria-label="Comic export proof">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-black text-blue-700 uppercase tracking-widest flex items-center gap-2">
+                        {comicExportProof.status === 'Ready' ? <CheckCircle2 size={14} aria-hidden="true" /> : <HelpCircle size={14} aria-hidden="true" />} Export proof
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">{comicExportProof.readyPages}/{comicExportProof.pageCount} pages clear · {comicExportProof.issueCount} proof note{comicExportProof.issueCount === 1 ? '' : 's'}</div>
+                    </div>
+                    <span className={`self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase ${comicExportProof.status === 'Ready' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+                      {comicExportProof.status}
+                    </span>
+                  </div>
+                  {comicExportProof.issueCount > 0 ? (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {comicExportProof.globalIssues.map((issue) => (
+                        <div key={issue.key} className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                          <div className="font-black">{issue.label}</div>
+                          <div className="mt-0.5 leading-relaxed">{issue.detail}</div>
+                        </div>
+                      ))}
+                      {comicExportProof.rows.filter(row => row.issues.length > 0).slice(0, 6).map((row) => (
+                        <div key={'proof-page-' + row.page} className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
+                          <button
+                            type="button"
+                            onClick={() => focusComicProofTarget(row.page)}
+                            className="flex w-full items-center justify-between gap-2 text-left"
+                            aria-label={'Review export proof for page ' + row.page}
+                            title={'Jump to page ' + row.page + ' preview'}
+                          >
+                            <span className="text-[11px] font-black text-rose-800">Page {row.page}</span>
+                            <span className="text-[10px] font-black text-rose-700">{row.issues.length} note{row.issues.length === 1 ? '' : 's'}</span>
+                          </button>
+                          <div className="mt-2 space-y-1">
+                            {row.issues.slice(0, 3).map((issue) => {
+                              const target = issue.panelTargets?.[0];
+                              return (
+                                <button
+                                  key={row.page + '-' + issue.key}
+                                  type="button"
+                                  onClick={() => focusComicProofTarget(row.page, target?.id)}
+                                  className="flex w-full items-center justify-between gap-2 rounded-md border border-rose-200 bg-white/70 px-2 py-1 text-left text-[10px] text-rose-800 hover:bg-white"
+                                  aria-label={issue.label + (target ? ' for panel ' + target.number : ' on page ' + row.page)}
+                                  title={target ? 'Focus panel ' + target.number : 'Review page ' + row.page}
+                                >
+                                  <span>{issue.label}</span>
+                                  {target && <span className="shrink-0 font-black text-rose-600">Panel {target.number}</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-800">
+                      Every page clears the current art, lettering, accessibility, pacing, and print checks.
+                    </div>
+                  )}
                 </div>
               )}
               {layoutMode === 'comic' && (() => {
@@ -9344,7 +10587,42 @@ show();
                 </div>
               )}
 
-              {/* ── Pass the Torch — Collaborative JSON Save/Load ── */}
+                            <div data-sf-project-vault className="bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm">
+                <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <Save size={16} /> Project Vault
+                </h4>
+                <p className="text-xs text-slate-600 mb-3">
+                  {vaultStorageMode === 'vault' ? 'Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser.' : 'Save a portable project package to preserve artwork and narration across browsers or devices.'}
+                </p>
+                <div className="flex flex-wrap gap-2 items-end">
+                  <button type="button" onClick={exportStoryForgeProject} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2" aria-label="Export full Story Forge project">
+                    <Download size={14} /> Export .storyforge
+                  </button>
+                  <button type="button" onClick={importDraftJSON} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2" aria-label="Import Story Forge project">
+                    <Plus size={14} /> Import project
+                  </button>
+                  <label className="flex-1 min-w-[180px]">
+                    <span className="sr-only">Checkpoint name</span>
+                    <input value={revisionLabel} onChange={(e) => setRevisionLabel(e.target.value.slice(0, 100))} placeholder="Checkpoint name" className="w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700" aria-label="Checkpoint name" />
+                  </label>
+                  <button type="button" onClick={() => void saveRevisionCheckpoint()} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50" aria-label="Save revision checkpoint">
+                    <Save size={14} /> Checkpoint
+                  </button>
+                </div>
+                {revisionHistory.length > 0 && (
+                  <div className="mt-4 border-t border-emerald-100 pt-3" aria-label="Saved project checkpoints">
+                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Recent checkpoints</div>
+                    <div className="flex flex-wrap gap-2">
+                      {revisionHistory.slice(0, 6).map((revision) => (
+                        <button key={revision.id} type="button" onClick={() => restoreRevisionCheckpoint(revision)} className="px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100" title={`Restore ${revision.label}`}>
+                          {revision.label} · {new Date(revision.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+{/* ── Pass the Torch — Collaborative JSON Save/Load ── */}
               <div className="bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <RefreshCw size={16} /> Pass the Torch

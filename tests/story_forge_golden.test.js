@@ -213,6 +213,34 @@ describe('StoryForge draft persistence sanitizer', () => {
     expect(draft.comicPageComposer).toEqual({ panelsPerPage: 6, pages: { 1: { layout: 'manga', turn: 'reveal', note: 'Hold the beat' } } });
   });
 });
+describe('StoryForge project vault data', () => {
+  it('preserves bounded artwork, cover, narration, and cast references in project snapshots', () => {
+    const project = FK.sanitizeStoryForgeProject({
+      storyTitle: 'Vault comic',
+      layoutMode: 'comic',
+      paragraphs: [{ id: 'p-1', text: 'A full panel caption.' }],
+      illustrations: {
+        'p-1': { imageUrl: 'data:image/png;base64,art', prompt: 'A stable panel prompt' },
+        unsafe: { imageUrl: 'javascript:alert(1)' },
+      },
+      coverArt: 'data:image/jpeg;base64,cover',
+      audioSegments: {
+        'p-1': { studentAudioBase64: 'audio-bytes', studentAudioMimeType: 'audio/webm', studentAudioUrl: 'blob:discard-me' },
+      },
+      comicContinuity: {
+        references: [{ name: 'Mina', role: 'Explorer', appearance: 'Round glasses', wardrobe: 'Red jacket', props: 'Compass', imageUrl: 'https://example.com/mina.png' }],
+      },
+    });
+
+    expect(project._storyForgeProjectVersion).toBe(3);
+    expect(project.illustrations).toEqual({ 'p-1': { imageUrl: 'data:image/png;base64,art', prompt: 'A stable panel prompt' } });
+    expect(project.coverArt).toBe('data:image/jpeg;base64,cover');
+    expect(project.audioSegments['p-1']).toMatchObject({ studentAudioBase64: 'audio-bytes', studentAudioMimeType: 'audio/webm' });
+    expect(project.audioSegments['p-1']).not.toHaveProperty('studentAudioUrl');
+    expect(project.comicContinuity.references[0]).toMatchObject({ name: 'Mina', role: 'Explorer', appearance: 'Round glasses', imageUrl: 'https://example.com/mina.png' });
+    expect(FK.isStoryForgeProjectMeaningful({ illustrations: { 'p-1': { imageUrl: 'data:image/png;base64:art' } } })).toBe(true);
+  });
+});
 describe('StoryForge production readiness', () => {
   it('blocks export when no story content exists', () => {
     const readiness = FK.getStoryForgeProjectReadiness({
@@ -329,5 +357,94 @@ describe('StoryForge — SSR render contract', () => {
     const html = render(base);
     expect(html).toContain('role="dialog"');
     expect(html.length).toBeGreaterThan(1000);
+  });
+});
+
+
+describe('comic continuity audit', () => {
+  it('flags untracked speakers and repeated camera setups with page-aware panel targets', () => {
+    const paragraphs = [
+      { id: 'p-1', text: 'Mina enters.' },
+      { id: 'p-2', text: 'A stranger answers.' },
+      { id: 'p-3', text: 'Mina looks closer.' },
+      { id: 'p-4', text: 'The clue remains hidden.' },
+    ];
+    const comicPages = [{
+      page: 1,
+      panels: paragraphs.map((paragraph, idx) => ({ paragraph, idx })),
+    }];
+    const directions = Object.fromEntries(paragraphs.map((paragraph) => [
+      paragraph.id,
+      { shot: 'wide', angle: 'eye-level', mood: 'tense' },
+    ]));
+    const audit = FK.getComicContinuityAudit(paragraphs, {
+      comicPages,
+      comicContinuity: {
+        references: [
+          { id: 'cast-1', name: 'Mina' },
+          { id: 'cast-2', name: 'Bo' },
+        ],
+      },
+      panelDialogue: {
+        'p-1': { speaker: 'Mina' },
+        'p-2': { speaker: 'Rook' },
+        'p-3': { speaker: 'Mina' },
+      },
+      panelDirections: directions,
+    });
+
+    expect(audit.status).toBe('Review');
+    expect(audit.rows.map(row => row.key)).toEqual(expect.arrayContaining([
+      'untracked-speakers',
+      'unused-cast-references',
+      'repeated-camera-setup-1',
+    ]));
+    expect(audit.rows.find(row => row.key === 'untracked-speakers')?.panelTargets[0]).toMatchObject({
+      id: 'p-2',
+      number: 2,
+      page: 1,
+    });
+  });
+});
+
+describe('comic cast aliases', () => {
+  it('matches configured aliases and persists them through comic snapshots', () => {
+    const paragraphs = [
+      { id: 'p-1', text: 'Mina raises the compass.' },
+      { id: 'p-2', text: 'Captain M calls from the doorway.' },
+    ];
+    const continuity = {
+      references: [
+        { id: 'cast-1', name: 'Mina', aliases: 'Min, Captain M', role: 'Explorer' },
+      ],
+    };
+    const audit = FK.getComicContinuityAudit(paragraphs, {
+      comicContinuity: continuity,
+      panelDialogue: {
+        'p-1': { speaker: 'Mina', speech: 'I found it.' },
+        'p-2': { speaker: 'Captain M', speech: 'Keep moving.' },
+      },
+    });
+
+    expect(audit.status).toBe('Clear');
+    expect(audit.usedReferenceCount).toBe(1);
+    expect(audit.referenceNames).toEqual(['Mina']);
+
+    const snapshot = FK.createComicProductionSnapshot({
+      paragraphs,
+      comicContinuity: continuity,
+    });
+    expect(snapshot.comicContinuity.references[0]).toMatchObject({
+      name: 'Mina',
+      aliases: 'Min, Captain M',
+    });
+  });
+});
+describe('comic reference art payloads', () => {
+  it('extracts only local image data for the generation consistency hook', () => {
+    expect(FK.getImageBase64Payload('data:image/png;base64,abc123')).toBe('abc123');
+    expect(FK.getImageBase64Payload('https://example.com/reference.png')).toBe('');
+    expect(FK.getImageBase64Payload('data:text/plain;base64,not-image')).toBe('');
+    expect(FK.getImageBase64Payload('')).toBe('');
   });
 });

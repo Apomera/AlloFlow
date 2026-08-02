@@ -24,11 +24,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 84,
+  "buttons": 85,
   "inputs": 7,
-  "lengthBucket": 606,
+  "lengthBucket": 630,
   "selects": 0,
-  "sha": "b531044b3f59572e",
+  "sha": "1557d9d5a08666c7",
   "svgs": 0,
 }
 `;

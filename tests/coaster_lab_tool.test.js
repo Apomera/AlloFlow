@@ -989,6 +989,20 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     ]) expect(src).toContain(marker);
   });
 
+  it.each(TOOL_PATHS)('%s guides first-time learners through a measurable first ride', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-guidedWelcome"', 'Guided first coaster', 'id="clab-guidedStep"', 'id="clab-guidedRecord"', 'id="clab-guidedCompare"', 'id="clab-guidedExport"', 'id="clab-guidedClear"', 'id="clab-guidedConditions"', 'id="clab-btnPacketExport"', 'id="clab-btnPacketImport"', 'function exportLabPacket(){', 'function importLabPacket(str){', "type: 'coaster-lab-packet'", 'LAB_PACKET_SCHEMA = 1', 'function packetTelemetrySnapshot(tele){', 'evidence: packetTelemetrySnapshot(lastTele)',
+      "const GUIDED_STATE_KEY = 'coaster_lab_onboarding_v1';", "const GUIDED_RECORD_KEY = 'coaster_lab_guided_record_v1';", 'design = normalizeDesign(simpleDesign());',
+      'function syncGuidedWelcome(){', 'function guidedConditionSnapshot(){', 'function guidedConditionsLocked(){', 'function guidedRejectConditionChange(){', 'function guidedGoalSnapshot(tele){', 'function guidedComparison(tele){', 'function guidedNotebookText(){', 'function copyGuidedNotebook(){', 'function clearGuidedNotebook(){', 'function beginGuidedAction(){', 'function renderPredictionEvidence(tele){', 'function renderRevisionComparison(tele){', 'function renderGuidedHistoryTrend(history){', 'data-clab-history-trend', 'function guidedTraceSnapshot(tele){', 'trace: guidedTraceSnapshot(tele)', 'function renderGuidedTraceOverlay(history, fromIndex, toIndex){', 'data-clab-trace-overlay', 'function renderExperimentTimeline(tele){', 'data-clab-experiment-timeline', 'function renderExperimentComparisonBoard(){', 'data-clab-experiment-compare', 'function guidedComparisonConclusion(history, fromIndex, toIndex){', 'data-clab-comparison-conclusion', 'data-clab-copy-conclusion', 'function buildGuidedHistoryCsv(){', 'data-clab-history-csv', 'function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){', 'data-clab-teacher-report', 'function guidedRubricSummary(){', 'function guidedExperimentQuality(history, fromIndex, toIndex){', 'function guidedDesignChangeStats(beforeEntry, afterEntry){', 'data-clab-evidence-quality', 'guidedAdaptiveRecommendation', 'guidedAdaptiveProgress', 'renderAdaptiveProgress', 'acceptAdaptiveChallenge', 'clab-adaptiveCoach', 'clab-btnAdaptiveAccept', 'clab-adaptiveProgress', 'function normalizeGuidedReview(raw){', 'const GUIDED_REVIEW_KEY =', 'data-clab-classroom-rubric', 'data-clab-review-status', 'data-clab-finalize-review', 'data-clab-student-reflection', 'data-clab-rubric-weight', 'data-clab-rubric-notes', 'review: guidedReview', 'bindClassroomRubric', 'bindGuidedTeacherReport', 'bindGuidedHistoryExport', 'bindExperimentComparison', 'guidedRun: () => {',
+      'telemetrySummary: () => {', 'guidedWelcomeEl.hidden = !active', 'window.__testHooks.coasterLab = rootEl._lab;',
+    ]) expect(src).toContain(marker);
+    for (const marker of ['id="clab-guidedPrediction"', 'id="clab-guidedSpeed"', 'id="clab-guidedForce"', 'id="clab-guidedRevise"', 'function guidedPredictionReady(){', 'function guidedActualSpeed(tele){', 'function updateGuidedPredictionFeedback(tele){', 'function persistGuidedRecord(){', 'friction: tele.fricUsed', 'propulsion: design.propulsion.mode']) expect(src).toContain(marker);
+    const statePos = src.indexOf('let guidedState =');
+    const savePos = src.indexOf("if(guidedState === 'ready') saveDesign(false);");
+    expect(statePos).toBeGreaterThan(-1);
+    expect(savePos).toBeGreaterThan(statePos);
+  });
   it.each(TOOL_PATHS)('%s adds an accessible dispatch presentation and livelier park motion', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
@@ -1382,7 +1396,7 @@ describe('coaster lab — procedural coaster generator', () => {
     expect(src).toContain('id=\\"clab-randomStyle\\"');
     expect(src).toContain('id=\\"clab-randomSeed\\"');
     // replacing the design is confirmed first, and the preflight coach is the referee
-    expect(src).toContain("confirm('Generate a new coaster?");
+    expect(src).toMatch(/(?:clab)?[Cc]onfirm\('Generate a new coaster\?/);
     expect(src).toContain("safetyFindings.filter(f => f.severity === 'bad')");
     // the second, track-aware banking pass runs before the design is accepted
     expect(src).toContain('autoBankDesign(raw.points, raw.meta.head');

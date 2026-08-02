@@ -225,7 +225,8 @@
     var numeric = Number(value);
     if (!isFinite(numeric)) return 'n/a';
     var rounded = round(numeric, places == null ? 1 : places);
-    return (rounded > 0 ? '+' : '') + rounded + (unit || '');
+    var prefix = rounded > 0 ? '+' : '';
+    return prefix + rounded + (unit || '');
   }
 
   function cerReviewFocus(strengthId, moveId) {
@@ -726,6 +727,41 @@ var IMMERSIVE_TOUR_STEPS = [
     return Object.assign({ index: index, total: IMMERSIVE_TOUR_STEPS.length, nextId: IMMERSIVE_TOUR_STEPS[(index + 1) % IMMERSIVE_TOUR_STEPS.length].id }, step);
   }
 
+
+  function immersiveTourCompletedStepList(stepIds) {
+    var list = Array.isArray(stepIds) ? stepIds : [];
+    var allowed = {};
+    IMMERSIVE_TOUR_STEPS.forEach(function (step) { allowed[step.id] = true; });
+    var completed = [];
+    list.forEach(function (id) {
+      var normalized = String(id || '');
+      if (allowed[normalized] && completed.indexOf(normalized) === -1) completed.push(normalized);
+    });
+    return completed;
+  }
+
+  function immersiveTourProgress(data) {
+    var d = data || {};
+    var completed = immersiveTourCompletedStepList(d.immersiveTourCompletedSteps);
+    var captures = Array.isArray(d.immersiveEvidenceCaptures) ? d.immersiveEvidenceCaptures : [];
+    var activeStep = immersiveTourStep(d.immersiveTourStep);
+    var steps = IMMERSIVE_TOUR_STEPS.map(function (step) {
+      var stepCaptures = captures.filter(function (capture) { return capture && capture.tourStepId === step.id; });
+      return Object.assign({}, step, {
+        complete: completed.indexOf(step.id) !== -1,
+        captureCount: stepCaptures.length,
+        noteCount: stepCaptures.filter(function (capture) { return String(capture.note || '').trim(); }).length
+      });
+    });
+    return {
+      activeStep: activeStep,
+      steps: steps,
+      completedSteps: completed,
+      completedCount: steps.filter(function (step) { return step.complete; }).length,
+      total: steps.length,
+      allComplete: steps.every(function (step) { return step.complete; })
+    };
+  }
 
 var IMMERSIVE_FEATURE_GLOSSARY = {
   conceptual: [
@@ -1851,6 +1887,9 @@ var GEOGRAPHY_PROFILES = {
     scoreForecast: scoreForecast,
     immersiveFocusProfile: immersiveFocusProfile,
     immersiveTourStep: immersiveTourStep,
+    immersiveTourCompletedStepList: immersiveTourCompletedStepList,
+    immersiveTourProgress: immersiveTourProgress,
+    immersiveTourHandoffText: immersiveTourHandoffText,
     immersiveFeatureGlossary: immersiveFeatureGlossary,
     immersiveFeatureById: immersiveFeatureById,
     immersiveFeatureConnections: immersiveFeatureConnections,
@@ -1905,7 +1944,21 @@ var GEOGRAPHY_PROFILES = {
     signedNumber: signedNumber,
     sceneAppearance: sceneAppearance,
     drawWeatherScene: drawWeatherScene,
-    resolvedState: resolvedState
+    resolvedState: resolvedState,
+    immersiveSessionSharePayload: immersiveSessionSharePayload,
+    immersiveLocalWorkspacePayload: immersiveLocalWorkspacePayload,
+    validateImmersiveLocalWorkspacePayload: validateImmersiveLocalWorkspacePayload,
+    immersiveSessionDownloadPayload: immersiveSessionDownloadPayload,
+    validateImmersiveSessionPayload: validateImmersiveSessionPayload,
+    immersiveEvidenceHandoffText: immersiveEvidenceHandoffText,
+    immersiveEvidenceCaptureReview: immersiveEvidenceCaptureReview,
+    immersiveEvidenceReviewSummary: immersiveEvidenceReviewSummary,
+    immersiveCaptureComparison: immersiveCaptureComparison,
+    immersiveCaptureClaimHandoffText: immersiveCaptureClaimHandoffText,
+    immersiveLessonPresetPayload: immersiveLessonPresetPayload,
+    validateImmersiveLessonPreset: validateImmersiveLessonPreset,
+    immersiveLessonPresetList: immersiveLessonPresetList,
+    immersiveLessonPresetDescription: immersiveLessonPresetDescription
   };
 
   function roundedRect(g, x, y, w, h, r) {
@@ -1951,6 +2004,335 @@ var GEOGRAPHY_PROFILES = {
       }
     } catch (error) {}
     legacyClipboardCopy(text, finish);
+  }
+
+  function formatWeatherDelta(value, unit, decimals) {
+    if (value == null || !isFinite(Number(value))) return '—';
+    var rounded = round(Number(value), decimals == null ? 1 : decimals);
+    return (rounded > 0 ? '+' : '') + rounded + (unit || '');
+  }
+
+  function immersiveTimelineDelta(current, comparison) {
+    if (!current || !comparison) return null;
+    function numericDelta(key) {
+      var a = Number(current[key]);
+      var b = Number(comparison[key]);
+      return isFinite(a) && isFinite(b) ? a - b : null;
+    }
+    var windDirection = null;
+    if (isFinite(Number(current.windDir)) && isFinite(Number(comparison.windDir))) {
+      windDirection = ((Number(current.windDir) - Number(comparison.windDir) + 540) % 360) - 180;
+    }
+    return {
+      temperature: numericDelta('temperature'), humidity: numericDelta('humidity'), cloudCover: numericDelta('cloudCover'),
+      precipitation: numericDelta('precipitation'), pressure: numericDelta('pressure'), windSpeed: numericDelta('windSpeed'),
+      windDirection: windDirection, conditionChanged: String(current.condition || '') !== String(comparison.condition || '')
+    };
+  }
+
+  function immersiveLessonPresetPayload(data, name, metadata) {
+    var label = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (!label) return null;
+    var safe = immersiveSessionSharePayload(data, { includeLocation: true }).weatherSystems;
+    delete safe.immersiveEvidenceCaptures;
+    delete safe.immersiveLessonPresets;
+    delete safe.immersiveTourStep;
+    delete safe.immersiveTourCompletedSteps;
+    delete safe.immersiveReflection;
+    var details = metadata || {};
+    return { schema: 'weather-immersive-preset-v1', id: String(details.id || ('weather-preset-' + Date.now())), name: label, savedAt: details.savedAt || new Date().toISOString(), weatherSystems: safe };
+  }
+
+  function validateImmersiveLessonPreset(preset) {
+    if (!preset || preset.schema !== 'weather-immersive-preset-v1' || !preset.weatherSystems || typeof preset.weatherSystems !== 'object') return null;
+    var safe = immersiveSessionSharePayload(preset.weatherSystems, { includeLocation: true }).weatherSystems;
+    delete safe.immersiveEvidenceCaptures;
+    delete safe.immersiveLessonPresets;
+    delete safe.immersiveTourStep;
+    delete safe.immersiveTourCompletedSteps;
+    delete safe.immersiveReflection;
+    return { schema: 'weather-immersive-preset-v1', id: String(preset.id || ('weather-preset-' + Date.now())), name: String(preset.name || 'Untitled preset').trim().replace(/\s+/g, ' ').slice(0, 80) || 'Untitled preset', savedAt: preset.savedAt || '', weatherSystems: safe };
+  }
+
+  function immersiveLessonPresetList(presets) {
+    var list = Array.isArray(presets) ? presets : [];
+    var deduped = [];
+    list.forEach(function (preset) {
+      var safe = validateImmersiveLessonPreset(preset);
+      if (!safe) return;
+      var existing = deduped.map(function (item) { return item.id; }).indexOf(safe.id);
+      if (existing !== -1) deduped.splice(existing, 1);
+      deduped.push(safe);
+    });
+    return deduped.slice(-8);
+  }
+
+  function immersiveLessonPresetDescription(preset) {
+    var state = preset && preset.weatherSystems ? preset.weatherSystems : {};
+    var mode = state.immersiveSceneMode === 'geographic' ? 'Geographic terrain' : 'Conceptual 3D';
+    var source = state.immersiveDataSource === 'live' ? 'Live weather' : 'Teaching model';
+    var focusLabels = { system: 'Full system', front: 'Front dynamics', moisture: 'Moisture', stations: 'Surface observations' };
+    var focus = focusLabels[state.immersiveFocus] || 'Full system';
+    var camera = String(state.immersiveCameraPreset || state.geographicCameraPreset || 'overview');
+    return mode + ' · ' + source + ' · ' + focus + ' · ' + camera + ' view';
+  }
+
+  function immersiveTourHandoffText(data) {
+    var d = data || {};
+    var run = immersiveTourProgress(d);
+    var scenario = scenarioById(d.scenario || 'coldFront');
+    var mode = d.immersiveSceneMode === 'geographic' ? 'Geographic terrain' : 'Conceptual 3D';
+    var source = d.immersiveDataSource === 'live' ? 'Live weather' : 'Teaching model';
+    var includeLocation = d.immersiveShareIncludeLocation === true;
+    var location = includeLocation ? (d.liveLocationQuery || d.liveLocationCity || 'Selected location') : 'Excluded by default for privacy';
+    var lines = [
+      'Weather Systems Guided Investigation Brief',
+      'Scenario: ' + scenario.name,
+      'Scene: ' + mode + ' | ' + source,
+      'Location: ' + location,
+      'Active step: ' + (run.activeStep.index + 1) + '/' + run.total + ' | ' + run.activeStep.label,
+      'Progress: ' + run.completedCount + '/' + run.total + ' steps complete',
+      '',
+      'GUIDED STEPS'
+    ];
+    run.steps.forEach(function (step, index) {
+      lines.push((step.complete ? '[x] ' : '[ ] ') + (index + 1) + '. ' + step.label + ' | ' + step.captureCount + ' evidence capture' + (step.captureCount === 1 ? '' : 's'));
+      lines.push('    Prompt: ' + step.prompt);
+      lines.push('    Evidence cue: ' + step.evidence);
+    });
+    var reflection = String(d.immersiveReflection || '').replace(/\s+/g, ' ').trim().slice(0, 1200);
+    if (reflection) lines.push('', 'LEARNER REFLECTION', reflection);
+    lines.push('', 'FACILITATOR NOTE', 'Review this brief before sharing. Keep student names and sensitive personal information out of the reflection or notes. The 3D scene is a teaching representation; use the evidence labels and numeric views to discuss model limits.');
+    return lines.join('\n');
+  }
+
+  var IMMERSIVE_LOCAL_WORKSPACE_KEY = 'weather-systems-immersive-workspace-v1';
+
+  function immersiveLocalWorkspacePayload(data) {
+    var payload = immersiveSessionDownloadPayload(data || {});
+    payload.schema = 'weather-immersive-local-v1';
+    payload.savedAt = new Date().toISOString();
+    return payload;
+  }
+
+  function validateImmersiveLocalWorkspacePayload(payload) {
+    if (!payload || payload.schema !== 'weather-immersive-local-v1' || !payload.weatherSystems || typeof payload.weatherSystems !== 'object') return null;
+    return validateImmersiveSessionPayload(Object.assign({}, payload, { schema: 'weather-immersive-session-v1' }));
+  }
+
+  function immersiveSessionSharePayload(data, options) {
+    var d = data || {};
+    var includeLocation = !options || options.includeLocation !== false;
+    var keys = [
+      'immersiveAudienceMode', 'immersiveSceneMode', 'immersiveDataSource', 'immersiveExplainerFeature', 'immersiveFocus',
+      'immersiveCameraPreset', 'immersiveInspectorPanel', 'immersiveComparisonFeature', 'immersiveGeography', 'immersiveCaptureClaimPrimaryId', 'immersiveCaptureClaimComparisonId', 'immersiveLessonPresetActiveId', 'immersiveTourStep', 'immersiveTourCompletedSteps', 'immersiveReflection', 'immersiveStageMode',
+      'geographicCameraPreset', 'geographicWeatherLayer', 'geographicStudyRadius', 'geographicStudyAreaVisible',
+      'geographicWindVisible', 'geographicTransectVisible', 'scenario', 'simHour', 'temp', 'humidity', 'pressure',
+      'windSpeed', 'windDir', 'terrain'
+    ];
+    if (includeLocation) keys = keys.concat(['liveLocationQuery', 'liveLocationCity', 'liveLocationRegion', 'liveLocationPostalCode', 'liveLocationCountry']);
+    var patch = {};
+    keys.forEach(function (key) { if (d[key] !== undefined) patch[key] = d[key]; });
+    if (patch.immersiveTourStep != null) patch.immersiveTourStep = immersiveTourStep(patch.immersiveTourStep).id;
+    if (Array.isArray(patch.immersiveTourCompletedSteps)) patch.immersiveTourCompletedSteps = immersiveTourCompletedStepList(patch.immersiveTourCompletedSteps);
+    if (patch.immersiveReflection != null) patch.immersiveReflection = String(patch.immersiveReflection).slice(0, 1200);
+    if (Array.isArray(d.immersiveEvidenceCaptures) && d.immersiveEvidenceCaptures.length) {
+      patch.immersiveEvidenceCaptures = d.immersiveEvidenceCaptures.slice(-12).map(function (capture) {
+        if (includeLocation) return capture;
+        var redacted = Object.assign({}, capture);
+        redacted.location = { label: 'Location redacted for sharing.' };
+        return redacted;
+      });
+    }
+    return { schema: 'weather-immersive-session-v1', weatherSystems: patch };
+  }
+
+  function immersiveSessionDownloadPayload(data) {
+    var payload = immersiveSessionSharePayload(data, { includeLocation: true });
+    var d = data || {};
+    if (d.liveWeather && typeof d.liveWeather === 'object') payload.weatherSystems.liveWeather = d.liveWeather;
+    if (Array.isArray(d.liveWeatherTimeline)) payload.weatherSystems.liveWeatherTimeline = d.liveWeatherTimeline.slice(-48);
+    if (d.liveWeatherTimelineIndex != null) payload.weatherSystems.liveWeatherTimelineIndex = d.liveWeatherTimelineIndex;
+    if (d.liveGeography && typeof d.liveGeography === 'object') payload.weatherSystems.liveGeography = d.liveGeography;
+    if (Array.isArray(d.immersiveLessonPresets)) payload.immersiveLessonPresets = immersiveLessonPresetList(d.immersiveLessonPresets);
+    return payload;
+  }
+
+  function validateImmersiveSessionPayload(payload) {
+    if (!payload || payload.schema !== 'weather-immersive-session-v1' || !payload.weatherSystems || typeof payload.weatherSystems !== 'object') return null;
+    var patch = immersiveSessionSharePayload(payload.weatherSystems, { includeLocation: true }).weatherSystems;
+    if (payload.weatherSystems.liveWeather && typeof payload.weatherSystems.liveWeather === 'object') patch.liveWeather = payload.weatherSystems.liveWeather;
+    if (Array.isArray(payload.weatherSystems.liveWeatherTimeline)) patch.liveWeatherTimeline = payload.weatherSystems.liveWeatherTimeline.slice(0, 48);
+    if (payload.weatherSystems.liveWeatherTimelineIndex != null && isFinite(Number(payload.weatherSystems.liveWeatherTimelineIndex))) patch.liveWeatherTimelineIndex = Math.max(0, Math.round(Number(payload.weatherSystems.liveWeatherTimelineIndex)));
+    if (payload.weatherSystems.liveGeography && typeof payload.weatherSystems.liveGeography === 'object') patch.liveGeography = payload.weatherSystems.liveGeography;
+    if (typeof payload.scenario === 'string' && scenarioById(payload.scenario).id === payload.scenario) patch.scenario = payload.scenario;
+    if (Array.isArray(payload.immersiveLessonPresets)) patch.immersiveLessonPresets = immersiveLessonPresetList(payload.immersiveLessonPresets);
+    if (payload.currentState && typeof payload.currentState === 'object') {
+      var currentState = payload.currentState;
+      var stateMap = { simHour: 'simHour', temperature: 'temp', humidity: 'humidity', pressure: 'pressure', windSpeed: 'windSpeed', windDir: 'windDir', terrain: 'terrain' };
+      Object.keys(stateMap).forEach(function (key) {
+        if (currentState[key] != null && isFinite(Number(currentState[key]))) patch[stateMap[key]] = Number(currentState[key]);
+      });
+      if (patch.simHour != null) patch.simHour = clamp(patch.simHour, 0, 24);
+    }
+    return patch;
+  }
+
+  function immersiveEvidenceCaptureReview(capture) {
+    var record = capture && typeof capture === 'object' ? capture : {};
+    var values = record.values && typeof record.values === 'object' ? record.values : {};
+    var missing = [];
+    if (!record.feature || !record.feature.label) missing.push('feature');
+    if (!record.source) missing.push('source');
+    if (!record.validAt && !record.capturedAt) missing.push('time');
+    if (!Object.keys(values).some(function (key) { return values[key] != null && values[key] !== ''; })) missing.push('values');
+    if (!String(record.note || '').trim()) missing.push('learner note');
+    var score = Math.round(((5 - missing.length) / 5) * 100);
+    var redacted = !!(record.location && /^Location redacted/i.test(String(record.location.label || '')));
+    return {
+      score: score,
+      ready: missing.length === 0,
+      missing: missing,
+      privacy: redacted ? 'Location redacted' : 'Location included',
+      label: missing.length ? 'Add ' + missing.join(', ') : 'Ready to hand off'
+    };
+  }
+
+  function immersiveEvidenceReviewSummary(captures) {
+    var list = Array.isArray(captures) ? captures : [];
+    var reviews = list.map(immersiveEvidenceCaptureReview);
+    return {
+      count: list.length,
+      readyCount: reviews.filter(function (review) { return review.ready; }).length,
+      noteCount: reviews.filter(function (review) { return review.missing.indexOf('learner note') !== -1; }).length,
+      redactedCount: reviews.filter(function (review) { return review.privacy === 'Location redacted'; }).length
+    };
+  }
+
+  var IMMERSIVE_CAPTURE_CLAIM_METRICS = [
+    { id: 'temperature', label: 'Temperature', unit: '\u00B0C', decimals: 1, threshold: 0.5 },
+    { id: 'humidity', label: 'Humidity', unit: '%', decimals: 0, threshold: 1 },
+    { id: 'cloudCover', label: 'Cloud cover', unit: '%', decimals: 0, threshold: 1 },
+    { id: 'precipitation', label: 'Precipitation', unit: ' mm', decimals: 1, threshold: 0.1 },
+    { id: 'pressure', label: 'Pressure', unit: ' hPa', decimals: 0, threshold: 1 },
+    { id: 'windSpeed', label: 'Wind speed', unit: ' km/h', decimals: 0, threshold: 1 },
+    { id: 'windDir', label: 'Wind direction', unit: '\u00B0', decimals: 0, threshold: 5 }
+  ];
+
+  function immersiveCaptureComparison(primary, comparison) {
+    if (!primary || !comparison || primary.id === comparison.id) return null;
+    var primaryValues = primary.values && typeof primary.values === 'object' ? primary.values : {};
+    var comparisonValues = comparison.values && typeof comparison.values === 'object' ? comparison.values : {};
+    var metrics = IMMERSIVE_CAPTURE_CLAIM_METRICS.map(function (spec) {
+      var first = Number(primaryValues[spec.id]);
+      var second = Number(comparisonValues[spec.id]);
+      if (!isFinite(first) || !isFinite(second)) return null;
+      var rawDelta = second - first;
+      var delta = spec.id === 'windDir' ? ((rawDelta + 540) % 360) - 180 : rawDelta;
+      return Object.assign({}, spec, { first: first, second: second, delta: delta, changed: Math.abs(delta) >= spec.threshold });
+    }).filter(Boolean);
+    var primaryLabel = primary.feature && primary.feature.label ? primary.feature.label : 'First weather view';
+    var comparisonLabel = comparison.feature && comparison.feature.label ? comparison.feature.label : 'Second weather view';
+    var primaryTime = primary.validAt || primary.capturedAt || 'first capture';
+    var comparisonTime = comparison.validAt || comparison.capturedAt || 'second capture';
+    var changedMetrics = metrics.filter(function (metric) { return metric.changed; });
+    var summary = changedMetrics.length ? changedMetrics.map(function (metric) { return metric.label + ' ' + (metric.delta > 0 ? '+' : '') + round(metric.delta, metric.decimals) + metric.unit; }).join(', ') : 'No recorded metric changed.';
+    return {
+      primary: primary,
+      comparison: comparison,
+      metrics: metrics,
+      changedMetrics: changedMetrics,
+      primaryLabel: primaryLabel,
+      comparisonLabel: comparisonLabel,
+      primaryTime: primaryTime,
+      comparisonTime: comparisonTime,
+      summary: summary,
+      claimPrompt: 'What changed between ' + primaryTime + ' and ' + comparisonTime + '? State a claim about how the weather system changed.',
+      evidencePrompt: 'Use the measured differences (' + summary + ') as evidence. Which values best support your claim?',
+      reasoningPrompt: 'What weather-system process might explain this pattern, and what remains uncertain or needs another observation?'
+    };
+  }
+
+  function immersiveCaptureClaimHandoffText(comparison) {
+    if (!comparison) return '';
+    var metricLines = comparison.metrics.length ? comparison.metrics.map(function (metric) {
+      return '- ' + metric.label + ': ' + round(metric.first, metric.decimals) + metric.unit + ' -> ' + round(metric.second, metric.decimals) + metric.unit + ' (' + (metric.delta > 0 ? '+' : '') + round(metric.delta, metric.decimals) + metric.unit + ')';
+    }) : ['- No shared numeric measurements were available.'];
+    return [
+      'Weather Systems Capture-to-Claim Handoff',
+      'Baseline: ' + comparison.primaryLabel + ' | ' + comparison.primaryTime,
+      'Comparison: ' + comparison.comparisonLabel + ' | ' + comparison.comparisonTime,
+      '',
+      'Measured changes',
+    ].concat(metricLines, [
+      '',
+      'Claim prompt', comparison.claimPrompt,
+      '',
+      'Evidence prompt', comparison.evidencePrompt,
+      '',
+      'Reasoning prompt', comparison.reasoningPrompt
+    ]).join('\n');
+  }
+
+  function immersiveEvidenceHandoffText(capture) {
+    if (!capture || typeof capture !== 'object') return '';
+    var feature = capture.feature && capture.feature.label ? capture.feature.label : 'Current weather view';
+    var location = capture.location && capture.location.label ? capture.location.label : 'Location redacted';
+    var values = capture.values || {};
+    var lines = [
+      'Weather Systems Evidence Handoff',
+      'Feature: ' + feature,
+      'Location: ' + location,
+      'Source: ' + (capture.source || 'Not specified'),
+      'Valid at: ' + (capture.validAt || capture.capturedAt || 'Not specified'),
+      'Focus: ' + (capture.focus || 'system') + ' | Camera: ' + (capture.cameraPreset || 'overview'),
+      '',
+      'Values',
+      '- Temperature: ' + (values.temperature != null ? values.temperature + '°C' : 'Not reported'),
+      '- Humidity: ' + (values.humidity != null ? values.humidity + '%' : 'Not reported'),
+      '- Cloud cover: ' + (values.cloudCover != null ? values.cloudCover + '%' : 'Not reported'),
+      '- Precipitation: ' + (values.precipitation != null ? values.precipitation + ' mm' : 'Not reported'),
+      '- Pressure: ' + (values.pressure != null ? values.pressure + ' hPa' : 'Not reported'),
+      '- Wind: ' + (values.windSpeed != null ? values.windSpeed + ' km/h' : 'Not reported') + (values.windDir != null ? ' from ' + values.windDir + '°' : ''),
+      '',
+      'Student / teacher note', capture.note || 'No note recorded.',
+      '',
+      'Limitation', capture.limitation || 'This capture preserves context but does not convert model output or teaching overlays into direct observations.'
+    ];
+    return lines.join('\n');
+  }
+
+  function encodeWeatherSession(payload) {
+    try {
+      var binary = unescape(encodeURIComponent(JSON.stringify(payload)));
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    } catch (error) { return ''; }
+  }
+
+  function decodeWeatherSession(hash) {
+    try {
+      var raw = String(hash || '').match(/^#weather-session=([^#]+)$/);
+      if (!raw) return null;
+      var normalized = raw[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (normalized.length % 4) normalized += '=';
+      var binary = atob(normalized);
+      var encoded = '';
+      for (var i = 0; i < binary.length; i += 1) encoded += '%' + ('00' + binary.charCodeAt(i).toString(16)).slice(-2);
+      return JSON.parse(decodeURIComponent(encoded));
+    } catch (error) { return null; }
+  }
+
+  function downloadWeatherText(filename, content, mime) {
+    try {
+      var blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+      return true;
+    } catch (error) { return false; }
   }
 
   // Deterministic per-element jitter keeps the scene varied without flickering between frames.
@@ -2692,6 +3074,8 @@ var GEOGRAPHY_PROFILES = {
       var immersiveRuntimeRef = React.useRef(null);
       var geographicMapRef = React.useRef(null);
       var geographicRuntimeRef = React.useRef(null);
+      var immersiveSessionHydratedRef = React.useRef(false);
+      var immersiveLocalHydratedRef = React.useRef(false);
       var state = resolvedState(d);
       var scenario = scenarioById(state.scenario);
       var selectedStation = d.selectedStation || 'central';
@@ -2711,6 +3095,263 @@ var GEOGRAPHY_PROFILES = {
           next.weatherSystems = Object.assign({}, prev.weatherSystems || {}, patch);
           return next;
         });
+      }
+
+      React.useEffect(function () {
+        if (immersiveSessionHydratedRef.current || typeof window === 'undefined') return;
+        immersiveSessionHydratedRef.current = true;
+        var payload = decodeWeatherSession(window.location.hash);
+        var restoredPatch = validateImmersiveSessionPayload(payload);
+        if (!restoredPatch) return;
+        update(Object.assign({}, restoredPatch, { immersiveSessionStatus: 'Shared immersive session restored from this link.' }));
+        if (announce) announce('Shared immersive weather session restored.');
+      }, []);
+
+      React.useEffect(function () {
+        if (immersiveLocalHydratedRef.current || typeof window === 'undefined') return;
+        immersiveLocalHydratedRef.current = true;
+        if (decodeWeatherSession(window.location && window.location.hash)) return;
+        try {
+          var raw = window.localStorage && window.localStorage.getItem(IMMERSIVE_LOCAL_WORKSPACE_KEY);
+          var restoredPatch = raw ? validateImmersiveLocalWorkspacePayload(JSON.parse(raw)) : null;
+          if (!restoredPatch) return;
+          update(Object.assign({}, restoredPatch, { immersiveLocalSaveStatus: 'Restored this immersive workspace from local device storage.' }));
+          if (announce) announce('Immersive workspace restored from this device.');
+        } catch (error) {}
+      }, []);
+
+      React.useEffect(function () {
+        if (typeof window === 'undefined' || !immersiveLocalHydratedRef.current || d.immersiveLocalPersistenceEnabled === false) return;
+        var timer = window.setTimeout(function () {
+          try {
+            if (window.localStorage) window.localStorage.setItem(IMMERSIVE_LOCAL_WORKSPACE_KEY, JSON.stringify(immersiveLocalWorkspacePayload(d)));
+          } catch (error) {}
+        }, 420);
+        return function () { window.clearTimeout(timer); };
+      }, [d]);
+
+      function setImmersiveAudienceMode(mode) {
+        var next = mode === 'teacher' ? 'teacher' : 'student';
+        update({ immersiveAudienceMode: next });
+        if (announce) announce(next === 'teacher' ? 'Teacher tools opened.' : 'Student focus mode opened.');
+      }
+
+      function setImmersiveLocalPersistenceEnabled(enabled) {
+        var next = enabled !== false;
+        if (!next) {
+          try { if (window.localStorage) window.localStorage.removeItem(IMMERSIVE_LOCAL_WORKSPACE_KEY); } catch (error) {}
+          update({ immersiveLocalPersistenceEnabled: false, immersiveLocalSaveStatus: 'Local autosave is off and the saved device copy was cleared.' });
+          if (announce) announce('Local autosave turned off and saved device copy cleared.');
+          return;
+        }
+        update({ immersiveLocalPersistenceEnabled: true, immersiveLocalSaveStatus: 'Local autosave enabled for this device.' });
+        if (announce) announce('Local autosave enabled for this device.');
+      }
+
+      function clearImmersiveLocalWorkspace() {
+        try { if (window.localStorage) window.localStorage.removeItem(IMMERSIVE_LOCAL_WORKSPACE_KEY); } catch (error) {}
+        update({ immersiveLocalPersistenceEnabled: false, immersiveLocalSaveStatus: 'Saved device copy cleared. Local autosave is now off.' });
+        if (announce) announce('Saved device copy cleared and local autosave turned off.');
+      }
+
+      function captureImmersiveEvidence() {
+        var sceneMode = geographicViewState(d).mode;
+        var geographyState = geographicViewState(d);
+        var glossary = immersiveFeatureGlossary(sceneMode, band);
+        var feature = glossary.filter(function (item) { return item.id === d.immersiveExplainerFeature; })[0] || glossary[0] || null;
+        var weather = activeLiveWeather(d) || projectConditions(state, state.simHour);
+        var capturedAt = new Date().toISOString();
+        var record = {
+          id: 'weather-capture-' + Date.now(), capturedAt: capturedAt, sceneMode: sceneMode,
+          audience: d.immersiveAudienceMode === 'teacher' ? 'teacher' : 'student',
+          location: { label: geographyState.label, latitude: geographyState.latitude, longitude: geographyState.longitude },
+          source: d.immersiveDataSource === 'live' && d.liveWeather ? (weather.timelineRole === 'forecast' ? 'forecast' : weather.timelineRole === 'earlier' ? 'earlier observation' : 'live observation') : 'teaching model',
+          validAt: weather.validAt || weather.observedAt || ('T+' + state.simHour + ' hours'),
+          feature: feature ? { id: feature.id, label: feature.label, category: feature.category, definition: feature.definition } : null,
+          tourStepId: sceneMode === 'conceptual' ? immersiveTourStep(d.immersiveTourStep).id : '',
+          tourStepLabel: sceneMode === 'conceptual' ? immersiveTourStep(d.immersiveTourStep).label : '',
+          focus: d.immersiveFocus || 'system', cameraPreset: d.immersiveCameraPreset || 'overview',
+          values: { temperature: weather.temperature, humidity: weather.humidity, cloudCover: weather.cloudCover, precipitation: weather.precipitation, pressure: weather.pressure, windSpeed: weather.windSpeed, windDir: weather.windDir, condition: weather.condition },
+          note: String(d.immersiveReflection || d.geographicInvestigationNote || '').trim().slice(0, 1200),
+          limitation: 'A captured view preserves the selected evidence context; it does not turn model values or teaching overlays into direct observations.'
+        };
+        var captures = Array.isArray(d.immersiveEvidenceCaptures) ? d.immersiveEvidenceCaptures : [];
+        var next = captures.concat([record]).slice(-12);
+        update({ immersiveEvidenceCaptures: next, immersiveEvidenceLastId: record.id, immersiveEvidenceStatus: 'Captured ' + (record.feature ? record.feature.label : 'current weather view') + ' at ' + record.validAt + '.' });
+        if (addToast) addToast('Evidence capture saved locally.', 'success');
+        if (announce) announce('Evidence capture saved for ' + (record.feature ? record.feature.label : 'the current weather view') + '.');
+      }
+
+      function clearImmersiveEvidenceCaptures() {
+        update({ immersiveEvidenceCaptures: [], immersiveEvidenceLastId: '', immersiveEvidenceStatus: 'Evidence captures cleared.' });
+        if (announce) announce('Immersive evidence captures cleared.');
+      }
+
+      function copyImmersiveSessionLink() {
+        var includeLocation = d.immersiveShareIncludeLocation === true;
+        var encoded = encodeWeatherSession(immersiveSessionSharePayload(d, { includeLocation: includeLocation }));
+        if (!encoded || typeof window === 'undefined') return;
+        var base = window.location.href.split('#')[0];
+        var link = base + '#weather-session=' + encoded;
+        copyToClipboard(link, function (ok) {
+          var status = ok ? (includeLocation ? 'Share link copied with location included.' : 'Share link copied without location.') : 'Share link could not be copied; use the session download instead.';
+          update({ immersiveSessionStatus: status });
+          if (addToast) addToast(status, ok ? 'success' : 'warning');
+          if (announce) announce(status);
+        });
+      }
+
+      function downloadImmersiveSession() {
+        var payload = Object.assign({}, immersiveSessionDownloadPayload(d), { exportedAt: new Date().toISOString(), scenario: scenario.name, gradeBand: band, currentState: { simHour: state.simHour, temperature: state.temp, humidity: state.humidity, pressure: state.pressure, windSpeed: state.windSpeed, windDir: state.windDir, terrain: state.terrain } });
+        var ok = downloadWeatherText('weather-immersive-session-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
+        var status = ok ? 'Immersive session downloaded as JSON.' : 'The session download was blocked by the browser.';
+        update({ immersiveSessionStatus: status });
+        if (addToast) addToast(status, ok ? 'success' : 'warning');
+        if (announce) announce(status);
+      }
+
+      function importImmersiveSessionFile(event) {
+        var input = event && event.target;
+        var file = input && input.files && input.files[0];
+        if (!file || typeof FileReader === 'undefined') return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var payload = JSON.parse(String(reader.result || ''));
+            var importedPatch = validateImmersiveSessionPayload(payload);
+            if (!importedPatch) throw new Error('This file is not a supported Weather Systems session.');
+            update(Object.assign({}, importedPatch, { immersiveAudienceMode: 'teacher', immersiveSessionStatus: 'Session JSON imported. Review the location and source labels before sharing it.' }));
+            if (addToast) addToast('Weather Systems session imported.', 'success');
+            if (announce) announce('Weather Systems session imported.');
+          } catch (error) {
+            var message = error && error.message ? error.message : 'The session file could not be read.';
+            update({ immersiveSessionStatus: message });
+            if (addToast) addToast(message, 'error');
+            if (announce) announce(message);
+          }
+          if (input) input.value = '';
+        };
+        reader.onerror = function () {
+          update({ immersiveSessionStatus: 'The session file could not be read.' });
+          if (input) input.value = '';
+        };
+        reader.readAsText(file.slice(0, 5 * 1024 * 1024));
+      }
+
+      function copyImmersiveEvidenceHandoff(capture) {
+        var handoff = immersiveEvidenceHandoffText(capture);
+        if (!handoff) return;
+        copyToClipboard(handoff, function (ok) {
+          var status = ok ? 'Evidence handoff copied.' : 'Evidence handoff could not be copied.';
+          update({ immersiveEvidenceStatus: status });
+          if (addToast) addToast(status, ok ? 'success' : 'warning');
+          if (announce) announce(status);
+        });
+      }
+
+      function downloadImmersiveEvidenceHandoff(capture) {
+        var handoff = immersiveEvidenceHandoffText(capture);
+        if (!handoff) return;
+        var slug = String(capture.feature && capture.feature.label || 'weather-view').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'weather-view';
+        var ok = downloadWeatherText('weather-evidence-' + slug + '.txt', handoff, 'text/plain;charset=utf-8');
+        var status = ok ? 'Evidence handoff downloaded.' : 'Evidence handoff download was blocked by the browser.';
+        update({ immersiveEvidenceStatus: status });
+        if (addToast) addToast(status, ok ? 'success' : 'warning');
+        if (announce) announce(status);
+      }
+
+      function setImmersiveCaptureClaimSelection(key, value) {
+        var patch = {};
+        patch[key] = value;
+        update(patch);
+      }
+
+      function currentImmersiveCaptureClaimComparison() {
+        var captures = Array.isArray(d.immersiveEvidenceCaptures) ? d.immersiveEvidenceCaptures.slice().reverse() : [];
+        var primary = captures.filter(function (capture) { return capture.id === d.immersiveCaptureClaimPrimaryId; })[0] || captures[1] || captures[0] || null;
+        var comparison = captures.filter(function (capture) { return capture.id === d.immersiveCaptureClaimComparisonId; })[0] || captures[0] || captures[1] || null;
+        return immersiveCaptureComparison(primary, comparison);
+      }
+
+      function copyImmersiveCaptureClaimHandoff() {
+        var handoff = immersiveCaptureClaimHandoffText(currentImmersiveCaptureClaimComparison());
+        if (!handoff) return;
+        copyToClipboard(handoff, function (ok) {
+          var status = ok ? 'Capture-to-Claim handoff copied.' : 'Capture-to-Claim handoff could not be copied.';
+          update({ immersiveEvidenceStatus: status });
+          if (addToast) addToast(status, ok ? 'success' : 'warning');
+          if (announce) announce(status);
+        });
+      }
+
+      function downloadImmersiveCaptureClaimHandoff() {
+        var handoff = immersiveCaptureClaimHandoffText(currentImmersiveCaptureClaimComparison());
+        if (!handoff) return;
+        var ok = downloadWeatherText('weather-capture-to-claim.txt', handoff, 'text/plain;charset=utf-8');
+        var status = ok ? 'Capture-to-Claim handoff downloaded.' : 'Capture-to-Claim handoff download was blocked by the browser.';
+        update({ immersiveEvidenceStatus: status });
+        if (addToast) addToast(status, ok ? 'success' : 'warning');
+        if (announce) announce(status);
+      }
+
+      function openImmersiveCaptureClaimIn3D() {
+        var comparison = currentImmersiveCaptureClaimComparison();
+        if (!comparison) return;
+        var primaryFeature = comparison.primary.feature && comparison.primary.feature.id ? comparison.primary.feature.id : '';
+        var comparisonFeature = comparison.comparison.feature && comparison.comparison.feature.id ? comparison.comparison.feature.id : '';
+        update({ tab: 'immersive', immersiveSceneMode: comparison.comparison.sceneMode || d.immersiveSceneMode, immersiveComparisonFeature: primaryFeature, immersiveExplainerFeature: comparisonFeature || d.immersiveExplainerFeature, immersiveInspectorPanel: 'compare', immersiveEvidenceStatus: '3D comparison opened for the selected captures.' });
+        if (announce) announce('3D comparison opened for the selected captures.');
+      }
+
+      function toggleImmersiveStageMode() {
+        var next = d.immersiveStageMode !== true;
+        var status = next ? '3D stage mode opened. The control rail is hidden for projection.' : '3D stage mode closed. Full controls restored.';
+        update({ immersiveStageMode: next, immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
+
+      function copyImmersiveTourHandoff() {
+        var handoff = immersiveTourHandoffText(d);
+        copyToClipboard(handoff, function (ok) {
+          var status = ok ? 'Guided investigation brief copied.' : 'Guided investigation brief could not be copied.';
+          update({ immersiveTourStatus: status });
+          if (addToast) addToast(status, ok ? 'success' : 'warning');
+          if (announce) announce(status);
+        });
+      }
+
+      function downloadImmersiveTourHandoff() {
+        var handoff = immersiveTourHandoffText(d);
+        var ok = downloadWeatherText('weather-guided-investigation-' + new Date().toISOString().slice(0, 10) + '.txt', handoff, 'text/plain;charset=utf-8');
+        var status = ok ? 'Guided investigation brief downloaded.' : 'Guided investigation brief download was blocked by the browser.';
+        update({ immersiveTourStatus: status });
+        if (addToast) addToast(status, ok ? 'success' : 'warning');
+        if (announce) announce(status);
+      }
+
+      function saveImmersiveLessonPreset() {
+        var name = String(d.immersiveLessonPresetDraftName || '').trim();
+        if (!name) { update({ immersiveLessonPresetStatus: 'Enter a preset name before saving.' }); if (announce) announce('Enter a preset name before saving.'); return; }
+        var preset = immersiveLessonPresetPayload(d, name, { id: 'weather-preset-' + Date.now(), savedAt: new Date().toISOString() });
+        if (!preset) return;
+        var next = immersiveLessonPresetList((Array.isArray(d.immersiveLessonPresets) ? d.immersiveLessonPresets : []).filter(function (item) { return item.id !== preset.id; }).concat([preset]));
+        update({ immersiveLessonPresets: next, immersiveLessonPresetActiveId: preset.id, immersiveLessonPresetDraftName: '', immersiveLessonPresetStatus: 'Saved preset “' + preset.name + '”.' });
+        if (addToast) addToast('Lesson preset saved locally.', 'success');
+        if (announce) announce('Lesson preset ' + preset.name + ' saved locally.');
+      }
+
+      function applyImmersiveLessonPreset(preset) {
+        var safe = validateImmersiveLessonPreset(preset);
+        if (!safe) { update({ immersiveLessonPresetStatus: 'That lesson preset could not be applied.' }); return; }
+        update(Object.assign({}, safe.weatherSystems, { immersiveLessonPresetActiveId: safe.id, immersiveLessonPresetStatus: 'Applied preset “' + safe.name + '”.' }));
+        if (announce) announce('Lesson preset ' + safe.name + ' applied.');
+      }
+
+      function deleteImmersiveLessonPreset(preset) {
+        var id = preset && preset.id;
+        var next = immersiveLessonPresetList((Array.isArray(d.immersiveLessonPresets) ? d.immersiveLessonPresets : []).filter(function (item) { return item.id !== id; }));
+        update({ immersiveLessonPresets: next, immersiveLessonPresetActiveId: d.immersiveLessonPresetActiveId === id ? '' : d.immersiveLessonPresetActiveId, immersiveLessonPresetStatus: 'Preset removed.' });
+        if (announce) announce('Lesson preset removed.');
       }
 
       function fetchLiveWeather(latitude, longitude, label, place) {
@@ -2739,7 +3380,7 @@ var GEOGRAPHY_PROFILES = {
           return live;
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'Live weather could not be loaded.';
-          update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: '' });
+          update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: d.liveWeather ? 'Showing the last saved weather while the new request is unavailable.' : '', immersiveLiveFallbackAvailable: !!d.liveWeather });
           if (addToast) addToast(message, 'error');
           if (announce) announce('Live weather error. ' + message);
           return null;
@@ -2896,6 +3537,12 @@ var GEOGRAPHY_PROFILES = {
         runtime.map.easeTo({ center: [geographic.longitude, geographic.latitude], zoom: view.zoom, pitch: view.pitch, bearing: view.bearing, duration: reduceMotion ? 0 : 850, essential: false });
         update({ geographicCameraPreset: view.id, geographicAnalysisLens: 'custom', geographicInvestigationPaused: true, geographicViewport: { zoom: view.zoom, pitch: view.pitch, bearing: view.bearing } });
         if (announce) announce('Geographic camera moved to ' + view.label + '. Analysis view is now custom.');
+      }
+
+      function resetImmersiveOrientation() {
+        if (geographicViewState(d).mode === 'geographic') setGeographicCameraPreset('local');
+        else setImmersiveCameraPreset('overview');
+        if (announce) announce('Immersive orientation reset to the guided view.');
       }
 
       function applyGeographicAnalysisLens(lensId, extraPatch, announcement) {
@@ -3078,6 +3725,14 @@ var GEOGRAPHY_PROFILES = {
         if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown.' : 'hidden.') + ' Analysis view is now custom and the guided investigation is paused.');
       }
 
+      function setLiveWeatherTimelineIndex(index) {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        if (!timeline.length) return;
+        var nextIndex = clamp(Math.round(Number(index)), 0, timeline.length - 1);
+        update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
+        if (announce) announce(weatherTimelineLabel(timeline[nextIndex], d.liveWeather && d.liveWeather.timezone));
+      }
+
       function stepLiveWeatherTimeline(delta) {
         var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
         if (!timeline.length) return;
@@ -3093,6 +3748,15 @@ var GEOGRAPHY_PROFILES = {
         var currentIndex = weatherTimelineCurrentIndex(timeline);
         update({ liveWeatherTimelineIndex: currentIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the current weather hour...' });
         if (announce) announce('Weather timeline returned to the current observation.');
+      }
+
+      function setImmersiveTimelineComparison(index) {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        var next = index === '' || index == null ? '' : clamp(Math.round(Number(index)), 0, Math.max(0, timeline.length - 1));
+        var currentIndex = weatherTimelineCurrentIndex(timeline);
+        if (next === currentIndex) next = '';
+        update({ immersiveTimelineCompareIndex: next });
+        if (announce) announce(next === '' ? 'Timeline comparison cleared.' : 'Timeline comparison baseline selected.');
       }
 
       function toggleLiveWeatherTimelinePlayback() {
@@ -3258,13 +3922,24 @@ var GEOGRAPHY_PROFILES = {
 
 function openImmersiveTourStep(stepId) {
         var step = immersiveTourStep(stepId);
-        update({ immersiveTourStep: step.id });
+        update({ immersiveTourStep: step.id, immersiveTourStatus: 'Step ' + (step.index + 1) + ' ready: ' + step.label + '.' });
         applyImmersiveFocus(step.focus);
         if (immersiveRuntimeRef.current && immersiveRuntimeRef.current.camera) setImmersiveCameraPreset(step.camera);
         else update({ immersiveCameraPreset: step.camera });
         if (announce) announce('Immersive investigation step ' + (step.index + 1) + ' of ' + step.total + ': ' + step.label + '. ' + step.prompt);
       }
 
+
+      function toggleImmersiveTourStepCompletion(stepId) {
+        var step = immersiveTourStep(stepId);
+        var completed = immersiveTourCompletedStepList(d.immersiveTourCompletedSteps);
+        var index = completed.indexOf(step.id);
+        var complete = index === -1;
+        if (complete) completed.push(step.id); else completed.splice(index, 1);
+        var status = complete ? 'Marked ' + step.label + ' complete.' : 'Reopened ' + step.label + '.';
+        update({ immersiveTourCompletedSteps: completed, immersiveTourStatus: status });
+        if (announce) announce(status);
+      }
 
       function explainImmersiveFeature(featureId) {
         var selectionMethod = arguments.length > 1 ? arguments[1] : '';
@@ -7756,6 +8431,13 @@ var geographyGroup = new THREE.Group();
         var timelineInstrumentLabel = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast valid' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier hour' : 'Observed';
         var timelineInstrumentTime = useLive ? (live.validAt || live.observedAt || 'Latest') : 'T+' + state.simHour + ' h';
         var timelineBadge = liveTimelinePoint ? (liveTimelinePoint.role === 'current' ? observationFreshness.badge : liveTimelinePoint.role === 'earlier' ? '-' + Math.abs(liveTimelinePoint.offsetHours) + 'H' : '+' + liveTimelinePoint.offsetHours + 'H') : observationFreshness ? observationFreshness.badge : 'SAVED';
+        var timelineStagePosition = liveTimeline.length > 1 ? 'Hour ' + (liveTimelineIndex + 1) + ' of ' + liveTimeline.length : 'Single hour';
+        var timelineStageContext = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast hour — compare this projection with the current observation.' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier hour — compare this past state with the current observation.' : liveTimelinePoint ? 'Current observation — use this as the baseline for comparison.' : 'Saved weather context.';
+         var immersiveAudienceMode = d.immersiveAudienceMode === 'teacher' ? 'teacher' : 'student';
+         var teacherMode = immersiveAudienceMode === 'teacher';
+         var timelineComparisonIndex = liveTimeline.length && d.immersiveTimelineCompareIndex !== '' && d.immersiveTimelineCompareIndex != null ? clamp(Math.round(Number(d.immersiveTimelineCompareIndex)), 0, liveTimeline.length - 1) : '';
+         var timelineComparisonPoint = timelineComparisonIndex === '' ? null : liveTimeline[timelineComparisonIndex] || null;
+         var timelineDelta = timelineComparisonPoint && liveTimelinePoint && timelineComparisonIndex !== liveTimelineIndex ? immersiveTimelineDelta(liveTimelinePoint, timelineComparisonPoint) : null;
         var observationFreshnessClass = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'border-violet-300/40 bg-violet-300/15 text-violet-100' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'border-slate-300/30 bg-slate-300/10 text-slate-100' : observationFreshness && observationFreshness.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : observationFreshness && !observationFreshness.stale ? 'border-amber-300/40 bg-amber-300/15 text-amber-100' : 'border-rose-300/40 bg-rose-300/15 text-rose-100';
         var model = projectConditions(state, state.simHour);
         var windDir = useLive ? live.windDir : model.windDir;
@@ -7770,6 +8452,7 @@ var geographyGroup = new THREE.Group();
           ['Pressure', model.pressure + ' hPa'], ['Wind', cardinal(model.windDir) + ' ' + model.windSpeed + ' km/h'], ['Geography', geographyProfile(d.immersiveGeography, state.scenario).label], ['Precipitation potential', model.precipPotential + '%']
         ];
         var engineReady = !!dataRoot._threeLoaded;
+        var immersiveStageMode = d.immersiveStageMode === true;
         var engineError = dataRoot._threeLoadError || d.immersiveRenderError;
         var xrAvailable = !!(window.navigator && window.navigator.xr);
         var immersiveQuality = d.immersiveQuality || 'high';
@@ -7829,6 +8512,16 @@ var geographyGroup = new THREE.Group();
           buildingsVisible: d.geographicBuildings === true && d.geographicBuildingsAvailable !== false
         };
         var selectedFeatureEvidence = selectedGlossaryFeature ? immersiveFeatureEvidence(selectedGlossaryFeature.id, featureEvidenceOptions) : null;
+        var immersiveDataTableRows = selectedFeatureEvidence && Array.isArray(selectedFeatureEvidence.metrics) && selectedFeatureEvidence.metrics.length ? selectedFeatureEvidence.metrics.map(function (metric) { return { label: metric.label, value: metric.value, kind: metric.kind || 'model' }; }) : values.slice(0, 7).map(function (metric) { return { label: metric[0], value: metric[1], kind: useLive ? 'Observed' : 'Model' }; });
+        var immersiveEvidenceCaptures = Array.isArray(d.immersiveEvidenceCaptures) ? d.immersiveEvidenceCaptures : [];
+        var immersiveEvidenceReview = immersiveEvidenceReviewSummary(immersiveEvidenceCaptures);
+        var immersiveEvidenceCaptureList = immersiveEvidenceCaptures.slice().reverse();
+        var immersiveEvidenceCaptureVisible = d.immersiveEvidenceCaptureShowAll ? immersiveEvidenceCaptureList : immersiveEvidenceCaptureList.slice(0, 3);
+        var immersiveCaptureClaimPrimary = immersiveEvidenceCaptureList.filter(function (capture) { return capture.id === d.immersiveCaptureClaimPrimaryId; })[0] || immersiveEvidenceCaptureList[1] || immersiveEvidenceCaptureList[0] || null;
+        var immersiveCaptureClaimComparison = immersiveEvidenceCaptureList.filter(function (capture) { return capture.id === d.immersiveCaptureClaimComparisonId; })[0] || immersiveEvidenceCaptureList[0] || immersiveEvidenceCaptureList[1] || null;
+        var immersiveCaptureClaimComparisonData = immersiveCaptureComparison(immersiveCaptureClaimPrimary, immersiveCaptureClaimComparison);
+        var immersiveLessonPresets = immersiveLessonPresetList(d.immersiveLessonPresets);
+        var immersiveLessonPresetActiveId = d.immersiveLessonPresetActiveId || '';
         var comparisonAnchorFeature = d.immersiveComparisonFeature ? immersiveGlossary.filter(function (item) { return item.id === d.immersiveComparisonFeature; })[0] || null : null;
         var featureComparison = comparisonAnchorFeature && selectedGlossaryFeature ? immersiveFeatureComparison(immersiveGlossaryMode, comparisonAnchorFeature.id, selectedGlossaryFeature.id, band) : null;
         var comparisonAnchorEvidence = comparisonAnchorFeature ? immersiveFeatureEvidence(comparisonAnchorFeature.id, featureEvidenceOptions) : null;
@@ -7855,6 +8548,24 @@ var geographyGroup = new THREE.Group();
         var geographicBuildings = d.geographicBuildings === true && geographicBuildingsAvailable !== false;
         var geographicTerrainAvailable = d.geographicTerrainAvailable;
         var geographicTerrainCapability = !d.geographicMapReady ? { code: 'loading', label: 'Terrain pending' } : geographicTerrainAvailable === false ? { code: 'degraded', label: 'Base map only' } : { code: 'ready', label: '3D terrain ' + terrainExaggeration + 'x' };
+        var focusLayers = immersiveFocusProfile(immersiveFocus).layers;
+        var stageLegendItems = geographicMode ? [
+          { id: 'map', label: 'Open map', detail: 'Published geographic context', enabled: !!d.geographicMapReady, color: '#34d399' },
+          { id: 'terrain', label: '3D terrain', detail: geographicTerrainCapability.label, enabled: !!d.geographicMapReady && geographicTerrainAvailable !== false, color: '#a7f3d0' },
+          { id: 'wind', label: 'Wind vectors', detail: 'Observed flow direction', enabled: geographicWindVisible, color: '#67e8f9' },
+          { id: 'field', label: 'Weather field', detail: regionalWeatherLayer.label, enabled: !!regionalFieldStatus.current, color: '#c4b5fd' },
+          { id: 'study', label: 'Study area', detail: 'Regional investigation boundary', enabled: geographicStudyAreaVisible, color: '#fcd34d' },
+          { id: 'transect', label: 'Terrain transect', detail: 'Wind-aligned elevation profile', enabled: geographicTransectVisible, color: '#fb923c' },
+          { id: 'buildings', label: '3D buildings', detail: 'OpenStreetMap footprints', enabled: geographicBuildings, color: '#f9a8d4' }
+        ] : [
+          { id: 'airMasses', label: 'Air masses', detail: 'Warm and cool volumes', enabled: !!focusLayers.airMasses, color: '#38bdf8' },
+          { id: 'front', label: 'Front boundary', detail: 'Sloped lifting zone', enabled: !!focusLayers.front, color: '#fbbf24' },
+          { id: 'clouds', label: 'Cloud layer', detail: 'Near-saturation regions', enabled: !!focusLayers.clouds, color: '#e2e8f0' },
+          { id: 'precipitation', label: 'Precipitation', detail: 'Teaching particles', enabled: !!focusLayers.precipitation, color: '#c4b5fd' },
+          { id: 'wind', label: 'Wind vectors', detail: 'Airflow direction and motion', enabled: !!focusLayers.wind, color: '#67e8f9' },
+          { id: 'stations', label: 'Surface stations', detail: 'Observation markers', enabled: !!focusLayers.stations, color: '#6ee7b7' },
+          { id: 'terrain', label: 'Terrain base', detail: 'Conceptual surface', enabled: true, color: '#f59e0b' }
+        ];
         var geographicAnalysisLensId = d.geographicAnalysisLens === 'custom' ? 'custom' : geographicAnalysisLens(d.geographicAnalysisLens).id;
         var geographicInvestigationPaused = d.geographicInvestigationPaused === true || geographicAnalysisLensId === 'custom';
         var geographicAnalysisLensDetail = geographicAnalysisLensId === 'custom'
@@ -7909,10 +8620,12 @@ var geographyGroup = new THREE.Group();
         var geographicOrientation = geographicOrientationSummary(geographicViewport.bearing);
         if (geographicMode && values[5]) values[5] = ['Coordinates', geographic.latitude.toFixed(3) + ', ' + geographic.longitude.toFixed(3)];
         var tourStep = immersiveTourStep(d.immersiveTourStep);
+        var tourRun = immersiveTourProgress(d);
+        var currentTourProgress = tourRun.steps.filter(function (step) { return step.id === tourStep.id; })[0] || tourRun.steps[0];
         var defaultGeographicFieldStep = geographicAnalysisLensId === 'context' ? 'orient' : geographicAnalysisLensId === 'site' ? 'site' : 'terrain';
         var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
         var tourSource = useLive ? (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'selected forecast hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'selected earlier hour' : 'live observation') : 'teaching model';
-        return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true },
+        return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true, 'data-weather-stage-mode': immersiveStageMode ? 'on' : 'off' },
           h('section', { className: 'overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-cyan-950 text-white shadow-2xl' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5' },
               h('div', { className: 'max-w-2xl' },
@@ -7923,12 +8636,43 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'flex flex-wrap items-center gap-2', 'data-weather-immersive-status-bar': true, role: 'status', 'aria-label': geographicMode ? 'Geographic 3D status' : 'Conceptual 3D status' },
                 h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[11px] font-black text-cyan-950' }, geographicMode ? (d.geographicMapReady ? '\u25CF Geographic layers ready' : '\u25CB Loading geographic layers') : (engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine')),
                 h('span', { className: 'rounded-full px-3 py-1.5 text-[11px] font-black ' + (geographicMode ? 'bg-emerald-300 text-emerald-950' : (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300')) }, geographicMode ? 'Open geographic data' : (xrAvailable ? 'WebXR detected' : 'Desktop 3D available')),
-                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode'))
+                h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-black text-slate-200', 'data-weather-geographic-terrain-capability': geographicMode ? geographicTerrainCapability.code : undefined }, geographicMode ? geographicTerrainCapability.label : (immersiveQuality === 'high' ? 'High fidelity' : immersiveQuality === 'balanced' ? 'Balanced quality' : 'Performance mode')),
+                h('button', { type: 'button', onClick: toggleImmersiveStageMode, 'aria-pressed': immersiveStageMode, 'aria-label': immersiveStageMode ? 'Exit 3D stage mode' : 'Enter 3D stage mode', className: 'min-h-11 rounded-lg border border-amber-300/35 bg-amber-300/10 px-3 py-1.5 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, immersiveStageMode ? 'Exit stage mode' : 'Enter stage mode')
               )
             ),
-            h('div', { className: 'grid gap-4 p-3 sm:p-5 xl:grid-cols-[minmax(0,1fr)_380px]' },
+            h('div', { className: 'grid gap-4 p-3 sm:p-5 ' + (immersiveStageMode ? 'xl:grid-cols-1' : 'xl:grid-cols-[minmax(0,1fr)_380px]'), 'data-weather-immersive-layout': immersiveStageMode ? 'stage' : 'control-rail' },
               h('div', { className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' },
                 h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
+                immersiveStageMode && h('div', { className: 'pointer-events-none absolute left-3 top-3 z-30 max-w-[300px] rounded-2xl border border-cyan-300/30 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-legend': true, role: 'region', 'aria-labelledby': 'weather-stage-legend-title' },
+                  h('div', { className: 'flex items-start justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Scene legend'), h('h4', { id: 'weather-stage-legend-title', className: 'mt-0.5 text-xs font-black text-white' }, geographicMode ? 'Map + terrain layers' : 'Visible 3D channels')),
+                    h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100' }, stageLegendItems.filter(function (item) { return item.enabled; }).length + '/' + stageLegendItems.length + ' on')
+                  ),
+                  h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5' }, stageLegendItems.map(function (item) {
+                    return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-1.5 text-[10px] ' + (item.enabled ? 'text-slate-100' : 'text-slate-500'), 'aria-label': item.label + ': ' + (item.enabled ? 'on' : 'off') + '. ' + item.detail },
+                      h('span', { className: 'h-2.5 w-2.5 shrink-0 rounded-full border border-white/70', style: { backgroundColor: item.color, opacity: item.enabled ? 1 : 0.28 }, 'aria-hidden': true }),
+                      h('span', { className: 'truncate' }, item.label)
+                    );
+                  })),
+                  h('p', { className: 'mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-slate-300' }, geographicMode ? 'These layers are geographic evidence or derived terrain context.' : 'Colored channels explain what the 3D scene is encoding; teaching layers are simplified, not direct measurements.')
+                ),
+                immersiveStageMode && useLive && liveTimeline.length > 1 && h('div', { className: 'pointer-events-auto absolute bottom-3 left-3 right-3 z-30 rounded-2xl border border-violet-300/35 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md', 'data-weather-stage-timeline': true, role: 'region', 'aria-labelledby': 'weather-stage-timeline-title' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Live timeline playback'), h('h4', { id: 'weather-stage-timeline-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Move the 3D scene through time')),
+                    h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[10px] font-black text-violet-100', role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
+                  ),
+                  h('div', { className: 'mt-2 grid gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 sm:grid-cols-[minmax(0,1fr)_auto]', 'data-weather-stage-timeline-context': true },
+                    h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-violet-200' }, timelineInstrumentLabel + ' · ' + timelineStagePosition), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, timelineStageContext)),
+                    h('div', { className: 'self-center rounded-lg border border-violet-300/20 bg-violet-300/10 px-2.5 py-2 text-right' }, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.12em] text-violet-200' }, 'Scene time'), h('p', { className: 'mt-0.5 text-[11px] font-black text-white' }, timelineValidTimeDetail))
+                  ),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Stage timeline playback controls' },
+                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Previous hour'),
+                    h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg bg-violet-300 px-3 py-2 text-[10px] font-black text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, d.liveWeatherTimelinePlaying ? 'Pause timeline' : 'Play timeline'),
+                    h('button', { type: 'button', onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Next hour'),
+                    h('button', { type: 'button', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-300/10 px-3 py-2 text-[10px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200' }, 'Return to now')
+                  ),
+                  h('label', { htmlFor: 'weather-stage-timeline-slider', className: 'mt-2 block text-[10px] font-black text-violet-100' }, 'Selected hour', h('input', { id: 'weather-stage-timeline-slider', type: 'range', min: 0, max: liveTimeline.length - 1, step: 1, value: liveTimelineIndex, onChange: function (event) { setLiveWeatherTimelineIndex(event.target.value); }, 'aria-valuetext': timelineSelectionLabel + '. ' + timelineStageContext, className: 'mt-1 min-h-11 w-full accent-violet-300' }))
+                ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
                 !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none absolute left-3 top-20 z-30 max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/92 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
@@ -8109,15 +8853,32 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
                 )
               ),
-              h('aside', { className: 'min-w-0 space-y-3', 'data-weather-immersive-control-rail': true },
-                h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
+              h('aside', { hidden: immersiveStageMode, className: 'min-w-0 space-y-3', 'data-weather-immersive-control-rail': true },
+                 h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-audience-mode': immersiveAudienceMode },
+                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Audience focus'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' }, immersiveAudienceMode === 'teacher' ? 'Teacher tools expose capture, sharing, and provenance controls.' : 'Student focus keeps the investigation path and explanations in front.' )),
+                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-black text-cyan-100', 'data-weather-audience-label': true }, immersiveAudienceMode === 'teacher' ? 'Teacher mode' : 'Student mode')
+                   ),
+                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive audience focus' },
+                     h('button', { type: 'button', onClick: function () { setImmersiveAudienceMode('student'); }, 'aria-pressed': immersiveAudienceMode === 'student', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveAudienceMode === 'student' ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, 'Student focus'),
+                     h('button', { type: 'button', onClick: function () { setImmersiveAudienceMode('teacher'); }, 'aria-pressed': immersiveAudienceMode === 'teacher', className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveAudienceMode === 'teacher' ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, 'Teacher tools')
+                   )
+                 ),
+                 h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive scene mode' },
                     h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
                     h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'observationSite', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
                   ),
-                  h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.')
-                ),
+                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.'),
+                   h('div', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-orientation-controls': true },
+                     h('div', { className: 'flex items-center justify-between gap-2' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-200' }, 'Orientation'), h('span', { className: 'text-[10px] font-bold text-slate-400', 'data-weather-orientation-status': true }, geographicMode ? geographicCameraPreset + ' map view' : immersiveCameraPreset + ' 3D view')),
+                     !geographicMode && h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Conceptual 3D camera views' },
+                       ['overview', 'front', 'surface'].map(function (preset) { return h('button', { key: preset, type: 'button', onClick: function () { setImmersiveCameraPreset(preset); }, 'aria-pressed': immersiveCameraPreset === preset, className: 'min-h-11 rounded-lg border px-2 py-2 text-[10px] font-black capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (immersiveCameraPreset === preset ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-white hover:bg-white/10') }, preset); })
+                     ),
+                     h('button', { type: 'button', onClick: resetImmersiveOrientation, className: 'mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, geographicMode ? 'Reset map orientation' : 'Reset 3D orientation')
+                   )
+                 ),
                 h('section', { className: 'overflow-hidden rounded-xl border border-sky-300/30 bg-gradient-to-br from-sky-950/45 via-slate-950/25 to-violet-950/35', 'data-weather-immersive-explainer': true, 'aria-labelledby': 'weather-immersive-explainer-title' },
                   h('button', { type: 'button', onClick: toggleImmersiveGuide, 'aria-expanded': immersiveGuideOpen, 'aria-controls': 'weather-immersive-explainer-content', className: 'flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sky-200' },
                     h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Visual literacy guide'), h('span', { id: 'weather-immersive-explainer-title', className: 'mt-0.5 block text-sm font-black text-white' }, 'What am I seeing?')),
@@ -8285,7 +9046,91 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     )
                   )
                 ),
-                h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
+                 h('section', { className: 'rounded-xl border border-sky-300/25 bg-sky-950/15 p-4', 'data-weather-accessible-data-table': true, 'aria-labelledby': 'weather-accessible-data-title' },
+                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Accessible data view'), h('h4', { id: 'weather-accessible-data-title', className: 'mt-1 text-sm font-black' }, 'Read the selected evidence as data')),
+                     h('button', { type: 'button', onClick: function () { update({ immersiveDataTableOpen: !d.immersiveDataTableOpen }); }, 'aria-expanded': !!d.immersiveDataTableOpen, 'aria-controls': 'weather-accessible-data-content', className: 'min-h-11 rounded-lg border border-sky-300/35 bg-sky-300/10 px-3 py-2 text-[11px] font-black text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, d.immersiveDataTableOpen ? 'Hide table' : 'Show table')
+                   ),
+                   h('div', { id: 'weather-accessible-data-content', hidden: !d.immersiveDataTableOpen },
+                     d.immersiveDataTableOpen && h('div', { className: 'mt-3 overflow-x-auto rounded-lg border border-white/10' },
+                       h('table', { className: 'w-full min-w-[320px] text-left text-[11px]', 'data-weather-accessible-data': true },
+                         h('caption', { className: 'sr-only' }, selectedGlossaryFeature ? selectedGlossaryFeature.label + ' evidence values' : 'Selected weather evidence values'),
+                         h('thead', null, h('tr', { className: 'border-b border-white/10 bg-white/5' }, h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Measure'), h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Value'), h('th', { scope: 'col', className: 'px-3 py-2 font-black text-slate-300' }, 'Evidence type'))),
+                         h('tbody', null, immersiveDataTableRows.map(function (row) { return h('tr', { key: row.label, className: 'border-b border-white/5 last:border-0' }, h('th', { scope: 'row', className: 'px-3 py-2 font-bold text-slate-200' }, row.label), h('td', { className: 'px-3 py-2 font-black text-white' }, row.value), h('td', { className: 'px-3 py-2 text-slate-400' }, row.kind)); }))
+                       )
+                     )
+                   ),
+                   h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'This table is the non-3D alternative for reading the same selected evidence with a keyboard, screen reader, or low-powered device.')
+                 ),
+                 h('section', { hidden: !teacherMode, className: 'rounded-xl border border-amber-300/25 bg-amber-950/15 p-4', 'data-weather-evidence-capture-workspace': true, 'aria-labelledby': 'weather-evidence-capture-title' },
+                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-amber-300' }, 'Teacher evidence desk'), h('h4', { id: 'weather-evidence-capture-title', className: 'mt-1 text-sm font-black' }, 'Capture and share this investigation')),
+                     h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[10px] font-black text-amber-100' }, immersiveEvidenceCaptures.length + '/12 saved')
+                   ),
+                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Captures preserve the location, selected hour, evidence source, feature, camera focus, values, note, and limitation so students can explain what they observed.'),
+                   h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4' },
+                     h('button', { type: 'button', onClick: captureImmersiveEvidence, className: 'min-h-11 rounded-lg bg-amber-300 px-3 py-2 text-[11px] font-black text-amber-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Capture current view'),
+                     h('button', { type: 'button', onClick: copyImmersiveSessionLink, className: 'min-h-11 rounded-lg border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-[11px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy share link'),
+                      h('button', { type: 'button', onClick: downloadImmersiveSession, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download session JSON'),
+                     h('label', { htmlFor: 'weather-immersive-session-import', className: 'flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-center text-[11px] font-black text-slate-100 hover:bg-white/10 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Import session JSON', h('input', { id: 'weather-immersive-session-import', type: 'file', accept: '.json,application/json', onChange: importImmersiveSessionFile, className: 'sr-only' }))
+                    ),
+                   h('label', { className: 'mt-3 flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold text-slate-200' }, h('input', { type: 'checkbox', checked: d.immersiveShareIncludeLocation === true, onChange: function (event) { update({ immersiveShareIncludeLocation: event.target.checked }); }, className: 'h-5 w-5 accent-amber-300' }), h('span', null, 'Include location and coordinates in share links')),
+                   h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Share links stay in the URL hash and are not uploaded. Location is excluded by default; session downloads include the full local context.'),
+                   h('div', { className: 'mt-3 rounded-lg border border-sky-300/20 bg-sky-300/10 p-3', 'data-weather-local-persistence': true },
+                     h('label', { className: 'flex min-h-11 items-center gap-2 text-[10px] font-black text-sky-100' }, h('input', { type: 'checkbox', checked: d.immersiveLocalPersistenceEnabled !== false, onChange: function (event) { setImmersiveLocalPersistenceEnabled(event.target.checked); }, className: 'h-5 w-5 accent-sky-300' }), h('span', null, 'Remember this workspace on this device')),
+                     h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Presets, guided progress, reflections, captures, and selected weather context autosave locally. Nothing is uploaded; clear the device copy before switching users.'),
+                     h('button', { type: 'button', onClick: clearImmersiveLocalWorkspace, disabled: d.immersiveLocalPersistenceEnabled === false, className: 'mt-2 min-h-11 rounded-lg border border-sky-300/30 bg-sky-300/10 px-3 py-2 text-[10px] font-black text-sky-100 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200' }, 'Clear local copy'),
+                     d.immersiveLocalSaveStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-sky-100', role: 'status', 'aria-live': 'polite', 'data-weather-local-persistence-status': true }, d.immersiveLocalSaveStatus)
+                   ),
+                   d.immersiveSessionStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-session-status': true }, d.immersiveSessionStatus),
+                   d.immersiveEvidenceStatus && h('p', { className: 'mt-1 text-[10px] text-slate-400', role: 'status', 'aria-live': 'polite', 'data-weather-evidence-capture-status': true }, d.immersiveEvidenceStatus),
+                   immersiveEvidenceReview.count > 0 && h('div', { className: 'mt-3 flex flex-wrap gap-2', role: 'status', 'aria-live': 'polite', 'data-weather-evidence-review-summary': true },
+                     h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100' }, immersiveEvidenceReview.readyCount + '/' + immersiveEvidenceReview.count + ' ready to hand off'),
+                     immersiveEvidenceReview.noteCount > 0 && h('span', { className: 'rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[10px] font-black text-amber-100' }, immersiveEvidenceReview.noteCount + ' need learner notes'),
+                     immersiveEvidenceReview.redactedCount > 0 && h('span', { className: 'rounded-full border border-slate-300/20 bg-slate-300/10 px-2 py-1 text-[10px] font-black text-slate-200' }, immersiveEvidenceReview.redactedCount + ' location-redacted')
+                   ),
+                   immersiveEvidenceCaptures.length > 0 && h('div', { className: 'mt-3 space-y-2', 'data-weather-evidence-capture-list': true }, immersiveEvidenceCaptureVisible.map(function (capture) { var review = immersiveEvidenceCaptureReview(capture); return h('article', { key: capture.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex items-start justify-between gap-2' }, h('p', { className: 'text-[10px] font-black text-white' }, capture.feature ? capture.feature.label : 'Weather view'), h('span', { className: 'text-[9px] text-slate-400' }, capture.source), h('span', { className: 'rounded-full border px-2 py-0.5 text-[9px] font-black ' + (review.ready ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/30 bg-amber-300/10 text-amber-100') }, review.ready ? 'Ready' : 'Needs review')), h('p', { className: 'mt-1 text-[10px] text-slate-300' }, capture.location && capture.location.label || 'Location redacted', ' | ', capture.validAt), h('p', { className: 'mt-1 text-[10px] text-slate-400' }, review.label), capture.note && h('p', { className: 'mt-1 text-[10px] italic leading-relaxed text-slate-400' }, '“' + capture.note + '”') , h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { copyImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-amber-300/30 bg-amber-300/10 px-2.5 py-1.5 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, 'Copy handoff'), h('button', { type: 'button', onClick: function () { downloadImmersiveEvidenceHandoff(capture); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download handoff'))); })),
+                   immersiveEvidenceCaptureList.length > 3 && h('button', { type: 'button', onClick: function () { update({ immersiveEvidenceCaptureShowAll: !d.immersiveEvidenceCaptureShowAll }); }, className: 'mt-3 min-h-11 rounded-lg border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-[10px] font-black text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200' }, d.immersiveEvidenceCaptureShowAll ? 'Show latest 3 captures' : 'Show all ' + immersiveEvidenceCaptureList.length + ' captures'),
+                   immersiveEvidenceCaptures.length > 0 && h('button', { type: 'button', onClick: clearImmersiveEvidenceCaptures, className: 'mt-3 min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear saved captures')
+                 ),
+                 h('section', { hidden: immersiveEvidenceCaptures.length < 2, className: 'mt-4 rounded-xl border border-cyan-300/25 bg-cyan-950/15 p-4', 'data-weather-capture-to-claim': true, 'aria-labelledby': 'weather-capture-to-claim-title' },
+                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Capture-to-Claim'), h('h4', { id: 'weather-capture-to-claim-title', className: 'mt-1 text-sm font-black' }, 'Compare observations and build an explanation')),
+                     h('span', { className: 'rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2 py-1 text-[10px] font-black text-cyan-100' }, immersiveEvidenceCaptures.length + ' captures available')
+                   ),
+                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Choose a baseline and a comparison capture. Use the measured changes as evidence, then explain what the pattern might mean and what remains uncertain.'),
+                   h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2' },
+                     h('label', { htmlFor: 'weather-capture-claim-primary', className: 'text-[11px] font-bold text-slate-200' }, 'Baseline capture', h('select', { id: 'weather-capture-claim-primary', value: immersiveCaptureClaimPrimary ? immersiveCaptureClaimPrimary.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimPrimaryId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-primary-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); }))),
+                     h('label', { htmlFor: 'weather-capture-claim-comparison', className: 'text-[11px] font-bold text-slate-200' }, 'Comparison capture', h('select', { id: 'weather-capture-claim-comparison', value: immersiveCaptureClaimComparison ? immersiveCaptureClaimComparison.id : '', onChange: function (event) { setImmersiveCaptureClaimSelection('immersiveCaptureClaimComparisonId', event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' }, immersiveEvidenceCaptureList.map(function (capture) { return h('option', { key: 'claim-comparison-' + capture.id, value: capture.id }, (capture.feature && capture.feature.label || 'Weather view') + ' | ' + (capture.validAt || capture.capturedAt || 'Captured')); })))
+                   ),
+                   immersiveCaptureClaimComparisonData ? h('div', { className: 'mt-3 rounded-lg border border-white/10 bg-slate-950/35 p-3', 'data-weather-capture-claim-result': true },
+                     h('p', { className: 'text-[11px] font-black text-cyan-100', role: 'status', 'aria-live': 'polite' }, immersiveCaptureClaimComparisonData.primaryLabel + ' → ' + immersiveCaptureClaimComparisonData.comparisonLabel + ': ' + immersiveCaptureClaimComparisonData.summary),
+                     h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' },
+                       h('article', { className: 'rounded-lg border border-amber-300/25 bg-amber-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-amber-200' }, 'Claim'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.claimPrompt)),
+                       h('article', { className: 'rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-200' }, 'Evidence'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.evidencePrompt)),
+                       h('article', { className: 'rounded-lg border border-violet-300/25 bg-violet-300/10 p-3' }, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Reasoning'), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, immersiveCaptureClaimComparisonData.reasoningPrompt))
+                     ),
+                     h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                       h('button', { type: 'button', onClick: copyImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-[10px] font-black text-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200' }, 'Copy CER handoff'),
+                       h('button', { type: 'button', onClick: downloadImmersiveCaptureClaimHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download CER handoff'),
+                       h('button', { type: 'button', onClick: openImmersiveCaptureClaimIn3D, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-2 text-[10px] font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Open 3D comparison')
+                     )
+                   ) : h('p', { className: 'mt-3 text-[11px] text-amber-100', role: 'status' }, 'Choose two different captures to build the comparison.')
+                 ),
+                 h('section', { hidden: !teacherMode, className: 'mb-4 rounded-xl border border-fuchsia-300/25 bg-fuchsia-950/15 p-4', 'data-weather-lesson-presets': true, 'aria-labelledby': 'weather-lesson-presets-title' },
+                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-fuchsia-300' }, 'Lesson presets'), h('h4', { id: 'weather-lesson-presets-title', className: 'mt-1 text-sm font-black' }, 'Save a repeatable 3D investigation')),
+                     h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, immersiveLessonPresets.length + '/8 saved')
+                   ),
+                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Presets stay local to this workspace and remember the scene mode, source, focus, camera, geography, and comparison setup. Save a named starting point for a lesson or station rotation.'),
+                   h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]' },
+                     h('label', { htmlFor: 'weather-lesson-preset-name', className: 'text-[11px] font-bold text-slate-200' }, 'Preset name', h('input', { id: 'weather-lesson-preset-name', type: 'text', value: d.immersiveLessonPresetDraftName || '', onChange: function (event) { update({ immersiveLessonPresetDraftName: event.target.value }); }, placeholder: 'e.g. Front passage warm-up', maxLength: 80, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white placeholder:text-slate-500 focus:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-300/40' })),
+                     h('button', { type: 'button', onClick: saveImmersiveLessonPreset, className: 'min-h-11 self-end rounded-lg bg-fuchsia-300 px-3 py-2 text-[10px] font-black text-fuchsia-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Save current scene')
+                   ),
+                   d.immersiveLessonPresetStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-fuchsia-100', role: 'status', 'aria-live': 'polite', 'data-weather-lesson-preset-status': true }, d.immersiveLessonPresetStatus),
+                   immersiveLessonPresets.length ? h('div', { className: 'mt-3 space-y-2', 'data-weather-lesson-preset-list': true }, immersiveLessonPresets.slice().reverse().map(function (preset) { return h('article', { key: preset.id, className: 'rounded-lg border border-white/10 bg-slate-950/35 px-3 py-2' }, h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black text-white' }, preset.name), h('p', { className: 'mt-0.5 text-[10px] text-slate-400' }, immersiveLessonPresetDescription(preset))), immersiveLessonPresetActiveId === preset.id && h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[9px] font-black text-emerald-100' }, 'Active')), h('div', { className: 'mt-2 flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: function () { applyImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2.5 py-1.5 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Apply preset'), h('button', { type: 'button', onClick: function () { deleteImmersiveLessonPreset(preset); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Delete'))); })) : h('p', { className: 'mt-3 text-[10px] text-slate-400', role: 'status' }, 'No lesson presets saved yet.')
+                 ),
+                 h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
                   h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? timelineSelectionLabel : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? (liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code) : 'model' }, geographicMode ? 'MAP \u2022 ' + timelineBadge : (useLive ? timelineBadge : 'MODEL'))),
                   !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
                     h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
@@ -8315,7 +9160,23 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                         className: 'mt-2 min-h-11 w-full accent-violet-300'
                       })
                     ),
-                    h('div', { className: 'flex justify-between text-[11px] font-bold text-slate-400', 'aria-hidden': true },
+                     h('div', { className: 'mt-3 rounded-xl border border-violet-300/25 bg-violet-300/10 p-3', 'data-weather-timeline-comparison': true },
+                       h('label', { htmlFor: 'weather-timeline-comparison', className: 'block text-[11px] font-black text-violet-100' }, 'Compare selected hour with',
+                         h('select', { id: 'weather-timeline-comparison', value: timelineComparisonIndex === '' ? '' : String(timelineComparisonIndex), onChange: function (event) { setImmersiveTimelineComparison(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-white focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-300/40' },
+                           h('option', { value: '' }, 'Choose a baseline hour'),
+                           liveTimeline.map(function (point, index) { return h('option', { key: 'compare-hour-' + index, value: String(index), disabled: index === liveTimelineIndex }, weatherTimelineLabel(point, baseLive && baseLive.timezone) + (index === liveTimelineIndex ? ' (selected)' : '')); })
+                         )
+                       ),
+                       timelineDelta && h('div', { className: 'mt-2', role: 'status', 'aria-live': 'polite' },
+                         h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-100' }, 'Change since baseline'),
+                         h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3' }, [
+                           ['Temperature', formatWeatherDelta(timelineDelta.temperature, '°C', 1)], ['Humidity', formatWeatherDelta(timelineDelta.humidity, '%', 0)], ['Pressure', formatWeatherDelta(timelineDelta.pressure, ' hPa', 1)],
+                           ['Wind speed', formatWeatherDelta(timelineDelta.windSpeed, ' km/h', 1)], ['Wind direction', formatWeatherDelta(timelineDelta.windDirection, '°', 0)], ['Precipitation', formatWeatherDelta(timelineDelta.precipitation, ' mm', 1)]
+                         ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg border border-white/10 bg-slate-950/35 px-2 py-2' }, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black text-white' }, metric[1])); })),
+                         timelineDelta.conditionChanged && h('p', { className: 'mt-2 text-[10px] font-bold text-amber-100' }, 'Condition changed from ' + (timelineComparisonPoint.condition || 'the baseline') + ' to ' + (liveTimelinePoint.condition || 'the selected hour') + '.')
+                       )
+                     ),
+                     h('div', { className: 'flex justify-between text-[11px] font-bold text-slate-400', 'aria-hidden': true },
                       h('span', null, Math.abs(liveTimeline[0].offsetHours) + ' h earlier'),
                       h('span', null, 'Current'),
                       h('span', null, '+' + liveTimeline[liveTimeline.length - 1].offsetHours + ' h')
@@ -8472,20 +9333,36 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
 !geographicMode && h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-immersive-tour': true },
                   h('div', { className: 'flex items-start justify-between gap-3' },
                     h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, 'Guided investigation'), h('h4', { className: 'text-sm font-black' }, tourStep.label)),
-                    h('span', { className: 'rounded-full bg-cyan-300 px-2 py-1 text-[11px] font-black text-cyan-950' }, (tourStep.index + 1) + '/' + tourStep.total)
+                    h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
+                      h('span', { className: 'rounded-full bg-cyan-300 px-2 py-1 text-[11px] font-black text-cyan-950' }, (tourStep.index + 1) + '/' + tourStep.total),
+                      h('span', { className: 'rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100', 'data-weather-tour-progress': true, role: 'status', 'aria-label': 'Guided investigation progress' }, tourRun.completedCount + '/' + tourRun.total + ' complete')
+                    )
                   ),
                   h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300', 'data-weather-tour-prompt': true }, tourStep.prompt),
                   h('p', { className: 'mt-1 text-[11px] leading-relaxed text-cyan-100' }, tourStep.evidence),
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive guided investigation steps' },
                     IMMERSIVE_TOUR_STEPS.map(function (step) {
                       var active = step.id === tourStep.id;
+                      var progress = tourRun.steps.filter(function (item) { return item.id === step.id; })[0] || step;
                       return h('button', {
                         key: step.id, type: 'button', onClick: function () { openImmersiveTourStep(step.id); }, 'aria-pressed': active,
                         className: 'min-h-11 rounded-lg border px-2 py-2 text-left text-[11px] font-black transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/10')
-                      }, step.label);
+                      }, (progress.complete ? '\u2713 ' : '') + step.label);
                     })
                   ),
-                  h('button', { type: 'button', onClick: function () { openImmersiveTourStep(tourStep.nextId); }, className: 'mt-3 min-h-11 w-full rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Next investigation step'),
+                  h('p', { className: 'mt-3 text-[11px] leading-relaxed ' + (currentTourProgress.complete ? 'text-emerald-100' : currentTourProgress.captureCount ? 'text-cyan-100' : 'text-slate-400'), role: 'status', 'aria-live': 'polite', 'data-weather-tour-status': true }, currentTourProgress.complete ? currentTourProgress.label + ' is marked complete.' : currentTourProgress.captureCount ? currentTourProgress.captureCount + ' evidence capture' + (currentTourProgress.captureCount === 1 ? '' : 's') + ' linked to this step. Review the prompt, then mark it complete.' : 'Use the prompt and add a note or discussion before marking this step complete.'),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
+                    h('button', { type: 'button', onClick: function () { toggleImmersiveTourStepCompletion(tourStep.id); }, 'aria-pressed': currentTourProgress.complete, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (currentTourProgress.complete ? 'border-emerald-300/50 bg-emerald-300/15 text-emerald-100' : 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100') }, currentTourProgress.complete ? 'Reopen this step' : 'Mark step complete'),
+                    h('button', { type: 'button', onClick: function () { openImmersiveTourStep(tourStep.nextId); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Next investigation step')
+                  ),
+                  teacherMode && h('div', { className: 'mt-3 rounded-lg border border-violet-300/25 bg-violet-300/10 p-3', 'data-weather-tour-handoff': true, 'aria-labelledby': 'weather-tour-handoff-title' },
+                    h('p', { id: 'weather-tour-handoff-title', className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Teacher run brief'),
+                    h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Copy or download the current scene, prompts, completion, evidence counts, and reflection for lesson plans or team handoff. Location stays excluded unless the sharing preference is enabled.'),
+                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
+                      h('button', { type: 'button', onClick: copyImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-violet-300/35 bg-violet-300/10 px-3 py-2 text-[10px] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, 'Copy teacher brief'),
+                      h('button', { type: 'button', onClick: downloadImmersiveTourHandoff, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Download teacher brief')
+                    )
+                  ),
                   h('label', { htmlFor: 'weather-immersive-reflection', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, '3D evidence note',
                     h('textarea', { id: 'weather-immersive-reflection', value: d.immersiveReflection || '', onChange: function (event) { update({ immersiveReflection: event.target.value }); }, rows: 3, placeholder: 'I think the ' + tourSource + ' suggests ___ because I observed ___.', className: 'mt-1 min-h-[92px] w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-normal text-white placeholder:text-slate-400 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/40' })
                   )
@@ -8677,6 +9554,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   d.liveWeatherStatus && h('p', { className: 'mt-2 text-[11px] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
                   d.terrainEvidenceInvalidatedMessage && h('p', { className: 'mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-[11px] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-terrain-evidence-invalidated': true }, d.terrainEvidenceInvalidatedMessage),
                   d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[11px] text-rose-200', role: 'alert' }, d.liveWeatherError),
+                  d.liveWeatherError && d.liveWeather && h('p', { className: 'mt-2 rounded-lg border border-amber-300/25 bg-amber-300/10 p-2 text-[11px] text-amber-100', role: 'status', 'data-weather-live-fallback': true }, 'Your last saved observation remains available for this lesson. Refresh when the network is available to replace it.'),
                   live && h('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Source: ', h('a', { href: live.sourceUrl, target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, live.source), '. Coordinates are rounded and stored only with this local lab state.'),
                   h('p', { className: 'mt-2 text-[11px] text-slate-400' }, 'Educational visualization only; not a safety or operational forecast.')
                 ),

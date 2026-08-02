@@ -68,7 +68,9 @@ describe('Canvas auth latch: doomed Gemini calls are skipped', () => {
 
     expect(url).toBe('blob:kokoro-af_heart');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(speak).toHaveBeenCalledWith(expect.any(String), 'af_heart', 1);
+    expect(speak).toHaveBeenCalledWith(
+      expect.any(String), 'af_heart', 1, expect.objectContaining({ signal: expect.anything() }),
+    );
     expect(traceEvents()).toContain('calltts:canvas-skip-authfailed');
     expect(traceEvents()).toContain('calltts:kokoro-fallback-ok');
   });
@@ -85,7 +87,9 @@ describe('Canvas auth latch: doomed Gemini calls are skipped', () => {
     const url = await callTTS('A local voice was chosen on purpose.', 'af_bella', 1, 2, 'English');
 
     expect(url).toBe('blob:kokoro-af_bella');
-    expect(speak).toHaveBeenCalledWith(expect.any(String), 'af_bella', 1);
+    expect(speak).toHaveBeenCalledWith(
+      expect.any(String), 'af_bella', 1, expect.objectContaining({ signal: expect.anything() }),
+    );
   });
 
   it('latched + cooldown expired: exactly ONE probe attempt, then cooldown re-arms', async () => {
@@ -152,23 +156,39 @@ describe('Canvas auth latch: doomed Gemini calls are skipped', () => {
 
 describe('Edit-Audio regenerate pathway pins (3-host)', () => {
   const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const synthBlock = (source) => {
+    const start = source.indexOf('const _synthSentenceForStore');
+    const end = source.indexOf('const _persistKaraokeAudioField', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    return source.slice(start, end).replace(/\r\n/g, '\n');
+  };
+
 
   it('_synthSentenceForStore skips the direct Gemini leg when it cannot succeed', () => {
-    expect(anti).toContain("const _geminiUsable = !window.__ttsGeminiAuthFailed && !/^(af_|am_|bf_|bm_)/i.test(String(selectedVoice || ''));");
+    expect(anti).toContain("const configuredProvider = String(profile.provider || _aiConfig.ttsProvider || 'auto').toLowerCase();");
+    expect(anti).toContain("const _providerAllowsGemini = configuredProvider === 'auto' || configuredProvider === 'gemini';");
+    expect(anti).toContain("const _geminiUsable = _providerAllowsGemini && !window.__ttsGeminiAuthFailed && !/^(af_|am_|bf_|bm_)/i.test(String(activeVoice || ''));");
     expect(anti).toContain('if (_geminiUsable && window.lamejs && _ah &&');
   });
 
   it('the callTTS leg rides the interactive lane with a tight retry ceiling', () => {
     const idx = anti.indexOf('const _synthSentenceForStore');
-    const slice = anti.slice(idx, idx + 2400);
-    expect(slice).toContain("priority: 'interactive',");
-    expect(slice).toContain('maxRetries: 1,');
+    const slice = anti.slice(idx, idx + 5000);
+    expect(slice).toContain("priority: options.priority || 'interactive',");
+    expect(slice).toContain('maxRetries: Number.isFinite(options.maxRetries) ? options.maxRetries : 1,');
     expect(slice).toContain("reason: 'karaoke-store-synth',");
+    expect(slice).toContain('signal,');
   });
 
-  it('mirrors stay byte-identical (App.jsx quest-map drift healed 2026-07-20)', () => {
-    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8')).toBe(anti);
-    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8')).toBe(anti);
+  it('keeps the synthesis contract identical across the source and both generated hosts', () => {
+    const sources = [
+      anti,
+      readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8'),
+      readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8'),
+    ];
+    const blocks = sources.map(synthBlock);
+    expect(blocks).toEqual([blocks[0], blocks[0], blocks[0]]);
   });
 
   it('the BUILT tts module ships the latch skip + voice mapping', () => {

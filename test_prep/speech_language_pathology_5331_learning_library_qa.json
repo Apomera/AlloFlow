@@ -1,7 +1,8 @@
 {
-  "packId": "praxis-speech-language-pathology-5331", "version": "1.0.0", "visibility": "public",
+  "packId": "praxis-speech-language-pathology-5331",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:12.363Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Speech-Language Pathology 5331 learning-library source and editorial review v1",
@@ -150,8 +151,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
-    "learningLibrarySha256": "8caa46f8d363b5aaa43ef84e10e8213b531c10f766d442bc45ed1e5defc826f1",
+    "sourceItemsSha256": "2fd3f3fc292b15c32425a01513c2b3879e24896d3f28896bb994cf007b4e9b51",
+    "learningLibrarySha256": "dcb2f058d433845f8ba41b9946f4ede483c918d0f7851ab886964dec1e95e441",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

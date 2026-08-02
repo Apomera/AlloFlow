@@ -64,6 +64,12 @@ describe('Typing Practice announcement quality', () => {
     expect(source).toContain('if (battleMistakeAnnouncement.shouldAnnounce) setAnnounceText(battleMistakeAnnouncement.message)');
   });
 
+  it('remounts the live status node for repeated messages', () => {
+    expect(source).toContain('var announceNonceTuple = useState(0)');
+    expect(source).toContain('setAnnounceTextState(nextText)');
+    expect(source).toContain("key: 'tp-announcement-' + announceNonce");
+  });
+
   it('uses one persistent alert for fallback print and export failures', () => {
     const issueReporter = extractFunction('reportTypingPracticeIssue');
     expect(source).not.toContain('allo-live-typingpractice');

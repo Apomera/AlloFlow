@@ -1,6 +1,6 @@
 ---
 name: alloflow-portable-remediation
-description: Rebuild attached PDFs as accessible copies plus a scoped report without sending documents to AlloFlow. Use for PDF accessibility, WCAG, Section 508, or PDF/UA remediation.
+description: Rebuild attached PDFs as accessible copies plus a scoped report entirely in the active file sandbox. Use by default for PDF accessibility, WCAG, Section 508, or PDF/UA remediation when the user has no paid Worker, institution account, AlloFlow server, or separate model API key.
 ---
 
 # AlloFlow portable PDF remediation
@@ -8,6 +8,11 @@ description: Rebuild attached PDFs as accessible copies plus a scoped report wit
 Keep the document inside the active Claude or ChatGPT file sandbox. Do not call
 an AlloFlow server, remote MCP, Gemini, web service, analytics endpoint, or
 telemetry service while using this workflow.
+
+This is the default path when a user attaches a PDF and simply asks to make it
+accessible. It needs no AlloFlow account, Cloudflare Worker, institution-owned
+service, or separate AI API key. The host model reads the attachment using the
+capabilities already available in the current conversation.
 
 ## Run the one-prompt workflow
 

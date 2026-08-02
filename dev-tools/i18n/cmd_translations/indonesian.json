@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio dibuka.",
   "cmd.open_video_studio_hint": "Rekam, beri takarir, dan edit video panduan",
   "palette.ctx.videoStudio": "Di sini — Video Studio",
-  "palette.close": "Tutup palet perintah"
+  "palette.close": "Tutup palet perintah",
+  "cmd.apply_lesson_template": "Mulai dari templat tersimpan",
+  "cmd.apply_lesson_template_done": "Dimulai dari ",
+  "cmd.apply_lesson_template_hint": "Memulai rencana baru dari salah satu templat tersimpan",
+  "cmd.apply_lesson_template_missing": "Saya tidak menemukan templat bernama ",
+  "cmd.apply_lesson_template_which": "Templat yang mana?",
+  "cmd.rebuild_lesson_step": "Bangun ulang satu langkah rencana",
+  "cmd.rebuild_lesson_step_done": "Membangun ulang langkah ",
+  "cmd.rebuild_lesson_step_hint": "Membuat ulang satu sumber daya — sebutkan nomor langkah",
+  "cmd.rebuild_lesson_step_missing": "Langkah itu tidak ditemukan dalam rencana.",
+  "cmd.rebuild_lesson_step_none": "rencana belum memiliki langkah.",
+  "cmd.rebuild_lesson_step_which": "Langkah yang mana?",
+  "cmd.run_lesson_blueprint": "Buat rencana pelajaran",
+  "cmd.run_lesson_blueprint_done": "Membuat rencana — Anda dapat melihat setiap langkah pada kartu.",
+  "cmd.run_lesson_blueprint_hint": "Membuat semua sumber daya dalam rencana saat ini",
+  "cmd.cancelled": "Pembatalan diminta. Operasi saat ini akan berhenti ketika penyedianya mendukungnya."
 }

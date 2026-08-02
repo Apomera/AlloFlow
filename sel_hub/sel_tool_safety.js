@@ -768,43 +768,79 @@ window.SelHub = window.SelHub || {
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
 
-        var tabBar = h('div', {           role: 'tablist', 'aria-label': 'Safety & Wellbeing tabs',
-          style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        function selectSafetyTab(tabId) {
+          var next = tabs.filter(function(tab) { return tab.id === tabId; })[0];
+          if (!next) return;
+          var patch = { activeTab: next.id };
+          if (!tabsVisited[next.id]) {
+            var newVisited = Object.assign({}, tabsVisited);
+            newVisited[next.id] = true;
+            patch.tabsVisited = newVisited;
+            if (Object.keys(newVisited).length >= 10) {
+              setTimeout(function() { tryAwardBadge('safety_educator'); }, 0);
+            }
+          }
+          upd(patch);
+          if (soundEnabled) sfxClick();
+          if (announceToSR) announceToSR(next.label + ' tab selected');
+        }
+
+        var tabBar = h('div', {
+          style: { display: 'flex', alignItems: 'stretch', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
         },
-          tabs.map(function(t) {
-            var isActive = activeTab === t.id;
-            return h('button', {
-              key: t.id,
-              onClick: function() {
-                upd('activeTab', t.id);
-                if (soundEnabled) sfxClick();
-                // Track tab visits for Safety Educator badge
-                if (!tabsVisited[t.id]) {
-                  var newVisited = Object.assign({}, tabsVisited);
-                  newVisited[t.id] = true;
-                  upd('tabsVisited', newVisited);
-                  // All 10 tabs visited?
-                  if (Object.keys(newVisited).length >= 10) tryAwardBadge('safety_educator');
+          h('div', {
+            role: 'tablist', 'aria-label': 'Safety & Wellbeing tabs',
+            style: { display: 'flex', gap: 2, minWidth: 'max-content' }
+          },
+            tabs.map(function(t) {
+              var isActive = activeTab === t.id;
+              return h('button', {
+                key: t.id,
+                id: 'safety-tab-' + t.id,
+                'data-safety-tab': t.id,
+                'aria-label': t.label,
+                'aria-controls': 'safety-tab-panel',
+                'aria-selected': isActive,
+                role: 'tab',
+                tabIndex: isActive ? 0 : -1,
+                onClick: function() { selectSafetyTab(t.id); },
+                onKeyDown: function(e) {
+                  var currentIndex = tabs.indexOf(t);
+                  var nextIndex = currentIndex;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') nextIndex = 0;
+                  else if (e.key === 'End') nextIndex = tabs.length - 1;
+                  else return;
+                  e.preventDefault();
+                  var nextTab = tabs[nextIndex];
+                  selectSafetyTab(nextTab.id);
+                  setTimeout(function() {
+                    var target = document.querySelector('[data-safety-tab="' + nextTab.id + '"]');
+                    if (target) target.focus();
+                  }, 0);
+                },
+                style: {
+                  padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
+                  background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _safFg('#94a3b8'),
+                  transition: 'all 0.15s'
                 }
-              },
-              'aria-selected': isActive,
-              role: 'tab',
-              style: {
-                padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _safFg('#94a3b8'),
-                transition: 'all 0.15s'
-              }
-            }, t.label);
-          }),
-          // Sound toggle
-          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute',
-            onClick: function() { upd('soundEnabled', !soundEnabled); },
-            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _safFg('#94a3b8') },
+              }, t.label);
+            })
+          ),
+          h('button', {
+            'aria-label': soundEnabled ? 'Mute' : 'Unmute',
+            'aria-pressed': soundEnabled,
+            onClick: function() {
+              var nextSound = !soundEnabled;
+              upd('soundEnabled', nextSound);
+              if (announceToSR) announceToSR(nextSound ? 'Sounds enabled' : 'Sounds muted');
+            },
+            style: { marginLeft: 'auto', alignSelf: 'center', flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _safFg('#94a3b8') },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
-
-        // ── Topic-accent hero band per tab ──
+        // Topic-accent hero band per tab
         var heroBand = (function() {
           var TAB_META = {
             learn:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCDA', title: 'Learn \u2014 the foundations',                          hint: 'Personal safety = body autonomy + boundaries + reading situations + naming what feels off. The 5-finger trick: people on each finger you can talk to. Knowing words for the situation IS half the safety.' },
@@ -857,17 +893,8 @@ window.SelHub = window.SelHub || {
         }
 
         function goSafetyTab(tabId) {
-          var patch = { activeTab: tabId };
-          if (!tabsVisited[tabId]) {
-            var newVisited = Object.assign({}, tabsVisited);
-            newVisited[tabId] = true;
-            patch.tabsVisited = newVisited;
-            if (Object.keys(newVisited).length >= 10) setTimeout(function() { tryAwardBadge('safety_educator'); }, 0);
-          }
-          upd(patch);
-          if (soundEnabled) sfxClick();
+          selectSafetyTab(tabId);
         }
-
         function safetyLaunchCard(title, blurb, actionLabel, tabId, color) {
           return h('button', {
             onClick: function() { goSafetyTab(tabId); },
@@ -968,7 +995,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontWeight: 700, color: _safFg('#fca5a5'), fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
             CRISIS_RESOURCES.map(function(cr, i) {
               return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: _safFg('#fde2e2') } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
                 h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
                 h('span', null, cr.contact)
               );
@@ -1403,7 +1430,7 @@ window.SelHub = window.SelHub || {
               disabled: scenIdx === scenarios.length - 1,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === scenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
-            h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
+            h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
           );
 
           var scenCard = h('div', {             style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: _safBg('#1e293b'), border: '1px solid #334155' }
@@ -1434,7 +1461,10 @@ window.SelHub = window.SelHub || {
                     // Badge: scenario star (first completion)
                     if (Object.keys(newCompleted).length === 1) tryAwardBadge('scenario_star');
                     // Badge: quick thinker (all 5 completed)
-                    if (Object.keys(newCompleted).length >= scenarios.length) tryAwardBadge('quick_thinker');
+                    if (Object.keys(newCompleted).length >= scenarios.length) {
+                      tryAwardBadge('quick_thinker');
+                      if (announceToSR) announceToSR('All safety scenarios completed');
+                    }
                     // Track top ratings
                     var topCount = 0;
                     Object.keys(newCompleted).forEach(function(k) { if (newCompleted[k].rating === 3) topCount++; });
@@ -1559,7 +1589,7 @@ window.SelHub = window.SelHub || {
               disabled: assertIdx === assertScenarios.length - 1,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === assertScenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
-            h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
+            h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
           );
 
           var assertCard = h('div', {             style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: _safBg('#1e293b'), border: '1px solid #334155' }
@@ -1679,7 +1709,7 @@ window.SelHub = window.SelHub || {
               )
             ),
             !quizDone && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
+              h('div', { role: 'progressbar', 'aria-label': 'Safety quiz progress', 'aria-valuemin': 0, 'aria-valuemax': totalQ, 'aria-valuenow': Object.keys(quizAnswered).length, 'aria-valuetext': Object.keys(quizAnswered).length + ' of ' + totalQ + ' questions answered', style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
                 h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(quizAnswered).length / totalQ) * 100) + '%', transition: 'width 0.3s' } })
               ),
               h('span', { style: { fontSize: 11, color: _safFg('#94a3b8') } }, Object.keys(quizAnswered).length + '/' + totalQ)
@@ -1696,7 +1726,7 @@ window.SelHub = window.SelHub || {
                 var isCorrectAnswer = val === currentQ.answer;
                 var showResult = isAnsweredQ;
                 var btnColor = showResult ? (isCorrectAnswer ? '#22c55e' : (isSelected && !isCorrectAnswer ? '#ef4444' : '#334155')) : '#334155';
-                return h('button', { 'aria-label': 'Select answer',
+                return h('button', { 'aria-label': val ? 'True' : 'False',
                   key: i,
                   onClick: function() {
                     if (isAnsweredQ) return;
@@ -1713,6 +1743,7 @@ window.SelHub = window.SelHub || {
                       var newBest = Math.max(quizBest, newScore);
                       upd('quizBest', newBest);
                       if (newScore >= 8) tryAwardBadge('quiz_master');
+                      if (announceToSR) announceToSR('Safety quiz complete. Score ' + newScore + ' of ' + totalQ);
                     }
                   },
                   style: {
@@ -1731,7 +1762,7 @@ window.SelHub = window.SelHub || {
                 var isCorrectAnswer = i === currentQ.answer;
                 var showResult = isAnsweredQ;
                 var btnColor = showResult ? (isCorrectAnswer ? '#22c55e' : (isSelected && !isCorrectAnswer ? '#ef4444' : '#334155')) : '#334155';
-                return h('button', { 'aria-label': 'Select answer',
+                return h('button', { 'aria-label': ch,
                   key: i,
                   onClick: function() {
                     if (isAnsweredQ) return;
@@ -1747,6 +1778,7 @@ window.SelHub = window.SelHub || {
                       var newBest = Math.max(quizBest, newScore);
                       upd('quizBest', newBest);
                       if (newScore >= 8) tryAwardBadge('quiz_master');
+                      if (announceToSR) announceToSR('Safety quiz complete. Score ' + newScore + ' of ' + totalQ);
                     }
                   },
                   style: {
@@ -1762,7 +1794,7 @@ window.SelHub = window.SelHub || {
 
             quizCard = h('div', {               style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: _safBg('#1e293b'), border: '1px solid #334155' }
             },
-              h('div', { style: { fontSize: 11, color: _safFg('#94a3b8'), marginBottom: 4 } }, 'Question ' + (quizIdx + 1) + ' of ' + totalQ),
+              h('div', { role: 'status', style: { fontSize: 11, color: _safFg('#94a3b8'), marginBottom: 4 } }, 'Question ' + (quizIdx + 1) + ' of ' + totalQ),
               h('div', { style: { fontWeight: 600, color: _safFg('#f1f5f9'), fontSize: 15, marginBottom: 14, lineHeight: '1.5' } }, currentQ.q),
               callTTS && h('button', { 'aria-label': 'Read aloud',
                 onClick: function() { speak(currentQ.q); },
@@ -2158,6 +2190,7 @@ window.SelHub = window.SelHub || {
                   addToast('\uD83D\uDCCB Safety Plan saved! You are prepared.', 'success');
                   awardXP(25);
                   tryAwardBadge('safety_planner');
+                  if (announceToSR) announceToSR('Safety plan saved');
                 },
                 style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: _safFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save My Plan'),
@@ -2351,12 +2384,13 @@ window.SelHub = window.SelHub || {
         var content = learnContent || digitalContent || circleContent || scenariosContent || assertiveContent || quizContent || flagsContent || emergencyContent || planContent || badgesContent;
 
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('safety', h, ctx) : null),
           tabBar,
           heroBand,
           safetyCommandPanel(),
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+          h('div', { id: 'safety-tab-panel', role: 'tabpanel', 'aria-labelledby': 'safety-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       })();

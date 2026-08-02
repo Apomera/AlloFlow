@@ -91,7 +91,9 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("'aria-errormessage': mistakeFeedback ? 'tp-mistake-feedback' : undefined");
     expect(source).toContain("'aria-invalid': mistakeFeedback ? 'true' : 'false'");
     expect(source).toContain('typingPracticeMistakeAnnouncement(\n              mistakeAnnouncementRef.current');
-    expect(source).toContain('if (mistakeAnnouncement.shouldAnnounce) setAnnounceText(mistakeAnnouncement.message)');
+    expect(source).toContain('if (mistakeAnnouncement.shouldAnnounce) setMistakeLiveText(mistakeAnnouncement.message)');
+    expect(source).toContain("id: 'tp-mistake-feedback-status'");
+    expect(source).toContain("'aria-live': 'polite'");
   });
 
   it('keeps pace samples aligned when tolerant input advances or Backspace undoes', () => {
@@ -132,13 +134,14 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("'aria-valuetext': typedLength + ' of ' + targetLength + ' characters complete'");
   });
 
-  it('keeps the visual reading countdown out of a per-second live region', () => {
+  it('announces the reading countdown without exposing visual character noise', () => {
     const countdownStart = source.indexOf("sightReadLeft > 0 ? h('div', {");
     const pauseStart = source.indexOf('// Paused overlay notice', countdownStart);
     const countdown = source.slice(countdownStart, pauseStart);
     expect(countdown).toContain("role: 'region'");
     expect(countdown).toContain("'aria-labelledby': 'tp-reading-time-title'");
-    expect(countdown).not.toContain("'aria-live'");
+    expect(countdown).toContain("'aria-live': 'polite'");
+    expect(countdown).toContain("'aria-atomic': 'true'");
     expect(source).toContain("'Reading time started. Typing begins in '");
     expect(source).toContain("'Reading time complete. The typing area is ready.'");
   });

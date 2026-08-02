@@ -88,6 +88,223 @@ var _lazyIcon = function (name) {
   // Standards alignment participates in the shared readiness model.
   // Renders the per-standard summary header + the existing per-report cards
   // inside the same ComprehensiveSection framework as the others.
+  function alignmentMapStatus(value) {
+    var raw = String(value || '').trim();
+    var lower = raw.toLowerCase();
+    if (!raw) return 'Not evaluated';
+    if (lower === 'pass' || lower === 'aligned' || lower === 'source verified') return 'Aligned';
+    if (lower.indexOf('partial') !== -1) return 'Partially aligned';
+    if (lower === 'revise' || lower.indexOf('not aligned') !== -1 || lower === 'fail' || lower === 'failed') return 'Not aligned';
+    if (lower.indexOf('source unavailable') !== -1 || lower === 'unavailable') return 'Source unavailable';
+    if (lower.indexOf('inference') !== -1) return 'Inference only';
+    if (lower === 'not evaluated' || lower === 'not applicable' || lower === 'incomplete') return 'Not evaluated';
+    return raw;
+  }
+  function alignmentMapBadgeClass(status) {
+    var canonical = alignmentMapStatus(status);
+    if (canonical === 'Aligned') return 'bg-emerald-100 text-emerald-800';
+    if (canonical === 'Not aligned') return 'bg-rose-100 text-rose-800';
+    if (canonical === 'Partially aligned') return 'bg-amber-100 text-amber-800';
+    if (canonical === 'Source unavailable' || canonical === 'Inference only') return 'bg-amber-100 text-amber-800';
+    return 'bg-slate-200 text-slate-800';
+  }
+  function alignmentMapGraph(standards, auditScope, savedGraph) {
+    if (savedGraph && savedGraph.version === 'acg/v1' && Array.isArray(savedGraph.nodes) && Array.isArray(savedGraph.edges)) return savedGraph;
+    var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    if (!E || typeof E.fromAlignmentAudit !== 'function') return null;
+    try {
+      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
+      return E.fromAlignmentAudit({ standards: standards }, { standardsProvider: provider, auditScope: auditScope });
+    } catch (e) {
+      return null;
+    }
+  }
+  function alignmentMapEntries(standards, graph, auditScope) {
+    var reports = Array.isArray(standards && standards.perStandard) ? standards.perStandard : [];
+    var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) { return node && node.type === 'standard'; }) : [];
+    var nodeById = {};
+    var artifactById = {};
+    if (graph && Array.isArray(graph.nodes)) graph.nodes.forEach(function (node) {
+      if (!node) return;
+      if (node.id) nodeById[node.id] = node;
+      if (node.type === 'auditArtifact' && node.artifactId) artifactById[node.artifactId] = node;
+    });
+    if (!Object.keys(artifactById).length && auditScope && typeof auditScope === 'object') {
+      var scopeItems = Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : Array.isArray(auditScope.includedArtifactIds) ? auditScope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id }; }) : [];
+      scopeItems.forEach(function (item) {
+        item = item && typeof item === 'object' ? item : { id: item };
+        var artifactId = String(item.id || '').trim();
+        if (artifactId) artifactById[artifactId] = { artifactId: artifactId, label: item.title || 'Audited artifact ' + artifactId, artifactType: item.type || 'unknown' };
+      });
+    }
+    function evidenceArtifacts(ids) {
+      return (Array.isArray(ids) ? ids : []).map(function (id) { return artifactById[String(id || '').trim()]; }).filter(Boolean).slice(0, 12);
+    }
+    function attributionLinks(nodeId, relationType) {
+      return graph && Array.isArray(graph.edges) ? graph.edges.filter(function (edge) {
+        return edge && edge.fromId === nodeId && edge.relationType === relationType && edge.attribution === 'explicit' && edge.toId && edge.artifactId;
+      }).map(function (edge) {
+        return { edgeId: edge.id, artifactId: edge.artifactId, attributionSource: edge.attributionSource || 'audit-model' };
+      }).slice(0, 12) : [];
+    }
+    function findingEntries(gaps, attributions) {
+      var items = Array.isArray(gaps) ? gaps : [];
+      var attributionItems = Array.isArray(attributions) ? attributions : [];
+      return items.map(function (gap) {
+        var text = gap && typeof gap === 'object' ? String(gap.text || gap.finding || gap.label || '').trim() : String(gap || '').trim();
+        if (!text) return null;
+        var ids = gap && typeof gap === 'object' && Array.isArray(gap.artifactIds) ? gap.artifactIds : [];
+        var attributionSource = gap && typeof gap === 'object' ? gap.attributionSource : null;
+        if (!ids.length) attributionItems.some(function (attribution) { if (!attribution || String(attribution.text || '').trim() !== text) return false; ids = Array.isArray(attribution.artifactIds) ? attribution.artifactIds : []; attributionSource = attribution.attributionSource; return true; });
+        return { text: text, artifactIds: ids, attributionSource: ids.length ? (attributionSource || 'audit-model') : null, artifacts: evidenceArtifacts(ids) };
+      }).filter(Boolean);
+    }    return reports.map(function (report, index) {
+      report = report && typeof report === 'object' ? report : {};
+      var standardNode = standardNodes[index] || null;
+      var analysis = report.analysis && typeof report.analysis === 'object' ? report.analysis : {};
+      var evidence = [];
+      var findings = [];
+      var recommendations = [];
+      var context = null;
+      if (standardNode && graph && Array.isArray(graph.edges)) graph.edges.forEach(function (edge) {
+        if (!edge) return;
+        if (edge.fromId === standardNode.id) {
+          var target = nodeById[edge.toId];
+          if (!target) return;
+          if (target.type === 'auditEvidence') { var targetEvidenceIds = Array.isArray(target.artifactIds) ? target.artifactIds : []; evidence.push({ label: target.label, status: target.status, evidence: target.evidence, notes: target.notes, artifactIds: targetEvidenceIds, attributionSource: target.attributionSource || (targetEvidenceIds.length ? 'audit-model' : null), attributionLinks: attributionLinks(target.id, 'evidenceFrom'), artifacts: evidenceArtifacts(targetEvidenceIds) }); }
+          else if (target.type === 'auditFinding') { var findingIds = Array.isArray(target.artifactIds) ? target.artifactIds : []; findings.push({ text: target.finding || target.label, artifactIds: findingIds, attributionSource: target.attributionSource || (findingIds.length ? 'audit-model' : null), attributionLinks: attributionLinks(target.id, 'findingFrom'), artifacts: evidenceArtifacts(findingIds) }); }
+          else if (target.type === 'auditRecommendation') recommendations.push(target.recommendation || target.label);
+        }
+        var otherId = edge.fromId === standardNode.id ? edge.toId : edge.toId === standardNode.id ? edge.fromId : null;
+        if (!otherId) return;
+        var contextTarget = nodeById[otherId];
+        if (!contextTarget || contextTarget.type !== 'standardsContext') return;
+        context = context || { record: standardNode.standardsContext, related: [] };
+        if (!context.related.some(function (item) { return item.id === contextTarget.id; })) context.related.push({
+          id: contextTarget.id,
+          label: contextTarget.label,
+          code: contextTarget.code,
+          kind: contextTarget.kind,
+          text: contextTarget.text,
+          sourceUrl: contextTarget.sourceUrl,
+          framework: contextTarget.framework,
+          relationType: edge.relationType || edge.type,
+          direction: edge.fromId === standardNode.id ? 'outgoing' : 'incoming'
+        });
+      });
+      if (standardNode && standardNode.standardsContext && !context) context = { record: standardNode.standardsContext, related: [] };
+      if (!evidence.length) [
+        { key: 'textAlignment', label: 'Text alignment' },
+        { key: 'activityAlignment', label: 'Activity alignment' },
+        { key: 'assessmentAlignment', label: 'Assessment alignment' }
+      ].forEach(function (dimension) {
+        var section = analysis[dimension.key] && typeof analysis[dimension.key] === 'object' ? analysis[dimension.key] : {};
+        var fallbackEvidenceIds = Array.isArray(section.artifactIds) ? section.artifactIds : []; evidence.push({ label: dimension.label, status: alignmentMapStatus(section.status), evidence: String(section.evidence || ''), notes: String(section.notes || ''), artifactIds: fallbackEvidenceIds, attributionSource: fallbackEvidenceIds.length ? (section.attributionSource || 'audit-model') : null, attributionLinks: [], artifacts: evidenceArtifacts(fallbackEvidenceIds) });
+      });
+      if (!findings.length) findings = findingEntries(report.gaps, report.findingAttributions);
+      if (!recommendations.length && report.adminRecommendation) recommendations = [String(report.adminRecommendation)];
+      return {
+        id: standardNode ? standardNode.id : 'alignment-standard-' + index,
+        label: standardNode ? standardNode.label : String(report.standard || ('Standard ' + (index + 1))),
+        status: standardNode ? standardNode.status : alignmentMapStatus(report.overallDetermination || report.status),
+        evidence: evidence,
+        findings: findings,
+        recommendations: recommendations,
+        context: context
+      };
+    });
+  }
+  function attributionSourceLabel(value) {
+    var source = String(value || '').trim().toLowerCase();
+    if (source === 'audit-model') return 'Audit model';
+    if (source === 'teacher') return 'Teacher';
+    if (source === 'deterministic-check') return 'Deterministic check';
+    if (source === 'unknown') return 'Unknown';
+    if (source === 'mixed') return 'Mixed relationship sources';
+    return null;
+  }
+  function itemAttributionSource(item) {
+    var links = item && Array.isArray(item.attributionLinks) ? item.attributionLinks : [];
+    var sources = [];
+    links.forEach(function (link) { var source = String(link && link.attributionSource || '').trim().toLowerCase(); if (source && sources.indexOf(source) === -1) sources.push(source); });
+    if (sources.length === 1) return sources[0];
+    if (sources.length > 1) return 'mixed';
+    return item && item.attributionSource;
+  }
+  function attributionReviewButton(link, artifact, onConfirmAttribution) {
+    if (!link || typeof onConfirmAttribution !== 'function') return null;
+    if (link.attributionSource === 'teacher') return <span className="ml-2 text-[10px] font-bold uppercase text-emerald-700">Teacher confirmed</span>;
+    return <button type="button" className="ml-2 rounded border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={'Confirm source: ' + (artifact.label || artifact.artifactId)} onClick={function () { onConfirmAttribution(link.edgeId); }}>Confirm source</button>;
+  }
+  function AlignmentEvidenceSources(item, onConfirmAttribution) {
+    var artifacts = item && Array.isArray(item.artifacts) ? item.artifacts : [];
+    if (!artifacts.length) return null;
+    var links = item && Array.isArray(item.attributionLinks) ? item.attributionLinks : [];
+    return <details className="mt-1 rounded border border-emerald-100 bg-emerald-50/50 p-2">
+      <summary className="cursor-pointer font-semibold text-emerald-900">{'Explicit artifact attribution (' + artifacts.length + ')'}</summary>
+      <p className="mt-1 text-emerald-900">These artifacts were explicitly named as evidence sources. This is a declared source link, not an independent verification.</p>
+      <p className="mt-1 text-emerald-900">Attribution source: {attributionSourceLabel(itemAttributionSource(item)) || 'Unspecified producer'}</p>
+      <ul className="mt-1 list-disc ml-5 text-emerald-950" aria-label="Evidence source artifacts">{artifacts.map(function (artifact, index) { var link = links.filter(function (candidate) { return candidate && candidate.artifactId === artifact.artifactId; })[0]; return <li key={String(artifact.artifactId || index)}><strong>Evidence source: </strong>{artifact.label || artifact.artifactId}{artifact.artifactType ? ' · ' + artifact.artifactType : ''}{attributionReviewButton(link, artifact, onConfirmAttribution)}</li>; })}</ul>
+    </details>;
+  }
+  function AlignmentFindingSources(item, onConfirmAttribution) {
+    var artifacts = item && Array.isArray(item.artifacts) ? item.artifacts : [];
+    if (!artifacts.length) return null;
+    var links = item && Array.isArray(item.attributionLinks) ? item.attributionLinks : [];
+    return <details className="mt-1 rounded border border-amber-100 bg-amber-50/50 p-2">
+      <summary className="cursor-pointer font-semibold text-amber-900">{'Explicit finding attribution (' + artifacts.length + ')'}</summary>
+      <p className="mt-1 text-amber-900">These artifacts were explicitly named as sources of this finding. This is a declared source link, not an independent verification.</p>
+      <p className="mt-1 text-amber-900">Attribution source: {attributionSourceLabel(itemAttributionSource(item)) || 'Unspecified producer'}</p>
+      <ul className="mt-1 list-disc ml-5 text-amber-950" aria-label="Finding source artifacts">{artifacts.map(function (artifact, index) { var link = links.filter(function (candidate) { return candidate && candidate.artifactId === artifact.artifactId; })[0]; return <li key={String(artifact.artifactId || index)}><strong>Finding source: </strong>{artifact.label || artifact.artifactId}{artifact.artifactType ? ' · ' + artifact.artifactType : ''}{attributionReviewButton(link, artifact, onConfirmAttribution)}</li>; })}</ul>
+    </details>;
+  }
+  function AlignmentMapScopeDetails(meta, fallbackScope) {
+    var scope = meta && meta.auditScope ? meta.auditScope : fallbackScope;
+    if (!scope || typeof scope !== 'object') return null;
+    var items = Array.isArray(scope.includedArtifacts) ? scope.includedArtifacts.slice(0, 100) : [];
+    if (!items.length && Array.isArray(scope.includedArtifactIds)) {
+      items = scope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id, title: 'Artifact ' + id, type: 'unknown' }; });
+    }
+    if (!items.length) return null;
+    var truncated = Array.isArray(scope.includedArtifacts) && scope.includedArtifacts.length > items.length;
+    return <details className="mt-2 rounded border border-indigo-200 bg-white/70 p-2 text-xs">
+      <summary className="cursor-pointer font-semibold text-indigo-900">{'Audited artifact scope (' + items.length + (truncated ? '+' : '') + ')'}</summary>
+      <p className="mt-1 text-indigo-900">These artifacts were included in the audit scope. This is scope provenance, not a claim that every artifact supports every standard.</p>
+      <p className="mt-1 text-indigo-900">Scope relationship source: Deterministic check of the selected artifact IDs.</p>
+      <ul className="mt-1 space-y-1 text-indigo-950" aria-label="Audited artifacts">{items.map(function (item, index) {
+        var artifact = item && typeof item === 'object' ? item : { id: item };
+        return <li key={String(artifact.id || index)}><strong>{artifact.title || 'Artifact ' + (index + 1)}</strong>{artifact.type ? ' · ' + artifact.type : ''}{artifact.id ? ' · ID ' + artifact.id : ''}{artifact.timestamp ? ' · ' + artifact.timestamp : ''}</li>;
+      })}</ul>
+    </details>;
+  }
+  function AlignmentEvidenceMap(p) {
+    var standards = p && p.standards;
+    var auditScope = p && p.auditScope;
+    var reports = standards && Array.isArray(standards.perStandard) ? standards.perStandard : [];
+    if (!reports.length) return null;
+    var graph = alignmentMapGraph(standards, auditScope, p && p.alignmentMapGraph);
+    var entries = alignmentMapEntries(standards, graph, auditScope);
+    var meta = graph && graph.meta && graph.meta.alignmentAudit;
+    var confirmAttribution = typeof (p && p.onConfirmAttribution) === 'function' && graph ? function (edgeId) { p.onConfirmAttribution({ edgeId: edgeId, graph: graph }); } : null;
+    var exportGraph = typeof (p && p.onExportAlignmentGraph) === 'function' && graph ? function () { p.onExportAlignmentGraph({ graph: graph }); } : null;
+    return <section id="audit-alignment-map" aria-labelledby="audit-alignment-map-heading" data-graph-version={graph && graph.version || 'audit-fallback'} className="mt-4 p-4 rounded-lg border border-indigo-200 bg-indigo-50">
+      <div className="flex items-center justify-between gap-3"><h3 id="audit-alignment-map-heading" className="text-base font-black text-indigo-950">Alignment Map</h3>{exportGraph && <button type="button" className="flex-shrink-0 rounded border border-indigo-300 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" aria-label="Export alignment graph JSON" onClick={exportGraph}>Export graph JSON</button>}</div>
+      <p className="mt-1 text-xs text-indigo-900">A readable graph view: each standard connects to text, activity, and assessment evidence, then to open findings and recommendations.</p>
+      {meta && <p className="mt-2 text-[11px] text-indigo-900">Grounding: {meta.provider || 'AlloFlow curriculum audit'}{meta.datasetVersion ? ' · Dataset ' + meta.datasetVersion : ''}</p>}{meta && meta.attributionConfirmations && meta.attributionConfirmations.count > 0 && <p role="status" className="mt-1 text-[11px] text-emerald-800">Teacher-confirmed relationships are saved in a derived graph snapshot; the original audit declaration remains available.</p>}
+      {meta && meta.standardsGraph && meta.standardsGraph.enabled && <p className="mt-1 text-[11px] text-indigo-900">{'Standards graph: ' + meta.standardsGraph.matchedTargets + '/' + entries.length + ' exact target' + (entries.length === 1 ? '' : 's') + ' connected · ' + meta.standardsGraph.contextNodes + ' context node' + (meta.standardsGraph.contextNodes === 1 ? '' : 's') + ' · ' + meta.standardsGraph.contextRelationships + ' relationship' + (meta.standardsGraph.contextRelationships === 1 ? '' : 's') + (meta.standardsGraph.truncatedTargets ? ' · bounded results truncated' : '')}</p>}
+      <AlignmentMapScopeDetails meta={meta} fallbackScope={auditScope} />
+      <ol className="mt-3 space-y-3" aria-label="Standards alignment map">{entries.map(function (entry, index) {
+        var headingId = 'audit-alignment-standard-' + index;
+        return <li key={entry.id} className="rounded-lg border border-indigo-200 bg-white p-3"><article aria-labelledby={headingId}><div className="flex items-start justify-between gap-3"><h4 id={headingId} className="font-bold text-slate-900">{entry.label}</h4><span className={'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status)} aria-label={'Overall status: ' + alignmentMapStatus(entry.status)}>{alignmentMapStatus(entry.status)}</span></div>
+          {entry.context && <div className="mt-2 rounded border border-indigo-100 bg-indigo-50 p-2 text-xs" aria-label={'Standards context for ' + entry.label}><div className="font-bold text-indigo-900">Standards context: {entry.context.record.code || entry.context.record.label || entry.label}{entry.context.record.framework ? ' · ' + entry.context.record.framework : ''}{entry.context.record.sourceUrl ? ' · Source verified' : ''}</div>{entry.context.related.length > 0 ? <ul className="mt-1 list-disc ml-5 text-indigo-950">{entry.context.related.slice(0, 12).map(function (item) { return <li key={item.id}><details><summary>{item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: '}{item.code ? item.code + ' · ' : ''}{item.label}{item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''}</summary>{item.text ? <p className="mt-1 text-indigo-900">{item.text}</p> : null}{item.sourceUrl ? <a className="mt-1 inline-block text-indigo-700 underline" href={item.sourceUrl} target="_blank" rel="noreferrer">Open source record</a> : null}</details></li>; })}</ul> : <p className="mt-1 text-indigo-900">No bounded graph neighbors returned.</p>}</div>}
+          <ul className="mt-2 space-y-2 text-xs" aria-label={'Evidence for ' + entry.label}>{entry.evidence.map(function (item, evidenceIndex) { return <li key={item.label + '-' + evidenceIndex} className="border-t border-slate-100 pt-2"><div className="flex items-center gap-2"><strong>{item.label}</strong><span className={'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ' + alignmentMapBadgeClass(item.status)}>{alignmentMapStatus(item.status)}</span></div><p className="mt-1 text-slate-700">{item.evidence || 'No evidence recorded.'}</p>{item.notes ? <p className="mt-1 text-slate-500 italic">Note: {item.notes}</p> : null}{AlignmentEvidenceSources(item, confirmAttribution)}</li>; })}</ul>
+          {entry.findings.length > 0 && <div className="mt-3 border-t border-rose-100 pt-2"><h5 className="text-xs font-bold text-rose-800">Open findings</h5><ul className="mt-1 list-disc ml-5 text-xs text-rose-900">{entry.findings.map(function (finding, findingIndex) { return <li key={findingIndex}>{finding && typeof finding === 'object' ? finding.text : String(finding || '')}{AlignmentFindingSources(finding, confirmAttribution)}</li>; })}</ul></div>}
+          {entry.recommendations.length > 0 && <div className="mt-3 border-t border-indigo-100 pt-2 text-xs"><strong className="text-indigo-800">Recommendation: </strong>{entry.recommendations.join(' ')}</div>}
+        </article></li>;
+      })}</ol>
+    </section>;
+  }
   function StandardsSection(p) {
     var s = p.standards;
     if (!s) return null;
@@ -108,7 +325,7 @@ var _lazyIcon = function (name) {
                     textAlign: 'center'
                   }}>{lbl + ' · ' + stat}</span><span className="text-slate-700 italic">{sec.evidence ? '"' + sec.evidence + '"' : '—'}</span></div>;
               })}{report && report.adminRecommendation && <div className="mt-2 pt-2 border-t border-slate-200"><span className="text-[10px] uppercase font-bold text-indigo-700">Recommendation: </span><span className="text-slate-800">{report.adminRecommendation}</span></div>}</div></details>;
-        })}</div>}{s.notes && <div className="mt-3 text-[11px] text-slate-500 italic">{s.notes}</div>}</ComprehensiveSection>;
+        })}</div>}{s.notes && <div className="mt-3 text-[11px] text-slate-500 italic">{s.notes}</div>}{AlignmentEvidenceMap({ standards: s, auditScope: p.auditScope, alignmentMapGraph: p.alignmentMapGraph, onConfirmAttribution: p.onConfirmAttribution, onExportAlignmentGraph: p.onExportAlignmentGraph })}</ComprehensiveSection>;
   }
   function VocabularySection(p) {
     var v = p.vocab;
@@ -751,7 +968,7 @@ var _lazyIcon = function (name) {
     if (!c) return null;
     return <section aria-labelledby="audit-findings-heading" className="mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"><div className="mb-6"><h2 id="audit-findings-heading" className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Per-Dimension Findings</h2><p className="text-sm text-slate-600">Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.</p></div>{c.auditScope && <div className="mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"><strong>Audit scope: </strong>{(c.auditScope.includedArtifactIds || []).length + ' artifact' + ((c.auditScope.includedArtifactIds || []).length === 1 ? '' : 's')}{(c.auditScope.includedTypes || []).length > 0 ? <span>{' · ' + c.auditScope.includedTypes.join(', ')}</span> : null}{c.auditScope.selectionMode ? <span>{' · Selection: ' + c.auditScope.selectionMode}</span> : null}{(c.auditScope.excludedArtifactCount || 0) > 0 ? <span>{' · ' + c.auditScope.excludedArtifactCount + ' eligible artifact' + (c.auditScope.excludedArtifactCount === 1 ? '' : 's') + ' outside scope'}</span> : null}{c.auditScope.contextTruncated ? <span> · AI context was truncated</span> : null}{c.auditScope.warnings && c.auditScope.warnings.length > 0 ? <ul className="list-disc ml-5 mt-1">{c.auditScope.warnings.map(function (w, i) { return <li key={i}>{w}</li>; })}</ul> : null}</div>}<div className="mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"><strong>Accessibility scope: </strong>These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required.</div>{c.differentiation && c.differentiation.audioCoverage && <AudioCoverageSummary audio={c.differentiation.audioCoverage} />}{c.overall && <ReadinessScoreCard overall={c.overall} />}{
       // Standards rendered first (most teacher-relevant)
-      c.standards ? (c.standards.computeFailed ? <FailedDimensionCard id="audit-standards" data={c.standards} label="Standards alignment" /> : c.standards.notApplicable ? <NotApplicableCard id="audit-standards" data={c.standards} label="Standards alignment" /> : <StandardsSection standards={c.standards} />) : <MissingDimensionCard id="audit-standards" label="Standards alignment" />}{c.vocabulary ? (c.vocabulary.computeFailed ? <FailedDimensionCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : c.vocabulary.notEvaluated ? <NotEvaluatedCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : <VocabularySection vocab={c.vocabulary} />) : <MissingDimensionCard id="audit-vocabulary" label="Vocabulary fit" />}{c.engagement ? (c.engagement.computeFailed ? <FailedDimensionCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : c.engagement.notEvaluated ? <NotEvaluatedCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : <EngagementSection eng={c.engagement} />) : <MissingDimensionCard id="audit-engagement" label="Engagement variety" />}{c.accessibility ? (c.accessibility.computeFailed ? <FailedDimensionCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : c.accessibility.notEvaluated ? <NotEvaluatedCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : <AccessibilitySection access={c.accessibility} />) : <MissingDimensionCard id="audit-accessibility" label="Content accessibility" />}{c.udl ? (c.udl.computeFailed ? <FailedDimensionCard id="audit-udl" data={c.udl} label="UDL principles" /> : c.udl.notEvaluated ? <NotEvaluatedCard id="audit-udl" data={c.udl} label="UDL principles" /> : <UdlSection udl={c.udl} />) : <MissingDimensionCard id="audit-udl" label="UDL principles" />}{c.accuracy ? (c.accuracy.computeFailed ? <FailedDimensionCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : c.accuracy.notEvaluated ? <NotEvaluatedCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : <AccuracySection acc={c.accuracy} />) : <MissingDimensionCard id="audit-accuracy" label="Content accuracy" />}{
+      c.standards ? (c.standards.computeFailed ? <FailedDimensionCard id="audit-standards" data={c.standards} label="Standards alignment" /> : c.standards.notApplicable ? <NotApplicableCard id="audit-standards" data={c.standards} label="Standards alignment" /> : <StandardsSection standards={c.standards} auditScope={c.auditScope} alignmentMapGraph={p.alignmentMapGraph} onConfirmAttribution={p.onConfirmAttribution} onExportAlignmentGraph={p.onExportAlignmentGraph} />) : <MissingDimensionCard id="audit-standards" label="Standards alignment" />}{c.vocabulary ? (c.vocabulary.computeFailed ? <FailedDimensionCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : c.vocabulary.notEvaluated ? <NotEvaluatedCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : <VocabularySection vocab={c.vocabulary} />) : <MissingDimensionCard id="audit-vocabulary" label="Vocabulary fit" />}{c.engagement ? (c.engagement.computeFailed ? <FailedDimensionCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : c.engagement.notEvaluated ? <NotEvaluatedCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : <EngagementSection eng={c.engagement} />) : <MissingDimensionCard id="audit-engagement" label="Engagement variety" />}{c.accessibility ? (c.accessibility.computeFailed ? <FailedDimensionCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : c.accessibility.notEvaluated ? <NotEvaluatedCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : <AccessibilitySection access={c.accessibility} />) : <MissingDimensionCard id="audit-accessibility" label="Content accessibility" />}{c.udl ? (c.udl.computeFailed ? <FailedDimensionCard id="audit-udl" data={c.udl} label="UDL principles" /> : c.udl.notEvaluated ? <NotEvaluatedCard id="audit-udl" data={c.udl} label="UDL principles" /> : <UdlSection udl={c.udl} />) : <MissingDimensionCard id="audit-udl" label="UDL principles" />}{c.accuracy ? (c.accuracy.computeFailed ? <FailedDimensionCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : c.accuracy.notEvaluated ? <NotEvaluatedCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : <AccuracySection acc={c.accuracy} />) : <MissingDimensionCard id="audit-accuracy" label="Content accuracy" />}{
       // Plan R+ new dimensions
       c.differentiation ? (c.differentiation.computeFailed ? <FailedDimensionCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : c.differentiation.notEvaluated ? <NotEvaluatedCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : <DifferentiationSection diff={c.differentiation} />) : <MissingDimensionCard id="audit-differentiation" label="Differentiation coverage" />}{c.cognitiveLoad ? (c.cognitiveLoad.computeFailed ? <FailedDimensionCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notApplicable ? <NotApplicableCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notEvaluated ? <NotEvaluatedCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : <CognitiveLoadSection load={c.cognitiveLoad} />) : <MissingDimensionCard id="audit-cognitiveLoad" label="Cognitive load / pacing" />}{c.culturalResponsiveness ? (c.culturalResponsiveness.computeFailed ? <FailedDimensionCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notApplicable ? <NotApplicableCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notEvaluated ? <NotEvaluatedCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : <CulturalResponsivenessSection cr={c.culturalResponsiveness} />) : <MissingDimensionCard id="audit-culturalResponsiveness" label="Cultural responsiveness" />}</section>;
   }
@@ -766,5 +983,5 @@ var _lazyIcon = function (name) {
       comprehensive && <ExecutiveSummary t={t} comp={comprehensive} standardsReportCount={reports.length} onApplyFixes={props.onApplyFixes} onGeneratePreCheck={props.onGeneratePreCheck} />}{
       // Per-dimension findings (standards is now the first dimension card; the
       // legacy top-level reports[] block has been folded into comprehensive.standards).
-      comprehensive && <ComprehensiveBlock comp={comprehensive} onApplyFixes={props.onApplyFixes} />}</section>;
+      comprehensive && <ComprehensiveBlock comp={comprehensive} alignmentMapGraph={comprehensive.alignmentMapGraph} onApplyFixes={props.onApplyFixes} onConfirmAttribution={props.onConfirmAttribution} onExportAlignmentGraph={props.onExportAlignmentGraph} />}</section>;
   }

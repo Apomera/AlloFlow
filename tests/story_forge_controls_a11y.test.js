@@ -74,20 +74,51 @@ describe('Story Forge draft recovery controls', () => {
 
   it('keeps the close dialog open on save failure and preserves the last confirmed draft', () => {
     expect(source).toContain('data-sf-save-close');
-    expect(source).toContain('if (persistDraftToStorage({ announce: true, allowDuringHydration: true }))');
+    expect(source).toContain('if (await persistDraftToStorage({ announce: true, allowDuringHydration: true }))');
     expect(source).toContain('close and keep the last confirmed draft');
     expect(source).not.toContain('setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY);');
   });
 
   it('uses the centralized sanitizer for browser restore and file import', () => {
-    expect(source).toContain('const data = sanitizeStoryForgeDraft(JSON.parse(saved));');
-    expect(source).toContain('const draft = applySanitizedDraft(savedDraftRef.current);');
-    expect(source).toContain('applySanitizedDraft({ ...d, phase: importedPhase });');
+    expect(source).toContain('legacyProject = sanitizeStoryForgeProject(JSON.parse(saved));');
+    expect(source).toContain('const draft = applySanitizedProject(savedDraftRef.current);');
+    expect(source).toContain('applySanitizedProject({');
+    expect(source).toContain('comicFlowReport: validated.comicFlowReport,');
     expect(source).toContain('language, customLanguage, storyShape');
     expect(source).toContain('genre, language, customLanguage, vocabTerms, storyShape');
   });
 });
 
+describe('Story Forge project vault and continuity controls', () => {
+  it('keeps the full project in an asset-aware vault and exposes portable package controls', () => {
+    expect(source).toContain('const sanitizeStoryForgeProject =');
+    expect(source).toContain('const storyForgeVaultRead =');
+    expect(source).toContain('const storyForgeVaultWrite =');
+    expect(source).toContain('const storyForgeVaultDelete =');
+    expect(source).toContain('const exportStoryForgeProject = async () =>');
+    expect(source).toContain('data-sf-project-vault');
+    expect(source).toContain("input.accept = '.json,.storyforge,.storyforge.json'");
+    expect(source).toContain('revisionHistory.slice(0, 6)');
+    expect(source).toContain('setLastDraftSavedAt(Date.parse(checkpoint.snapshot.savedAt) || Date.now());');
+    expect(source).toContain('setIsDirty(false);');
+  });
+
+  it('supports structured Cast & Continuity references and feeds them into prompts', () => {
+    expect(source).toContain('const sanitizeContinuityReferences =');
+    expect(source).toContain('const addContinuityReference =');
+    expect(source).toContain('const handleContinuityReferenceImage =');
+    expect(source).toContain('accept="image/*"');
+    expect(source).toContain('data-sf-cast-references');
+    expect(source).toContain('Cast reference: ${identity}');
+    expect(source).toContain('Cast references');
+  });
+
+  it('sets print-ready page dimensions and avoids corrupted standalone print glyphs', () => {
+    expect(source).toContain('@page{size:${storybookPrintSafety.format');
+    expect(source).toContain('Print-ready PDF</button>');
+    expect(source).not.toContain('ðŸ–¨ï¸Â¨Ã¯Â¸Â Print');
+  });
+});
 describe('Story Forge readiness focus routing', () => {
   it('routes production findings to exact fields and affected panels', () => {
     expect(source).toContain('const getReadinessFocusTarget = (issue) =>');

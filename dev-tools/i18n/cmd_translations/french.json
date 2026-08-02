@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio ouvert.",
   "cmd.open_video_studio_hint": "Enregistrez, sous-titrez et montez des démonstrations",
   "palette.ctx.videoStudio": "Ici — Video Studio",
-  "palette.close": "Fermer la palette de commandes"
+  "palette.close": "Fermer la palette de commandes",
+  "cmd.apply_lesson_template": "Commencer à partir d’un modèle enregistré",
+  "cmd.apply_lesson_template_done": "Commencé à partir de ",
+  "cmd.apply_lesson_template_hint": "Commence un nouveau plan avec l’un de vos modèles enregistrés",
+  "cmd.apply_lesson_template_missing": "Modèle introuvable : ",
+  "cmd.apply_lesson_template_which": "Quel modèle ?",
+  "cmd.rebuild_lesson_step": "Reconstruire une étape du plan",
+  "cmd.rebuild_lesson_step_done": "Reconstruction de l’étape ",
+  "cmd.rebuild_lesson_step_hint": "Régénère une seule ressource — indiquez le numéro de l’étape",
+  "cmd.rebuild_lesson_step_missing": "Cette étape est introuvable dans le plan.",
+  "cmd.rebuild_lesson_step_none": "le plan ne comporte encore aucune étape.",
+  "cmd.rebuild_lesson_step_which": "Quelle étape ?",
+  "cmd.run_lesson_blueprint": "Générer le plan de cours",
+  "cmd.run_lesson_blueprint_done": "Génération du plan — vous pouvez suivre chaque étape sur la carte.",
+  "cmd.run_lesson_blueprint_hint": "Génère toutes les ressources du plan actuel",
+  "cmd.cancelled": "Annulation demandée. L’opération en cours s’arrêtera lorsque son fournisseur la prendra en charge."
 }

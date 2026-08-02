@@ -4514,7 +4514,7 @@
               var strokeColor = pct >= 80 ? '#10b981' : (pct >= 60 ? '#38bdf8' : '#fbbf24');
               return h('div', { style: { padding: 20, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 16 } },
                 h('div', { style: { fontSize: 32, marginBottom: 8 } }, pct >= 80 ? '🧬' : pct >= 60 ? '🦠' : '🔬'),
-                h('svg', { role: 'img', 'aria-label': sel.name + ' quiz score ' + pct + ' percent', width: 100, height: 100, style: { transform: 'rotate(-90deg)' } },
+                h('svg', { role: 'img', 'aria-label': 'Microbiology quiz score ' + pct + ' percent', width: 100, height: 100, style: { transform: 'rotate(-90deg)' } },
                   h('circle', { cx: 50, cy: 50, r: radius, fill: 'none', stroke: '#0f172a', strokeWidth: 8 }),
                   h('circle', {
                     cx: 50,

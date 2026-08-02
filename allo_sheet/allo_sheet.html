@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
   <title>AlloSheet — Agentic Educator Spreadsheet</title>
-  <link rel="stylesheet" href="allo_sheet.css?v=7">
+  <link rel="stylesheet" href="allo_sheet.css?v=8">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to workbook</a>
@@ -225,6 +225,17 @@ Column 3</textarea>
             <p>Filter, group, and summarize the loaded table in this popup. These calculations do not enable AI, write back to the source, or change workbook cells.</p>
           </div>
         </div>
+        <section id="analysisProfilePanel" class="analysis-profile-panel" aria-labelledby="analysisProfileTitle">
+          <h3 id="analysisProfileTitle">Column profile</h3>
+          <p id="analysisProfileNarrative" class="analysis-profile-narrative" role="status" aria-live="polite" aria-atomic="true">Load a table to profile its columns.</p>
+          <div id="analysisProfileTableScroll" class="table-scroll" tabindex="0" role="region" aria-label="Scrollable column profile. Use arrow keys to review every column.">
+            <table id="analysisProfileTable">
+              <caption id="analysisProfileCaption">No column profile is available.</caption>
+              <thead id="analysisProfileHead"></thead>
+              <tbody id="analysisProfileBody"></tbody>
+            </table>
+          </div>
+        </section>
         <form id="analysisForm" class="analysis-form" novalidate>
           <fieldset>
             <legend>Optional row filter</legend>
@@ -292,7 +303,9 @@ Column 3</textarea>
           <div class="button-row">
             <button id="runAnalysisButton" type="submit" disabled>Run local analysis</button>
             <button id="clearAnalysisButton" type="button" class="quiet-button">Clear results</button>
+            <button id="downloadAnalysisButton" type="button" class="quiet-button" disabled>Download result CSV</button>
           </div>
+          <p id="analysisExportStatus" class="field-hint" role="status" aria-live="polite" aria-atomic="true">Run an analysis before downloading its grouped result.</p>
         </form>
         <p id="analysisNarrative" class="analysis-narrative" role="status" aria-live="polite" aria-atomic="true">Load a table to configure a local analysis.</p>
         <div id="analysisVisual" class="analysis-visual" aria-hidden="true" hidden></div>
@@ -389,9 +402,9 @@ Column 3</textarea>
     <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
   </footer>
 
-  <script src="allo_sheet_adapter.js?v=7"></script>
-  <script src="allo_sheet_analysis.js?v=7"></script>
-  <script src="allo_sheet_workspace.js?v=7"></script>
-  <script src="allo_sheet.js?v=7"></script>
+  <script src="allo_sheet_adapter.js?v=8"></script>
+  <script src="allo_sheet_analysis.js?v=8"></script>
+  <script src="allo_sheet_workspace.js?v=8"></script>
+  <script src="allo_sheet.js?v=8"></script>
 </body>
 </html>

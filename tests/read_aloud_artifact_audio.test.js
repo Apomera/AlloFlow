@@ -1,10 +1,11 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
+import { validAudioBase64 } from './lib/audio_fixtures.js';
 
 let createArtifactAudio;
 let Contract;
 
-const audioB64 = (text) => Buffer.from('audio:' + text).toString('base64');
+const audioB64 = (text) => validAudioBase64(192, 65 + (String(text).length % 20));
 
 beforeAll(() => {
   loadAlloModule('karaoke_audio_store_module.js');

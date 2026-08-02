@@ -305,7 +305,7 @@ function FaqView(props) {
     "aria-label": prepState.busy ? t('common.stop') || 'Stop saving TTS' : t('immersive.prepare_all') || 'Save TTS'
   }, prepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
   }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'), /*#__PURE__*/React.createElement("button", {

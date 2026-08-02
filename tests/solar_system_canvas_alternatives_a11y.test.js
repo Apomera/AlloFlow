@@ -48,6 +48,16 @@ describe('Solar System canvas alternatives', () => {
     }
   });
 
+  it('exposes keyboard shortcuts on the interactive Orrery canvas', () => {
+    const markup = renderTool('solarSystem', { solarSystem: { tutorialDismissed: true, orreryMode: true } });
+    document.body.innerHTML = markup;
+    const canvas = document.querySelector('canvas[role="application"]');
+    expect(canvas).not.toBeNull();
+    expect(canvas.getAttribute('aria-keyshortcuts')).toContain('ArrowLeft');
+    expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Home');
+    expect(canvas.getAttribute('aria-describedby')).toBe('orrery-canvas-help');
+    expect(document.getElementById('orrery-canvas-help')?.textContent).toContain('Keyboard: arrows pan');
+  });
   it('names the dynamic vehicle radar and excludes detached texture buffers', () => {
     const source = readFileSync(SOURCE, 'utf8');
     expect(source).toContain("miniMap.setAttribute('aria-label', 'Radar map showing the vehicle position and nearby points of interest')");

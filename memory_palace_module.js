@@ -193,7 +193,7 @@
       var lc = worldToRoomLocal(room, x, z);
       if (!lc) return;
       if (Math.abs(lc.lx) <= ROOM_W / 2 - pad && Math.abs(lc.lz) <= ROOM_D / 2 - pad) {
-        found = { room: room, roomKey: room.key, lx: lc.lx, lz: lc.lz };
+        found = { room: room, roomIdx: ri, roomKey: room.key, lx: lc.lx, lz: lc.lz };
       }
     });
     return found;
@@ -404,11 +404,30 @@
       : (data && data.memoryPalace && Array.isArray(data.memoryPalace.routeOrder) ? data.memoryPalace.routeOrder : null);
     route = normalizeRouteOrder(route, preferredRoute);
 
+    // Preserve explicit non-linear branch relationships for the overview scene.
+    // The authored walking route stays the source of truth; adjacent unlabeled
+    // fallback edges are omitted so these threads communicate meaning, not order.
+    var roomLinks = [], roomLinkSeen = {};
+    branches.forEach(function (branch, sourceIdx) {
+      var rawConnections = branch && Array.isArray(branch.connections) ? branch.connections : (branch && Array.isArray(branch.connectsTo) ? branch.connectsTo : []);
+      rawConnections.forEach(function (rawConnection) {
+        var target = typeof rawConnection === 'number' ? rawConnection : (rawConnection && rawConnection.target);
+        target = Number(target);
+        if (!isFinite(target) || Math.floor(target) !== target || target < 0 || target >= branches.length || target === sourceIdx) return;
+        var label = typeof rawConnection === 'object' && rawConnection && rawConnection.label != null ? String(rawConnection.label).trim() : '';
+        if (!label && target === sourceIdx + 1) return;
+        var a = Math.min(sourceIdx, target), b = Math.max(sourceIdx, target), key = a + '|' + b;
+        if (roomLinkSeen[key]) return;
+        roomLinkSeen[key] = true;
+        roomLinks.push({ fromRoomIdx: sourceIdx + 1, toRoomIdx: target + 1, label: label });
+      });
+    });
+
     var outerLaps = extraRooms.length ? Math.floor((extraRooms.length - 1) / OUTER_SLOTS) + 1 : 0;
     var reach = SPOKE_R + OUTER_GAP * outerLaps + ROOM_D / 2 + 80;   // radial extent, annexes included
     return {
       version: VERSION, title: main,
-      rooms: rooms, loci: loci, route: route,
+      rooms: rooms, loci: loci, route: route, roomLinks: roomLinks,
       bounds: { minX: -reach, maxX: reach, minZ: -reach, maxZ: reach, width: 2 * reach }
     };
   }
@@ -812,6 +831,30 @@
     return (rec && typeof rec.strength === 'number') ? rec.strength : null;
   }
 
+  // Room-level mastery is an overview aid, not a second score: it averages the
+  // per-locus retrieval strengths already recorded and reports coverage separately
+  // so a room with one reviewed locus never looks as confident as a fully reviewed
+  // room. PURE and intentionally recall-agnostic; the renderer decides when to show it.
+  function roomMasterySummary(palace, mastery) {
+    var rooms = (palace && Array.isArray(palace.rooms)) ? palace.rooms : [];
+    var loci = (palace && Array.isArray(palace.loci)) ? palace.loci : [];
+    var out = rooms.map(function () { return { count: 0, rated: 0, average: null, coverage: 0 }; });
+    loci.forEach(function (locus) {
+      if (!locus || locus.id === '__entry' || typeof locus.roomIdx !== 'number' || !out[locus.roomIdx]) return;
+      var bucket = out[locus.roomIdx];
+      bucket.count += 1;
+      var strength = masteryStrength(mastery, locus.id);
+      if (strength == null) return;
+      bucket.rated += 1;
+      bucket.average = (bucket.average == null ? 0 : bucket.average) + Math.max(0, Math.min(1, strength));
+    });
+    out.forEach(function (bucket) {
+      if (bucket.rated) bucket.average = bucket.average / bucket.rated;
+      bucket.coverage = bucket.count ? bucket.rated / bucket.count : 0;
+    });
+    return out;
+  }
+
   // Recall-safe announcement: room + position + the QUESTION — never the answer
   // or the mnemonic (both would leak through the live region / route list). The
   // decoration name IS included: it's the visible cue a sighted player sees at
@@ -1116,6 +1159,7 @@
       group.add(mesh);
     }
 
+    var _roomLights = {}, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {};
     palace.rooms.forEach(function (room, ri) {
       var cx = room.center.x, cz = room.center.z, ang = room.angle || 0;
       // Each room lives in its own group, positioned on its spoke and rotated to
@@ -1129,6 +1173,39 @@
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
         new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(theme.floorMul), roughness: 0.9 }));
       floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; rg.add(floor);
+      // Room-level mastery tint: a quiet, overview-only wash across the floor.
+      // It is deliberately created for every room but kept transparent until
+      // measured mastery exists, so late-loaded mastery data can light it up
+      // without rebuilding the scene.
+      if (ri > 0) {
+        try {
+          var heatmap = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W - 48, ROOM_D - 48),
+            new THREE.MeshBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+          heatmap.rotation.x = -Math.PI / 2;
+          heatmap.position.y = 1.2;
+          heatmap.renderOrder = 1;
+          rg.add(heatmap);
+          _roomHeatmaps[ri] = heatmap;
+        } catch (eHeatmap) {}
+      }
+      // Thin room footprint outline: subtle in the walk, stronger in overview,
+      // so the bird's-eye map preserves room grouping without adding walls.
+      if (ri > 0) {
+        try {
+          var outlineY = 1.9, outlinePad = 26;
+          var outlinePts = [
+            new THREE.Vector3(-ROOM_W / 2 + outlinePad, outlineY, -ROOM_D / 2 + outlinePad),
+            new THREE.Vector3(ROOM_W / 2 - outlinePad, outlineY, -ROOM_D / 2 + outlinePad),
+            new THREE.Vector3(ROOM_W / 2 - outlinePad, outlineY, ROOM_D / 2 - outlinePad),
+            new THREE.Vector3(-ROOM_W / 2 + outlinePad, outlineY, ROOM_D / 2 - outlinePad),
+            new THREE.Vector3(-ROOM_W / 2 + outlinePad, outlineY, -ROOM_D / 2 + outlinePad)
+          ];
+          var outlineGeo = new THREE.BufferGeometry().setFromPoints(outlinePts);
+          var outlineMat = new THREE.LineBasicMaterial({ color: new THREE.Color(room.color), transparent: true, opacity: 0.18, depthWrite: false });
+          rg.add(new THREE.Line(outlineGeo, outlineMat));
+          _roomOutlines[ri] = outlineMat;
+        } catch (eO) {}
+      }
       // Carpet runner from the doorway to the far wall — a soft accent path that
       // pulls the eye down the room's locus row (and doubles as wayfinding in the
       // open-world themes). Room-local, so it rotates with the spoke for free.
@@ -1165,16 +1242,99 @@
             var col = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, WALL_H * 0.88, 14), colMat);
             col.position.set(-ROOM_W / 2, WALL_H * 0.44, cs * (DOOR_W / 2 + 24)); rg.add(col);
           });
-          var lintel = new THREE.Mesh(new THREE.BoxGeometry(26, 24, DOOR_W + 92),
-            new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.65), roughness: 0.55, metalness: 0.2 }));
+          var portalMat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(room.color).multiplyScalar(0.65),
+            emissive: new THREE.Color(room.color),
+            emissiveIntensity: 0.04,
+            roughness: 0.55,
+            metalness: 0.2
+          });
+          var lintel = new THREE.Mesh(new THREE.BoxGeometry(26, 24, DOOR_W + 92), portalMat);
           lintel.position.set(-ROOM_W / 2, WALL_H * 0.88 + 12, 0); rg.add(lintel);
+          _roomPortals[ri] = portalMat;
         } catch (eD) {}
       }
       // Room accent light + name sprite (world coords; sprites always face the camera).
-      try { var pl = new THREE.PointLight(new THREE.Color(room.color), 0.55, ROOM_W * 1.4); pl.position.set(cx, WALL_H - 40, cz); group.add(pl); } catch (e) {}
+      // Keep references so navigation can gently emphasize the active room.
+      try {
+        var pl = new THREE.PointLight(new THREE.Color(room.color), 0.55, ROOM_W * 1.4);
+        pl.position.set(cx, WALL_H - 40, cz); group.add(pl);
+        _roomLights[ri] = pl;
+      } catch (e) {}
       var name = makeLabelSprite(THREE, room.label, room.color, 30);
-      name.position.set(cx, WALL_H + 40, cz); group.add(name);
+      name.position.set(cx, WALL_H + 40, cz);
+      name.userData = name.userData || {};
+      name.userData.roomBaseScale = name.scale.clone();
+      _roomLabels[ri] = name;
+      group.add(name);
     });
+
+    // Explicit branch relationships become overview-only glowing threads between
+    // rooms. The route remains authoritative; these threads add meaning without
+    // changing walking order, and recall hides them to preserve test integrity.
+    var crossLinkGroup = new THREE.Group();
+    var crossLinks = [];
+    var focusedCrossLink = -1;
+    crossLinkGroup.visible = false;
+    crossLinkGroup.renderOrder = 3;
+    group.add(crossLinkGroup);
+    (palace.roomLinks || []).forEach(function (link, linkIdx) {
+      try {
+        var fromRoom = palace.rooms[link.fromRoomIdx], toRoom = palace.rooms[link.toRoomIdx];
+        if (!fromRoom || !toRoom || !fromRoom.center || !toRoom.center) return;
+        var start = new THREE.Vector3(fromRoom.center.x, 14, fromRoom.center.z);
+        var end = new THREE.Vector3(toRoom.center.x, 14, toRoom.center.z);
+        var distance = start.distanceTo(end);
+        var mid = start.clone().lerp(end, 0.5);
+        mid.y += Math.min(260, 90 + distance * 0.055);
+        var linkGeo = new THREE.BufferGeometry().setFromPoints([start, mid, end]);
+        var linkColor = fromRoom.color || '#818cf8';
+        var haloMat = new THREE.LineBasicMaterial({ color: new THREE.Color(linkColor), transparent: true, opacity: 0.05, depthWrite: false });
+        var coreMat = new THREE.LineBasicMaterial({ color: new THREE.Color(linkColor), transparent: true, opacity: 0.16, depthWrite: false });
+        var halo = new THREE.Line(linkGeo, haloMat); halo.renderOrder = 3;
+        var core = new THREE.Line(linkGeo, coreMat); core.renderOrder = 4;
+        crossLinkGroup.add(halo); crossLinkGroup.add(core);
+        var linkLabel = null;
+        if (link.label) {
+          linkLabel = makeLabelSprite(THREE, link.label, linkColor, 16);
+          linkLabel.position.copy(mid); linkLabel.position.y += 18;
+          linkLabel.material.opacity = 0;
+          crossLinkGroup.add(linkLabel);
+        }
+        crossLinks.push({ from: link.fromRoomIdx, to: link.toRoomIdx, coreMat: coreMat, haloMat: haloMat, label: linkLabel, phase: linkIdx * 0.7 });
+      } catch (eCrossLink) {}
+    });
+    function _setCrossLinkState() {
+      if (!crossLinkGroup) return;
+      var show = !!overview && !recall && crossLinks.length > 0;
+      crossLinkGroup.visible = show;
+      crossLinks.forEach(function (link, linkIdx) {
+        var focused = linkIdx === focusedCrossLink;
+        var active = focused || link.from === _activeRoomIdx || link.to === _activeRoomIdx;
+        try {
+          link.coreMat.opacity = show ? (focused ? 0.98 : (active ? 0.72 : 0.16)) : 0;
+          link.haloMat.opacity = show ? (focused ? 0.26 : (active ? 0.15 : 0.04)) : 0;
+          if (link.label) { link.label.visible = show && active; link.label.material.opacity = show && active ? 0.92 : 0; }
+        } catch (eCrossState) {}
+      });
+      var focusedLink = show && focusedCrossLink >= 0 ? crossLinks[focusedCrossLink] : null;
+      Object.keys(_roomLabels).forEach(function (key) {
+        var roomIdx = Number(key);
+        var endpoint = !!focusedLink && (focusedLink.from === roomIdx || focusedLink.to === roomIdx);
+        var activeRoom = roomIdx === _activeRoomIdx;
+        try {
+          if (_roomLabels[key].material) _roomLabels[key].material.opacity = endpoint ? 1 : (activeRoom ? 1 : 0.62);
+          var base = _roomLabels[key].userData && _roomLabels[key].userData.roomBaseScale;
+          if (base) _roomLabels[key].scale.copy(base).multiplyScalar(endpoint ? 1.14 : (activeRoom ? 1.08 : 1));
+        } catch (eCrossLabel) {}
+      });
+      Object.keys(_roomOutlines).forEach(function (key) {
+        var roomIdx = Number(key);
+        var endpoint = !!focusedLink && (focusedLink.from === roomIdx || focusedLink.to === roomIdx);
+        var activeRoom = roomIdx === _activeRoomIdx;
+        try { _roomOutlines[key].opacity = endpoint ? 0.9 : (activeRoom ? (overview ? 0.68 : 0.32) : (overview ? 0.34 : 0.14)); } catch (eCrossOutline) {}
+      });
+    }
 
     // Entry plinth (the palace title) + a slow sparkle ring orbiting the orb.
     var _orbRing = null;
@@ -1223,7 +1383,7 @@
     // Loci frames. In recall mode the label is a '?' — the image (or the numbered
     // placard) is the CUE, the label is the ANSWER and stays hidden until earned.
     var recall = !!opts.recall;
-    var frameMeshes = [], frameRefs = {};
+    var frameMeshes = [], frameRefs = {}, _emptyBeacons = [];
     var texLoader = new THREE.TextureLoader();
     // Depth-relief "statues": when a locus has BOTH a color image and a grayscale depth
     // map (white = near), the flat frame canvas is swapped for a subdivided plane whose
@@ -1329,6 +1489,26 @@
       canvasMesh.position.z = 4;
       canvasMesh.userData.locusId = l.id;
       g2.add(canvasMesh);
+      // Empty spots keep the numbered card, plus a quiet animated beacon around
+      // its '+' affordance. It becomes more noticeable near the learner so the
+      // customization tray feels connected to the place in the palace.
+      var isEmptyLocus = !img && !((opts && opts.objects) || {})[l.id];
+      var emptyBeacon = null;
+      if (isEmptyLocus && !recall) {
+        try {
+          var beaconRing = new THREE.Mesh(new THREE.RingGeometry(13, 17, 28),
+            new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide }));
+          beaconRing.position.set(FRAME_W / 2 - 20, FRAME_H / 2 + 22, 13);
+          beaconRing.renderOrder = 13;
+          var beaconDot = new THREE.Mesh(new THREE.CircleGeometry(7, 24),
+            new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.45, depthWrite: false, side: THREE.DoubleSide }));
+          beaconDot.position.copy(beaconRing.position);
+          beaconDot.renderOrder = 13;
+          g2.add(beaconRing); g2.add(beaconDot);
+          emptyBeacon = { id: l.id, ring: beaconRing, dot: beaconDot, phase: (li % 7) * 0.8 };
+          _emptyBeacons.push(emptyBeacon);
+        } catch (eEmptyBeacon) {}
+      }
       // Item label under the frame ('?' while its answer is unearned in recall).
       var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
@@ -1343,6 +1523,7 @@
       } catch (eB) {}
       // Floor stop-ring at the camera stop — "stand here" wayfinding for the
       // free-roam walk and VR teleport, in the room accent color.
+      var stopRing = null;
       try {
         if (l.camPos) {
           var ring = new THREE.Mesh(new THREE.RingGeometry(18, 25, 28),
@@ -1350,6 +1531,7 @@
           ring.rotation.x = -Math.PI / 2;
           ring.position.set(l.camPos.x, 1.6, l.camPos.z);
           group.add(ring);
+          stopRing = ring;
         }
       } catch (eR) {}
       // Recall-driven dimming (study/review mode only — NEVER during a recall quiz,
@@ -1382,11 +1564,337 @@
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, idx: routeNo, hasImage: !!img, busy: false, empty: !img && !((opts && opts.objects) || {})[l.id] };
+      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, stopRing: stopRing, emptyBeacon: emptyBeacon, idx: routeNo, hasImage: !!img, busy: false, empty: isEmptyLocus };
       if (frameRefs[l.id].empty) borderMat.emissiveIntensity = 0.12;
       // Existing relief pair (reload path): upgrade the flat frame in place.
       if (img && depths[l.id]) applyRelief(frameRefs[l.id], routeNo, color, img, depths[l.id]);
     });
+
+    // Recreate the invitation when an existing locus is cleared after mount. This
+    // keeps the visual affordance in sync with live decorate/remove actions.
+    function _ensureEmptyBeacon(ref) {
+      if (!ref || ref.emptyBeacon || recall || !ref.group) return;
+      try {
+        var color = ref.baseColor || '#818cf8';
+        var beaconRing = new THREE.Mesh(new THREE.RingGeometry(13, 17, 28),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide }));
+        beaconRing.position.set(FRAME_W / 2 - 20, FRAME_H / 2 + 22, 13);
+        beaconRing.renderOrder = 13;
+        var beaconDot = new THREE.Mesh(new THREE.CircleGeometry(7, 24),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.45, depthWrite: false, side: THREE.DoubleSide }));
+        beaconDot.position.copy(beaconRing.position);
+        beaconDot.renderOrder = 13;
+        ref.group.add(beaconRing); ref.group.add(beaconDot);
+        ref.emptyBeacon = { id: ref.locus.id, ring: beaconRing, dot: beaconDot, phase: (ref.idx % 7) * 0.8 };
+        _emptyBeacons.push(ref.emptyBeacon);
+      } catch (eEmptyBeacon) {}
+    }
+
+    // Final-locus completion beacon: a larger, quiet floor glow appears only after
+    // the learner reaches the last authored stop in study mode. It adds closure
+    // without changing the route or revealing anything during recall.
+    var completionGlow = null;
+    try {
+      var finalId = palace.route[palace.route.length - 1];
+      var finalLocus = locusById(palace, finalId);
+      if (finalLocus && finalLocus.camPos) {
+        var finalRoom = palace.rooms[finalLocus.roomIdx];
+        var finalColor = finalRoom && finalRoom.color ? finalRoom.color : '#818cf8';
+        var finalGroup = new THREE.Group();
+        var finalRing = new THREE.Mesh(new THREE.RingGeometry(34, 43, 40),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(finalColor), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+        finalRing.rotation.x = -Math.PI / 2;
+        finalRing.position.set(finalLocus.camPos.x, 2.2, finalLocus.camPos.z);
+        finalGroup.add(finalRing);
+        var finalColumn = new THREE.Mesh(new THREE.CylinderGeometry(7, 11, 108, 16),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(finalColor), transparent: true, opacity: 0, depthWrite: false }));
+        finalColumn.position.set(finalLocus.camPos.x, 54, finalLocus.camPos.z);
+        finalGroup.add(finalColumn);
+        var finalCap = new THREE.Mesh(new THREE.ConeGeometry(19, 30, 5),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(finalColor), transparent: true, opacity: 0, depthWrite: false }));
+        finalCap.position.set(finalLocus.camPos.x, 116, finalLocus.camPos.z);
+        finalGroup.add(finalCap);
+        finalGroup.visible = false;
+        group.add(finalGroup);
+        completionGlow = { group: finalGroup, ring: finalRing, column: finalColumn, cap: finalCap, color: finalColor };
+      }
+    } catch (eCompletionGlow) {}
+
+    // Active-locus arrival halo: a low, color-matched floor wash makes the
+    // selected frame feel like a destination, not just a highlighted border.
+    // It is study-only so recall, overview, free-roam, and VR remain uncluttered.
+    var arrivalHalo = null;
+    try {
+      var arrivalGroup = new THREE.Group();
+      var arrivalOuter = new THREE.Mesh(new THREE.RingGeometry(30, 39, 40),
+        new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+      arrivalOuter.rotation.x = -Math.PI / 2;
+      arrivalOuter.position.y = 2.3;
+      var arrivalInner = new THREE.Mesh(new THREE.CircleGeometry(18, 32),
+        new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+      arrivalInner.rotation.x = -Math.PI / 2;
+      arrivalInner.position.y = 2.05;
+      arrivalGroup.add(arrivalOuter); arrivalGroup.add(arrivalInner);
+      arrivalGroup.visible = false;
+      group.add(arrivalGroup);
+      arrivalHalo = { group: arrivalGroup, outer: arrivalOuter, inner: arrivalInner, targetId: null };
+    } catch (eArrivalHalo) {}
+    function _setArrivalHaloState() {
+      if (!arrivalHalo) return;
+      var ref = !recall && !overview && !freeMode && !state.xrActive ? _hlRef : null;
+      var locus = ref && ref.locus;
+      if (!locus || !locus.camPos) {
+        arrivalHalo.group.visible = false;
+        arrivalHalo.outer.material.opacity = 0;
+        arrivalHalo.inner.material.opacity = 0;
+        arrivalHalo.targetId = null;
+        return;
+      }
+      arrivalHalo.group.visible = true;
+      if (arrivalHalo.targetId !== locus.id) {
+        arrivalHalo.group.position.set(locus.camPos.x, 0, locus.camPos.z);
+        arrivalHalo.targetId = locus.id;
+      }
+      var accent = ref.baseColor || '#818cf8';
+      try {
+        arrivalHalo.outer.material.color.set(accent);
+        arrivalHalo.inner.material.color.set(accent);
+        arrivalHalo.outer.material.opacity = reduce ? 0.15 : 0.1;
+        arrivalHalo.inner.material.opacity = reduce ? 0.07 : 0.045;
+      } catch (eArrivalState) {}
+    }
+
+    // Free-roam route beacon: exploration stays open, but the next authored stop
+    // remains visible as a gentle floor ring + vertical light column. Recall mode
+    // never shows it because the next locus is an answer leak there.
+    var nextStopBeacon = null;
+    try {
+      var nextBeaconGroup = new THREE.Group();
+      var nextBeaconRing = new THREE.Mesh(new THREE.RingGeometry(23, 30, 32),
+        new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.56, depthWrite: false, side: THREE.DoubleSide }));
+      nextBeaconRing.rotation.x = -Math.PI / 2;
+      nextBeaconRing.position.y = 1.8;
+      var nextBeaconColumn = new THREE.Mesh(new THREE.CylinderGeometry(5, 8, 76, 12),
+        new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.24, depthWrite: false }));
+      nextBeaconColumn.position.y = 38;
+      var nextBeaconCap = new THREE.Mesh(new THREE.ConeGeometry(15, 26, 4),
+        new THREE.MeshBasicMaterial({ color: 0xbfdbfe, transparent: true, opacity: 0.82, depthWrite: false }));
+      nextBeaconCap.position.y = 86;
+      nextBeaconGroup.add(nextBeaconRing); nextBeaconGroup.add(nextBeaconColumn); nextBeaconGroup.add(nextBeaconCap);
+      nextBeaconGroup.visible = false;
+      group.add(nextBeaconGroup);
+      nextStopBeacon = { group: nextBeaconGroup, ring: nextBeaconRing, column: nextBeaconColumn, cap: nextBeaconCap, targetIdx: -1 };
+    } catch (eNextBeacon) {}
+    function _setNextStopBeaconState() {
+      if (!nextStopBeacon) return;
+      var targetIdx = curIdx + 1;
+      var show = !!freeMode && !overview && !recall && targetIdx < palace.route.length;
+      nextStopBeacon.group.visible = show;
+      if (!show) { nextStopBeacon.targetIdx = -1; return; }
+      var target = locusById(palace, palace.route[targetIdx]);
+      if (!target || !target.camPos) { nextStopBeacon.group.visible = false; nextStopBeacon.targetIdx = -1; return; }
+      if (nextStopBeacon.targetIdx === targetIdx) return;
+      nextStopBeacon.group.position.set(target.camPos.x, 0, target.camPos.z);
+      var room = target.roomIdx >= 0 ? palace.rooms[target.roomIdx] : null;
+      var color = room && room.color ? room.color : '#93c5fd';
+      try {
+        nextStopBeacon.ring.material.color.set(color);
+        nextStopBeacon.column.material.color.set(color);
+        nextStopBeacon.cap.material.color.set(color);
+      } catch (eNextColor) {}
+      nextStopBeacon.targetIdx = targetIdx;
+    }
+
+    // Guided-study route tether: a restrained, floor-level arc connects the
+    // current stop to the next authored locus. It gives the learner a spatial
+    // sense of direction without revealing answers in recall or competing with
+    // the bird's-eye overview/free-roam beacon.
+    var guidedTether = null;
+    try {
+      var tetherGroup = new THREE.Group();
+      var tetherLineMat = new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0, depthWrite: false });
+      var tetherLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()
+      ]), tetherLineMat);
+      tetherLine.renderOrder = 3;
+      var tetherArrowMat = new THREE.MeshBasicMaterial({ color: 0xbfdbfe, transparent: true, opacity: 0, depthWrite: false });
+      var tetherArrow = new THREE.Mesh(new THREE.ConeGeometry(9, 22, 4), tetherArrowMat);
+      tetherArrow.renderOrder = 4;
+      tetherGroup.add(tetherLine); tetherGroup.add(tetherArrow);
+      tetherGroup.visible = false;
+      group.add(tetherGroup);
+      guidedTether = { group: tetherGroup, line: tetherLine, arrow: tetherArrow, lineMat: tetherLineMat, arrowMat: tetherArrowMat, targetIdx: -1 };
+    } catch (eGuidedTether) {}
+    function _setGuidedTetherState() {
+      if (!guidedTether) return;
+      var targetIdx = curIdx + 1;
+      var show = !recall && !overview && !freeMode && !state.xrActive && targetIdx < palace.route.length;
+      guidedTether.group.visible = show;
+      if (!show) {
+        guidedTether.lineMat.opacity = 0;
+        guidedTether.arrowMat.opacity = 0;
+        guidedTether.targetIdx = -1;
+        return;
+      }
+      var from = locusById(palace, palace.route[curIdx]);
+      var to = locusById(palace, palace.route[targetIdx]);
+      if (!from || !to || !from.camPos || !to.camPos) {
+        guidedTether.group.visible = false;
+        guidedTether.targetIdx = -1;
+        return;
+      }
+      if (guidedTether.targetIdx !== targetIdx) {
+        var start = new THREE.Vector3(from.camPos.x, 5.4, from.camPos.z);
+        var end = new THREE.Vector3(to.camPos.x, 5.4, to.camPos.z);
+        var delta = end.clone().sub(start);
+        var distance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+        var mid = start.clone().lerp(end, 0.5);
+        mid.y = Math.min(84, 18 + distance * 0.04);
+        try { if (guidedTether.line.geometry) guidedTether.line.geometry.dispose(); } catch (eTetherGeo) {}
+        guidedTether.line.geometry = new THREE.BufferGeometry().setFromPoints([start, mid, end]);
+        guidedTether.arrow.position.copy(start).lerp(end, 0.72);
+        guidedTether.arrow.position.y = 10;
+        guidedTether.arrow.rotation.x = Math.PI / 2;
+        guidedTether.arrow.rotation.y = Math.atan2(delta.x, delta.z);
+        var targetRoom = palace.rooms[to.roomIdx];
+        var tetherColor = targetRoom && targetRoom.color ? targetRoom.color : '#93c5fd';
+        try { guidedTether.lineMat.color.set(tetherColor); guidedTether.arrowMat.color.set(tetherColor); } catch (eTetherColor) {}
+        guidedTether.targetIdx = targetIdx;
+      }
+    }
+
+    // Overview-only walking-order guide: floor-level segments connect the authored
+    // camera stops, while small arrowheads preserve direction without cluttering
+    // the normal guided walk or recall scene.
+    var routeGuide = new THREE.Group();
+    var routeGuideSegments = [], routeGuideMarkers = [];
+    routeGuide.visible = false;
+    routeGuide.renderOrder = 4;
+    group.add(routeGuide);
+    try {
+      for (var _routeIndex = 1; _routeIndex < palace.route.length; _routeIndex++) {
+        var _from = locusById(palace, palace.route[_routeIndex - 1]);
+        var _to = locusById(palace, palace.route[_routeIndex]);
+        if (!_from || !_to || !_from.camPos || !_to.camPos) continue;
+        var _start = new THREE.Vector3(_from.camPos.x, 3.4, _from.camPos.z);
+        var _end = new THREE.Vector3(_to.camPos.x, 3.4, _to.camPos.z);
+        var _delta = _end.clone().sub(_start);
+        var _length = Math.max(1, Math.sqrt(_delta.x * _delta.x + _delta.z * _delta.z));
+        var _roomForRoute = palace.rooms[_to.roomIdx];
+        var _routeColor = (_roomForRoute && _roomForRoute.color) || '#818cf8';
+        var _segGeo = new THREE.BufferGeometry().setFromPoints([_start, _end]);
+        var _segMat = new THREE.LineBasicMaterial({ color: new THREE.Color(_routeColor), transparent: true, opacity: 0.22, depthWrite: false });
+        var _seg = new THREE.Line(_segGeo, _segMat);
+        _seg.renderOrder = 4;
+        routeGuide.add(_seg);
+        var _marker = new THREE.Mesh(
+          new THREE.ConeGeometry(11, 28, 3),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(_routeColor), transparent: true, opacity: 0.5, depthWrite: false })
+        );
+        _marker.position.set(_start.x + _delta.x * 0.72, 5.2, _start.z + _delta.z * 0.72);
+        _marker.rotation.x = Math.PI / 2;
+        _marker.rotation.y = Math.atan2(_delta.x, _delta.z);
+        _marker.renderOrder = 5;
+        routeGuide.add(_marker);
+        routeGuideSegments.push({ index: _routeIndex, mat: _segMat });
+        routeGuideMarkers.push({ index: _routeIndex, mat: _marker.material });
+      }
+    } catch (eRoute) {}
+    function _setRouteGuideState() {
+      routeGuide.visible = !!overview;
+      routeGuideSegments.forEach(function (segment) {
+        var active = segment.index === curIdx;
+        try { segment.mat.opacity = overview ? (active ? 0.82 : 0.22) : 0; } catch (e) {}
+      });
+      routeGuideMarkers.forEach(function (marker) {
+        var active = marker.index === curIdx;
+        try { marker.mat.opacity = overview ? (active ? 0.95 : 0.5) : 0; } catch (e) {}
+      });
+    }
+    // Mastery rings are intentionally quiet in the walk; the overview legend
+    // makes their meaning explicit without relying on color alone.
+    var masteryLegend = null, masteryLegendCurrent = null;
+    // Overview journey map: a compact, clickable route index that mirrors the
+    // palace's room grouping without making learners decode the 3D geometry.
+    var journeyMap = null, journeyMapTitle = null, journeyMapMeta = null, journeyMapStops = [], journeyMapLinks = [];
+    function _setJourneyMapState() {
+      if (!journeyMap) return;
+      var show = !!overview && !routeVisible && !recall && journeyMapStops.length > 0;
+      journeyMap.hidden = !show;
+      if (!show) return;
+      var totalStops = Math.max(0, palace.route.length - 1);
+      journeyMapMeta.textContent = curIdx === 0
+        ? _tr(t, 'memory_palace.journey_map_start', 'Entrance · choose a stop to preview')
+        : _tr(t, 'memory_palace.journey_map_progress', 'Stop {current} of {total}').replace('{current}', String(curIdx)).replace('{total}', String(totalStops));
+      journeyMapStops.forEach(function (stop) {
+        var active = stop.index === curIdx;
+        var color = stop.color || '#818cf8';
+        stop.button.setAttribute('aria-current', active ? 'step' : 'false');
+        stop.button.style.backgroundColor = active ? color : '#0f172a';
+        stop.button.style.borderColor = active ? '#ffffff' : color;
+        stop.button.style.color = active ? '#0f172a' : '#f8fafc';
+        stop.button.style.transform = active ? 'scale(1.08)' : 'scale(1)';
+        stop.button.style.boxShadow = active ? ('0 0 0 3px ' + color + '55') : 'none';
+      });
+      journeyMapLinks.forEach(function (connection) {
+        var focused = connection.index === focusedCrossLink;
+        connection.button.setAttribute('aria-pressed', focused ? 'true' : 'false');
+        connection.button.style.backgroundColor = focused ? '#312e81' : '#0f172a';
+        connection.button.style.borderColor = focused ? '#c4b5fd' : (connection.color || '#64748b');
+        connection.button.style.boxShadow = focused ? ('0 0 0 3px ' + (connection.color || '#818cf8') + '55') : 'none';
+        connection.button.style.transform = focused ? 'translateX(2px)' : 'translateX(0)';
+      });
+    }
+    function _focusCrossLink(index) {
+      if (!overview || recall || index < 0 || index >= crossLinks.length) return;
+      focusedCrossLink = focusedCrossLink === index ? -1 : index;
+      _setCrossLinkState();
+      _setJourneyMapState();
+      try {
+        var source = palace.rooms[crossLinks[index].from] || {};
+        var target = palace.rooms[crossLinks[index].to] || {};
+        live.textContent = focusedCrossLink === index
+          ? ('Connection focused: ' + (source.label || 'Room') + ' to ' + (target.label || 'room'))
+          : 'Connection focus cleared.';
+      } catch (e) {}
+    }
+    function _firstStopForRoom(roomIdx) {
+      for (var ri = 1; ri < palace.route.length; ri++) {
+        var roomLocus = locusById(palace, palace.route[ri]);
+        if (roomLocus && roomLocus.roomIdx === roomIdx) return ri;
+      }
+      return roomIdx === 0 ? 0 : -1;
+    }
+    function _jumpToRoom(roomIdx) {
+      var targetIndex = _firstStopForRoom(roomIdx);
+      if (targetIndex >= 0) {
+        focusedCrossLink = -1;
+        goTo(targetIndex);
+      }
+    }
+    function _masteryDataAvailable() {
+      if (recall || !opts.mastery || typeof opts.mastery !== 'object') return false;
+      try {
+        return Object.keys(opts.mastery).some(function (id) { return masteryStrength(opts.mastery, id) != null; });
+      } catch (e) { return false; }
+    }
+    function _masteryStatusLabel(strength) {
+      if (strength == null) return '';
+      if (strength >= 0.8) return _tr(t, 'memory_palace.mastery_strong', 'Strong');
+      if (strength >= 0.5) return _tr(t, 'memory_palace.mastery_developing', 'Developing');
+      return _tr(t, 'memory_palace.mastery_needs_practice', 'Needs practice');
+    }
+    function _setMasteryLegendState() {
+      if (!masteryLegend) return;
+      var show = !!overview && _masteryDataAvailable();
+      masteryLegend.hidden = !show;
+      if (!show || !masteryLegendCurrent) return;
+      var activeStrength = _hlRef && _hlRef.locus ? masteryStrength(opts.mastery, _hlRef.locus.id) : null;
+      masteryLegendCurrent.hidden = activeStrength == null;
+      masteryLegendCurrent.textContent = activeStrength == null
+        ? ''
+        : _tr(t, 'memory_palace.mastery_current', 'Current: {status}').replace('{status}', _masteryStatusLabel(activeStrength));
+    }
 
     // Rebuild frame captions when the app's reading typography changes. Canvas
     // textures do not inherit CSS, so without this observer a user could enlarge
@@ -1489,6 +1997,7 @@
           try {
             if (typeof recipe.rotY === 'number' && !isNaN(recipe.rotY)) fig.rotation.y += recipe.rotY * Math.PI / 180;
             _placeFig(l, fig);
+            if (palace.route[curIdx] === l.id) stopTargets(curIdx);
           } catch (e) {}
         }).catch(function () { delete _sculptedIds[l.id]; });   // failed load frees the claim for a retry
         return;
@@ -1499,6 +2008,7 @@
         if (!fig) return;
         _sculptedIds[l.id] = true;
         _placeFig(l, fig);
+        if (palace.route[curIdx] === l.id) stopTargets(curIdx);
       } catch (e) {}
     }
     function _disposeObj(o) {
@@ -1533,6 +2043,7 @@
           ref.mat.displacementMap = null; ref.mat.needsUpdate = true;
         }
         if (oldMap && oldMap.dispose && oldMap !== tx) { try { oldMap.dispose(); } catch (e) {} }   // free the placeholder card
+        if (palace.route[curIdx] === id) stopTargets(curIdx);
       } catch (e) {}
     };
     // Clear a single locus back to its numbered card + no sculpture (the Decorate
@@ -1549,6 +2060,7 @@
           if (old && old.dispose && old !== ref.mat.map) { try { old.dispose(); } catch (eO) {} }
           ref.hasImage = false; ref.busy = false; ref.empty = true;
           if (ref.borderMat) ref.borderMat.emissiveIntensity = 0.12;
+          _ensureEmptyBeacon(ref);
         } catch (e) {}
       }
       var sr = _sculptRefs[id];
@@ -1563,12 +2075,14 @@
       if (!ref || !img) return;
       ref.hasImage = true; ref.busy = false; ref.empty = false;
       if (!depth || !applyRelief(ref, ref.idx || 0, ref.baseColor, img, depth)) state.setLocusImage(id, img);
+      if (palace.route[curIdx] === id) stopTargets(curIdx);
     };
     state.setLocusObject = function (id, recipe) {
       var l = locusById(palace, id);
       if (l && recipe) {
         if (frameRefs[id]) { frameRefs[id].busy = false; frameRefs[id].empty = false; }
         placeSculpture(l, recipe);
+        if (palace.route[curIdx] === id) stopTargets(curIdx);
       }
     };
     state.setLocusBusy = function (id, busy) {
@@ -1601,6 +2115,7 @@
       _sculptSeq[id] = (_sculptSeq[id] || 0) + 1;
       if (recipe && frameRefs[id]) frameRefs[id].empty = false;
       placeSculpture(l, recipe);
+      if (palace.route[curIdx] === id) stopTargets(curIdx);
     };
 
     // Landmarks: one giant primitive structure per room (opts.landmarks =
@@ -1664,13 +2179,61 @@
     // writes; the burst loop only runs while a celebration is alive.
     function _animateFlourish() {
       try {
+        var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
         if (!reduce) {
-          var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
           for (var si = 0; si < _starMats.length; si++) {
             _starMats[si].opacity = 0.42 + 0.18 * Math.sin(now * 0.0012 + (_starMats[si].userData.phase || 0));
           }
           if (_motes) { _motes.rotation.y += 0.00035; _motes.position.y = Math.sin(now * 0.0005) * 6; }
           if (_orbRing) { _orbRing.rotation.y += 0.012; }
+        }
+        if (completionGlow && completionGlow.group.visible) {
+          var completionWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.0032));
+          completionGlow.ring.material.opacity = reduce ? 0.22 : (0.14 + 0.14 * completionWave);
+          completionGlow.ring.scale.setScalar(reduce ? 1.04 : (1.02 + 0.1 * completionWave));
+          completionGlow.column.material.opacity = reduce ? 0.18 : (0.13 + 0.09 * completionWave);
+          completionGlow.cap.material.opacity = reduce ? 0.72 : (0.58 + 0.24 * completionWave);
+          if (!reduce) completionGlow.cap.rotation.y += 0.01;
+        }
+        if (guidedTether && guidedTether.group.visible) {
+          var tetherWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.0036));
+          guidedTether.lineMat.opacity = reduce ? 0.18 : (0.1 + 0.1 * tetherWave);
+          guidedTether.arrowMat.opacity = reduce ? 0.62 : (0.42 + 0.22 * tetherWave);
+          guidedTether.arrow.scale.setScalar(reduce ? 1 : (0.96 + 0.1 * tetherWave));
+        }
+        if (arrivalHalo && arrivalHalo.group.visible) {
+          var arrivalWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.0031));
+          arrivalHalo.outer.material.opacity = reduce ? 0.15 : (0.07 + 0.08 * arrivalWave);
+          arrivalHalo.outer.scale.setScalar(reduce ? 1.02 : (1.01 + 0.09 * arrivalWave));
+          arrivalHalo.inner.material.opacity = reduce ? 0.07 : (0.028 + 0.035 * arrivalWave);
+          arrivalHalo.inner.scale.setScalar(reduce ? 1 : (0.96 + 0.08 * arrivalWave));
+        }
+        if (nextStopBeacon && nextStopBeacon.group.visible) {
+          var nextWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.0035));
+          try {
+            nextStopBeacon.ring.material.opacity = reduce ? 0.62 : (0.44 + 0.26 * nextWave);
+            nextStopBeacon.ring.scale.setScalar(reduce ? 1.08 : 1.02 + 0.14 * nextWave);
+            if (!reduce) nextStopBeacon.ring.rotation.z += 0.012;
+            nextStopBeacon.column.material.opacity = reduce ? 0.3 : (0.18 + 0.12 * nextWave);
+            nextStopBeacon.cap.material.opacity = reduce ? 0.82 : (0.64 + 0.2 * nextWave);
+            nextStopBeacon.cap.position.y = 82 + (reduce ? 0 : 7 * nextWave);
+          } catch (eNextTick) {}
+        }
+        for (var eb = 0; eb < _emptyBeacons.length; eb++) {
+          var beacon = _emptyBeacons[eb];
+          var beaconRef = frameRefs[beacon.id];
+          var beaconVisible = !!beaconRef && beaconRef.empty && !recall;
+          var nearby = _nearEmptyId === beacon.id;
+          var beaconWave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.004 + beacon.phase));
+          try {
+            beacon.ring.visible = beaconVisible;
+            beacon.dot.visible = beaconVisible;
+            beacon.ring.material.opacity = beaconVisible ? (nearby ? 0.56 + 0.24 * beaconWave : 0.16 + 0.12 * beaconWave) : 0;
+            beacon.dot.material.opacity = beaconVisible ? (nearby ? 0.88 : 0.5) : 0;
+            var ringScale = nearby ? (reduce ? 1.12 : 1.06 + 0.18 * beaconWave) : (reduce ? 1 : 1 + 0.07 * beaconWave);
+            beacon.ring.scale.setScalar(ringScale);
+            beacon.dot.scale.setScalar(nearby && !reduce ? 1 + 0.08 * beaconWave : 1);
+          } catch (eBeaconTick) {}
         }
         for (var b = _bursts.length - 1; b >= 0; b--) {
           var burst = _bursts[b]; burst.age += 1;
@@ -1735,19 +2298,109 @@
       freeYaw = Math.atan2(dx, dz);
       freePitch = _cl(dy / len, -0.99, 0.99); freePitch = Math.asin(freePitch);
       overview = false; freeMode = true;
+      _setFocusCardState();
+      _setCompletionCardState();
+      _setNextStopBeaconState();
+      _setGuidedTetherState();
+      _setArrivalHaloState();
     }
 
+    // Content-aware camera framing keeps the featured cue legible when a locus
+    // gains a sculpture, a long caption, or a relief surface. The authored rail
+    // remains the baseline; this only widens the shot and recenters the focus.
+    var _adaptiveBox = new THREE.Box3();
+    var _adaptiveFrameCenter = new THREE.Vector3();
+    var _adaptiveBaseCam = new THREE.Vector3();
+    var _adaptiveForward = new THREE.Vector3();
+    var _adaptiveRight = new THREE.Vector3();
+    var _adaptiveFocus = new THREE.Vector3();
+    var _adaptiveLookOffset = new THREE.Vector3();
+    var _adaptiveObjectCenter = new THREE.Vector3();
+    var _adaptiveObjectSize = new THREE.Vector3();
+    function _textureAspect(ref) {
+      try {
+        var image = ref && ref.mat && ref.mat.map && ref.mat.map.image;
+        var width = image && (image.naturalWidth || image.videoWidth || image.width);
+        var height = image && (image.naturalHeight || image.videoHeight || image.height);
+        return width && height ? width / height : 1;
+      } catch (e) { return 1; }
+    }
+    function _applyAdaptiveFraming(l, ref) {
+      if (!l || !ref) return;
+      try {
+        _adaptiveFrameCenter.set(l.framePos.x, l.framePos.y, l.framePos.z);
+        _adaptiveBaseCam.copy(camPosT);
+        _adaptiveForward.copy(_adaptiveBaseCam).sub(_adaptiveFrameCenter);
+        var horizontal = Math.sqrt(_adaptiveForward.x * _adaptiveForward.x + _adaptiveForward.z * _adaptiveForward.z);
+        if (horizontal < 1) _adaptiveForward.set(0, 0, 1);
+        else _adaptiveForward.set(_adaptiveForward.x / horizontal, 0, _adaptiveForward.z / horizontal);
+        var baseDistance = Math.max(CAM_BACK, _adaptiveBaseCam.distanceTo(_adaptiveFrameCenter));
+        _adaptiveRight.set(_adaptiveForward.z, 0, -_adaptiveForward.x);
+        _adaptiveLookOffset.copy(lookT).sub(_adaptiveFrameCenter);
+
+        var minLateral = -FRAME_W / 2, maxLateral = FRAME_W / 2;
+        var minVertical = -(FRAME_H / 2 + 54), maxVertical = FRAME_H / 2 + 32;
+        var captionLength = l.label ? String(l.label).length : 0;
+        var captionWidth = Math.min(300, Math.max(FRAME_W, 80 + captionLength * 7));
+        minLateral = Math.min(minLateral, -captionWidth / 2);
+        maxLateral = Math.max(maxLateral, captionWidth / 2);
+
+        var sculpt = _sculptRefs[l.id];
+        var hasObjectBounds = false;
+        _adaptiveBox.makeEmpty();
+        if (sculpt && sculpt.fig) { _adaptiveBox.setFromObject(sculpt.fig); hasObjectBounds = !_adaptiveBox.isEmpty(); }
+        if (sculpt && sculpt.ped) {
+          var pedestalBox = new THREE.Box3().setFromObject(sculpt.ped);
+          if (hasObjectBounds) _adaptiveBox.union(pedestalBox);
+          else { _adaptiveBox.copy(pedestalBox); hasObjectBounds = !_adaptiveBox.isEmpty(); }
+        }
+        if (hasObjectBounds) {
+          _adaptiveBox.getCenter(_adaptiveObjectCenter);
+          _adaptiveBox.getSize(_adaptiveObjectSize);
+          var objectOffset = _adaptiveObjectCenter.clone().sub(_adaptiveFrameCenter);
+          var lateralOffset = objectOffset.dot(_adaptiveRight);
+          var objectHalfWidth = (Math.abs(_adaptiveRight.x) * _adaptiveObjectSize.x + Math.abs(_adaptiveRight.z) * _adaptiveObjectSize.z) / 2 + 18;
+          minLateral = Math.min(minLateral, lateralOffset - objectHalfWidth);
+          maxLateral = Math.max(maxLateral, lateralOffset + objectHalfWidth);
+          var verticalOffset = _adaptiveObjectCenter.y - _adaptiveFrameCenter.y;
+          var objectHalfHeight = _adaptiveObjectSize.y / 2 + 18;
+          minVertical = Math.min(minVertical, verticalOffset - objectHalfHeight);
+          maxVertical = Math.max(maxVertical, verticalOffset + objectHalfHeight);
+        }
+
+        var aspect = _textureAspect(ref);
+        if (ref.hasImage && aspect > 1.7) maxLateral = Math.max(maxLateral, FRAME_W * 0.62);
+        if (ref.hasImage && aspect > 0 && aspect < 0.58) maxVertical = Math.max(maxVertical, FRAME_H * 0.62);
+        var spanWidth = Math.max(FRAME_W, maxLateral - minLateral);
+        var spanHeight = Math.max(FRAME_H + 86, maxVertical - minVertical);
+        var spanRatio = Math.max(spanWidth / FRAME_W, spanHeight / (FRAME_H + 86));
+        var distanceScale = 1 + Math.min(0.72, Math.max(0, spanRatio - 1) * 0.42);
+        if (ref.mat && ref.mat.displacementMap) distanceScale = Math.min(1.8, distanceScale * 1.06);
+
+        var lateralCenter = (minLateral + maxLateral) / 2;
+        var verticalCenter = (minVertical + maxVertical) / 2;
+        _adaptiveFocus.copy(_adaptiveFrameCenter).add(_adaptiveRight.multiplyScalar(lateralCenter));
+        _adaptiveFocus.y += verticalCenter;
+        camPosT.copy(_adaptiveFocus).add(_adaptiveForward.multiplyScalar(baseDistance * distanceScale));
+        camPosT.y = _adaptiveBaseCam.y;
+        lookT.copy(_adaptiveFocus).add(_adaptiveLookOffset);
+      } catch (e) {
+        // A malformed texture/object must never break guided navigation.
+      }
+    }
     function stopTargets(idx) {
       var id = palace.route[idx];
       var l = locusById(palace, id);
       if (!l) return;
       camPosT.set(l.camPos.x, l.camPos.y, l.camPos.z);
       lookT.set(l.lookAt.x, l.lookAt.y, l.lookAt.z);
+      _applyAdaptiveFraming(l, frameRefs[id]);
     }
     function applyOverview() {
       var cx = (palace.bounds.minX + palace.bounds.maxX) / 2;
       camPosT.set(cx, Math.max(1400, palace.bounds.width * 0.75), ROOM_D * 1.9);
       lookT.set(cx, 0, 0);
+      try { _setRoomOutlineMode(); _setRouteGuideState(); _setCrossLinkState(); _setRoomHeatmapState(); _setMasteryLegendState(); _setGuidedTetherState(); _setArrivalHaloState(); } catch (e) {}
     }
     stopTargets(curIdx);
     camPos.copy(camPosT); look.copy(lookT);
@@ -1759,6 +2412,7 @@
 
     function announce(idx) {
       try { live.textContent = recall ? describeLocusForRecall(palace, palace.route[idx], t2, decor) : describeLocusForSR(palace, palace.route[idx], t2, decor); } catch (e) {}
+      _setFocusCardState();
       if (typeof opts.onLocusChange === 'function') {
         try { opts.onLocusChange(locusById(palace, palace.route[idx]), idx, palace.route.length); } catch (e) {}
       }
@@ -1865,47 +2519,333 @@
 
     // Current-locus glow: the active frame's border emissive pulses gently so the
     // student always sees WHICH locus the walk is on (reduced motion ⇒ steady glow).
-    var _hlRef = null;
-    function _setHighlight(id) {
-      if (_hlRef && _hlRef.borderMat) {
-        try { _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? 0.72 : (_hlRef.empty ? 0.12 : 0); } catch (e) {}
+    var _activeRoomIdx = -1;
+    var _freeStopRef = null;
+    var freeNavCue = null, freeNavText = null, freeReturnBtn = null, freeNavCompass = null, freeNavCompassArrow = null, roomBadge = null, roomBadgeText = null, roomBadgeDot = null, focusCard = null, focusCardKicker = null, focusCardTitle = null, focusCardMeta = null, focusCardCue = null, completionCard = null, completionCardTitle = null, completionCardMeta = null, completionCardDismiss = null, completionWalkBtn = null, completionOverviewBtn = null, completionCardDismissed = false, _freeCueKey = '', _freeCueHeading = -99;
+    function _setRingActive(ref, active) {
+      var ring = ref && ref.stopRing;
+      if (!ring || !ring.material) return;
+      try {
+        ring.material.opacity = active ? 0.58 : 0.16;
+        ring.scale.setScalar(active ? 1.08 : 1);
+      } catch (e) {}
+    }
+    function _resetBorder(ref) {
+      if (!ref || !ref.borderMat) return;
+      try { ref.borderMat.emissiveIntensity = ref.busy ? 0.72 : (ref.empty ? 0.12 : 0); } catch (e) {}
+    }
+    function _setRoomOutlineMode() {
+      Object.keys(_roomOutlines).forEach(function (key) {
+        var outline = _roomOutlines[key];
+        var active = Number(key) === _activeRoomIdx;
+        try { outline.opacity = active ? (overview ? 0.68 : 0.32) : (overview ? 0.34 : 0.14); } catch (e) {}
+      });
+    }
+    function _roomMasteryColor(value) {
+      var color = new THREE.Color('#475569');
+      if (value == null) return color;
+      try { color.setHSL(Math.max(0, Math.min(1, value)) * 0.33, 0.78, 0.48); } catch (e) {}
+      return color;
+    }
+    function _setRoomHeatmapState() {
+      if (!Object.keys(_roomHeatmaps).length) return;
+      var show = !!overview && !recall && _masteryDataAvailable();
+      var summary = roomMasterySummary(palace, opts.mastery);
+      Object.keys(_roomHeatmaps).forEach(function (key) {
+        var roomIdx = Number(key), heatmap = _roomHeatmaps[key];
+        var bucket = summary[roomIdx] || { average: null, coverage: 0 };
+        var measured = bucket.average != null;
+        var active = roomIdx === _activeRoomIdx;
+        try {
+          heatmap.visible = show && measured;
+          heatmap.material.color.copy(_roomMasteryColor(bucket.average));
+          heatmap.material.opacity = show && measured ? (0.06 + 0.16 * bucket.coverage + (active ? 0.05 : 0)) : 0;
+          heatmap.userData = { average: bucket.average, coverage: bucket.coverage, roomIdx: roomIdx };
+        } catch (eHeatState) {}
+      });
+    }
+    function _setRoomBadgeState() {
+      if (!roomBadge) return;
+      var ref = freeMode ? _freeStopRef : _hlRef;
+      var roomIdx = _activeRoomIdx;
+      if (ref && ref.locus && typeof ref.locus.roomIdx === 'number') roomIdx = ref.locus.roomIdx;
+      var room = roomIdx >= 0 ? palace.rooms[roomIdx] : null;
+      if (!room) { roomBadge.hidden = true; return; }
+      var label = room.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
+      roomBadge.hidden = false;
+      roomBadgeText.textContent = label;
+      roomBadgeDot.style.backgroundColor = room.color || '#64748b';
+      roomBadgeDot.style.boxShadow = room.color ? ('0 0 0 2px ' + room.color + '44') : '0 0 0 2px rgba(148,163,184,0.35)';
+      roomBadge.setAttribute('aria-label', _tr(t, 'memory_palace.room_current', 'Current room: {room}').replace('{room}', label));
+      roomBadge.title = label;
+    }
+    function _setFocusCardState() {
+      if (!focusCard) return;
+      var l = _hlRef && _hlRef.locus ? _hlRef.locus : locusById(palace, palace.route[curIdx]);
+      var show = !recall && !overview && !freeMode && !state.xrActive && !!l;
+      focusCard.hidden = !show;
+      if (!show) return;
+      var idx = Math.max(0, palace.route.indexOf(l.id));
+      var total = Math.max(0, palace.route.length - 1);
+      var room = l.roomIdx >= 0 ? palace.rooms[l.roomIdx] : null;
+      var roomLabel = room && room.label ? room.label : _tr(t, 'memory_palace.hub', 'Hub plaza');
+      var entry = l.id === '__entry';
+      var accent = room && room.color ? room.color : '#818cf8';
+      focusCardKicker.textContent = entry ? _tr(t, 'memory_palace.focus_entry', 'Palace entrance') : _tr(t, 'memory_palace.focus_current', 'Current locus');
+      focusCardTitle.textContent = l.label || _tr(t, 'memory_palace.focus_stop', 'Stop {index}').replace('{index}', String(idx));
+      focusCardMeta.textContent = entry
+        ? _tr(t, 'memory_palace.focus_start', 'Start of the route')
+        : roomLabel + ' · ' + _tr(t, 'memory_palace.focus_progress', 'Stop {current} of {total}').replace('{current}', String(idx)).replace('{total}', String(total));
+      focusCardCue.textContent = entry
+        ? _tr(t, 'memory_palace.focus_begin', 'Choose a locus to begin your route.')
+        : (l.mnemonic
+          ? _tr(t, 'memory_palace.focus_picture', 'Picture: {mnemonic}').replace('{mnemonic}', l.mnemonic)
+          : _tr(t, 'memory_palace.focus_follow', 'Follow the highlighted frame to place this idea.'));
+      focusCard.style.borderColor = accent;
+      focusCard.style.boxShadow = '0 12px 30px ' + accent + '33';
+      focusCard.setAttribute('aria-label', focusCardTitle.textContent + '. ' + focusCardMeta.textContent);
+    }
+    function _setCompletionGlowState() {
+      if (!completionGlow) return;
+      var total = Math.max(0, palace.route.length - 1);
+      var complete = !recall && !overview && !freeMode && !state.xrActive && total > 0 && curIdx >= total;
+      completionGlow.group.visible = complete;
+      if (!complete) {
+        completionGlow.ring.material.opacity = 0;
+        completionGlow.column.material.opacity = 0;
+        completionGlow.cap.material.opacity = 0;
+      } else if (reduce) {
+        completionGlow.ring.material.opacity = 0.22;
+        completionGlow.column.material.opacity = 0.18;
+        completionGlow.cap.material.opacity = 0.72;
       }
+    }
+    function _setCompletionCardState() {
+      if (!completionCard) return;
+      var total = Math.max(0, palace.route.length - 1);
+      var complete = !recall && !overview && !freeMode && !state.xrActive && total > 0 && curIdx >= total;
+      completionCard.hidden = !complete || completionCardDismissed;
+      if (complete) {
+        var finalLocus = locusById(palace, palace.route[palace.route.length - 1]);
+        completionCardTitle.textContent = _tr(t, 'memory_palace.complete_title', 'Route complete');
+        completionCardMeta.textContent = _tr(t, 'memory_palace.complete_meta', 'You walked all {total} loci. Final stop: {label}.').replace('{total}', String(total)).replace('{label}', finalLocus && finalLocus.label ? finalLocus.label : _tr(t, 'memory_palace.complete_final', 'final locus'));
+        completionCard.setAttribute('aria-label', completionCardTitle.textContent + '. ' + completionCardMeta.textContent);
+      }
+      _setCompletionGlowState();
+    }
+    function _setActiveRoom(roomIdx) {
+      _activeRoomIdx = typeof roomIdx === 'number' ? roomIdx : -1;
+      Object.keys(_roomLights).forEach(function (key) {
+        var light = _roomLights[key];
+        try { light.intensity = Number(key) === _activeRoomIdx ? 0.78 : 0.42; } catch (e) {}
+      });
+      Object.keys(_roomLabels).forEach(function (key) {
+        var label = _roomLabels[key], active = Number(key) === _activeRoomIdx;
+        try {
+          if (label.material) label.material.opacity = active ? 1 : 0.62;
+          var base = label.userData && label.userData.roomBaseScale;
+          if (base) label.scale.copy(base).multiplyScalar(active ? 1.08 : 1);
+        } catch (e) {}
+      });
+      Object.keys(_roomPortals).forEach(function (key) {
+        var portal = _roomPortals[key];
+        try { portal.emissiveIntensity = Number(key) === _activeRoomIdx ? 0.42 : 0.04; } catch (e) {}
+      });
+      _setRoomOutlineMode();
+      _setCrossLinkState();
+      _setRoomHeatmapState();
+      _setRoomBadgeState();
+      _setFocusCardState();
+      _setArrivalHaloState();
+    }
+    function _updateFreeCue(roomIdx, ref) {
+      if (!freeNavCue) return;
+      if (!freeMode) {
+        freeNavCue.hidden = true;
+        if (freeReturnBtn) freeReturnBtn.hidden = true;
+        if (freeNavCompass) freeNavCompass.hidden = true;
+        _freeCueKey = '';
+        _freeCueHeading = -99;
+        return;
+      }
+      var room = roomIdx >= 0 ? palace.rooms[roomIdx] : null;
+      var stop = ref && ref.locus ? ref.locus.label : '';
+      var target = ref && ref.locus ? ref.locus : locusById(palace, palace.route[curIdx]);
+      var headingBin = -99, headingGlyph = '';
+      if (target && target.camPos) {
+        var tx = target.camPos.x - camPos.x, tz = target.camPos.z - camPos.z;
+        if (Math.abs(tx) + Math.abs(tz) > 40) {
+          var bearing = Math.atan2(tx, tz), delta = bearing - freeYaw;
+          while (delta > Math.PI) delta -= Math.PI * 2;
+          while (delta < -Math.PI) delta += Math.PI * 2;
+          headingBin = (Math.round(delta / (Math.PI / 4)) + 8) % 8;
+          headingGlyph = ['\u2191', '\u2197', '\u2192', '\u2198', '\u2193', '\u2199', '\u2190', '\u2196'][headingBin];
+        }
+      }
+      var key = String(roomIdx) + '|' + (ref && ref.locus ? ref.locus.id : '') + '|' + String(headingBin);
+      if (_freeCueKey === key && !freeNavCue.hidden) return;
+      _freeCueKey = key;
+      _freeCueHeading = headingBin;
+      freeNavCue.hidden = false;
+      if (freeReturnBtn) freeReturnBtn.hidden = false;
+      var roomLabel = room && room.label ? room.label : _tr(t, 'memory_palace.hub', 'Hub plaza');
+      var context = stop
+        ? (_tr(t, 'memory_palace.free_near', 'Near {label}').replace('{label}', stop))
+        : _tr(t, 'memory_palace.free_walk', 'Free-roam');
+      var direction = headingGlyph
+        ? ' · ' + _tr(t, 'memory_palace.free_toward', 'toward route')
+        : '';
+      if (freeNavCompass) {
+        freeNavCompass.hidden = !headingGlyph;
+        if (headingGlyph && freeNavCompassArrow) freeNavCompassArrow.style.transform = 'rotate(' + String(headingBin * 45) + 'deg)';
+      }
+      if (freeNavText) freeNavText.textContent = roomLabel + ' · ' + context + direction;
+      try {
+        freeNavCue.style.borderColor = room && room.color ? room.color : '#64748b';
+        freeNavCue.style.boxShadow = room && room.color ? ('0 8px 24px ' + room.color + '33') : '0 8px 24px rgba(2,6,23,0.35)';
+      } catch (e) {}
+    }
+    var _hlRef = null;
+    function _setFreeStop(ref) {
+      if (_freeStopRef === ref) return;
+      if (_freeStopRef) { _setRingActive(_freeStopRef, false); _resetBorder(_freeStopRef); }
+      if (_hlRef && _hlRef !== ref) { _setRingActive(_hlRef, false); _resetBorder(_hlRef); }
+      _freeStopRef = ref || null;
+      _setRingActive(_freeStopRef, true);
+      if (_freeStopRef && _freeStopRef.borderMat && reduce) {
+        try { _freeStopRef.borderMat.emissiveIntensity = _freeStopRef.busy ? 0.72 : 0.45; } catch (e) {}
+      }
+    }
+    function _syncFreeRoomContext() {
+      if (!freeMode) return;
+      var spot = roomAtPoint(palace, camPos.x, camPos.z, 22);
+      var roomIdx = spot && typeof spot.roomIdx === 'number' ? spot.roomIdx : -1;
+      if (roomIdx !== _activeRoomIdx) _setActiveRoom(roomIdx);
+      var nearest = null, nearestD = 300 * 300;
+      Object.keys(frameRefs).forEach(function (key) {
+        var ref = frameRefs[key], l = ref && ref.locus;
+        if (!l || l.roomIdx !== roomIdx || !l.camPos) return;
+        var dx = camPos.x - l.camPos.x, dz = camPos.z - l.camPos.z;
+        var d = dx * dx + dz * dz;
+        if (d <= nearestD) { nearest = ref; nearestD = d; }
+      });
+      _setFreeStop(nearest);
+      _updateFreeCue(roomIdx, nearest);
+    }
+    function _setHighlight(id) {
+      _updateFreeCue(-1, null);
+      if (_freeStopRef) { _setRingActive(_freeStopRef, false); _freeStopRef = null; }
+      _resetBorder(_hlRef);
+      Object.keys(frameRefs).forEach(function (key) { _setRingActive(frameRefs[key], false); });
       _hlRef = frameRefs[id] || null;
+      var nextRoomIdx = _hlRef && _hlRef.locus ? _hlRef.locus.roomIdx : -1;
+      _setActiveRoom(nextRoomIdx);
+      _setRingActive(_hlRef, true);
       if (_hlRef && _hlRef.borderMat && reduce) {
         try { _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? 0.72 : 0.45; } catch (e) {}
       }
     }
     function _pulseHl() {
-      if (reduce || !_hlRef || !_hlRef.borderMat) return;
+      var focusRef = freeMode ? _freeStopRef : _hlRef;
+      var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
+      var wave = reduce ? 0.5 : (0.5 + 0.5 * Math.sin(now * 0.004));
       try {
-        var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
-        var wave = 0.5 + 0.5 * Math.sin(now * 0.004);
-        _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? (0.62 + 0.18 * wave) : (0.24 + 0.2 * wave);
+        if (focusRef && focusRef.stopRing && focusRef.stopRing.material) {
+          focusRef.stopRing.material.opacity = reduce ? 0.58 : (0.42 + 0.22 * wave);
+          focusRef.stopRing.scale.setScalar(reduce ? 1.08 : (1.04 + 0.08 * wave));
+        }
+        var activeLight = _roomLights[_activeRoomIdx];
+        if (activeLight && !reduce) activeLight.intensity = 0.68 + 0.16 * wave;
+        var activePortal = _roomPortals[_activeRoomIdx];
+        if (activePortal && !reduce) activePortal.emissiveIntensity = 0.32 + 0.16 * wave;
+        var activeOutline = _roomOutlines[_activeRoomIdx];
+        if (activeOutline && !reduce) activeOutline.opacity = overview ? (0.54 + 0.14 * wave) : (0.24 + 0.12 * wave);
+        var activeHeatmap = _roomHeatmaps[_activeRoomIdx];
+        if (activeHeatmap && activeHeatmap.visible && overview && !reduce) activeHeatmap.material.opacity = Math.min(0.32, 0.2 + 0.08 * wave);
+        if (overview && !reduce) {
+          routeGuideSegments.forEach(function (segment) {
+            if (segment.index === curIdx) { try { segment.mat.opacity = 0.62 + 0.2 * wave; } catch (e) {} }
+          });
+          routeGuideMarkers.forEach(function (marker) {
+            if (marker.index === curIdx) { try { marker.mat.opacity = 0.78 + 0.17 * wave; } catch (e) {} }
+          });
+          crossLinks.forEach(function (link, linkIdx) {
+            if (linkIdx === focusedCrossLink || link.from === _activeRoomIdx || link.to === _activeRoomIdx) { try { link.coreMat.opacity = linkIdx === focusedCrossLink ? (0.84 + 0.14 * wave) : (0.58 + 0.18 * wave); link.haloMat.opacity = linkIdx === focusedCrossLink ? (0.18 + 0.1 * wave) : (0.1 + 0.08 * wave); } catch (eCrossPulse) {} }
+          });
+        }
+        if (reduce || !focusRef || !focusRef.borderMat) return;
+        focusRef.borderMat.emissiveIntensity = focusRef.busy ? (0.62 + 0.18 * wave) : (0.24 + 0.2 * wave);
       } catch (e) {}
     }
     function goTo(idx, skipAnnounce) {
       try { if (typeof _xrHideBank === 'function') _xrHideBank(); } catch (eB) {}   // navigating away closes an open VR answer bank
       curIdx = Math.max(0, Math.min(palace.route.length - 1, idx));
       overview = false; freeMode = false; moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;   // guided nav returns to the rails
+      focusedCrossLink = -1;
+      completionCardDismissed = false;
+      _setNextStopBeaconState();
+      _setGuidedTetherState();
       stopTargets(curIdx);
       _setHighlight(palace.route[curIdx]);
+      _setRouteGuideState();
+      _setCrossLinkState();
+      _setMasteryLegendState();
       if (reduce) { camPos.copy(camPosT); look.copy(lookT); }
       updateHud();
       if (!skipAnnounce) announce(curIdx);
     }
     _setHighlight(palace.route[curIdx]);   // glow the starting locus too
+    _setRouteGuideState();
+    _setGuidedTetherState();
+    _setArrivalHaloState();
 
     // ── DOM chrome: prev/next + progress + overview ──
     var hud = document.createElement('div');
-    hud.style.cssText = 'position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);background:rgba(2,6,23,0.9);border:1px solid #475569;border-radius:999px;padding:6px 10px;color:#e2e8f0;';
+    hud.style.cssText = 'position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom,14px));transform:translateX(-50%);z-index:8;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(4px,1vw,8px);width:max-content;max-width:calc(100% - 24px);max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;background:rgba(2,6,23,0.9);border:1px solid #475569;border-radius:999px;padding:6px 10px;color:#e2e8f0;';
     function mkBtn(txt, label, fn) {
       var b = document.createElement('button');
       b.textContent = txt; b.setAttribute('aria-label', label);
-      b.style.cssText = 'border:1px solid #475569;background:#1e293b;color:#e2e8f0;border-radius:999px;min-width:44px;min-height:44px;padding:8px 13px;font-size:13px;font-weight:800;cursor:pointer;';
+      b.style.cssText = 'border:1px solid #475569;background:#1e293b;color:#e2e8f0;border-radius:999px;min-width:44px;min-height:44px;padding:8px 13px;font-size:0.8125rem;font-weight:800;white-space:nowrap;flex:0 0 auto;cursor:pointer;';
       b.onclick = fn; return b;
     }
     var prevBtn = mkBtn('◀', _tr(t, 'memory_palace.prev', 'Previous locus'), function () { goTo(curIdx - 1); });
-    var progress = document.createElement('span'); progress.style.cssText = 'font-size:12px;font-weight:800;min-width:76px;text-align:center;';
+    focusCard = document.createElement('section');
+    focusCard.hidden = true;
+    focusCard.setAttribute('role', 'group');
+    focusCard.setAttribute('aria-label', _tr(t, 'memory_palace.focus_card', 'Current locus focus'));
+    focusCard.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;width:min(340px,calc(100% - 24px));box-sizing:border-box;padding:11px 13px 12px;border:1px solid #818cf8;border-radius:14px;background:rgba(2,6,23,0.94);color:#f8fafc;box-shadow:0 12px 30px rgba(2,6,23,0.3);pointer-events:none;transition:border-color 180ms ease,box-shadow 180ms ease;';
+    focusCardKicker = document.createElement('div');
+    focusCardKicker.style.cssText = 'color:#c4b5fd;font-size:clamp(0.625rem,1.5vw,0.75rem);font-weight:900;letter-spacing:0.06em;line-height:1.2;text-transform:uppercase;';
+    focusCard.appendChild(focusCardKicker);
+    focusCardTitle = document.createElement('div');
+    focusCardTitle.style.cssText = 'margin-top:4px;color:#ffffff;font-size:clamp(0.95rem,2.2vw,1.2rem);font-weight:950;line-height:1.18;overflow-wrap:anywhere;';
+    focusCard.appendChild(focusCardTitle);
+    focusCardMeta = document.createElement('div');
+    focusCardMeta.style.cssText = 'margin-top:4px;color:#cbd5e1;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:800;line-height:1.25;overflow-wrap:anywhere;';
+    focusCard.appendChild(focusCardMeta);
+    focusCardCue = document.createElement('div');
+    focusCardCue.style.cssText = 'margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,0.35);color:#f8fafc;font-size:clamp(0.6875rem,1.55vw,0.8125rem);font-weight:750;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;';
+    focusCard.appendChild(focusCardCue);
+    var roomBadge = document.createElement('span');
+    roomBadge.hidden = true;
+    roomBadge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:min(34vw,160px);padding:5px 9px;border:1px solid #475569;border-radius:999px;background:#172033;color:#f8fafc;font-size:0.75rem;font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;';
+    roomBadgeDot = document.createElement('span');
+    roomBadgeDot.setAttribute('aria-hidden', 'true');
+    roomBadgeDot.style.cssText = 'width:8px;height:8px;border-radius:999px;flex:0 0 auto;background:#64748b;';
+    roomBadgeText = document.createElement('span');
+    roomBadgeText.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;';
+    roomBadge.appendChild(roomBadgeDot); roomBadge.appendChild(roomBadgeText);
+    var progressWrap = document.createElement('span');
+    progressWrap.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:3px;min-width:82px;max-width:26vw;flex:0 1 auto;';
+    var progressTrack = document.createElement('span');
+    progressTrack.setAttribute('aria-hidden', 'true');
+    progressTrack.style.cssText = 'display:block;width:100%;min-width:76px;height:4px;overflow:hidden;border-radius:999px;background:#334155;';
+    var progressFill = document.createElement('span');
+    progressFill.style.cssText = 'display:block;width:0%;height:100%;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#818cf8);transition:width 180ms ease;';
+    progressTrack.appendChild(progressFill);
+    var progress = document.createElement('span');
+    progress.style.cssText = 'font-size:0.75rem;font-weight:800;min-width:76px;flex:0 1 auto;line-height:1.2;text-align:center;';
+    progressWrap.appendChild(progressTrack); progressWrap.appendChild(progress);
     var nextBtn = mkBtn('▶', _tr(t, 'memory_palace.next', 'Next locus'), function () { goTo(curIdx + 1); });
     var ovBtn = mkBtn('🗺', _tr(t, 'memory_palace.overview', 'Overview'), function () {
       overview = !overview;
@@ -1918,11 +2858,206 @@
     });
     routePanel.id = 'palace-route-panel-' + (window.__palaceRouteSeq = (window.__palaceRouteSeq || 0) + 1);
     routePanel.hidden = true;
-    routePanel.style.cssText = 'position:absolute;right:12px;top:12px;bottom:78px;z-index:7;width:min(360px,calc(100% - 24px));color:#e2e8f0;padding:14px 18px;overflow:auto;background:rgba(2,6,23,0.94);border:1px solid #475569;border-radius:12px;box-sizing:border-box;';
+    routePanel.style.cssText = 'position:absolute;right:12px;top:12px;bottom:78px;z-index:7;width:min(360px,calc(100% - 24px));max-height:calc(100% - 24px);color:#e2e8f0;padding:14px 18px;overflow:auto;background:rgba(2,6,23,0.94);border:1px solid #475569;border-radius:12px;box-sizing:border-box;';
     routePanel.setAttribute('role', 'region');
     routePanel.setAttribute('aria-label', _tr(t, 'memory_palace.route_title', 'Palace route'));
     state.routePanel = routePanel;        // so a rewritten mnemonic can retext its row
     holder.appendChild(routePanel);
+    holder.appendChild(focusCard);
+    completionCard = document.createElement('section');
+    completionCard.hidden = true;
+    completionCard.setAttribute('role', 'region');
+    completionCard.setAttribute('aria-label', _tr(t, 'memory_palace.complete_card', 'Route complete'));
+    completionCard.style.cssText = 'position:absolute;left:50%;bottom:calc(max(92px,env(safe-area-inset-bottom,92px)) + 10px);transform:translateX(-50%);z-index:7;width:min(430px,calc(100% - 24px));box-sizing:border-box;padding:13px 15px 14px;border:1px solid #a5b4fc;border-radius:16px;background:linear-gradient(145deg,rgba(30,27,75,0.97),rgba(2,6,23,0.96));color:#f8fafc;box-shadow:0 16px 42px rgba(2,6,23,0.45),0 0 0 1px rgba(129,140,248,0.18);';
+    var completionKicker = document.createElement('div');
+    completionKicker.textContent = _tr(t, 'memory_palace.complete_kicker', 'Journey milestone');
+    completionKicker.style.cssText = 'color:#c4b5fd;font-size:clamp(0.625rem,1.5vw,0.75rem);font-weight:900;letter-spacing:0.08em;line-height:1.2;text-transform:uppercase;';
+    completionCard.appendChild(completionKicker);
+    completionCardTitle = document.createElement('div');
+    completionCardTitle.style.cssText = 'margin-top:4px;color:#ffffff;font-size:clamp(1.05rem,2.5vw,1.35rem);font-weight:950;line-height:1.16;';
+    completionCard.appendChild(completionCardTitle);
+    completionCardMeta = document.createElement('div');
+    completionCardMeta.style.cssText = 'margin-top:5px;color:#e2e8f0;font-size:clamp(0.6875rem,1.7vw,0.8125rem);font-weight:750;line-height:1.35;overflow-wrap:anywhere;';
+    completionCard.appendChild(completionCardMeta);
+    var completionActions = document.createElement('div');
+    completionActions.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:11px;';
+    completionWalkBtn = document.createElement('button');
+    completionWalkBtn.type = 'button';
+    completionWalkBtn.textContent = _tr(t, 'memory_palace.complete_walk_again', 'Walk again');
+    completionWalkBtn.setAttribute('aria-label', _tr(t, 'memory_palace.complete_walk_again', 'Walk again'));
+    completionWalkBtn.style.cssText = 'min-height:38px;padding:7px 12px;border:1px solid #a5b4fc;border-radius:999px;background:#6366f1;color:#ffffff;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
+    completionWalkBtn.onclick = function () { completionCardDismissed = false; goTo(0); };
+    completionActions.appendChild(completionWalkBtn);
+    completionOverviewBtn = document.createElement('button');
+    completionOverviewBtn.type = 'button';
+    completionOverviewBtn.textContent = _tr(t, 'memory_palace.complete_overview', 'Review overview');
+    completionOverviewBtn.setAttribute('aria-label', _tr(t, 'memory_palace.complete_overview', 'Review overview'));
+    completionOverviewBtn.style.cssText = 'min-height:38px;padding:7px 12px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#f8fafc;font-size:clamp(0.6875rem,1.6vw,0.8125rem);font-weight:900;cursor:pointer;';
+    completionOverviewBtn.onclick = function () {
+      completionCardDismissed = true;
+      if (routeVisible) setRouteVisible(false, false);
+      overview = true;
+      applyOverview();
+      if (reduce) { camPos.copy(camPosT); look.copy(lookT); }
+      updateHud();
+    };
+    completionActions.appendChild(completionOverviewBtn);
+    completionCardDismiss = document.createElement('button');
+    completionCardDismiss.type = 'button';
+    completionCardDismiss.textContent = '\u00d7';
+    completionCardDismiss.setAttribute('aria-label', _tr(t, 'memory_palace.complete_dismiss', 'Dismiss completion message'));
+    completionCardDismiss.title = _tr(t, 'memory_palace.complete_dismiss', 'Dismiss completion message');
+    completionCardDismiss.style.cssText = 'min-width:34px;min-height:34px;margin-left:auto;padding:5px 9px;border:1px solid #475569;border-radius:999px;background:transparent;color:#cbd5e1;font-size:1.05rem;font-weight:900;cursor:pointer;';
+    completionCardDismiss.onclick = function () { completionCardDismissed = true; _setCompletionCardState(); };
+    completionActions.appendChild(completionCardDismiss);
+    completionCard.appendChild(completionActions);
+    holder.appendChild(completionCard);
+    journeyMap = document.createElement('section');
+    journeyMap.hidden = true;
+    journeyMap.setAttribute('role', 'region');
+    journeyMap.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map', 'Visual journey map'));
+    journeyMap.style.cssText = 'position:absolute;right:12px;top:12px;z-index:6;width:min(380px,calc(100% - 24px));max-height:min(52%,360px);overflow:auto;box-sizing:border-box;background:rgba(2,6,23,0.94);color:#f8fafc;border:1px solid #475569;border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px rgba(2,6,23,0.34);';
+    journeyMapTitle = document.createElement('div');
+    journeyMapTitle.textContent = _tr(t, 'memory_palace.journey_map', 'Visual journey map');
+    journeyMapTitle.style.cssText = 'font-size:0.8125rem;font-weight:900;letter-spacing:0.01em;';
+    journeyMap.appendChild(journeyMapTitle);
+    journeyMapMeta = document.createElement('div');
+    journeyMapMeta.setAttribute('role', 'status');
+    journeyMapMeta.style.cssText = 'margin-top:3px;color:#cbd5e1;font-size:0.6875rem;font-weight:700;line-height:1.3;';
+    journeyMap.appendChild(journeyMapMeta);
+    var journeyMapBody = document.createElement('div');
+    journeyMapBody.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:10px;';
+    var journeyGroups = {};
+    palace.route.forEach(function (id, index) {
+      if (index === 0) return;
+      var locus = locusById(palace, id);
+      if (!locus) return;
+      var roomIdx = typeof locus.roomIdx === 'number' ? locus.roomIdx : 0;
+      if (!journeyGroups[roomIdx]) journeyGroups[roomIdx] = { room: palace.rooms[roomIdx], stops: [] };
+      journeyGroups[roomIdx].stops.push({ id: id, index: index, locus: locus });
+    });
+    Object.keys(journeyGroups).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (key) {
+      var bucket = journeyGroups[key], room = bucket.room || {};
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;min-width:0;';
+      var roomName = document.createElement('span');
+      roomName.textContent = room.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
+      roomName.title = roomName.textContent;
+      roomName.style.cssText = 'min-width:82px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cbd5e1;font-size:0.6875rem;font-weight:900;';
+      row.appendChild(roomName);
+      var stopRail = document.createElement('div');
+      stopRail.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;';
+      bucket.stops.forEach(function (stop) {
+        var color = room.color || '#818cf8';
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = String(stop.index);
+        button.setAttribute('data-journey-index', String(stop.index));
+        button.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map_stop', 'Go to stop {index}: {label}').replace('{index}', String(stop.index)).replace('{label}', stop.locus.label || ''));
+        button.title = stop.locus.label || ('Stop ' + stop.index);
+        button.style.cssText = 'width:30px;height:30px;padding:0;border:2px solid ' + color + ';border-radius:999px;background:#0f172a;color:#f8fafc;font-size:0.6875rem;font-weight:900;line-height:1;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,background-color 160ms ease;';
+        button.onclick = function () { goTo(stop.index); };
+        stopRail.appendChild(button);
+        journeyMapStops.push({ index: stop.index, button: button, color: color });
+      });
+      row.appendChild(stopRail);
+      journeyMapBody.appendChild(row);
+    });
+    journeyMap.appendChild(journeyMapBody);
+    if (palace.roomLinks && palace.roomLinks.length) {
+      var connectionHeading = document.createElement('div');
+      connectionHeading.textContent = _tr(t, 'memory_palace.connections', 'Connections');
+      connectionHeading.style.cssText = 'margin-top:13px;padding-top:9px;border-top:1px solid #334155;color:#e2e8f0;font-size:0.6875rem;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;';
+      journeyMap.appendChild(connectionHeading);
+      var connectionHint = document.createElement('div');
+      connectionHint.textContent = _tr(t, 'memory_palace.connections_hint', 'Select a thread to highlight both rooms, then jump to either concept.');
+      connectionHint.style.cssText = 'margin-top:3px;color:#94a3b8;font-size:0.625rem;font-weight:700;line-height:1.35;';
+      journeyMap.appendChild(connectionHint);
+      var connectionBody = document.createElement('div');
+      connectionBody.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:8px;';
+      palace.roomLinks.forEach(function (link, linkIdx) {
+        var fromRoom = palace.rooms[link.fromRoomIdx] || {};
+        var toRoom = palace.rooms[link.toRoomIdx] || {};
+        var fromLabel = fromRoom.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
+        var toLabel = toRoom.label || _tr(t, 'memory_palace.hub', 'Hub plaza');
+        var color = fromRoom.color || '#818cf8';
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:stretch;gap:5px;min-width:0;';
+        var focusButton = document.createElement('button');
+        focusButton.type = 'button';
+        focusButton.textContent = fromLabel + ' → ' + toLabel + (link.label ? ' · ' + link.label : '');
+        focusButton.setAttribute('aria-pressed', 'false');
+        focusButton.setAttribute('aria-label', _tr(t, 'memory_palace.focus_connection', 'Focus connection from {from} to {to}').replace('{from}', fromLabel).replace('{to}', toLabel));
+        focusButton.title = link.label ? link.label : (fromLabel + ' → ' + toLabel);
+        focusButton.style.cssText = 'min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;border:1px solid ' + color + ';border-radius:8px;background:#0f172a;color:#f8fafc;padding:7px 8px;font-size:0.625rem;font-weight:900;line-height:1.2;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,background-color 160ms ease;';
+        focusButton.onclick = function () { _focusCrossLink(linkIdx); };
+        row.appendChild(focusButton);
+        var actionBody = document.createElement('div');
+        actionBody.style.cssText = 'display:flex;gap:4px;flex:0 0 auto;';
+        function addConnectionJump(label, roomIdx, roomLabel) {
+          var jumpButton = document.createElement('button');
+          jumpButton.type = 'button';
+          jumpButton.textContent = label;
+          jumpButton.setAttribute('aria-label', _tr(t, 'memory_palace.jump_connection', 'Jump to {room}').replace('{room}', roomLabel));
+          jumpButton.title = _tr(t, 'memory_palace.jump_connection', 'Jump to {room}').replace('{room}', roomLabel);
+          jumpButton.style.cssText = 'min-width:36px;min-height:36px;padding:5px 6px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#e2e8f0;font-size:0.5625rem;font-weight:900;cursor:pointer;';
+          jumpButton.onclick = function (event) { event.stopPropagation(); _jumpToRoom(roomIdx); };
+          actionBody.appendChild(jumpButton);
+        }
+        addConnectionJump('From', link.fromRoomIdx, fromLabel);
+        addConnectionJump('To', link.toRoomIdx, toLabel);
+        row.appendChild(actionBody);
+        connectionBody.appendChild(row);
+        journeyMapLinks.push({ index: linkIdx, button: focusButton, color: color });
+      });
+      journeyMap.appendChild(connectionBody);
+    }
+    holder.appendChild(journeyMap);
+    if (!recall && opts.mastery && typeof opts.mastery === 'object') {
+      masteryLegend = document.createElement('div');
+      masteryLegend.hidden = true;
+      masteryLegend.setAttribute('role', 'group');
+      masteryLegend.setAttribute('aria-label', _tr(t, 'memory_palace.mastery_legend', 'Memory strength'));
+      masteryLegend.style.cssText = 'position:absolute;left:12px;top:56px;z-index:6;max-width:calc(100% - 24px);display:flex;align-items:center;flex-wrap:wrap;gap:5px 7px;background:rgba(2,6,23,0.9);color:#f8fafc;border:1px solid #475569;border-radius:10px;padding:6px 8px;font-size:0.6875rem;font-weight:800;line-height:1.25;pointer-events:none;box-shadow:0 8px 24px rgba(2,6,23,0.28);';
+      var masteryLegendTitle = document.createElement('span');
+      masteryLegendTitle.textContent = _tr(t, 'memory_palace.mastery_legend', 'Memory strength') + ':';
+      masteryLegendTitle.style.cssText = 'font-weight:900;color:#e2e8f0;';
+      masteryLegend.appendChild(masteryLegendTitle);
+      function _appendMasteryChip(symbol, color, label) {
+        var chip = document.createElement('span');
+        chip.style.cssText = 'display:inline-flex;align-items:center;gap:3px;white-space:nowrap;';
+        var mark = document.createElement('span');
+        mark.textContent = symbol;
+        mark.setAttribute('aria-hidden', 'true');
+        mark.style.cssText = 'font-size:14px;line-height:1;color:' + color + ';';
+        var text = document.createElement('span');
+        text.textContent = label;
+        chip.appendChild(mark); chip.appendChild(text); masteryLegend.appendChild(chip);
+      }
+      _appendMasteryChip('\u25cf', '#f87171', _tr(t, 'memory_palace.mastery_needs_practice', 'Needs practice'));
+      _appendMasteryChip('\u25d0', '#fbbf24', _tr(t, 'memory_palace.mastery_developing', 'Developing'));
+      _appendMasteryChip('\u2713', '#4ade80', _tr(t, 'memory_palace.mastery_strong', 'Strong'));
+      _appendMasteryChip('\u25a6', '#cbd5e1', _tr(t, 'memory_palace.mastery_room_average', 'Room tint = average'));
+      masteryLegendCurrent = document.createElement('span');
+      masteryLegendCurrent.hidden = true;
+      masteryLegendCurrent.style.cssText = 'margin-left:2px;border-left:1px solid #64748b;padding-left:7px;color:#f8fafc;white-space:nowrap;';
+      masteryLegend.appendChild(masteryLegendCurrent);
+      holder.appendChild(masteryLegend);
+    }
+    var _dockResizeObserver = null;
+    function _syncDockLayout() {
+      try {
+        if (!hud || !routePanel) return;
+        var hudHeight = Math.ceil(hud.getBoundingClientRect().height || 0);
+        var overlayBottom = Math.max(70, hudHeight + 16);
+        routePanel.style.bottom = Math.max(78, hudHeight + 16) + 'px';
+        if (freeNavCue) freeNavCue.style.bottom = overlayBottom + 'px';
+        if (masteryLegend && ctrlHint) {
+          var hintBottom = 12 + Math.ceil(ctrlHint.getBoundingClientRect().height || 0) + 8;
+          masteryLegend.style.top = Math.max(56, hintBottom) + 'px';
+        }
+      } catch (e) {}
+    }
     function setRouteVisible(visible, moveFocus) {
       routeVisible = !!visible;
       routePanel.hidden = !routeVisible;
@@ -1954,10 +3089,12 @@
     var overviewClick = ovBtn.onclick;
     ovBtn.onclick = function () { overviewClick(); updateHud(); };
     routeBtn.setAttribute('aria-controls', routePanel.id);
-    hud.appendChild(prevBtn); hud.appendChild(progress); hud.appendChild(nextBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
+    hud.appendChild(prevBtn); hud.appendChild(roomBadge); hud.appendChild(progressWrap); hud.appendChild(nextBtn); hud.appendChild(ovBtn); hud.appendChild(routeBtn);
     holder.appendChild(hud);
     function updateHud() {
       var totalStops = Math.max(0, palace.route.length - 1);
+      var progressRatio = totalStops ? Math.max(0, Math.min(1, curIdx / totalStops)) : 1;
+      progressFill.style.width = Math.round(progressRatio * 1000) / 10 + '%';
       progress.textContent = curIdx === 0 ? 'Entrance' : (curIdx + ' of ' + totalStops);
       progress.setAttribute('aria-label', curIdx === 0 ? ('Palace entrance. ' + totalStops + ' loci.') : ('Locus ' + curIdx + ' of ' + totalStops));
       ovBtn.setAttribute('aria-pressed', overview ? 'true' : 'false');
@@ -1969,6 +3106,14 @@
         button.style.borderColor = button.hasAttribute('aria-current') ? '#a5b4fc' : '#475569';
       });
       prevBtn.style.opacity = prevBtn.disabled ? 0.4 : 1; nextBtn.style.opacity = nextBtn.disabled ? 0.4 : 1;
+      _setMasteryLegendState();
+      _setRoomHeatmapState();
+      _setRoomBadgeState();
+      _setFocusCardState();
+      _setCompletionCardState();
+      _setJourneyMapState();
+      _setNextStopBeaconState();
+      _syncDockLayout();
     }
     updateHud();
 
@@ -1986,9 +3131,64 @@
     // Visible control hint (fades after a few seconds) — WASD isn't discoverable otherwise.
     var ctrlHint = document.createElement('div');
     ctrlHint.setAttribute('aria-hidden', 'true');
-    ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;max-width:calc(100% - 24px);background:rgba(2,6,23,0.82);color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:7px 10px;font-size:12px;line-height:1.35;pointer-events:none;';
+    ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;max-width:calc(100% - 24px);box-sizing:border-box;background:rgba(2,6,23,0.82);color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:7px 10px;font-size:0.75rem;line-height:1.35;pointer-events:none;transition:opacity 260ms ease,transform 260ms ease;';
     ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'WASD to walk · drag to look · ◀ ▶ for the guided tour');
     holder.appendChild(ctrlHint);
+    var ctrlHintTimer = 0;
+    function _hideCtrlHint() {
+      if (!ctrlHint) return;
+      ctrlHint.style.opacity = '0';
+      ctrlHint.style.transform = 'translateY(-4px)';
+      if (ctrlHintTimer) { try { window.clearTimeout(ctrlHintTimer); } catch (e) {} ctrlHintTimer = 0; }
+    }
+    function _showCtrlHint(duration) {
+      if (!ctrlHint) return;
+      ctrlHint.style.opacity = '1';
+      ctrlHint.style.transform = 'translateY(0)';
+      if (ctrlHintTimer) { try { window.clearTimeout(ctrlHintTimer); } catch (e) {} }
+      ctrlHintTimer = window.setTimeout(_hideCtrlHint, duration || 6200);
+    }
+    _showCtrlHint(6200);
+
+    // Free-roam orientation cue: keeps room identity visible while the learner
+    // leaves the authored rail, without competing with the guided HUD.
+    freeNavCue = document.createElement('div');
+    freeNavCue.hidden = true;
+    freeNavCue.setAttribute('role', 'status');
+    freeNavCue.setAttribute('aria-live', 'polite');
+    freeNavCue.setAttribute('aria-atomic', 'true');
+    freeNavCue.style.cssText = 'position:absolute;left:12px;bottom:70px;z-index:7;max-width:calc(100% - 24px);display:flex;align-items:center;gap:8px;background:rgba(2,6,23,0.9);color:#f8fafc;border:1px solid #64748b;border-radius:999px;padding:5px 6px 5px 12px;font-size:0.75rem;font-weight:800;line-height:1.3;pointer-events:auto;box-shadow:0 8px 24px rgba(2,6,23,0.35);';
+    freeNavCompass = document.createElement('span');
+    freeNavCompass.hidden = true;
+    freeNavCompass.setAttribute('aria-hidden', 'true');
+    freeNavCompass.title = _tr(t, 'memory_palace.free_compass', 'Direction to the next route stop');
+    freeNavCompass.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 auto;border:1px solid rgba(255,255,255,0.4);border-radius:999px;background:rgba(15,23,42,0.72);';
+    freeNavCompassArrow = document.createElement('span');
+    freeNavCompassArrow.textContent = '\u2191';
+    freeNavCompassArrow.style.cssText = 'display:block;color:#f8fafc;font-size:1.05rem;font-weight:900;line-height:1;transition:transform 180ms ease;';
+    freeNavCompass.appendChild(freeNavCompassArrow);
+    freeNavCue.appendChild(freeNavCompass);
+    freeNavText = document.createElement('span');
+    freeNavText.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    freeNavCue.appendChild(freeNavText);
+    freeReturnBtn = document.createElement('button');
+    freeReturnBtn.type = 'button';
+    freeReturnBtn.textContent = '\u21a9';
+    freeReturnBtn.setAttribute('aria-label', _tr(t, 'memory_palace.free_return', 'Return to guided route'));
+    freeReturnBtn.title = _tr(t, 'memory_palace.free_return', 'Return to guided route');
+    freeReturnBtn.style.cssText = 'border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:#fff;border-radius:999px;min-width:30px;min-height:30px;padding:2px 8px;font-size:0.875rem;font-weight:900;cursor:pointer;flex:0 0 auto;';
+    freeReturnBtn.onclick = function () { goTo(curIdx); };
+    freeNavCue.appendChild(freeReturnBtn);
+    holder.appendChild(freeNavCue);
+    if (typeof window.ResizeObserver === 'function') {
+      try {
+        _dockResizeObserver = new window.ResizeObserver(_syncDockLayout);
+        _dockResizeObserver.observe(holder);
+        _dockResizeObserver.observe(hud);
+      } catch (eResize) { _dockResizeObserver = null; }
+    }
+    window.addEventListener('resize', _syncDockLayout);
+    _syncDockLayout();
 
     // ── WebXR: optional "Enter VR" (progressive enhancement) ──
     // The button appears ONLY when the browser reports immersive-vr support (a
@@ -2011,6 +3211,10 @@
           _seatUserForVR();
           freeMode = false;                           // headset owns the view; disable WASD/drag
           state.xrActive = true;
+          _setFocusCardState();
+          _setCompletionCardState();
+          _setGuidedTetherState();
+          _setArrivalHaloState();
           if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
           try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
           _xrSetupControllers();                      // Tier 2: thumbstick locomotion + ray-select
@@ -2022,6 +3226,10 @@
             try { renderer.setAnimationLoop(null); } catch (e) {}
             _unseatVR();
             if (btn) btn.disabled = false;
+            _setFocusCardState();
+            _setCompletionCardState();
+            _setGuidedTetherState();
+            _setArrivalHaloState();
             if (!state.disposed) { if (state._resumeLoop) state._resumeLoop(); else tick(); }   // resume the 2D window-rAF loop (clears any off-screen pause)
           });
         })
@@ -2052,6 +3260,7 @@
     hud.setAttribute('aria-label', _tr(t, 'memory_palace.controls', 'Memory palace route controls'));
 
     function onKeyDown(e) {
+      _hideCtrlHint();
       var k = e.key;
       var lk = (k && k.length === 1) ? k.toLowerCase() : k;
       if (lk === 'w' || lk === 'a' || lk === 's' || lk === 'd') {   // free walk
@@ -2125,7 +3334,7 @@
       if (g && !buildMode) g.visible = false;
       try { el.style.cursor = buildMode ? 'crosshair' : 'grab'; } catch (e) {}
     };
-    function onDown(e) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; try { el.focus(); } catch (er) {} }   // focus so WASD/arrows work after a click
+    function onDown(e) { _hideCtrlHint(); dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; try { el.focus(); } catch (er) {} }   // focus so WASD/arrows work after a click
     function onMove(e) {
       if (!dragging) return;
       var dx = e.clientX - lx, dy = e.clientY - ly;
@@ -2194,7 +3403,48 @@
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       el.removeEventListener('wheel', onWheel);
-      [hud, live, instr, ctrlHint, routePanel].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
+      window.removeEventListener('resize', _syncDockLayout);
+      if (ctrlHintTimer) { try { window.clearTimeout(ctrlHintTimer); } catch (e) {} ctrlHintTimer = 0; }
+      if (_dockResizeObserver) { try { _dockResizeObserver.disconnect(); } catch (eResize) {} _dockResizeObserver = null; }
+      [hud, live, instr, ctrlHint, freeNavCue, routePanel, journeyMap, masteryLegend, roomBadge, progressWrap, focusCard, completionCard].forEach(function (nd) { try { if (nd && nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
+      masteryLegend = null;
+      masteryLegendCurrent = null;
+      roomBadge = null;
+      roomBadgeText = null;
+      roomBadgeDot = null;
+      focusCard = null;
+      focusCardKicker = null;
+      focusCardTitle = null;
+      focusCardMeta = null;
+      focusCardCue = null;
+      completionCard = null;
+      completionCardTitle = null;
+      completionCardMeta = null;
+      completionCardDismiss = null;
+      completionWalkBtn = null;
+      completionOverviewBtn = null;
+      completionCardDismissed = false;
+      completionGlow = null;
+      guidedTether = null;
+      arrivalHalo = null;
+      freeNavCue = null;
+      freeNavText = null;
+      freeReturnBtn = null;
+      freeNavCompass = null;
+      freeNavCompassArrow = null;
+      _freeCueKey = '';
+      _freeCueHeading = -99;
+      _emptyBeacons.length = 0;
+      nextStopBeacon = null;
+      crossLinkGroup = null;
+      crossLinks = [];
+      _roomHeatmaps = {};
+      journeyMap = null;
+      journeyMapTitle = null;
+      journeyMapMeta = null;
+      journeyMapStops = [];
+      journeyMapLinks = [];
+      focusedCrossLink = -1;
     });
 
     // ── WebXR Tier 2: controllers — smooth thumbstick locomotion, snap-turn,
@@ -2422,6 +3672,7 @@
           camPos.x = _cl(camPos.x, b.minX + 40, b.maxX - 40);   // stay inside the palace footprint
           camPos.z = _cl(camPos.z, b.minZ + 40, b.maxZ - 40);
         }
+        _syncFreeRoomContext();
         camPos.y = EYE;
         var cp = Math.cos(freePitch);
         lookBase.set(camPos.x + Math.sin(freeYaw) * cp, camPos.y + Math.sin(freePitch), camPos.z + Math.cos(freeYaw) * cp);
@@ -2675,6 +3926,7 @@
     updateMastery: updateMastery,
     dueLoci: dueLoci,
     masteryStrength: masteryStrength,
+    roomMasterySummary: roomMasterySummary,
     isWebGLAvailable: isWebGLAvailable,
     loadThree: loadThree,
     render: render

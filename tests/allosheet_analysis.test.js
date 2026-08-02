@@ -283,6 +283,23 @@ describe('AlloSheet deterministic local analysis', () => {
     expect(JSON.stringify({ records, columns, spec })).toBe(before);
   });
 
+  it('builds a privacy-safe column profile with completeness, distinct counts, and typed ranges', () => {
+    const records = [
+      record('1', { Student_ID: 'S-1', Score: '2', When: '2026-07-01', Note: '' }),
+      record('2', { Student_ID: 'S-2', Score: '8', When: '2026-07-03', Note: 'needs review' }),
+      record('3', { Student_ID: 'S-1', Score: '', When: '', Note: 'needs review' }),
+    ];
+    const profile = Analysis.buildColumnProfile(records, ['Student_ID', 'Score', 'When', 'Note'], []);
+    expect(profile.sourceRowCount).toBe(3);
+    expect(profile.narrative).toContain('Values stay in this window');
+    expect(profile.columns).toEqual([
+      expect.objectContaining({ column: 'Student_ID', type: 'text', identifierLike: true, filledCount: 3, blankCount: 0, distinctCount: 2, range: null }),
+      expect.objectContaining({ column: 'Score', type: 'number', filledCount: 2, blankCount: 1, distinctCount: 2, range: { minimum: 2, maximum: 8, validCount: 2 } }),
+      expect.objectContaining({ column: 'When', type: 'date', filledCount: 2, blankCount: 1, distinctCount: 2, range: { minimum: '2026-07-01', maximum: '2026-07-03', validCount: 2 } }),
+      expect.objectContaining({ column: 'Note', type: 'text', filledCount: 2, blankCount: 1, distinctCount: 1, range: null }),
+    ]);
+    expect(JSON.stringify(records)).not.toContain('profiled');
+  });
   it('rejects unsupported trend and numeric-filter combinations', () => {
     expect(() => Analysis.buildAnalysis(
       [record('1', { Group: 'A', Score: 2 })],

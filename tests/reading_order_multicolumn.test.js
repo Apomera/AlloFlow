@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
-const block = dp.match(/function _alloOrderTextItems\(items, opts\) \{[\s\S]*?\n  var _multi = \{ items: out, columns: res\.cols\.length, gutters: res\.gutters, applied: true \};\r?\n  return _multi;\r?\n\}/);
+const block = dp.match(/function _alloOrderTextItems\(items, opts\) \{[\s\S]*?\n  var _multi = \{ items: out,[^\r\n]*\};\r?\n  return _multi;\r?\n\}/);
 if (!block) throw new Error('could not extract _alloOrderTextItems from source');
 const order = new Function(block[0] + '\n; return _alloOrderTextItems;')();
 

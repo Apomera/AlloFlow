@@ -199,6 +199,19 @@ describe('Open Groove project core', () => {
     expect(OG.ogBuildNotationPreview(project, pattern.id).notes[0]).toMatchObject({ pitch: 'C4', startBeat: 1.5 });
   });
 
+  it('preserves stacked notes when a staff slot receives a keyboard chord', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'major' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'C4', duration: 'q', replaceSlot: true, source: 'virtualKeyboard' });
+    OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'E4', duration: 'q', replaceSlot: false, source: 'virtualKeyboard' });
+    OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'G4', duration: 'q', replaceSlot: false, source: 'virtualKeyboard' });
+
+    const notes = OG.ogBuildNotationPreview(project, pattern.id).measures[0].notes;
+    expect(notes.filter(note => note.startBeat === 1).map(note => note.pitch)).toEqual(['C4', 'E4', 'G4']);
+    expect(notes.every(note => note.source === 'virtualKeyboard')).toBe(true);
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
   it('stores normalized synth patch controls on synth tracks', () => {
     const project = OG.ogCreateProject();
     const synth = project.tracks[1];
@@ -441,7 +454,42 @@ describe('Open Groove project core', () => {
     expect(notes.map((event) => event.startTick)).toEqual([1920, 1920]);
     expect(notes.map((event) => event.durationTicks)).toEqual([960, 960]);
   });
-  it('imports MusicXML notes, rests, and chords into notation events', () => {
+  it('preserves explicit staff rests in VexFlow and MusicXML timelines', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const rest = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1,
+      tool: 'rest',
+      rest: true,
+      duration: 'q',
+      replaceSlot: true
+    });
+    OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 2,
+      pitch: 'C4',
+      duration: 'q',
+      replaceSlot: true
+    });
+
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, {
+      trackId: synth.id,
+      runtime: { Vex: { Flow: { Renderer: function Renderer() {} } } }
+    });
+    expect(vexModel.measures[0].elements[0]).toMatchObject({
+      type: 'rest',
+      explicit: true,
+      id: rest.event.id,
+      durationTicks: OG.ogTicksPerBeat(project)
+    });
+    expect(vexModel.measures[0].elements[1]).toMatchObject({ type: 'note', localStart: OG.ogTicksPerBeat(project) });
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<rest/>\n        <duration>960</duration>\n        <type>quarter</type>');
+    expect(xml.indexOf('<rest/>')).toBeLessThan(xml.indexOf('<step>C</step>'));
+  });  it('imports MusicXML notes, rests, and chords into notation events', () => {
     const project = OG.ogCreateProject({ ppq: 960 });
     const pattern = project.patterns[0];
     const synth = project.tracks[1];
@@ -756,6 +804,8 @@ describe('Open Groove project core', () => {
     expect(emptyStaff).toMatchObject({ clef: 'treble', keyName: 'C Minor', slotsPerMeasure: 8 });
     expect(emptyStaff.measures[0].slots).toHaveLength(8);
     expect(emptyStaff.measures[0].selected).toBe(true);
+    expect(emptyStaff.measures[0].rests).toHaveLength(1);
+    expect(emptyStaff.measures[0].rests[0]).toMatchObject({ startBeat: 1, durationTicks: OG.ogTicksPerMeasure(project), durationName: 'whole' });
 
     const written = OG.ogSetStaffNote(project, pattern.id, synth.id, {
       startBar: 0,
@@ -782,6 +832,18 @@ describe('Open Groove project core', () => {
     });
     expect(note.y).toBeGreaterThan(staff.geometry.bottomY);
     expect(note.ledgerLines.length).toBeGreaterThan(0);
+    expect(staff.measures[0].rests.some(item => item.startBeat === 1)).toBe(true);
+
+    const dottedWritten = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 1,
+      startBeat: 1,
+      pitch: 'E4',
+      duration: 'q.',
+      replaceSlot: true
+    });
+    expect(dottedWritten.event.durationTicks).toBe(OG.ogTicksPerBeat(project) * 3 / 2);
+    const dottedNote = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id }).measures[1].notes.find(item => item.pitch === 'E4');
+    expect(dottedNote).toMatchObject({ durationToken: 'q.', dots: 1, durationTicks: OG.ogTicksPerBeat(project) * 3 / 2 });
 
     const rest = OG.ogSetStaffNote(project, pattern.id, synth.id, {
       startBar: 0,
@@ -790,6 +852,8 @@ describe('Open Groove project core', () => {
       rest: true
     });
     expect(rest).toMatchObject({ rest: true, removed: 1 });
+    expect(rest.event).toMatchObject({ type: 'rest', durationTicks: OG.ogTicksPerBeat(project) });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).measures[0].rests[0]).toMatchObject({ rest: true, startBeat: 1.5, durationTicks: OG.ogTicksPerBeat(project) });
     expect(OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id }).measures[0].notes).toHaveLength(0);
 
     OG.ogApplySynthPatchPreset(project, synth.id, 'roundSub');
@@ -814,6 +878,174 @@ describe('Open Groove project core', () => {
     expect(forcedTrebleNote.ledgerLines.length).toBeGreaterThan(bassNote.ledgerLines.length);
   });
 
+  it('groups adjacent eighths and sixteenths into beat-aware beams', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const first = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'C4', duration: 'e' });
+    const second = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1.5, pitch: 'E4', duration: 'e' });
+    const boundary = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 2, pitch: 'G4', duration: 'e' });
+    const nextBeat = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 2.5, pitch: 'B4', duration: 'e' });
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id });
+    expect(staff.measures[0].beams).toHaveLength(2);
+    expect(staff.measures[0].beams[0]).toMatchObject({
+      level: 1,
+      noteIds: [first.event.id, second.event.id]
+    });
+    expect(staff.measures[0].beams[1].noteIds).toEqual([boundary.event.id, nextBeat.event.id]);
+    expect(staff.measures[0].notes.filter(note => note.beamed)).toHaveLength(4);
+
+    const sixteenthProject = OG.ogCreateProject({ ppq: 960 });
+    const sixteenthPattern = sixteenthProject.patterns[0];
+    const sixteenthSynth = sixteenthProject.tracks[1];
+    [1, 1.25, 1.5, 1.75].forEach((startBeat, index) => {
+      OG.ogSetStaffNote(sixteenthProject, sixteenthPattern.id, sixteenthSynth.id, {
+        startBar: 0,
+        startBeat,
+        pitch: ['C4', 'D4', 'E4', 'F4'][index],
+        duration: 's'
+      });
+    });
+    const sixteenthStaff = OG.ogBuildStaffEngraving(sixteenthProject, sixteenthPattern.id, { trackId: sixteenthSynth.id });
+    expect(sixteenthStaff.measures[0].beams).toHaveLength(1);
+    expect(sixteenthStaff.measures[0].beams[0]).toMatchObject({ level: 2, noteIds: expect.any(Array) });
+    expect(sixteenthStaff.measures[0].beams[0].noteIds).toHaveLength(4);
+  });
+  it('creates, engraves, exports, and clears editable ties', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const first = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'C4', duration: 'q' });
+    const second = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 2, pitch: 'C4', duration: 'q' });
+
+    const tied = OG.ogSetStaffTie(project, pattern.id, synth.id, first.event.id);
+    expect(tied).toMatchObject({ changed: true, startEvent: { id: first.event.id }, endEvent: { id: second.event.id } });
+    expect(first.event.notation.tie).toMatchObject({ start: true, toId: second.event.id });
+    expect(second.event.notation.tie).toMatchObject({ stop: true, fromId: first.event.id });
+
+    const preview = OG.ogBuildNotationPreview(project, pattern.id);
+    expect(preview.measures[0].notes[0].tie).toMatchObject({ start: true, toId: second.event.id });
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id });
+    expect(staff.ties).toHaveLength(1);
+    expect(staff.ties[0]).toMatchObject({ startNoteId: first.event.id, endNoteId: second.event.id });
+
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, { trackId: synth.id });
+    expect(vexModel.measures[0].elements[0].notes[0].tie).toMatchObject({ start: true });
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<tie type="start"/>');
+    expect(xml).toContain('<tie type="stop"/>');
+    expect(xml).toContain('<tied type="start"/>');
+    expect(xml).toContain('<tied type="stop"/>');
+
+    const cleared = OG.ogSetStaffTie(project, pattern.id, synth.id, first.event.id, { clear: true });
+    expect(cleared).toMatchObject({ changed: true, cleared: true });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).notes.every(note => !note.tie)).toBe(true);
+  });
+  it('preserves 3:2 triplet rhythm through staff, VexFlow, and MusicXML', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const starts = [1, 1 + 1 / 3, 1 + 2 / 3];
+    starts.forEach((startBeat, index) => {
+      OG.ogSetStaffNote(project, pattern.id, synth.id, {
+        startBar: 0,
+        startBeat,
+        pitch: ['C4', 'D4', 'E4'][index],
+        duration: 'te'
+      });
+    });
+    expect(OG.ogNotationDurationTicks(project, 'te')).toBe(320);
+
+    const preview = OG.ogBuildNotationPreview(project, pattern.id);
+    expect(preview.notes[0].tuplet).toMatchObject({ actualNotes: 3, normalNotes: 2, baseType: 'eighth', token: 'te' });
+
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id });
+    expect(staff.tuplets).toHaveLength(1);
+    expect(staff.tuplets[0]).toMatchObject({ actualNotes: 3, normalNotes: 2, noteIds: expect.any(Array) });
+    expect(staff.tuplets[0].noteIds).toHaveLength(3);
+
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, { trackId: synth.id });
+    expect(vexModel.measures[0].elements[0]).toMatchObject({
+      durationTicks: 320,
+      vexflow: { duration: '8', tuplet: { actualNotes: 3, normalNotes: 2 } }
+    });
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>');
+
+    const imported = OG.ogCreateProject({ ppq: 960 });
+    const importedPattern = imported.patterns[0];
+    const importedSynth = imported.tracks[1];
+    OG.ogImportMusicXmlSketch(imported, importedPattern.id, importedSynth.id, xml);
+    expect(importedPattern.events[0].notation.tuplet).toMatchObject({ actualNotes: 3, normalNotes: 2 });
+  });
+  it('preserves editable articulations through staff, VexFlow, MusicXML, and triplet edits', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const placed = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1,
+      pitch: 'C4',
+      duration: 'q',
+      articulation: 'accent'
+    });
+    expect(placed.event).toMatchObject({ articulation: 'accent', notation: { articulation: 'accent' } });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).notes[0].articulation).toBe('accent');
+
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id });
+    expect(staff.measures[0].notes[0].articulation).toBe('accent');
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, { trackId: synth.id });
+    expect(vexModel.measures[0].elements[0].vexflow.articulations).toEqual(['accent']);
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<articulations><accent/></articulations>');
+    const imported = OG.ogCreateProject({ ppq: 960 });
+    const importedPattern = imported.patterns[0];
+    const importedSynth = imported.tracks[1];
+    OG.ogImportMusicXmlSketch(imported, importedPattern.id, importedSynth.id, xml);
+    expect(importedPattern.events.find(event => event.type === 'note')).toMatchObject({ articulation: 'accent' });
+
+    const updated = OG.ogUpdateStaffNote(project, pattern.id, synth.id, placed.event.id, {
+      duration: 'te',
+      articulation: 'staccato'
+    });
+    expect(updated).toMatchObject({ duration: 'te', articulation: 'staccato' });
+    expect(updated.event.notation).toMatchObject({ articulation: 'staccato', tuplet: { actualNotes: 3, normalNotes: 2, token: 'te' } });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).notes[0]).toMatchObject({ articulation: 'staccato', tuplet: { token: 'te' } });
+  });
+  it('preserves dynamic markings across staff, MIDI velocity, VexFlow, and MusicXML', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const placed = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1,
+      pitch: 'C4',
+      duration: 'q',
+      dynamic: 'ff'
+    });
+    expect(placed.event).toMatchObject({ dynamic: 'ff', velocity: OG.ogDynamicVelocity('ff'), notation: { dynamic: 'ff' } });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).notes[0].dynamic).toBe('ff');
+
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id });
+    expect(staff.measures[0].notes[0].dynamic).toBe('ff');
+    const vexModel = OG.ogBuildVexFlowNotationModel(project, pattern.id, { trackId: synth.id });
+    expect(vexModel.measures[0].elements[0].vexflow.dynamics).toEqual(['ff']);
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<direction placement="below">');
+    expect(xml).toContain('<dynamics><ff/></dynamics>');
+    const imported = OG.ogCreateProject({ ppq: 960 });
+    const importedPattern = imported.patterns[0];
+    const importedSynth = imported.tracks[1];
+    OG.ogImportMusicXmlSketch(imported, importedPattern.id, importedSynth.id, xml);
+    expect(importedPattern.events.find(event => event.type === 'note')).toMatchObject({ dynamic: 'ff' });
+
+    const updated = OG.ogUpdateStaffNote(project, pattern.id, synth.id, placed.event.id, { dynamic: 'pp' });
+    expect(updated).toMatchObject({ dynamic: 'pp' });
+    expect(updated.event).toMatchObject({ dynamic: 'pp', velocity: OG.ogDynamicVelocity('pp'), notation: { dynamic: 'pp' } });
+  });
   it('updates and deletes selected staff notes without breaking notation timing', () => {
     const project = OG.ogCreateProject({ tonic: 'F', mode: 'major' });
     const pattern = project.patterns[0];
@@ -846,6 +1078,40 @@ describe('Open Groove project core', () => {
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
+  it('maps playback ticks to the active engraved measure and note', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'major' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const first = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 1, pitch: 'C4', duration: 'q' });
+    const second = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 0, startBeat: 2, pitch: 'E4', duration: 'q' });
+    const third = OG.ogSetStaffNote(project, pattern.id, synth.id, { startBar: 1, startBeat: 1, pitch: 'G4', duration: 'h' });
+    const beatTicks = OG.ogTicksPerBeat(project);
+    const measureTicks = OG.ogTicksPerMeasure(project);
+
+    expect(OG.ogBuildStaffPlaybackCursor(project, pattern.id, { trackId: synth.id, tick: 0 })).toMatchObject({
+      tick: 0,
+      bar: 1,
+      beat: 1,
+      noteId: first.event.id,
+      noteIds: [first.event.id]
+    });
+    expect(OG.ogBuildStaffPlaybackCursor(project, pattern.id, { trackId: synth.id, tick: beatTicks + 120 })).toMatchObject({
+      bar: 1,
+      beat: 2,
+      noteId: second.event.id
+    });
+    expect(OG.ogBuildStaffPlaybackCursor(project, pattern.id, { trackId: synth.id, tick: measureTicks + 1 })).toMatchObject({
+      bar: 2,
+      beat: 1,
+      noteId: third.event.id
+    });
+    expect(OG.ogBuildStaffPlaybackCursor(project, pattern.id, { trackId: synth.id, tick: beatTicks * 3 + 120 })).toMatchObject({
+      bar: 1,
+      beat: 4,
+      noteId: null,
+      noteIds: []
+    });
+  });
   it('resolves staff click targets and writes notation phrase presets', () => {
     const project = OG.ogCreateProject({ tonic: 'C', mode: 'major' });
     const pattern = project.patterns[0];
@@ -1661,8 +1927,21 @@ describe('Open Groove browser wrappers', () => {
     expect(markup).toContain('Write Phrase');
     expect(markup).toContain('MusicXML Export');
     expect(markup).toContain('Selected Note');
+    expect(markup).toContain('Staff Notation');
+    expect(markup).toContain('Keyboard entry target');
+    expect(markup).toContain('Time signature meter');
+    expect(markup).toContain('Write Rest');
+    expect(markup).toContain('ArrowRight');
+    expect(markup).toContain('data-staff-slot');
     expect(markup).toContain('Delete Note');
     expect(markup).toContain('Staff notes in selected bar');
+    expect(markup).toContain('Staff rests in selected bar');
+    expect(markup).toContain('Update Rest');
+    expect(markup).toContain('Tie to Next');
+    expect(markup).toContain('Eighth triplet');
+    expect(markup).toContain('Articulation');
+    expect(markup).toContain('Grid uses fixed length');
+    expect(markup).toContain('Playback cursor ready');
   });
 
   it('fails audio creation gracefully when Web Audio is unavailable', () => {

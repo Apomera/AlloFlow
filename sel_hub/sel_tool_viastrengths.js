@@ -148,7 +148,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         });
       }
       var view = d.view || 'overview';
-      function goto(v) { setVS({ view: v }); }
+      var VIA_VIEW_LABELS = { overview: 'Overview', sort: 'Self-Sort', reflect: 'Reflect', print: 'Print view', about: 'About' };
+      function goto(v) {
+        setVS({ view: v });
+        if (announceToSR) announceToSR((VIA_VIEW_LABELS[v] || v) + ' section selected');
+      }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
@@ -164,26 +168,53 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
       function navTabs() {
         var tabs = [
-          { id: 'overview', label: 'Overview', icon: '🌟' },
-          { id: 'sort', label: 'Self-Sort', icon: '✏️' },
-          { id: 'reflect', label: 'Reflect', icon: '💭' },
-          { id: 'print', label: 'Print view', icon: '🖨' },
-          { id: 'about', label: 'About', icon: 'ℹ' }
+          { id: 'overview', label: 'Overview', icon: 'ðŸŒŸ' },
+          { id: 'sort', label: 'Self-Sort', icon: 'âœï¸' },
+          { id: 'reflect', label: 'Reflect', icon: 'ðŸ’­' },
+          { id: 'print', label: 'Print view', icon: 'ðŸ–¨' },
+          { id: 'about', label: 'About', icon: 'â„¹' }
         ];
-        return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'VIA Strengths sections',
-          style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
-            var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : _viaBg('#1e293b'),
-                color: active ? _viaFg('#fde68a') : _viaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
-              t.icon + ' ' + t.label);
-          })
+        return h('div', { className: 'no-print', style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
+          h('div', {
+            role: 'tablist', 'aria-label': 'VIA Strengths sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap' }
+          },
+            tabs.map(function(t) {
+              var active = view === t.id;
+              return h('button', {
+                key: t.id,
+                id: 'via-tab-' + t.id,
+                'data-via-tab': t.id,
+                'aria-label': t.label,
+                'aria-controls': 'via-tab-panel',
+                role: 'tab',
+                'aria-selected': active,
+                tabIndex: active ? 0 : -1,
+                onClick: function() { goto(t.id); },
+                onKeyDown: function(e) {
+                  var currentIndex = tabs.indexOf(t);
+                  var nextIndex = currentIndex;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') nextIndex = 0;
+                  else if (e.key === 'End') nextIndex = tabs.length - 1;
+                  else return;
+                  e.preventDefault();
+                  var nextTab = tabs[nextIndex];
+                  goto(nextTab.id);
+                  setTimeout(function() {
+                    var target = document.querySelector('[data-via-tab="' + nextTab.id + '"]');
+                    if (target) target.focus();
+                  }, 0);
+                },
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
+                  background: active ? 'rgba(245,158,11,0.18)' : _viaBg('#1e293b'),
+                  color: active ? _viaFg('#fde68a') : _viaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 }
+              }, t.icon + ' ' + t.label);
+            })
+          )
         );
       }
-
       function authoritativeBanner() {
         return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
           h('strong', null, '📚 The authoritative VIA Survey is free at '),
@@ -279,6 +310,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           var ratings = Object.assign({}, (d.ratings || {}));
           ratings[id] = value;
           setVS({ ratings: ratings });
+          var strength = STRENGTHS.find(function(item) { return item.id === id; });
+          if (announceToSR && strength) announceToSR(strength.label + ' rated ' + value + ' out of 5');
         }
         function toggleTop(id) {
           var top = (d.topFive || []).slice();
@@ -299,6 +332,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           virtues[s.virtue] = virtues[s.virtue] || [];
           virtues[s.virtue].push(s);
         });
+        var ratedCount = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] > 0; }).length;
 
         return h('div', null,
           authoritativeBanner(),
@@ -307,6 +341,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             'For each of the 24 strengths, rate how much it sounds like you (1 = not really me, 5 = really me). Then click the star icon on up to 5 strengths to mark them as your signature strengths.'
           ),
 
+          h('div', { style: { padding: 10, borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+            h('div', { role: 'progressbar', 'aria-label': 'Self-sort progress', 'aria-valuemin': 0, 'aria-valuemax': 24, 'aria-valuenow': ratedCount, 'aria-valuetext': ratedCount + ' of 24 strengths rated', style: { height: 7, borderRadius: 4, background: _viaBg('#1e293b'), overflow: 'hidden' } },
+              h('div', { style: { height: '100%', width: Math.round((ratedCount / 24) * 100) + '%', borderRadius: 4, background: '#f59e0b', transition: 'width 0.2s' } })
+            ),
+            h('div', { role: 'status', style: { marginTop: 5, color: _viaFg('#fcd34d'), fontSize: 11, fontWeight: 700 } }, ratedCount + ' of 24 strengths rated')
+          ),
           Object.keys(virtues).map(function(v) {
             return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
               h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, v),
@@ -539,7 +579,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'VIA Character Strengths' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'via-tab-panel', role: 'tabpanel', 'aria-labelledby': 'via-tab-' + view }, body)
       );
     }
   });

@@ -203,7 +203,7 @@ const _dsBridge = () => {
       ? Promise.resolve(window.alloDeviceStorage)
       : new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager';
           s.onload = () => {
             // Pages answers missing files with its SPA index as HTML 200 —
             // verify the global actually appeared (lame.min.js lesson).
@@ -734,6 +734,7 @@ const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
         img.onload = () => {
             try {
                 const canvas = document.createElement('canvas');
+                canvas.setAttribute('aria-hidden', 'true');
                 let width = img.width;
                 let height = img.height;
                 if (width > maxWidth) {

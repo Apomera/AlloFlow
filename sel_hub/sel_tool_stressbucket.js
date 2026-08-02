@@ -19508,7 +19508,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
         return h('div', null,
           // Summary line
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: overflowing ? 'rgba(239,68,68,0.15)' : '#0f172a', border: '1px solid ' + (overflowing ? _sbkBg('#ef4444') : _sbkBg('#1e293b')), marginBottom: 12, flexWrap: 'wrap' } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Stress bucket balance', style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: overflowing ? 'rgba(239,68,68,0.15)' : '#0f172a', border: '1px solid ' + (overflowing ? _sbkBg('#ef4444') : _sbkBg('#1e293b')), marginBottom: 12, flexWrap: 'wrap' } },
             h('div', { style: { flex: 1, minWidth: 200 } },
               h('div', { style: { fontSize: 12, color: _sbkFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Right now'),
               h('div', { style: { fontSize: 16, color: overflowing ? _sbkFg('#fca5a5') : _sbkFg('#e2e8f0'), fontWeight: 800 } },
@@ -19727,8 +19727,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 6, background: _sbkBg('#1e293b') } },
                   h('span', { style: { width: 50, fontSize: 11, color: w.color, fontWeight: 700, textTransform: 'uppercase' } }, w.label),
                   h('span', { style: { flex: 1, fontSize: 13, color: _sbkFg('#e2e8f0') } }, s.label),
-                  h('button', { onClick: function() { removeStressor(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('button', { onClick: function() { removeStressor(i); }, 'aria-label': 'Remove stressor: ' + s.label,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
                 );
               })
             ) : null,
@@ -19737,7 +19737,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               h('input', { id: 'sb-stressor-input', type: 'text', placeholder: 'A stressor...',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addStressor(); } },
                 style: { flex: 2, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
-              h('select', { id: 'sb-stressor-weight', defaultValue: '2',
+              h('select', { id: 'sb-stressor-weight', defaultValue: '2', 'aria-label': 'Weight for new stressor',
                 style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
                 WEIGHTS.map(function(w) { return h('option', { key: w.value, value: w.value }, w.label); })),
               h('button', { onClick: addStressor, 'aria-label': 'Add stressor',
@@ -19763,8 +19763,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 6, background: _sbkBg('#1e293b') } },
                   h('span', { style: { width: 80, fontSize: 11, color: _sbkFg('#a78bfa'), fontWeight: 700, textTransform: 'uppercase' } }, c.label),
                   h('span', { style: { flex: 1, fontSize: 13, color: _sbkFg('#e2e8f0') } }, t.label),
-                  h('button', { onClick: function() { removeTap(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('button', { onClick: function() { removeTap(i); }, 'aria-label': 'Remove tap: ' + t.label,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
                 );
               })
             ) : null,
@@ -19773,7 +19773,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               h('input', { id: 'sb-tap-input', type: 'text', placeholder: 'A practice or person that drains the bucket...',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addTap(); } },
                 style: { flex: 2, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
-              h('select', { id: 'sb-tap-capacity', defaultValue: '2',
+              h('select', { id: 'sb-tap-capacity', defaultValue: '2', 'aria-label': 'Capacity for new tap',
                 style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
                 CAPACITIES.map(function(c) { return h('option', { key: c.value, value: c.value }, c.label); })),
               h('button', { onClick: addTap, 'aria-label': 'Add tap',
@@ -19799,8 +19799,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                   d.overflowSigns.map(function(s, i) {
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _sbkBg('#1e293b'), border: '1px solid rgba(239,68,68,0.4)', fontSize: 12, color: _sbkFg('#fecaca') } },
                       h('span', null, s),
-                      h('button', { onClick: function() { removeOverflow(i); }, 'aria-label': 'Remove',
-                        style: { background: 'transparent', border: 'none', color: _sbkFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
+                      h('button', { onClick: function() { removeOverflow(i); }, 'aria-label': 'Remove overflow sign: ' + s,
+                        style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _sbkFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
                     );
                   })
                 )

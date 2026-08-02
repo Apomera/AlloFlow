@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "campaignId": "eppp-quality-halving-final-verification-v1",
-  "generatedAt": "2026-07-30T00:19:55.334Z",
+  "generatedAt": "2026-08-01T22:20:23.619Z",
   "reportType": "read-only-cross-artifact-eppp-quality-halving-verification",
   "status": "pass",
   "reviewStatus": "Automated repository gates passed; no independent human, psychometric, expert, or licensed-psychologist validation is claimed.",
@@ -161,15 +161,15 @@
   },
   "artifactSha256": {
     "bank": "bba4cf58cc215e3ae634dcd64c88a5d2ceffa9b24f2439d636749b99fc7530ee",
-    "catalog": "c75fc0c3c81f637a943d707e1000b3fe2c5e13331c0798a2f36c6c40429dea99",
+    "catalog": "451ea047a98fdb503f55b9b81baf1d1b993c05e37feaebf43cca4cbc37d4d70c",
     "distractorDiagnostics": "463e30073cce6b02ec333282a290225d6203dec65965f37fad55b29443b4044b",
     "feedbackDiagnostics": "b49e78002ac973f81667afbd9d91063eae919db3768541d09c2301700c846bca",
     "qa": "ce09c34c824f446c5899fd87a311349a55038bcf73162493c25136c59651cf8d",
     "distractorAudit": "7211b273e983778a664f9fa702544c08e008df3319956f43823cdbf47425edb2",
     "feedbackAudit": "fb650e081a2686cb25f5ed96838b1f7ff17d4c3a20848caddf0a90a2e57fdc3c",
-    "runtime": "177cad765d7db65477fd63d283adb66aea5d9858d7434686f07479fecfad866f",
+    "runtime": "6af07846c823cc02d8a5fca06bf4b49ecb20b1437366d22080cc0625dd7083cd",
     "pack": "4cd675514a6ce2c427897e2678c6e2617ec4d89468f03e2bd801cd90db5b765a",
-    "manifest": "4d58884513683f7405742ead4abfa6f95999a62dab313eb0d35c00fb0e7ea041"
+    "manifest": "11ebe45b799a02fa331b62002a3704cdaa66fc288dcd220d7a94ad65ca58edf9"
   },
   "limitations": [
     "These gates verify repository invariants and heuristic metric ceilings; they are not psychometric calibration or evidence of exam-score validity.",

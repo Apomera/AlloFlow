@@ -44,4 +44,21 @@ describe('Conflict Theater control accessibility', () => {
     expect(text).toContain('upd({ memoryResetConfirm: false, memory: {} });');
     expect(text).toContain('onClick: openMemoryResetConfirm');
   });
+
+  it('labels the active conflict scene and live conversation states', () => {
+    const text = source();
+    expect(text).toContain("role: 'img', 'aria-label': 'Conflict scene with '");
+    expect(text).toContain("'aria-label': 'Harmony with ' + characters.map(function(c) { return c.name; }).join(' and ')");
+    expect(text).toContain("role: 'log', 'aria-label': 'Conflict conversation'");
+    expect(text).toContain("role: 'status', 'aria-live': 'polite', 'aria-label': 'Characters are responding'");
+  });
+
+  it('announces addressing, safety pauses, and ending transitions', () => {
+    const text = source();
+    expect(text).toContain("role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': 'Address ' + opt.name");
+    expect(text).toContain("'aria-label': loading ? 'Waiting for characters to respond' : 'Send message'");
+    expect(text).toContain("announceSR('Practice paused. Please use the support resources below.')");
+    expect(text).toContain("announceSR('Conversation complete: ' + ending + '.')");
+  });
+
 });

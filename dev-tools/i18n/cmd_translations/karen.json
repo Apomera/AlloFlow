@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "အိးထီၣ်လံ Video Studio.",
   "cmd.open_video_studio_hint": "ဒိနုာ်, ထၢနုာ်လံာ်မဲာ်ဖျၢၣ် ဒီး ဘှီဘၣ် တၢ်နဲၣ်ကျဲအဂီၤမူ",
   "palette.ctx.videoStudio": "ဖဲအံၤ — Video Studio",
-  "palette.close": "ကးတံာ်တၢ်ပၢအလီၢ်"
+  "palette.close": "ကးတံာ်တၢ်ပၢအလီၢ်",
+  "cmd.apply_lesson_template": "တၢ်စးထီၣ်လၢ template လၢတၢ်ပာ်ဖှိၣ်အီၤ",
+  "cmd.apply_lesson_template_done": "စးထီၣ်လၢ ",
+  "cmd.apply_lesson_template_hint": "စးထီၣ် plan အသီလၢ template လၢနပာ်ဖှိၣ်အီၤအကျါတခါ",
+  "cmd.apply_lesson_template_missing": "ယတဘၣ်ထွဲ template လၢအမံၤ ",
+  "cmd.apply_lesson_template_which": "Template မနုၤလဲၣ်?",
+  "cmd.rebuild_lesson_step": "မၤက့ၤတၢ်လၢ plan အပူၤတဆီ",
+  "cmd.rebuild_lesson_step_done": "မၤက့ၤတဆီ ",
+  "cmd.rebuild_lesson_step_hint": "မၤက့ၤ resource တခါ — စံးကတိၤတဆီနီၣ်ဂံၢ်",
+  "cmd.rebuild_lesson_step_missing": "ယတဘၣ်ထွဲတဆီအံၤလၢ plan အပူၤဘၣ်.",
+  "cmd.rebuild_lesson_step_none": "plan အပူၤဒံးတအိၣ်တဆီဘၣ်.",
+  "cmd.rebuild_lesson_step_which": "တဆီမနုၤလဲၣ်?",
+  "cmd.run_lesson_blueprint": "တ့ထီၣ် lesson plan",
+  "cmd.run_lesson_blueprint_done": "plan တ့ထီၣ်အံၤ — နကွၢ်တဆီတဆီလၢ card အဖီခိၣ်သ့.",
+  "cmd.run_lesson_blueprint_hint": "တ့ထီၣ် resource ခဲလၢာ်လၢ plan အခဲအံၤအပူၤ",
+  "cmd.cancelled": "Ta bluh htee. Ta htee ha k’thu ta ta hku bluh htee."
 }

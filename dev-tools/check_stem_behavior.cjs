@@ -675,7 +675,71 @@ const TEST_SUITES = [
       },
     ],
   },
-];
+  {
+    toolId: 'coasterLab',
+    pluginFile: 'stem_lab/stem_tool_coasterlab.js',
+    framesToWait: 30,
+    initialToolData: {},
+    clearStorage: ['coaster_lab_design_v2', 'coaster_lab_design_recovery_v1', 'coaster_lab_onboarding_v1', 'coaster_lab_guided_record_v1'],
+    skipHookCalls: ['fastRun', 'guidedRun', 'randomize', 'genOnce', 'rideTest', 'setLevel', 'place', 'setCam', 'settleCam', 'setProp', 'importDesign', 'importLabPacket'],
+    triggerStart: true,
+    startHook: 'guidedRun',
+    assertions: [
+      {
+        name: 'Guided first-run path opens on a compact editable track',
+        fn: (state) => {
+          const info = state.guidedInfo;
+          if (!info || info.points !== 6 || info.state !== 'tested') {
+            return { pass: false, message: 'Expected the guided run to finish with 6 editable points and state=tested; got ' + JSON.stringify(info) };
+          }
+          if (!info.welcomeVisible) return { pass: false, message: 'Guided progress card is not visible after the first run' };
+          if (!info.prediction || !info.prediction.feedback || info.prediction.speed !== 'speedUp' || info.prediction.force !== 'valley') {
+            return { pass: false, message: 'Prediction checkpoint did not produce feedback: ' + JSON.stringify(info.prediction) };
+          }
+          if (!info.notebook || info.notebook.attempts < 1 || info.notebook.revisions !== 0 || !info.notebook.hasPrediction) {
+            return { pass: false, message: 'Notebook did not retain the guided attempt: ' + JSON.stringify(info.notebook) };
+          }
+          if (!info.evidenceVisible) return { pass: false, message: 'Prediction evidence card was not rendered in the report' };
+          if (!info.notebook || info.notebook.historyLength !== 1 || !info.notebook.exportReady || !info.notebook.packetReady || !info.notebook.packetEvidenceReady || !info.notebook.packetControlsVisible || !info.notebook.clearReady || !info.notebook.conditionsLocked || !info.timelineVisible || !info.historyExportVisible || !info.historyTrendVisible || !info.teacherReportVisible || !info.classroomRubricVisible || !info.evidenceQualityVisible || !info.adaptiveVisible || !info.adaptiveProgressVisible || !info.reviewVisible || !info.notebook.conditions || !info.comparisonVisible) return { pass: false, message: 'Guided baseline comparison, controls, or locked conditions were not ready: ' + JSON.stringify(info) };
+          if (!state.packetRoundTrip || !state.packetRoundTrip.pass || !state.packetRoundTrip.evidence) return { pass: false, message: 'Lab packet round trip did not restore the guided state: ' + JSON.stringify(state.packetRoundTrip) };
+          return { pass: true, message: 'guided first run completed with 6 editable points, a recorded prediction, and a round-trippable lab packet' };
+        },
+      },
+      {
+        name: 'Track rebuild produces a finite closed circuit',
+        fn: (state) => {
+          const info = state.trackInfo;
+          if (!info || !Number.isFinite(info.length) || info.length <= 20 || !Number.isInteger(info.samples) || info.samples < 100) {
+            return { pass: false, message: 'Invalid track summary: ' + JSON.stringify(info) };
+          }
+          return { pass: true, message: info.length + ' m circuit with ' + info.samples + ' samples' };
+        },
+      },
+      {
+        name: 'Guided ride completes and emits usable telemetry',
+        fn: (state) => {
+          const t = state.telemetrySummary;
+          if (!t || t.status !== 'complete' || !Number.isFinite(t.duration) || t.duration <= 0 || !Array.isArray(t.trace) || t.trace.length < 5) {
+            return { pass: false, message: 'Ride did not emit complete telemetry: ' + JSON.stringify(t) };
+          }
+          const finite = t.trace.every(p => ['s', 'v', 'g', 'gl'].every(k => Number.isFinite(p[k])));
+          const forward = t.trace.every((p, i, a) => i === 0 || p.s >= a[i - 1].s - 1e-6);
+          if (!finite || !forward) return { pass: false, message: 'Telemetry contains non-finite values or moves backward in arc length' };
+          return { pass: true, message: 'complete ride with ' + t.trace.length + ' finite forward samples' };
+        },
+      },
+      {
+        name: 'Physics invariant battery passes on the live track',
+        fn: (state) => {
+          const rows = state.runTests;
+          if (!Array.isArray(rows) || rows.length < 4) return { pass: false, message: 'Physics battery returned an invalid result' };
+          const failed = rows.filter(row => row && row.pass === false);
+          if (failed.length) return { pass: false, message: failed.map(row => row.name + ': ' + row.detail).join('; ') };
+          return { pass: true, message: rows.length + ' physics invariants passed' };
+        },
+      },
+    ],
+  },];
 
 const suitesToRun = TOOL_FILTER ? TEST_SUITES.filter(s => s.toolId === TOOL_FILTER) : TEST_SUITES;
 if (suitesToRun.length === 0) {
@@ -719,6 +783,8 @@ function generateHarness(suite) {
   <script src="/stem_lab/stem_lab_module.js"></script>
   <script src="/${suite.pluginFile}"></script>
   <script>
+    var resetStorageKeys = ${JSON.stringify(suite.clearStorage || [])};
+    try { resetStorageKeys.forEach(function(key) { window.localStorage.removeItem(key); }); } catch (e) {}
     // Wait for stem_lab + plugin to finish loading, then mount the tool
     setTimeout(function() {
       try {
@@ -832,17 +898,20 @@ async function runSuite(suite) {
     // (or the suite's equivalent) so the simulation populates before we measure.
     await page.waitForTimeout(800);
     if (suite.triggerStart) {
-      await page.evaluate(function(toolId) {
-        var hook = window.__testHooks && window.__testHooks[toolId];
-        if (hook && typeof hook.startDriving === 'function') {
-          hook.startDriving();
+      await page.evaluate(function(payload) {
+        var hook = window.__testHooks && window.__testHooks[payload.toolId];
+        var method = payload.startHook || 'startDriving';
+        if (hook && typeof hook[method] === 'function') {
+          hook[method].apply(hook, Array.isArray(payload.startArgs) ? payload.startArgs : []);
         }
-      }, suite.toolId);
+      }, { toolId: suite.toolId, startHook: suite.startHook || 'startDriving', startArgs: suite.startArgs || [] });
     }
     // Capture state at two checkpoints so behavioral assertions can compare frames
     // (e.g., "did each car move in its heading direction over N frames?")
     function takeSnapshot() {
-      return page.evaluate(function(toolId) {
+      return page.evaluate(function(payload) {
+        var toolId = payload.toolId;
+        var skipHookCalls = Array.isArray(payload.skipHookCalls) ? payload.skipHookCalls : [];
         var s = window.__testHooks && window.__testHooks[toolId];
         if (!s) return { _missing: true };
         var out = {};
@@ -911,6 +980,8 @@ async function runSuite(suite) {
             try { out[k] = { current: JSON.parse(JSON.stringify(v.current)) }; }
             catch (e) { out[k] = { current: '<unserializable>' }; }
           } else if (typeof v === 'function') {
+            // Some dev hooks mutate the simulation; suites can explicitly skip those.
+            if (skipHookCalls.indexOf(k) >= 0) { out[k] = '<skipped mutating hook>'; continue; }
             // Function on the hook (e.g., getCurrentScenario) — call + capture result
             try { out[k] = v(); }
             catch (e) { out[k] = '<error: ' + e.message + '>'; }
@@ -922,7 +993,7 @@ async function runSuite(suite) {
         out._errors = (window.__errors || []).slice(0, 5);
         out._timestamp = Date.now();
         return out;
-      }, suite.toolId);
+      }, { toolId: suite.toolId, skipHookCalls: suite.skipHookCalls || [] });
     }
 
     // First snapshot — early in the sim (after ~half the frames)

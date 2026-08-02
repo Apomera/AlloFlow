@@ -112,6 +112,14 @@ window.StemLab = window.StemLab || {
   ];
 
   // ── Badges ──
+  var LIFE_SKILLS_3D_LABS = [
+    { id: 'safety', source: 'alloflow-life-safety-3d', title: 'Home safety', icon: '\uD83D\uDEE1\uFE0F', accent: '#dc2626' },
+    { id: 'repair', source: 'alloflow-life-repair-3d', title: 'Home repair', icon: '\uD83D\uDD27', accent: '#2563eb' },
+    { id: 'kitchen', source: 'alloflow-life-kitchen-3d', title: 'Kitchen safety', icon: '\uD83C\uDF73', accent: '#ea580c' },
+    { id: 'laundry', source: 'alloflow-life-laundry-3d', title: 'Laundry care', icon: '\uD83E\uDDFA', accent: '#0f766e' },
+    { id: 'transit', source: 'alloflow-life-transit-3d', title: 'Transit safety', icon: '\uD83D\uDE8C', accent: '#0369a1' },
+    { id: 'capstone', source: 'alloflow-life-capstone-3d', title: 'Day-in-the-life', icon: '\uD83C\uDF1F', accent: '#7c3aed', total: 5 }
+  ];
   var LS_BADGES = [
     { id: 'firstPay',    icon: '\uD83E\uDDFE', name: 'First Paycheck', desc: 'Calculate your first paycheck' },
     { id: 'dataDetect',  icon: '\uD83D\uDCCA', name: 'Data Detective', desc: 'Spot 3 misleading data tricks' },
@@ -171,7 +179,8 @@ window.StemLab = window.StemLab || {
     { id: 'chefSafe',   icon: '\uD83C\uDF73', name: 'Food Safety Pro', desc: 'Master food safety temperatures' },
     { id: 'recipeScale', icon: '\uD83D\uDCCF', name: 'Recipe Scaler', desc: 'Scale a recipe successfully' },
     { id: 'laundryPro', icon: '\uD83E\uDDFA', name: 'Laundry Scientist', desc: 'Build a clean, safe laundry load' },
-    { id: 'scholar',     icon: '\uD83C\uDF93', name: 'Life Skills Scholar', desc: 'Read all Learn topics' }
+    { id: 'scholar',     icon: '\uD83C\uDF93', name: 'Life Skills Scholar', desc: 'Read all Learn topics' },
+  { id: 'capstoneReady', icon: '\uD83C\uDF1F', name: 'Day-in-the-Life Ready', desc: 'Complete the connected 3D capstone' }
   ];
 
   // ── Data Literacy Scenarios ──
@@ -1611,6 +1620,22 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var gradeBand = getGradeBand(ctx);
 
+      var lifeSkills3dPassport = d.lifeSkills3dPassport || {};
+      var lifeSkills3dCompletedSteps = LIFE_SKILLS_3D_LABS.reduce(function(sum, lab) {
+        var record = lifeSkills3dPassport[lab.id] || {};
+        return sum + Math.max(0, Math.min(Number(record.total) || 6, Number(record.completed) || 0));
+      }, 0);
+      var lifeSkills3dTotalSteps = LIFE_SKILLS_3D_LABS.reduce(function(sum, lab) { return sum + (Number(lab.total) || 6); }, 0);
+      var lifeSkills3dCompletedLabs = LIFE_SKILLS_3D_LABS.filter(function(lab) {
+        var record = lifeSkills3dPassport[lab.id] || {};
+        return !!record.complete || (Number(record.completed) || 0) >= (Number(record.total) || 6);
+      }).length;
+      var lifeSkills3dNextLab = LIFE_SKILLS_3D_LABS.find(function(lab) {
+        var record = lifeSkills3dPassport[lab.id] || {};
+        return !record.complete && (Number(record.completed) || 0) < (Number(record.total) || 6);
+      }) || null;
+      var lifeSkills3dPassportHint = lifeSkills3dNextLab ? 'Next suggested lab: ' + lifeSkills3dNextLab.title + '.' : 'All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete. Revisit any lab to strengthen transfer skills.';
+
       // ── State helpers ──
       function upd(k, v) {
         ctx.setToolData(function(prev) {
@@ -1662,8 +1687,251 @@ window.StemLab = window.StemLab || {
       }
       function stemBeep(correct) { if (typeof window.stemBeep === 'function') { window.stemBeep(correct); return; } if (correct) { lifeskTone(660, 0.09, 'sine', 0.05); setTimeout(function() { lifeskTone(880, 0.12, 'sine', 0.05); }, 90); } else { lifeskTone(196, 0.2, 'triangle', 0.05); } }
       function announceToSR(msg) { upd('srMsg', msg); }
+      function lifeSkills3dLabId(source) {
+        return String(source || '').replace(/^alloflow-life-/, '').replace(/-3d$/, '');
+      }
+      function lifeSkills3dTotal(source) {
+        var labId = lifeSkills3dLabId(source);
+        var lab = LIFE_SKILLS_3D_LABS.find(function(item) { return item.id === labId; });
+        return lab && lab.total ? lab.total : 6;
+      }
+      function updateLifeSkills3dPassport(source, completed, total, complete) {
+        var labId = lifeSkills3dLabId(source);
+        if (!LIFE_SKILLS_3D_LABS.some(function(lab) { return lab.id === labId; })) return;
+        upd('lifeSkills3dPassport', function(current) {
+          var next = Object.assign({}, current || {});
+          var stepTotal = Math.max(1, Number(total) || 6);
+          var record = Object.assign({ completed: 0, total: stepTotal, complete: false }, next[labId] || {});
+          record.total = stepTotal;
+          record.completed = Math.max(0, Math.min(stepTotal, Number(completed) || 0));
+          record.complete = !!complete || record.completed >= stepTotal;
+          record.updatedAt = Date.now();
+          next[labId] = record;
+          return next;
+        });
+      }
+      if (!window.__alloflowLifeSkills3dBridge) {
+        window.__alloflowLifeSkills3dBridge = { seen: {}, handle: null };
+        window.addEventListener('message', function(event) {
+          var bridge = window.__alloflowLifeSkills3dBridge;
+          var data = event && event.data;
+          if (!bridge || !data || !/^alloflow-life-(safety|repair|kitchen|laundry|transit|capstone)-3d$/.test(String(data.source || ''))) return;
+          if (typeof bridge.handle === 'function') bridge.handle(data);
+        }, false);
+      }
+      window.__alloflowLifeSkills3dBridge.handle = function(data) {
+        var bridge = window.__alloflowLifeSkills3dBridge;
+        var labels = {
+          'alloflow-life-safety-3d': 'Home safety',
+          'alloflow-life-repair-3d': 'Home repair',
+          'alloflow-life-kitchen-3d': 'Kitchen safety',
+          'alloflow-life-laundry-3d': 'Laundry care',
+          'alloflow-life-transit-3d': 'Transit safety',
+          'alloflow-life-capstone-3d': 'Day-in-the-life capstone'
+        };
+        var badges = {
+          'alloflow-life-safety-3d': 'homeSafetyReady',
+          'alloflow-life-repair-3d': 'handyman',
+          'alloflow-life-kitchen-3d': 'chefSafe',
+          'alloflow-life-laundry-3d': 'laundryPro',
+          'alloflow-life-transit-3d': 'routeNavigator',
+          'alloflow-life-capstone-3d': 'capstoneReady'
+        };
+        var label = labels[data.source] || '3D Life Skills';
+        var type = String(data.type || '');
+        if (/-hello$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' lab is ready.');
+          return;
+        }
+        if (/-challenge-start$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' transfer challenge started.');
+          announceToSR('Started the 3D ' + label + ' transfer challenge.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-debrief$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' reflection saved.');
+          announceToSR('Saved the 3D ' + label + ' reflection.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-teach-back$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' teach-back saved.');
+          announceToSR('Saved the 3D ' + label + ' teach-back.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-help-pause$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' pause/help cue practiced.');
+          announceToSR('Practiced pausing and asking for help in the 3D ' + label + ' lab.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-why-reveal$/.test(type)) {
+          upd('lifeSkills3dStatus', label + ' explanation opened.');
+          announceToSR('Opened the why-this-matters explanation in the 3D ' + label + ' lab.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-reset$/.test(type)) {
+          Object.keys(bridge.seen).forEach(function(key) {
+            if (key.indexOf(data.source + ':') === 0) delete bridge.seen[key];
+          });
+          updateLifeSkills3dPassport(data.source, 0, lifeSkills3dTotal(data.source), false);
+          upd('lifeSkills3dStatus', label + ' progress reset.');
+          return;
+        }
+        if (/-task-complete$/.test(type)) {
+          var taskKey = data.source + ':' + String(data.task || '') + ':' + String(data.completed || '');
+          if (bridge.seen[taskKey]) return;
+          bridge.seen[taskKey] = true;
+          upd('lifeSkills3dStatus', label + ': ' + (Number(data.completed) || 0) + '/' + (Number(data.total) || 6) + ' completed.');
+          updateLifeSkills3dPassport(data.source, data.completed, data.total, false);
+          awardXP(5, '3D ' + label + ' step');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+          return;
+        }
+        if (/-complete$/.test(type)) {
+          var completeKey = data.source + ':complete';
+          if (bridge.seen[completeKey]) return;
+          bridge.seen[completeKey] = true;
+          awardXP(10, '3D ' + label + ' complete');
+          if (badges[data.source]) checkBadge(badges[data.source]);
+          updateLifeSkills3dPassport(data.source, data.total || lifeSkills3dTotal(data.source), data.total || lifeSkills3dTotal(data.source), true);
+          upd('lifeSkills3dStatus', label + ' lab complete — reward unlocked.');
+          announceToSR('Completed the 3D ' + label + ' lab.');
+          setTimeout(function() { upd('lifeSkills3dStatus', null); }, 5000);
+        }
+      };
+      function openLifeSkillsSafety3D() {
+        var safetyBase = 'https://alloflow-cdn.pages.dev/life_skills_safety/life_skills_safety.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            safetyBase = window.location.origin + '/life_skills_safety/life_skills_safety.html';
+          }
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(safetyBase + query, 'alloflow-life-safety-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) {
+          announceToSR('The 3D home safety walkthrough was blocked. Allow pop-ups for this page, then try again.');
+          upd('safety3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.');
+          return;
+        }
+        upd('safety3dOpenedAt', Date.now());
+        upd('safety3dMsg', '3D walkthrough opened in a new window.');
+        announceToSR('Opened the 3D home safety walkthrough in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
+      function openLifeSkillsRepair3D() {
+        var repairBase = 'https://alloflow-cdn.pages.dev/life_skills_repair/life_skills_repair.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            repairBase = window.location.origin + '/life_skills_repair/life_skills_repair.html';
+          }
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(repairBase + query, 'alloflow-life-repair-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) {
+          announceToSR('The 3D home repair lab was blocked. Allow pop-ups for this page, then try again.');
+          upd('repair3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.');
+          return;
+        }
+        upd('repair3dOpenedAt', Date.now());
+        upd('repair3dMsg', '3D repair lab opened in a new window.');
+        announceToSR('Opened the 3D home repair lab in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
+      function openLifeSkillsKitchen3D() {
+        var kitchenBase = 'https://alloflow-cdn.pages.dev/life_skills_kitchen/life_skills_kitchen.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            kitchenBase = window.location.origin + '/life_skills_kitchen/life_skills_kitchen.html';
+          }
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(kitchenBase + query, 'alloflow-life-kitchen-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) {
+          announceToSR('The 3D kitchen lab was blocked. Allow pop-ups for this page, then try again.');
+          upd('kitchen3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.');
+          return;
+        }
+        upd('kitchen3dOpenedAt', Date.now());
+        upd('kitchen3dMsg', '3D kitchen lab opened in a new window.');
+        announceToSR('Opened the 3D kitchen and food safety lab in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
+      function openLifeSkillsLaundry3D() {
+        var laundryBase = 'https://alloflow-cdn.pages.dev/life_skills_laundry/life_skills_laundry.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            laundryBase = window.location.origin + '/life_skills_laundry/life_skills_laundry.html';
+          }
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(laundryBase + query, 'alloflow-life-laundry-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) {
+          announceToSR('The 3D laundry lab was blocked. Allow pop-ups for this page, then try again.');
+          upd('laundry3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.');
+          return;
+        }
+        upd('laundry3dOpenedAt', Date.now());
+        upd('laundry3dMsg', '3D laundry lab opened in a new window.');
+        announceToSR('Opened the 3D laundry and clothing care lab in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
+      function openLifeSkillsTransit3D() {
+        var transitBase = 'https://alloflow-cdn.pages.dev/life_skills_transit/life_skills_transit.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            transitBase = window.location.origin + '/life_skills_transit/life_skills_transit.html';
+          }
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(transitBase + query, 'alloflow-life-transit-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) {
+          announceToSR('The 3D transit lab was blocked. Allow pop-ups for this page, then try again.');
+          upd('transit3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.');
+          return;
+        }
+        upd('transit3dOpenedAt', Date.now());
+        upd('transit3dMsg', '3D transit lab opened in a new window.');
+        announceToSR('Opened the 3D transit and street safety lab in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
 
       // ── Defaults ──
+      function openLifeSkillsCapstone3D() {
+        var capstoneBase = 'https://alloflow-cdn.pages.dev/life_skills_capstone/life_skills_capstone.html';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) capstoneBase = window.location.origin + '/life_skills_capstone/life_skills_capstone.html';
+        } catch (_) {}
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var w = null;
+        try { w = window.open(capstoneBase + query, 'alloflow-life-capstone-3d', 'width=1280,height=860'); } catch (_) { w = null; }
+        if (!w) { announceToSR('The 3D day-in-the-life capstone was blocked. Allow pop-ups for this page, then try again.'); upd('capstone3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.'); return; }
+        upd('capstone3dMsg', '3D capstone opened in a new window.');
+        announceToSR('Opened the 3D day-in-the-life capstone in a new window.');
+        try { w.focus(); } catch (_) {}
+      }
+      function openLifeSkills3dById(id) {
+        if (id === 'capstone') return openLifeSkillsCapstone3D();
+        if (id === 'safety') return openLifeSkillsSafety3D();
+        if (id === 'repair') return openLifeSkillsRepair3D();
+        if (id === 'kitchen') return openLifeSkillsKitchen3D();
+        if (id === 'laundry') return openLifeSkillsLaundry3D();
+        if (id === 'transit') return openLifeSkillsTransit3D();
+      }
       var tab = d.tab || 'overview';
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
       var overviewFocus = d.overviewFocus || 'money';
@@ -3172,6 +3440,7 @@ window.StemLab = window.StemLab || {
 
         // Badge toast
         d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' }, '\uD83C\uDFC6 Badge: ' + d.badgeToast),
+        d.lifeSkills3dStatus && h('div', { className: 'fixed top-16 right-4 z-50 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-lg text-xs font-bold', role: 'status', 'aria-live': 'polite' }, d.lifeSkills3dStatus),
 
         // Header
         h('div', { className: 'bg-gradient-to-r from-cyan-700 via-teal-700 to-emerald-700 rounded-2xl p-5 text-white shadow-lg' },
@@ -3264,6 +3533,42 @@ window.StemLab = window.StemLab || {
 
         // ═══ PAYCHECK TAB ═══
         tab === 'overview' && h('div', { className: 'space-y-4', 'data-lifeskills-overview': 'true' },
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-3d-passport': 'true' },
+            h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, '3D practice passport'),
+                h('h4', { className: 'text-base font-black text-slate-800' }, lifeSkills3dCompletedLabs + '/' + LIFE_SKILLS_3D_LABS.length + ' labs completed'),
+                h('p', { className: 'text-[11px] text-slate-600' }, lifeSkills3dCompletedSteps + '/' + lifeSkills3dTotalSteps + ' scene steps practiced')
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold' }, lifeSkills3dPassportHint)
+            ),
+            h('div', { className: 'grid sm:grid-cols-2 xl:grid-cols-3 gap-2' },
+              LIFE_SKILLS_3D_LABS.map(function(lab) {
+                var record = lifeSkills3dPassport[lab.id] || {};
+                var total = Math.max(1, Number(record.total) || 6);
+                var completed = Math.max(0, Math.min(total, Number(record.completed) || 0));
+                var percent = Math.round(completed / total * 100);
+                var done = !!record.complete || completed >= total;
+                return h('button', {
+                  key: lab.id,
+                  type: 'button',
+                  onClick: function() { openLifeSkills3dById(lab.id); },
+                  className: 'text-left rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-teal-700',
+                  style: { borderColor: lab.accent + '66' },
+                  'aria-label': 'Open ' + lab.title + ' 3D lab, ' + completed + ' of ' + total + ' steps complete'
+                },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-sm font-black', style: { color: lab.accent } }, lab.icon + ' ' + lab.title),
+                    h('span', { className: 'text-[10px] font-bold ' + (done ? 'text-emerald-700' : 'text-slate-500') }, done ? 'READY' : completed + '/' + total)
+                  ),
+                  h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden mt-2', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': completed, 'aria-label': lab.title + ' progress' },
+                    h('div', { className: 'h-full rounded-full transition-all', style: { width: percent + '%', background: done ? '#059669' : lab.accent } })
+                  ),
+                  h('p', { className: 'text-[10px] text-slate-600 mt-2' }, done ? 'Revisit for transfer practice.' : 'Open the scene and practice safely.')
+                );
+              })
+            )
+          ),
           h('div', { className: glassCard + ' space-y-3' },
             h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
               h('div', null,
@@ -3722,7 +4027,11 @@ window.StemLab = window.StemLab || {
                   'Practice getting from one place to another with a trusted plan and a backup.',
                   'Plan trips by checking destination, route, time, fare, safety, and what to do if plans change.',
                   'Compare routes, transfers, access needs, payment, alerts, safer waiting places, and backup options.',
-                  'Model transportation literacy as time management, wayfinding, accessibility, cost planning, situational awareness, and contingency planning.'))
+                  'Model transportation literacy as time management, wayfinding, accessibility, cost planning, situational awareness, and contingency planning.')),
+                h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
+                  h('button', { onClick: openLifeSkillsTransit3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-700 to-emerald-700 hover:from-blue-800 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-blue-300', 'aria-label': 'Open the 3D transit and street safety lab in a new window' }, '\uD83C\uDF10 Open 3D transit lab \u2197'),
+                  d.transit3dMsg && h('span', { className: 'text-[11px] font-bold text-blue-800', role: 'status' }, d.transit3dMsg)
+                )
               ),
               h('div', { className: 'px-3 py-2 rounded-xl bg-sky-50 border border-sky-200 text-right' },
                 h('p', { className: 'text-[10px] uppercase font-bold text-sky-800' }, 'Trip readiness'),
@@ -5687,7 +5996,11 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-2xl font-black text-red-800 leading-none' }, Math.round(homeSafetyDone / HOME_SAFETY_CHECKS.length * 100) + '%')
               )
             ),
-            h('p', { className: 'text-[11px] text-slate-600 bg-red-50 border border-red-200 rounded-xl p-2' }, 'Practice only. If there is immediate danger, smoke/fire, carbon monoxide alarm, serious injury, trouble breathing, or an unconscious person, leave if needed and call emergency help.')
+            h('p', { className: 'text-[11px] text-slate-600 bg-red-50 border border-red-200 rounded-xl p-2' }, 'Practice only. If there is immediate danger, smoke/fire, carbon monoxide alarm, serious injury, trouble breathing, or an unconscious person, leave if needed and call emergency help.'),
+          h('div', { className: 'flex items-center gap-2 flex-wrap' },
+            h('button', { onClick: openLifeSkillsSafety3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-800 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-red-300', 'aria-label': 'Open the 3D home safety walkthrough in a new window' }, '🌐 Open 3D safety walkthrough ↗'),
+            d.safety3dMsg && h('span', { className: 'text-[11px] font-bold text-red-800', role: 'status' }, d.safety3dMsg)
+          )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
             h('div', { className: glassCard + ' space-y-3' },
@@ -6022,7 +6335,11 @@ window.StemLab = window.StemLab || {
         tab === 'homerepair' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.home_repair', '\uD83D\uDD27 Home Repair')),
-            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.plumbing_paint_calculator_and_diy_diag', 'Plumbing, paint calculator, and DIY diagnostics'))
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.plumbing_paint_calculator_and_diy_diag', 'Plumbing, paint calculator, and DIY diagnostics')),
+            h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
+              h('button', { onClick: openLifeSkillsRepair3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-700 to-indigo-700 hover:from-sky-800 to-indigo-800 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': 'Open the 3D home repair and systems lab in a new window' }, '\uD83C\uDF10 Open 3D repair lab \u2197'),
+              d.repair3dMsg && h('span', { className: 'text-[11px] font-bold text-sky-800', role: 'status' }, d.repair3dMsg)
+            )
           ),
           // Toilet Diagnosis
           h('div', { className: glassCard },
@@ -6516,7 +6833,11 @@ window.StemLab = window.StemLab || {
         tab === 'cooking' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.cooking_food_safety', '\uD83C\uDF73 Cooking & Food Safety')),
-            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Cooking is science you can eat!', 'Learn food safety temps, scale recipes, and read nutrition labels.', 'Kitchen STEM: food safety microbiology, recipe ratios, and nutrition label analysis.', 'Food science: safe internal temps, danger zone microbiology, recipe scaling algebra, and FDA nutrition label literacy.'))
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Cooking is science you can eat!', 'Learn food safety temps, scale recipes, and read nutrition labels.', 'Kitchen STEM: food safety microbiology, recipe ratios, and nutrition label analysis.', 'Food science: safe internal temps, danger zone microbiology, recipe scaling algebra, and FDA nutrition label literacy.')),
+            h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
+              h('button', { onClick: openLifeSkillsKitchen3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-orange-700 hover:from-emerald-800 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-emerald-300', 'aria-label': 'Open the 3D kitchen and food safety lab in a new window' }, '\uD83C\uDF10 Open 3D kitchen lab \u2197'),
+              d.kitchen3dMsg && h('span', { className: 'text-[11px] font-bold text-emerald-800', role: 'status' }, d.kitchen3dMsg)
+            )
           ),
           // Recipe Scaler
           h('div', { className: glassCard + ' space-y-3' },
@@ -6631,7 +6952,11 @@ window.StemLab = window.StemLab || {
                   'Learn the steps for clean, safe clothes.',
                   'Practice sorting, choosing settings, and spotting laundry myths.',
                   'Explore detergent chemistry, stain science, water temperature, and fabric care.',
-                  'Model laundry as applied chemistry: surfactants, enzymes, mechanical action, heat transfer, fiber structure, and residue control.'))
+                  'Model laundry as applied chemistry: surfactants, enzymes, mechanical action, heat transfer, fiber structure, and residue control.')),
+                h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
+                  h('button', { onClick: openLifeSkillsLaundry3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-700 hover:from-cyan-800 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': 'Open the 3D laundry and clothing care lab in a new window' }, '\uD83C\uDF10 Open 3D laundry lab \u2197'),
+                  d.laundry3dMsg && h('span', { className: 'text-[11px] font-bold text-cyan-800', role: 'status' }, d.laundry3dMsg)
+                )
               ),
               h('div', { className: 'px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-right' },
                 h('p', { className: 'text-[10px] uppercase font-bold text-teal-600' }, 'Load readiness'),

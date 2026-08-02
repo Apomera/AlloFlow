@@ -171,7 +171,7 @@
     var loopPair = React.useState(false);
     var loopEnabled = loopPair[0];
     var setLoopEnabled = loopPair[1];
-    var transportViewPair = React.useState({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: false });
+    var transportViewPair = React.useState({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: false, tick: 0, barIndex: 0, beat: 1, activeNoteId: null, loopIndex: 0 });
     var transportView = transportViewPair[0];
     var setTransportView = transportViewPair[1];
     var draftMetaPair = React.useState(function () { return ogReadDraftMeta(root); });
@@ -272,6 +272,12 @@
     var keyboardDurationPair = React.useState(1);
     var keyboardDurationSteps = keyboardDurationPair[0];
     var setKeyboardDurationSteps = keyboardDurationPair[1];
+    var keyboardEntryModePair = React.useState('grid');
+    var keyboardEntryMode = keyboardEntryModePair[0];
+    var setKeyboardEntryMode = keyboardEntryModePair[1];
+    var keyboardStaffDurationPair = React.useState('q');
+    var keyboardStaffDuration = keyboardStaffDurationPair[0];
+    var setKeyboardStaffDuration = keyboardStaffDurationPair[1];
     var midiStatusPair = React.useState({
       supported: !!(root.navigator && root.navigator.requestMIDIAccess),
       connected: false,
@@ -329,6 +335,12 @@
     var staffDurationPair = React.useState('q');
     var staffDuration = staffDurationPair[0];
     var setStaffDuration = staffDurationPair[1];
+    var staffArticulationPair = React.useState('normal');
+    var staffArticulation = staffArticulationPair[0];
+    var setStaffArticulation = staffArticulationPair[1];
+    var staffDynamicPair = React.useState('mf');
+    var staffDynamic = staffDynamicPair[0];
+    var setStaffDynamic = staffDynamicPair[1];
     var staffToolPair = React.useState('note');
     var staffTool = staffToolPair[0];
     var setStaffTool = staffToolPair[1];
@@ -366,6 +378,7 @@
     var musicXmlInputRef = React.useRef(null);
     var midiAccessRef = React.useRef(null);
     var midiHandlerRef = React.useRef(null);
+    var midiActiveNotesRef = React.useRef({});
     var pattern = C.ogFindPattern && C.ogFindPattern(project, selectedPatternId) || project.patterns[0];
     var drumTrack = project.tracks.find(function (track) { return track.type === 'drumRack'; });
     var synthTrack = project.tracks.find(function (track) { return track.type === 'synth'; });
@@ -375,11 +388,32 @@
     var selectedPadVoiceDescription = selectedPadVoice && C.ogDescribeProceduralVoice ? C.ogDescribeProceduralVoice(selectedPadVoice) : null;
     var selectedPadVoiceComparison = selectedPad && drumTrack && C.ogComparePadProceduralVoice ? C.ogComparePadProceduralVoice(project, drumTrack.id, selectedPadId) : null;
     var stepsPerBar = 16;
+    var timeSignatureOptions = [[2, 4], [3, 4], [4, 4], [5, 4], [6, 8], [7, 8], [12, 8]];
+    var timeSignatureValue = (project.timeSignature || [4, 4]).slice(0, 2).join('/');
+    if (!timeSignatureOptions.some(function (signature) { return signature[0] + '/' + signature[1] === timeSignatureValue; })) {
+      var currentSignatureParts = timeSignatureValue.split('/');
+      timeSignatureOptions.push([Number(currentSignatureParts[0]) || 4, Number(currentSignatureParts[1]) || 4]);
+    }
     var synthPitches = ['C4', 'Bb3', 'G3', 'Eb3', 'C3', 'Bb2', 'G2', 'C2'];
     var keyboardLayout = C.ogBuildKeyboardLayout ? C.ogBuildKeyboardLayout(project, { octave: keyboardOctave, octaves: 2 }) : { keys: [] };
     var keyboardModeLabel = keyboardMode === 'triad' ? 'Triad assist' : 'Single notes';
     var keyboardLengthOptions = [1, 2, 4, 8].filter(function (steps) { return steps <= stepsPerBar; });
+    var keyboardStaffDurationOptions = [
+      { value: 's', label: 'Sixteenth' },
+      { value: 'ts', label: 'Sixteenth triplet (3:2)' },
+      { value: 'te', label: 'Eighth triplet (3:2)' },
+      { value: 'tq', label: 'Quarter triplet (3:2)' },
+      { value: 'e', label: 'Eighth' },
+      { value: 'e.', label: 'Dotted Eighth' },
+      { value: 'q', label: 'Quarter' },
+      { value: 'q.', label: 'Dotted Quarter' },
+      { value: 'h', label: 'Half' },
+      { value: 'h.', label: 'Dotted Half' },
+      { value: 'w', label: 'Whole' }
+    ];
     if (keyboardLengthOptions.indexOf(keyboardDurationSteps) === -1) keyboardLengthOptions.push(keyboardDurationSteps);
+    var keyboardStaffEntryBeat = keyboardStaffBeatForStep(keyboardStep);
+    var keyboardEntryPositionLabel = keyboardEntryMode === 'staff' ? 'Bar ' + (selectedBar + 1) + ' - beat ' + keyboardStaffEntryBeat : 'Step ' + (keyboardStep + 1);
     var workspaceModes = [
       { id: 'learn', label: 'Learn', summary: 'Starter, beat, keyboard, harmony, score', sections: ['start', 'pads', 'steps', 'keyboard', 'harmony', 'score', 'project'] },
       { id: 'compose', label: 'Compose', summary: 'Keyboard, synth notes, harmony, score, song', sections: ['start', 'synth', 'keyboard', 'harmony', 'score', 'song', 'project'] },
@@ -442,8 +476,10 @@
         if (access && access.inputs) {
           access.inputs.forEach(function (input) {
             input.onmidimessage = null;
+
           });
         }
+        midiActiveNotesRef.current = {};
         if (access) access.onstatechange = null;
       };
     }, []);
@@ -462,7 +498,7 @@
       return function () {
         if (root.removeEventListener) root.removeEventListener('keydown', handleComputerKey);
       };
-    }, [keyboardOctave, keyboardRecordEnabled, keyboardMode, keyboardDurationSteps, keyboardStep, selectedBar, selectedPatternId, project]);
+    }, [keyboardOctave, keyboardRecordEnabled, keyboardMode, keyboardDurationSteps, keyboardStep, keyboardEntryMode, keyboardStaffDuration, staffArticulation, staffDynamic, selectedBar, selectedPatternId, project]);
 
     React.useEffect(function () {
       if (!C || !C.ogSerializeProject || !project) return undefined;
@@ -545,7 +581,7 @@
       ref.timers = [];
       if (ref.interval) root.clearInterval(ref.interval);
       ref.interval = null;
-      if (resetView) setTransportView({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: loopEnabled });
+      if (resetView) setTransportView({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: loopEnabled, tick: 0, barIndex: 0, beat: 1, activeNoteId: null, loopIndex: 0 });
     }
 
     function addTransportTimer(fn, delayMs) {
@@ -582,12 +618,29 @@
         var safeDuration = Math.max(0.001, durationSec || 0.001);
         var cycleElapsed = activeLoop ? elapsed % safeDuration : Math.min(elapsed, safeDuration);
         var progress = Math.max(0, Math.min(1, cycleElapsed / safeDuration));
+        var safeTotalTicks = Math.max(1, totalTicks || 1);
+        var loopIndex = activeLoop ? Math.floor(elapsed / safeDuration) : 0;
+        var tick = Math.min(safeTotalTicks - 1, Math.max(0, Math.floor(progress * safeTotalTicks)));
+        var staffPlayback = mode === 'pattern' && C.ogBuildStaffPlaybackCursor && pattern
+          ? C.ogBuildStaffPlaybackCursor(project, pattern.id, { trackId: synthTrack && synthTrack.id, tick: tick })
+          : null;
         var label = formatTransportLabel(mode, progress, totalTicks, activeLoop);
-        setTransportView({ active: true, mode: mode, progress: progress, label: label, loop: activeLoop });
+        setTransportView({
+          active: true,
+          mode: mode,
+          progress: progress,
+          label: label,
+          loop: activeLoop,
+          tick: staffPlayback ? staffPlayback.tick : tick,
+          barIndex: staffPlayback ? staffPlayback.barIndex : 0,
+          beat: staffPlayback ? staffPlayback.beat : 1,
+          activeNoteId: staffPlayback ? staffPlayback.noteId : null,
+          loopIndex: loopIndex
+        });
         if (!activeLoop && elapsed >= safeDuration) {
           clearTransportSchedule(false);
           setPlaying(false);
-          setTransportView({ active: false, mode: mode, progress: 1, label: formatTransportLabel(mode, 1, totalTicks, false), loop: false });
+          setTransportView({ active: false, mode: mode, progress: 1, label: formatTransportLabel(mode, 1, totalTicks, false), loop: false, tick: safeTotalTicks - 1, barIndex: staffPlayback ? staffPlayback.barIndex : 0, beat: staffPlayback ? staffPlayback.beat : 1, activeNoteId: null, loopIndex: 0 });
         }
       }
       transportRef.current.interval = root.setInterval(update, 100);
@@ -860,14 +913,50 @@
       return { pitches: [pitch], label: pitch };
     }
 
+    function keyboardStaffBeatForStep(stepValue) {
+      var step = Math.max(0, Math.min(stepsPerBar - 1, Number(stepValue) || 0));
+      return Math.round((1 + (step * (C.ogTicksPerMeasure(project) / stepsPerBar) / C.ogTicksPerBeat(project))) * 1000) / 1000;
+    }
+
+    function writeKeyboardStaffRest() {
+      if (keyboardEntryMode !== 'staff' || !pattern || !synthTrack) return;
+      var startBeat = keyboardStaffBeatForStep(keyboardStep);
+      writeStaffSlot(selectedBar, startBeat, { tool: 'rest', rest: true, duration: keyboardStaffDuration });
+      setKeyboardStep(function (value) { return (Math.max(0, value) + 1) % stepsPerBar; });
+      ogAnnounce('Rest written at bar ' + (selectedBar + 1) + ' beat ' + startBeat);
+    }
+
     function recordKeyboardNotes(pitches, velocity, source) {
-      if (!pattern || !synthTrack || !C.ogSetNoteStep) return;
+      if (!pattern || !synthTrack) return { target: keyboardEntryMode, event: null };
       var step = selectedBar * stepsPerBar + Math.max(0, Math.min(stepsPerBar - 1, keyboardStep));
       var durationSteps = Math.max(1, Math.min(stepsPerBar, Math.round(Number(keyboardDurationSteps) || 1)));
+      var staffStartBeat = keyboardStaffBeatForStep(keyboardStep);
+      var firstStaffResult = null;
+      var staffResults = [];
       mutate(function (next) {
         var nextPattern = currentPatternIn(next);
         var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
         if (!nextPattern || !nextSynth) return;
+        if (keyboardEntryMode === 'staff' && C.ogSetStaffNote) {
+          (pitches || []).forEach(function (pitch, pitchIndex) {
+            var staffResult = C.ogSetStaffNote(next, nextPattern.id, nextSynth.id, {
+              startBar: selectedBar,
+              startBeat: Math.round(staffStartBeat * 1000) / 1000,
+              pitch: pitch,
+              duration: keyboardStaffDuration,
+              articulation: staffArticulation,
+              dynamic: source === 'hardwareMidi' && C.ogDynamicFromVelocity ? C.ogDynamicFromVelocity(velocity || 0.75) : staffDynamic,
+              velocity: velocity || 0.75,
+              role: keyboardMode === 'triad' ? 'keyboardChord' : 'keyboard',
+              source: source || 'virtualKeyboard',
+              replaceSlot: pitchIndex === 0
+            });
+            if (!firstStaffResult && staffResult && staffResult.event) firstStaffResult = staffResult;
+            if (staffResult && staffResult.event) staffResults.push(staffResult);
+          });
+          return;
+        }
+        if (!C.ogSetNoteStep) return;
         var durationTicks = Math.round(C.ogTicksPerMeasure(next) / stepsPerBar) * durationSteps;
         (pitches || []).forEach(function (pitch) {
           C.ogSetNoteStep(next, nextPattern.id, nextSynth.id, pitch, step, stepsPerBar, {
@@ -879,7 +968,27 @@
           });
         });
       });
+      if (keyboardEntryMode === 'staff' && firstStaffResult && firstStaffResult.event) {
+        setSelectedBar(selectedBar);
+        setStaffTool('note');
+        setStaffPitch(firstStaffResult.event.pitch || activeStaffPitch);
+        setStaffDuration(keyboardStaffDuration);
+        setStaffArticulation(firstStaffResult.event.articulation || 'normal');
+        setStaffDynamic(firstStaffResult.event.dynamic || 'mf');
+        setSelectedStaffNoteId(firstStaffResult.event.id || '');
+        setStaffCursor({
+          barIndex: selectedBar,
+          bar: selectedBar + 1,
+          startBeat: Math.round(staffStartBeat * 1000) / 1000,
+          pitch: firstStaffResult.event.pitch || activeStaffPitch,
+          duration: keyboardStaffDuration,
+          tool: 'note',
+          noteId: firstStaffResult.event.id || '',
+          inRange: true
+        });
+      }
       setKeyboardStep(function (value) { return (Math.max(0, value) + 1) % stepsPerBar; });
+      return { target: keyboardEntryMode === 'staff' && firstStaffResult ? 'staff' : 'grid', event: firstStaffResult && firstStaffResult.event || null, events: staffResults, startBeat: staffStartBeat };
     }
 
     function playKeyboardPitch(pitch, velocity, source) {
@@ -888,22 +997,73 @@
       (performance.pitches || [pitch]).forEach(function (nextPitch) {
         triggerNote(nextPitch, velocity || 0.75);
       });
-      if (keyboardRecordEnabled) recordKeyboardNotes(performance.pitches, velocity || 0.75, source);
-      ogAnnounce(performance.label + (keyboardRecordEnabled ? ' recorded' : ' played'));
+      var recordResult = keyboardRecordEnabled ? recordKeyboardNotes(performance.pitches, velocity || 0.75, source) : null;
+      var recordLabel = recordResult && recordResult.target === 'staff' ? ' written to staff' : keyboardRecordEnabled ? ' recorded' : ' played';
+      ogAnnounce(performance.label + recordLabel);
+      return { pitches: performance.pitches || [pitch], recordResult: recordResult };
     }
 
     function playKeyboardMidi(midi, velocity, source) {
       if (!C.ogMidiToNoteName) return;
       var pitch = C.ogMidiToNoteName(midi);
-      playKeyboardPitch(pitch, velocity || 0.75, source);
+      return playKeyboardPitch(pitch, velocity || 0.75, source);
     }
 
+    function midiClockMs() {
+      return root.performance && typeof root.performance.now === 'function' ? root.performance.now() : Date.now();
+    }
+
+    function beginMidiNoteCapture(midi, velocity, result) {
+      if (!keyboardRecordEnabled || keyboardEntryMode !== 'staff' || !result || !result.recordResult) return;
+      var events = result.recordResult.events || [];
+      var pitch = C.ogMidiToNoteName ? C.ogMidiToNoteName(midi) : '';
+      var match = events.filter(function (item) { return item && item.event && item.event.pitch === pitch; })[0] || events[0];
+      if (!match || !match.event) return;
+      midiActiveNotesRef.current[midi] = {
+        eventId: match.event.id,
+        eventIds: events.filter(function (item) { return item && item.event; }).map(function (item) { return item.event.id; }),
+        patternId: pattern && pattern.id,
+        trackId: synthTrack && synthTrack.id,
+        startedAt: midiClockMs(),
+        velocity: velocity
+      };
+    }
+
+    function finishMidiNoteCapture(midi) {
+      var capture = midiActiveNotesRef.current[midi];
+      if (!capture) return;
+      delete midiActiveNotesRef.current[midi];
+      var eventIds = capture.eventIds && capture.eventIds.length ? capture.eventIds : capture.eventId ? [capture.eventId] : [];
+      if (!keyboardRecordEnabled || keyboardEntryMode !== 'staff' || !eventIds.length || !C.ogUpdateStaffNote) return;
+      var elapsedMs = Math.max(1, midiClockMs() - capture.startedAt);
+      var quarterMs = 60000 / Math.max(1, Number(project.bpm) || 96);
+      var durationTicks = Math.max(1, Math.round((elapsedMs / quarterMs) * C.ogTicksPerBeat(project)));
+      var summary = { changed: false };
+      mutate(function (next) {
+        eventIds.forEach(function (eventId) {
+          var nextSummary = C.ogUpdateStaffNote(next, capture.patternId, capture.trackId, eventId, {
+            durationTicks: durationTicks,
+            source: 'midiPerformance'
+          });
+          if (nextSummary && nextSummary.changed) summary = nextSummary;
+        });
+      });
+      if (summary && summary.changed) ogAnnounce('MIDI note length captured as ' + (summary.duration || 'custom value'));
+    }
     function handleMidiMessage(ev) {
       var data = ev && ev.data || [];
       var command = data[0] & 240;
       var midi = data[1];
       var velocity = data[2] || 0;
-      if (command === 144 && velocity > 0 && midi != null) playKeyboardMidi(midi, velocity / 127, 'hardwareMidi');
+      if (midi == null) return;
+      if (command === 128 || command === 144 && velocity === 0) {
+        finishMidiNoteCapture(midi);
+        return;
+      }
+      if (command === 144 && velocity > 0) {
+        if (midiActiveNotesRef.current[midi]) finishMidiNoteCapture(midi);
+        beginMidiNoteCapture(midi, velocity / 127, playKeyboardMidi(midi, velocity / 127, 'hardwareMidi'));
+      }
     }
 
     function wireMidiInputs(access) {
@@ -964,6 +1124,19 @@
       mutate(function (next) {
         next.swing = Math.max(0, Math.min(0.75, (Number(value) || 0) / 100));
       });
+    }
+
+    function setTimeSignature(value) {
+      var parts = String(value || '').split('/');
+      var beats = Math.max(1, Math.min(24, Math.round(Number(parts[0]) || 4)));
+      var beatType = Math.max(1, Math.min(32, Math.round(Number(parts[1]) || 4)));
+      var label = beats + '/' + beatType;
+      if (label === timeSignatureValue) return;
+      mutate(function (next) {
+        next.timeSignature = [beats, beatType];
+      });
+      addToast('Meter set to ' + label + '.', 'success');
+      ogAnnounce('Meter set to ' + label);
     }
 
     function setMixerGain(channelId, value) {
@@ -1526,6 +1699,8 @@
       var targetTool = entryOptions.tool || staffTool;
       var targetPitch = entryOptions.pitch || activeStaffPitch;
       var targetDuration = entryOptions.duration || staffDuration;
+      var targetArticulation = entryOptions.articulation || staffArticulation;
+      var targetDynamic = entryOptions.dynamic || staffDynamic;
       var result = null;
       mutate(function (next) {
         var nextPattern = currentPatternIn(next);
@@ -1537,6 +1712,8 @@
           duration: targetDuration,
           tool: targetTool,
           rest: targetTool === 'rest',
+          articulation: targetArticulation,
+          dynamic: targetDynamic,
           replaceSlot: true
         });
       });
@@ -1547,6 +1724,7 @@
         pitch: targetPitch,
         duration: targetDuration,
         tool: targetTool,
+        restId: targetTool === 'rest' && result && result.event ? result.event.id : '',
         x: entryOptions.x,
         y: entryOptions.y,
         inRange: entryOptions.inRange,
@@ -1554,8 +1732,8 @@
       });
       if (targetTool === 'rest') {
         setSelectedStaffNoteId('');
-        addToast('Staff slot cleared.', 'success');
-        ogAnnounce('Staff slot cleared');
+        addToast('Rest written on the staff.', 'success');
+        ogAnnounce('Rest written');
       } else {
         triggerNote(targetPitch, 0.72);
         addToast(targetPitch + ' written on the staff.', 'success');
@@ -1622,6 +1800,8 @@
       setSelectedBar(Math.max(0, (measure && measure.bar || note.bar || selectedBar + 1) - 1));
       if (note.pitch) setStaffPitch(note.pitch);
       setStaffDuration(staffDurationTokenFor(note));
+      setStaffArticulation(note.articulation || 'normal');
+      setStaffDynamic(note.dynamic || 'mf');
       setStaffTool('note');
       setStaffCursor({
         barIndex: Math.max(0, (measure && measure.bar || note.bar || selectedBar + 1) - 1),
@@ -1637,6 +1817,37 @@
       });
       if (note.pitch) triggerNote(note.pitch, 0.62);
       ogAnnounce('Selected ' + (note.pitch || 'note') + ' in bar ' + (measure && measure.bar || note.bar || selectedBar + 1));
+    }
+
+    function selectStaffRest(rest, measure) {
+      if (!rest) return;
+      var barIndex = Math.max(0, (measure && measure.bar || selectedBar + 1) - 1);
+      var duration = rest.durationToken || staffDuration;
+      setSelectedStaffNoteId('');
+      setSelectedBar(barIndex);
+      setStaffTool('rest');
+      setStaffDuration(duration);
+      setStaffCursor({
+        barIndex: barIndex,
+        bar: barIndex + 1,
+        startBeat: rest.startBeat || 1,
+        pitch: activeStaffPitch,
+        duration: duration,
+        tool: 'rest',
+        noteId: '',
+        restId: rest.id || '',
+        x: rest.x,
+        y: rest.y,
+        inRange: true
+      });
+      ogAnnounce('Selected ' + (rest.durationName || 'rest') + ' in bar ' + (barIndex + 1) + ' beat ' + (rest.startBeat || 1));
+    }
+
+    function staffRestKey(ev, rest, measure) {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      selectStaffRest(rest, measure);
     }
 
     function staffNoteKey(ev, note, measure) {
@@ -1662,6 +1873,8 @@
       if (summary && summary.event) {
         setStaffPitch(summary.event.pitch || activeStaffPitch);
         setStaffDuration(summary.duration || staffDuration);
+        setStaffArticulation(summary.articulation || summary.event.articulation || 'normal');
+        setStaffDynamic(summary.dynamic || summary.event.dynamic || 'mf');
         setStaffCursor({
           barIndex: Math.max(0, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project))),
           bar: Math.max(1, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project)) + 1),
@@ -1676,6 +1889,22 @@
       }
     }
 
+    function toggleSelectedStaffTie() {
+      if (!selectedStaffNoteId || !pattern || !synthTrack || !C.ogSetStaffTie) return;
+      var clear = !!(selectedStaffNote && selectedStaffNote.tie && selectedStaffNote.tie.start);
+      var result = { changed: false };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (nextPattern && nextSynth) result = C.ogSetStaffTie(next, nextPattern.id, nextSynth.id, selectedStaffNoteId, { clear: clear });
+      });
+      if (!result.changed) {
+        addToast(clear ? 'No tie was attached to this note.' : 'Tie needs the next same-pitch note at the following beat.', 'info');
+        return;
+      }
+      addToast(clear ? 'Tie cleared.' : 'Note tied to the next same-pitch note.', 'success');
+      ogAnnounce(clear ? 'Tie cleared' : 'Note tied to next same-pitch note');
+    }
     function deleteSelectedStaffNote(noteId) {
       var id = noteId || selectedStaffNoteId;
       if (!id || !pattern || !synthTrack || !C.ogDeleteStaffNote) return;
@@ -1694,11 +1923,70 @@
         addToast('No selected staff note to delete.', 'info');
       }
     }
+    function rewriteSelectedStaffRest() {
+      if (!selectedStaffRest || !pattern || !synthTrack || !C.ogSetStaffNote) return;
+      var result = { event: null, rest: true };
+      var restBar = selectedStaffRest.barIndex == null ? selectedBar : selectedStaffRest.barIndex;
+      var restBeat = selectedStaffRest.startBeat || 1;
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (nextPattern && nextSynth) result = C.ogSetStaffNote(next, nextPattern.id, nextSynth.id, {
+          startBar: restBar,
+          startBeat: restBeat,
+          tool: 'rest',
+          rest: true,
+          duration: staffDuration,
+          role: 'notationRest',
+          source: 'staffInspector',
+          replaceSlot: true
+        });
+      });
+      setSelectedBar(restBar);
+      setStaffTool('rest');
+      setStaffCursor({
+        barIndex: restBar,
+        bar: restBar + 1,
+        startBeat: restBeat,
+        pitch: activeStaffPitch,
+        duration: staffDuration,
+        tool: 'rest',
+        restId: result.event && result.event.id || '',
+        inRange: true
+      });
+      addToast('Rest updated at bar ' + (restBar + 1) + ' beat ' + restBeat + '.', 'success');
+      ogAnnounce('Rest updated');
+    }
+
     function staffSlotKey(ev, barIndex, startBeat) {
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
         writeStaffSlot(barIndex, startBeat);
+        return;
       }
+      var direction = ev.key === 'ArrowRight' || ev.key === 'ArrowDown' ? 1 : ev.key === 'ArrowLeft' || ev.key === 'ArrowUp' ? -1 : 0;
+      var isHome = ev.key === 'Home';
+      var isEnd = ev.key === 'End';
+      if (!direction && !isHome && !isEnd) return;
+      var svg = ev.currentTarget && ev.currentTarget.ownerSVGElement;
+      var slots = svg && svg.querySelectorAll ? svg.querySelectorAll('[data-staff-slot=true]') : [];
+      var currentIndex = -1;
+      for (var index = 0; index < slots.length; index++) {
+        if (slots[index] === ev.currentTarget) {
+          currentIndex = index;
+          break;
+        }
+      }
+      if (currentIndex < 0 || !slots.length) return;
+      ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      var nextIndex = isHome ? 0 : isEnd ? slots.length - 1 : Math.max(0, Math.min(slots.length - 1, currentIndex + direction));
+      var nextSlot = slots[nextIndex];
+      if (!nextSlot || !nextSlot.focus) return;
+      nextSlot.focus();
+      var nextBar = Number(nextSlot.getAttribute && nextSlot.getAttribute('data-bar-index'));
+      var nextBeat = Number(nextSlot.getAttribute && nextSlot.getAttribute('data-start-beat'));
+      ogAnnounce('Staff slot bar ' + (isFinite(nextBar) ? nextBar + 1 : '?') + ' beat ' + (isFinite(nextBeat) ? nextBeat : '?'));
     }
 
     function VexFlowStaffView(props) {
@@ -1746,6 +2034,26 @@
               if (typeof staveNote.addModifier === 'function') staveNote.addModifier(new runtime.Accidental(accidental), index);
               else if (typeof staveNote.addAccidental === 'function') staveNote.addAccidental(index, new runtime.Accidental(accidental));
             });
+            var articulationGlyphs = { accent: 'a>', staccato: 'a.', tenuto: 'a-', marcato: 'a^' };
+            var articulationNames = (vex.articulations || []).filter(function (value) { return articulationGlyphs[value]; });
+            if (articulationNames.length && runtime.Articulation && typeof staveNote.addModifier === 'function') {
+              try {
+                var articulation = new runtime.Articulation(articulationGlyphs[articulationNames[0]]);
+                var position = runtime.Modifier && runtime.Modifier.Position && runtime.Modifier.Position.ABOVE != null
+                  ? runtime.Modifier.Position.ABOVE
+                  : runtime.Articulation.Position && runtime.Articulation.Position.ABOVE;
+                if (typeof articulation.setPosition === 'function' && position != null) articulation.setPosition(position);
+                staveNote.addModifier(articulation, 0);
+              } catch (_) {}
+            }
+            var dynamicNames = (vex.dynamics || []).filter(function (value) { return value && value !== 'mf'; });
+            if (dynamicNames.length && runtime.TextDynamics && typeof staveNote.addModifier === 'function') {
+              try {
+                var dynamicModifier = new runtime.TextDynamics(dynamicNames[0]);
+                if (typeof dynamicModifier.setLine === 'function') dynamicModifier.setLine(10);
+                staveNote.addModifier(dynamicModifier, 0);
+              } catch (_) {}
+            }
             var dots = Math.max(0, intValue(vex.dots, 0));
             for (var dot = 0; dot < dots; dot += 1) {
               if (typeof staveNote.addDotToAll === 'function') staveNote.addDotToAll();
@@ -1775,11 +2083,44 @@
               return staveNote;
             });
             if (!staveNotes.length) return;
+            var vexTuplets = [];
+            if (runtime.Tuplet) {
+              var tupletRun = [];
+              function addRuntimeTuplet(run, tuplet) {
+                var actualNotes = Math.max(2, intValue(tuplet && tuplet.actualNotes, 3));
+                if (run.length < actualNotes) return;
+                var notes = run.slice(0, actualNotes).map(function (item) { return staveNotes[item.elementIndex]; }).filter(Boolean);
+                if (notes.length !== actualNotes) return;
+                try {
+                  vexTuplets.push(new runtime.Tuplet(notes, {
+                    num_notes: actualNotes,
+                    notes_occupied: Math.max(1, intValue(tuplet.normalNotes, 2)),
+                    bracketed: true
+                  }));
+                } catch (_) {}
+              }
+              (measure.elements || []).forEach(function (element, elementIndex) {
+                var tuplet = element && element.vexflow && element.vexflow.tuplet;
+                var prior = tupletRun[tupletRun.length - 1];
+                var sameRun = prior && tuplet && prior.tuplet.actualNotes === tuplet.actualNotes && prior.tuplet.normalNotes === tuplet.normalNotes && prior.tuplet.baseType === tuplet.baseType && prior.elementIndex + 1 === elementIndex;
+                if (!sameRun) tupletRun = [];
+                if (!tuplet) return;
+                tupletRun.push({ elementIndex: elementIndex, tuplet: tuplet });
+                if (tupletRun.length >= Math.max(2, intValue(tuplet.actualNotes, 3))) {
+                  addRuntimeTuplet(tupletRun, tuplet);
+                  tupletRun = [];
+                }
+              });
+            }
             var voice = new runtime.Voice({ num_beats: intValue((model.timeSignature || [4, 4])[0], 4), beat_value: intValue((model.timeSignature || [4, 4])[1], 4) });
             if (typeof voice.setStrict === 'function') voice.setStrict(false);
             voice.addTickables(staveNotes);
             new runtime.Formatter().joinVoices([voice]).format([voice], Math.max(40, measureWidth - 28));
             voice.draw(context, stave);
+            vexTuplets.forEach(function (tuplet) {
+              if (typeof tuplet.setContext === 'function') tuplet.setContext(context);
+              if (typeof tuplet.draw === 'function') tuplet.draw();
+            });
           });
         } catch (err) {
           mount.textContent = 'VexFlow rendering failed: ' + (err && err.message || 'unknown error');
@@ -1793,6 +2134,14 @@
       });
     }
 
+    function vexFlowRenderSignature(model) {
+      return (model && model.measures || []).map(function (measure) {
+        return (measure.elements || []).map(function (element) {
+          var vex = element.vexflow || {};
+          return (vex.articulations || []).join(',') + ':' + (vex.dynamics || []).join(',');
+        }).join(',');
+      }).join('|');
+    }
     function renderVexFlowStaff() {
       if (!notationEnginePlan || notationEnginePlan.rendererStatus !== 'ready') {
         return h('div', null,
@@ -1803,13 +2152,32 @@
         model: notationEnginePlan,
         themeMode: themeMode,
         selectedBar: selectedBar,
-        renderKey: [pattern && pattern.id, notationEnginePlan.noteCount, notationEnginePlan.restCount, notationEnginePlan.chordCount, selectedBar, staffClef].join(':')
+        renderKey: [pattern && pattern.id, notationEnginePlan.noteCount, notationEnginePlan.restCount, notationEnginePlan.chordCount, vexFlowRenderSignature(notationEnginePlan), selectedBar, staffClef].join(':')
       });
     }
 
     function renderScoreStaff() {
       var wantsVexFlow = notationRenderer === 'vexflow' || notationRenderer === 'auto' && notationEnginePlan && notationEnginePlan.rendererStatus === 'ready';
       return wantsVexFlow ? renderVexFlowStaff() : renderEngravedStaff();
+    }
+
+    function staffRestGlyph(rest) {
+      var token = String(rest && rest.durationToken || '');
+      var glyph = token.indexOf('w') === 0 ? '𝄻' : token.indexOf('h') === 0 ? '𝄼' : token.indexOf('q') === 0 ? '𝄽' : token.indexOf('e') === 0 ? '𝄾' : token.indexOf('s') === 0 ? '𝄿' : 'R';
+      return glyph;
+    }
+
+    function staffArticulationGlyph(value) {
+      var articulation = C.ogNormalizeNotationArticulation ? C.ogNormalizeNotationArticulation(value) : String(value || 'normal').toLowerCase();
+      return articulation === 'accent' ? '>' : articulation === 'staccato' ? '.' : articulation === 'tenuto' ? '-' : articulation === 'marcato' ? '^' : '';
+    }
+
+    function staffArticulationLabel(value) {
+      var articulation = C.ogNormalizeNotationArticulation ? C.ogNormalizeNotationArticulation(value) : String(value || 'normal').toLowerCase();
+      return articulation === 'normal' ? '' : articulation;
+    }
+    function staffDynamicLabel(value) {
+      return C.ogNormalizeNotationDynamic ? C.ogNormalizeNotationDynamic(value) : String(value || 'mf').toLowerCase();
     }
 
     function renderEngravedStaff() {
@@ -1821,6 +2189,13 @@
       var paper = themeMode === 'contrast' ? '#000000' : themeMode === 'dark' ? '#020617' : '#ffffff';
       var accent = themeMode === 'contrast' ? '#ffff00' : themeMode === 'dark' ? '#5eead4' : '#0f766e';
       var muted = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#94a3b8' : '#94a3b8';
+      var activeStaffPlaybackBarIndex = staffPlaybackActive ? staffPlaybackBarIndex : -1;
+      var playbackMeasure = activeStaffPlaybackBarIndex >= 0 ? staffEngraving.measures[activeStaffPlaybackBarIndex] : null;
+      var playbackTick = staffPlaybackActive ? Math.max(0, Number(transportView.tick) || 0) : -1;
+      var playbackMeasureTicks = C.ogTicksPerMeasure ? C.ogTicksPerMeasure(project) : 3840;
+      var playbackLocalTick = playbackMeasure ? Math.max(0, Math.min(playbackMeasureTicks, playbackTick - activeStaffPlaybackBarIndex * playbackMeasureTicks)) : 0;
+      var playbackInnerWidth = playbackMeasure ? Math.max(20, playbackMeasure.width - 32) : 0;
+      var playbackX = playbackMeasure ? playbackMeasure.x + 18 + (playbackLocalTick / Math.max(1, playbackMeasureTicks)) * playbackInnerWidth : 0;
       var isBassClef = staffEngraving.clef === 'bass';
       var clefGlyph = isBassClef ? 'F' : 'G';
       var clefY = isBassClef ? g.staffTop + g.lineSpacing * 3.05 : g.staffTop + g.lineSpacing * 3.1;
@@ -1836,7 +2211,10 @@
         var y = g.staffTop + line * g.lineSpacing;
         children.push(h('line', { key: 'line-' + line, x1: g.left, y1: y, x2: staffEngraving.width - g.right, y2: y, stroke: ink, strokeWidth: 1 }));
       }
-      staffEngraving.measures.forEach(function (measure, measureIndex) {
+      if (staffPlaybackActive && playbackMeasure) {
+        children.push(h('rect', { key: 'playback-measure', x: playbackMeasure.x + 1, y: g.staffTop - 26, width: playbackMeasure.width - 2, height: g.lineSpacing * 7.4, fill: accent, opacity: 0.08 }));
+        children.push(h('line', { key: 'playback-head', x1: playbackX, y1: g.staffTop - 28, x2: playbackX, y2: g.bottomY + 18, stroke: accent, strokeWidth: themeMode === 'contrast' ? 3 : 2 }));
+      }      staffEngraving.measures.forEach(function (measure, measureIndex) {
         var barX = measure.x;
         var endX = measure.x + measure.width;
         if (measure.selected) {
@@ -1857,6 +2235,10 @@
             role: 'button',
             tabIndex: 0,
             focusable: 'true',
+            'data-staff-slot': 'true',
+            'data-bar-index': measure.bar - 1,
+            'data-start-beat': slot.startBeat,
+            'aria-keyshortcuts': 'Enter Space ArrowLeft ArrowRight ArrowUp ArrowDown Home End',
             'aria-label': 'Write ' + (staffTool === 'rest' ? 'rest' : activeStaffPitch) + ' in bar ' + measure.bar + ' beat ' + slot.startBeat,
             onClick: function (ev) { writeStaffPointer(ev); },
             onKeyDown: function (ev) { staffSlotKey(ev, measure.bar - 1, slot.startBeat); }
@@ -1868,11 +2250,74 @@
         (measure.chords || []).forEach(function (chord, chordIndex) {
           children.push(h('text', { key: 'chord-' + measure.bar + '-' + chordIndex, x: chord.x - 8, y: chord.y, fill: accent, fontSize: 12, fontWeight: 900 }, chord.symbol || chord.roman || ''));
         });
+        (measure.rests || []).forEach(function (rest, restIndex) {
+          var restLabel = String(rest.durationName || 'rest') + ' rest in bar ' + measure.bar + ' beat ' + rest.startBeat;
+          var restToken = String(rest && rest.durationToken || '');
+          var restDotMatch = /(\.+)$/.exec(restToken);
+          var restDots = restDotMatch ? restDotMatch[1].length : 0;
+          children.push(h('rect', {
+            key: 'rest-hit-' + measure.bar + '-' + restIndex,
+            x: rest.x - 16,
+            y: rest.y - 25,
+            width: 32,
+            height: 36,
+            fill: accent,
+            opacity: 0.001,
+            role: 'button',
+            tabIndex: 0,
+            focusable: 'true',
+            'aria-label': 'Select ' + restLabel,
+            onClick: function (ev) { if (ev && ev.stopPropagation) ev.stopPropagation(); selectStaffRest(rest, measure); },
+            onKeyDown: function (ev) { staffRestKey(ev, rest, measure); }
+          }));
+          children.push(h('text', {
+            key: 'rest-' + measure.bar + '-' + restIndex,
+            x: rest.x,
+            y: rest.y,
+            fill: muted,
+            fontSize: 22,
+            fontFamily: 'Georgia, serif',
+            textAnchor: 'middle',
+            'aria-label': restLabel
+          }, staffRestGlyph(rest)));
+          for (var restDotIndex = 0; restDotIndex < restDots; restDotIndex += 1) {
+            children.push(h('circle', { key: 'rest-dot-' + measure.bar + '-' + restIndex + '-' + restDotIndex, cx: rest.x + 14 + restDotIndex * 4, cy: rest.y - 5, r: 1.8, fill: muted }));
+          }
+        });
         (measure.notes || []).forEach(function (note, noteIndex) {
           var key = 'note-' + measure.bar + '-' + noteIndex + '-' + note.pitch;
           (note.ledgerLines || []).forEach(function (ly, ledgerIndex) {
             children.push(h('line', { key: key + '-ledger-' + ledgerIndex, x1: note.x - 11, y1: ly, x2: note.x + 11, y2: ly, stroke: ink, strokeWidth: 1 }));
           });
+          var previousNote = noteIndex > 0 ? measure.notes[noteIndex - 1] : null;
+          var dynamicLabel = staffDynamicLabel(note.dynamic);
+          if (dynamicLabel && (!previousNote || staffDynamicLabel(previousNote.dynamic) !== dynamicLabel)) {
+            children.push(h('text', {
+              key: key + '-dynamic',
+              x: note.x,
+              y: g.bottomY + 27,
+              fill: muted,
+              fontSize: 13,
+              fontFamily: 'Georgia, serif',
+              fontStyle: 'italic',
+              fontWeight: 700,
+              textAnchor: 'middle',
+              'aria-label': 'Dynamic ' + dynamicLabel
+            }, dynamicLabel));
+          }
+          var articulationGlyph = staffArticulationGlyph(note.articulation);
+          if (articulationGlyph) {
+            children.push(h('text', {
+              key: key + '-articulation',
+              x: note.x,
+              y: note.stemUp ? note.y - 44 : note.y + 46,
+              fill: ink,
+              fontSize: 13,
+              fontWeight: 900,
+              textAnchor: 'middle',
+              'aria-label': staffArticulationLabel(note.articulation)
+            }, articulationGlyph));
+          }
           if (note.accidental) {
             children.push(h('text', { key: key + '-acc', x: note.x - 21, y: note.y + 4, fill: ink, fontSize: 13, fontWeight: 900 }, note.accidental));
           }
@@ -1887,11 +2332,14 @@
             stroke: ink,
             strokeWidth: 1.3
           }));
+          for (var dotIndex = 0; dotIndex < Number(note.dots || 0); dotIndex += 1) {
+            children.push(h('circle', { key: key + '-dot-' + dotIndex, cx: note.x + 11 + dotIndex * 4, cy: note.y - 1, r: 1.8, fill: ink }));
+          }
           if (note.stem) {
             var stemX = note.stemUp ? note.x + 5 : note.x - 5;
             var stemEnd = note.stemUp ? note.y - 32 : note.y + 32;
             children.push(h('line', { key: key + '-stem', x1: stemX, y1: note.y, x2: stemX, y2: stemEnd, stroke: ink, strokeWidth: 1.4 }));
-            if (note.durationName === 'eighth' || note.durationName === 'sixteenth') {
+            if ((note.durationName === 'eighth' || note.durationName === 'sixteenth') && !note.beamed) {
               children.push(h('path', {
                 key: key + '-flag',
                 d: note.stemUp
@@ -1903,7 +2351,9 @@
               }));
             }
           }
-          if (selectedStaffNoteId && selectedStaffNoteId === note.id) {
+          if (staffPlaybackNoteId && staffPlaybackNoteId === note.id) {
+            children.push(h('rect', { key: key + '-playing', x: note.x - 17, y: note.y - 16, width: 34, height: 32, rx: 3, fill: accent, opacity: 0.28, stroke: accent, strokeWidth: 2 }));
+          }          if (selectedStaffNoteId && selectedStaffNoteId === note.id) {
             children.push(h('rect', { key: key + '-selected', x: note.x - 15, y: note.y - 14, width: 30, height: 28, rx: 3, fill: accent, opacity: 0.18, stroke: accent, strokeWidth: 1.2 }));
           }
           children.push(h('rect', {
@@ -1922,6 +2372,78 @@
             onKeyDown: function (ev) { staffNoteKey(ev, note, measure); }
           }));
         });
+        (measure.beams || []).forEach(function (beam, beamIndex) {
+          var beamLevels = Math.max(1, Number(beam.level) || 1);
+          for (var beamLevel = 0; beamLevel < beamLevels; beamLevel += 1) {
+            var beamOffset = beam.stemUp ? beamLevel * 4 : -beamLevel * 4;
+            children.push(h('line', {
+              key: 'beam-' + measure.bar + '-' + beamIndex + '-' + beamLevel,
+              x1: beam.startX,
+              y1: beam.startY + beamOffset,
+              x2: beam.endX,
+              y2: beam.endY + beamOffset,
+              stroke: ink,
+              strokeWidth: 3,
+              strokeLinecap: 'square',
+              'aria-hidden': 'true'
+            }));
+          }
+        });
+      });
+      (staffEngraving.tuplets || []).forEach(function (tuplet, tupletIndex) {
+        var bracketDepth = tuplet.stemUp ? 5 : -5;
+        children.push(h('line', {
+          key: 'tuplet-bracket-' + tupletIndex,
+          x1: tuplet.startX,
+          y1: tuplet.bracketY,
+          x2: tuplet.endX,
+          y2: tuplet.bracketY,
+          stroke: ink,
+          strokeWidth: 1.2,
+          'aria-hidden': 'true'
+        }));
+        children.push(h('line', {
+          key: 'tuplet-start-' + tupletIndex,
+          x1: tuplet.startX,
+          y1: tuplet.bracketY,
+          x2: tuplet.startX,
+          y2: tuplet.bracketY + bracketDepth,
+          stroke: ink,
+          strokeWidth: 1.2,
+          'aria-hidden': 'true'
+        }));
+        children.push(h('line', {
+          key: 'tuplet-end-' + tupletIndex,
+          x1: tuplet.endX,
+          y1: tuplet.bracketY,
+          x2: tuplet.endX,
+          y2: tuplet.bracketY + bracketDepth,
+          stroke: ink,
+          strokeWidth: 1.2,
+          'aria-hidden': 'true'
+        }));
+        children.push(h('text', {
+          key: 'tuplet-label-' + tupletIndex,
+          x: tuplet.labelX,
+          y: tuplet.labelY,
+          fill: ink,
+          fontSize: 11,
+          fontWeight: 900,
+          textAnchor: 'middle',
+          'aria-label': tuplet.actualNotes + ':' + tuplet.normalNotes + ' tuplet'
+        }, tuplet.label));
+      });
+      (staffEngraving.ties || []).forEach(function (tie, tieIndex) {
+        var middleX = (tie.startX + tie.endX) / 2;
+        var curveY = (tie.startY + tie.endY) / 2 + (tie.stemUp ? 14 : -14);
+        children.push(h('path', {
+          key: 'tie-' + tieIndex + '-' + tie.startNoteId + '-' + tie.endNoteId,
+          d: 'M ' + tie.startX + ' ' + tie.startY + ' Q ' + middleX + ' ' + curveY + ' ' + tie.endX + ' ' + tie.endY,
+          fill: 'none',
+          stroke: ink,
+          strokeWidth: 1.6,
+          'aria-hidden': 'true'
+        }));
       });
       return h('svg', {
         style: styles.staffSvg,
@@ -2572,7 +3094,15 @@
     });
     var selectedStaffNote = staffNoteRows.filter(function (note) { return note.id === selectedStaffNoteId; })[0] || null;
     var selectedStaffNoteDuration = selectedStaffNote ? staffDurationTokenFor(selectedStaffNote) : staffDuration;
+    var selectedStaffRest = !selectedStaffNote && staffCursor && staffCursor.tool === 'rest' ? staffCursor : null;
     var currentBarStaffNotes = staffNoteRows.filter(function (note) { return note.barIndex === selectedBar; });
+    var staffPlaybackActive = !!(transportView.active && transportView.mode === 'pattern');
+    var staffPlaybackBarIndex = staffPlaybackActive ? Math.max(0, Math.min(Math.max(0, (staffEngraving.measures || []).length - 1), (parseInt(transportView.barIndex, 10) || 0))) : -1;
+    var staffPlaybackNoteId = staffPlaybackActive ? transportView.activeNoteId : null;
+    var staffPlaybackNote = staffPlaybackNoteId ? staffNoteRows.filter(function (note) { return note.id === staffPlaybackNoteId; })[0] || null : null;
+    var staffPlaybackLabel = staffPlaybackActive
+      ? 'Playing bar ' + (staffPlaybackBarIndex + 1) + ', beat ' + (transportView.beat || 1) + (staffPlaybackNote ? ' - ' + staffPlaybackNote.pitch : ' - no pitched note')
+      : 'Playback cursor ready';
     var staffDurationOptions = [
       { value: 'w', label: 'Whole' },
       { value: 'h.', label: 'Dotted Half' },
@@ -2581,13 +3111,35 @@
       { value: 'q', label: 'Quarter' },
       { value: 'e.', label: 'Dotted Eighth' },
       { value: 'e', label: 'Eighth' },
-      { value: 's', label: 'Sixteenth' }
+      { value: 's', label: 'Sixteenth' },
+      { value: 'ts', label: 'Sixteenth triplet (3:2)' },
+      { value: 'te', label: 'Eighth triplet (3:2)' },
+      { value: 'tq', label: 'Quarter triplet (3:2)' }
+    ];
+    var staffArticulationOptions = [
+      { value: 'normal', label: 'Normal' },
+      { value: 'accent', label: 'Accent' },
+      { value: 'staccato', label: 'Staccato' },
+      { value: 'tenuto', label: 'Tenuto' },
+      { value: 'marcato', label: 'Marcato' }
+    ];
+    var staffDynamicOptions = [
+      { value: 'ppp', label: 'ppp - very soft' },
+      { value: 'pp', label: 'pp - soft' },
+      { value: 'p', label: 'p - quiet' },
+      { value: 'mp', label: 'mp - moderately soft' },
+      { value: 'mf', label: 'mf - moderately loud' },
+      { value: 'f', label: 'f - loud' },
+      { value: 'ff', label: 'ff - very loud' },
+      { value: 'fff', label: 'fff - strongest' },
+      { value: 'sfz', label: 'sfz - sudden accent' }
     ];
     var selectedStaffMeasure = staffEngraving.measures && staffEngraving.measures[selectedBar] || null;
+    var currentBarStaffRests = selectedStaffMeasure && selectedStaffMeasure.rests || [];
     var staffBeatOptions = selectedStaffMeasure && selectedStaffMeasure.slots && selectedStaffMeasure.slots.length
       ? selectedStaffMeasure.slots.map(function (slot) { return { value: slot.startBeat, label: 'Beat ' + slot.startBeat }; })
       : [{ value: 1, label: 'Beat 1' }, { value: 2, label: 'Beat 2' }, { value: 3, label: 'Beat 3' }, { value: 4, label: 'Beat 4' }];
-    var selectedStaffBeat = selectedStaffNote ? selectedStaffNote.startBeat : (staffCursor && staffCursor.startBeat || 1);
+    var selectedStaffBeat = selectedStaffNote ? selectedStaffNote.startBeat : selectedStaffRest ? selectedStaffRest.startBeat : (staffCursor && staffCursor.startBeat || 1);
     var notationBridge = C.ogBuildNotationGridBridge ? C.ogBuildNotationGridBridge(project, pattern && pattern.id, {
       trackId: synthTrack && synthTrack.id,
       stepsPerBar: stepsPerBar,
@@ -2996,6 +3548,17 @@
             }, 'Redo'),
             h('label', { style: styles.tempoLabel }, 'BPM',
               h('input', { style: styles.tempoInput, type: 'number', min: 40, max: 240, value: project.bpm, onChange: function (ev) { setTempo(ev.target.value); }, 'aria-label': 'Tempo in beats per minute' })),
+            h('label', { style: styles.compactField }, 'Meter',
+              h('select', {
+                style: styles.select,
+                value: timeSignatureValue,
+                onChange: function (ev) { setTimeSignature(ev.target.value); },
+                'aria-label': 'Time signature meter'
+              },
+                timeSignatureOptions.map(function (signature) {
+                  var value = signature[0] + '/' + signature[1];
+                  return h('option', { key: 'meter-' + value, value: value }, value);
+                }))),
             h('label', { style: styles.swingLabel }, 'Swing',
               h('input', { style: styles.swingSlider, type: 'range', min: 0, max: 75, value: Math.round((project.swing || 0) * 100), onChange: function (ev) { setSwing(ev.target.value); }, 'aria-label': 'Swing amount' }),
               h('span', { style: styles.swingValue }, Math.round((project.swing || 0) * 100) + '%')),
@@ -3189,8 +3752,18 @@
           h('section', workspaceSectionProps('keyboard', 'og-keyboard-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-keyboard-title', style: styles.h2 }, 'Keyboard'),
-              h('span', { style: styles.meta }, midiStatus.label + ' - ' + keyboardModeLabel.toLowerCase() + (keyboardRecordEnabled ? ' - record' : ''))),
+              h('span', { style: styles.meta }, midiStatus.label + ' - ' + keyboardModeLabel.toLowerCase() + (keyboardRecordEnabled ? ' - record to ' + (keyboardEntryMode === 'staff' ? 'staff' : 'grid') : ''))),
             h('div', { style: styles.keyboardControls, role: 'group', 'aria-label': 'Keyboard controls' },
+              h('label', { style: styles.compactField }, 'Entry',
+                h('select', {
+                  style: styles.select,
+                  value: keyboardEntryMode,
+                  onChange: function (ev) { setKeyboardEntryMode(ev.target.value === 'staff' ? 'staff' : 'grid'); },
+                  'aria-label': 'Keyboard entry target'
+                },
+                  h('option', { value: 'grid' }, 'Grid Steps'),
+                  h('option', { value: 'staff' }, 'Staff Notation'))),
+              h('span', { style: styles.keyboardEntryStatus, role: 'status', 'aria-live': 'polite' }, keyboardEntryPositionLabel),
               h('label', { style: styles.compactField }, 'Octave',
                 h('select', {
                   style: styles.select,
@@ -3210,17 +3783,28 @@
                 },
                   h('option', { value: 'single' }, 'Single'),
                   h('option', { value: 'triad' }, 'Triad'))),
-              h('label', { style: styles.compactField }, 'Length',
-                h('select', {
-                  style: styles.select,
-                  value: keyboardDurationSteps,
-                  onChange: function (ev) { setKeyboardDurationSteps(Math.max(1, Math.min(stepsPerBar, Number(ev.target.value) || 1))); },
-                  'aria-label': 'Keyboard note length'
-                },
-                  keyboardLengthOptions.map(function (steps) {
-                    return h('option', { key: steps, value: steps }, steps + (steps === 1 ? ' step' : ' steps'));
-                  }))),
-              h('label', { style: styles.compactField }, 'Step',
+              (keyboardEntryMode === 'staff'
+                ? h('label', { style: styles.compactField }, 'Value',
+                  h('select', {
+                    style: styles.select,
+                    value: keyboardStaffDuration,
+                    onChange: function (ev) { setKeyboardStaffDuration(ev.target.value); },
+                    'aria-label': 'Keyboard staff note value'
+                  },
+                    keyboardStaffDurationOptions.map(function (item) {
+                      return h('option', { key: 'keyboard-staff-duration-' + item.value, value: item.value }, item.label);
+                    })))
+                : h('label', { style: styles.compactField }, 'Length',
+                  h('select', {
+                    style: styles.select,
+                    value: keyboardDurationSteps,
+                    onChange: function (ev) { setKeyboardDurationSteps(Math.max(1, Math.min(stepsPerBar, Number(ev.target.value) || 1))); },
+                    'aria-label': 'Keyboard grid note length'
+                  },
+                    keyboardLengthOptions.map(function (steps) {
+                      return h('option', { key: steps, value: steps }, steps + (steps === 1 ? ' step' : ' steps'));
+                    })))),
+              h('label', { style: styles.compactField }, keyboardEntryMode === 'staff' ? 'Start' : 'Step',
                 h('input', {
                   style: styles.mixerSlider,
                   type: 'range',
@@ -3228,9 +3812,15 @@
                   max: stepsPerBar,
                   value: keyboardStep + 1,
                   onChange: function (ev) { setKeyboardStep(Math.max(0, Math.min(stepsPerBar - 1, Number(ev.target.value) - 1))); },
-                  'aria-label': 'Keyboard record step'
+                  'aria-label': keyboardEntryMode === 'staff' ? 'Keyboard staff start position' : 'Keyboard record step'
                 }),
                 h('span', { style: styles.mixerValue }, String(keyboardStep + 1))),
+              h('button', {
+                style: Object.assign({}, styles.smallButton, keyboardEntryMode !== 'staff' ? styles.disabledButton : null),
+                onClick: writeKeyboardStaffRest,
+                disabled: keyboardEntryMode !== 'staff',
+                'aria-label': keyboardEntryMode === 'staff' ? 'Write rest at ' + keyboardEntryPositionLabel : 'Switch keyboard entry to staff notation to write a rest'
+              }, 'Write Rest'),
               h('button', {
                 style: Object.assign({}, styles.smallButton, keyboardRecordEnabled ? styles.recordButtonOn : null),
                 onClick: function () { setKeyboardRecordEnabled(!keyboardRecordEnabled); },
@@ -3242,14 +3832,15 @@
                 onClick: connectMidiInput,
                 disabled: !midiStatus.supported,
                 'aria-label': 'Connect MIDI input'
-              }, midiStatus.connected ? 'MIDI Ready' : 'Connect MIDI')),
+              }, midiStatus.connected ? 'MIDI Ready' : 'Connect MIDI'),
+              h('span', { style: styles.keyboardEntryStatus, role: 'note' }, keyboardEntryMode === 'staff' ? 'Held MIDI notes set length' : 'Grid uses fixed length')),
             h('div', { style: styles.keyboardKeys, role: 'group', 'aria-label': 'Virtual piano keyboard' },
               (keyboardLayout.keys || []).map(function (key) {
                 return h('button', {
                   key: key.midi,
                   style: Object.assign({}, styles.keyboardKey, key.isBlack ? styles.keyboardKeyBlack : styles.keyboardKeyWhite, key.inKey ? null : styles.keyboardKeyOutside),
                   onClick: function () { playKeyboardPitch(key.pitch, 0.75, 'virtualKeyboard'); },
-                  'aria-label': (keyboardMode === 'triad' ? 'Play triad from ' : 'Play ') + key.pitch + (keyboardRecordEnabled ? ' and record to step ' + (keyboardStep + 1) : '')
+                  'aria-label': (keyboardMode === 'triad' ? 'Play triad from ' : 'Play ') + key.pitch + (keyboardRecordEnabled ? ' and record to ' + (keyboardEntryMode === 'staff' ? 'staff position ' : 'step ') + (keyboardStep + 1) : '')
                 },
                   h('strong', null, key.note),
                   h('span', null, key.octave),
@@ -3541,7 +4132,26 @@
                     h('option', { value: 'h' }, 'Half'),
                     h('option', { value: 'q' }, 'Quarter'),
                     h('option', { value: 'e' }, 'Eighth'),
-                    h('option', { value: 's' }, 'Sixteenth'))),
+                    h('option', { value: 's' }, 'Sixteenth'),
+                    h('option', { value: 'ts' }, 'Sixteenth triplet'),
+                    h('option', { value: 'te' }, 'Eighth triplet'),
+                    h('option', { value: 'tq' }, 'Quarter triplet'))),
+                h('label', { style: styles.fieldLabel }, 'Articulation',
+                  h('select', {
+                    style: styles.select,
+                    value: staffArticulation,
+                    onChange: function (ev) { setStaffArticulation(ev.target.value); },
+                    'aria-label': 'Staff note articulation'
+                  },
+                    staffArticulationOptions.map(function (item) { return h('option', { key: 'staff-articulation-' + item.value, value: item.value }, item.label); }))),
+                h('label', { style: styles.fieldLabel }, 'Dynamic',
+                  h('select', {
+                    style: styles.select,
+                    value: staffDynamic,
+                    onChange: function (ev) { setStaffDynamic(ev.target.value); },
+                    'aria-label': 'Staff note dynamic marking'
+                  },
+                    staffDynamicOptions.map(function (item) { return h('option', { key: 'staff-dynamic-' + item.value, value: item.value }, item.label); }))),
                 h('label', { style: styles.fieldLabel }, 'Renderer',
                   h('select', {
                     style: styles.select,
@@ -3554,10 +4164,11 @@
                     h('option', { value: 'vexflow' }, 'VexFlow')))),
               renderScoreStaff(),
               h('div', { style: styles.staffStatus, role: 'status', 'aria-live': 'polite' }, staffCursorLabel),
-              h('div', { style: styles.staffInspector, role: 'group', 'aria-label': 'Selected staff note editor' },
+              h('div', { style: styles.staffPlaybackStatus, role: 'status', 'aria-live': 'polite' }, staffPlaybackLabel),
+              h('div', { style: styles.staffInspector, role: 'group', 'aria-label': 'Selected staff notation event editor' },
                 h('div', { style: styles.bridgeHeader },
-                  h('strong', null, 'Selected Note'),
-                  h('span', { style: styles.meta }, selectedStaffNote ? selectedStaffNote.pitch + ' - bar ' + selectedStaffNote.bar + ' beat ' + selectedStaffNote.startBeat : 'No note selected')),
+                  h('strong', null, selectedStaffRest ? 'Selected Rest' : 'Selected Note'),
+                  h('span', { style: styles.meta }, selectedStaffNote ? selectedStaffNote.pitch + ' - bar ' + selectedStaffNote.bar + ' beat ' + selectedStaffNote.startBeat : selectedStaffRest ? String(selectedStaffRest.duration || 'q').toUpperCase() + ' rest - bar ' + selectedStaffRest.bar + ' beat ' + selectedStaffRest.startBeat : 'No note selected')),
                 h('div', { style: styles.staffInspectorGrid },
                   h('label', { style: styles.fieldLabel }, 'Pitch',
                     h('select', {
@@ -3576,6 +4187,22 @@
                       'aria-label': selectedStaffNote ? 'Selected staff note value' : 'Next staff note value'
                     },
                       staffDurationOptions.map(function (item) { return h('option', { key: 'selected-note-duration-' + item.value, value: item.value }, item.label); }))),
+                  h('label', { style: styles.fieldLabel }, 'Articulation',
+                    h('select', {
+                      style: styles.select,
+                      value: selectedStaffNote && selectedStaffNote.articulation || staffArticulation,
+                      onChange: function (ev) { selectedStaffNote ? updateSelectedStaffNote({ articulation: ev.target.value }) : setStaffArticulation(ev.target.value); },
+                      'aria-label': selectedStaffNote ? 'Selected staff note articulation' : 'Next staff note articulation'
+                    },
+                      staffArticulationOptions.map(function (item) { return h('option', { key: 'selected-note-articulation-' + item.value, value: item.value }, item.label); }))),
+                  h('label', { style: styles.fieldLabel }, 'Dynamic',
+                    h('select', {
+                      style: styles.select,
+                      value: selectedStaffNote && selectedStaffNote.dynamic || staffDynamic,
+                      onChange: function (ev) { selectedStaffNote ? updateSelectedStaffNote({ dynamic: ev.target.value }) : setStaffDynamic(ev.target.value); },
+                      'aria-label': selectedStaffNote ? 'Selected staff note dynamic marking' : 'Next staff note dynamic marking'
+                    },
+                      staffDynamicOptions.map(function (item) { return h('option', { key: 'selected-note-dynamic-' + item.value, value: item.value }, item.label); }))),
                   h('label', { style: styles.fieldLabel }, 'Beat',
                     h('select', {
                       style: styles.select,
@@ -3585,6 +4212,18 @@
                       'aria-label': 'Selected staff note beat'
                     },
                       staffBeatOptions.map(function (item) { return h('option', { key: 'selected-note-beat-' + item.value, value: item.value }, item.label); }))),
+                  h('button', {
+                    style: Object.assign({}, styles.smallButton, !selectedStaffNote ? styles.disabledButton : null),
+                    onClick: toggleSelectedStaffTie,
+                    disabled: !selectedStaffNote || !C.ogSetStaffTie,
+                    'aria-label': selectedStaffNote && selectedStaffNote.tie && selectedStaffNote.tie.start ? 'Clear tie from selected staff note' : 'Tie selected staff note to next same pitch'
+                  }, selectedStaffNote && selectedStaffNote.tie && selectedStaffNote.tie.start ? 'Clear Tie' : 'Tie to Next'),
+                  h('button', {
+                    style: Object.assign({}, styles.smallButton, !selectedStaffRest ? styles.disabledButton : null),
+                    onClick: rewriteSelectedStaffRest,
+                    disabled: !selectedStaffRest,
+                    'aria-label': selectedStaffRest ? 'Update selected staff rest' : 'No staff rest selected'
+                  }, 'Update Rest'),
                   h('button', {
                     style: Object.assign({}, styles.smallButton, !selectedStaffNote ? styles.disabledButton : null),
                     onClick: function () { deleteSelectedStaffNote(); },
@@ -3599,7 +4238,18 @@
                       onClick: function () { selectStaffNote(note, { bar: note.bar }); },
                       'aria-label': 'Select ' + note.pitch + ' at beat ' + note.startBeat + ' in bar ' + note.bar
                     }, note.pitch + ' - beat ' + note.startBeat + ' - ' + staffDurationTokenFor(note).toUpperCase());
-                  }) : h('span', { style: styles.muted }, 'No staff notes in this bar.'))),            ),
+                  }) : h('span', { style: styles.muted }, 'No staff notes in this bar.'))),
+                h('div', { style: styles.staffNoteList, role: 'list', 'aria-label': 'Staff rests in selected bar' },
+                  currentBarStaffRests.length ? currentBarStaffRests.map(function (rest, restIndex) {
+                    var restSelected = selectedStaffRest && selectedStaffRest.barIndex === selectedBar && selectedStaffRest.startBeat === rest.startBeat;
+                    return h('button', {
+                      key: 'staff-rest-row-' + restIndex + '-' + rest.startBeat,
+                      style: Object.assign({}, styles.staffNoteButton, restSelected ? styles.staffNoteButtonOn : null),
+                      onClick: function () { selectStaffRest(rest, { bar: selectedBar + 1 }); },
+                      'aria-label': 'Select ' + String(rest.durationName || 'rest') + ' rest at beat ' + rest.startBeat + ' in bar ' + (selectedBar + 1)
+                    }, String(rest.durationName || 'Rest') + ' rest - beat ' + rest.startBeat);
+                  }) : h('span', { style: styles.muted }, 'No staff rests in this bar.')),
+              ),
             h('div', { style: styles.notationWorkflowPanel, role: 'group', 'aria-label': 'Notation phrase presets and MusicXML round trip workflow' },
               h('div', { style: styles.bridgeHeader },
                 h('strong', null, 'Notation Workflow'),
@@ -4268,6 +4918,7 @@
     staffRangeHint: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
     staffStatus: { minHeight: '28px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '5px 7px', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
+    staffPlaybackStatus: { minHeight: '26px', border: '1px solid #99f6e4', background: '#f0fdfa', color: '#115e59', padding: '5px 7px', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     staffInspector: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', minWidth: 0 },
     staffInspectorGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 104px), 1fr))', gap: '8px', alignItems: 'end', minWidth: 0 },
     staffNoteList: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 108px), 1fr))', gap: '6px', minWidth: 0 },
@@ -4334,6 +4985,7 @@
     noteStep: { height: '30px', border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#111827', fontSize: '12px', fontWeight: 900, cursor: 'pointer' },
     noteStepOn: { background: '#67e8f9', border: '1px solid #0e7490' },
     keyboardControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(94px, 1fr))', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    keyboardEntryStatus: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', border: '1px solid #99f6e4', background: '#f0fdfa', color: '#115e59', padding: '5px 7px', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     keyboardKeys: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(42px, 1fr))', gap: '4px', alignItems: 'stretch' },
     keyboardKey: { minHeight: '74px', border: '1px solid #94a3b8', padding: '7px 4px', display: 'grid', alignContent: 'space-between', justifyItems: 'center', gap: '3px', fontSize: '12px', fontWeight: 900, cursor: 'pointer', overflowWrap: 'anywhere' },
     keyboardKeyWhite: { background: '#ffffff', color: '#0f172a' },
@@ -4491,6 +5143,7 @@
       staffRangeHint: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
       staffStatus: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      staffPlaybackStatus: { border: '1px solid #2dd4bf', background: '#134e4a', color: '#ecfeff' },
       staffInspector: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       staffNoteButton: { border: '1px solid #64748b', background: '#020617', color: '#e2e8f0' },
       staffNoteButtonOn: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 1px #5eead4' },
@@ -4532,6 +5185,7 @@
       keyboardKeyWhite: { background: '#e2e8f0', color: '#0f172a', border: '1px solid #cbd5e1' },
       keyboardKeyBlack: { background: '#020617', color: '#f8fafc', border: '1px solid #94a3b8' },
       keyboardKeyOutside: { boxShadow: 'inset 0 -4px 0 #facc15' },
+      keyboardEntryStatus: { border: '1px solid #2dd4bf', background: '#134e4a', color: '#ecfeff' },
       recordButtonOn: { background: '#14532d', border: '1px solid #86efac', color: '#dcfce7', boxShadow: 'inset 0 0 0 2px #86efac' },
       patternPad: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
       patternPadActive: { border: '1px solid #5eead4', background: '#134e4a', boxShadow: 'inset 0 0 0 2px #5eead4' },
@@ -4624,6 +5278,7 @@
       staffRangeHint: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
       staffStatus: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffPlaybackStatus: { border: '2px solid #ffffff', background: '#000000', color: '#ffff00' },
       staffInspector: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffNoteButton: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffNoteButtonOn: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
@@ -4665,6 +5320,7 @@
       keyboardKeyWhite: { background: '#ffffff', color: '#000000', border: '2px solid #ffffff' },
       keyboardKeyBlack: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff' },
       keyboardKeyOutside: { boxShadow: 'inset 0 -5px 0 #ffff00' },
+      keyboardEntryStatus: { border: '2px solid #ffffff', background: '#000000', color: '#ffff00' },
       recordButtonOn: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
       patternPad: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       patternPadActive: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },

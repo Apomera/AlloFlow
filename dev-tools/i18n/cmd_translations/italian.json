@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio aperto.",
   "cmd.open_video_studio_hint": "Registra, sottotitola e monta video dimostrativi",
   "palette.ctx.videoStudio": "Qui — Video Studio",
-  "palette.close": "Chiudi la tavolozza dei comandi"
+  "palette.close": "Chiudi la tavolozza dei comandi",
+  "cmd.apply_lesson_template": "Inizia da un modello salvato",
+  "cmd.apply_lesson_template_done": "Avviato da ",
+  "cmd.apply_lesson_template_hint": "Avvia un nuovo piano da uno dei tuoi modelli salvati",
+  "cmd.apply_lesson_template_missing": "Non ho trovato un modello chiamato ",
+  "cmd.apply_lesson_template_which": "Quale modello?",
+  "cmd.rebuild_lesson_step": "Ricrea un passaggio del piano",
+  "cmd.rebuild_lesson_step_done": "Ricreazione del passaggio ",
+  "cmd.rebuild_lesson_step_hint": "Rigenera una sola risorsa — indica il numero del passaggio",
+  "cmd.rebuild_lesson_step_missing": "Non ho trovato quel passaggio nel piano.",
+  "cmd.rebuild_lesson_step_none": "il piano non ha ancora passaggi.",
+  "cmd.rebuild_lesson_step_which": "Quale passaggio?",
+  "cmd.run_lesson_blueprint": "Genera il piano della lezione",
+  "cmd.run_lesson_blueprint_done": "Generazione del piano — puoi seguire ogni passaggio sulla scheda.",
+  "cmd.run_lesson_blueprint_hint": "Genera tutte le risorse del piano attuale",
+  "cmd.cancelled": "Annullamento richiesto. L’operazione corrente si fermerà quando il provider lo consentirà."
 }

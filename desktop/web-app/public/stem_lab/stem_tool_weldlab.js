@@ -1041,7 +1041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     role: 'radio',
                     'aria-checked': sel ? 'true' : 'false',
                     className: 'p-3 rounded-xl border-2 text-sm font-bold transition-all focus:outline-none focus:ring-4 ring-orange-500/40 ' +
-                      (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                      (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                   }, processInfo[p].label);
                 })
               ),
@@ -1364,7 +1364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                        (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                        (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                     }, lbl);
                   })
                 )
@@ -1380,7 +1380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'w-full p-2 rounded-lg border-2 text-xs font-bold text-left transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                        (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                        (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                     }, MATERIAL[mk].name);
                   })
                 )
@@ -1397,7 +1397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       role: 'radio',
                       'aria-checked': sel ? 'true' : 'false',
                       className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                        (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                        (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                     }, lbl);
                   })
                 )
@@ -1441,7 +1441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     announce('View: ' + m.label + ' (' + m.sub + ')');
                   },
                   className: 'px-3 py-1.5 rounded-lg border-2 font-bold text-xs transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                    (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                 },
                   h('span', { 'aria-hidden': true, className: 'mr-1' }, m.icon),
                   m.label
@@ -1485,7 +1485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         'aria-checked': sel ? 'true' : 'false',
                         title: j.desc,
                         className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                          (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                          (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                       },
                         h('div', { className: 'text-base font-mono', 'aria-hidden': true }, j.icon),
                         h('div', { className: 'text-[10px] mt-0.5' }, j.label)
@@ -1511,7 +1511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         'aria-checked': sel ? 'true' : 'false',
                         title: p.desc,
                         className: 'p-2 rounded-lg border-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                          (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                          (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                       },
                         h('div', { className: 'text-base', 'aria-hidden': true }, p.icon),
                         h('div', { className: 'text-[10px] mt-0.5' }, p.label)
@@ -3505,7 +3505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     role: 'radio',
                     'aria-checked': sel ? 'true' : 'false',
                     className: 'p-2 rounded-lg border-2 text-xs font-bold text-left transition-all focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                      (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                      (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                   }, s.name);
                 })
               ),
@@ -3570,7 +3570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 className: 'rounded-xl shadow border-2 ' +
                   (revealAll
                     ? 'transition-colors bg-slate-200 text-slate-800 border-slate-400 hover:bg-slate-300'
-                    : 'transition-colors bg-orange-600 text-white border-orange-700 hover:bg-orange-700') +
+                    : 'transition-colors bg-orange-700 text-white border-orange-800 hover:bg-orange-800') +
                   ' font-bold text-sm transition focus:outline-none focus:ring-4 ring-orange-500/40 p-3'
               }, revealAll ? '🔄 Reset Sample' : '👁️ Reveal All (give up)')
             ),
@@ -4194,7 +4194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-selected': sel ? 'true' : 'false',
                   onClick: function() { setTab(jk); announce(JOINTS[jk].name + ' tab'); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                    (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                 }, JOINTS[jk].name);
               })
             ),
@@ -4473,7 +4473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-selected': sel ? 'true' : 'false',
                   onClick: function() { setLocalView(t.id); announce(t.label); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                    (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                 }, t.label);
               })
             ),
@@ -4550,7 +4550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onClick: function() { setChallengeIdx(i); announce('Challenge ' + (i + 1) + ' loaded'); },
                     'aria-pressed': sel ? 'true' : 'false',
                     className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                      (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                      (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                   }, 'Challenge ' + (i + 1) + ' · ' + c.difficulty);
                 })
               ),
@@ -4808,7 +4808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-selected': sel ? 'true' : 'false',
                   onClick: function() { setLocalView(t.id); announce(t.label); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                    (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                 }, t.label);
               })
             ),
@@ -4892,7 +4892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onClick: function() { setScenarioIdx(i); },
                     'aria-pressed': sel ? 'true' : 'false',
                     className: 'px-3 py-2 rounded-xl border-2 font-bold text-xs transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                      (sel ? 'bg-orange-600 text-white border-orange-700' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                      (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                   },
                     'Scenario ' + (i + 1),
                     done && h('span', { className: 'ml-1' }, correct ? '✓' : '✗')
@@ -5136,7 +5136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-selected': sel ? 'true' : 'false',
                   onClick: function() { setLocalView(t.id); announce(t.label); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
-                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                    (sel ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
                 }, t.label);
               })
             ),
@@ -6845,7 +6845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   key: s.id,
                   onClick: function() { setSection(s.id); announce(s.label + ': ' + s.desc); },
                   className: 'px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                    (sel ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-400'),
+                    (sel ? 'bg-emerald-700 text-white border-emerald-800' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-400'),
                   title: s.desc
                 }, s.label);
               })

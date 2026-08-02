@@ -32,19 +32,520 @@ function _ensureHarper() {
   return _harperPromise;
 }
 // end _ensureHarper
+const _BUILDER_STYLE_GALLERY = Object.freeze([
+  { id: 'normal', label: 'Normal', tag: 'p', style: {} },
+  { id: 'title', label: 'Title', tag: 'h1', style: { fontSize: '2.25em', lineHeight: '1.1', marginBottom: '0.35em', letterSpacing: '-0.02em' } },
+  { id: 'subtitle', label: 'Subtitle', tag: 'p', style: { fontSize: '1.25em', color: '#475569', marginTop: '-0.15em', marginBottom: '1em' } },
+  { id: 'heading1', label: 'Heading 1', tag: 'h1', style: {} },
+  { id: 'heading2', label: 'Heading 2', tag: 'h2', style: {} },
+  { id: 'heading3', label: 'Heading 3', tag: 'h3', style: {} },
+  { id: 'quote', label: 'Quote', tag: 'blockquote', style: { borderLeft: '4px solid #94a3b8', color: '#334155', fontStyle: 'italic', paddingLeft: '1em' } },
+  { id: 'caption', label: 'Caption', tag: 'p', style: { color: '#475569', fontSize: '0.875em', fontStyle: 'italic' } },
+  { id: 'callout', label: 'Callout', tag: 'blockquote', style: { backgroundColor: '#eef2ff', borderLeft: '4px solid #6366f1', fontStyle: 'normal', padding: '0.75em 1em' } },
+]);
+const _BUILDER_STYLE_PROPERTIES = Object.freeze(['fontSize', 'lineHeight', 'marginTop', 'marginBottom', 'letterSpacing', 'color', 'fontStyle', 'fontWeight', 'backgroundColor', 'borderLeft', 'padding', 'paddingLeft']);
+
+const _BUILDER_PAGE_SIZES = Object.freeze({
+  letter: { label: 'Letter', width: 8.5, height: 11, css: 'letter' },
+  legal: { label: 'Legal', width: 8.5, height: 14, css: 'legal' },
+  a4: { label: 'A4', width: 8.27, height: 11.69, css: 'A4' },
+});
+function _builderPageDimensions(setup) {
+  const definition = _BUILDER_PAGE_SIZES[setup?.size] || _BUILDER_PAGE_SIZES.letter;
+  const landscape = setup?.orientation === 'landscape';
+  const width = landscape ? definition.height : definition.width;
+  const height = landscape ? definition.width : definition.height;
+  return { ...definition, width, height, widthCss: width + 'in', heightCss: height + 'in', heightPx: height * 96 };
+}
+function _builderClampEditorZoom(value) {
+  return Math.max(50, Math.min(200, Math.round((Number(value) || 100) / 5) * 5));
+}
+const _BUILDER_SECTION_BREAK_SELECTOR = '[data-allo-section-break]';
+function _builderNormalizeSectionName(value, index = 0) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80) || `Section ${index + 1}`;
+}
+function _builderSectionBreaks(doc) {
+  return doc ? Array.from(doc.querySelectorAll(_BUILDER_SECTION_BREAK_SELECTOR)) : [];
+}
+function _builderSectionIndexForNode(doc, node) {
+  if (!doc?.body || !node) return 0;
+  const element = node.nodeType === 3 ? node.parentElement : node;
+  if (!element || !doc.body.contains(element)) return 0;
+  const following = doc.defaultView?.Node?.DOCUMENT_POSITION_FOLLOWING || 4;
+  return _builderSectionBreaks(doc).reduce((index, marker, markerIndex) => (
+    marker === element || marker.contains(element) || (marker.compareDocumentPosition(element) & following) ? markerIndex + 1 : index
+  ), 0);
+}
+function _builderDocumentSections(doc, pageForNode = () => 0) {
+  if (!doc?.body) return [{ id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 }];
+  const firstName = _builderNormalizeSectionName(doc.body.getAttribute('data-allo-section-name'), 0);
+  const sections = [{ id: 'section-1', index: 0, name: firstName, startType: 'document', page: 0 }];
+  _builderSectionBreaks(doc).forEach((marker, markerIndex) => {
+    const index = markerIndex + 1;
+    const startType = marker.getAttribute('data-allo-section-break') === 'continuous' ? 'continuous' : 'next-page';
+    sections.push({
+      id: marker.getAttribute('data-allo-section-id') || `section-${index + 1}`,
+      index,
+      name: _builderNormalizeSectionName(marker.getAttribute('data-allo-section-name'), index),
+      startType,
+      page: pageForNode(marker),
+    });
+  });
+  return sections;
+}
+function _builderSyncBreakFill(doc, pageHeight, zoom = 100, pageView = true) {
+  if (!doc?.body) return;
+  const scale = Math.max(0.5, (Number(zoom) || 100) / 100);
+  const pageAdvance = Math.max(240, Number(pageHeight) || 1080);
+  const bodyTop = doc.body.getBoundingClientRect().top;
+  Array.from(doc.querySelectorAll('[data-allo-page-break="1"],[data-allo-section-break]')).forEach((marker) => {
+    const forcesPage = marker.hasAttribute('data-allo-page-break') || marker.getAttribute('data-allo-section-break') === 'next-page';
+    let fill = 24;
+    if (pageView && forcesPage) {
+      const top = Math.max(0, (marker.getBoundingClientRect().top - bodyTop) / scale);
+      const phase = ((top % pageAdvance) + pageAdvance) % pageAdvance;
+      const remaining = pageAdvance - phase;
+      fill = phase < 1 || remaining < 24 ? 24 : remaining;
+    }
+    marker.style.setProperty('--allo-break-fill', `${Math.round(fill * 8) / 8}px`);
+  });
+}
+function _builderStripEditorBreakMetadata(root) {
+  root?.querySelectorAll?.('[data-allo-page-break="1"],[data-allo-section-break]').forEach((marker) => {
+    marker.style?.removeProperty?.('--allo-break-fill');
+    if (!marker.getAttribute('style')) marker.removeAttribute('style');
+  });
+  return root;
+}
+function _builderInsertDocumentBreak(doc, kind = 'page', options = {}) {
+  if (!doc?.body || !doc.getSelection?.()?.rangeCount) return null;
+  const marker = doc.createElement('div');
+  let result = { kind: 'page' };
+  if (kind === 'section') {
+    const sectionIndex = _builderSectionBreaks(doc).length + 1;
+    const startType = options.startType === 'continuous' ? 'continuous' : 'next-page';
+    const id = `section-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    const name = _builderNormalizeSectionName(options.name, sectionIndex);
+    marker.setAttribute('data-allo-section-break', startType);
+    marker.setAttribute('data-allo-section-id', id);
+    marker.setAttribute('data-allo-section-name', name);
+    marker.setAttribute('role', 'separator');
+    marker.setAttribute('aria-label', `${startType === 'continuous' ? 'Continuous' : 'Next page'} section break. Starts ${name}.`);
+    marker.setAttribute('contenteditable', 'false');
+    marker.setAttribute('style', startType === 'continuous'
+      ? 'break-before:auto;page-break-before:auto;height:0;margin:0;border:0;'
+      : 'break-before:page;page-break-before:always;height:0;margin:0;border:0;');
+    result = { kind: 'section', id, name, startType };
+  } else {
+    marker.setAttribute('data-allo-page-break', '1');
+    marker.setAttribute('role', 'separator');
+    marker.setAttribute('aria-label', 'Page break');
+    marker.setAttribute('contenteditable', 'false');
+    marker.setAttribute('style', 'break-before:page;page-break-before:always;height:0;margin:0;border:0;');
+  }
+  let inserted = false;
+  try { inserted = Boolean(doc.execCommand('insertHTML', false, marker.outerHTML + '<p><br></p>')); } catch (_) {}
+  if (!inserted) return null;
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: kind === 'section' ? 'insertSectionBreak' : 'insertPageBreak' }));
+  return result;
+}
+const _BUILDER_PARAGRAPH_BLOCK_SELECTOR = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,td,th';
+const _BUILDER_PARAGRAPH_DEFAULTS = Object.freeze({
+  leftIndent: 0, firstLineIndent: 0, rightIndent: 0,
+  lineSpacing: 'normal', spaceBefore: 0, spaceAfter: 0,
+  keepWithNext: false, keepLinesTogether: false, widowOrphanControl: false,
+  tabStops: [],
+});
+function _builderPageContentWidth(setup) {
+  const dimensions = _builderPageDimensions(setup);
+  const margin = Math.max(0, parseFloat(setup?.margin) || 0);
+  return Math.max(2, dimensions.width - (margin * 2));
+}
+function _builderCssLengthInches(value, element) {
+  const text = String(value || '').trim().toLowerCase();
+  const amount = parseFloat(text);
+  if (!Number.isFinite(amount) || amount === 0) return 0;
+  if (text.endsWith('in')) return amount;
+  if (text.endsWith('pt')) return amount / 72;
+  if (text.endsWith('pc')) return amount / 6;
+  if (text.endsWith('cm')) return amount / 2.54;
+  if (text.endsWith('mm')) return amount / 25.4;
+  if (text.endsWith('px')) return amount / 96;
+  try {
+    const win = element?.ownerDocument?.defaultView;
+    const fontPixels = parseFloat(win?.getComputedStyle?.(element)?.fontSize) || 16;
+    if (text.endsWith('rem')) {
+      const rootPixels = parseFloat(win?.getComputedStyle?.(element.ownerDocument.documentElement)?.fontSize) || 16;
+      return (amount * rootPixels) / 96;
+    }
+    if (text.endsWith('em')) return (amount * fontPixels) / 96;
+  } catch (_) {}
+  return 0;
+}
+function _builderCssLengthPoints(value, element) {
+  const text = String(value || '').trim().toLowerCase();
+  const amount = parseFloat(text);
+  if (!Number.isFinite(amount) || amount === 0) return 0;
+  return text.endsWith('pt') ? amount : _builderCssLengthInches(text, element) * 72;
+}
+function _normalizeBuilderParagraphLayout(candidate, contentWidth = 6.5) {
+  const width = Math.max(2, Number(contentWidth) || 6.5);
+  const roundInches = (value) => Math.round((Number(value) || 0) * 8) / 8;
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, Number(value) || 0));
+  const leftIndent = roundInches(clamp(candidate?.leftIndent, 0, width - 0.5));
+  const rightIndent = roundInches(clamp(candidate?.rightIndent, 0, width - leftIndent - 0.5));
+  const firstLineAbsolute = roundInches(clamp(leftIndent + (Number(candidate?.firstLineIndent) || 0), 0, width - rightIndent));
+  const lineSpacing = ['normal', '1', '1.15', '1.5', '2'].includes(String(candidate?.lineSpacing)) ? String(candidate.lineSpacing) : 'normal';
+  const tabStopMap = new Map();
+  (Array.isArray(candidate?.tabStops) ? candidate.tabStops : []).forEach((tab) => {
+    const position = roundInches(clamp(typeof tab === 'number' ? tab : tab?.position, 0.125, width - 0.125));
+    const alignment = ['left', 'center', 'right', 'decimal'].includes(tab?.alignment) ? tab.alignment : 'left';
+    const fallbackId = 'tab-' + position.toFixed(3).replace('.', '-') + '-' + alignment;
+    const sanitizedId = typeof tab === 'object' && tab?.id ? String(tab.id).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64) : '';
+    tabStopMap.set(position.toFixed(3), { id: sanitizedId || fallbackId, position, alignment });
+  });
+  return {
+    leftIndent,
+    firstLineIndent: roundInches(firstLineAbsolute - leftIndent),
+    rightIndent,
+    lineSpacing,
+    spaceBefore: Math.round(clamp(candidate?.spaceBefore, 0, 72)),
+    spaceAfter: Math.round(clamp(candidate?.spaceAfter, 0, 72)),
+    keepWithNext: Boolean(candidate?.keepWithNext),
+    keepLinesTogether: Boolean(candidate?.keepLinesTogether),
+    widowOrphanControl: Boolean(candidate?.widowOrphanControl),
+    tabStops: Array.from(tabStopMap.values()).sort((a, b) => a.position - b.position).slice(0, 16),
+  };
+}
+function _builderParagraphLayoutsEqual(left, right) {
+  if (!left || !right) return false;
+  return left.leftIndent === right.leftIndent && left.firstLineIndent === right.firstLineIndent
+    && left.rightIndent === right.rightIndent && left.lineSpacing === right.lineSpacing
+    && left.spaceBefore === right.spaceBefore && left.spaceAfter === right.spaceAfter
+    && left.keepWithNext === right.keepWithNext && left.keepLinesTogether === right.keepLinesTogether
+    && left.widowOrphanControl === right.widowOrphanControl
+    && left.tabStops.length === right.tabStops.length
+    && left.tabStops.every((tab, index) => tab.position === right.tabStops[index]?.position && tab.alignment === right.tabStops[index]?.alignment);
+}
+function _builderSelectedParagraphBlocks(doc) {
+  if (!doc?.body) return [];
+  const selection = doc.getSelection?.();
+  let anchor = selection?.anchorNode;
+  if (anchor?.nodeType === 3) anchor = anchor.parentElement;
+  const anchorBlock = anchor?.closest?.(_BUILDER_PARAGRAPH_BLOCK_SELECTOR);
+  if (!selection?.rangeCount || selection.isCollapsed) return anchorBlock && !anchorBlock.closest('[data-allo-page-element]') ? [anchorBlock] : [];
+  const range = selection.getRangeAt(0);
+  const candidates = Array.from(doc.querySelectorAll(_BUILDER_PARAGRAPH_BLOCK_SELECTOR)).filter((block) => {
+    if (block.closest('[data-allo-page-element]')) return false;
+    try { return range.intersectsNode(block); } catch (_) { return false; }
+  });
+  const leafBlocks = candidates.filter((block) => !candidates.some((other) => other !== block && block.contains(other)));
+  return leafBlocks.length ? leafBlocks : (anchorBlock ? [anchorBlock] : []);
+}
+function _builderParagraphLayoutFromBlock(block) {
+  if (!block) return { ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] };
+  let tabStops = [];
+  try {
+    const parsed = JSON.parse(block.getAttribute('data-allo-tab-stops') || '[]');
+    if (Array.isArray(parsed)) tabStops = parsed;
+  } catch (_) {}
+  const style = block.style || {};
+  return _normalizeBuilderParagraphLayout({
+    leftIndent: _builderCssLengthInches(style.marginLeft, block),
+    firstLineIndent: _builderCssLengthInches(style.textIndent, block),
+    rightIndent: _builderCssLengthInches(style.marginRight, block),
+    lineSpacing: ['1', '1.15', '1.5', '2'].includes(style.lineHeight) ? style.lineHeight : 'normal',
+    spaceBefore: _builderCssLengthPoints(style.marginTop, block),
+    spaceAfter: _builderCssLengthPoints(style.marginBottom, block),
+    keepWithNext: block.getAttribute('data-allo-keep-with-next') === '1' || /avoid/.test(style.breakAfter || style.pageBreakAfter || ''),
+    keepLinesTogether: block.getAttribute('data-allo-keep-lines') === '1' || /avoid/.test(style.breakInside || style.pageBreakInside || ''),
+    widowOrphanControl: block.getAttribute('data-allo-widow-orphan') === '1',
+    tabStops,
+  }, 20);
+}
+function _builderDocumentContentWidthInches(doc, zoom = 100) {
+  if (!doc?.body) return 6.5;
+  try {
+    const scale = Math.max(0.5, (Number(zoom) || 100) / 100);
+    const rect = doc.body.getBoundingClientRect();
+    const style = doc.defaultView?.getComputedStyle?.(doc.body);
+    const padding = ((parseFloat(style?.paddingLeft) || 0) + (parseFloat(style?.paddingRight) || 0)) / (96 * scale);
+    return Math.max(2, (rect.width / (96 * scale)) - padding);
+  } catch (_) { return 6.5; }
+}
+function _builderInsertParagraphTab(doc, zoom = 100, contentWidthOverride) {
+  if (!doc?.body) return null;
+  const selection = doc.getSelection?.();
+  if (!selection?.rangeCount) return null;
+  let range = selection.getRangeAt(0);
+  let selectedNode = selection.anchorNode;
+  if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+  const activeField = selectedNode?.closest?.('[data-allo-tab-field]');
+  if (activeField) {
+    range = doc.createRange();
+    range.setStartAfter(activeField);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  const block = selectedNode?.closest?.(_BUILDER_PARAGRAPH_BLOCK_SELECTOR);
+  if (!block || block.closest('[data-allo-page-element]')) return null;
+  const layout = _builderParagraphLayoutFromBlock(block);
+  const scale = Math.max(0.5, (Number(zoom) || 100) / 100);
+  const contentWidth = Math.max(2, Number(contentWidthOverride) || _builderDocumentContentWidthInches(doc, zoom));
+  let currentPosition = layout.leftIndent;
+  try {
+    const caretRect = range.getBoundingClientRect();
+    const blockRect = block.getBoundingClientRect();
+    if (caretRect && blockRect && Number.isFinite(caretRect.left) && Number.isFinite(blockRect.left)) {
+      currentPosition += Math.max(0, (caretRect.left - blockRect.left) / (96 * scale));
+    }
+  } catch (_) {}
+  if (activeField) currentPosition = Math.max(currentPosition, parseFloat(activeField.getAttribute('data-tab-stop')) || currentPosition);
+  const explicit = layout.tabStops.find((tab) => tab.position > currentPosition + 0.05);
+  const stop = explicit || { position: Math.min(contentWidth, Math.max(0.5, Math.ceil((currentPosition + 0.05) * 2) / 2)), alignment: 'left' };
+  const distance = Math.max(0.125, stop.position - currentPosition);
+  const tab = doc.createElement('span');
+  tab.setAttribute('data-allo-tab', '1');
+  tab.setAttribute('data-tab-stop', String(stop.position));
+  tab.setAttribute('data-tab-alignment', stop.alignment);
+  tab.setAttribute('aria-label', `${stop.alignment} tab to ${stop.position} inches`);
+  tab.style.display = 'inline-block';
+  tab.style.verticalAlign = 'baseline';
+  tab.style.maxWidth = '100%';
+  if (stop.alignment === 'left') {
+    tab.style.width = distance + 'in';
+    tab.textContent = '\u00a0';
+    if (!range.collapsed) range.deleteContents();
+    range.insertNode(tab);
+    range.setStartAfter(tab);
+  } else {
+    const available = Math.max(distance, contentWidth - currentPosition);
+    const fieldWidth = stop.alignment === 'center' ? Math.min(available, distance * 2) : distance;
+    tab.setAttribute('data-allo-tab-field', stop.alignment);
+    tab.style.width = fieldWidth + 'in';
+    tab.style.textAlign = stop.alignment === 'center' ? 'center' : 'right';
+    tab.style.whiteSpace = 'nowrap';
+    tab.textContent = '\u200b';
+    if (!range.collapsed) range.deleteContents();
+    range.insertNode(tab);
+    range.selectNodeContents(tab);
+    range.collapse(false);
+  }
+  selection.removeAllRanges();
+  selection.addRange(range);
+  doc.body.setAttribute('data-allo-user-edited', '1');
+  doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
+  return stop;
+}
 function _builderWordCount(doc) {
-  if (!doc?.body) return 0;
+  const text = _builderDocumentText(doc);
+  return text ? text.split(/\s+/).length : 0;
+}
+
+function _builderDocumentText(doc) {
+  if (!doc?.body) return '';
   const win = doc.defaultView;
   const NF = win?.NodeFilter || NodeFilter;
   const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT);
   const parts = [];
   while (walker.nextNode()) {
     const node = walker.currentNode;
-    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]')) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]')) continue;
     if (node.nodeValue) parts.push(node.nodeValue);
   }
-  const text = parts.join(' ').trim();
-  return text ? text.split(/\s+/).length : 0;
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function _builderTextStatistics(text) {
+  const normalized = String(text || '').replace(/[\u200B\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+  const words = normalized ? normalized.split(/\s+/).length : 0;
+  let sentences = 0;
+  if (normalized) {
+    try {
+      const Segmenter = typeof Intl !== 'undefined' ? Intl.Segmenter : null;
+      if (Segmenter) sentences = Array.from(new Segmenter(undefined, { granularity: 'sentence' }).segment(normalized)).filter((part) => part.segment.trim()).length;
+    } catch (_) {}
+    if (!sentences) sentences = (normalized.match(/[.!?]+(?:["')\]]+)?(?=\s|$)/g) || []).length || 1;
+  }
+  return {
+    words,
+    charactersWithSpaces: Array.from(normalized).length,
+    charactersWithoutSpaces: Array.from(normalized.replace(/\s/g, '')).length,
+    paragraphs: normalized ? 1 : 0,
+    sentences,
+    readingMinutes: words ? Math.max(1, Math.ceil(words / 225)) : 0,
+    speakingMinutes: words ? Math.max(1, Math.ceil(words / 130)) : 0,
+  };
+}
+
+function _builderDocumentStatistics(doc) {
+  const statistics = _builderTextStatistics(_builderDocumentText(doc));
+  if (!doc?.body || !statistics.words) return statistics;
+  const win = doc.defaultView;
+  const NF = win?.NodeFilter || NodeFilter;
+  const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT);
+  const blocks = new Set();
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!String(node.nodeValue || '').trim()) continue;
+    if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]')) continue;
+    const block = node.parentElement?.closest('h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,pre,address,dt,dd,td,th,div');
+    if (block && block !== doc.body) blocks.add(block);
+  }
+  return { ...statistics, paragraphs: blocks.size || 1 };
+}
+
+function _builderSelectionStatistics(doc, savedRange) {
+  const empty = { active: false, ..._builderTextStatistics('') };
+  if (!doc?.body) return empty;
+  let range = null;
+  try {
+    const selection = doc.getSelection?.();
+    if (selection?.rangeCount && !selection.isCollapsed) range = selection.getRangeAt(0);
+    else if (savedRange && !savedRange.collapsed && savedRange.commonAncestorContainer?.ownerDocument === doc) range = savedRange;
+    if (!range || range.collapsed) return empty;
+    const container = range.commonAncestorContainer?.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer?.parentElement;
+    if (!container || !doc.body.contains(container)) return empty;
+    return { active: true, ..._builderTextStatistics(range.toString()) };
+  } catch (_) {
+    return empty;
+  }
+}
+
+const _BUILDER_COMMENT_SELECTOR = 'mark[data-allo-comment-id]';
+
+function _builderNormalizeCommentMessage(value) {
+  return String(value || '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
+}
+
+function _builderCommentThread(marker) {
+  let source = [];
+  try {
+    const parsed = JSON.parse(marker?.getAttribute?.('data-allo-comment-thread') || '[]');
+    if (Array.isArray(parsed)) source = parsed;
+  } catch (_) {}
+  const fallback = _builderNormalizeCommentMessage(marker?.getAttribute?.('data-allo-comment-text'));
+  if (!source.length && fallback) source = [{ text: fallback, at: marker?.getAttribute?.('data-allo-comment-created-at') || '' }];
+  return source.map((entry, index) => ({
+    id: String(entry?.id || `message-${index + 1}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `message-${index + 1}`,
+    text: _builderNormalizeCommentMessage(entry?.text),
+    at: String(entry?.at || '').slice(0, 48),
+  })).filter((entry) => entry.text).slice(0, 20);
+}
+
+function _builderSetCommentThread(marker, thread) {
+  if (!marker) return [];
+  const normalized = (Array.isArray(thread) ? thread : []).map((entry, index) => ({
+    id: String(entry?.id || `message-${index + 1}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `message-${index + 1}`,
+    text: _builderNormalizeCommentMessage(entry?.text),
+    at: String(entry?.at || new Date().toISOString()).slice(0, 48),
+  })).filter((entry) => entry.text).slice(0, 20);
+  marker.setAttribute('data-allo-comment-thread', JSON.stringify(normalized));
+  marker.setAttribute('data-allo-comment-text', normalized[0]?.text || '');
+  marker.setAttribute('tabindex', '0');
+  const resolved = marker.getAttribute('data-allo-comment-resolved') === '1';
+  const summary = (normalized[0]?.text || 'Comment').replace(/\s+/g, ' ').slice(0, 140);
+  marker.setAttribute('aria-label', `${resolved ? 'Resolved comment' : 'Comment'}: ${summary}`);
+  marker.setAttribute('title', `${resolved ? 'Resolved comment' : 'Comment'}: ${summary}`);
+  return normalized;
+}
+
+function _builderCommentEntries(doc) {
+  if (!doc?.querySelectorAll) return [];
+  return Array.from(doc.querySelectorAll(_BUILDER_COMMENT_SELECTOR)).map((marker, index) => {
+    const rawId = marker.getAttribute('data-allo-comment-id') || '';
+    const id = rawId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `comment-${index + 1}`;
+    if (id !== rawId) marker.setAttribute('data-allo-comment-id', id);
+    const thread = _builderSetCommentThread(marker, _builderCommentThread(marker));
+    const createdAt = marker.getAttribute('data-allo-comment-created-at') || thread[0]?.at || '';
+    if (createdAt && !marker.getAttribute('data-allo-comment-created-at')) marker.setAttribute('data-allo-comment-created-at', createdAt);
+    return {
+      id,
+      index,
+      quote: String(marker.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 180) || 'Commented text',
+      resolved: marker.getAttribute('data-allo-comment-resolved') === '1',
+      createdAt,
+      thread,
+      node: marker,
+    };
+  });
+}
+
+function _builderInsertReviewComment(doc, savedRange, message) {
+  const text = _builderNormalizeCommentMessage(message);
+  if (!doc?.body || !text) return { ok: false, error: 'Write a comment first.' };
+  try {
+    const selection = doc.getSelection?.();
+    let range = selection?.rangeCount && !selection.isCollapsed ? selection.getRangeAt(0).cloneRange() : null;
+    if (!range && savedRange?.cloneRange && !savedRange.collapsed && savedRange.commonAncestorContainer?.ownerDocument === doc) range = savedRange.cloneRange();
+    if (!range || range.collapsed) return { ok: false, error: 'Select the text you want to comment on.' };
+    const startElement = range.startContainer?.nodeType === 1 ? range.startContainer : range.startContainer?.parentElement;
+    const endElement = range.endContainer?.nodeType === 1 ? range.endContainer : range.endContainer?.parentElement;
+    if (!startElement || !endElement || !doc.body.contains(startElement) || !doc.body.contains(endElement)) return { ok: false, error: 'Select text inside the document.' };
+    if (startElement.closest(_BUILDER_COMMENT_SELECTOR) || endElement.closest(_BUILDER_COMMENT_SELECTOR)) return { ok: false, error: 'That text already belongs to a comment.' };
+    const blockSelector = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,pre,td,th,div';
+    if (startElement.closest(blockSelector) !== endElement.closest(blockSelector)) return { ok: false, error: 'Select text within one paragraph or table cell.' };
+    const fragment = range.cloneContents();
+    if (fragment.querySelector?.(_BUILDER_COMMENT_SELECTOR)) return { ok: false, error: 'Comments cannot overlap.' };
+    if (fragment.querySelector?.('p,h1,h2,h3,h4,h5,h6,li,blockquote,figure,figcaption,pre,table,tr,td,th,div')) return { ok: false, error: 'Select text within one paragraph or table cell.' };
+    const quote = range.toString().replace(/\s+/g, ' ').trim();
+    if (!quote) return { ok: false, error: 'Select visible text before adding a comment.' };
+    const id = `comment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const at = new Date().toISOString();
+    const marker = doc.createElement('mark');
+    marker.setAttribute('data-allo-comment-id', id);
+    marker.setAttribute('data-allo-comment-created-at', at);
+    marker.setAttribute('data-allo-comment-resolved', '0');
+    _builderSetCommentThread(marker, [{ id: `message-${Date.now().toString(36)}`, text, at }]);
+    try {
+      range.surroundContents(marker);
+    } catch (_) {
+      marker.appendChild(range.extractContents());
+      range.insertNode(marker);
+    }
+    const nextRange = doc.createRange();
+    nextRange.selectNodeContents(marker);
+    selection?.removeAllRanges();
+    selection?.addRange(nextRange);
+    doc.body.setAttribute('data-allo-user-edited', '1');
+    doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'insertComment' }));
+    return { ok: true, id, marker, quote };
+  } catch (_) {
+    return { ok: false, error: 'The comment could not be anchored to that selection.' };
+  }
+}
+
+function _builderClearReviewCommentTransientState(root) {
+  root?.querySelectorAll?.(_BUILDER_COMMENT_SELECTOR).forEach((marker) => marker.removeAttribute('data-allo-comment-active'));
+  return root;
+}
+
+function _builderStripReviewComments(root) {
+  if (!root?.querySelectorAll) return root;
+  Array.from(root.querySelectorAll(_BUILDER_COMMENT_SELECTOR)).forEach((marker) => marker.replaceWith(...Array.from(marker.childNodes)));
+  return root;
+}
+
+function _builderSuspendReviewComments(root) {
+  if (!root?.querySelectorAll) return () => {};
+  const records = [];
+  Array.from(root.querySelectorAll(_BUILDER_COMMENT_SELECTOR)).forEach((marker) => {
+    if (!marker.parentNode) return;
+    const children = Array.from(marker.childNodes);
+    marker.replaceWith(...children);
+    records.push({ marker, children });
+  });
+  return () => {
+    records.reverse().forEach(({ marker, children }) => {
+      const first = children.find((node) => node.parentNode);
+      const parent = first?.parentNode;
+      if (!parent) return;
+      parent.insertBefore(marker, first);
+      children.forEach((node) => { if (node.parentNode === parent) marker.appendChild(node); });
+    });
+  };
 }
 
 function _builderHeadingOutline(doc) {
@@ -57,6 +558,47 @@ function _builderHeadingOutline(doc) {
   }));
 }
 
+function _normalizeBuilderLocalDraft(candidate) {
+  if (!candidate || typeof candidate !== 'object' || typeof candidate.html !== 'string' || candidate.html.length < 100) return null;
+  const currentAt = Number(candidate.at) || Date.now();
+  const rawSnapshots = Array.isArray(candidate.snapshots) ? candidate.snapshots : [];
+  const snapshots = rawSnapshots
+    .filter((item) => item && typeof item.html === 'string' && item.html.length > 100)
+    .map((item, index) => ({
+      id: String(item.id || `snapshot-${item.at || currentAt}-${index}`),
+      at: Number(item.at) || currentAt,
+      label: String(item.label || 'Auto-save').slice(0, 80),
+      html: item.html,
+    }))
+    .slice(0, 10);
+  if (!snapshots.length) snapshots.push({ id: `legacy-${currentAt}`, at: currentAt, label: 'Recovered draft', html: candidate.html });
+  return { ...candidate, version: 2, at: currentAt, snapshots };
+}
+
+const _BUILDER_VIEW_PREFS_KEY = 'alloflow-builder-view-prefs-v1';
+
+function _readBuilderViewPreferences() {
+  const defaults = { zoom: 100, zoomMode: 'custom', pageView: true, pageSize: 'letter', pageOrientation: 'portrait', pageMargin: '1in', navigationPane: false, navigationTab: 'headings', navigationWidth: 248, ribbonTab: 'home', ribbonCollapsed: false };
+  if (typeof window === 'undefined') return defaults;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(_BUILDER_VIEW_PREFS_KEY) || 'null') || {};
+    return {
+      zoom: _builderClampEditorZoom(stored.zoom || defaults.zoom),
+      zoomMode: ['custom', 'fit-width', 'fit-page'].includes(stored.zoomMode) ? stored.zoomMode : defaults.zoomMode,
+      pageView: typeof stored.pageView === 'boolean' ? stored.pageView : defaults.pageView,
+      pageSize: ['letter', 'legal', 'a4'].includes(stored.pageSize) ? stored.pageSize : defaults.pageSize,
+      pageOrientation: ['portrait', 'landscape'].includes(stored.pageOrientation) ? stored.pageOrientation : defaults.pageOrientation,
+      pageMargin: ['0.5in', '1in', '1.5in'].includes(stored.pageMargin) ? stored.pageMargin : defaults.pageMargin,
+      navigationPane: typeof stored.navigationPane === 'boolean' ? stored.navigationPane : Boolean(stored.pageThumbnails),
+      navigationTab: ['headings', 'pages', 'sections', 'comments'].includes(stored.navigationTab) ? stored.navigationTab : (stored.pageThumbnails ? 'pages' : defaults.navigationTab),
+      navigationWidth: Math.max(180, Math.min(420, Number(stored.navigationWidth) || defaults.navigationWidth)),
+      ribbonTab: ['home', 'insert', 'layout', 'review', 'view', 'expert'].includes(stored.ribbonTab) ? stored.ribbonTab : defaults.ribbonTab,
+      ribbonCollapsed: typeof stored.ribbonCollapsed === 'boolean' ? stored.ribbonCollapsed : defaults.ribbonCollapsed,
+    };
+  } catch (_) {
+    return defaults;
+  }
+}
 function _builderExportPreflight(doc, mode) {
   const issues = [];
   const add = (severity, code, message, count) => issues.push({ severity, code, message, count: count || 1 });
@@ -87,6 +629,8 @@ function _builderExportPreflight(doc, mode) {
   }).length;
   if (unlabeled) add('error', 'form-label', `${unlabeled} form control${unlabeled === 1 ? ' has' : 's have'} no accessible label.`, unlabeled);
   const tablesWithoutHeaders = Array.from(doc.querySelectorAll('table')).filter((table) => !table.querySelector('th')).length;
+  const tablesWithoutCaptions = Array.from(doc.querySelectorAll('table')).filter((table) => !(table.querySelector('caption')?.textContent || '').trim() && !table.hasAttribute('aria-label') && !table.hasAttribute('aria-labelledby')).length;
+  if (tablesWithoutCaptions) add('warning', 'table-caption', tablesWithoutCaptions + ' table' + (tablesWithoutCaptions === 1 ? ' has' : 's have') + ' no caption or accessible name.', tablesWithoutCaptions);
   if (tablesWithoutHeaders) add('warning', 'table-headers', `${tablesWithoutHeaders} table${tablesWithoutHeaders === 1 ? ' has' : 's have'} no header cells.`, tablesWithoutHeaders);
   const unsafeLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*(javascript|vbscript|data):/i.test(a.getAttribute('href') || '')).length;
   if (unsafeLinks) add('error', 'unsafe-links', `${unsafeLinks} unsafe link${unsafeLinks === 1 ? '' : 's'} must be removed.`, unsafeLinks);
@@ -239,10 +783,57 @@ function ExportPreviewView(props) {
   const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
   const [wordCount, setWordCount] = React.useState(0);
   const [wordGoal, setWordGoal] = React.useState(0);
+  const [documentStatistics, setDocumentStatistics] = React.useState(() => _builderTextStatistics(''));
+  const [selectionStatistics, setSelectionStatistics] = React.useState(() => ({ active: false, ..._builderTextStatistics('') }));
+  const [showWordCountDetails, setShowWordCountDetails] = React.useState(false);
   const [headingOutline, setHeadingOutline] = React.useState([]);
+  const [activeHeadingIndex, setActiveHeadingIndex] = React.useState(null);
+  const [reviewComments, setReviewComments] = React.useState([]);
+  const [activeCommentId, setActiveCommentId] = React.useState('');
+  const [showResolvedComments, setShowResolvedComments] = React.useState(false);
+  const [findMatchState, setFindMatchState] = React.useState({ count: 0, current: 0 });
+  const [draftRecovery, setDraftRecovery] = React.useState(null);
+  const [versionHistory, setVersionHistory] = React.useState([]);
   const [preflightResult, setPreflightResult] = React.useState(null);
+  const [isFocusMode, setIsFocusMode] = React.useState(false);
+  const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
+  const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
+  const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);
+  const [showNavigationPane, setShowNavigationPane] = React.useState(() => _readBuilderViewPreferences().navigationPane);
+  const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
+  const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
+  const [activeRibbonTab, setActiveRibbonTab] = React.useState(() => _readBuilderViewPreferences().ribbonTab);
+  const [ribbonCollapsed, setRibbonCollapsed] = React.useState(() => _readBuilderViewPreferences().ribbonCollapsed);
+  const [pageMetrics, setPageMetrics] = React.useState({ count: 1, active: 0, sections: [], documentSections: [{ id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 }], activeSection: 0 });
+  const [sectionNameDraft, setSectionNameDraft] = React.useState('Section 1');
+  const [draftCaptureState, setDraftCaptureState] = React.useState('ready');
+  const [formatState, setFormatState] = React.useState({
+    bold: false, italic: false, underline: false,
+    strikeThrough: false, subscript: false, superscript: false, fontSize: '3',
+    unorderedList: false, orderedList: false,
+    block: 'p', namedStyle: 'normal', alignment: 'left', paragraphSpacing: 'normal',
+  });
   const [findQuery, setFindQuery] = React.useState('');
   const [replaceQuery, setReplaceQuery] = React.useState('');
+  const [findOptions, setFindOptions] = React.useState({ matchCase: false, wholeWord: false, highlightAll: true });
+  const [findDocumentRevision, setFindDocumentRevision] = React.useState(0);
+  const [formatPainterActive, setFormatPainterActive] = React.useState(false);
+  const [tableInsertConfig, setTableInsertConfig] = React.useState({ rows: 3, columns: 3, headerRow: true, caption: '' });
+  const [tableContext, setTableContext] = React.useState({ active: false, rows: 0, columns: 0, hasHeader: false, headerCell: false });
+  const [pageSetup, setPageSetup] = React.useState(() => {
+    const preferences = _readBuilderViewPreferences();
+    return { size: ['letter', 'legal', 'a4'].includes(exportConfig?.pageSize) ? exportConfig.pageSize : preferences.pageSize, orientation: ['portrait', 'landscape'].includes(exportConfig?.pageOrientation) ? exportConfig.pageOrientation : preferences.pageOrientation, margin: ['0.5in', '1in', '1.5in'].includes(exportConfig?.pageMargin) ? exportConfig.pageMargin : preferences.pageMargin };
+  });
+  const [pageElements, setPageElements] = React.useState({ headerText: '', headerAlignment: 'left', footerText: '', pageNumbers: 'none' });
+  const [paragraphLayout, setParagraphLayout] = React.useState(() => ({ ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] }));
+  const [rulerTabAlignment, setRulerTabAlignment] = React.useState('left');
+  const unresolvedReviewCommentCount = reviewComments.filter((comment) => !comment.resolved).length;
+  const visibleReviewComments = reviewComments.filter((comment) => showResolvedComments || !comment.resolved);
+  const activeDocumentSection = pageMetrics.documentSections?.[pageMetrics.activeSection] || pageMetrics.documentSections?.[0] || { id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 };
+  React.useEffect(() => {
+    setSectionNameDraft(activeDocumentSection.name);
+  }, [activeDocumentSection.id, activeDocumentSection.name]);
+  const paragraphContentWidth = _builderPageContentWidth(pageSetup);
   const [altExportBusy, setAltExportBusy] = React.useState('');
   const [pendingImageFile, setPendingImageFile] = React.useState(null);
   const qtiAssessments = React.useMemo(() => (Array.isArray(history) ? history : [])
@@ -276,10 +867,14 @@ function ExportPreviewView(props) {
   const [exportActionBusy, setExportActionBusy] = React.useState(false);
   const imageFileInputRef = React.useRef(null);
   const imageAddButtonRef = React.useRef(null);
+  const imageOpenerRef = React.useRef(null);
   const imageAltInputRef = React.useRef(null);
   const imageInsertionRangeRef = React.useRef(null);
   const exportDialogRef = React.useRef(null);
   const imageDialogRef = React.useRef(null);
+  const wordCountButtonRef = React.useRef(null);
+  const wordCountPanelRef = React.useRef(null);
+  const wordCountOpenerRef = React.useRef(null);
   const imageInsertRunRef = React.useRef(0);
   const writingCheckRunRef = React.useRef(0);
   const auditRunRef = React.useRef(0);
@@ -287,7 +882,16 @@ function ExportPreviewView(props) {
   const exportActionLockRef = React.useRef(false);
   const mountedRef = React.useRef(true);
   const findCursorRef = React.useRef({ node: null, offset: 0 });
+  const editorSelectionRangeRef = React.useRef(null);
+  const formatPainterRef = React.useRef(null);
+  const rulerRef = React.useRef(null);
+  const rulerDragCleanupRef = React.useRef(null);
   const openerRef = React.useRef(null);
+  const draftDocumentTitle = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || 'AlloFlow Document').trim().substring(0, 120) || 'AlloFlow Document';
+  const draftIdentitySeed = Array.isArray(history)
+    ? `${history.length}:${history[0]?.id || history[0]?.type || ''}:${history[history.length - 1]?.id || history[history.length - 1]?.type || ''}`
+    : 'empty';
+  const draftStorageKey = React.useMemo(() => `alloflow-builder-draft-v1:${encodeURIComponent([exportPreviewSource || 'generated', exportPreviewMode || 'print', draftDocumentTitle, draftIdentitySeed].join('|')).substring(0, 220)}`, [exportPreviewSource, exportPreviewMode, draftDocumentTitle, draftIdentitySeed]);
 
   const promptForBuilderText = React.useCallback(async (message, defaultValue, options) => {
     if (!(window.AlloFlowUX && typeof window.AlloFlowUX.prompt === 'function')) {
@@ -303,6 +907,7 @@ function ExportPreviewView(props) {
     writingCheckRunRef.current += 1;
     auditRunRef.current += 1;
     expertRunRef.current += 1;
+    try { rulerDragCleanupRef.current?.(); } catch (_) {}
   }, []);
 
   // Capture the launch control before the following focus-trap effect moves
@@ -318,6 +923,102 @@ function ExportPreviewView(props) {
     };
   }, [showExportPreview]);
 
+  const resetBuilderViewPreferences = React.useCallback(() => {
+    setEditorZoom(100);
+    setEditorZoomMode('custom');
+    setEditorPageView(true);
+    setShowNavigationPane(false);
+    setNavigationPaneTab('headings');
+    setNavigationPaneWidth(248);
+    setActiveRibbonTab('home');
+    setRibbonCollapsed(false);
+    addToast && addToast('Builder view reset.', 'info');
+  }, [addToast]);
+  const setBuilderFocusMode = React.useCallback(async (nextValue) => {
+    const next = typeof nextValue === 'boolean' ? nextValue : !isFocusMode;
+    setIsFocusMode(next);
+    if (next) {
+      try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (_) {
+        // The in-app focus surface still works when the browser denies native fullscreen.
+      }
+    } else if (document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch (_) {}
+    }
+  }, [isFocusMode]);
+
+  const openFindTools = React.useCallback((mode = 'find') => {
+    setActiveRibbonTab('review');
+    setRibbonCollapsed(false);
+    try {
+      window.setTimeout(() => {
+        const tools = document.getElementById('builder-find-tools');
+        if (tools) tools.open = true;
+        const input = document.getElementById(mode === 'replace' ? 'builder-replace' : 'builder-find');
+        if (input) { input.focus(); input.select?.(); }
+      }, 0);
+    } catch (_) {}
+  }, []);
+
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const active = Boolean(showExportPreview && isFocusMode);
+    root.classList.toggle('allo-docbuilder-focus', active);
+    if (!showExportPreview && isFocusMode) {
+      setIsFocusMode(false);
+      if (document.fullscreenElement && document.exitFullscreen) {
+        try { document.exitFullscreen(); } catch (_) {}
+      }
+    }
+    return () => root.classList.remove('allo-docbuilder-focus');
+  }, [showExportPreview, isFocusMode]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement && isFocusMode) setIsFocusMode(false);
+    };
+    const onFocusExit = () => setBuilderFocusMode(false);
+    const onOpenFind = (event) => openFindTools(event?.detail?.mode === 'replace' ? 'replace' : 'find');
+    const onShortcut = (event) => {
+      const target = event.target;
+      const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+      if ((tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) && !target?.closest?.('#document-builder-preview')) return;
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === 's' || event.key === 'S')) {
+        event.preventDefault();
+        document.dispatchEvent(new CustomEvent('alloflow-builder-save-snapshot'));
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === 'f' || event.key === 'F')) {
+        event.preventDefault();
+        openFindTools('find');
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === 'h' || event.key === 'H')) {
+        event.preventDefault();
+        openFindTools('replace');
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'Enter') {
+        event.preventDefault();
+        setBuilderFocusMode();
+      }
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('alloflow-builder-exit-focus', onFocusExit);
+    document.addEventListener('alloflow-builder-open-find', onOpenFind);
+    document.addEventListener('keydown', onShortcut);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('alloflow-builder-exit-focus', onFocusExit);
+      document.removeEventListener('alloflow-builder-open-find', onOpenFind);
+      document.removeEventListener('keydown', onShortcut);
+    };
+  }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
+
   const closeImageDialog = React.useCallback(() => {
     imageInsertRunRef.current += 1;
     setImageInsertBusy(false);
@@ -325,14 +1026,14 @@ function ExportPreviewView(props) {
     setImageAltText('');
     setImageDecorative(false);
     setImageAltError('');
-    window.setTimeout(() => imageAddButtonRef.current?.focus(), 0);
+    window.setTimeout(() => (imageOpenerRef.current || imageAddButtonRef.current)?.focus(), 0);
   }, []);
 
   React.useEffect(() => {
     if (!showExportPreview || pendingImageFile) return undefined;
     const dialog = exportDialogRef.current;
     if (!dialog) return undefined;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'));
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.key === 'Escape') { event.preventDefault(); setShowExportPreview(false); return; }
@@ -444,22 +1145,225 @@ function ExportPreviewView(props) {
     reader.readAsDataURL(file);
   }, [pendingImageFile, imageInsertBusy, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
 
-  const applyPageMargin = React.useCallback((margin) => {
-    const value = ['0.5in', '1in', '1.5in'].includes(margin) ? margin : '1in';
+  const applyPageSetup = React.useCallback((nextSetup, options = {}) => {
+    const normalized = {
+      size: ['letter', 'legal', 'a4'].includes(nextSetup?.size) ? nextSetup.size : 'letter',
+      orientation: ['portrait', 'landscape'].includes(nextSetup?.orientation) ? nextSetup.orientation : 'portrait',
+      margin: ['0.5in', '1in', '1.5in'].includes(nextSetup?.margin) ? nextSetup.margin : '1in',
+    };
+    const dimensions = _builderPageDimensions(normalized);
+    setPageSetup((previous) => previous.size === normalized.size && previous.orientation === normalized.orientation && previous.margin === normalized.margin ? previous : normalized);
     try {
-      const doc = exportPreviewRef.current?.contentDocument;
+      const iframe = exportPreviewRef.current;
+      if (iframe) iframe.__alloBuilderPageSetup = normalized;
+      const doc = iframe?.contentDocument;
       if (doc?.head) {
-        let style = doc.getElementById('allo-margin-style');
-        if (!style) { style = doc.createElement('style'); style.id = 'allo-margin-style'; doc.head.appendChild(style); }
-        style.textContent = `@media print { @page { margin: ${value}; } } body { padding-left: ${value}; padding-right: ${value}; }`;
+        let style = doc.getElementById('allo-page-setup-style') || doc.getElementById('allo-margin-style');
+        if (!style) { style = doc.createElement('style'); doc.head.appendChild(style); }
+        style.id = 'allo-page-setup-style';
+        style.setAttribute('data-page-size', normalized.size);
+        style.setAttribute('data-page-orientation', normalized.orientation);
+        style.setAttribute('data-page-margin', normalized.margin);
+        style.textContent = [
+          '@page { size: ' + dimensions.css + ' ' + normalized.orientation + '; margin: ' + normalized.margin + '; }',
+          'body { padding-left: ' + normalized.margin + '; padding-right: ' + normalized.margin + '; }',
+          '[data-allo-page-element] { box-sizing:border-box;color:#475569;font:500 10pt/1.35 system-ui,sans-serif; }',
+          '[data-allo-section-break="next-page"] { break-before:page;page-break-before:always; }',
+          '[data-allo-section-break="continuous"] { break-before:auto;page-break-before:auto; }',
+          '[data-allo-page-header] { margin:0 0 .65em;padding:0 0 .35em;border-bottom:1px solid #cbd5e1;text-align:var(--allo-header-align,left); }',
+          '[data-allo-page-footer] { position:relative;margin:.85em 0 0;padding:.35em 0 0;min-height:1.35em;border-top:1px solid #cbd5e1; }',
+          '[data-allo-page-number] { position:absolute;top:.35em;font-variant-numeric:tabular-nums; }',
+          '[data-allo-page-number]::before { content:"Page "; }',
+          '[data-allo-header-text],[data-allo-footer-text] { display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }',
+          '[data-page-number-position="left"] [data-allo-footer-text] { padding-left:5em; }',
+          '[data-page-number-position="center"] [data-allo-footer-text] { max-width:calc(50% - 3em); }',
+          '[data-page-number-position="right"] [data-allo-footer-text] { padding-right:5em; }',
+          '[data-page-number-position="left"] [data-allo-page-number] { left:0; }',
+          '[data-page-number-position="center"] [data-allo-page-number] { left:50%;transform:translateX(-50%); }',
+          '[data-page-number-position="right"] [data-allo-page-number] { right:0; }',
+          '@media screen { [data-allo-page-number]::after { content:"#"; } }',
+          '@media print { body { padding-top:.35in !important;padding-bottom:.35in !important;padding-left:0 !important;padding-right:0 !important; } [data-allo-page-header],[data-allo-page-footer] { position:fixed;left:0;right:0;margin:0;border-color:#94a3b8; } [data-allo-page-header] { top:0; } [data-allo-page-footer] { bottom:0; } [data-allo-page-break="1"],[data-allo-section-break] { height:0 !important;margin:0 !important;border:0 !important;background:none !important; } [data-allo-page-number]::after { content:counter(page); } }',
+        ].join('\n');
       }
     } catch (_) {}
+    if (options?.commit) {
+      try {
+        const doc = exportPreviewRef.current?.contentDocument;
+        if (doc?.body) {
+          doc.body.setAttribute('data-allo-user-edited', '1');
+          const InputEventCtor = doc.defaultView?.InputEvent || doc.defaultView?.Event;
+          doc.body.dispatchEvent(new InputEventCtor('input', { bubbles: true }));
+        }
+      } catch (_) {}
+    }
+    return normalized;
   }, [exportPreviewRef]);
 
-  React.useEffect(() => {
-    applyPageMargin(exportConfig.pageMargin || '1in');
-  }, [applyPageMargin, exportConfig.pageMargin, showExportPreview]);
+  const applyPageMargin = React.useCallback((margin) => {
+    applyPageSetup({ ...pageSetup, margin }, { commit: true });
+  }, [applyPageSetup, pageSetup]);
 
+  React.useEffect(() => {
+    applyPageSetup(pageSetup);
+  }, [applyPageSetup, pageSetup, showExportPreview]);
+
+  const editorPageCss = React.useCallback((enabled) => {
+    if (!enabled) return [
+      'html { background: transparent !important; }',
+      'body { width:auto !important;max-width:none !important;min-height:0 !important;margin:0 !important;background-image:none !important;box-shadow:none !important; }',
+    ].join('\n');
+    const dimensions = _builderPageDimensions(pageSetup);
+    const stripeHeight = dimensions.height + 0.25;
+    return [
+      'html { background:#e2e8f0 !important; }',
+      'body {',
+      'width:' + dimensions.widthCss + ' !important;',
+      'max-width:calc(100% - 2rem) !important;',
+      'min-height:' + dimensions.heightCss + ' !important;',
+      'box-sizing:border-box !important;',
+      'margin:1rem auto 2rem !important;',
+      'background-color:#fff !important;',
+      'background-image: linear-gradient(to bottom,transparent calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) ' + dimensions.heightCss + ',transparent ' + dimensions.heightCss + ') !important;',
+      'background-size:100% ' + stripeHeight + 'in !important;',
+      'box-shadow:0 0 0 1px rgba(100,116,139,0.3),0 12px 28px rgba(15,23,42,0.15) !important;',
+      '}',
+    ].join('\n');
+  }, [pageSetup.size, pageSetup.orientation]);
+  const applyEditorZoom = React.useCallback((zoom) => {
+    const value = _builderClampEditorZoom(zoom);
+    try {
+      const iframe = exportPreviewRef.current;
+      if (iframe) iframe.__alloBuilderZoom = value;
+      const style = iframe?.contentDocument?.getElementById('allo-builder-edit-css');
+      if (!style) return;
+      const base = style.getAttribute('data-allo-base-css') || style.textContent.replace(/\n?\s*body\s*\{[^}]*zoom:[^}]*\}\s*$/i, '');
+      const pageCss = style.getAttribute('data-allo-page-css') || editorPageCss(iframe?.__alloBuilderPageView !== false);
+      style.setAttribute('data-allo-page-css', pageCss);
+      style.textContent = `${base}\n${pageCss}\n        body { zoom: ${value}%; }`;
+    } catch (_) {}
+  }, [exportPreviewRef, editorPageCss]);
+
+  const applyEditorPageView = React.useCallback((enabled) => {
+    try {
+      const iframe = exportPreviewRef.current;
+      if (iframe) iframe.__alloBuilderPageView = Boolean(enabled);
+      const style = iframe?.contentDocument?.getElementById('allo-builder-edit-css');
+      if (!style) return;
+      const base = style.getAttribute('data-allo-base-css') || style.textContent.replace(/\n?\s*body\s*\{[^}]*zoom:[^}]*\}\s*$/i, '');
+      const pageCss = editorPageCss(Boolean(enabled));
+      const zoom = _builderClampEditorZoom(iframe?.__alloBuilderZoom);
+      style.setAttribute('data-allo-page-css', pageCss);
+      style.textContent = `${base}\n${pageCss}\n        body { zoom: ${zoom}%; }`;
+    } catch (_) {}
+  }, [exportPreviewRef, editorPageCss]);
+  const calculateEditorZoomPreset = React.useCallback((mode) => {
+    const iframe = exportPreviewRef.current;
+    if (!iframe) return 100;
+    const dimensions = _builderPageDimensions(pageSetup);
+    const availableWidth = Math.max(240, iframe.clientWidth - 48);
+    const availableHeight = Math.max(240, iframe.clientHeight - 48);
+    const widthScale = availableWidth / (dimensions.width * 96);
+    const heightScale = availableHeight / ((dimensions.height * 96) + 24);
+    const rawZoom = (mode === 'fit-page' ? Math.min(widthScale, heightScale) : widthScale) * 100;
+    return _builderClampEditorZoom(Math.floor(rawZoom / 5) * 5);
+  }, [exportPreviewRef, pageSetup.size, pageSetup.orientation]);
+
+  const useEditorZoomPreset = React.useCallback((mode) => {
+    const nextMode = mode === 'fit-page' ? 'fit-page' : 'fit-width';
+    setEditorZoomMode(nextMode);
+    setEditorPageView(true);
+    setEditorZoom(calculateEditorZoomPreset(nextMode));
+  }, [calculateEditorZoomPreset]);
+
+  const setCustomEditorZoom = React.useCallback((nextValue) => {
+    setEditorZoomMode('custom');
+    setEditorZoom((previous) => _builderClampEditorZoom(typeof nextValue === 'function' ? nextValue(previous) : nextValue));
+  }, []);
+  React.useEffect(() => {
+    applyEditorZoom(editorZoom);
+  }, [applyEditorZoom, editorZoom, showExportPreview]);
+
+  React.useEffect(() => {
+    applyEditorPageView(editorPageView);
+  }, [applyEditorPageView, editorPageView, showExportPreview]);
+
+  React.useEffect(() => {
+    if (!showExportPreview || editorZoomMode === 'custom') return undefined;
+    const updateFitZoom = () => setEditorZoom(calculateEditorZoomPreset(editorZoomMode));
+    const timer = window.setTimeout(updateFitZoom, 0);
+    const iframe = exportPreviewRef.current;
+    const ResizeObserverCtor = window.ResizeObserver;
+    const observer = ResizeObserverCtor && iframe ? new ResizeObserverCtor(updateFitZoom) : null;
+    if (observer && iframe) observer.observe(iframe);
+    window.addEventListener('resize', updateFitZoom);
+    return () => {
+      window.clearTimeout(timer);
+      observer?.disconnect();
+      window.removeEventListener('resize', updateFitZoom);
+    };
+  }, [showExportPreview, editorZoomMode, calculateEditorZoomPreset]);
+
+  const refreshFormattingState = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    const state = (command) => { try { return Boolean(doc.queryCommandState(command)); } catch (_) { return false; } };
+    const value = (command) => { try { return String(doc.queryCommandValue(command) || '').toLowerCase(); } catch (_) { return ''; } };
+    let block = value('formatBlock').replace(/[<>]/g, '') || 'p';
+    if (!['h1', 'h2', 'h3', 'p', 'blockquote'].includes(block)) block = 'p';
+    const alignment = state('justifyCenter') ? 'center' : state('justifyRight') ? 'right' : state('justifyFull') ? 'justify' : 'left';
+    let paragraphSpacing = 'normal';
+    let nextParagraphLayout = { ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] };
+    let namedStyle = block === 'h1' ? 'heading1' : block === 'h2' ? 'heading2' : block === 'h3' ? 'heading3' : block === 'blockquote' ? 'quote' : 'normal';
+    try {
+      let selectedNode = doc.getSelection?.()?.anchorNode;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const selectedBlock = selectedNode?.closest?.(_BUILDER_PARAGRAPH_BLOCK_SELECTOR);
+      const explicitStyle = selectedBlock?.getAttribute?.('data-allo-style');
+      if (_BUILDER_STYLE_GALLERY.some((item) => item.id === explicitStyle)) namedStyle = explicitStyle;
+      const inlineMargin = selectedBlock?.style?.marginBottom || '';
+      const spacingPoints = _builderCssLengthPoints(inlineMargin, selectedBlock);
+      paragraphSpacing = !inlineMargin ? 'normal' : spacingPoints <= 6 ? 'compact' : spacingPoints >= 20 ? 'double' : 'relaxed';
+      if (selectedBlock && !selectedBlock.closest('[data-allo-page-element]')) {
+        nextParagraphLayout = _normalizeBuilderParagraphLayout(_builderParagraphLayoutFromBlock(selectedBlock), paragraphContentWidth);
+      }
+    } catch (_) {}
+    const next = {
+      bold: state('bold'), italic: state('italic'), underline: state('underline'),
+      strikeThrough: state('strikeThrough'), subscript: state('subscript'), superscript: state('superscript'),
+      fontSize: /^[1-7]$/.test(value('fontSize')) ? value('fontSize') : '3',
+      unorderedList: state('insertUnorderedList'), orderedList: state('insertOrderedList'),
+      block, namedStyle, alignment, paragraphSpacing,
+    };
+    setFormatState((previous) => (
+      previous.bold === next.bold && previous.italic === next.italic && previous.underline === next.underline
+      && previous.strikeThrough === next.strikeThrough && previous.subscript === next.subscript && previous.superscript === next.superscript
+      && previous.fontSize === next.fontSize
+      && previous.unorderedList === next.unorderedList && previous.orderedList === next.orderedList
+      && previous.block === next.block && previous.namedStyle === next.namedStyle && previous.alignment === next.alignment
+      && previous.paragraphSpacing === next.paragraphSpacing
+    ) ? previous : next);
+    setParagraphLayout((previous) => _builderParagraphLayoutsEqual(previous, nextParagraphLayout) ? previous : nextParagraphLayout);
+  }, [exportPreviewRef, paragraphContentWidth]);
+
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(_BUILDER_VIEW_PREFS_KEY, JSON.stringify({
+        version: 1,
+        zoom: editorZoom,
+        zoomMode: editorZoomMode,
+        pageView: editorPageView,
+        pageSize: pageSetup.size,
+        pageOrientation: pageSetup.orientation,
+        pageMargin: pageSetup.margin,
+        navigationPane: showNavigationPane,
+        navigationTab: navigationPaneTab,
+        navigationWidth: navigationPaneWidth,
+        ribbonTab: activeRibbonTab,
+        ribbonCollapsed,
+      }));
+    } catch (_) {}
+  }, [editorZoom, editorZoomMode, editorPageView, pageSetup, showNavigationPane, navigationPaneTab, navigationPaneWidth, activeRibbonTab, ribbonCollapsed]);
   React.useEffect(() => {
     const goal = Number.isFinite(wordGoal) && wordGoal > 0 ? wordGoal : 0;
     setWordGoalProgress({
@@ -469,12 +1373,1301 @@ function ExportPreviewView(props) {
     });
   }, [wordCount, wordGoal]);
 
+  const refreshSelectionStatistics = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const next = _builderSelectionStatistics(doc, editorSelectionRangeRef.current);
+    setSelectionStatistics((previous) => (
+      previous.active === next.active
+      && previous.words === next.words
+      && previous.charactersWithSpaces === next.charactersWithSpaces
+      && previous.charactersWithoutSpaces === next.charactersWithoutSpaces
+      && previous.paragraphs === next.paragraphs
+      && previous.sentences === next.sentences
+    ) ? previous : next);
+    return next;
+  }, [exportPreviewRef]);
+
   const refreshDocumentStats = React.useCallback(() => {
     const doc = exportPreviewRef.current?.contentDocument;
-    setWordCount(_builderWordCount(doc));
+    const statistics = _builderDocumentStatistics(doc);
+    setWordCount(statistics.words);
+    setDocumentStatistics(statistics);
     setHeadingOutline(_builderHeadingOutline(doc));
     setPreflightResult(null);
+    const selected = _builderSelectionStatistics(doc, editorSelectionRangeRef.current);
+    setSelectionStatistics((previous) => (
+      previous.active === selected.active
+      && previous.words === selected.words
+      && previous.charactersWithSpaces === selected.charactersWithSpaces
+      && previous.charactersWithoutSpaces === selected.charactersWithoutSpaces
+      && previous.paragraphs === selected.paragraphs
+      && previous.sentences === selected.sentences
+    ) ? previous : selected);
   }, [exportPreviewRef]);
+
+  const refreshReviewComments = React.useCallback(() => {
+    const comments = _builderCommentEntries(exportPreviewRef.current?.contentDocument);
+    setReviewComments(comments);
+    setActiveCommentId((current) => (
+      comments.some((comment) => comment.id === current)
+        ? current
+        : (comments.find((comment) => !comment.resolved)?.id || comments[0]?.id || '')
+    ));
+    return comments;
+  }, [exportPreviewRef]);
+
+  const refreshActiveReviewComment = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    try {
+      const selection = doc?.getSelection?.();
+      let node = selection?.rangeCount ? selection.anchorNode : null;
+      if (node?.nodeType === 3) node = node.parentElement;
+      const marker = node?.closest?.(_BUILDER_COMMENT_SELECTOR);
+      const id = marker?.getAttribute?.('data-allo-comment-id') || '';
+      if (id) setActiveCommentId(id);
+    } catch (_) {}
+  }, [exportPreviewRef]);
+
+  const openReviewComments = React.useCallback((commentId = '') => {
+    if (commentId) {
+      setActiveCommentId(commentId);
+      if (reviewComments.some((comment) => comment.id === commentId && comment.resolved)) setShowResolvedComments(true);
+    }
+    setActiveRibbonTab('review');
+    setRibbonCollapsed(false);
+    setNavigationPaneTab('comments');
+    setShowNavigationPane(true);
+  }, [reviewComments]);
+
+  const handleNavigationTabKeyDown = React.useCallback((event, currentTab) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = ['headings', 'pages', 'sections', 'comments'];
+    const currentIndex = Math.max(0, tabs.indexOf(currentTab));
+    const nextIndex = event.key === 'Home' ? 0
+      : event.key === 'End' ? tabs.length - 1
+      : event.key === 'ArrowLeft' ? (currentIndex - 1 + tabs.length) % tabs.length
+      : (currentIndex + 1) % tabs.length;
+    event.preventDefault();
+    const nextTab = tabs[nextIndex];
+    setNavigationPaneTab(nextTab);
+    window.setTimeout(() => document.getElementById(`builder-navigation-tab-${nextTab}`)?.focus(), 0);
+  }, []);
+
+  React.useEffect(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.querySelectorAll) return;
+    doc.querySelectorAll(_BUILDER_COMMENT_SELECTOR).forEach((marker) => {
+      if (activeCommentId && marker.getAttribute('data-allo-comment-id') === activeCommentId) marker.setAttribute('data-allo-comment-active', '1');
+      else marker.removeAttribute('data-allo-comment-active');
+    });
+  }, [activeCommentId, reviewComments, exportPreviewRef]);
+
+  const closeWordCountDetails = React.useCallback((returnFocus = true) => {
+    setShowWordCountDetails(false);
+    if (returnFocus) {
+      const opener = wordCountOpenerRef.current || wordCountButtonRef.current || exportPreviewRef.current;
+      window.setTimeout(() => opener?.focus?.(), 0);
+    }
+  }, [exportPreviewRef]);
+
+  const openWordCountDetails = React.useCallback((event) => {
+    const opener = event?.currentTarget;
+    wordCountOpenerRef.current = opener?.focus ? opener : (exportPreviewRef.current || wordCountButtonRef.current);
+    refreshDocumentStats();
+    refreshSelectionStatistics();
+    setShowWordCountDetails(true);
+    window.setTimeout(() => wordCountPanelRef.current?.focus(), 0);
+  }, [exportPreviewRef, refreshDocumentStats, refreshSelectionStatistics]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onOpenWordCount = (event) => openWordCountDetails(event);
+    const onWordCountShortcut = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && !event.altKey && (event.key === 'g' || event.key === 'G')) {
+        event.preventDefault();
+        openWordCountDetails(event);
+      }
+    };
+    document.addEventListener('alloflow-builder-open-word-count', onOpenWordCount);
+    document.addEventListener('keydown', onWordCountShortcut);
+    return () => {
+      document.removeEventListener('alloflow-builder-open-word-count', onOpenWordCount);
+      document.removeEventListener('keydown', onWordCountShortcut);
+    };
+  }, [showExportPreview, openWordCountDetails]);
+
+  React.useEffect(() => {
+    if (!showWordCountDetails) return undefined;
+    const onPointerDown = (event) => {
+      if (wordCountPanelRef.current?.contains(event.target) || wordCountButtonRef.current?.contains(event.target)) return;
+      closeWordCountDetails(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeWordCountDetails(true);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('keydown', onKeyDown, true);
+    };
+  }, [showWordCountDetails, closeWordCountDetails]);
+
+  const restoreEditorSelection = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return false;
+    try {
+      const range = editorSelectionRangeRef.current;
+      if (range && doc.contains(range.commonAncestorContainer)) {
+        const selection = win.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range.cloneRange());
+      }
+      win.focus();
+      return true;
+    } catch (_) { return false; }
+  }, [exportPreviewRef]);
+
+  const runEditorCommand = React.useCallback((command, value = null) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    try {
+      restoreEditorSelection();
+      doc.execCommand(command, false, value);
+      exportPreviewRef.current?.contentWindow?.focus();
+      refreshFormattingState();
+      refreshDocumentStats();
+    } catch (_) {}
+  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats]);
+
+  const applyBuilderStyle = React.useCallback((styleId) => {
+    const definition = _BUILDER_STYLE_GALLERY.find((item) => item.id === styleId) || _BUILDER_STYLE_GALLERY[0];
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return;
+    try {
+      restoreEditorSelection();
+      doc.execCommand('formatBlock', false, '<' + definition.tag + '>');
+      let selectedNode = win.getSelection?.()?.anchorNode;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const block = selectedNode?.closest?.('p,h1,h2,h3,blockquote');
+      if (block) {
+        _BUILDER_STYLE_PROPERTIES.forEach((property) => {
+          block.style.removeProperty(property.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase()));
+        });
+        block.removeAttribute('data-allo-style');
+        Object.entries(definition.style).forEach(([property, value]) => { block.style[property] = value; });
+        if (definition.id !== 'normal') block.setAttribute('data-allo-style', definition.id);
+        if (!block.getAttribute('style')) block.removeAttribute('style');
+      }
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      refreshFormattingState();
+      refreshDocumentStats();
+    } catch (_) {
+      addToast && addToast('The selected style could not be applied.', 'error');
+    }
+  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, addToast]);
+
+  const useFormatPainter = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return;
+    try {
+      restoreEditorSelection();
+      const selection = win.getSelection?.();
+      let selectedNode = selection?.anchorNode;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const block = selectedNode?.closest?.('p,h1,h2,h3,blockquote');
+      const state = (command) => { try { return Boolean(doc.queryCommandState(command)); } catch (_) { return false; } };
+      const value = (command) => { try { return String(doc.queryCommandValue(command) || ''); } catch (_) { return ''; } };
+      if (!formatPainterRef.current) {
+        const blockTag = String(block?.tagName || 'P').toLowerCase();
+        formatPainterRef.current = {
+          blockTag: ['p', 'h1', 'h2', 'h3', 'blockquote'].includes(blockTag) ? blockTag : 'p',
+          blockStyle: block?.getAttribute('style') || '',
+          namedStyle: block?.getAttribute('data-allo-style') || '',
+          states: {
+            bold: state('bold'), italic: state('italic'), underline: state('underline'),
+            strikeThrough: state('strikeThrough'), subscript: state('subscript'), superscript: state('superscript'),
+          },
+          fontSize: value('fontSize'),
+          fontName: value('fontName'),
+          foreColor: value('foreColor'),
+          hiliteColor: value('hiliteColor'),
+          alignment: state('justifyCenter') ? 'justifyCenter' : state('justifyRight') ? 'justifyRight' : state('justifyFull') ? 'justifyFull' : 'justifyLeft',
+        };
+        setFormatPainterActive(true);
+        addToast && addToast('Formatting copied. Select the destination, then choose Apply format.', 'info');
+        return;
+      }
+      const snapshot = formatPainterRef.current;
+      doc.execCommand('formatBlock', false, '<' + snapshot.blockTag + '>');
+      Object.entries(snapshot.states).forEach(([command, enabled]) => {
+        if (state(command) !== enabled) doc.execCommand(command, false, null);
+      });
+      if (snapshot.fontSize) doc.execCommand('fontSize', false, snapshot.fontSize);
+      if (snapshot.fontName) doc.execCommand('fontName', false, snapshot.fontName);
+      if (snapshot.foreColor) doc.execCommand('foreColor', false, snapshot.foreColor);
+      if (snapshot.hiliteColor) doc.execCommand('hiliteColor', false, snapshot.hiliteColor);
+      doc.execCommand(snapshot.alignment, false, null);
+      selectedNode = win.getSelection?.()?.anchorNode;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const targetBlock = selectedNode?.closest?.('p,h1,h2,h3,blockquote');
+      if (targetBlock) {
+        if (snapshot.blockStyle) targetBlock.setAttribute('style', snapshot.blockStyle);
+        else targetBlock.removeAttribute('style');
+        if (snapshot.namedStyle) targetBlock.setAttribute('data-allo-style', snapshot.namedStyle);
+        else targetBlock.removeAttribute('data-allo-style');
+      }
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      formatPainterRef.current = null;
+      setFormatPainterActive(false);
+      refreshFormattingState();
+      refreshDocumentStats();
+      addToast && addToast('Formatting applied.', 'success');
+    } catch (_) {
+      formatPainterRef.current = null;
+      setFormatPainterActive(false);
+      addToast && addToast('Format Painter could not apply that formatting.', 'error');
+    }
+  }, [exportPreviewRef, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, addToast]);
+
+  const cancelFormatPainter = React.useCallback(() => {
+    formatPainterRef.current = null;
+    setFormatPainterActive(false);
+    addToast && addToast('Format Painter cancelled.', 'info');
+  }, [addToast]);
+  React.useEffect(() => {
+    if (showExportPreview) return;
+    formatPainterRef.current = null;
+    setFormatPainterActive(false);
+  }, [showExportPreview]);
+  const refreshActiveHeading = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    try {
+      const headings = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+      const threshold = 96;
+      let active = null;
+      headings.forEach((node, index) => {
+        if (node.getBoundingClientRect().top <= threshold) active = index;
+      });
+      setActiveHeadingIndex(active);
+    } catch (_) {}
+  }, [exportPreviewRef]);
+
+  const refreshPageMetrics = React.useCallback(() => {
+    const iframe = exportPreviewRef.current;
+    const doc = iframe?.contentDocument;
+    if (!doc?.body) return;
+    try {
+      const zoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
+      const pageView = iframe.__alloBuilderPageView !== false;
+      const pageAdvanceBase = _builderPageDimensions(pageSetup).heightPx + (pageView ? 24 : 0);
+      _builderSyncBreakFill(doc, pageAdvanceBase, zoom, pageView);
+      const pageHeight = pageAdvanceBase * (zoom / 100);
+      const scrollTop = Number(doc.defaultView?.scrollY || doc.documentElement?.scrollTop || doc.body?.scrollTop || 0);
+      const bodyTop = doc.body.getBoundingClientRect().top + scrollTop;
+      const totalHeight = Math.max(doc.documentElement?.scrollHeight || 0, doc.body?.scrollHeight || 0);
+      const count = Math.max(1, Math.min(200, Math.ceil((totalHeight + 12) / pageHeight)));
+      const pageForNode = (node) => {
+        if (!node?.getBoundingClientRect) return 0;
+        const top = node.getBoundingClientRect().top + scrollTop - bodyTop;
+        return Math.min(count - 1, Math.max(0, Math.floor(Math.max(0, top) / pageHeight)));
+      };
+      const sections = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')).map((node, index) => ({
+        index,
+        level: Number(node.tagName.substring(1)) || 1,
+        text: (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80) || `Untitled heading ${index + 1}`,
+        page: pageForNode(node),
+      }));
+      const documentSections = _builderDocumentSections(doc, pageForNode);
+      const selection = doc.getSelection?.();
+      let selectedNode = selection?.rangeCount ? selection.anchorNode : null;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const activeSection = Math.min(documentSections.length - 1, Math.max(0, _builderSectionIndexForNode(doc, selectedNode)));
+      const active = selectedNode?.getBoundingClientRect ? pageForNode(selectedNode) : Math.min(count - 1, Math.max(0, Math.floor((scrollTop + 1) / pageHeight)));
+      setPageMetrics((previous) => {
+        const previousHeadings = previous.sections || [];
+        const previousDocumentSections = previous.documentSections || [];
+        const sameHeadings = previousHeadings.length === sections.length && previousHeadings.every((item, index) => item.page === sections[index].page && item.level === sections[index].level && item.text === sections[index].text);
+        const sameDocumentSections = previousDocumentSections.length === documentSections.length && previousDocumentSections.every((item, index) => item.id === documentSections[index].id && item.name === documentSections[index].name && item.startType === documentSections[index].startType && item.page === documentSections[index].page);
+        return previous.count === count && previous.active === active && previous.activeSection === activeSection && sameHeadings && sameDocumentSections
+          ? previous : { count, active, sections, documentSections, activeSection };
+      });
+    } catch (_) {}
+  }, [exportPreviewRef, pageSetup.size, pageSetup.orientation, pageSetup.margin]);
+
+  React.useEffect(() => {
+    refreshPageMetrics();
+  }, [refreshPageMetrics, editorZoom, editorPageView, showExportPreview]);
+
+  const jumpToPage = React.useCallback((pageIndex) => {
+    const iframe = exportPreviewRef.current;
+    const doc = iframe?.contentDocument;
+    if (!doc) return;
+    const zoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
+    const pageAdvance = (_builderPageDimensions(pageSetup).heightPx + (iframe.__alloBuilderPageView === false ? 0 : 24)) * (zoom / 100);
+    const top = Math.max(0, Number(pageIndex) || 0) * pageAdvance;
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { doc.defaultView?.scrollTo({ top, behavior: reducedMotion ? 'auto' : 'smooth' }); } catch (_) { try { doc.defaultView?.scrollTo(0, top); } catch (_) {} }
+    setPageMetrics((previous) => ({ ...previous, active: Math.max(0, Math.min(previous.count - 1, Number(pageIndex) || 0)) }));
+    iframe.focus();
+  }, [exportPreviewRef, pageSetup.size, pageSetup.orientation, pageSetup.margin]);
+
+  const jumpToDocumentSection = React.useCallback((sectionIndex) => {
+    const iframe = exportPreviewRef.current;
+    const doc = iframe?.contentDocument;
+    if (!doc?.body) return;
+    const sections = pageMetrics.documentSections || [];
+    const index = Math.max(0, Math.min(sections.length - 1, Number(sectionIndex) || 0));
+    const section = sections[index];
+    const markers = _builderSectionBreaks(doc);
+    const marker = index > 0 ? markers[index - 1] : null;
+    let target = marker?.nextElementSibling || doc.body.firstElementChild;
+    while (target && target.matches?.('[data-allo-page-element],script,style,[data-allo-page-break],[data-allo-section-break]')) target = target.nextElementSibling;
+    const scrollTarget = marker || target || doc.body;
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { scrollTarget.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' }); } catch (_) {}
+    if (target) {
+      try {
+        const range = doc.createRange();
+        range.selectNodeContents(target);
+        range.collapse(true);
+        const selection = doc.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editorSelectionRangeRef.current = range.cloneRange();
+      } catch (_) {}
+    }
+    setPageMetrics((previous) => ({ ...previous, active: section?.page || 0, activeSection: index }));
+    iframe.focus();
+  }, [exportPreviewRef, pageMetrics.documentSections]);
+
+  const commitSectionName = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) return false;
+    const index = activeDocumentSection.index || 0;
+    const normalized = _builderNormalizeSectionName(sectionNameDraft, index);
+    const markers = _builderSectionBreaks(doc);
+    const marker = index > 0 ? markers[index - 1] : null;
+    const currentName = index === 0
+      ? _builderNormalizeSectionName(doc.body.getAttribute('data-allo-section-name'), 0)
+      : _builderNormalizeSectionName(marker?.getAttribute('data-allo-section-name'), index);
+    setSectionNameDraft(normalized);
+    if (normalized === currentName) return true;
+    if (index === 0) doc.body.setAttribute('data-allo-section-name', normalized);
+    else if (marker) {
+      marker.setAttribute('data-allo-section-name', normalized);
+      marker.setAttribute('aria-label', `${marker.getAttribute('data-allo-section-break') === 'continuous' ? 'Continuous' : 'Next page'} section break. Starts ${normalized}.`);
+    } else return false;
+    doc.body.setAttribute('data-allo-user-edited', '1');
+    doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'formatSection' }));
+    refreshPageMetrics();
+    addToast && addToast(`Section renamed to “${normalized}”.`, 'success');
+    return true;
+  }, [exportPreviewRef, activeDocumentSection.index, sectionNameDraft, refreshPageMetrics, addToast]);
+
+  const setActiveSectionStartType = React.useCallback((startType) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const index = activeDocumentSection.index || 0;
+    if (!doc?.body || index === 0) return false;
+    const marker = _builderSectionBreaks(doc)[index - 1];
+    if (!marker) return false;
+    const normalized = startType === 'continuous' ? 'continuous' : 'next-page';
+    if (marker.getAttribute('data-allo-section-break') === normalized) return true;
+    marker.setAttribute('data-allo-section-break', normalized);
+    marker.style.breakBefore = normalized === 'continuous' ? 'auto' : 'page';
+    marker.style.pageBreakBefore = normalized === 'continuous' ? 'auto' : 'always';
+    const name = _builderNormalizeSectionName(marker.getAttribute('data-allo-section-name'), index);
+    marker.setAttribute('aria-label', `${normalized === 'continuous' ? 'Continuous' : 'Next page'} section break. Starts ${name}.`);
+    doc.body.setAttribute('data-allo-user-edited', '1');
+    doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'formatSection' }));
+    refreshPageMetrics();
+    addToast && addToast(normalized === 'continuous' ? 'Section now continues on the same page.' : 'Section now starts on the next page.', 'success');
+    return true;
+  }, [exportPreviewRef, activeDocumentSection.index, refreshPageMetrics, addToast]);
+
+  const insertSectionBreak = React.useCallback((startType = 'next-page') => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return false;
+    restoreEditorSelection();
+    exportPreviewRef.current?.contentWindow?.focus();
+    const inserted = _builderInsertDocumentBreak(doc, 'section', { startType });
+    if (!inserted) {
+      addToast && addToast('Place the caret in the document before inserting a section break.', 'info');
+      return false;
+    }
+    refreshDocumentStats();
+    window.setTimeout(refreshPageMetrics, 0);
+    addToast && addToast(`${inserted.name} inserted${inserted.startType === 'continuous' ? ' on the same page' : ' on the next page'}.`, 'success');
+    return true;
+  }, [exportPreviewRef, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, addToast]);
+
+  const removeActiveSectionBreak = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const index = activeDocumentSection.index || 0;
+    if (!doc?.body || index === 0) return false;
+    const marker = _builderSectionBreaks(doc)[index - 1];
+    if (!marker) return false;
+    try {
+      const selection = doc.getSelection();
+      const range = doc.createRange();
+      range.selectNode(marker);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      const deleted = Boolean(doc.execCommand('delete', false, null));
+      if (!deleted && marker.isConnected) marker.remove();
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true, inputType: 'deleteSectionBreak' }));
+      refreshDocumentStats();
+      window.setTimeout(refreshPageMetrics, 0);
+      addToast && addToast('Section break removed; its content was merged with the previous section.', 'success');
+      return true;
+    } catch (_) {
+      addToast && addToast('The section break could not be removed.', 'error');
+      return false;
+    }
+  }, [exportPreviewRef, activeDocumentSection.index, refreshDocumentStats, refreshPageMetrics, addToast]);
+
+  const insertPageBreak = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return false;
+    try {
+      exportPreviewRef.current?.contentWindow?.focus();
+      const inserted = _builderInsertDocumentBreak(doc, 'page');
+      if (!inserted) {
+        addToast && addToast('Place the caret in the document before inserting a page break.', 'info');
+        return false;
+      }
+      refreshDocumentStats();
+      window.setTimeout(refreshPageMetrics, 0);
+      addToast && addToast('Page break inserted.', 'success');
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }, [exportPreviewRef, refreshDocumentStats, refreshPageMetrics, addToast]);
+
+  const syncPageSetupFromDocument = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const style = doc?.getElementById('allo-page-setup-style') || doc?.getElementById('allo-margin-style');
+    if (!style) {
+      applyPageSetup(pageSetup);
+      return;
+    }
+    applyPageSetup({
+      size: style.getAttribute('data-page-size') || pageSetup.size,
+      orientation: style.getAttribute('data-page-orientation') || pageSetup.orientation,
+      margin: style.getAttribute('data-page-margin') || pageSetup.margin,
+    });
+  }, [exportPreviewRef, applyPageSetup, pageSetup]);
+
+  const syncPageElementsFromDocument = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) return;
+    const header = doc.querySelector('header[data-allo-page-header]');
+    const footer = doc.querySelector('footer[data-allo-page-footer]');
+    const headerAlignment = header?.getAttribute('data-header-alignment');
+    const pageNumberPosition = footer?.getAttribute('data-page-number-position');
+    const next = {
+      headerText: String(header?.querySelector('[data-allo-header-text]')?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+      headerAlignment: ['left', 'center', 'right'].includes(headerAlignment) ? headerAlignment : 'left',
+      footerText: String(footer?.querySelector('[data-allo-footer-text]')?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      pageNumbers: ['left', 'center', 'right'].includes(pageNumberPosition) && footer?.querySelector('[data-allo-page-number]') ? pageNumberPosition : 'none',
+    };
+    setPageElements((previous) => (
+      previous.headerText === next.headerText && previous.headerAlignment === next.headerAlignment
+      && previous.footerText === next.footerText && previous.pageNumbers === next.pageNumbers
+    ) ? previous : next);
+  }, [exportPreviewRef]);
+
+  const applyPageElements = React.useCallback((configOverride = pageElements, announce = true) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) return false;
+    const normalized = {
+      headerText: String(configOverride?.headerText || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+      headerAlignment: ['left', 'center', 'right'].includes(configOverride?.headerAlignment) ? configOverride.headerAlignment : 'left',
+      footerText: String(configOverride?.footerText || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      pageNumbers: ['left', 'center', 'right'].includes(configOverride?.pageNumbers) ? configOverride.pageNumbers : 'none',
+    };
+    try {
+      let header = doc.querySelector('header[data-allo-page-header]');
+      if (normalized.headerText) {
+        if (!header) header = doc.createElement('header');
+        header.setAttribute('data-allo-page-element', 'header');
+        header.setAttribute('data-allo-page-header', '1');
+        header.setAttribute('data-header-alignment', normalized.headerAlignment);
+        header.setAttribute('contenteditable', 'false');
+        header.setAttribute('aria-label', 'Page header');
+        header.style.setProperty('--allo-header-align', normalized.headerAlignment);
+        header.style.textAlign = normalized.headerAlignment;
+        header.replaceChildren();
+        const headerText = doc.createElement('span');
+        headerText.setAttribute('data-allo-header-text', '1');
+        headerText.textContent = normalized.headerText;
+        header.appendChild(headerText);
+        if (doc.body.firstChild !== header) doc.body.insertBefore(header, doc.body.firstChild);
+      } else if (header) {
+        header.remove();
+      }
+
+      let footer = doc.querySelector('footer[data-allo-page-footer]');
+      if (normalized.footerText || normalized.pageNumbers !== 'none') {
+        if (!footer) footer = doc.createElement('footer');
+        footer.setAttribute('data-allo-page-element', 'footer');
+        footer.setAttribute('data-allo-page-footer', '1');
+        footer.setAttribute('data-page-number-position', normalized.pageNumbers);
+        footer.setAttribute('contenteditable', 'false');
+        footer.setAttribute('aria-label', 'Page footer');
+        footer.replaceChildren();
+        if (normalized.footerText) {
+          const footerText = doc.createElement('span');
+          footerText.setAttribute('data-allo-footer-text', '1');
+          footerText.textContent = normalized.footerText;
+          footer.appendChild(footerText);
+        }
+        if (normalized.pageNumbers !== 'none') {
+          const pageNumber = doc.createElement('span');
+          pageNumber.setAttribute('data-allo-page-number', '1');
+          pageNumber.setAttribute('aria-label', 'Automatic page number');
+          footer.appendChild(pageNumber);
+        }
+        if (footer.parentElement !== doc.body) doc.body.appendChild(footer);
+        else if (doc.body.lastChild !== footer) doc.body.appendChild(footer);
+      } else if (footer) {
+        footer.remove();
+      }
+
+      setPageElements(normalized);
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      const InputEventCtor = doc.defaultView?.InputEvent || doc.defaultView?.Event;
+      doc.body.dispatchEvent(new InputEventCtor('input', { bubbles: true }));
+      refreshDocumentStats();
+      refreshPageMetrics();
+      if (announce && addToast) {
+        const hasElements = Boolean(normalized.headerText || normalized.footerText || normalized.pageNumbers !== 'none');
+        addToast(hasElements ? 'Header, footer, and page numbering updated.' : 'Header and footer cleared.', 'success');
+      }
+      return true;
+    } catch (_) {
+      if (announce && addToast) addToast('Could not update the page header or footer.', 'error');
+      return false;
+    }
+  }, [pageElements, exportPreviewRef, refreshDocumentStats, refreshPageMetrics, addToast]);
+
+  const clearPageElements = React.useCallback(() => {
+    applyPageElements({ headerText: '', headerAlignment: 'left', footerText: '', pageNumbers: 'none' });
+  }, [applyPageElements]);
+
+  const refreshTableContext = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    let selectedNode = doc.getSelection?.()?.anchorNode;
+    if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+    const cell = selectedNode?.closest?.('td,th') || null;
+    const table = cell?.closest?.('table') || null;
+    const next = table && cell ? {
+      active: true,
+      rows: table.rows.length,
+      columns: Math.max(0, ...Array.from(table.rows).map((row) => row.cells.length)),
+      hasHeader: Boolean(table.tHead?.querySelector('th')),
+      headerCell: cell.tagName === 'TH',
+    } : { active: false, rows: 0, columns: 0, hasHeader: false, headerCell: false };
+    setTableContext((previous) => (
+      previous.active === next.active && previous.rows === next.rows && previous.columns === next.columns
+      && previous.hasHeader === next.hasHeader && previous.headerCell === next.headerCell
+    ) ? previous : next);
+  }, [exportPreviewRef]);
+
+  const insertAccessibleTable = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return;
+    const bodyRows = Math.max(1, Math.min(20, Number(tableInsertConfig.rows) || 1));
+    const columns = Math.max(1, Math.min(10, Number(tableInsertConfig.columns) || 1));
+    try {
+      restoreEditorSelection();
+      const marker = 'allo-builder-table-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+      const table = doc.createElement('table');
+      table.setAttribute('data-allo-insert-id', marker);
+      table.setAttribute('style', 'width:100%;border-collapse:collapse;margin:1em 0;');
+      const captionText = String(tableInsertConfig.caption || '').trim().slice(0, 160);
+      if (captionText) {
+        const caption = doc.createElement('caption');
+        caption.textContent = captionText;
+        caption.setAttribute('style', 'caption-side:top;text-align:left;font-weight:700;padding:0 0 .4em;');
+        table.appendChild(caption);
+      }
+      const cellStyle = 'border:1px solid #94a3b8;padding:.5em;vertical-align:top;';
+      if (tableInsertConfig.headerRow) {
+        const thead = doc.createElement('thead');
+        const header = doc.createElement('tr');
+        for (let column = 0; column < columns; column += 1) {
+          const th = doc.createElement('th');
+          th.setAttribute('scope', 'col');
+          th.setAttribute('style', cellStyle + 'background:#f1f5f9;text-align:left;');
+          th.textContent = 'Column ' + (column + 1);
+          header.appendChild(th);
+        }
+        thead.appendChild(header);
+        table.appendChild(thead);
+      }
+      const tbody = doc.createElement('tbody');
+      for (let rowIndex = 0; rowIndex < bodyRows; rowIndex += 1) {
+        const row = doc.createElement('tr');
+        for (let column = 0; column < columns; column += 1) {
+          const td = doc.createElement('td');
+          td.setAttribute('style', cellStyle);
+          td.appendChild(doc.createElement('br'));
+          row.appendChild(td);
+        }
+        tbody.appendChild(row);
+      }
+      table.appendChild(tbody);
+      doc.execCommand('insertHTML', false, table.outerHTML + '<p><br></p>');
+      const inserted = doc.querySelector('table[data-allo-insert-id="' + marker + '"]');
+      if (inserted) {
+        inserted.removeAttribute('data-allo-insert-id');
+        const firstCell = inserted.querySelector('th,td');
+        if (firstCell) {
+          const range = doc.createRange();
+          range.selectNodeContents(firstCell);
+          if (firstCell.tagName !== 'TH') range.collapse(true);
+          const selection = win.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          editorSelectionRangeRef.current = range.cloneRange();
+        }
+      }
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      refreshDocumentStats();
+      refreshPageMetrics();
+      window.setTimeout(refreshTableContext, 0);
+      addToast && addToast('Accessible table inserted.', 'success');
+    } catch (_) {
+      addToast && addToast('The table could not be inserted.', 'error');
+    }
+  }, [exportPreviewRef, tableInsertConfig, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, refreshTableContext, addToast]);
+
+  const editSelectedTable = React.useCallback((action) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return;
+    try {
+      restoreEditorSelection();
+      let selectedNode = win.getSelection?.()?.anchorNode;
+      if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+      const cell = selectedNode?.closest?.('td,th');
+      const row = cell?.closest?.('tr');
+      const table = cell?.closest?.('table');
+      if (!cell || !row || !table) {
+        addToast && addToast('Place the caret inside a table cell first.', 'info');
+        return;
+      }
+      const cellStyle = 'border:1px solid #94a3b8;padding:.5em;vertical-align:top;';
+      const columnIndex = cell.cellIndex;
+      let targetCell = cell;
+      if (action === 'add-row') {
+        const newRow = doc.createElement('tr');
+        const columnCount = Math.max(1, ...Array.from(table.rows).map((item) => item.cells.length));
+        for (let index = 0; index < columnCount; index += 1) {
+          const td = doc.createElement('td');
+          td.setAttribute('style', cellStyle);
+          td.appendChild(doc.createElement('br'));
+          newRow.appendChild(td);
+        }
+        if (row.parentElement?.tagName === 'THEAD') {
+          const body = table.tBodies[0] || table.appendChild(doc.createElement('tbody'));
+          body.insertBefore(newRow, body.firstChild);
+        } else row.parentElement.insertBefore(newRow, row.nextSibling);
+        targetCell = newRow.cells[Math.min(columnIndex, newRow.cells.length - 1)];
+      } else if (action === 'add-column') {
+        Array.from(table.rows).forEach((tableRow) => {
+          const header = tableRow.parentElement?.tagName === 'THEAD';
+          const newCell = doc.createElement(header ? 'th' : 'td');
+          newCell.setAttribute('style', cellStyle + (header ? 'background:#f1f5f9;text-align:left;' : ''));
+          if (header) {
+            newCell.setAttribute('scope', 'col');
+            newCell.textContent = 'Column ' + (columnIndex + 2);
+          } else newCell.appendChild(doc.createElement('br'));
+          tableRow.insertBefore(newCell, tableRow.cells[columnIndex + 1] || null);
+        });
+        targetCell = row.cells[Math.min(columnIndex + 1, row.cells.length - 1)];
+      } else if (action === 'remove-row') {
+        if (cell.tagName === 'TH') {
+          addToast && addToast('The header row is kept for accessibility.', 'info');
+          return;
+        }
+        const minimumRows = table.tHead ? 2 : 1;
+        if (table.rows.length <= minimumRows) {
+          addToast && addToast('A table needs at least one data row.', 'info');
+          return;
+        }
+        const nextRowIndex = Math.max(0, Math.min(table.rows.length - 2, row.rowIndex));
+        row.remove();
+        const nextRow = table.rows[nextRowIndex];
+        targetCell = nextRow?.cells[Math.min(columnIndex, Math.max(0, nextRow.cells.length - 1))] || null;
+      } else if (action === 'remove-column') {
+        const columnCount = Math.max(0, ...Array.from(table.rows).map((item) => item.cells.length));
+        if (columnCount <= 1) {
+          addToast && addToast('A table needs at least one column.', 'info');
+          return;
+        }
+        Array.from(table.rows).forEach((tableRow) => {
+          if (tableRow.cells[columnIndex]) tableRow.deleteCell(columnIndex);
+        });
+        targetCell = row.cells[Math.min(columnIndex, Math.max(0, row.cells.length - 1))] || null;
+      } else return;
+      if (targetCell?.isConnected) {
+        const range = doc.createRange();
+        range.selectNodeContents(targetCell);
+        range.collapse(true);
+        const selection = win.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editorSelectionRangeRef.current = range.cloneRange();
+      }
+      doc.body?.dispatchEvent(new win.Event('input', { bubbles: true }));
+      refreshDocumentStats();
+      refreshPageMetrics();
+      refreshTableContext();
+    } catch (_) {
+      addToast && addToast('The table could not be updated.', 'error');
+    }
+  }, [exportPreviewRef, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, refreshTableContext, addToast]);
+
+  const openImagePicker = React.useCallback((event) => {
+    imageOpenerRef.current = event?.currentTarget || imageAddButtonRef.current;
+    restoreEditorSelection();
+    const doc = exportPreviewRef.current?.contentDocument;
+    const selection = doc?.getSelection();
+    imageInsertionRangeRef.current = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+    imageFileInputRef.current?.click();
+  }, [exportPreviewRef, restoreEditorSelection]);
+  const applyParagraphLayout = React.useCallback((patch = {}, options = {}) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = exportPreviewRef.current?.contentWindow;
+    if (!doc || !win) return false;
+    const contentWidth = _builderPageContentWidth(pageSetup);
+    try {
+      if (options.restoreFocus === false) {
+        const savedRange = editorSelectionRangeRef.current;
+        if (savedRange && doc.contains(savedRange.commonAncestorContainer)) {
+          const selection = win.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(savedRange.cloneRange());
+        }
+      } else restoreEditorSelection();
+      const blocks = _builderSelectedParagraphBlocks(doc);
+      if (!blocks.length) {
+        if (options.announce !== false && addToast) addToast('Place the caret inside a paragraph first.', 'info');
+        return false;
+      }
+      const fields = new Set(options.replace ? Object.keys(_BUILDER_PARAGRAPH_DEFAULTS) : Object.keys(patch));
+      blocks.forEach((block) => {
+        const current = _builderParagraphLayoutFromBlock(block);
+        const next = _normalizeBuilderParagraphLayout(options.replace ? { ..._BUILDER_PARAGRAPH_DEFAULTS, ...patch } : { ...current, ...patch }, contentWidth);
+        const namedStyle = _BUILDER_STYLE_GALLERY.find((item) => item.id === block.getAttribute('data-allo-style'));
+        const restoreNamedStyle = (property, cssName) => {
+          const namedValue = namedStyle?.style?.[property];
+          if (namedValue != null && namedValue !== '') block.style[property] = namedValue;
+          else block.style.removeProperty(cssName);
+        };
+        if (fields.has('leftIndent')) {
+          if (next.leftIndent) block.style.marginLeft = next.leftIndent + 'in';
+          else block.style.removeProperty('margin-left');
+        }
+        if (fields.has('firstLineIndent')) {
+          if (next.firstLineIndent) block.style.textIndent = next.firstLineIndent + 'in';
+          else block.style.removeProperty('text-indent');
+        }
+        if (fields.has('rightIndent')) {
+          if (next.rightIndent) block.style.marginRight = next.rightIndent + 'in';
+          else block.style.removeProperty('margin-right');
+        }
+        if (fields.has('lineSpacing')) {
+          if (next.lineSpacing === 'normal') restoreNamedStyle('lineHeight', 'line-height');
+          else block.style.lineHeight = next.lineSpacing;
+        }
+        if (fields.has('spaceBefore')) {
+          if (next.spaceBefore) block.style.marginTop = next.spaceBefore + 'pt';
+          else restoreNamedStyle('marginTop', 'margin-top');
+        }
+        if (fields.has('spaceAfter')) {
+          if (next.spaceAfter) block.style.marginBottom = next.spaceAfter + 'pt';
+          else restoreNamedStyle('marginBottom', 'margin-bottom');
+        }
+        if (fields.has('keepWithNext')) {
+          if (next.keepWithNext) {
+            block.setAttribute('data-allo-keep-with-next', '1');
+            block.style.breakAfter = 'avoid-page';
+            block.style.pageBreakAfter = 'avoid';
+          } else {
+            block.removeAttribute('data-allo-keep-with-next');
+            block.style.removeProperty('break-after');
+            block.style.removeProperty('page-break-after');
+          }
+        }
+        if (fields.has('keepLinesTogether')) {
+          if (next.keepLinesTogether) {
+            block.setAttribute('data-allo-keep-lines', '1');
+            block.style.breakInside = 'avoid';
+            block.style.pageBreakInside = 'avoid';
+          } else {
+            block.removeAttribute('data-allo-keep-lines');
+            block.style.removeProperty('break-inside');
+            block.style.removeProperty('page-break-inside');
+          }
+        }
+        if (fields.has('widowOrphanControl')) {
+          if (next.widowOrphanControl) {
+            block.setAttribute('data-allo-widow-orphan', '1');
+            block.style.widows = '3';
+            block.style.orphans = '3';
+          } else {
+            block.removeAttribute('data-allo-widow-orphan');
+            block.style.removeProperty('widows');
+            block.style.removeProperty('orphans');
+          }
+        }
+        if (fields.has('tabStops')) {
+          if (next.tabStops.length) block.setAttribute('data-allo-tab-stops', JSON.stringify(next.tabStops));
+          else block.removeAttribute('data-allo-tab-stops');
+        }
+        if (options.replace && _builderParagraphLayoutsEqual(next, { ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] })) block.removeAttribute('data-allo-paragraph-layout');
+        else block.setAttribute('data-allo-paragraph-layout', '1');
+        if (!block.getAttribute('style')) block.removeAttribute('style');
+      });
+      const nextUi = _normalizeBuilderParagraphLayout(options.replace ? { ..._BUILDER_PARAGRAPH_DEFAULTS, ...patch } : { ...paragraphLayout, ...patch }, contentWidth);
+      setParagraphLayout(nextUi);
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      doc.body.dispatchEvent(new win.Event('input', { bubbles: true, inputType: 'formatParagraph' }));
+      refreshFormattingState();
+      refreshDocumentStats();
+      refreshPageMetrics();
+      if (options.restoreFocus !== false) win.focus();
+      if (typeof options.announce === 'string' && addToast) addToast(options.announce, 'success');
+      return true;
+    } catch (_) {
+      if (options.announce !== false && addToast) addToast('The paragraph layout could not be updated.', 'error');
+      return false;
+    }
+  }, [exportPreviewRef, pageSetup, paragraphLayout, restoreEditorSelection, refreshFormattingState, refreshDocumentStats, refreshPageMetrics, addToast]);
+
+  const nudgeParagraphIndent = React.useCallback((delta) => {
+    applyParagraphLayout({ leftIndent: paragraphLayout.leftIndent + Number(delta || 0) }, { restoreFocus: true, announce: false });
+  }, [applyParagraphLayout, paragraphLayout.leftIndent]);
+
+  const resetParagraphLayout = React.useCallback(() => {
+    applyParagraphLayout({ ..._BUILDER_PARAGRAPH_DEFAULTS, tabStops: [] }, { replace: true, restoreFocus: true, announce: 'Paragraph layout reset.' });
+  }, [applyParagraphLayout]);
+
+  const addRulerTabStop = React.useCallback((position, alignment = rulerTabAlignment, restoreFocus = false) => {
+    const rounded = Math.round(Math.max(0.125, Math.min(paragraphContentWidth - 0.125, Number(position) || 0.5)) * 8) / 8;
+    const existing = paragraphLayout.tabStops.find((tab) => Math.abs(tab.position - rounded) <= 0.06);
+    const tabs = paragraphLayout.tabStops.filter((tab) => Math.abs(tab.position - rounded) > 0.06);
+    tabs.push({ id: existing?.id || `tab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`, position: rounded, alignment });
+    return applyParagraphLayout({ tabStops: tabs }, { restoreFocus, announce: false });
+  }, [applyParagraphLayout, paragraphContentWidth, paragraphLayout.tabStops, rulerTabAlignment]);
+
+  const addNextRulerTabStop = React.useCallback(() => {
+    const maximum = paragraphContentWidth - 0.125;
+    const occupied = new Set(paragraphLayout.tabStops.map((tab) => tab.position.toFixed(3)));
+    const candidates = [];
+    for (let position = 0.5; position <= maximum + 0.001; position += 0.5) candidates.push(Math.round(position * 8) / 8);
+    const next = candidates.find((position) => position > paragraphLayout.leftIndent + 0.05 && !occupied.has(position.toFixed(3)))
+      ?? candidates.find((position) => !occupied.has(position.toFixed(3)));
+    if (next == null) {
+      addToast && addToast('The ruler already has the maximum number of practical tab stops.', 'info');
+      return;
+    }
+    if (addRulerTabStop(next, rulerTabAlignment, false)) addToast && addToast(`${rulerTabAlignment.charAt(0).toUpperCase() + rulerTabAlignment.slice(1)} tab added at ${next} inches.`, 'success');
+  }, [addRulerTabStop, addToast, paragraphContentWidth, paragraphLayout.leftIndent, paragraphLayout.tabStops, rulerTabAlignment]);
+
+  const clearRulerTabStops = React.useCallback(() => {
+    applyParagraphLayout({ tabStops: [] }, { restoreFocus: false, announce: 'Tab stops cleared.' });
+  }, [applyParagraphLayout]);
+
+  const removeRulerTabStop = React.useCallback((index) => {
+    applyParagraphLayout({ tabStops: paragraphLayout.tabStops.filter((_, itemIndex) => itemIndex !== index) }, { restoreFocus: false, announce: false });
+  }, [applyParagraphLayout, paragraphLayout.tabStops]);
+
+  const paragraphLayoutAtRulerPosition = React.useCallback((kind, position, baseLayout = paragraphLayout) => {
+    const positionInches = Math.max(0, Math.min(paragraphContentWidth, Number(position) || 0));
+    if (kind === 'first') return _normalizeBuilderParagraphLayout({ ...baseLayout, firstLineIndent: positionInches - baseLayout.leftIndent }, paragraphContentWidth);
+    if (kind === 'hanging') {
+      const firstLineAbsolute = baseLayout.leftIndent + baseLayout.firstLineIndent;
+      return _normalizeBuilderParagraphLayout({ ...baseLayout, leftIndent: positionInches, firstLineIndent: firstLineAbsolute - positionInches }, paragraphContentWidth);
+    }
+    if (kind === 'left') return _normalizeBuilderParagraphLayout({ ...baseLayout, leftIndent: positionInches }, paragraphContentWidth);
+    if (kind === 'right') return _normalizeBuilderParagraphLayout({ ...baseLayout, rightIndent: paragraphContentWidth - positionInches }, paragraphContentWidth);
+    return baseLayout;
+  }, [paragraphContentWidth, paragraphLayout]);
+
+  const applyRulerMarkerLayout = React.useCallback((kind, nextLayout, restoreFocus = false) => {
+    const patch = kind === 'first' ? { firstLineIndent: nextLayout.firstLineIndent }
+      : kind === 'hanging' ? { leftIndent: nextLayout.leftIndent, firstLineIndent: nextLayout.firstLineIndent }
+      : kind === 'left' ? { leftIndent: nextLayout.leftIndent }
+      : { rightIndent: nextLayout.rightIndent };
+    applyParagraphLayout(patch, { restoreFocus, announce: false });
+  }, [applyParagraphLayout]);
+
+  const startRulerMarkerDrag = React.useCallback((kind, event) => {
+    const ruler = rulerRef.current;
+    if (!ruler) return;
+    event.preventDefault();
+    event.stopPropagation();
+    try { rulerDragCleanupRef.current?.(); } catch (_) {}
+    const baseLayout = paragraphLayout;
+    let liveLayout = baseLayout;
+    const update = (clientX) => {
+      const rect = ruler.getBoundingClientRect();
+      if (!rect.width) return;
+      const position = ((clientX - rect.left) / rect.width) * paragraphContentWidth;
+      liveLayout = paragraphLayoutAtRulerPosition(kind, position, baseLayout);
+      setParagraphLayout(liveLayout);
+    };
+    const onMove = (moveEvent) => { moveEvent.preventDefault(); update(moveEvent.clientX); };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      rulerDragCleanupRef.current = null;
+    };
+    const onUp = (upEvent) => {
+      update(upEvent.clientX);
+      cleanup();
+      applyRulerMarkerLayout(kind, liveLayout, false);
+    };
+    rulerDragCleanupRef.current = cleanup;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    window.addEventListener('pointercancel', onUp, { once: true });
+    update(event.clientX);
+  }, [paragraphLayout, paragraphContentWidth, paragraphLayoutAtRulerPosition, applyRulerMarkerLayout]);
+
+  const handleRulerMarkerKeyDown = React.useCallback((kind, event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const step = event.shiftKey ? 0.5 : 0.125;
+    const current = kind === 'first' ? paragraphLayout.leftIndent + paragraphLayout.firstLineIndent
+      : kind === 'right' ? paragraphContentWidth - paragraphLayout.rightIndent : paragraphLayout.leftIndent;
+    const nextPosition = event.key === 'Home' ? 0 : event.key === 'End' ? paragraphContentWidth : current + (event.key === 'ArrowLeft' ? -step : step);
+    const nextLayout = paragraphLayoutAtRulerPosition(kind, nextPosition, paragraphLayout);
+    setParagraphLayout(nextLayout);
+    applyRulerMarkerLayout(kind, nextLayout, false);
+  }, [paragraphLayout, paragraphContentWidth, paragraphLayoutAtRulerPosition, applyRulerMarkerLayout]);
+
+  const handleRulerClick = React.useCallback((event) => {
+    if (event.target?.closest?.('button,input,select')) return;
+    const ruler = rulerRef.current;
+    const rect = ruler?.getBoundingClientRect();
+    if (!rect?.width) return;
+    const position = ((event.clientX - rect.left) / rect.width) * paragraphContentWidth;
+    addRulerTabStop(position, rulerTabAlignment, false);
+  }, [addRulerTabStop, paragraphContentWidth, rulerTabAlignment]);
+
+  const handleTabStopKeyDown = React.useCallback((tab, index, event) => {
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault();
+      removeRulerTabStop(index);
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      const alignments = ['left', 'center', 'right', 'decimal'];
+      const alignment = alignments[(alignments.indexOf(tab.alignment) + 1) % alignments.length];
+      const tabs = paragraphLayout.tabStops.map((item, itemIndex) => itemIndex === index ? { ...item, alignment } : item);
+      applyParagraphLayout({ tabStops: tabs }, { restoreFocus: false, announce: false });
+      return;
+    }
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const step = event.shiftKey ? 0.5 : 0.125;
+    const nextPosition = tab.position + (event.key === 'ArrowLeft' ? -step : step);
+    const tabs = paragraphLayout.tabStops.filter((_, itemIndex) => itemIndex !== index);
+    tabs.push({ ...tab, position: nextPosition });
+    applyParagraphLayout({ tabStops: tabs }, { restoreFocus: false, announce: false });
+  }, [applyParagraphLayout, paragraphLayout.tabStops, removeRulerTabStop]);
+
+  const startTabStopDrag = React.useCallback((tab, index, event) => {
+    const ruler = rulerRef.current;
+    if (!ruler) return;
+    event.preventDefault();
+    event.stopPropagation();
+    try { rulerDragCleanupRef.current?.(); } catch (_) {}
+    const remaining = paragraphLayout.tabStops.filter((_, itemIndex) => itemIndex !== index);
+    let liveTabs = paragraphLayout.tabStops;
+    const update = (clientX) => {
+      const rect = ruler.getBoundingClientRect();
+      if (!rect.width) return;
+      const position = Math.round(Math.max(0.125, Math.min(paragraphContentWidth - 0.125, ((clientX - rect.left) / rect.width) * paragraphContentWidth)) * 8) / 8;
+      liveTabs = [...remaining, { ...tab, position }].sort((a, b) => a.position - b.position);
+      setParagraphLayout((layout) => ({ ...layout, tabStops: liveTabs }));
+    };
+    const onMove = (moveEvent) => { moveEvent.preventDefault(); update(moveEvent.clientX); };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      rulerDragCleanupRef.current = null;
+    };
+    const onUp = (upEvent) => {
+      update(upEvent.clientX);
+      cleanup();
+      applyParagraphLayout({ tabStops: liveTabs }, { restoreFocus: false, announce: false });
+    };
+    rulerDragCleanupRef.current = cleanup;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    window.addEventListener('pointercancel', onUp, { once: true });
+    update(event.clientX);
+  }, [paragraphLayout.tabStops, paragraphContentWidth, applyParagraphLayout]);
+
+  const insertParagraphTab = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc) return;
+    restoreEditorSelection();
+    const stop = _builderInsertParagraphTab(doc, editorZoom, paragraphContentWidth);
+    if (!stop) {
+      addToast && addToast('Place the caret inside a paragraph first.', 'info');
+      return;
+    }
+    exportPreviewRef.current?.contentWindow?.focus();
+    refreshDocumentStats();
+    refreshPageMetrics();
+  }, [exportPreviewRef, editorZoom, paragraphContentWidth, restoreEditorSelection, refreshDocumentStats, refreshPageMetrics, addToast]);
+  const applyParagraphSpacing = React.useCallback((spacing) => {
+    const values = { normal: 0, compact: 4, relaxed: 12, double: 24 };
+    const nextSpacing = Object.prototype.hasOwnProperty.call(values, spacing) ? spacing : 'normal';
+    applyParagraphLayout({ spaceAfter: values[nextSpacing] }, { restoreFocus: false, announce: false });
+  }, [applyParagraphLayout]);
+
+  const jumpToHeading = React.useCallback((heading) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const node = heading?.node;
+    if (!doc || !node?.isConnected) return;
+    node.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+    const range = doc.createRange();
+    range.selectNodeContents(node);
+    range.collapse(false);
+    const selection = doc.defaultView?.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    setActiveHeadingIndex(heading.index);
+    exportPreviewRef.current?.focus();
+    refreshFormattingState();
+  }, [exportPreviewRef, refreshFormattingState]);
+
+  const findLiveReviewMarker = React.useCallback((commentId) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.querySelectorAll || !commentId) return null;
+    return Array.from(doc.querySelectorAll(_BUILDER_COMMENT_SELECTOR))
+      .find((marker) => marker.getAttribute('data-allo-comment-id') === commentId) || null;
+  }, [exportPreviewRef]);
+
+  const commitReviewCommentMutation = React.useCallback((message, tone = 'success', dispatchInput = true) => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (doc?.body) {
+      doc.body.setAttribute('data-allo-user-edited', '1');
+      if (dispatchInput) {
+        try { doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
+      }
+    }
+    refreshReviewComments();
+    refreshDocumentStats();
+    refreshPageMetrics();
+    refreshSelectionStatistics();
+    if (message) addToast && addToast(message, tone);
+  }, [exportPreviewRef, refreshReviewComments, refreshDocumentStats, refreshPageMetrics, refreshSelectionStatistics, addToast]);
+
+  const jumpToReviewComment = React.useCallback((commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!marker || !doc) {
+      refreshReviewComments();
+      addToast && addToast('That comment is no longer in the document.', 'info');
+      return;
+    }
+    try {
+      const range = doc.createRange();
+      range.selectNodeContents(marker);
+      const selection = doc.defaultView?.getSelection?.();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editorSelectionRangeRef.current = range.cloneRange();
+      marker.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      setActiveCommentId(commentId);
+      openReviewComments(commentId);
+      exportPreviewRef.current?.focus();
+      refreshFormattingState();
+      refreshSelectionStatistics();
+    } catch (_) {
+      addToast && addToast('Could not move to that comment.', 'error');
+    }
+  }, [findLiveReviewMarker, exportPreviewRef, refreshReviewComments, openReviewComments, refreshFormattingState, refreshSelectionStatistics, addToast]);
+
+  const addReviewComment = React.useCallback(async () => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc?.body) {
+      addToast && addToast('The editable document is not ready yet.', 'info');
+      return;
+    }
+    let savedRange = null;
+    try {
+      const selection = doc.getSelection?.();
+      if (selection?.rangeCount && !selection.isCollapsed) savedRange = selection.getRangeAt(0).cloneRange();
+      else if (editorSelectionRangeRef.current && !editorSelectionRangeRef.current.collapsed) savedRange = editorSelectionRangeRef.current.cloneRange();
+    } catch (_) {}
+    if (!savedRange || savedRange.collapsed) {
+      addToast && addToast('Select the text you want to comment on, then choose New Comment.', 'info');
+      exportPreviewRef.current?.focus();
+      return;
+    }
+    editorSelectionRangeRef.current = savedRange.cloneRange();
+    const commentText = await promptForBuilderText('Write a comment about the selected text.', '', {
+      title: 'New comment',
+      confirmText: 'Add comment',
+      multiline: true,
+      maxLength: 1200,
+      validate: (value) => _builderNormalizeCommentMessage(value) ? null : 'Write a comment first.',
+    });
+    if (commentText == null) return;
+    const result = _builderInsertReviewComment(doc, savedRange, commentText);
+    if (!result.ok) {
+      addToast && addToast(result.error || 'The comment could not be added.', 'error');
+      exportPreviewRef.current?.focus();
+      return;
+    }
+    try {
+      const selection = doc.getSelection?.();
+      if (selection?.rangeCount) editorSelectionRangeRef.current = selection.getRangeAt(0).cloneRange();
+    } catch (_) {}
+    setActiveCommentId(result.id);
+    openReviewComments(result.id);
+    commitReviewCommentMutation('Comment added.', 'success', false);
+  }, [exportPreviewRef, promptForBuilderText, openReviewComments, commitReviewCommentMutation, addToast]);
+
+  const replyReviewComment = React.useCallback(async (commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    if (!marker) {
+      refreshReviewComments();
+      return;
+    }
+    const thread = _builderCommentThread(marker);
+    if (thread.length >= 20) {
+      addToast && addToast('This comment thread has reached its 20-message limit.', 'info');
+      return;
+    }
+    const reply = await promptForBuilderText('Add a reply to this comment thread.', '', {
+      title: 'Reply to comment',
+      confirmText: 'Reply',
+      multiline: true,
+      maxLength: 1200,
+      validate: (value) => _builderNormalizeCommentMessage(value) ? null : 'Write a reply first.',
+    });
+    if (reply == null) return;
+    const at = new Date().toISOString();
+    _builderSetCommentThread(marker, [...thread, { id: `message-${Date.now().toString(36)}`, text: reply, at }]);
+    marker.setAttribute('data-allo-comment-resolved', '0');
+    _builderSetCommentThread(marker, _builderCommentThread(marker));
+    setShowResolvedComments(false);
+    setActiveCommentId(commentId);
+    commitReviewCommentMutation('Reply added and comment reopened.');
+  }, [findLiveReviewMarker, refreshReviewComments, promptForBuilderText, commitReviewCommentMutation, addToast]);
+
+  const editReviewComment = React.useCallback(async (commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    if (!marker) {
+      refreshReviewComments();
+      return;
+    }
+    const thread = _builderCommentThread(marker);
+    const firstMessage = thread[0];
+    if (!firstMessage) return;
+    const updatedText = await promptForBuilderText('Edit the first message in this comment thread.', firstMessage.text, {
+      title: 'Edit comment',
+      confirmText: 'Save comment',
+      multiline: true,
+      maxLength: 1200,
+      validate: (value) => _builderNormalizeCommentMessage(value) ? null : 'Write a comment first.',
+    });
+    if (updatedText == null) return;
+    _builderSetCommentThread(marker, [{ ...firstMessage, text: updatedText }, ...thread.slice(1)]);
+    setActiveCommentId(commentId);
+    commitReviewCommentMutation('Comment updated.');
+  }, [findLiveReviewMarker, refreshReviewComments, promptForBuilderText, commitReviewCommentMutation]);
+
+  const toggleReviewCommentResolved = React.useCallback((commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    if (!marker) {
+      refreshReviewComments();
+      return;
+    }
+    const resolved = marker.getAttribute('data-allo-comment-resolved') === '1';
+    marker.setAttribute('data-allo-comment-resolved', resolved ? '0' : '1');
+    _builderSetCommentThread(marker, _builderCommentThread(marker));
+    setActiveCommentId(commentId);
+    commitReviewCommentMutation(resolved ? 'Comment reopened.' : 'Comment resolved.');
+  }, [findLiveReviewMarker, refreshReviewComments, commitReviewCommentMutation]);
+
+  const deleteReviewComment = React.useCallback(async (commentId) => {
+    const marker = findLiveReviewMarker(commentId);
+    if (!marker) {
+      refreshReviewComments();
+      return;
+    }
+    const confirmCommentDelete = window.AlloFlowUX?.confirm;
+    if (typeof confirmCommentDelete !== 'function') {
+      addToast && addToast('The confirmation dialog is still loading. Please try again.', 'info');
+      return;
+    }
+    let confirmed = false;
+    try {
+      confirmed = await Promise.resolve(confirmCommentDelete.call(window.AlloFlowUX, 'Delete this comment thread? The selected document text will be kept.', {
+        title: 'Delete comment?',
+        detail: 'This removes the discussion only. It does not delete the commented text.',
+        confirmText: 'Delete comment',
+        cancelText: 'Keep comment',
+        tone: 'danger',
+      })).then(Boolean, () => false);
+    } catch (_) {}
+    if (!confirmed || !marker.isConnected) return;
+    marker.replaceWith(...Array.from(marker.childNodes));
+    setActiveCommentId('');
+    commitReviewCommentMutation('Comment deleted.', 'success');
+  }, [findLiveReviewMarker, refreshReviewComments, commitReviewCommentMutation, addToast]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onNewComment = () => addReviewComment();
+    const onActivateComment = (event) => {
+      const commentId = String(event?.detail?.id || '');
+      if (commentId) openReviewComments(commentId);
+    };
+    const onCommentShortcut = (event) => {
+      const target = event.target;
+      const tag = String(target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+      if ((event.ctrlKey || event.metaKey) && event.altKey && !event.shiftKey && (event.key === 'm' || event.key === 'M')) {
+        event.preventDefault();
+        addReviewComment();
+      }
+    };
+    document.addEventListener('alloflow-builder-new-comment', onNewComment);
+    document.addEventListener('alloflow-builder-activate-comment', onActivateComment);
+    document.addEventListener('keydown', onCommentShortcut);
+    return () => {
+      document.removeEventListener('alloflow-builder-new-comment', onNewComment);
+      document.removeEventListener('alloflow-builder-activate-comment', onActivateComment);
+      document.removeEventListener('keydown', onCommentShortcut);
+    };
+  }, [showExportPreview, addReviewComment, openReviewComments]);
 
   const runBuilderPreflight = React.useCallback((modeOverride, announce = true) => {
     const result = _builderExportPreflight(exportPreviewRef.current?.contentDocument, modeOverride || exportPreviewMode);
@@ -487,74 +2680,204 @@ function ExportPreviewView(props) {
     return result;
   }, [exportPreviewRef, exportPreviewMode, addToast]);
 
-  const findNextInPreview = React.useCallback(() => {
-    const needle = findQuery.trim();
-    const doc = exportPreviewRef.current?.contentDocument;
-    if (!doc || !needle) return;
+  const collectFindTextNodes = React.useCallback((doc) => {
+    if (!doc?.body) return [];
     const win = doc.defaultView;
     const NF = win?.NodeFilter || NodeFilter;
     const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT, {
       acceptNode(node) {
         const parent = node.parentElement;
-        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]') && node.nodeValue
+        return parent && !parent.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui],[data-allo-page-element]') && node.nodeValue
           ? NF.FILTER_ACCEPT : NF.FILTER_REJECT;
       }
     });
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    if (!nodes.length) return;
-    const selection = win?.getSelection();
-    let startIndex = selection?.anchorNode ? nodes.indexOf(selection.anchorNode) : -1;
-    let startOffset = startIndex >= 0 ? Math.max(selection.anchorOffset || 0, selection.focusOffset || 0) : 0;
-    const lowerNeedle = needle.toLocaleLowerCase();
-    for (let pass = 0; pass < 2; pass++) {
-      for (let i = pass ? 0 : Math.max(0, startIndex); i < nodes.length; i++) {
-        const from = !pass && i === startIndex ? startOffset : 0;
-        const at = String(nodes[i].nodeValue || '').toLocaleLowerCase().indexOf(lowerNeedle, from);
-        if (at < 0) continue;
-        const range = doc.createRange();
-        range.setStart(nodes[i], at);
-        range.setEnd(nodes[i], at + needle.length);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        nodes[i].parentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        findCursorRef.current = { node: nodes[i], offset: at + needle.length };
-        return;
-      }
-      startIndex = 0; startOffset = 0;
+    return nodes;
+  }, []);
+
+  const findMatchesInText = React.useCallback((textValue, needleValue) => {
+    const text = String(textValue || '');
+    const needle = String(needleValue || '');
+    if (!needle) return [];
+    const searchableText = findOptions.matchCase ? text : text.toLocaleLowerCase();
+    const searchableNeedle = findOptions.matchCase ? needle : needle.toLocaleLowerCase();
+    const isWordCharacter = (value) => value ? /[\p{L}\p{N}_]/u.test(value) : false;
+    const matches = [];
+    let at = 0;
+    while ((at = searchableText.indexOf(searchableNeedle, at)) >= 0) {
+      const end = at + searchableNeedle.length;
+      if (!findOptions.wholeWord || (!isWordCharacter(text[at - 1]) && !isWordCharacter(text[end]))) matches.push(at);
+      at += Math.max(1, searchableNeedle.length);
     }
-    addToast && addToast(`?${needle}? was not found.`, 'info');
-  }, [findQuery, exportPreviewRef, addToast]);
+    return matches;
+  }, [findOptions.matchCase, findOptions.wholeWord]);
+
+  const countFindMatches = React.useCallback((doc, needle) => collectFindTextNodes(doc)
+    .reduce((total, node) => total + findMatchesInText(node.nodeValue, needle).length, 0), [collectFindTextNodes, findMatchesInText]);
+
+  const clearFindHighlights = React.useCallback((doc) => {
+    try { doc?.defaultView?.CSS?.highlights?.delete('allo-builder-find'); } catch (_) {}
+  }, []);
+
+  const refreshFindHighlights = React.useCallback((doc, needle) => {
+    clearFindHighlights(doc);
+    if (!findOptions.highlightAll || !doc || !needle) return;
+    const win = doc.defaultView;
+    const registry = win?.CSS?.highlights;
+    if (!registry || typeof win.Highlight !== 'function') return;
+    const ranges = [];
+    collectFindTextNodes(doc).forEach((node) => {
+      findMatchesInText(node.nodeValue, needle).forEach((at) => {
+        const range = doc.createRange();
+        range.setStart(node, at);
+        range.setEnd(node, at + needle.length);
+        ranges.push(range);
+      });
+    });
+    if (ranges.length) registry.set('allo-builder-find', new win.Highlight(...ranges));
+  }, [clearFindHighlights, collectFindTextNodes, findMatchesInText, findOptions.highlightAll]);
+
+  React.useEffect(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const needle = findQuery.trim();
+    const count = needle ? countFindMatches(doc, needle) : 0;
+    findCursorRef.current = { node: null, offset: 0 };
+    setFindMatchState({ count, current: 0 });
+    refreshFindHighlights(doc, needle);
+    return () => clearFindHighlights(doc);
+  }, [findQuery, findDocumentRevision, exportPreviewRef, countFindMatches, refreshFindHighlights, clearFindHighlights]);
+
+  const findInPreview = React.useCallback((direction = 1) => {
+    const needle = findQuery.trim();
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!doc || !needle) return;
+    const win = doc.defaultView;
+    const selection = win?.getSelection();
+    const nodes = collectFindTextNodes(doc);
+    const totalMatches = countFindMatches(doc, needle);
+    if (!selection || !nodes.length || !totalMatches) {
+      addToast && addToast('“' + needle + '” was not found.', 'info');
+      return;
+    }
+    let startIndex = nodes.indexOf(findCursorRef.current.node);
+    let startOffset = Number(findCursorRef.current.offset) || 0;
+    if (startIndex < 0) {
+      startIndex = selection.anchorNode ? nodes.indexOf(selection.anchorNode) : -1;
+      startOffset = startIndex >= 0 ? Math.max(selection.anchorOffset || 0, selection.focusOffset || 0) : (direction > 0 ? 0 : Number.MAX_SAFE_INTEGER);
+    }
+    let foundNode = null;
+    let foundAt = -1;
+    if (direction > 0) {
+      for (let pass = 0; pass < 2 && !foundNode; pass += 1) {
+        const first = pass ? 0 : Math.max(0, startIndex);
+        for (let i = first; i < nodes.length; i += 1) {
+          const from = !pass && i === startIndex ? startOffset : 0;
+          const at = findMatchesInText(nodes[i].nodeValue, needle).find((matchAt) => matchAt >= from) ?? -1;
+          if (at >= 0) { foundNode = nodes[i]; foundAt = at; break; }
+        }
+      }
+    } else {
+      for (let pass = 0; pass < 2 && !foundNode; pass += 1) {
+        const first = pass ? nodes.length - 1 : (startIndex >= 0 ? Math.min(nodes.length - 1, startIndex) : nodes.length - 1);
+        for (let i = first; i >= 0; i -= 1) {
+          const text = String(nodes[i].nodeValue || '');
+          const limit = !pass && i === startIndex ? Math.min(text.length, Math.max(0, startOffset - needle.length)) : text.length;
+          const candidates = findMatchesInText(text, needle).filter((matchAt) => matchAt < limit);
+          const at = candidates.length ? candidates[candidates.length - 1] : -1;
+          if (at >= 0) { foundNode = nodes[i]; foundAt = at; break; }
+        }
+      }
+    }
+    if (!foundNode) {
+      addToast && addToast('“' + needle + '” was not found.', 'info');
+      return;
+    }
+    const range = doc.createRange();
+    range.setStart(foundNode, foundAt);
+    range.setEnd(foundNode, foundAt + needle.length);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    foundNode.parentElement?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+    findCursorRef.current = { node: foundNode, offset: foundAt + needle.length };
+    setFindMatchState((previous) => {
+      const current = direction > 0 ? (previous.current >= totalMatches ? 1 : previous.current + 1) : (previous.current <= 1 ? totalMatches : previous.current - 1);
+      return { count: totalMatches, current };
+    });
+  }, [findQuery, exportPreviewRef, addToast, collectFindTextNodes, countFindMatches, findMatchesInText]);
+
+  const findNextInPreview = React.useCallback(() => findInPreview(1), [findInPreview]);
+  const findPreviousInPreview = React.useCallback(() => findInPreview(-1), [findInPreview]);
+
+  const replaceCurrentInPreview = React.useCallback(() => {
+    const needle = findQuery.trim();
+    const doc = exportPreviewRef.current?.contentDocument;
+    const win = doc?.defaultView;
+    if (!doc || !needle || !win) return;
+    let selection = win.getSelection();
+    const selectionIsMatch = () => {
+      if (!selection || selection.rangeCount !== 1 || selection.isCollapsed) return false;
+      const range = selection.getRangeAt(0);
+      if (range.startContainer !== range.endContainer || range.startContainer.nodeType !== 3) return false;
+      return range.endOffset - range.startOffset === needle.length
+        && findMatchesInText(range.startContainer.nodeValue, needle).includes(range.startOffset);
+    };
+    if (!selectionIsMatch()) {
+      findInPreview(1);
+      selection = win.getSelection();
+    }
+    if (!selectionIsMatch()) return;
+    const replaced = doc.execCommand('insertText', false, replaceQuery);
+    if (!replaced) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      const replacementNode = doc.createTextNode(replaceQuery);
+      range.insertNode(replacementNode);
+      range.setStartAfter(replacementNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    try { doc.body.dispatchEvent(new win.Event('input', { bubbles: true })); } catch (_) {}
+    findCursorRef.current = { node: selection.anchorNode, offset: selection.anchorOffset };
+    setFindDocumentRevision((value) => value + 1);
+    addToast && addToast('Replaced the current match.', 'success');
+  }, [findQuery, replaceQuery, exportPreviewRef, addToast, findInPreview, findMatchesInText]);
 
   const replaceAllInPreview = React.useCallback(() => {
     const needle = findQuery.trim();
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc || !needle) return;
     const win = doc.defaultView;
-    const NF = win?.NodeFilter || NodeFilter;
-    const walker = doc.createTreeWalker(doc.body, NF.SHOW_TEXT);
-    const escaped = needle.replace(/[.*+?^$()|[\]{}\\]/g, '\\$&');
-    const pattern = new RegExp(escaped, 'gi');
     let count = 0;
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (node.parentElement?.closest('script,style,.allo-block-controls,.allo-block-remove,[data-allo-crop-ui]')) continue;
+    collectFindTextNodes(doc).forEach((node) => {
       const before = node.nodeValue || '';
-      const after = before.replace(pattern, () => { count += 1; return replaceQuery; });
-      if (after !== before) node.nodeValue = after;
-    }
+      const matches = findMatchesInText(before, needle);
+      if (!matches.length) return;
+      let after = before;
+      matches.slice().reverse().forEach((at) => {
+        after = after.slice(0, at) + replaceQuery + after.slice(at + needle.length);
+        count += 1;
+      });
+      node.nodeValue = after;
+    });
     if (count) {
       try { doc.body.dispatchEvent(new (win?.Event || Event)('input', { bubbles: true })); } catch (_) {}
-      addToast && addToast(`Replaced ${count} occurrence${count === 1 ? '' : 's'}.`, 'success');
-    } else addToast && addToast(`?${needle}? was not found.`, 'info');
-  }, [findQuery, replaceQuery, exportPreviewRef, addToast]);
-
-  const getCleanBuilderDocument = React.useCallback(() => {
+      setFindDocumentRevision((value) => value + 1);
+      setFindMatchState({ count: countFindMatches(doc, needle), current: 0 });
+      addToast && addToast('Replaced ' + count + ' occurrence' + (count === 1 ? '' : 's') + '.', 'success');
+    } else addToast && addToast('“' + needle + '” was not found.', 'info');
+  }, [findQuery, replaceQuery, exportPreviewRef, addToast, collectFindTextNodes, countFindMatches, findMatchesInText]);
+  const getCleanBuilderDocument = React.useCallback((options = {}) => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.documentElement) return null;
     const clone = doc.documentElement.cloneNode(true);
+    _builderClearReviewCommentTransientState(clone);
+    if (options?.forExport) _builderStripReviewComments(clone);
     clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script').forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
+    _builderStripEditorBreakMetadata(clone);
     clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach((node) => {
       const added = node.getAttribute('data-allo-crop-tabindex-added') === 'added';
       node.removeAttribute('data-allo-crop-tabindex-added');
@@ -564,6 +2887,107 @@ function ExportPreviewView(props) {
     const title = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || doc.title || 'AlloFlow Document').trim();
     return { doc, clone, title, html: '<!DOCTYPE html>\n' + clone.outerHTML };
   }, [exportPreviewRef, exportConfig]);
+
+  const readLocalDraftStore = React.useCallback(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(draftStorageKey);
+      return _normalizeBuilderLocalDraft(rawDraft ? JSON.parse(rawDraft) : null);
+    } catch (_) {
+      return null;
+    }
+  }, [draftStorageKey]);
+
+  const persistLocalDraft = React.useCallback((html, at = Date.now(), label = 'Auto-save') => {
+    if (typeof html !== 'string' || html.length < 100) return false;
+    try {
+      const existing = readLocalDraftStore();
+      const duplicate = existing?.snapshots?.some((snapshot) => snapshot.html === html);
+      const snapshot = { id: `snapshot-${at}-${Math.random().toString(36).slice(2, 8)}`, at, label: String(label || 'Auto-save').slice(0, 80), html };
+      const snapshots = (duplicate ? (existing?.snapshots || []) : [snapshot, ...(existing?.snapshots || [])]).slice(0, 10);
+      const store = { version: 2, title: draftDocumentTitle, html, at, snapshots };
+      window.localStorage.setItem(draftStorageKey, JSON.stringify(store));
+      setVersionHistory(store.snapshots);
+      setDraftRecovery(null);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }, [readLocalDraftStore, draftStorageKey, draftDocumentTitle]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) {
+      setDraftRecovery(null);
+      setVersionHistory([]);
+      return;
+    }
+    const saved = readLocalDraftStore();
+    setDraftRecovery(saved);
+    setVersionHistory(saved?.snapshots || []);
+  }, [showExportPreview, readLocalDraftStore]);
+
+  const restoreDraftHtml = React.useCallback((html, message = 'Local draft restored.') => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (!html || !doc) {
+      addToast && addToast('The editable preview is not ready to restore yet.', 'info');
+      return false;
+    }
+    try {
+      try { delete doc.__alloPasteGuard; } catch (_) {}
+      doc.open();
+      doc.write(html);
+      doc.close();
+      setDraftCaptureState('restored');
+      window.setTimeout(() => {
+        const liveDoc = exportPreviewRef.current?.contentDocument;
+        if (!liveDoc?.body) return;
+        liveDoc.body.setAttribute('data-allo-user-edited', '1');
+        window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML, at: Date.now() };
+        refreshDocumentStats();
+        refreshReviewComments();
+        refreshActiveHeading();
+        refreshPageMetrics();
+        refreshFormattingState();
+        if (mountedRef.current) setDraftCaptureState('restored');
+      }, 80);
+      addToast && addToast(message, 'success');
+      return true;
+    } catch (_) {
+      addToast && addToast('Could not restore that version.', 'error');
+      return false;
+    }
+  }, [exportPreviewRef, refreshDocumentStats, refreshReviewComments, refreshActiveHeading, refreshPageMetrics, refreshFormattingState, addToast]);
+
+  const restoreLocalDraft = React.useCallback(() => {
+    if (restoreDraftHtml(draftRecovery?.html, 'Local draft restored.')) setDraftRecovery(null);
+  }, [draftRecovery, restoreDraftHtml]);
+
+  const restoreVersionSnapshot = React.useCallback((snapshot) => {
+    if (!snapshot?.html) return;
+    persistLocalDraft(snapshot.html, Date.now(), 'Restored version');
+    restoreDraftHtml(snapshot.html, 'Version restored.');
+  }, [persistLocalDraft, restoreDraftHtml]);
+
+  const saveVersionSnapshot = React.useCallback(() => {
+    const clean = getCleanBuilderDocument();
+    if (!clean || !persistLocalDraft(clean.html, Date.now(), 'Manual snapshot')) {
+      addToast && addToast('Could not save a local version snapshot.', 'error');
+      return;
+    }
+    setDraftCaptureState('saved');
+    addToast && addToast('Version snapshot saved on this device.', 'success');
+  }, [getCleanBuilderDocument, persistLocalDraft, addToast]);
+
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    const onSaveSnapshotRequest = () => saveVersionSnapshot();
+    document.addEventListener('alloflow-builder-save-snapshot', onSaveSnapshotRequest);
+    return () => document.removeEventListener('alloflow-builder-save-snapshot', onSaveSnapshotRequest);
+  }, [showExportPreview, saveVersionSnapshot]);
+  const discardLocalDraft = React.useCallback(() => {
+    try { window.localStorage.removeItem(draftStorageKey); } catch (_) {}
+    setDraftRecovery(null);
+    setVersionHistory([]);
+  }, [draftStorageKey]);
 
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error('The export did not produce a file.');
@@ -597,7 +3021,7 @@ function ExportPreviewView(props) {
         const succeeded = await handler({ generatedContent: selected.item });
         if (succeeded === false) return;
       } else {
-        const clean = getCleanBuilderDocument();
+        const clean = getCleanBuilderDocument({ forExport: true });
         if (!clean) throw new Error('The editable preview is not ready.');
         await handler({ liveHtml: clean.html, liveTitle: clean.title });
       }
@@ -617,7 +3041,7 @@ function ExportPreviewView(props) {
     if (preflight.errors) { addToast && addToast('Office export stopped: fix the blocking preflight issues first.', 'error'); return; }
     setAltExportBusy(format);
     try {
-      const clean = getCleanBuilderDocument();
+      const clean = getCleanBuilderDocument({ forExport: true });
       if (!clean) throw new Error('The editable preview is not ready.');
       const result = await api.build({ html: clean.html, title: clean.title, format });
       downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
@@ -633,16 +3057,19 @@ function ExportPreviewView(props) {
     if (exportActionLockRef.current) return;
     exportActionLockRef.current = true;
     setExportActionBusy(true);
+    let resumeReviewComments = () => {};
     try {
+      resumeReviewComments = _builderSuspendReviewComments(exportPreviewRef.current?.contentDocument?.documentElement);
       await executeExportFromPreview();
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'builder', format: exportPreviewMode }); } catch (_) {}
     } catch (error) {
       if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
     } finally {
+      try { resumeReviewComments(); } catch (_) {}
       exportActionLockRef.current = false;
       if (mountedRef.current) setExportActionBusy(false);
     }
-  }, [executeExportFromPreview, runBuilderPreflight, exportPreviewMode, addToast, onExportSuccess]);
+  }, [executeExportFromPreview, exportPreviewRef, runBuilderPreflight, exportPreviewMode, addToast, onExportSuccess]);
 
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
@@ -679,7 +3106,7 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="presentation"
+          <div className={`allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center ${isFocusMode ? 'p-0' : 'p-4'}`} role="presentation"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
             {pendingImageFile && (
               <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
@@ -707,9 +3134,9 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className="bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 ${isFocusMode ? 'rounded-none max-w-none max-h-none h-full' : 'rounded-2xl max-w-[95vw] max-h-[95vh]'}`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {/* Left Panel — Settings */}
-              <div className="w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3">
+              <div className={`${isFocusMode ? 'hidden' : 'w-full lg:w-72'} shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3`}>
                 <div className="flex items-center justify-between mb-1">
                   <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
@@ -855,11 +3282,11 @@ function ExportPreviewView(props) {
                         { label: 'Normal', val: '1in' },
                         { label: 'Wide', val: '1.5in' },
                       ].map(m => (
-                        <button key={m.label} type="button" aria-pressed={(exportConfig.pageMargin || '1in') === m.val} onClick={() => {
+                        <button key={m.label} type="button" aria-pressed={pageSetup.margin === m.val} onClick={() => {
                           applyPageMargin(m.val);
                           setExportConfigAndRefresh(p => ({ ...p, pageMargin: m.val }));
                         }}
-                          className={`flex-1 text-[11px] font-bold py-1 border rounded transition-colors ${(exportConfig.pageMargin || '1in') === m.val ? 'bg-indigo-600 text-white border-indigo-700' : 'text-slate-600 bg-white border-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}
+                          className={`flex-1 text-[11px] font-bold py-1 border rounded transition-colors ${pageSetup.margin === m.val ? 'bg-indigo-600 text-white border-indigo-700' : 'text-slate-600 bg-white border-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}
                           title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
                       ))}
                     </div>
@@ -1107,6 +3534,12 @@ function ExportPreviewView(props) {
                       <input type="checkbox" checked={exportConfig.includeStudentResponses} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeStudentResponses: e.target.checked }))} className="rounded" />
                       📝 Student Responses
                     </label>
+                    <div className="mt-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2">
+                      <label className="block text-[11px] font-bold text-indigo-900" htmlFor="alloflow-export-due-at">Assignment due date and time (optional)</label>
+                      <input id="alloflow-export-due-at" type="datetime-local" value={exportConfig.dueAt ? (() => { try { const d = new Date(exportConfig.dueAt); return Number.isFinite(d.getTime()) ? new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''; } catch (_) { return ''; } })() : ''} onChange={(e) => { const raw = String(e.target.value || '').trim(); if (!raw) { setExportConfigAndRefresh(p => ({ ...p, dueAt: '', dueTimeZone: '' })); return; } const parsed = new Date(raw); if (!Number.isFinite(parsed.getTime())) return; let zone = ''; try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) {} setExportConfigAndRefresh(p => ({ ...p, dueAt: parsed.toISOString(), dueTimeZone: zone })); }} className="mt-1 w-full rounded border border-indigo-300 bg-white px-2 py-1.5 text-xs text-slate-800" aria-describedby="alloflow-export-due-help" />
+                      <div id="alloflow-export-due-help" className="mt-1 text-[10px] leading-snug text-indigo-800">Late status is calculated only when this exact instant and a submission timestamp are available. The browser records your IANA timezone; missing work is never inferred here.</div>
+                      {exportConfig.dueAt && <button type="button" className="mt-1 text-[10px] font-semibold text-indigo-800 underline" onClick={() => setExportConfigAndRefresh(p => ({ ...p, dueAt: '', dueTimeZone: '' }))}>Clear due date</button>}
+                    </div>
                     {/* Assessment mode (Aaron 2026-07-01): interactive quizzes self-grade via a hidden
                         data-correct marker per question — anyone can read it in view-source. Fine for
                         practice; not for a graded test. This strips the markers + self-check button and
@@ -1581,14 +4014,32 @@ function ExportPreviewView(props) {
               </div>
 
               {/* Right Panel — Live Preview with Editing */}
-              <div className="flex-1 flex flex-col min-w-0 min-h-[60vh] lg:min-h-0">
+              <div className={`flex-1 flex flex-col min-w-0 ${isFocusMode ? 'min-h-0' : 'min-h-[60vh] lg:min-h-0'}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
+                    <h3 className="text-sm font-bold text-slate-700">{isFocusMode ? 'Document Builder' : 'Live Preview'}</h3>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <span className="text-[11px] text-indigo-700 font-medium">Focus the preview and edit text directly</span>
+                    <span className="text-[11px] text-indigo-700 font-medium">{isFocusMode ? 'Focus mode · write without distractions' : 'Focus the preview and edit text directly'}</span>
+                    <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="hidden md:inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <button type="button" onClick={saveVersionSnapshot} className="text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100" aria-label="Save a local version snapshot" title="Save a local restore point (Ctrl+S)">
+                      <span aria-hidden="true">▣</span> Save
+                    </button>
+                    <button type="button" onClick={() => {
+                      const active = showNavigationPane && navigationPaneTab === 'headings';
+                      if (active) setShowNavigationPane(false);
+                      else { setNavigationPaneTab('headings'); setShowNavigationPane(true); }
+                    }} aria-pressed={showNavigationPane && navigationPaneTab === 'headings'} aria-controls="document-builder-navigation"
+                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${showNavigationPane && navigationPaneTab === 'headings' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-700 bg-slate-100 hover:bg-slate-200'}`}
+                      title={showNavigationPane && navigationPaneTab === 'headings' ? 'Hide navigation' : 'Open heading navigation'}>
+                      <span aria-hidden="true">☷</span> Navigation
+                    </button>
+                    <button type="button" onClick={() => setBuilderFocusMode()} aria-pressed={isFocusMode}
+                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all ${isFocusMode ? 'bg-indigo-700 text-white shadow-sm' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'}`}
+                      title={isFocusMode ? 'Exit focus mode and restore the settings panel' : 'Hide settings for a distraction-free drafting surface'}>
+                      <span aria-hidden="true">{isFocusMode ? '↙' : '↗'}</span> {isFocusMode ? 'Exit focus' : 'Focus mode'}
+                    </button>
                     {/* Editing toolbar */}
                     <input ref={imageFileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true"
                       onChange={(e) => {
@@ -1609,12 +4060,7 @@ function ExportPreviewView(props) {
                         setImageAltError('');
                         setPendingImageFile(file);
                       }} />
-                    <button ref={imageAddButtonRef} type="button" onClick={() => {
-                      const doc = exportPreviewRef.current?.contentDocument;
-                      const selection = doc?.getSelection();
-                      imageInsertionRangeRef.current = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
-                      imageFileInputRef.current?.click();
-                    }} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
+                    <button ref={imageAddButtonRef} type="button" onClick={openImagePicker} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
                       <ImageIcon size={12} aria-hidden="true" /> Add Image
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
@@ -1708,6 +4154,7 @@ function ExportPreviewView(props) {
                           let text = '';
                           try {
                             const _tClone = doc.body.cloneNode(true);
+                            _builderStripReviewComments(_tClone);
                             _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -1724,6 +4171,8 @@ function ExportPreviewView(props) {
                           try {
                             const _mClone = doc.documentElement.cloneNode(true);
                             _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                            _builderStripEditorBreakMetadata(_mClone);
+                            _builderStripReviewComments(_mClone);
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
                           // Spoken-math captions (2026-07-05): the ```mathml fence below is
@@ -1843,6 +4292,8 @@ function ExportPreviewView(props) {
                               try {
                                 const _mdClone = doc.documentElement.cloneNode(true);
                                 _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                                _builderStripEditorBreakMetadata(_mdClone);
+                                _builderStripReviewComments(_mdClone);
                                 html = _mdClone.outerHTML;
                               } catch (_) { html = doc.documentElement.outerHTML; }
                               // #6: preserve tables (pipe tables) + image alts before the tag-strip.
@@ -1885,6 +4336,8 @@ function ExportPreviewView(props) {
                             _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
                             _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+                            _builderStripEditorBreakMetadata(_clone);
+                            _builderStripReviewComments(_clone);
                           } catch (_) {}
                           const _escXml = (s) => String(s || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                           const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
@@ -2153,57 +4606,164 @@ const _downloadBRF = (brf) => {
                     </ul>}
                   </div>
                 )}
-                <details className="bg-white border-b border-slate-200 shrink-0">
-                  <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Find / Replace | Heading Outline ({headingOutline.length})</summary>
+                {draftRecovery && (
+                  <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900" role="status" aria-live="polite">
+                    <span className="font-bold">Local draft available</span>
+                    <span>Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
+                    <button type="button" onClick={restoreLocalDraft} className="rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800">Restore draft</button>
+                    <button type="button" onClick={discardLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
+                  </div>
+                )}
+                <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1" role="tablist" aria-label="Document Builder ribbon">
+                  {[['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['review', 'Review'], ['view', 'View'], ['expert', isAgentRunning ? 'Expert •' : 'Expert']].map(([tab, label]) => {
+                    const selected = activeRibbonTab === tab;
+                    return <button key={tab} id={`builder-ribbon-tab-${tab}`} type="button" role="tab" aria-selected={selected} aria-controls={`builder-ribbon-panel-${tab}`} tabIndex={selected ? 0 : -1}
+                      onClick={() => { setActiveRibbonTab(tab); setRibbonCollapsed(false); }}
+                      onKeyDown={(event) => {
+                        const tabs = ['home', 'insert', 'layout', 'review', 'view', 'expert'];
+                        const current = tabs.indexOf(tab);
+                        const next = event.key === 'ArrowRight' ? (current + 1) % tabs.length : event.key === 'ArrowLeft' ? (current - 1 + tabs.length) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+                        if (next < 0) return;
+                        event.preventDefault();
+                        setActiveRibbonTab(tabs[next]);
+                        setRibbonCollapsed(false);
+                        window.setTimeout(() => document.getElementById(`builder-ribbon-tab-${tabs[next]}`)?.focus(), 0);
+                      }}
+                      className={`shrink-0 rounded px-3 py-1.5 text-[11px] font-bold transition-colors ${selected && !ribbonCollapsed ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white hover:text-indigo-700'}`}>{label}</button>;
+                  })}
+                  <button type="button" onClick={() => setRibbonCollapsed((value) => !value)} aria-expanded={!ribbonCollapsed} aria-controls={`builder-ribbon-panel-${activeRibbonTab}`} className="ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700" title={ribbonCollapsed ? 'Expand the ribbon' : 'Collapse the ribbon'}>{ribbonCollapsed ? 'Expand ribbon' : 'Collapse ribbon'}</button>
+                </div>
+                {!ribbonCollapsed && activeRibbonTab === 'review' && (
+                  <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5" role="group" aria-label="Review tools">
+                      <button id="builder-new-comment" type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-700" title="Comment on the selected text (Ctrl+Alt+M)">New Comment</button>
+                      <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls="document-builder-navigation" className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
+                      <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50">Word Count</button>
+                      <span className="text-[10px] font-medium text-slate-600">{selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
+                      <span className="ml-auto text-[10px] text-slate-500">Ctrl+Alt+M comment &middot; Ctrl+Shift+G word count</span>
+                    </div>
+                <details id="builder-find-tools" className="bg-white border-b border-slate-200 shrink-0">
+                  <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Find / Replace | Heading Outline ({headingOutline.length}) <span className="font-normal text-slate-500">{findMatchState.count ? `${findMatchState.current || 0}/${findMatchState.count} matches` : 'No matches'} | Ctrl+F / Ctrl+H</span></summary>
                   <div className="grid gap-2 border-t border-slate-200 bg-slate-50 p-2 lg:grid-cols-2">
-                    <div className="flex flex-wrap items-center gap-1">
-                      <label htmlFor="builder-find" className="sr-only">Find text</label>
-                      <input id="builder-find" value={findQuery} onChange={(e) => { setFindQuery(e.target.value); findCursorRef.current = { node: null, offset: 0 }; }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); findNextInPreview(); } }} placeholder="Find" className="min-w-28 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
-                      <button type="button" onClick={findNextInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Next</button>
-                      <label htmlFor="builder-replace" className="sr-only">Replace with</label>
-                      <input id="builder-replace" value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)} placeholder="Replace with" className="min-w-28 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
-                      <button type="button" onClick={replaceAllInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Replace all</button>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <label htmlFor="builder-find" className="sr-only">Find text</label>
+                        <input id="builder-find" value={findQuery} onChange={(e) => { setFindQuery(e.target.value); findCursorRef.current = { node: null, offset: 0 }; }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.shiftKey ? findPreviousInPreview() : findNextInPreview(); } }} placeholder="Find" className="min-w-32 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
+                        <button type="button" onClick={findPreviousInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" aria-label="Find previous match">Prev</button>
+                        <button type="button" onClick={findNextInPreview} disabled={!findQuery.trim()} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40" aria-label="Find next match">Next</button>
+                        <span className="min-w-16 px-1 text-[10px] font-semibold text-slate-500" role="status" aria-live="polite">{findMatchState.count ? `${findMatchState.current || 0} of ${findMatchState.count}` : '0 matches'}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <label htmlFor="builder-replace" className="sr-only">Replace with</label>
+                        <input id="builder-replace" value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); replaceCurrentInPreview(); } }} placeholder="Replace with" className="min-w-32 flex-1 rounded border border-slate-400 px-2 py-1 text-xs" />
+                        <button type="button" onClick={replaceCurrentInPreview} disabled={!findQuery.trim() || !findMatchState.count} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Replace current</button>
+                        <button type="button" onClick={replaceAllInPreview} disabled={!findQuery.trim() || !findMatchState.count} className="rounded border border-indigo-500 bg-white px-2 py-1 text-xs font-bold text-indigo-700 disabled:opacity-40">Replace all</button>
+                      </div>
+                      <fieldset className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-medium text-slate-600" aria-label="Find options">
+                        <label className="inline-flex cursor-pointer items-center gap-1"><input type="checkbox" checked={findOptions.matchCase} onChange={(e) => setFindOptions((options) => ({ ...options, matchCase: e.target.checked }))} className="accent-indigo-700" />Match case</label>
+                        <label className="inline-flex cursor-pointer items-center gap-1"><input type="checkbox" checked={findOptions.wholeWord} onChange={(e) => setFindOptions((options) => ({ ...options, wholeWord: e.target.checked }))} className="accent-indigo-700" />Whole words</label>
+                        <label className="inline-flex cursor-pointer items-center gap-1"><input type="checkbox" checked={findOptions.highlightAll} onChange={(e) => setFindOptions((options) => ({ ...options, highlightAll: e.target.checked }))} className="accent-indigo-700" />Highlight all</label>
+                      </fieldset>
                     </div>
                     <nav aria-label="Document heading outline" className="max-h-24 overflow-y-auto rounded border border-slate-300 bg-white p-1">
                       {headingOutline.length ? headingOutline.map((heading) => (
-                        <button key={heading.index + '-' + heading.text} type="button" onClick={() => {
-                          const doc = exportPreviewRef.current?.contentDocument;
-                          const node = heading.node;
-                          if (!doc || !node?.isConnected) return;
-                          node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          const range = doc.createRange(); range.selectNodeContents(node); range.collapse(false);
-                          const selection = doc.defaultView?.getSelection(); selection?.removeAllRanges(); selection?.addRange(range); exportPreviewRef.current?.focus();
-                        }} className="block w-full truncate rounded px-2 py-1 text-left text-[11px] text-slate-700 hover:bg-indigo-50" style={{ paddingLeft: Math.min(28, 4 + (heading.level - 1) * 6) }} title={heading.text}>H{heading.level} - {heading.text}</button>
+                        <button key={heading.index + '-' + heading.text} type="button" onClick={() => jumpToHeading(heading)} aria-current={activeHeadingIndex === heading.index ? 'location' : undefined} className={`block w-full truncate rounded px-2 py-1 text-left text-[11px] ${activeHeadingIndex === heading.index ? 'bg-indigo-100 font-bold text-indigo-800 ring-1 ring-indigo-200' : 'text-slate-700 hover:bg-indigo-50'}`} style={{ paddingLeft: Math.min(28, 4 + (heading.level - 1) * 6) }} title={heading.text}>H{heading.level} - {heading.text}</button>
                       )) : <span className="block px-2 py-1 text-[11px] text-slate-500">No headings yet.</span>}
                     </nav>
                   </div>
                 </details>
-                {/* Formatting toolbar */}
+                <details id="builder-version-history" className="bg-white border-b border-slate-200 shrink-0">
+                  <summary className="cursor-pointer px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-50">
+                    Version History ({versionHistory.length}) <span className="font-normal text-slate-500">Stored on this device</span>
+                  </summary>
+                  <div className="border-t border-slate-200 bg-slate-50 p-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[10px] text-slate-500">Recent restore points stay on this device.</span>
+                      <button type="button" onClick={saveVersionSnapshot} className="rounded bg-indigo-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-800">Save snapshot</button>
+                    </div>
+                    <div className="mt-2 max-h-36 space-y-1 overflow-y-auto">
+                      {versionHistory.length ? versionHistory.map((snapshot) => (
+                        <div key={snapshot.id} className="flex items-center gap-2 rounded border border-slate-200 bg-white px-2 py-1">
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-[11px] font-semibold text-slate-700">{snapshot.label}</div>
+                            <time className="text-[10px] text-slate-500" dateTime={new Date(snapshot.at).toISOString()}>{new Date(snapshot.at).toLocaleString()}</time>
+                          </div>
+                          <button type="button" onClick={() => restoreVersionSnapshot(snapshot)} className="rounded border border-indigo-500 px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Restore</button>
+                        </div>
+                      )) : <p className="text-[11px] text-slate-500">No snapshots yet. Editing will save recent versions automatically.</p>}
+                    </div>
+                  </div>
+                </details>
+                  </div>
+                )}
+                {!ribbonCollapsed && activeRibbonTab === 'home' && (
+                  <div id="builder-ribbon-panel-home" role="tabpanel" aria-labelledby="builder-ribbon-tab-home" className="shrink-0">
+                <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label="Styles and Format Painter">
+                  <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500">Styles</span>
+                  <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-0.5" role="toolbar" aria-label="Document styles">
+                    {_BUILDER_STYLE_GALLERY.map((styleOption) => {
+                      const selected = formatState.namedStyle === styleOption.id;
+                      const previewClass = styleOption.id === 'title' ? 'text-sm font-black' : styleOption.id.startsWith('heading') ? 'font-black' : styleOption.id === 'subtitle' ? 'text-slate-500' : styleOption.id === 'quote' ? 'italic' : styleOption.id === 'caption' ? 'text-[9px] italic' : styleOption.id === 'callout' ? 'text-indigo-800' : '';
+                      return <button key={styleOption.id} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyBuilderStyle(styleOption.id)} aria-pressed={selected}
+                        className={'min-h-8 shrink-0 rounded border px-2 py-1 text-[10px] transition-colors ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white shadow-inner' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-500 hover:bg-indigo-50')}
+                        title={'Apply ' + styleOption.label + ' style'}><span className={previewClass}>{styleOption.label}</span></button>;
+                    })}
+                  </div>
+                  <span className="mx-1 h-6 w-px bg-slate-300" aria-hidden="true"></span>
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={useFormatPainter} aria-pressed={formatPainterActive}
+                    className={'min-h-8 rounded border px-2 text-[10px] font-bold transition-colors ' + (formatPainterActive ? 'border-amber-600 bg-amber-100 text-amber-900 ring-2 ring-amber-300' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-500 hover:bg-indigo-50')}
+                    title={formatPainterActive ? 'Apply copied formatting to the current selection' : 'Copy formatting from the current selection'}>{formatPainterActive ? 'Apply format' : 'Format Painter'}</button>
+                  {formatPainterActive && (
+                    <>
+                      <span className="text-[10px] font-medium text-amber-800" role="status">Select the destination, then choose Apply format.</span>
+                      <button type="button" onClick={cancelFormatPainter} className="min-h-8 rounded px-2 text-[10px] font-bold text-slate-600 hover:bg-slate-200" aria-label="Cancel Format Painter">Cancel</button>
+                    </>
+                  )}
+                </div>                {/* Formatting toolbar */}
                 <div className="px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0" role="toolbar" aria-label={t("a11y.text_formatting")}>
                   {[
                     { cmd: 'bold', icon: 'B', label: 'Bold', style: 'font-bold' },
                     { cmd: 'italic', icon: 'I', label: 'Italic', style: 'italic' },
                     { cmd: 'underline', icon: 'U', label: 'Underline', style: 'underline' },
-                  ].map(btn => (
-                    <button key={btn.cmd} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
-                      className={`w-8 h-8 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
-                      aria-label={btn.label} title={btn.label}>{btn.icon}</button>
-                  ))}
+                    { cmd: 'strikeThrough', icon: 'S̶', label: 'Strikethrough', style: '' },
+                    { cmd: 'subscript', icon: 'x₂', label: 'Subscript', style: '' },
+                    { cmd: 'superscript', icon: 'x²', label: 'Superscript', style: '' },
+                  ].map(btn => {
+                    const active = Boolean(formatState[btn.cmd]);
+                    return <button key={btn.cmd} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand(btn.cmd)} aria-pressed={active}
+                      className={`w-8 h-8 rounded text-xs ${btn.style} transition-colors border ${active ? 'bg-indigo-700 text-white border-indigo-700 shadow-inner' : 'text-slate-700 border-transparent hover:bg-indigo-100 hover:text-indigo-700 hover:border-indigo-600'}`}
+                      aria-label={btn.label} title={btn.label}>{btn.icon}</button>;
+                  })}
+                  <label className="ml-0.5 inline-flex items-center">
+                    <span className="sr-only">Text size</span>
+                    <select value={formatState.fontSize} onChange={(e) => runEditorCommand('fontSize', e.target.value)} className="h-8 rounded border border-slate-400 bg-white px-1 text-[11px] text-slate-700" aria-label="Text size" title="Text size">
+                      <option value="1">10 pt</option><option value="2">12 pt</option><option value="3">14 pt</option><option value="4">18 pt</option><option value="5">24 pt</option><option value="6">32 pt</option><option value="7">48 pt</option>
+                    </select>
+                  </label>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   {[
-                    { cmd: 'formatBlock', val: '<h2>', icon: 'H2', label: 'Heading 2' },
-                    { cmd: 'formatBlock', val: '<h3>', icon: 'H3', label: 'Heading 3' },
-                    { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
-                  ].map(btn => (
-                    <button key={btn.icon} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
-                      className="min-w-8 h-8 px-1.5 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
-                      aria-label={btn.label} title={btn.label}>{btn.icon}</button>
-                  ))}
+                    { val: '<h1>', block: 'h1', styleId: 'heading1', icon: 'H1', label: 'Heading 1' },
+                    { val: '<h2>', block: 'h2', styleId: 'heading2', icon: 'H2', label: 'Heading 2' },
+                    { val: '<h3>', block: 'h3', styleId: 'heading3', icon: 'H3', label: 'Heading 3' },
+                    { val: '<p>', block: 'p', styleId: 'normal', icon: '¶', label: 'Paragraph' },
+                  ].map(btn => {
+                    const active = formatState.block === btn.block;
+                    return <button key={btn.icon} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyBuilderStyle(btn.styleId)} aria-pressed={active}
+                      className={`min-w-8 h-8 px-1.5 rounded text-[11px] font-bold transition-colors border ${active ? 'bg-indigo-700 text-white border-indigo-700 shadow-inner' : 'text-slate-600 border-transparent hover:bg-indigo-100 hover:text-indigo-700 hover:border-indigo-600'}`}
+                      aria-label={btn.label} title={btn.label}>{btn.icon}</button>;
+                  })}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
-                    className="w-8 h-8 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
-                    className="w-8 h-8 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('insertUnorderedList')} aria-pressed={formatState.unorderedList}
+                    className={`w-8 h-8 rounded text-xs transition-colors border ${formatState.unorderedList ? 'bg-indigo-700 text-white border-indigo-700 shadow-inner' : 'text-slate-600 border-transparent hover:bg-indigo-100 hover:text-indigo-700'}`} aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('insertOrderedList')} aria-pressed={formatState.orderedList}
+                    className={`w-8 h-8 rounded text-[11px] font-bold transition-colors border ${formatState.orderedList ? 'bg-indigo-700 text-white border-indigo-700 shadow-inner' : 'text-slate-600 border-transparent hover:bg-indigo-100 hover:text-indigo-700'}`} aria-label="Numbered list" title="Numbered list">1.</button>
+                  <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
+                  {[['justifyLeft', 'left', '←', 'Align left'], ['justifyCenter', 'center', '↔', 'Center align'], ['justifyRight', 'right', '→', 'Align right'], ['justifyFull', 'justify', '☰', 'Justify text']].map(([cmd, alignment, icon, label]) => {
+                    const active = formatState.alignment === alignment;
+                    return <button key={cmd} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand(cmd)} aria-pressed={active}
+                      className={`w-8 h-8 rounded text-[13px] font-bold transition-colors border ${active ? 'bg-indigo-700 text-white border-indigo-700 shadow-inner' : 'text-slate-600 border-transparent hover:bg-indigo-100 hover:text-indigo-700 hover:border-indigo-600'}`}
+                      aria-label={label} title={label}>{icon}</button>;
+                  })}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={async () => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return;
                     const selection = doc.getSelection?.();
@@ -2280,13 +4840,13 @@ const _downloadBRF = (brf) => {
                   }}
                     className="min-w-8 h-8 px-1.5 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600" aria-label="Insert an equation (accessible math)" title="Insert an equation (accessible math)">∑</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('removeFormat')}
                     className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
-                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo">↩</button>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
-                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
-                  <select onChange={(e) => { const doc = exportPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('undo')}
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo (Ctrl+Z)">↩</button>
+                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('redo')}
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo (Ctrl+Y)">↪</button>
+                  <select onChange={(e) => { if (e.target.value) runEditorCommand('foreColor', e.target.value); e.target.value = ''; }}
                     className="h-8 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
                     <option value="" disabled>Color</option>
                     <option value="#000000">⬛ Black</option>
@@ -2295,7 +4855,203 @@ const _downloadBRF = (brf) => {
                     <option value="#166534">🟩 Green</option>
                     <option value="#7c3aed">🟪 Purple</option>
                   </select>
+                  <select onChange={(e) => { if (e.target.value) runEditorCommand('hiliteColor', e.target.value); e.target.value = ''; }}
+                    className="h-8 rounded border border-slate-400 px-1 text-[11px] text-slate-600" aria-label="Text highlight color" defaultValue="">
+                    <option value="" disabled>Highlight</option>
+                    <option value="#fef08a">Yellow</option><option value="#bbf7d0">Green</option><option value="#bfdbfe">Blue</option><option value="#fecdd3">Pink</option><option value="transparent">No highlight</option>
+                  </select>
                 </div>
+                  </div>
+                )}
+                {!ribbonCollapsed && activeRibbonTab === 'insert' && (
+                  <div id="builder-ribbon-panel-insert" role="tabpanel" aria-labelledby="builder-ribbon-tab-insert" className="shrink-0 border-b border-slate-200 bg-white">
+                    <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" aria-label="Insert tools">
+                      <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-table-help">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Table</legend>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Body rows
+                          <input type="number" min="1" max="20" value={tableInsertConfig.rows} onChange={(e) => setTableInsertConfig((config) => ({ ...config, rows: Math.max(1, Math.min(20, Number(e.target.value) || 1)) }))} className="h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label="Table body rows" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Columns
+                          <input type="number" min="1" max="10" value={tableInsertConfig.columns} onChange={(e) => setTableInsertConfig((config) => ({ ...config, columns: Math.max(1, Math.min(10, Number(e.target.value) || 1)) }))} className="h-7 w-14 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label="Table columns" />
+                        </label>
+                        <label className="flex min-w-36 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600">Caption
+                          <input value={tableInsertConfig.caption} maxLength={160} onChange={(e) => setTableInsertConfig((config) => ({ ...config, caption: e.target.value }))} placeholder="Recommended" className="h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-xs" aria-label="Table caption" />
+                        </label>
+                        <label className="inline-flex min-h-7 cursor-pointer items-center gap-1 text-[10px] font-semibold text-slate-700"><input type="checkbox" checked={tableInsertConfig.headerRow} onChange={(e) => setTableInsertConfig((config) => ({ ...config, headerRow: e.target.checked }))} className="accent-indigo-700" />Header row</label>
+                        <button type="button" onClick={insertAccessibleTable} className="h-7 rounded bg-indigo-700 px-2.5 text-[11px] font-bold text-white hover:bg-indigo-800">Insert table</button>
+                        <span id="builder-table-help" className="sr-only">Creates semantic table headers and an optional accessible caption.</span>
+                      </fieldset>
+                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" aria-label="Insert document elements">
+                        <button type="button" onClick={openImagePicker} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert image with alternative text"><ImageIcon size={13} aria-hidden="true" /> <span className="ml-1">Image</span></button>
+                        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => runEditorCommand('insertHorizontalRule')} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" title="Insert horizontal rule">Rule</button>
+                        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert page break" aria-keyshortcuts="Control+Enter" title="Insert page break">Page break</button>
+                        <label className="inline-flex items-center"><span className="sr-only">Insert symbol</span>
+                          <select defaultValue="" onChange={(e) => { if (e.target.value) runEditorCommand('insertText', e.target.value); e.target.value = ''; }} className="h-8 rounded border border-slate-300 bg-white px-1 text-[11px] text-slate-700" aria-label="Insert symbol">
+                            <option value="" disabled>Symbol</option><option value="—">Em dash —</option><option value="–">En dash –</option><option value="©">Copyright ©</option><option value="°">Degree °</option><option value="±">Plus/minus ±</option><option value="→">Arrow →</option>
+                          </select>
+                        </label>
+                      </div>
+                      {tableContext.active ? (
+                        <div className="flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1" role="toolbar" aria-label="Selected table tools">
+                          <span className="mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Selected table · {tableContext.rows} rows × {tableContext.columns} columns</span>
+                          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-row')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add row</button>
+                          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-column')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add column</button>
+                          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('remove-row')} disabled={tableContext.headerCell || tableContext.rows <= (tableContext.hasHeader ? 2 : 1)} className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40">Remove row</button>
+                          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('remove-column')} disabled={tableContext.columns <= 1} className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40">Remove column</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center rounded border border-dashed border-slate-300 px-2 py-1 text-[10px] text-slate-500">Place the caret in a table to edit rows and columns.</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!ribbonCollapsed && activeRibbonTab === 'layout' && (
+                  <div id="builder-ribbon-panel-layout" role="tabpanel" aria-labelledby="builder-ribbon-tab-layout" className="shrink-0 border-b border-slate-200 bg-white">
+                    <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" role="group" aria-label="Document layout tools">
+                      <fieldset className="flex min-w-72 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Page setup</legend>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Paper size
+                          <select value={pageSetup.size} onChange={(event) => applyPageSetup({ ...pageSetup, size: event.target.value }, { commit: true })} className="h-7 rounded border border-slate-400 bg-white px-1.5 text-[11px] text-slate-700" aria-label="Paper size">
+                            <option value="letter">Letter (8.5 x 11 in)</option>
+                            <option value="legal">Legal (8.5 x 14 in)</option>
+                            <option value="a4">A4 (8.27 x 11.69 in)</option>
+                          </select>
+                        </label>
+                        <div className="flex items-center gap-1" role="group" aria-label="Page orientation">
+                          <span className="text-[10px] font-semibold text-slate-600">Orientation</span>
+                          {['portrait', 'landscape'].map((orientation) => (
+                            <button key={orientation} type="button" onClick={() => applyPageSetup({ ...pageSetup, orientation }, { commit: true })} aria-pressed={pageSetup.orientation === orientation} className={`h-7 rounded border px-2 text-[10px] font-bold capitalize ${pageSetup.orientation === orientation ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>{orientation}</button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1" role="group" aria-label="Page margins">
+                          <span className="text-[10px] font-semibold text-slate-600">Margins</span>
+                          {[['0.5in', 'Narrow'], ['1in', 'Normal'], ['1.5in', 'Wide']].map(([margin, label]) => (
+                            <button key={margin} type="button" onClick={() => applyPageSetup({ ...pageSetup, margin }, { commit: true })} aria-pressed={pageSetup.margin === margin} className={`h-7 rounded border px-2 text-[10px] font-bold ${pageSetup.margin === margin ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={`${label} margins (${margin})`}>{label}</button>
+                          ))}
+                        </div>
+                        <span className="w-full text-[10px] text-slate-500" role="status" aria-live="polite">
+                          {_BUILDER_PAGE_SIZES[pageSetup.size]?.label || 'Letter'} · {_builderPageDimensions(pageSetup).width} x {_builderPageDimensions(pageSetup).height} in · {pageSetup.margin} margins
+                        </span>
+                      </fieldset>
+                      <fieldset className="flex min-w-80 flex-[1.35] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-page-elements-help">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Header &amp; footer</legend>
+                        <label className="flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600">Header
+                          <input value={pageElements.headerText} maxLength={120} onChange={(event) => setPageElements((config) => ({ ...config, headerText: event.target.value }))} placeholder="Document title" className="h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]" aria-label="Header text" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600"><span className="sr-only">Header alignment</span>
+                          <select value={pageElements.headerAlignment} onChange={(event) => setPageElements((config) => ({ ...config, headerAlignment: event.target.value }))} className="h-7 rounded border border-slate-400 bg-white px-1 text-[11px]" aria-label="Header alignment">
+                            <option value="left">Align left</option><option value="center">Center</option><option value="right">Align right</option>
+                          </select>
+                        </label>
+                        <label className="flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600">Footer
+                          <input value={pageElements.footerText} maxLength={160} onChange={(event) => setPageElements((config) => ({ ...config, footerText: event.target.value }))} placeholder="Optional footer" className="h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]" aria-label="Footer text" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Page numbers
+                          <select value={pageElements.pageNumbers} onChange={(event) => setPageElements((config) => ({ ...config, pageNumbers: event.target.value }))} className="h-7 rounded border border-slate-400 bg-white px-1 text-[11px]" aria-label="Page numbers">
+                            <option value="none">None</option><option value="left">Bottom left</option><option value="center">Bottom center</option><option value="right">Bottom right</option>
+                          </select>
+                        </label>
+                        <button type="button" onClick={() => applyPageElements()} className="h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800">Apply</button>
+                        <button type="button" onClick={clearPageElements} className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700">Clear</button>
+                        <span id="builder-page-elements-help" className="w-full text-[10px] text-slate-500">Headers and footers repeat on printed and PDF pages; automatic page numbers update during print.</span>
+                      </fieldset>
+                      <fieldset className="flex min-w-80 flex-[1.15] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" aria-describedby="builder-section-help">
+                        <legend className="px-1 text-[10px] font-black uppercase tracking-wider text-slate-600">Sections</legend>
+                        <button type="button" onClick={() => jumpToDocumentSection(pageMetrics.activeSection - 1)} disabled={pageMetrics.activeSection <= 0} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Previous section">←</button>
+                        <span className="min-w-20 text-center text-[10px] font-bold text-slate-700" role="status">Section {pageMetrics.activeSection + 1} of {pageMetrics.documentSections.length}</span>
+                        <button type="button" onClick={() => jumpToDocumentSection(pageMetrics.activeSection + 1)} disabled={pageMetrics.activeSection >= pageMetrics.documentSections.length - 1} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Next section">→</button>
+                        <label className="flex min-w-48 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600">Name
+                          <input value={sectionNameDraft} maxLength={80} onChange={(event) => setSectionNameDraft(event.target.value)} onBlur={commitSectionName} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } else if (event.key === 'Escape') { event.preventDefault(); setSectionNameDraft(activeDocumentSection.name); } }} className="h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]" aria-label="Current section name" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Starts
+                          <select value={activeDocumentSection.startType} disabled={activeDocumentSection.index === 0} onChange={(event) => setActiveSectionStartType(event.target.value)} className="h-7 rounded border border-slate-400 bg-white px-1 text-[10px] disabled:cursor-not-allowed disabled:bg-slate-100" aria-label="Current section start type">
+                            <option value="document">Document start</option><option value="next-page">Next page</option><option value="continuous">Same page</option>
+                          </select>
+                        </label>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => insertSectionBreak('next-page')} className="h-7 rounded border border-violet-400 bg-white px-2 text-[10px] font-bold text-violet-800 hover:bg-violet-50">Next-page section</button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => insertSectionBreak('continuous')} className="h-7 rounded border border-teal-400 bg-white px-2 text-[10px] font-bold text-teal-800 hover:bg-teal-50">Continuous section</button>
+                        <button type="button" onClick={removeActiveSectionBreak} disabled={activeDocumentSection.index === 0} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" title="Merge this section into the preceding section">Remove break</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('sections'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'sections'} aria-controls="document-builder-navigation" className="h-7 rounded px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50">Open sections</button>
+                        <span id="builder-section-help" className="w-full text-[10px] text-slate-500">{activeDocumentSection.name} starts {activeDocumentSection.startType === 'document' ? 'the document' : activeDocumentSection.startType === 'continuous' ? 'on the same page' : `on page ${activeDocumentSection.page + 1}`}.</span>
+                      </fieldset>
+                      <div className="flex flex-wrap items-center gap-1 rounded border border-slate-200 px-2 py-1" role="toolbar" aria-label="Pagination tools">
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert page break" aria-keyshortcuts="Control+Enter" title="Insert a page break at the caret">Page break</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} className="h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-controls="document-builder-navigation">Open pages</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!ribbonCollapsed && activeRibbonTab === 'view' && (
+                  <div id="builder-ribbon-panel-view" role="tabpanel" aria-labelledby="builder-ribbon-tab-view" className="shrink-0 border-b border-slate-200 bg-white">
+                    <div className="flex flex-col gap-1.5 px-2 py-1.5">
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5" role="group" aria-label="Interactive paragraph ruler">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Ruler</span>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Tab
+                          <select value={rulerTabAlignment} onChange={(event) => setRulerTabAlignment(event.target.value)} className="h-7 rounded border border-slate-400 bg-white px-1 text-[10px] text-slate-700" aria-label="New tab stop alignment" title="Choose the kind of tab stop added when you click the ruler">
+                            <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option><option value="decimal">Decimal</option>
+                          </select>
+                        </label>
+                        <div ref={rulerRef} role="group" aria-describedby="builder-ruler-help" onClick={handleRulerClick} className="relative h-9 min-w-64 flex-1 cursor-crosshair select-none overflow-hidden rounded border border-slate-400 bg-white shadow-inner" aria-label={`Paragraph ruler, ${paragraphContentWidth} inches wide. Click to add a ${rulerTabAlignment} tab stop.`} title={`Click to add a ${rulerTabAlignment} tab stop. Drag indent and tab markers; use arrow keys for precise movement.`}>
+                          <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: 'linear-gradient(to right,#cbd5e1 1px,transparent 1px)', backgroundSize: `${100 / Math.max(1, paragraphContentWidth * 4)}% 100%` }} aria-hidden="true"></div>
+                          {Array.from({ length: Math.floor(paragraphContentWidth) + 1 }, (_, inch) => (
+                            <span key={'ruler-inch-' + inch} className="pointer-events-none absolute top-2 -translate-x-1/2 text-[8px] font-mono text-slate-400" style={{ left: `${(inch / paragraphContentWidth) * 100}%` }} aria-hidden="true">{inch}</span>
+                          ))}
+                          {paragraphLayout.tabStops.map((tab, index) => (
+                            <button key={tab.id || index} type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label={`${tab.alignment} tab stop`} aria-valuemin={0.125} aria-valuemax={paragraphContentWidth - 0.125} aria-valuenow={tab.position} aria-valuetext={`${tab.alignment} tab at ${tab.position} inches`} onPointerDown={(event) => startTabStopDrag(tab, index, event)} onKeyDown={(event) => handleTabStopKeyDown(tab, index, event)} onDoubleClick={() => removeRulerTabStop(index)} className="absolute top-0 z-30 flex h-3 min-w-3 -translate-x-1/2 items-center justify-center rounded-b border border-violet-800 bg-violet-600 px-0.5 text-[7px] font-black uppercase leading-none text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1" style={{ left: `${(tab.position / paragraphContentWidth) * 100}%` }} title={`${tab.alignment} tab at ${tab.position} in. Drag or use arrows; Enter changes type; Delete removes.`}>{tab.alignment.charAt(0)}</button>
+                          ))}
+                          <button type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label="First-line indent" aria-valuemin={0} aria-valuemax={paragraphContentWidth - paragraphLayout.rightIndent} aria-valuenow={paragraphLayout.leftIndent + paragraphLayout.firstLineIndent} aria-valuetext={`${paragraphLayout.leftIndent + paragraphLayout.firstLineIndent} inches from the left margin`} onPointerDown={(event) => startRulerMarkerDrag('first', event)} onKeyDown={(event) => handleRulerMarkerKeyDown('first', event)} className="absolute top-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-b border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" style={{ left: `${((paragraphLayout.leftIndent + paragraphLayout.firstLineIndent) / paragraphContentWidth) * 100}%` }} title="First-line indent: drag or use Left/Right arrows">F</button>
+                          <button type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label="Hanging indent" aria-valuemin={0} aria-valuemax={paragraphContentWidth - paragraphLayout.rightIndent - 0.5} aria-valuenow={paragraphLayout.leftIndent} aria-valuetext={`${paragraphLayout.leftIndent} inches from the left margin`} onPointerDown={(event) => startRulerMarkerDrag('hanging', event)} onKeyDown={(event) => handleRulerMarkerKeyDown('hanging', event)} className="absolute bottom-2 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-teal-900 bg-teal-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1" style={{ left: `${(paragraphLayout.leftIndent / paragraphContentWidth) * 100}%` }} title="Hanging indent: drag or use Left/Right arrows">H</button>
+                          <button type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label="Left paragraph indent" aria-valuemin={0} aria-valuemax={paragraphContentWidth - paragraphLayout.rightIndent - 0.5} aria-valuenow={paragraphLayout.leftIndent} aria-valuetext={`${paragraphLayout.leftIndent} inches from the left margin`} onPointerDown={(event) => startRulerMarkerDrag('left', event)} onKeyDown={(event) => handleRulerMarkerKeyDown('left', event)} className="absolute bottom-0 z-10 flex h-2 w-3 -translate-x-1/2 items-center justify-center rounded-sm border border-indigo-900 bg-indigo-700 text-[6px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" style={{ left: `${(paragraphLayout.leftIndent / paragraphContentWidth) * 100}%` }} title="Left indent: moves the whole paragraph">L</button>
+                          <button type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label="Right paragraph indent" aria-valuemin={paragraphLayout.leftIndent + 0.5} aria-valuemax={paragraphContentWidth} aria-valuenow={paragraphContentWidth - paragraphLayout.rightIndent} aria-valuetext={`${paragraphLayout.rightIndent} inches from the right margin`} onPointerDown={(event) => startRulerMarkerDrag('right', event)} onKeyDown={(event) => handleRulerMarkerKeyDown('right', event)} className="absolute bottom-0 z-20 flex h-3 w-3 -translate-x-1/2 items-center justify-center rounded-t border border-indigo-900 bg-indigo-700 text-[7px] font-black leading-none text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" style={{ left: `${((paragraphContentWidth - paragraphLayout.rightIndent) / paragraphContentWidth) * 100}%` }} title="Right indent: drag or use Left/Right arrows">R</button>
+                        </div>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addNextRulerTabStop} aria-label={`Add ${rulerTabAlignment} tab stop`} aria-describedby="builder-ruler-help" className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-violet-50 hover:text-violet-700">Add tab</button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertParagraphTab} aria-keyshortcuts="Control+Tab" aria-describedby="builder-ruler-help" className="h-7 rounded border border-indigo-500 bg-white px-2 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50" title="Insert a tab at the next configured stop (Ctrl+Tab)">Insert tab</button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={clearRulerTabStops} disabled={!paragraphLayout.tabStops.length} className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40">Clear tabs</button>
+                        <span id="builder-ruler-help" className="basis-full text-[9px] text-slate-500">Drag F/H/L/R markers or use their arrow keys. Click the ruler or choose Add tab. On a tab marker, press Enter to change alignment or Delete to remove it. Ctrl+Tab inserts a tab without trapping normal keyboard focus.</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Paragraph layout controls">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Paragraph</span>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => nudgeParagraphIndent(-0.25)} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Decrease paragraph indent">− Indent</button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => nudgeParagraphIndent(0.25)} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Increase paragraph indent">+ Indent</button>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Left
+                          <input type="number" min="0" max={Math.max(0, paragraphContentWidth - paragraphLayout.rightIndent - 0.5)} step="0.125" value={paragraphLayout.leftIndent} onChange={(event) => applyParagraphLayout({ leftIndent: Number(event.target.value) }, { restoreFocus: false, announce: false })} className="h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="Left paragraph indent in inches" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">First
+                          <input type="number" min={-paragraphLayout.leftIndent} max={Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - paragraphLayout.rightIndent)} step="0.125" value={paragraphLayout.firstLineIndent} onChange={(event) => applyParagraphLayout({ firstLineIndent: Number(event.target.value) }, { restoreFocus: false, announce: false })} className="h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="First-line indent in inches; use a negative value for a hanging indent" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Right
+                          <input type="number" min="0" max={Math.max(0, paragraphContentWidth - paragraphLayout.leftIndent - 0.5)} step="0.125" value={paragraphLayout.rightIndent} onChange={(event) => applyParagraphLayout({ rightIndent: Number(event.target.value) }, { restoreFocus: false, announce: false })} className="h-7 w-16 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="Right paragraph indent in inches" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Line
+                          <select value={paragraphLayout.lineSpacing} onChange={(event) => applyParagraphLayout({ lineSpacing: event.target.value }, { restoreFocus: false, announce: false })} className="h-7 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="Line spacing">
+                            <option value="normal">Normal</option><option value="1">1.0</option><option value="1.15">1.15</option><option value="1.5">1.5</option><option value="2">2.0</option>
+                          </select>
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">Before
+                          <input type="number" min="0" max="72" step="3" value={paragraphLayout.spaceBefore} onChange={(event) => applyParagraphLayout({ spaceBefore: Number(event.target.value) }, { restoreFocus: false, announce: false })} className="h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="Space before paragraph in points" />
+                        </label>
+                        <label className="flex items-center gap-1 text-[10px] font-semibold text-slate-600">After
+                          <input type="number" min="0" max="72" step="3" value={paragraphLayout.spaceAfter} onChange={(event) => applyParagraphLayout({ spaceAfter: Number(event.target.value) }, { restoreFocus: false, announce: false })} className="h-7 w-14 rounded border border-slate-400 bg-white px-1 text-[10px]" aria-label="Space after paragraph in points" />
+                        </label>
+                        <button type="button" onClick={() => applyParagraphLayout({ keepWithNext: !paragraphLayout.keepWithNext }, { restoreFocus: false, announce: false })} aria-pressed={paragraphLayout.keepWithNext} className={`h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepWithNext ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title="Prevent a page break after this paragraph">Keep with next</button>
+                        <button type="button" onClick={() => applyParagraphLayout({ keepLinesTogether: !paragraphLayout.keepLinesTogether }, { restoreFocus: false, announce: false })} aria-pressed={paragraphLayout.keepLinesTogether} className={`h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.keepLinesTogether ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title="Keep all lines of this paragraph on one page">Keep lines</button>
+                        <button type="button" onClick={() => applyParagraphLayout({ widowOrphanControl: !paragraphLayout.widowOrphanControl }, { restoreFocus: false, announce: false })} aria-pressed={paragraphLayout.widowOrphanControl} className={`h-7 rounded border px-2 text-[10px] font-bold ${paragraphLayout.widowOrphanControl ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title="Keep at least three lines together at page boundaries">Widow/orphan</button>
+                        <button type="button" onClick={resetParagraphLayout} className="h-7 rounded px-2 text-[10px] font-bold text-slate-600 hover:bg-red-50 hover:text-red-700">Reset paragraph</button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-1" role="group" aria-label="Page and zoom view controls">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">View</span>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { restoreEditorSelection(); insertPageBreak(); }} className="h-7 rounded border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Insert page break" aria-keyshortcuts="Control+Enter">Page break</button>
+                        <button type="button" onClick={() => { setNavigationPaneTab('pages'); setShowNavigationPane(true); }} aria-pressed={showNavigationPane && navigationPaneTab === 'pages'} aria-controls="document-builder-navigation" className={`h-7 rounded px-2 text-[10px] font-bold ${showNavigationPane && navigationPaneTab === 'pages' ? 'bg-slate-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Pages</button>
+                        <button type="button" onClick={() => { setEditorZoomMode('custom'); setEditorPageView((value) => !value); }} aria-pressed={editorPageView} className={`h-7 rounded px-2 text-[10px] font-bold ${editorPageView ? 'bg-indigo-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={editorPageView ? 'Switch to continuous editor view' : 'Switch to paper-like page view'}>{editorPageView ? 'Page view' : 'Continuous'}</button>
+                        <button type="button" onClick={() => useEditorZoomPreset('fit-width')} aria-pressed={editorZoomMode === 'fit-width'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-width' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit width</button>
+                        <button type="button" onClick={() => useEditorZoomPreset('fit-page')} aria-pressed={editorZoomMode === 'fit-page'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-page' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit page</button>
+                        <span className="ml-auto text-[9px] text-slate-500" role="status" aria-live="polite">Left {paragraphLayout.leftIndent} in · First {paragraphLayout.firstLineIndent} in · Right {paragraphLayout.rightIndent} in · {editorZoomMode === 'custom' ? `${editorZoom}%` : `${editorZoomMode === 'fit-width' ? 'Fit width' : 'Fit page'} (${editorZoom}%)`}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!ribbonCollapsed && activeRibbonTab === 'expert' && (
+                  <div id="builder-ribbon-panel-expert" role="tabpanel" aria-labelledby="builder-ribbon-tab-expert" className="shrink-0">
                 {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
@@ -2423,8 +5179,132 @@ const _downloadBRF = (brf) => {
                     </div>
                   </div>
                 )}
-                <div className="flex-1 overflow-hidden bg-slate-100 p-4">
-                  <iframe
+                  </div>
+                )}
+                <div className="flex flex-1 min-h-0 overflow-hidden bg-slate-100">
+                  {showNavigationPane && (
+                    <aside id="document-builder-navigation" role="complementary" aria-label="Document navigation" className="relative flex max-w-[55vw] shrink-0 flex-col border-r border-slate-300 bg-white" style={{ width: navigationPaneWidth }}>
+                      <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
+                        <div>
+                          <div className="text-[11px] font-black uppercase tracking-wider text-slate-700">Navigation</div>
+                          <div className="text-[10px] text-slate-500">{navigationPaneTab === 'headings' ? `${headingOutline.length} heading${headingOutline.length === 1 ? '' : 's'}` : navigationPaneTab === 'sections' ? `${pageMetrics.documentSections.length} section${pageMetrics.documentSections.length === 1 ? '' : 's'}` : navigationPaneTab === 'comments' ? `${unresolvedReviewCommentCount} open / ${reviewComments.length} total` : `${pageMetrics.count} page${pageMetrics.count === 1 ? '' : 's'}`}</div>
+                        </div>
+                        <button type="button" onClick={() => setShowNavigationPane(false)} aria-label="Close document navigation" className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800">×</button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1 border-b border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Navigation view">
+                        <button id="builder-navigation-tab-headings" type="button" role="tab" aria-selected={navigationPaneTab === 'headings'} aria-controls="builder-navigation-panel-headings" tabIndex={navigationPaneTab === 'headings' ? 0 : -1} onClick={() => setNavigationPaneTab('headings')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'headings')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'headings' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Headings</button>
+                        <button id="builder-navigation-tab-pages" type="button" role="tab" aria-selected={navigationPaneTab === 'pages'} aria-controls="builder-navigation-panel-pages" tabIndex={navigationPaneTab === 'pages' ? 0 : -1} onClick={() => setNavigationPaneTab('pages')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'pages')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'pages' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Pages</button>
+                        <button id="builder-navigation-tab-sections" type="button" role="tab" aria-selected={navigationPaneTab === 'sections'} aria-controls="builder-navigation-panel-sections" tabIndex={navigationPaneTab === 'sections' ? 0 : -1} onClick={() => setNavigationPaneTab('sections')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'sections')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'sections' ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-300' : 'text-slate-600 hover:bg-white'}`}>Sections</button>
+                        <button id="builder-navigation-tab-comments" type="button" role="tab" aria-selected={navigationPaneTab === 'comments'} aria-controls="builder-navigation-panel-comments" tabIndex={navigationPaneTab === 'comments' ? 0 : -1} onClick={() => setNavigationPaneTab('comments')} onKeyDown={(event) => handleNavigationTabKeyDown(event, 'comments')} className={`rounded px-1 py-1.5 text-[10px] font-bold ${navigationPaneTab === 'comments' ? 'bg-white text-amber-800 shadow-sm ring-1 ring-amber-300' : 'text-slate-600 hover:bg-white'}`}>Comments</button>
+                      </div>
+                      {navigationPaneTab === 'headings' ? (
+                        <nav id="builder-navigation-panel-headings" role="tabpanel" aria-labelledby="builder-navigation-tab-headings" aria-label="Document heading navigation" className="min-h-0 flex-1 overflow-y-auto p-2">
+                          {headingOutline.length ? headingOutline.map((heading) => (
+                            <button key={heading.index + '-' + heading.text} type="button" onClick={() => jumpToHeading(heading)} aria-current={activeHeadingIndex === heading.index ? 'location' : undefined}
+                              className={`block w-full truncate rounded-md px-2 py-1.5 text-left text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ${activeHeadingIndex === heading.index ? 'bg-indigo-100 font-bold text-indigo-800 ring-1 ring-indigo-200' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}
+                              style={{ paddingLeft: Math.min(30, 8 + (heading.level - 1) * 8) }} title={heading.text}>
+                              <span className="mr-1 text-[10px] font-bold text-slate-400">H{heading.level}</span>{heading.text}
+                            </button>
+                          )) : <p className="px-2 py-3 text-[11px] text-slate-500">Add headings to build a navigable document map.</p>}
+                        </nav>
+                      ) : navigationPaneTab === 'comments' ? (
+                        <section id="builder-navigation-panel-comments" role="tabpanel" aria-labelledby="builder-navigation-tab-comments" aria-label="Document comments" className="flex min-h-0 flex-1 flex-col">
+                          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-amber-50 px-2 py-2">
+                            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white hover:bg-amber-700">New comment</button>
+                            <label className="ml-auto inline-flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-amber-900">
+                              <input type="checkbox" checked={showResolvedComments} onChange={(event) => setShowResolvedComments(event.target.checked)} className="accent-amber-700" />
+                              Show resolved
+                            </label>
+                          </div>
+                          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2" aria-live="polite">
+                            {reviewComments.length ? (
+                              visibleReviewComments.length ? visibleReviewComments.map((comment) => {
+                                const active = activeCommentId === comment.id;
+                                return (
+                                  <article key={comment.id} id={`builder-comment-${comment.id}`} aria-labelledby={`builder-comment-title-${comment.id}`} className={`rounded-lg border p-2 shadow-sm ${active ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200' : comment.resolved ? 'border-slate-200 bg-slate-50' : 'border-amber-200 bg-white'}`}>
+                                    <div className="flex items-start gap-2">
+                                      <button type="button" onClick={() => jumpToReviewComment(comment.id)} aria-current={active ? 'location' : undefined} aria-label={`Go to commented text: ${comment.quote}`} className="min-w-0 flex-1 rounded px-1 py-1 text-left hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
+                                        <h3 id={`builder-comment-title-${comment.id}`} className="text-[9px] font-black uppercase tracking-wider text-amber-800">{comment.resolved ? 'Resolved comment' : `Comment ${comment.index + 1}`}</h3>
+                                        <blockquote className="mt-0.5 line-clamp-3 break-words text-[11px] font-semibold text-slate-700">"{comment.quote}"</blockquote>
+                                      </button>
+                                      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${comment.resolved ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-800'}`}>{comment.resolved ? 'Resolved' : 'Open'}</span>
+                                    </div>
+                                    <ol className="mt-2 space-y-1.5">
+                                      {comment.thread.map((message, messageIndex) => (
+                                        <li key={message.id + '-' + messageIndex} className="rounded border border-slate-200 bg-white px-2 py-1.5">
+                                          <div className="flex items-center justify-between gap-2 text-[9px] font-bold uppercase tracking-wide text-slate-500">
+                                            <span>{messageIndex === 0 ? 'Comment' : `Reply ${messageIndex}`}</span>
+                                            <time dateTime={message.at || undefined}>{message.at && !Number.isNaN(Date.parse(message.at)) ? new Date(message.at).toLocaleString() : 'Recently'}</time>
+                                          </div>
+                                          <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-700">{message.text}</p>
+                                        </li>
+                                      ))}
+                                    </ol>
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                      <button type="button" onClick={() => replyReviewComment(comment.id)} className="rounded border border-amber-400 bg-white px-2 py-1 text-[10px] font-bold text-amber-800 hover:bg-amber-50">Reply</button>
+                                      <button type="button" onClick={() => editReviewComment(comment.id)} className="rounded border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Edit</button>
+                                      <button type="button" onClick={() => toggleReviewCommentResolved(comment.id)} className="rounded border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">{comment.resolved ? 'Reopen' : 'Resolve'}</button>
+                                      <button type="button" onClick={() => deleteReviewComment(comment.id)} className="ml-auto rounded px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50">Delete</button>
+                                    </div>
+                                  </article>
+                                );
+                              }) : <p className="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center text-[11px] text-slate-600">All comments are resolved. Turn on <strong>Show resolved</strong> to review them.</p>
+                            ) : <p className="rounded border border-dashed border-amber-300 bg-amber-50 px-3 py-4 text-center text-[11px] text-amber-900">Select text in the document, then choose <strong>New comment</strong> or press Ctrl+Alt+M.</p>}
+                          </div>
+                        </section>
+                      ) : navigationPaneTab === 'sections' ? (
+                        <nav id="builder-navigation-panel-sections" role="tabpanel" aria-labelledby="builder-navigation-tab-sections" aria-label="Document section navigation" className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-2">
+                          {pageMetrics.documentSections.map((section) => {
+                            const active = pageMetrics.activeSection === section.index;
+                            return (
+                              <button key={section.id} type="button" onClick={() => jumpToDocumentSection(section.index)} aria-current={active ? 'location' : undefined} className={`block w-full rounded-md border px-2.5 py-2 text-left transition-colors ${active ? 'border-violet-300 bg-violet-100 text-violet-900 ring-1 ring-violet-300' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-200 hover:bg-violet-50'}`}>
+                                <span className="flex items-center justify-between gap-2 text-[9px] font-black uppercase tracking-wider"><span>Section {section.index + 1}</span><span>Page {section.page + 1}</span></span>
+                                <span className="mt-0.5 block truncate text-[11px] font-bold" title={section.name}>{section.name}</span>
+                                <span className="mt-0.5 block text-[9px] text-slate-500">{section.startType === 'document' ? 'Document start' : section.startType === 'continuous' ? 'Continues on same page' : 'Starts on next page'}</span>
+                              </button>
+                            );
+                          })}
+                        </nav>
+                      ) : (
+                        <nav id="builder-navigation-panel-pages" role="tabpanel" aria-labelledby="builder-navigation-tab-pages" aria-label="Page thumbnails" className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
+                          {Array.from({ length: pageMetrics.count }, (_, pageIndex) => {
+                            const pageHeadings = pageMetrics.sections.filter((section) => section.page === pageIndex);
+                            const pageDocumentSections = pageMetrics.documentSections.filter((section) => section.page === pageIndex);
+                            const active = pageMetrics.active === pageIndex;
+                            return (
+                              <button key={pageIndex} type="button" onClick={() => jumpToPage(pageIndex)} aria-current={active ? 'page' : undefined} aria-label={`Go to page ${pageIndex + 1}${pageDocumentSections[0] ? `, ${pageDocumentSections[0].name}` : pageHeadings[0] ? `: ${pageHeadings[0].text}` : ''}`} className={`mx-auto block w-full max-w-28 rounded-md p-1 text-left transition-colors ${active ? 'bg-indigo-100 ring-2 ring-indigo-500' : 'bg-transparent hover:bg-slate-50 hover:shadow-sm'}`}>
+                                <span className={`block text-center text-[9px] font-bold ${active ? 'text-indigo-800' : 'text-slate-500'}`}>Page {pageIndex + 1}</span>
+                                <span className="relative mt-1 block overflow-hidden rounded border border-slate-300 bg-white shadow-sm" style={{ aspectRatio: `${_builderPageDimensions(pageSetup).width} / ${_builderPageDimensions(pageSetup).height}` }}>
+                                  <span className="absolute inset-2 space-y-1">
+                                    {pageDocumentSections.slice(0, 2).map((section) => <span key={section.id} className={`block truncate text-[6px] font-black leading-tight ${section.startType === 'continuous' ? 'text-teal-700' : 'text-violet-700'}`}>§{section.index + 1} {section.name}</span>)}
+                                    <span className="block h-1 w-3/4 rounded bg-slate-300"></span>
+                                    {pageHeadings.slice(0, 3).map((section) => <span key={section.index} className={`block truncate text-[6px] font-bold leading-tight ${section.level === 1 ? 'text-indigo-700' : 'text-slate-500'}`}>{section.text}</span>)}
+                                    <span className="block h-px w-full bg-slate-200"></span>
+                                    <span className="block h-px w-5/6 bg-slate-200"></span>
+                                    <span className="block h-px w-2/3 bg-slate-200"></span>
+                                  </span>
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </nav>
+                      )}
+                      <div role="separator" aria-orientation="vertical" aria-label="Resize document navigation" aria-valuemin={180} aria-valuemax={420} aria-valuenow={navigationPaneWidth} tabIndex={0}
+                        onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); setNavigationPaneWidth((width) => Math.max(180, Math.min(420, width + (event.key === 'ArrowRight' ? 16 : -16)))); } }}
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          const startX = event.clientX;
+                          const startWidth = navigationPaneWidth;
+                          const onMove = (moveEvent) => setNavigationPaneWidth(Math.max(180, Math.min(420, startWidth + moveEvent.clientX - startX)));
+                          const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); window.removeEventListener('pointercancel', onUp); };
+                          window.addEventListener('pointermove', onMove);
+                          window.addEventListener('pointerup', onUp, { once: true });
+                          window.addEventListener('pointercancel', onUp, { once: true });
+                        }}
+                        className="absolute inset-y-0 right-0 w-2 cursor-col-resize bg-transparent hover:bg-indigo-300 focus:bg-indigo-300 focus:outline-none" title="Drag or use arrow keys to resize navigation"></div>
+                    </aside>
+                  )}                  <div className="min-w-0 flex-1 overflow-hidden bg-slate-100 p-4">
+                    <iframe
                     id="document-builder-preview"
                     ref={exportPreviewRef}
                     title="Editable document preview"
@@ -2444,8 +5324,48 @@ const _downloadBRF = (brf) => {
                         const doc = exportPreviewRef.current?.contentDocument;
                         if (!doc || doc.__alloPasteGuard) return;
                         doc.__alloPasteGuard = true;
-                        applyPageMargin(exportConfig.pageMargin || '1in');
+                        syncPageSetupFromDocument();
+                        syncPageElementsFromDocument();
                         refreshDocumentStats();
+                        refreshReviewComments();
+                        refreshActiveHeading();
+                        refreshPageMetrics();
+                        applyEditorZoom(editorZoom);
+                        setDraftCaptureState('ready');
+                        editorSelectionRangeRef.current = null;
+                        formatPainterRef.current = null;
+                        setFormatPainterActive(false);
+                        const _rememberSelection = () => {
+                          try {
+                            const selection = doc.getSelection?.();
+                            if (selection?.rangeCount) editorSelectionRangeRef.current = selection.getRangeAt(0).cloneRange();
+                          } catch (_) {}
+                          refreshFormattingState();
+                          refreshTableContext();
+                          refreshPageMetrics();
+                          refreshSelectionStatistics();
+                          refreshActiveReviewComment();
+                        };
+                        const _syncFormatting = () => refreshFormattingState();
+                        const _syncActiveHeading = () => refreshActiveHeading();
+                        const _syncPageMetrics = () => { refreshActiveHeading(); refreshPageMetrics(); };
+                        const _activateReviewComment = (event) => {
+                          try {
+                            const marker = event.target?.closest?.(_BUILDER_COMMENT_SELECTOR);
+                            const id = marker?.getAttribute?.('data-allo-comment-id') || '';
+                            if (!id) return;
+                            setActiveCommentId(id);
+                            const hostDoc = window.parent && window.parent.document;
+                            hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-comment', { detail: { id } }));
+                          } catch (_) {}
+                        };
+                        doc.addEventListener('selectionchange', _rememberSelection);
+                        doc.addEventListener('click', _activateReviewComment);
+                        doc.addEventListener('keyup', _syncFormatting);
+                        doc.addEventListener('mouseup', _syncFormatting);
+                        doc.addEventListener('scroll', _syncPageMetrics, true);
+                        doc.defaultView?.addEventListener('scroll', _syncPageMetrics, { passive: true });
+                        window.setTimeout(_syncFormatting, 0);
                         const _sanitizeFragment = (html) => {
                           try {
                             const p = new DOMParser().parseFromString('<body>' + String(html || '') + '</body>', 'text/html');
@@ -2479,11 +5399,22 @@ const _downloadBRF = (brf) => {
                         // follow-up half — design in memory: project_comprehensive_review.
                         let _capT = null;
                         const _captureEdits = () => {
-                          try { window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() }; } catch (_) {}
+                          try {
+                            const capturedAt = Date.now();
+                            const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+                            window.__alloBuilderEditedPack = { html: fullHtml, at: capturedAt };
+                            const clean = getCleanBuilderDocument();
+                            const savedLocally = persistLocalDraft(clean?.html || fullHtml, capturedAt, 'Auto-save');
+                            if (mountedRef.current) {
+                              setDraftCaptureState(savedLocally ? 'saved' : 'captured');
+                            }
+                          } catch (_) {}
                         };
                         doc.addEventListener('input', () => {
                           try {
                             if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                            if (mountedRef.current) setDraftCaptureState('capturing');
+                            refreshFormattingState();
                             writingCheckRunRef.current += 1;
                             auditRunRef.current += 1;
                             expertRunRef.current += 1;
@@ -2493,6 +5424,11 @@ const _downloadBRF = (brf) => {
                               setExportAuditLoading(false);
                             }
                               refreshDocumentStats();
+                            refreshReviewComments();
+                            refreshActiveHeading();
+                            refreshPageMetrics();
+                            refreshTableContext();
+                            setFindDocumentRevision((value) => value + 1);
                             if (_capT) clearTimeout(_capT);
                             _capT = setTimeout(_captureEdits, 800);
                           } catch (_) {}
@@ -2500,6 +5436,83 @@ const _downloadBRF = (brf) => {
                       } catch (_) {}
                     }}
                   />
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="font-semibold text-slate-700">{isFocusMode ? 'Focus mode' : 'Editing enabled'}</span>
+                    <span role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${draftCaptureState === 'capturing' ? 'text-amber-700' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
+                      {draftCaptureState === 'capturing' ? 'Capturing changes…' : draftCaptureState === 'saved' ? 'Saved on this device' : draftCaptureState === 'restored' ? 'Local draft restored' : draftCaptureState === 'captured' ? 'Draft captured in this session' : 'Ready'}
+                    </span>
+                    <div className="relative">
+                      <button ref={wordCountButtonRef} type="button" onClick={(event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event)} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
+                      {showWordCountDetails && (
+                        <section ref={wordCountPanelRef} id="builder-word-count-panel" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-word-count-title" aria-describedby="builder-word-count-description" className="absolute bottom-full left-0 z-[90] mb-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-300 bg-white p-3 text-slate-700 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h4 id="builder-word-count-title" className="text-sm font-black text-slate-900">Word Count</h4>
+                              <p id="builder-word-count-description" className="text-[10px] text-slate-500">Live statistics for this document{selectionStatistics.active ? ' and the selected text' : ''}.</p>
+                            </div>
+                            <button type="button" onClick={() => closeWordCountDetails(true)} className="min-h-8 rounded px-2 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Close Word Count details">Close</button>
+                          </div>
+                          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
+                            <table className="w-full border-collapse text-[11px]">
+                              <caption className="sr-only">Document and selection statistics</caption>
+                              <thead className="bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500">
+                                <tr><th scope="col" className="px-2 py-1 text-left">Statistic</th><th scope="col" className="px-2 py-1 text-right">Document</th>{selectionStatistics.active && <th scope="col" className="px-2 py-1 text-right">Selection</th>}</tr>
+                              </thead>
+                              <tbody>
+                                {[
+                                  ['Pages', pageMetrics.count, null],
+                                  ['Words', documentStatistics.words, selectionStatistics.words],
+                                  ['Characters (no spaces)', documentStatistics.charactersWithoutSpaces, selectionStatistics.charactersWithoutSpaces],
+                                  ['Characters (with spaces)', documentStatistics.charactersWithSpaces, selectionStatistics.charactersWithSpaces],
+                                  ['Paragraphs', documentStatistics.paragraphs, selectionStatistics.paragraphs],
+                                  ['Sentences', documentStatistics.sentences, selectionStatistics.sentences],
+                                ].map(([label, documentValue, selectionValue]) => (
+                                  <tr key={label} className="border-t border-slate-100">
+                                    <th scope="row" className="px-2 py-1 text-left font-semibold text-slate-600">{label}</th>
+                                    <td className="px-2 py-1 text-right tabular-nums">{Number(documentValue || 0).toLocaleString()}</td>
+                                    {selectionStatistics.active && <td className="px-2 py-1 text-right tabular-nums">{selectionValue == null ? <span aria-label="Not applicable">&mdash;</span> : Number(selectionValue || 0).toLocaleString()}</td>}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <dl className="mt-2 grid grid-cols-2 gap-2 text-[10px]">
+                            <div className="rounded-lg bg-indigo-50 px-2 py-1.5"><dt className="font-bold text-indigo-800">Reading time</dt><dd>{documentStatistics.readingMinutes || 0} min at 225 wpm</dd></div>
+                            <div className="rounded-lg bg-violet-50 px-2 py-1.5"><dt className="font-bold text-violet-800">Speaking time</dt><dd>{documentStatistics.speakingMinutes || 0} min at 130 wpm</dd></div>
+                          </dl>
+                          <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+                            <div className="flex items-center gap-2">
+                              <label htmlFor="builder-word-count-goal" className="text-[10px] font-bold text-slate-600">Word goal</label>
+                              <input id="builder-word-count-goal" type="number" min="0" step="50" value={wordGoal || ''} onChange={(event) => setWordGoal(Math.max(0, parseInt(event.target.value, 10) || 0))} placeholder="None" className="h-7 w-24 rounded border border-slate-400 bg-white px-1.5 text-[11px]" />
+                              <span className="ml-auto text-[10px] font-semibold text-slate-600">{wordGoalProgress.goal > 0 ? `${wordGoalProgress.percent}%` : 'No goal'}</span>
+                            </div>
+                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Word-count goal progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={wordGoalProgress.percent} aria-valuetext={wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words` : 'No word-count goal set'}>
+                              <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: `${wordGoalProgress.percent}%` }}></div>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-[9px] leading-snug text-slate-500">Counts exclude headers, footers, page controls, and other editor-only interface text.</p>
+                        </section>
+                      )}
+                    </div>
+                    <span>{headingOutline.length} heading{headingOutline.length === 1 ? '' : 's'}</span>
+                    <span>Page {pageMetrics.active + 1} of {pageMetrics.count}</span>
+                    <span>Section {pageMetrics.activeSection + 1} of {pageMetrics.documentSections.length}: {activeDocumentSection.name}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-slate-500">Ctrl+Enter page break · Ctrl+Shift+Enter {isFocusMode ? 'exits focus mode' : 'opens focus mode'} · Ctrl+Shift+G word count &middot; Ctrl+Z undo</span>
+                    <span className="hidden sm:inline-block h-4 w-px bg-slate-300" aria-hidden="true"></span>
+                    <div className="flex items-center gap-1" aria-label="Editor zoom controls">
+                      <button type="button" onClick={() => setCustomEditorZoom((value) => value - 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom out" title="Zoom out">−</button>
+                      <input type="range" min="50" max="200" step="5" value={editorZoom} onChange={(event) => setCustomEditorZoom(Number(event.target.value))} className="w-24 accent-indigo-600" aria-label="Editor zoom" aria-valuetext={`${editorZoomMode === 'custom' ? '' : editorZoomMode === 'fit-width' ? 'Fit width, ' : 'Fit page, '}${editorZoom} percent`} />
+                      <button type="button" onClick={() => setCustomEditorZoom((value) => value + 5)} className="h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Zoom in" title="Zoom in">+</button>
+                      <button type="button" onClick={() => setCustomEditorZoom(100)} className="min-w-12 rounded px-1.5 py-1 font-semibold text-indigo-700 hover:bg-indigo-100" aria-label="Reset editor zoom to 100 percent" title="Reset editor zoom">{editorZoom}%</button>
+                      <button type="button" onClick={resetBuilderViewPreferences} className="rounded px-1.5 py-1 font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700" aria-label="Reset Builder view preferences" title="Reset zoom, page view, ribbon, and navigation">Reset view</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2618,22 +5631,99 @@ async function updateExportPreview(deps) {
       // The id lets export paths strip this editor-only CSS so it never
       // ships inside a student-facing document.
       editStyle.id = 'allo-builder-edit-css';
-      editStyle.textContent = `
+      const _baseEditCss = `
         [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
         img { cursor: move; transition: outline 0.2s; }
         img:hover { outline: 2px dashed #6366f1; }
+        [data-allo-page-break="1"], [data-allo-section-break] { position:relative;display:block;height:var(--allo-break-fill,24px) !important;margin:0 !important;border:0 !important;border-top:2px dashed #94a3b8 !important;background:linear-gradient(to bottom,transparent 0,transparent 11px,rgba(148,163,184,0.12) 11px,rgba(148,163,184,0.12) 13px,transparent 13px) !important; }
+        [data-allo-page-break="1"]::after, [data-allo-section-break]::after { position:absolute;top:5px;right:0;padding:0 4px;color:#64748b;background:#f8fafc;font:700 9px/14px system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase; }
+        [data-allo-page-break="1"]::after { content:'Page break'; }
+        [data-allo-section-break="next-page"] { border-top-color:#7c3aed !important; }
+        [data-allo-section-break="next-page"]::after { content:attr(data-allo-section-name) ' · Next page section';color:#6d28d9; }
+        [data-allo-section-break="continuous"] { border-top-style:dotted !important;border-top-color:#0f766e !important; }
+        [data-allo-section-break="continuous"]::after { content:attr(data-allo-section-name) ' · Continuous section';color:#0f766e; }
+        @media print { [data-allo-page-break="1"],[data-allo-section-break] { height:0 !important;margin:0 !important;border:0 !important;background:none !important; } [data-allo-page-break="1"]::after,[data-allo-section-break]::after { display:none !important; } }
+        [data-allo-tab="1"] { min-height:1em;border-bottom:1px dotted rgba(99,102,241,.45); }
+        [data-allo-tab-field] { min-width:.25in; }
         ::selection { background: #c7d2fe; }
+        ::highlight(allo-builder-find) { background: #fde68a; color: #713f12; }
+        mark[data-allo-comment-id] { padding:0;background:#fef3c7;color:inherit;border-bottom:2px solid #d97706;border-radius:2px;cursor:pointer; }
+        mark[data-allo-comment-resolved="1"] { background:#f1f5f9;border-bottom:1px dotted #64748b; }
+        mark[data-allo-comment-active="1"] { background:#fde68a;box-shadow:0 0 0 2px #f59e0b; }
+        @media print { mark[data-allo-comment-id] { padding:0 !important;background:transparent !important;color:inherit !important;border:0 !important;box-shadow:none !important; } }
       `;
+      editStyle.setAttribute('data-allo-base-css', _baseEditCss);
+      const _editorZoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
+      const _pageCss = editorPageCss(iframe.__alloBuilderPageView !== false);
+      editStyle.setAttribute('data-allo-page-css', _pageCss);
+      editStyle.textContent = `${_baseEditCss}\n${_pageCss}\n        body { zoom: ${_editorZoom}%; }`;
       doc.head.appendChild(editStyle);
       doc.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-          // WCAG 2.1.2 escape hatch: Escape was dead inside the editing
-          // iframe — a keyboard trap. Move focus back to the builder chrome.
-          try { e.preventDefault(); const _cb = document.querySelector('[aria-label="' + (t('a11y.close_doc_builder') || 'Close document builder') + '"]'); if (_cb && _cb.focus) _cb.focus(); } catch (_) {}
+          // Focus mode owns Escape first: leave the distraction-free surface,
+          // then keep the existing escape hatch for the normal builder dialog.
+          try {
+            e.preventDefault();
+            const _parentDoc = window.parent && window.parent.document;
+            if (_parentDoc && _parentDoc.documentElement.classList.contains('allo-docbuilder-focus')) {
+              if (_parentDoc.fullscreenElement && _parentDoc.exitFullscreen) _parentDoc.exitFullscreen().catch(() => {});
+              window.parent.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-exit-focus'));
+              return;
+            }
+            const _cb = _parentDoc && _parentDoc.querySelector('[aria-label="' + (t('a11y.close_doc_builder') || 'Close document builder') + '"]');
+            if (_cb && _cb.focus) _cb.focus();
+          } catch (_) {}
           return;
         }
         if (e.key === 'Tab') {
-          // Key events inside an iframe do not bubble to the parent dialog.
+          if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+            const insertedTab = _builderInsertParagraphTab(doc, _editorZoom);
+            if (insertedTab) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+          }
+          // Move through table cells like a desktop word processor. Tabbing
+          // from the final cell appends a new data row; Shift+Tab at the first
+          // cell still falls through to the dialog focus loop below.
+          try {
+            let selectedNode = doc.getSelection?.()?.anchorNode;
+            if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
+            const cell = selectedNode?.closest?.('td,th');
+            const table = cell?.closest?.('table');
+            if (cell && table) {
+              let cells = Array.from(table.querySelectorAll('th,td'));
+              const current = cells.indexOf(cell);
+              let target = cells[current + (e.shiftKey ? -1 : 1)] || null;
+              if (!target && !e.shiftKey) {
+                const body = table.tBodies[0] || table.appendChild(doc.createElement('tbody'));
+                const row = doc.createElement('tr');
+                const columnCount = Math.max(1, ...Array.from(table.rows).map((item) => item.cells.length));
+                for (let index = 0; index < columnCount; index += 1) {
+                  const td = doc.createElement('td');
+                  td.setAttribute('style', 'border:1px solid #94a3b8;padding:.5em;vertical-align:top;');
+                  td.appendChild(doc.createElement('br'));
+                  row.appendChild(td);
+                }
+                body.appendChild(row);
+                target = row.cells[0];
+                cells = Array.from(table.querySelectorAll('th,td'));
+                doc.body?.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true }));
+              }
+              if (target) {
+                e.preventDefault();
+                const range = doc.createRange();
+                range.selectNodeContents(target);
+                range.collapse(true);
+                const selection = doc.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                target.scrollIntoView({ block: 'nearest' });
+                return;
+              }
+            }
+          } catch (_) {}          // Key events inside an iframe do not bubble to the parent dialog.
           // Hand focus across the iframe boundary at either edge so the modal
           // remains a single, closed keyboard loop.
           try {
@@ -2651,11 +5741,56 @@ async function updateExportPreview(deps) {
             }
           } catch (_) {}
         }
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key === 'Enter') {
+          const insertedBreak = _builderInsertDocumentBreak(doc, 'page');
+          if (insertedBreak) { e.preventDefault(); e.stopPropagation(); return; }
+        }
+        if ((e.ctrlKey || e.metaKey) && e.altKey && !e.shiftKey && (e.key === 'm' || e.key === 'M')) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-new-comment'));
+          } catch (_) {}
+          return;
+        }
+        const _focusedComment = e.target?.closest?.(_BUILDER_COMMENT_SELECTOR);
+        if ((e.key === 'Enter' || e.key === ' ') && _focusedComment) {
+          try {
+            e.preventDefault();
+            e.stopPropagation();
+            const _hostDoc = window.parent && window.parent.document;
+            const _commentId = _focusedComment.getAttribute('data-allo-comment-id') || '';
+            if (_hostDoc && _commentId) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-activate-comment', { detail: { id: _commentId } }));
+          } catch (_) {}
+          return;
+        }
         if ((e.key === 'Enter' || e.key === ' ') && e.target && (e.target.tagName || '').toUpperCase() === 'IMG') {
           e.preventDefault(); e.stopPropagation(); _openBuilderCropModal(e.target); return;
         }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && (e.key === 'g' || e.key === 'G')) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-open-word-count'));
+          } catch (_) {}
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'f' || e.key === 'F' || e.key === 'h' || e.key === 'H')) {
+          try {
+            e.preventDefault();
+            const _hostDoc = window.parent && window.parent.document;
+            if (_hostDoc) _hostDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-open-find', { detail: { mode: (e.key === 'h' || e.key === 'H') ? 'replace' : 'find' } }));
+          } catch (_) {}
+          return;
+        }
         if (e.ctrlKey || e.metaKey) {
-          if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+          if (!e.altKey && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            try { window.parent.document.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-save-snapshot')); } catch (_) {}
+          }
+          else if (!e.altKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); doc.execCommand(e.shiftKey ? 'redo' : 'undo'); }
+          else if (!e.altKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); doc.execCommand('redo'); }
+          else if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
           else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
           else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
           else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }

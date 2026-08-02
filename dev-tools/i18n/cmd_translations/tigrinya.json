@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio ተኸፊቱ።",
   "cmd.open_video_studio_hint": "መምርሒ ቪድዮታት ቅረጽ፣ ጽሑፍ ወስኽን ኣርትዕን",
   "palette.ctx.videoStudio": "ኣብዚ — Video Studio",
-  "palette.close": "ናይ ትእዛዝ ፓለት ዕጸ"
+  "palette.close": "ናይ ትእዛዝ ፓለት ዕጸ",
+  "cmd.apply_lesson_template": "ካብ ዝተዓቀበ ኣብነት ጀምር",
+  "cmd.apply_lesson_template_done": "ካብዚ ተጀሚሩ: ",
+  "cmd.apply_lesson_template_hint": "ካብ ሓደ ካብ ዝተዓቀቡ ኣብነታትካ ሓድሽ መደብ ይጅምር",
+  "cmd.apply_lesson_template_missing": "ብስም ዝተጸውዐ ኣብነት ኣይረኸብኩን: ",
+  "cmd.apply_lesson_template_which": "ኣየናይ ኣብነት?",
+  "cmd.rebuild_lesson_step": "ሓደ ስጉምቲ ናይ መደብ እንደገና ስራሕ",
+  "cmd.rebuild_lesson_step_done": "ስጉምቲ እንደገና ይስራሕ: ",
+  "cmd.rebuild_lesson_step_hint": "ሓደ ምንጪ እንደገና ይፈጥር — ቁጽሪ ስጉምቲ በል",
+  "cmd.rebuild_lesson_step_missing": "ነቲ ስጉምቲ ኣብ መደብ ኣይረኸብኩን።",
+  "cmd.rebuild_lesson_step_none": "ኣብ መደብ ገና ስጉምትታት የለዉን።",
+  "cmd.rebuild_lesson_step_which": "ኣየናይ ስጉምቲ?",
+  "cmd.run_lesson_blueprint": "መደብ ትምህርቲ ፍጠር",
+  "cmd.run_lesson_blueprint_done": "መደብ ይፍጠር ኣሎ — ነፍሲ ወከፍ ስጉምቲ ኣብ ካርድ ክትከታተል ትኽእል።",
+  "cmd.run_lesson_blueprint_hint": "ኩሎም ምንጭታት ናይ ሕጂ መደብ ይፈጥር",
+  "cmd.cancelled": "ምስራዝ ተሓቲቱ እዩ። እቲ ኣብዚ ግዜ ዘሎ ስራሕ እቲ ኣቕራቢኡ ክድግፎ ከሎ ክቋረጽ እዩ።"
 }

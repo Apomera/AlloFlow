@@ -6,7 +6,8 @@
 // properties that keep a misconfigured client from spending quota or hanging.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn } from 'node:child_process';
-import { writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -89,15 +90,67 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(res.protocolVersion).toBe('2025-06-18');
     expect(res.serverInfo.name).toBe('alloflow-remediation');
     expect(res.instructions).toContain('remediation_capabilities');
+    expect(res.instructions).toContain('dataHandling');
+    expect(res.instructions).not.toContain('portable-remediation');
+    expect(res.capabilities.resources).toEqual({ subscribe: false, listChanged: false });
+    expect(res.capabilities.prompts).toEqual({ listChanged: false });
+    expect(res.capabilities.extensions['io.modelcontextprotocol/skills']).toEqual({});
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
   });
 
-  it('lists exactly the twenty-seven tools, underscore-named, each with title + annotations', async () => {
+  it('serves the canonical remediation skill with digest-bound resources', async () => {
+    const uri = 'skill://alloflow-remediation/alloflow-pdf-remediation/SKILL.md';
+    const listed = (await request('skills/list', {})).result;
+    expect(listed.skills).toHaveLength(1);
+    const entry = listed.skills[0];
+    expect(entry.uri).toBe(uri);
+    expect(entry.frontmatter.name).toBe('alloflow-pdf-remediation');
+    expect(entry.frontmatter.description).toMatch(/accessibility remediation MCP connector/i);
+    expect(entry.resources).toHaveLength(1);
+
+    const fetched = (await request('skills/get', { uri })).result;
+    expect(fetched.skill).toEqual(entry);
+    const resources = (await request('resources/list', {})).result;
+    expect(resources.resources.map((resource) => resource.uri)).toEqual([uri]);
+    const read = (await request('resources/read', { uri })).result;
+    expect(read.contents).toHaveLength(1);
+    expect(read.contents[0].text).toContain('## Inspect capabilities before choosing a path');
+    expect(read.contents[0].text).toContain('`geminiDocumentEgressToolNames`');
+    expect(read.contents[0].text).toContain('`es`, `fr`, or `zh-hant`');
+    const digest = 'sha256:' + createHash('sha256').update(Buffer.from(read.contents[0].text, 'utf8')).digest('hex');
+    expect(entry.resources[0].digest).toBe(digest);
+
+    expect((await request('skills/list', { cursor: 'done' })).result.skills).toEqual([]);
+    expect((await request('resources/list', { cursor: 'done' })).result.resources).toEqual([]);
+    expect((await request('resources/read', { uri: 'skill://unknown/SKILL.md' })).error.code).toBe(-32602);
+  });
+
+  it('exposes a standard user-controlled remediation prompt backed by the canonical skill', async () => {
+    const listed = (await request('prompts/list', {})).result;
+    expect(listed.prompts).toHaveLength(1);
+    expect(listed.prompts[0].name).toBe('remediate_document');
+    expect(listed.prompts[0].arguments.map((argument) => argument.name)).toEqual(['document', 'goal']);
+
+    const fetched = (await request('prompts/get', {
+      name: 'remediate_document',
+      arguments: { document: 'the PDF attached by the user', goal: 'Prioritize headings and alt text' },
+    })).result;
+    expect(fetched.messages).toHaveLength(1);
+    expect(fetched.messages[0].role).toBe('user');
+    expect(fetched.messages[0].content.text).toContain('## Inspect capabilities before choosing a path');
+    expect(fetched.messages[0].content.text).toContain('Document reference: the PDF attached by the user');
+    expect(fetched.messages[0].content.text).toContain('Additional goal: Prioritize headings and alt text');
+
+    expect((await request('prompts/list', { cursor: 'done' })).result.prompts).toEqual([]);
+    expect((await request('prompts/get', { name: 'remediate_document', arguments: {} })).error.code).toBe(-32602);
+    expect((await request('prompts/get', { name: 'unknown', arguments: { document: 'x' } })).error.code).toBe(-32602);
+  });
+  it('lists exactly the twenty-eight tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
       'apply_form_fields', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields',
       'export_accessible_office', 'export_alt_format',
-      'extract_document_text', 'fix_contrast', 'generate_conformance_report',
+      'extract_document_text', 'fix_contrast', 'generate_conformance_report', 'generate_resource_pack',
       'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_remediate',
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',
       'pdf_validate_ua',
@@ -124,6 +177,9 @@ describe('remediation MCP: protocol + tool registry', () => {
     const audit = tools.find((t) => t.name === 'pdf_audit');
     expect(audit.annotations.readOnlyHint).toBe(true);
     expect(audit.annotations.openWorldHint).toBe(true); // read-only on disk, but network egress
+    for (const name of ['fix_contrast', 'generate_conformance_report', 'audit_two_engines', 'check_document_structure']) {
+      expect(tools.find((t) => t.name === name).annotations.openWorldHint, name).toBe(false);
+    }
 
     // OCR input uses the same fail-closed language contract as the remote MCP. The JSON Schema
     // must not advertise legacy Tesseract codes which the runtime rejects.
@@ -154,13 +210,58 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(res.isError).toBe(false);
     const cap = res.structuredContent;
     expect(cap.geminiKeyPresent).toBe(false);
-    expect(cap.ready).toBe(false); // must not claim ready without a key
+    expect(cap.ready).toBe(false); // legacy full-pipeline field must not claim ready without a key
+    expect(cap.fullAiPipelineReady).toBe(false);
+    expect(cap.keylessModeAvailable).toBe(true);
+    expect(cap.alloflowAccountRequired).toBe(false);
+    expect(cap.paidWorkerRequired).toBe(false);
+    expect(cap.institutionAccountRequired).toBe(false);
+    expect(cap.keylessModeMeans).toMatch(/no Gemini key, paid Worker, institution account, or AlloFlow service/i);
+    expect(cap.keylessToolNames).toContain('pdf_validate_ua');
+    expect(cap.keylessToolNames).toContain('redact_document');
+    expect(cap.keylessToolNames).toContain('extract_document_text');
+    expect(cap.keylessToolNames).not.toContain('pdf_remediate');
+    expect(cap.geminiRequiredToolNames).toContain('pdf_remediate');
+    expect(cap.geminiRequiredToolNames).not.toContain('pdf_validate_ua');
+    expect(cap.keylessToolNames).toContain('generate_resource_pack');
+    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(28);
+    expect(cap.dataHandling.publicDependencyDownloadToolNames.sort()).toEqual([
+      'export_accessible_office', 'export_alt_format', 'remediation_setup',
+    ]);
+    expect(cap.dataHandling.offlineToolNames).toContain('redact_document');
+    expect(cap.dataHandling.offlineToolNames).toContain('remediation_selftest');
+    expect(cap.dataHandling.offlineToolNames).not.toContain('export_alt_format');
+    expect(cap.dataHandling.geminiDocumentEgressToolNames.sort()).toEqual(cap.geminiRequiredToolNames.slice().sort());
+    expect(cap.dataHandling.dependencyDownloadsSendDocumentContent).toBe(false);
+    const privacyGroups = [
+      cap.dataHandling.offlineToolNames,
+      cap.dataHandling.publicDependencyDownloadToolNames,
+      cap.dataHandling.geminiDocumentEgressToolNames,
+    ];
+    expect(new Set(privacyGroups.flat()).size).toBe(28);
+    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(28); // disjoint, not merely exhaustive
+    expect(['setup-required', 'keyless-ready']).toContain(cap.onboarding.state);
+    expect(cap.onboarding.actionRequired).toBe(!cap.chromiumInstalled);
+    expect(cap.onboarding.nextTool).toBe(cap.chromiumInstalled ? 'remediation_selftest' : 'remediation_setup');
     expect(typeof cap.playwrightAvailable).toBe('boolean');
+    expect(cap.vendorAssets.present).toBe(true);
+    expect(cap.vendorAssets.hashVerified).toBe(true);
+    expect(cap.vendorAssets.files).toBeGreaterThan(10);
     // Package ≠ browser binary: a packaged install resolves playwright but has no Chromium.
     // The capabilities report distinguishes the two so a fresh install is guided to setup.
     expect(typeof cap.chromiumInstalled).toBe('boolean');
     expect(Object.keys(cap.pipelineModulesPresent)).toContain('doc_pipeline_module.js');
     expect(cap.networkEgress.join(' ')).toContain('generativelanguage');
+    expect(cap.networkEgress.join(' ')).toContain('remediation_setup');
+    expect(cap.networkEgress.join(' ')).toContain('cdn.jsdelivr.net');
+  });
+
+  it('the Claude Desktop bundle keeps the Gemini key optional for no-account installs', () => {
+    const built = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_mcpb.cjs'));
+    const manifest = built.buildManifest();
+    expect(manifest.user_config.gemini_api_key.required).toBe(false);
+    expect(manifest.long_description).toMatch(/deterministic tools remain available without a key/i);
+    expect(manifest.server.mcp_config.env.ALLOFLOW_MCP_NO_KEY_FILES).toBe('1');
   });
 
   it('the MCPB manifest advertises EXACTLY the tools the server serves', async () => {
@@ -172,6 +273,90 @@ describe('remediation MCP: protocol + tool registry', () => {
     const manifestNames = built.buildManifest().tools.map((t) => t.name).sort();
     expect(manifestNames).toEqual(tools.map((t) => t.name).sort());
   });
+
+
+
+  it('builds official MCPB Registry metadata from the exact artifact bytes and manifest version', () => {
+    const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
+    const artifact = join(tmp, 'registry-fixture.mcpb');
+    writeFileSync(artifact, Buffer.alloc(2048, 0x41));
+    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.0' });
+    expect(metadata.$schema).toBe('https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json');
+    expect(metadata.name).toBe('io.github.apomera/alloflow-remediation');
+    expect(metadata.version).toBe('0.3.0');
+    expect(metadata.packages).toHaveLength(1);
+    expect(metadata.packages[0].registryType).toBe('mcpb');
+    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.0/alloflow-remediation.mcpb');
+    expect(metadata.packages[0].fileSha256).toBe('3a34c8dc4aec1554c04e0d0e61179d08362b329029db4632f5f086c37be74caa');
+    expect(metadata.packages[0].transport.type).toBe('stdio');
+  });
+
+  it('refuses to generate immutable Registry metadata for a mismatched release tag', () => {
+    const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
+    const artifact = join(tmp, 'wrong-tag-fixture.mcpb');
+    writeFileSync(artifact, Buffer.alloc(2048, 0x42));
+    expect(() => registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v9.9.9' })).toThrow(/does not match MCPB manifest version/);
+  });
+
+  it('the staged MCPB layout launches outside the repository with all hashed vendor assets', async () => {
+    const built = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_mcpb.cjs'));
+    const staged = join(tmp, 'clean-mcpb-layout');
+    built.stageBundle(staged);
+    const manifest = JSON.parse(readFileSync(join(staged, 'manifest.json'), 'utf8'));
+    expect(manifest.tools).toHaveLength(28);
+    expect(readFileSync(join(staged, 'server', 'vendor', 'manifest.json'), 'utf8')).toContain('"schema": 1');
+    expect(readFileSync(join(staged, 'server', 'vendor', 'THIRD_PARTY_NOTICES.md'), 'utf8')).toMatch(/axe-core/i);
+
+    const serverPath = join(staged, 'server', 'alloflow-remediation-mcp-stdio.cjs');
+    const env = {
+      ...process.env,
+      ALLOFLOW_MCP_ASSETS_DIR: join(staged, 'assets'),
+      ALLOFLOW_MCP_STATE_DIR: join(staged, 'state'),
+      ALLOFLOW_MCP_NO_KEY_FILES: '1',
+    };
+    delete env.GEMINI_API_KEY;
+    delete env.NODE_PATH; // prove this lean staged copy cannot borrow the repository's dependencies
+    const proc = spawn(process.execPath, [serverPath], { cwd: staged, env, stdio: ['pipe', 'pipe', 'pipe'] });
+    proc.stdout.setEncoding('utf8');
+    proc.stderr.setEncoding('utf8');
+    let pendingText = '';
+    let stderr = '';
+    const replies = new Map();
+    proc.stdout.on('data', (chunk) => {
+      pendingText += chunk;
+      let newline;
+      while ((newline = pendingText.indexOf('\n')) !== -1) {
+        const line = pendingText.slice(0, newline).trim();
+        pendingText = pendingText.slice(newline + 1);
+        if (!line) continue;
+        const message = JSON.parse(line);
+        const resolveReply = replies.get(message.id);
+        if (resolveReply) { replies.delete(message.id); resolveReply(message); }
+      }
+    });
+    proc.stderr.on('data', (chunk) => { stderr += chunk; });
+    const rpc = (id, method, params) => new Promise((resolveReply, rejectReply) => {
+      const timer = setTimeout(() => { replies.delete(id); rejectReply(new Error('clean staged server timed out on ' + method + ': ' + stderr.slice(-500))); }, 20000);
+      replies.set(id, (message) => { clearTimeout(timer); resolveReply(message); });
+      proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
+    });
+    try {
+      const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'clean-stage', version: '1' } });
+      expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
+      const listed = await rpc(2, 'tools/list', {});
+      expect(listed.result.tools).toHaveLength(28);
+      const capabilities = await rpc(3, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
+      const cleanCap = capabilities.result.structuredContent;
+      expect(cleanCap.vendorAssets.present).toBe(true);
+      expect(cleanCap.vendorAssets.hashVerified).toBe(true);
+      expect(cleanCap.vendorAssets.files).toBeGreaterThan(10);
+      expect(Object.values(cleanCap.pipelineModulesPresent).every(Boolean)).toBe(true);
+      expect(cleanCap.playwrightAvailable).toBe(false); // lean stage is intentionally dependency-free
+      expect(cleanCap.keylessModeAvailable).toBe(true);
+    } finally {
+      proc.kill();
+    }
+  }, 60000);
 
   it('the declared output schemas describe what the tools ACTUALLY return', async () => {
     // A schema nobody checks is documentation that drifts. Validate the two read-only tools we
@@ -202,6 +387,8 @@ describe('remediation MCP: protocol + tool registry', () => {
     // ownership gate. The word stays, but it must say what it does and does not prove.
     expect(cap.readyMeans).toMatch(/does NOT prove/i);
     expect(cap.readyMeans).toContain('remediation_selftest');
+    expect(cap.fullAiPipelineReady).toBe(cap.ready);
+    expect(cap.keylessModeAvailable).toBe(true);
   });
 
   it('remediation_selftest is advertised as key-free and quota-free (it is the broken-vs-misconfigured discriminator)', async () => {
@@ -227,7 +414,251 @@ describe('remediation MCP: protocol + tool registry', () => {
   });
 });
 
+describe('remediation MCP: direct production parity for deterministic adapters', () => {
+  it('matches the production pipeline output exactly after normalizing intentional generation metadata', async () => {
+    const cap = (await callTool('remediation_capabilities', {})).structuredContent;
+    if (!cap.chromiumInstalled) return; // do not turn a unit test into a 200MB setup operation
+    const input = join(tmp, 'resource-pack.json');
+    const output = join(tmp, 'resource-pack.html');
+    const payload = {
+      topic: 'Fractions & Ratios',
+      items: [{ id: 'reading-1', type: 'simplified', title: 'Ratio Reading', data: '## A useful ratio\nMCP parity sentence.' }],
+      isWorksheet: false,
+      responses: {},
+      config: { includeSimplified: true, includeTeacherKey: false },
+    };
+    writeFileSync(input, JSON.stringify(payload));
+
+    const res = await callTool('generate_resource_pack', { resource_pack_json: input, output_path: output });
+    expect(res.isError).toBe(false);
+    expect(res.structuredContent.generator).toBe("AlloFlow's production generateFullPackHTML");
+    expect(res.structuredContent.modelFree).toBe(true);
+    expect(res.structuredContent.resourcesRequested).toBe(1);
+    const mcpHtml = readFileSync(res.structuredContent.output, 'utf8');
+
+    // This is the normal app-side factory, booted directly without the MCP server or driver.
+    // If the adapter ever starts rendering, rewriting, or dropping output, this exact comparison
+    // fails. generatedAt is the sole normalized field because the canonical exporter intentionally
+    // stamps each invocation with the current time.
+    const Driver = requireCjs(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'));
+    const chrome = Driver.resolveChromium();
+    const browser = await chrome.chromium.launch({ headless: true });
+    let directHtml;
+    try {
+      const page = await browser.newPage();
+      await page.goto('about:blank');
+      for (const moduleFile of Driver.MODULE_FILES) {
+        await page.addScriptTag({ path: join(Driver.ASSETS_ROOT, moduleFile) });
+      }
+      await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
+      directHtml = await page.evaluate((pack) => {
+        const noModel = async () => { throw new Error('parity fixture must remain model-free'); };
+        const pipeline = window.AlloModules.createDocPipeline({
+          callGemini: noModel, callGeminiVision: noModel, callImagen: async () => null,
+          addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+          updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+        });
+        return pipeline.generateFullPackHTML(pack.items, pack.topic, pack.isWorksheet, pack.responses, pack.config);
+      }, payload);
+    } finally {
+      await browser.close();
+    }
+
+    const generatedAt = /"generatedAt":"[^"]+"/g;
+    expect(mcpHtml.match(generatedAt)).toHaveLength(1);
+    expect(directHtml.match(generatedAt)).toHaveLength(1);
+    const normalize = (html) => html.replace(generatedAt, '"generatedAt":"<normalized>"');
+    expect(normalize(mcpHtml)).toBe(normalize(directHtml));
+  }, 60000);
+
+  it('matches production redaction, form, and structure functions without adapter-side rewriting', async () => {
+    const cap = (await callTool('remediation_capabilities', {})).structuredContent;
+    if (!cap.chromiumInstalled) return;
+    const source = '<!DOCTYPE html><html lang="en"><body><main><h1>Student record</h1><p>Name: Alice Example</p><p>Short answer: ______</p><p>[ ] I agree</p><h3>Review notes</h3><p>Keep this text.</p></main></body></html>';
+    const sourcePath = join(tmp, 'deterministic-parity.html');
+    writeFileSync(sourcePath, source);
+
+    const redactedPath = join(tmp, 'deterministic-redacted.html');
+    const redacted = await callTool('redact_document', { file_path: sourcePath, targets: ['Alice Example'], output_path: redactedPath });
+    expect(redacted.isError).toBe(false);
+
+    const detected = await callTool('detect_form_fields', { file_path: sourcePath });
+    expect(detected.isError).toBe(false);
+    expect(detected.structuredContent.blanks.map((b) => b.id)).toEqual(['f0', 'f1']);
+    const accepted = Object.fromEntries(detected.structuredContent.blanks.map((blank) => [blank.id, { label: blank.label || 'Reviewed field' }]));
+    const fillablePath = join(tmp, 'deterministic-fillable.html');
+    const applied = await callTool('apply_form_fields', { file_path: sourcePath, accepted, output_path: fillablePath });
+    expect(applied.isError).toBe(false);
+    expect(applied.structuredContent.applied).toBe(2);
+
+    const textPath = join(tmp, 'deterministic-plain.txt');
+    const structure = await callTool('check_document_structure', { file_path: sourcePath, output_path: textPath });
+    expect(structure.isError).toBe(false);
+
+    const Driver = requireCjs(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'));
+    const chrome = Driver.resolveChromium();
+    const browser = await chrome.chromium.launch({ headless: true });
+    let direct;
+    try {
+      const page = await browser.newPage();
+      await page.goto('about:blank');
+      for (const moduleFile of Driver.MODULE_FILES) await page.addScriptTag({ path: join(Driver.ASSETS_ROOT, moduleFile) });
+      await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
+      direct = await page.evaluate(({ html, acceptedMap }) => {
+        const noModel = async () => { throw new Error('deterministic parity fixture must remain model-free'); };
+        const pipeline = window.AlloModules.createDocPipeline({
+          callGemini: noModel, callGeminiVision: noModel, callImagen: async () => null,
+          addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+          updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+        });
+        return {
+          redacted: pipeline.redactDocument(html, ['Alice Example'], {}),
+          blanks: pipeline.detectFormBlanks(html),
+          applied: pipeline.applyFormBlanks(html, acceptedMap),
+          text: pipeline.htmlToPlainText(html),
+          headingIssue: pipeline.headingOutlineIssue ? pipeline.headingOutlineIssue(html) : null,
+        };
+      }, { html: source, acceptedMap: accepted });
+    } finally {
+      await browser.close();
+    }
+
+    expect(readFileSync(redacted.structuredContent.output, 'utf8')).toBe(direct.redacted.html);
+    expect(redacted.structuredContent.redactionCount).toBe(direct.redacted.count);
+    expect(redacted.structuredContent.clean).toBe(direct.redacted.clean);
+    expect(detected.structuredContent.blanks).toEqual(direct.blanks);
+    expect(readFileSync(applied.structuredContent.output, 'utf8')).toBe(direct.applied.html);
+    expect(applied.structuredContent.applied).toBe(direct.applied.converted);
+    expect(readFileSync(structure.structuredContent.output, 'utf8')).toBe(direct.text);
+    expect(structure.structuredContent.headingIssue || null).toEqual(direct.headingIssue || null);
+    expect(structure.structuredContent.headingSkips).toBe(1);
+  }, 60000);
+
+  it('matches production contrast repair and conformance-report rendering', async () => {
+    const cap = (await callTool('remediation_capabilities', {})).structuredContent;
+    if (!cap.chromiumInstalled) return;
+
+    const contrastSource = '<!DOCTYPE html><html lang="en"><body><main><h1>Contrast fixture</h1><p style="color:#dddddd;background:#ffffff">Faint but important text.</p></main></body></html>';
+    const contrastInput = join(tmp, 'contrast-parity.html');
+    const contrastOutput = join(tmp, 'contrast-parity-output.html');
+    writeFileSync(contrastInput, contrastSource);
+    const contrast = await callTool('fix_contrast', { file_path: contrastInput, output_path: contrastOutput });
+    expect(contrast.isError).toBe(false);
+
+    const accessibleHtml = '<!DOCTYPE html><html lang="en"><body><main><h1>Parity lesson</h1><p>Accessible content.</p></main></body></html>';
+    const accessiblePath = join(tmp, 'report-accessible.html');
+    const auditPath = join(tmp, 'report-axe.json');
+    const veraPath = join(tmp, 'report-verapdf.json');
+    const reportPath = join(tmp, 'report-parity.html');
+    const axe = {
+      totalViolations: 1,
+      axeScore: 88,
+      violations: [{ id: 'color-contrast', impact: 'serious', description: 'Text contrast needs review.', nodes: [] }],
+    };
+    const vera = {
+      compliant: false,
+      failedRules: [
+        { clause: '5', testNumber: 1, message: 'PDF/UA declaration is absent.', count: 1 },
+        { clause: '7.1', testNumber: 2, message: 'Content is not tagged.', count: 2 },
+      ],
+    };
+    writeFileSync(accessiblePath, accessibleHtml);
+    writeFileSync(auditPath, JSON.stringify(axe));
+    writeFileSync(veraPath, JSON.stringify(vera));
+    const report = await callTool('generate_conformance_report', {
+      audit_json: auditPath,
+      verapdf_json: veraPath,
+      accessible_html: accessiblePath,
+      output_path: reportPath,
+      document_name: 'Parity lesson.pdf',
+    });
+    expect(report.isError).toBe(false);
+
+    const Driver = requireCjs(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'));
+    const chrome = Driver.resolveChromium();
+    const browser = await chrome.chromium.launch({ headless: true });
+    let direct;
+    try {
+      const page = await browser.newPage();
+      await page.goto('about:blank');
+      await page.addScriptTag({ path: resolve(process.cwd(), 'desktop/mcp/vendor/axe.min.js') });
+      for (const moduleFile of Driver.MODULE_FILES) await page.addScriptTag({ path: join(Driver.ASSETS_ROOT, moduleFile) });
+      await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
+      direct = await page.evaluate(async ({ contrastHtml, accessible, axeResult, veraResult }) => {
+        const noModel = async () => { throw new Error('deterministic parity fixture must remain model-free'); };
+        const pipeline = window.AlloModules.createDocPipeline({
+          callGemini: noModel, callGeminiVision: noModel, callImagen: async () => null,
+          addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+          updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+        });
+        const asHtml = (value, fallback) => typeof value === 'string' ? value : ((value && value.html) || fallback);
+        const pass1 = asHtml(pipeline.fixContrastViolations(contrastHtml), contrastHtml);
+        const mid = await pipeline.runAxeAudit(pass1);
+        const pass2 = asHtml(pipeline.fixAxeContrastViolationsTargeted(pass1, mid), pass1);
+        const sanitizedResult = pipeline.sanitizeStyleForWCAG(pass2);
+        const contrastFixed = asHtml(sanitizedResult, pass2);
+
+        const checks = veraResult.failedRules.map((rule) => ({
+          id: 'ISO 14289-1 clause ' + rule.clause + ' test ' + rule.testNumber,
+          label: rule.message,
+          status: String(rule.clause) === '5' && Number(rule.testNumber) === 1 ? 'warn' : 'fail',
+          detail: (rule.count || 1) + ' occurrence(s)',
+        }));
+        const summary = {
+          pass: 0,
+          fail: checks.filter((check) => check.status === 'fail').length,
+          warn: checks.filter((check) => check.status === 'warn').length,
+          manual: 0, na: 0,
+          conformancePct: veraResult.compliant ? 100 : (checks.some((check) => check.status === 'fail') ? 0 : 95),
+        };
+        const conformance = pipeline.generateAccessibilityReportHtml({
+          accessibleHtml: accessible,
+          axeAudit: { totalViolations: axeResult.totalViolations, violations: axeResult.violations || [], score: axeResult.axeScore },
+          afterScore: axeResult.axeScore, beforeScore: null,
+          _aiVerificationIncomplete: true,
+          verificationCoverage: { pdfUaSelfCheck: true },
+        }, {
+          score: null,
+          summary: 'Source audit not performed by a triangulated auditor panel in this flow.',
+          issues: [],
+        }, { checks, summary }, { fileName: 'Parity lesson.pdf' });
+        return {
+          contrastHtml: contrastFixed,
+          styleFixes: sanitizedResult && typeof sanitizedResult.fixCount === 'number' ? sanitizedResult.fixCount : null,
+          conformance,
+        };
+      }, { contrastHtml: contrastSource, accessible: accessibleHtml, axeResult: axe, veraResult: vera });
+    } finally {
+      await browser.close();
+    }
+
+    expect(readFileSync(contrast.structuredContent.output, 'utf8')).toBe(direct.contrastHtml);
+    expect(contrast.structuredContent.styleFixes).toBe(direct.styleFixes);
+    expect(readFileSync(report.structuredContent.output, 'utf8')).toBe(direct.conformance);
+    expect(report.structuredContent.pdfUaIncluded).toBe(true);
+  }, 60000);
+});
+
 describe('remediation MCP: validation fires BEFORE any browser/quota spend', () => {
+  it('apply_form_fields advertises the native map and rejects the old array shape before launching Chromium', async () => {
+    const { tools } = (await request('tools/list', {})).result;
+    const acceptedSchema = tools.find((tool) => tool.name === 'apply_form_fields').inputSchema.properties.accepted;
+    expect(acceptedSchema.type).toBe('object');
+    expect(acceptedSchema.additionalProperties.type).toBe('object');
+    const sourcePath = join(tmp, 'invalid-form-contract.html');
+    writeFileSync(sourcePath, '<main><p>Name: ______</p></main>');
+    const msg = await request('tools/call', { name: 'apply_form_fields', arguments: { file_path: sourcePath, accepted: [{ id: 'f0' }] } });
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toMatch(/object map/i);
+  });
+
+  it('generate_resource_pack rejects a missing JSON file before launching Chromium', async () => {
+    const t0 = Date.now();
+    const msg = await request('tools/call', { name: 'generate_resource_pack', arguments: { resource_pack_json: join(tmp, 'missing-pack.json'), output_path: join(tmp, 'pack.html') } });
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toContain('does not exist');
+    expect(Date.now() - t0).toBeLessThan(3000);
+  });
   it('pdf_audit on a missing file → clean invalid-params, instantly (no Chromium launch)', async () => {
     const t0 = Date.now();
     const msg = await request('tools/call', { name: 'pdf_audit', arguments: { file_path: join(tmp, 'nope.pdf') } });

@@ -64,7 +64,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
   // ─── State ──────────────────────────────────
   function defaultState() {
     return {
-      view: 'map',                          // 'map' | 'add' | 'reflect' | 'about'
+      view: 'map',                          // 'map' | 'pulse' | 'add' | 'reflect' | 'about'
       connections: [],                       // [{ id, name, categoryId, direction ('to-me'/'from-me'/'mutual'), strength (1-5), notes }]
       selectedConnId: null,                 // for editing
       reflectionAnswers: {},                // { promptId: text }
@@ -127,6 +127,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       function navTabs() {
         var tabs = [
           { id: 'map', label: 'My constellation', icon: '🌌' },
+          { id: 'pulse', label: 'Care Pulse', icon: '\u25CE' },
           { id: 'add', label: 'Add a connection', icon: '+' },
           { id: 'reflect', label: 'Reflect', icon: '🧭' },
           { id: 'print', label: 'Print', icon: '🖨' },
@@ -136,7 +137,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            var tabIndex = tabs.indexOf(t);
+            return h('button', {
+              key: t.id,
+              id: 'cc-tab-' + t.id,
+              'aria-controls': 'cc-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(event) {
+                var nextIndex = tabIndex;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home') nextIndex = 0;
+                else if (event.key === 'End') nextIndex = tabs.length - 1;
+                else return;
+                event.preventDefault();
+                goto(tabs[nextIndex].id);
+                setTimeout(function() {
+                  var nextTab = document.getElementById('cc-tab-' + tabs[nextIndex].id);
+                  if (nextTab) nextTab.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _cnsFg('#fda4af') : '#334155'),
                 background: active ? 'rgba(253,164,175,0.15)' : _cnsBg('#1e293b'),
@@ -282,6 +303,94 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       }
 
       // ═══════════════════════════════════════════════════════
+      // ── CARE PULSE VIEW ──
+      // A descriptive summary, not a score: the map is information, not a verdict.
+      function renderPulse() {
+        var connections = d.connections || [];
+        var received = connections.filter(function(c) { return c.direction === 'to-me'; }).length;
+        var given = connections.filter(function(c) { return c.direction === 'from-me'; }).length;
+        var mutual = connections.filter(function(c) { return c.direction === 'mutual'; }).length;
+        var averageStrength = connections.length
+          ? (connections.reduce(function(sum, c) { return sum + (Number(c.strength) || 0); }, 0) / connections.length).toFixed(1)
+          : '-';
+        var categoriesUsed = {};
+        connections.forEach(function(c) { categoriesUsed[c.categoryId] = (categoriesUsed[c.categoryId] || 0) + 1; });
+        var activeCategories = CARE_CATEGORIES.filter(function(cat) { return categoriesUsed[cat.id]; });
+        var flowMessage = connections.length === 0
+          ? 'Your map is empty right now. That is information, not a failure. Start with one person, place, practice, or non-human relationship that already matters.'
+          : received > 0 && given > 0
+            ? 'Your map shows care moving in both directions. Notice which relationships feel mutual and which ones may need a boundary, repair, or more support.'
+            : received > 0
+              ? 'Your map currently emphasizes care you receive. That can be a resource, especially in a season when you need to be held.'
+              : given > 0
+                ? 'Your map currently emphasizes care you give. Notice whether giving feels chosen and sustaining, or whether you need more care flowing toward you.'
+                : 'Your map has mutual connections. Consider what makes those exchanges feel supportive.';
+        var nextPrompt = connections.length === 0
+          ? 'Name one source of care you can receive today.'
+          : received === 0
+            ? 'What is one source of care you could let yourself receive?'
+            : given === 0
+              ? 'What is one small act of care you want to offer by choice?'
+              : 'Which connection would you like to tend with one small action?';
+
+        return h('div', null,
+          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.35)', borderRight: '1px solid rgba(253,164,175,0.35)', borderBottom: '1px solid rgba(253,164,175,0.35)', borderLeft: '4px solid #fda4af', marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', color: _cnsFg('#fecaca'), fontSize: 18, fontWeight: 900 } }, 'Care Pulse'),
+            h('p', { style: { margin: 0, color: _cnsFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6 } },
+              'A descriptive snapshot of how care is moving through your map. It is not a wellness score, and there is no ideal shape.'
+            )
+          ),
+          h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            'aria-label': 'Care Pulse summary',
+            style: { padding: 12, borderRadius: 10, background: _cnsBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14, color: _cnsFg('#e2e8f0'), fontSize: 13, lineHeight: 1.6 }
+          }, flowMessage),
+          h('div', { role: 'list', 'aria-label': 'Care flow summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14 } },
+            [
+              { label: 'Care received', value: received, detail: 'connections flowing toward you' },
+              { label: 'Care given', value: given, detail: 'connections flowing from you' },
+              { label: 'Mutual care', value: mutual, detail: 'connections moving both ways' },
+              { label: 'Average closeness', value: averageStrength + '/5', detail: 'across mapped connections' }
+            ].map(function(stat) {
+              return h('div', { key: stat.label, role: 'listitem', style: { padding: 11, borderRadius: 9, background: _cnsBg('#1e293b'), border: '1px solid #334155' } },
+                h('div', { style: { color: _cnsFg('#fda4af'), fontSize: 20, fontWeight: 900 } }, String(stat.value)),
+                h('div', { style: { color: _cnsFg('#e2e8f0'), fontSize: 11, fontWeight: 800, marginTop: 2 } }, stat.label),
+                h('div', { style: { color: _cnsFg('#94a3b8'), fontSize: 10.5, marginTop: 3, lineHeight: 1.35 } }, stat.detail)
+              );
+            })
+          ),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _cnsBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', color: _cnsFg('#e9d5ff'), fontSize: 14, fontWeight: 800 } }, 'Where care is showing up'),
+            activeCategories.length === 0
+              ? h('p', { style: { margin: 0, color: _cnsFg('#94a3b8'), fontSize: 12, fontStyle: 'italic' } }, 'Your categories will appear here as you add connections.')
+              : h('div', { role: 'list', 'aria-label': 'Mapped care categories', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                activeCategories.map(function(cat) {
+                  return h('div', { key: cat.id, role: 'listitem', style: { padding: '7px 9px', borderRadius: 8, background: cat.color + '22', border: '1px solid ' + cat.color + '66', color: _cnsFg('#e2e8f0'), fontSize: 11 } },
+                    cat.icon + ' ' + cat.label + ': ' + categoriesUsed[cat.id]
+                  );
+                })
+              )
+          ),
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.25)', borderRight: '1px solid rgba(168,85,247,0.25)', borderBottom: '1px solid rgba(168,85,247,0.25)', borderLeft: '3px solid #a855f7', marginBottom: 14 } },
+            h('strong', { style: { color: _cnsFg('#e9d5ff'), fontSize: 13 } }, 'A gentle next question: '),
+            h('span', { style: { color: _cnsFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } }, nextPrompt)
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            h('button', {
+              onClick: function() { goto('add'); if (announceToSR) announceToSR('Add a connection to explore the next care question.'); },
+              'aria-label': 'Add a connection from Care Pulse',
+              style: { padding: '9px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 800, fontSize: 12 }
+            }, 'Add a connection'),
+            h('button', {
+              onClick: function() { goto('reflect'); if (announceToSR) announceToSR('Reflection prompts opened from Care Pulse.'); },
+              'aria-label': 'Open reflections from Care Pulse',
+              style: { padding: '9px 14px', borderRadius: 8, border: '1px solid #475569', cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 800, fontSize: 12 }
+            }, 'Open reflections')
+          )
+        );
+      }
       // ADD / EDIT VIEW
       // ═══════════════════════════════════════════════════════
       function renderAdd() {
@@ -615,7 +724,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
       // ── Root ──
       var body;
-      if (view === 'add') body = renderAdd();
+      if (view === 'pulse') body = renderPulse();
+      else if (view === 'add') body = renderAdd();
       else if (view === 'reflect') body = renderReflect();
       else if (view === 'print') body = renderPrintView();
       else if (view === 'about') body = renderAbout();
@@ -624,7 +734,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       return h('div', { style: { maxWidth: 860, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Care Constellations' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'cc-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'cc-tab-' + view, tabIndex: 0 }, body)
       );
     }
   });

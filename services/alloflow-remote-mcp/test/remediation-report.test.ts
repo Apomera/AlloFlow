@@ -198,6 +198,37 @@ describe("sanitizeRemediationReport", () => {
     });
   });
 
+  it.each(["compliant", "noncompliant"] as const)(
+    "accepts bounded veraPDF %s evidence without raw output",
+    (status) => {
+      const report = legacyReport();
+      report.pdfUaValidation = {
+        status,
+        validator: "veraPDF",
+        profile: "ua1",
+        validatorVersion: "1.30.2",
+        failedRules: 2,
+        failedChecks: 3,
+        passedRules: 104,
+        passedChecks: 4459,
+        rawValidatorOutput: PRIVACY_CANARY,
+      };
+
+      const result = sanitizeRemediationReport(report, expected);
+
+      expect(result.pdfUaValidation).toEqual({
+        status,
+        validator: "veraPDF",
+        profile: "ua1",
+        validatorVersion: "1.30.2",
+        failedRules: 2,
+        failedChecks: 3,
+        passedRules: 104,
+        passedChecks: 4459,
+      });
+      expect(JSON.stringify(result)).not.toContain(PRIVACY_CANARY);
+    },
+  );
   it.each([
     [
       "job id",

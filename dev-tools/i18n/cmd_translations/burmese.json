@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio ကို ဖွင့်လိုက်ပါပြီ။",
   "cmd.open_video_studio_hint": "လမ်းညွှန်ဗီဒီယိုများ ရိုက်ကူး၊ စာတန်းထိုးပြီး တည်းဖြတ်ပါ",
   "palette.ctx.videoStudio": "ဤနေရာ — Video Studio",
-  "palette.close": "အမိန့်ပေး ပါးလက်ကို ပိတ်ပါ"
+  "palette.close": "အမိန့်ပေး ပါးလက်ကို ပိတ်ပါ",
+  "cmd.apply_lesson_template": "သိမ်းထားသော နမူနာပုံစံမှ စတင်ပါ",
+  "cmd.apply_lesson_template_done": "ဤနေရာမှ စတင်ခဲ့သည်: ",
+  "cmd.apply_lesson_template_hint": "သိမ်းထားသော နမူနာပုံစံများထဲမှ တစ်ခုကို အသုံးပြု၍ အစီအစဉ်အသစ် စတင်သည်",
+  "cmd.apply_lesson_template_missing": "အမည်ဖြင့် နမူနာပုံစံကို မတွေ့ပါ: ",
+  "cmd.apply_lesson_template_which": "ဘယ်နမူနာပုံစံလဲ",
+  "cmd.rebuild_lesson_step": "အစီအစဉ်၏ အဆင့်တစ်ဆင့်ကို ပြန်တည်ဆောက်ပါ",
+  "cmd.rebuild_lesson_step_done": "အဆင့်ကို ပြန်တည်ဆောက်နေသည်: ",
+  "cmd.rebuild_lesson_step_hint": "ရင်းမြစ်တစ်ခုတည်းကို ပြန်ဖန်တီးသည် — အဆင့်နံပါတ်ကို ပြောပါ",
+  "cmd.rebuild_lesson_step_missing": "အစီအစဉ်ထဲတွင် ထိုအဆင့်ကို မတွေ့ပါ။",
+  "cmd.rebuild_lesson_step_none": "အစီအစဉ်တွင် အဆင့်များ မရှိသေးပါ။",
+  "cmd.rebuild_lesson_step_which": "ဘယ်အဆင့်လဲ",
+  "cmd.run_lesson_blueprint": "သင်ခန်းစာအစီအစဉ် ဖန်တီးပါ",
+  "cmd.run_lesson_blueprint_done": "အစီအစဉ်ကို ဖန်တီးနေသည် — ကတ်ပေါ်တွင် အဆင့်တိုင်းကို ကြည့်နိုင်သည်။",
+  "cmd.run_lesson_blueprint_hint": "လက်ရှိအစီအစဉ်ရှိ ရင်းမြစ်အားလုံးကို ဖန်တီးသည်",
+  "cmd.cancelled": "ပယ်ဖျက်ရန် တောင်းဆိုထားသည်။ ပံ့ပိုးသူက ခွင့်ပြုသည့်အခါ လက်ရှိလုပ်ဆောင်မှု ရပ်တန့်မည်။"
 }

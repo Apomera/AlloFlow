@@ -2,7 +2,7 @@
 /*
  * mcp_capability_inventory.cjs — how much of the pipeline does the MCP connector actually expose?
  *
- *   node dev-tools/mcp_capability_inventory.cjs [--json out.json]
+ *   node dev-tools/mcp_capability_inventory.cjs [--json out.json] [--assert-parity]
  *
  * WHY: the app is "nearly any input, nearly any accessible output." The connector advertises
  * PDF/DOCX/PPTX in, HTML + tagged PDF out. If an agent is meant to reach the pipeline THROUGH
@@ -49,6 +49,11 @@ const CAPABILITY_MAP = [
   ['Preview + expert commands', ['getPdfPreviewHtml', 'updatePdfPreview', 'processExpertCommand']],
 ];
 
+// These functions are an interactive editing SESSION, not a document transformation surface.
+// They remain in the report as an explicit design decision, but do not make the transport parity
+// gate fail. Every other present capability is required once --assert-parity is requested.
+const SESSION_ONLY_CAPABILITIES = new Set(['Preview + expert commands']);
+
 // Formats implemented OUTSIDE the three modules the bundle ships. Grep-verified per format so the
 // claim "the connector cannot do this" is evidence, not assumption.
 // The third column, `builder`, names the key on window.AlloModules.AltFormatExports that makes the
@@ -63,6 +68,7 @@ const OUT_OF_BUNDLE_FORMATS = [
 
 const argv = process.argv.slice(2);
 const jsonOut = (() => { const i = argv.indexOf('--json'); return i === -1 ? null : argv[i + 1]; })();
+const assertParity = argv.includes('--assert-parity');
 
 async function factorySurface() {
   const chrome = Driver.resolveChromium();
@@ -97,6 +103,14 @@ function connectorReaches(fnNames) {
   const reached = new Set();
   for (const fn of fnNames) {
     if (new RegExp(receiver + '\\s*\\.\\s*' + fn + '\\b').test(both)) reached.add(fn);
+  }
+  // The connector's folder jobs deliberately orchestrate the canonical per-document audit and
+  // remediation adapters instead of calling the app's UI-coupled FileList/download helpers. That
+  // is capability parity, not a second remediation implementation; count it explicitly so the
+  // inventory does not recommend a redundant batch tool.
+  if (/name:\s*'pdf_batch_(?:audit|remediate)_start'/.test(SERVER_SRC)) {
+    reached.add('runPdfBatchRemediation');
+    reached.add('downloadBatchResults');
   }
   return reached;
 }
@@ -213,12 +227,20 @@ function moduleHomeFor(pattern) {
   gaps.forEach((g, i) => console.log('  ' + (i + 1) + '. ' + g.capability + '  (' + g.functions.join(', ') + ')'));
   if (!gaps.length) console.log('  none');
 
+  const parityRegressions = gaps.filter((g) => !SESSION_ONLY_CAPABILITIES.has(g.capability));
   const report = {
     factoryFunctions: fns.length, reachedByConnector: reached.size, mcpTools: tools.length,
     bootModules: Driver.MODULE_FILES, shippedAssets: BUNDLE_ASSETS,
     capabilities, outOfBundleFormats: formats,
     gaps: gaps.map((g) => g.capability),
+    parityRegressions: parityRegressions.map((g) => g.capability),
     note: 'bootModules are loaded for every pipeline run; shippedAssets is the complete connector bundle asset set. A capability that is in the pipeline but not reached is a candidate MCP tool.',
   };
   if (jsonOut) { fs.writeFileSync(jsonOut, JSON.stringify(report, null, 2), 'utf8'); console.log('\nrecord: ' + jsonOut); }
+  if (assertParity) {
+    if (parityRegressions.length) {
+      throw new Error('MCP capability parity regressed: ' + parityRegressions.map((g) => g.capability).join(', '));
+    }
+    console.log('\nPARITY GATE: PASS (' + (capabilities.length - SESSION_ONLY_CAPABILITIES.size) + ' transport-capable areas reached; session-only UI commands excluded explicitly)');
+  }
 })().catch((e) => { console.error('FAILED: ' + ((e && e.message) || e)); process.exit(1); });

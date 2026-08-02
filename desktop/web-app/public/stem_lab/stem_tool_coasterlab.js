@@ -62,7 +62,7 @@
 
 
   var CLAB_CSS = ".clab-root{\n    --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f;\n    --line:#26364a; --line2:#31465e;\n    --ink:#e8eef4; --ink2:#9fb0c1; --ink3:#66788a;\n    --accent:#f2a63c; --accent-dim:#8a5f22;\n    --ke:#3f8fd2; --pe:#c05fa0; --heat:#c47c2f;\n    --good:#59c98d; --warn:#f2c14e; --bad:#e5484d;\n    --mono:\"Cascadia Code\",Consolas,\"SF Mono\",ui-monospace,Menlo,monospace;\n    --sans:\"Segoe UI\",system-ui,-apple-system,\"Helvetica Neue\",sans-serif;\n  }.clab-root *{box-sizing:border-box}.clab-root [hidden]{display:none !important}.clab-root #clab-app{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);\n       color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}.clab-root /* ---------- top bar ---------- */\n  #clab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;\n       padding:0 14px;height:52px;flex:none;background:var(--panel);\n       border-bottom:1px solid var(--line)}.clab-root .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.clab-root .brand .name{font-weight:700;letter-spacing:.14em;font-size:15px}.clab-root .brand .name em{color:var(--accent);font-style:normal}.clab-root .brand .sub{color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.clab-root .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.clab-root button{font-family:var(--sans);font-size:13px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:6px 12px;cursor:pointer}.clab-root button:hover{border-color:var(--accent-dim)}.clab-root button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root button.primary{background:var(--accent);border-color:var(--accent);color:#22160a;font-weight:700}.clab-root button.primary:hover{filter:brightness(1.08)}.clab-root button.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}.clab-root button:disabled{opacity:.45;cursor:default}.clab-root button.danger{color:var(--bad);border-color:var(--bad)}.clab-root .clab-sel{font-family:var(--sans);font-size:12.5px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:5px 8px;cursor:pointer}.clab-root .clab-sel:hover{border-color:var(--accent-dim)}.clab-root .clab-sel:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root /* ---------- main split ---------- */\n  #clab-main{display:flex;flex:1;min-height:0}.clab-root #clab-side{width:346px;flex:none;display:flex;flex-direction:column;background:var(--panel);\n        border-right:1px solid var(--line);min-height:0}.clab-root #clab-tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}.clab-root #clab-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink3);\n               padding:10px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;\n               border-bottom:2px solid transparent}.clab-root #clab-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}.clab-root #clab-side section{overflow-y:auto;padding:14px;flex:1;min-height:0}.clab-root .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);\n           margin:0 0 6px;font-weight:600}.clab-root .card{background:var(--card);border:1px solid var(--line);border-radius:8px;\n        padding:12px;margin-bottom:12px}.clab-root .card h3{margin:0 0 6px;font-size:13px;font-weight:600}.clab-root .hint{color:var(--ink2);font-size:12.5px;margin:0 0 10px}.clab-root .hint b{color:var(--ink)}.clab-root kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);\n      border:1px solid var(--line2);border-radius:4px;padding:0 5px}.clab-root .row{display:flex;gap:8px;align-items:center;margin:8px 0}.clab-root .row label{flex:none;width:64px;color:var(--ink2);font-size:12px}.clab-root .row input[type=range]{flex:1;accent-color:var(--accent)}.clab-root .row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n            width:64px;text-align:right;color:var(--ink)}.clab-root .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.clab-root .coords{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}.clab-root /* ---------- certification ---------- */\n  .marker-legend{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.clab-root .marker-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2)}.clab-root .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.clab-root .prob .given{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n               color:var(--ink2);background:var(--panel2);border-radius:6px;padding:7px 9px;margin:8px 0}.clab-root .prob .ask{font-size:13px;margin:6px 0}.clab-root .ansrow{display:flex;gap:8px;align-items:center;margin-top:8px}.clab-root .ansrow input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;\n      width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);\n      border-radius:6px;padding:6px 8px;font-size:13px}.clab-root .ansrow input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root .ansrow .unit{color:var(--ink3);font-size:12px;width:40px}.clab-root .verdict{font-size:12px;font-weight:600;margin-left:auto}.clab-root .verdict.ok{color:var(--good)}.clab-root .verdict.no{color:var(--bad)}.clab-root details.work{margin-top:8px}.clab-root details.work summary{cursor:pointer;color:var(--ink3);font-size:12px}.clab-root details.work div{font-family:var(--mono);font-size:11.5px;color:var(--ink2);\n                   padding:6px 0 0;line-height:1.7}.clab-root table.cert{width:100%;border-collapse:collapse;font-family:var(--mono);\n             font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:8px}.clab-root table.cert th{color:var(--ink3);font-weight:600;text-align:right;padding:4px 6px;\n                border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.06em}.clab-root table.cert td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ink)}.clab-root table.cert th:first-child,.clab-root table.cert td:first-child{text-align:left}.clab-root .certbanner{border-radius:8px;padding:12px;margin-top:12px;font-weight:600;font-size:14px;\n              border:1px solid var(--line2);background:var(--panel2)}.clab-root .certbanner.pass{border-color:var(--good);color:var(--good)}.clab-root .certbanner.fail{border-color:var(--bad);color:var(--bad)}.clab-root /* ---------- report ---------- */\n  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.clab-root .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}.clab-root .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}.clab-root .stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;margin-top:2px}.clab-root .stat .v small{font-size:11px;color:var(--ink3)}.clab-root .rating{margin:10px 0}.clab-root .rating .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:4px}.clab-root .rating .lbl .num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}.clab-root .rbar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}.clab-root .rbar i{display:block;height:100%;border-radius:4px}.clab-root .modebtn.on{border-color:var(--accent);color:var(--accent)}.clab-root .choice button{display:block;width:100%;text-align:left;margin-top:6px}.clab-root .choice button.on{border-color:var(--accent);color:var(--accent);background:rgba(242,166,60,.08)}.clab-root .exline{font-size:12.5px;margin:6px 0;color:var(--ink2)}.clab-root .exline b.ok{color:var(--good)}.clab-root .exline b.no{color:var(--bad)}.clab-root .mission{display:flex;gap:10px;align-items:flex-start;background:var(--card);\n           border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}.clab-root .mission .mi{font-size:19px;flex:none;width:26px;text-align:center;filter:grayscale(1);opacity:.55}.clab-root .mission.done .mi{filter:none;opacity:1}.clab-root .mission .mt{font-size:13px;font-weight:600}.clab-root .mission.done .mt{color:var(--good)}.clab-root .mission .md{font-size:12px;color:var(--ink2)}.clab-root .mission .stamp{margin-left:auto;flex:none;font-size:11px;color:var(--good);font-weight:700}.clab-root #clab-gball{width:64px;height:64px;display:block;margin-top:4px;border-radius:6px}.clab-root .chart{width:100%;height:74px;display:block;margin:2px 0 6px}.clab-root .chlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:6px}.clab-root .chnote{font-family:var(--mono);font-size:10px;color:var(--ink3);margin:2px 0 0}.clab-root .viol{display:flex;flex-direction:column;gap:6px;margin-top:10px}.clab-root .viol span{font-size:12px;color:var(--bad);background:rgba(229,72,77,.08);\n             border:1px solid rgba(229,72,77,.35);border-radius:6px;padding:5px 9px}.clab-root .viol span.okline{color:var(--good);background:rgba(89,201,141,.07);border-color:rgba(89,201,141,.3)}.clab-root /* ---------- viewport & HUD ---------- */\n  #clab-viewport{flex:1;position:relative;min-width:0;min-height:0;background:#121a24}.clab-root #clab-gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.clab-root #clab-hud{position:absolute;left:12px;bottom:12px;display:flex;gap:14px;align-items:flex-end;\n       background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:10px;\n       padding:10px 14px;pointer-events:none;backdrop-filter:blur(3px)}.clab-root .hudcol{display:flex;flex-direction:column;gap:2px}.clab-root .hudk{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}.clab-root .hudv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;line-height:1.1}.clab-root .hudv small{font-size:10.5px;color:var(--ink3)}.clab-root .gmeter{width:120px}.clab-root .gtrack{position:relative;height:9px;background:var(--panel2);border-radius:5px;margin-top:5px;overflow:hidden}.clab-root .gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(229,72,77,.28)}.clab-root .gtrack .zero{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--ink3)}.clab-root .gtrack .fill{position:absolute;top:1px;bottom:1px;background:var(--accent);border-radius:4px}.clab-root .gval{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;margin-top:3px}.clab-root .gval.hot{color:var(--bad)}.clab-root .ebar{display:flex;width:170px;height:12px;border-radius:6px;overflow:hidden;\n        background:var(--panel2);margin-top:5px}.clab-root .ebar i{display:block;height:100%}.clab-root .ebar i+i{border-left:2px solid var(--bg)}.clab-root .elegend{display:flex;gap:8px;margin-top:4px;font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}.clab-root .elegend b{font-weight:600}.clab-root .elegend .ke{color:var(--ke)}.clab-root .elegend .pe{color:var(--pe)}.clab-root .elegend .heat{color:var(--heat)}.clab-root #clab-xrayLegend{position:absolute;top:12px;right:12px;background:rgba(15,21,28,.85);\n              border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:190px;\n              pointer-events:none;backdrop-filter:blur(3px)}.clab-root .xbar{height:10px;border-radius:5px;margin-top:6px;\n        background:linear-gradient(90deg,#c05fa0 0%,#3f8fd2 18%,#4a5865 28%,#f2a63c 57%,#e5484d 100%)}.clab-root .xlabels{display:flex;justify-content:space-between;font-family:var(--mono);\n           font-size:9.5px;color:var(--ink3);margin-top:3px}.clab-root .photo img{width:100%;border-radius:6px;display:block}.clab-root .photo a{color:var(--accent);font-size:12px}.clab-root #clab-guide{position:absolute;inset:24px;max-width:820px;margin:0 auto;overflow-y:auto;\n         background:rgba(15,21,28,.96);border:1px solid var(--line2);border-radius:14px;\n         padding:16px 18px;backdrop-filter:blur(5px);z-index:8}.clab-root .gd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clab-root .gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.clab-root .gd-grid .card{margin:0}.clab-root .gd-grid h3{margin:0 0 6px;font-size:13px}@media (max-width:900px){.clab-root .gd-grid{grid-template-columns:1fr} }.clab-root .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);\n          padding:0;cursor:pointer}.clab-root .swatch.on{border-color:var(--ink);outline:2px solid var(--accent)}.clab-root #clab-rideQ{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);\n         width:min(470px,92%);background:rgba(15,21,28,.95);border:1px solid var(--line2);\n         border-radius:12px;padding:14px 16px;backdrop-filter:blur(4px)}.clab-root .rq-top{display:flex;justify-content:space-between;align-items:baseline}.clab-root .rq-pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent)}.clab-root #clab-rqTimer{display:block;height:4px;background:var(--panel2);border-radius:2px;margin:8px 0 10px;overflow:hidden}.clab-root #clab-rqTimerFill{display:block;height:100%;background:var(--accent);width:100%}.clab-root #clab-rqText{margin:0 0 10px;font-size:14px}.clab-root #clab-rqText b{color:var(--accent)}.clab-root .clab-viz{height:74px;margin:0 0 10px;display:none}.clab-root .clab-viz svg{display:block;height:100%;width:100%}.clab-root .clab-viz.on{display:block}.clab-root .clab-viz .clab-ans{transform-box:fill-box;transform-origin:center}.clab-root .clab-viz .clab-ans.reveal{fill:var(--good) !important;filter:drop-shadow(0 0 5px rgba(89,201,141,.75));animation:clabAnsPop .62s cubic-bezier(.2,.8,.2,1)}@keyframes clabAnsPop{0%{transform:scaleX(.06) scale(.72)}58%{transform:scaleX(1) scale(1.42)}100%{transform:scaleX(1) scale(1)}}.clab-root .clab-spark{position:absolute;width:var(--sz,7px);height:var(--sz,7px);border-radius:50%;pointer-events:none;opacity:0;animation:clabSpark .8s ease-out var(--delay,0ms) forwards}.clab-root .clab-spark.diamond{border-radius:1px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.clab-root .clab-spark.streak{width:calc(var(--sz,7px) * 1.8);height:3px;border-radius:3px}@keyframes clabSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}@media (prefers-reduced-motion:reduce){.clab-root .clab-viz .clab-ans.reveal{animation:none}.clab-root .clab-spark{display:none}}.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto;overscroll-behavior:contain;z-index:6}@media (max-width:760px),(max-height:620px){.clab-root #clab-rideQ{top:8px;bottom:auto;max-height:calc(100% - 16px)}}.clab-root .clab-build-start{border-color:rgba(242,166,60,.5);background:linear-gradient(145deg,rgba(242,166,60,.12),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--accent)}.clab-root .clab-build-start h3{font-size:16px}.clab-root .clab-build-steps{display:grid;gap:5px;margin:10px 0 12px;padding:0;list-style:none;counter-reset:build}.clab-root .clab-build-steps li{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}.clab-root .clab-build-steps li:before{counter-increment:build;content:counter(build);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#22160a;font:700 11px var(--mono)}.clab-root .clab-node-prompt{border-style:dashed}.clab-root .clab-build-coach{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(242,166,60,.6);border-radius:999px;background:rgba(15,21,28,.88);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}.clab-root .clab-build-coach small{display:block;color:var(--ink2);font-size:10px}.clab-root .clab-node-beacon{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,166,60,.14);animation:clabBeacon 1.8s ease-in-out infinite}@keyframes clabBeacon{50%{box-shadow:0 0 0 10px rgba(242,166,60,0)}}.clab-root #clab-viewport.ride-question-open:after{content:\"\";position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 55%,rgba(15,21,28,.18),rgba(15,21,28,.62));pointer-events:none}.clab-root #clab-rideQ:not([hidden]){animation:clabCardIn .28s ease-out}.clab-root #clab-rideQ.is-correct{border-color:rgba(89,201,141,.85);box-shadow:0 0 0 1px rgba(89,201,141,.18),0 16px 44px rgba(0,0,0,.38),0 0 28px rgba(89,201,141,.12)}.clab-root #clab-rideQ.is-wrong{border-color:rgba(229,72,77,.8);box-shadow:0 0 0 1px rgba(229,72,77,.14),0 16px 44px rgba(0,0,0,.38)}@keyframes clabCardIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}.clab-root .rq-scorebox{position:relative;display:flex;align-items:center;gap:7px}.clab-root .rq-streak{padding:2px 7px;border-radius:999px;background:rgba(242,166,60,.14);border:1px solid rgba(242,166,60,.34);color:var(--accent);font:700 10px var(--mono)}.clab-root .rq-delta{position:absolute;right:0;top:16px;color:var(--good);font:800 13px var(--mono);opacity:0}.clab-root .rq-delta.on{animation:clabScoreGain .75s ease-out}@keyframes clabScoreGain{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1.12)}}.clab-root #clab-rqTimerFill{transition:width .1s linear,background .2s}.clab-root #clab-rqTimer.urgent #clab-rqTimerFill{background:#e98436}.clab-root #clab-rqTimer.critical #clab-rqTimerFill{background:var(--bad);animation:clabTimerPulse .55s ease-in-out infinite alternate}.clab-root #clab-rqTimer.done #clab-rqTimerFill{background:var(--good)}@keyframes clabTimerPulse{to{filter:brightness(1.5)}}.clab-root .choice button{position:relative;min-height:40px;padding-left:42px;transition:border-color .18s,background .18s,color .18s,transform .18s}.clab-root .choice button:before{content:attr(data-key);position:absolute;left:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--panel);border:1px solid var(--line2);color:var(--ink2);font:700 10px var(--mono)}.clab-root .choice button.picked{border-color:var(--accent)}.clab-root .choice button.correct{border-color:var(--good);color:var(--good);background:rgba(89,201,141,.11)}.clab-root .choice button.correct:before{content:\"✓\";border-color:var(--good);color:var(--good)}.clab-root .choice button.wrong{border-color:var(--bad);color:#ffb4b6;background:rgba(229,72,77,.1)}.clab-root .choice button.wrong:before{content:\"×\";border-color:var(--bad);color:var(--bad)}.clab-root .choice button:disabled{opacity:1}.clab-root #clab-rqTimer.failed #clab-rqTimerFill{background:var(--bad)}.clab-root #clab-rqNumRow.correct input{border-color:var(--good);box-shadow:0 0 0 2px rgba(89,201,141,.12)}.clab-root #clab-rqNumRow.wrong input{border-color:var(--bad);box-shadow:0 0 0 2px rgba(229,72,77,.1)}.clab-root #clab-rqFeed:not(:empty){padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.035);border-left:3px solid var(--line2)}.clab-root #clab-rideQ.is-correct #clab-rqFeed{border-left-color:var(--good);background:rgba(89,201,141,.07)}.clab-root #clab-rideQ.is-wrong #clab-rqFeed{border-left-color:var(--bad);background:rgba(229,72,77,.06)}.clab-root .clab-viz.on{padding:4px 8px;border:1px solid rgba(49,70,94,.72);border-radius:8px;background:linear-gradient(180deg,rgba(63,143,210,.055),rgba(89,201,141,.025))}.clab-root .ride-result-grid{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:10px 0}.clab-root .ride-accuracy{--pct:0;display:grid;place-items:center;width:90px;height:90px;border-radius:50%;background:conic-gradient(var(--good) calc(var(--pct) * 1%),var(--panel2) 0);position:relative}.clab-root .ride-accuracy:before{content:\"\";position:absolute;inset:8px;border-radius:50%;background:var(--panel)}.clab-root .ride-accuracy span{position:relative;text-align:center;font:800 20px var(--mono)}.clab-root .ride-accuracy small{display:block;color:var(--ink3);font:600 9px var(--sans);text-transform:uppercase;letter-spacing:.08em}.clab-root .ride-checkpoints{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.clab-root .ride-checkpoints i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:11px;background:var(--panel2);border:1px solid var(--line2)}.clab-root .ride-checkpoints i.ok{color:var(--good);border-color:rgba(89,201,141,.5);background:rgba(89,201,141,.08)}.clab-root .ride-checkpoints i.no{color:var(--bad);border-color:rgba(229,72,77,.45);background:rgba(229,72,77,.07)}@media (prefers-reduced-motion:reduce){.clab-root .clab-node-beacon,.clab-root #clab-rideQ:not([hidden]),.clab-root .rq-delta.on,.clab-root #clab-rqTimer.critical #clab-rqTimerFill{animation:none}}@media (max-width:760px){.clab-root .clab-build-coach{top:48px;max-width:90%}.clab-root .ride-result-grid{grid-template-columns:1fr}.clab-root .ride-accuracy{margin:auto}}.clab-root #clab-rideEnd{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);\n           width:min(400px,92%);background:rgba(15,21,28,.96);border:1px solid var(--line2);\n           border-radius:12px;padding:16px 18px;backdrop-filter:blur(4px)}.clab-root #clab-rideEnd .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;color:var(--accent)}.clab-root #clab-rideEnd .exline{margin:4px 0}.clab-root #clab-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);\n          background:rgba(22,31,41,.94);border:1px solid var(--line2);border-radius:8px;\n          padding:9px 18px;font-size:13.5px;pointer-events:none;max-width:70%;text-align:center}.clab-root #clab-banner.pass{border-color:var(--good);color:var(--good)}.clab-root #clab-banner.fail{border-color:var(--bad);color:var(--bad)}.clab-root #clab-err{position:absolute;inset:auto 12px 12px 12px;background:#2a1214;border:1px solid var(--bad);\n       color:#ffb4b6;border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;z-index:9}@media (prefers-reduced-motion:reduce){.clab-root *{scroll-behavior:auto} }@media (max-width:760px){.clab-root #clab-main{flex-direction:column}.clab-root #clab-side{width:100%;max-height:46%;border-right:0;border-bottom:1px solid var(--line)}\n  }.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note{margin:8px 0 0;color:var(--ink3);font-size:11px}.clab-root .clab-element-card{border-color:rgba(63,143,210,.38)}.clab-root .clab-element-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.clab-root .clab-element-btn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:48px;padding:7px 9px;text-align:left}.clab-root .clab-element-btn b{font-size:12px}.clab-root .clab-element-btn small{color:var(--ink3);font-size:10px}.clab-root .clab-element-wide{grid-column:1/-1}.clab-root .clab-safety-card{border-color:rgba(242,193,78,.34)}.clab-root .clab-safety-summary{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px}.clab-root .clab-safety-summary:before{content:\"!\";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.45);color:var(--warn);font:800 12px var(--mono)}.clab-root .clab-safety-summary.safe{color:var(--good)}.clab-root .clab-safety-summary.safe:before{content:\"✓\";background:rgba(89,201,141,.12);border-color:rgba(89,201,141,.42);color:var(--good)}.clab-root .clab-safety-list{display:grid;gap:7px;margin-top:9px}.clab-root .clab-safety-item{display:grid;grid-template-columns:22px 1fr auto;gap:7px;align-items:start;padding:8px;border:1px solid rgba(242,193,78,.28);border-radius:7px;background:rgba(242,193,78,.055)}.clab-root .clab-safety-item.bad{border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.055)}.clab-root .clab-safety-num{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#241b08;font:800 10px var(--mono)}.clab-root .clab-safety-item.bad .clab-safety-num{background:var(--bad);color:white}.clab-root .clab-safety-copy b{display:block;font-size:11.5px}.clab-root .clab-safety-copy small{display:block;color:var(--ink2);font-size:10.5px;line-height:1.35;margin-top:2px}.clab-root .clab-safety-jump{padding:4px 7px;font-size:10px;white-space:nowrap}@media (max-width:760px){.clab-root .clab-element-btn{min-height:44px}}\n";
-  var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
+  var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.\n            <b>Lab packet</b> bundles the design, guided notebook, conditions, challenge, and latest measured ride evidence.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
   CLAB_CSS += `
   .clab-root{--rail-guide:#f2a63c;--bank-suggest:#f2c14e;--ink3:#8fa4b8;--focus:#fff}
   .clab-root[data-visual-theme="daylight"]{--accent:#61d39a;--accent-dim:#2d7c5a;--line:#385063;--line2:#4d6b80;--rail-guide:#f0a235;--bank-suggest:#b76524}
@@ -137,8 +137,12 @@
   `;
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
+  var packetShare = '<button id="clab-btnPacketExport" class="ghost" type="button">⬆ Lab packet</button><button id="clab-btnPacketImport" class="ghost" type="button">⬇ Open packet</button>';
+  CLAB_HTML = CLAB_HTML.replace('<button id="clab-btnImport">⬇ Import</button>', '<button id="clab-btnImport">⬇ Import</button>' + packetShare);
+  var guidedWelcome = '<div class="card" id="clab-guidedWelcome" hidden style="border-color:rgba(89,201,141,.55);background:linear-gradient(145deg,rgba(89,201,141,.11),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--good)"><p class="eyebrow">Guided first coaster</p><h3>Build, test, explain, and revise</h3><p class="hint" id="clab-guidedText" style="margin:0">Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.</p><ol style="display:grid;gap:6px;margin:10px 0 12px;padding:0;list-style:none"><li>1. Choose a glowing node and shape a hill.</li><li>2. Predict what will happen, then test the ride.</li><li>3. Read the evidence and revise one node.</li></ol><div id="clab-guidedStep" role="status" aria-live="polite" style="margin:8px 0;color:var(--ink2);font:600 11px var(--mono)"><b style="color:var(--good)">Step 1 of 4</b> - Shape the track</div><div id="clab-guidedRecord" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin-top:5px">Attempts: 0 - revisions: 0</div><p id="clab-guidedConditions" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin:4px 0 0">Controlled experiment starts with the current settings.</p><div id="clab-guidedPrediction" hidden style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><p class="eyebrow">Before the test</p><p class="hint" style="margin-bottom:8px">Make a prediction first. Then we will compare it with measured telemetry.</p><label class="hint" for="clab-guidedSpeed" style="display:block;margin:7px 0 4px">After the first drop, the train will</label><select id="clab-guidedSpeed" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="speedUp">speed up</option><option value="slowDown">slow down</option></select><label class="hint" for="clab-guidedForce" style="display:block;margin:9px 0 4px">The strongest vertical force will appear near the</label><select id="clab-guidedForce" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="valley">valley</option><option value="hill">hill</option><option value="turn">turn</option></select><p id="clab-guidedFeedback" role="status" aria-live="polite" hidden style="margin:9px 0 0;color:var(--ink2);font-size:12px"></p><p id="clab-guidedCompare" role="status" aria-live="polite" hidden style="margin:7px 0 0;color:var(--ink3);font:600 10px var(--mono)"></p></div><div class="btnrow"><button id="clab-guidedAction" class="primary" type="button">Begin guided build</button><button id="clab-guidedRevise" class="ghost" type="button" hidden>Revise one node</button><button id="clab-guidedExport" class="ghost" type="button" disabled>Copy experiment log</button><button id="clab-guidedClear" class="ghost" type="button" disabled>Clear notebook</button><button id="clab-guidedSkip" class="ghost" type="button">Use full lab</button></div></div>'
+  CLAB_HTML = CLAB_HTML.replace('<div class="card clab-build-start" id="clab-buildStart">', guidedWelcome + '\n\n        <div class="card clab-build-start" id="clab-buildStart">');
   var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
-  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
+  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><p id="clab-adaptiveReason" class="hint" style="margin:4px 0 7px">Complete a guided run to receive a personalized next step.</p><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
   var pointCoords = '<div class="coords" id="clab-ptCoords"></div>';
   CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" role="group" aria-label="No track node selected"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span><span class="wide">Bank match <b id="clab-nodeBankDelta">?</b></span><span class="wide clab-bank-key" aria-label="3-D banking guide: solid is the actual rail and dashed is the suggested bank"><i aria-hidden="true"></i>Actual rail<i class="suggested" aria-hidden="true"></i>Suggested</span></div>');
   var energyHud = '<div class="hudcol">\n          <span class="hudk">Energy budget</span>';
@@ -789,8 +793,95 @@ function saveDesign(record = true){
   if(record) snapshot();
   try{ localStorage.setItem(STORE_KEY, JSON.stringify({ coasterlab: DESIGN_SCHEMA, ...design })); }catch(_e){}
 }
-let design = loadDesign() || normalizeDesign(defaultDesign());
 
+const GUIDED_STATE_KEY = 'coaster_lab_onboarding_v1';
+const GUIDED_RECORD_KEY = 'coaster_lab_guided_record_v1';
+const GUIDED_RUBRIC_KEY = 'coaster_lab_rubric_v1';
+const GUIDED_REVIEW_KEY = 'coaster_lab_review_v1';
+let hadSavedDesign = false;
+try{ hadSavedDesign = !!localStorage.getItem(STORE_KEY); }catch(_e){}
+let guidedState = (() => {
+  try{
+    const saved = localStorage.getItem(GUIDED_STATE_KEY);
+    return saved || (hadSavedDesign ? 'complete' : 'new');
+  }catch(_e){ return hadSavedDesign ? 'complete' : 'new'; }
+})();
+let guidedRecord = { attempts: 0, revisions: 0, prediction: null, history: [], conditions: null, studentReflection: '', teacherNotes: '' };
+try{
+  const rawRecord = JSON.parse(localStorage.getItem(GUIDED_RECORD_KEY) || 'null');
+  if(rawRecord && typeof rawRecord === 'object'){
+    guidedRecord = { attempts: Math.max(0, Number(rawRecord.attempts) || 0), revisions: Math.max(0, Number(rawRecord.revisions) || 0), prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null, history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-5) : [],
+    conditions: rawRecord.conditions && typeof rawRecord.conditions === 'object' ? rawRecord.conditions : null, studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '', teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '' };
+  }
+}catch(_e){}
+let design = loadDesign() || normalizeDesign(defaultDesign());
+if(!hadSavedDesign && guidedState === 'new'){
+  design = normalizeDesign(simpleDesign());
+  guidedState = 'ready';
+}
+if(guidedState === 'new' && hadSavedDesign) guidedState = 'complete';
+if(guidedState === 'ready') saveDesign(false);
+let guidedPrediction = { speed: '', force: '', feedback: '', speedCorrect: null, forceCorrect: null, actualForce: '', ...(guidedRecord.prediction || {}) };
+const GUIDED_RUBRIC_DEFAULTS = { prediction: 2, evidence: 2, reasoning: 2, safety: 2 };
+function normalizeGuidedRubricWeights(raw){
+  const source = raw && typeof raw === 'object' ? raw : {};
+  return Object.keys(GUIDED_RUBRIC_DEFAULTS).reduce((out, key) => {
+    const value = Math.trunc(Number(source[key]));
+    out[key] = value >= 1 && value <= 3 ? value : GUIDED_RUBRIC_DEFAULTS[key];
+    return out;
+  }, {});
+}
+let guidedRubricWeights = (() => {
+  try{ return normalizeGuidedRubricWeights(JSON.parse(localStorage.getItem(GUIDED_RUBRIC_KEY) || 'null')); }catch(_e){ return { ...GUIDED_RUBRIC_DEFAULTS }; }
+})();
+function persistGuidedRubricWeights(){
+  try{ localStorage.setItem(GUIDED_RUBRIC_KEY, JSON.stringify(guidedRubricWeights)); }catch(_e){}
+}
+function normalizeGuidedReview(raw){
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const snapshotSource = source.snapshot && typeof source.snapshot === 'object' ? source.snapshot : null;
+  const keys = Object.keys(GUIDED_RUBRIC_DEFAULTS);
+  const rawCriteria = snapshotSource && Array.isArray(snapshotSource.criteria) ? snapshotSource.criteria : [];
+  const criteria = keys.map(key => {
+    const item = rawCriteria.find(candidate => candidate && candidate.key === key);
+    if(!item) return null;
+    const score = Math.max(0, Math.min(2, Math.trunc(Number(item.score) || 0)));
+    return { key, score, note: typeof item.note === 'string' ? item.note.slice(0, 360) : '' };
+  });
+  if(!snapshotSource || criteria.some(item => !item)) return { locked: false, finalizedAt: '', reviewer: '', snapshot: null };
+  const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  return {
+    locked: source.locked === true,
+    finalizedAt: typeof source.finalizedAt === 'string' ? source.finalizedAt.slice(0, 64) : '',
+    reviewer: typeof source.reviewer === 'string' ? source.reviewer.slice(0, 120) : '',
+    snapshot: {
+      earned: Math.max(0, finite(snapshotSource.earned, 0)),
+      max: Math.max(1, finite(snapshotSource.max, 1)),
+      percent: Math.max(0, Math.min(100, Math.trunc(finite(snapshotSource.percent, 0)))),
+      attempts: Math.max(0, Math.trunc(finite(snapshotSource.attempts, 0))),
+      goalsMet: Math.max(0, Math.trunc(finite(snapshotSource.goalsMet, 0))),
+      predictionMatches: Math.max(0, Math.trunc(finite(snapshotSource.predictionMatches, 0))),
+      comparablePairs: Math.max(0, Math.trunc(finite(snapshotSource.comparablePairs, 0))),
+      validEvidencePairs: Math.max(0, Math.trunc(finite(snapshotSource.validEvidencePairs, 0))),
+      partialEvidencePairs: Math.max(0, Math.trunc(finite(snapshotSource.partialEvidencePairs, 0))),
+      needsRevisionPairs: Math.max(0, Math.trunc(finite(snapshotSource.needsRevisionPairs, 0))),
+      criteria
+    }
+  };
+}
+let guidedReview = (() => {
+  try{ return normalizeGuidedReview(JSON.parse(localStorage.getItem(GUIDED_REVIEW_KEY) || 'null')); }catch(_e){ return { locked: false, finalizedAt: '', reviewer: '', snapshot: null }; }
+})();
+function persistGuidedReview(){
+  try{ localStorage.setItem(GUIDED_REVIEW_KEY, JSON.stringify(guidedReview)); }catch(_e){}
+}
+function guidedReviewStatusText(){
+  if(!guidedReview.locked) return 'Draft review · weights and feedback can still be edited.';
+  const stamp = guidedReview.finalizedAt ? new Date(guidedReview.finalizedAt) : null;
+  const when = stamp && Number.isFinite(stamp.getTime()) ? ' on ' + stamp.toLocaleString() : '';
+  const reviewer = guidedReview.reviewer ? ' by ' + guidedReview.reviewer : '';
+  return 'Finalized locally' + when + reviewer + ' · rubric lock active.';
+}
 /* ---------------- three.js scene ---------------- */
 const canvas = __clabGet('clab-gl');
 let renderer;
@@ -2804,6 +2895,7 @@ function startRun(cert){
     return;
   }
   sim.running = true; sim.cert = cert; sim.done = false;
+  if(guidedState === 'building') setGuidedState('testing');
   if(buildCoach) buildCoach.hidden = true;
   sim.paused = false; sim.ride = false; sim.exploreCheck = false;
   sim.S = 2; sim.prevS = 2; sim.v = 0; sim.t = 0; sim.sMax = 2; sim.tAtMax = 0;
@@ -2835,6 +2927,10 @@ function stopRun(){
 function finishRun(status){
   const tele = sim.tele;
   tele.status = status; tele.duration = sim.t;
+  if(guidedState === 'testing'){
+    if(status === 'complete') updateGuidedPredictionFeedback(tele);
+    setGuidedState(status === 'complete' ? 'tested' : 'building');
+  }
   /* ride/explore runs are always ideal — record them under 'ideal' */
   if(sim.ride || sim.exploreCheck) tele.fricUsed = false;
   if(status === 'complete'){
@@ -3358,6 +3454,751 @@ function updateTelemetryReplay(now){
   if(next >= telemetryReplay.tele.trace.length - 1) stopTelemetryReplay();
 }
 
+function predictionEvidence(tele){
+  const p = guidedRecord.prediction && guidedRecord.prediction.feedback ? guidedRecord.prediction : guidedPrediction;
+  if(!tele || tele.status !== 'complete' || !p || !p.speed || !p.force || !p.feedback) return null;
+  if(p.designKey && tele.designKey && packetDesignFingerprintFromKey(p.designKey) !== packetDesignFingerprintFromKey(tele.designKey)) return null;
+  const labels = { speedUp: 'speed up', slowDown: 'slow down', valley: 'valley', hill: 'hill', turn: 'turn' };
+  const actualSpeed = guidedActualSpeed(tele);
+  const actualForce = guidedPeakZone(tele);
+  return {
+    speedClaim: labels[p.speed] || p.speed,
+    forceClaim: labels[p.force] || p.force,
+    speedActual: labels[actualSpeed],
+    forceActual: labels[actualForce],
+    speedCorrect: actualSpeed === p.speed,
+    forceCorrect: actualForce === p.force,
+    maxSpeed: tele.maxV,
+    maxGV: tele.maxGV
+  };
+}
+function renderPredictionEvidence(tele){
+  const e = predictionEvidence(tele);
+  if(!e) return '';
+  const speedState = e.speedCorrect ? 'matched' : 'did not match';
+  const forceState = e.forceCorrect ? 'matched' : 'did not match';
+  const reflection = e.speedCorrect && e.forceCorrect
+    ? 'Both predictions matched the measured ride. Explain how height and curvature caused those changes.'
+    : 'Use the mismatch as a design clue: change one node, then predict again so the evidence can test the revision.';
+  return `<div class="card" data-clab-prediction-evidence="true">
+    <p class="eyebrow">Prediction -&gt; evidence</p>
+    <p class="hint" style="margin:0 0 6px"><b>Claim:</b> after the first drop, the train would <b>${e.speedClaim}</b>; the strongest vertical force would appear near the <b>${e.forceClaim}</b>.</p>
+    <p class="hint" style="margin:0 0 6px"><b>Evidence:</b> the measured train did <b>${e.speedActual}</b> after the drop (${speedState}); peak vertical force was <b>${fmt(e.maxGV, 1)} g</b> near the <b>${e.forceActual}</b> (${forceState}).</p>
+    <p class="chnote" style="margin:0"><b>Reflection:</b> ${reflection}</p>
+  </div>`;
+}
+function renderRevisionComparison(tele){
+  const comparison = guidedComparison(tele);
+  if(!comparison) return '';
+  const note = comparison.baseline
+    ? 'This is your baseline. Revise one node, make the same predictions again, and compare the measured change.'
+    : comparison.comparable === false
+      ? 'The conditions changed, so this run is a new experiment rather than a clean before-and-after comparison.'
+      : 'A delta is evidence of what the revision changed; decide whether the tradeoff helps your design goal.';
+  return `<div class="card" data-clab-guided-comparison="true">
+    <p class="eyebrow">Revision notebook</p>
+    <p class="hint" style="margin:0 0 6px"><b>${comparison.text}</b></p>
+    <p class="chnote" style="margin:0">${note}</p>
+  </div>`;
+}
+function renderGuidedHistoryTrend(history){
+  if(!Array.isArray(history) || !history.length) return '';
+  const values = history.map(entry => Number.isFinite(Number(entry.goalValue)) ? Number(entry.goalValue) : 0);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const padding = Math.max(0.5, (maxValue - minValue) * 0.15);
+  const lo = minValue - padding;
+  const hi = maxValue + padding;
+  const left = 34;
+  const right = 348;
+  const top = 18;
+  const bottom = 112;
+  const span = Math.max(0.001, hi - lo);
+  const x = index => left + (right - left) * (history.length === 1 ? 0.5 : index / (history.length - 1));
+  const y = value => bottom - ((value - lo) / span) * (bottom - top);
+  const points = values.map((value, index) => x(index).toFixed(1) + ',' + y(value).toFixed(1)).join(' ');
+  const dots = history.map((entry, index) => '<circle cx="' + x(index).toFixed(1) + '" cy="' + y(values[index]).toFixed(1) + '" r="4" fill="' + (entry.goalPassed ? 'var(--good)' : 'var(--warn)') + '"><title>Attempt ' + (Number(entry.attempt) || index + 1) + ': ' + fmt(values[index], 1) + ' ' + guidedGoalUnit(entry.goal) + (entry.goalPassed ? ', goal met' : ', goal not met') + '</title></circle>').join('');
+  const labels = history.map((entry, index) => '<text x="' + x(index).toFixed(1) + '" y="132" text-anchor="middle" fill="var(--ink3)" font-size="10">A' + (Number(entry.attempt) || index + 1) + '</text>').join('');
+  const goals = [...new Set(history.map(entry => entry.goal).filter(Boolean))];
+  const goalText = goals.length === 1 ? guidedGoalLabel(goals[0]) + ' · green markers meet the goal' : 'Goals changed across runs · compare within one goal for a clean trend';
+  const direction = goals.length === 1 && goals[0] === 'gentle4' ? 'Lower is better for this force goal.' : 'Higher is better for this goal measure.';
+  return '<div data-clab-history-trend="true" style="margin:0 0 12px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card2)">' +
+    '<p class="eyebrow" style="margin:0 0 2px">Goal measure trend</p>' +
+    '<p class="chnote" style="margin:0 0 5px">' + goalText + ' · ' + direction + '</p>' +
+    '<svg viewBox="0 0 380 150" role="img" aria-label="Goal measure trend across guided attempts" style="display:block;width:100%;height:auto;overflow:visible">' +
+      '<line x1="' + left + '" y1="' + bottom + '" x2="' + right + '" y2="' + bottom + '" stroke="var(--line2)" />' +
+      '<line x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + bottom + '" stroke="var(--line2)" />' +
+      '<text x="4" y="' + (top + 4) + '" fill="var(--ink3)" font-size="10">' + fmt(hi, 1) + ' ' + guidedGoalUnit(history[history.length - 1].goal) + '</text>' +
+      '<text x="4" y="' + (bottom + 4) + '" fill="var(--ink3)" font-size="10">' + fmt(lo, 1) + ' ' + guidedGoalUnit(history[history.length - 1].goal) + '</text>' +
+      '<polyline points="' + points + '" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />' + dots + labels +
+    '</svg>' +
+  '</div>';
+}
+function renderExperimentTimeline(tele){
+  const history = Array.isArray(guidedRecord.history) ? guidedRecord.history.filter(entry => entry && typeof entry === 'object') : [];
+  if(!history.length) return '';
+  const signed = (value, digits) => (value >= 0 ? '+' : '') + fmt(value, digits);
+  const label = value => ({ speedUp: 'speed up', slowDown: 'slow down', valley: 'valley', hill: 'hill', turn: 'turn' }[value] || 'not recorded');
+  const goalUnit = goal => goal === 'hill20' ? 'm' : goal === 'airtime3' ? 's' : 'g';
+  const rows = history.map((entry, index) => {
+    const previous = index ? history[index - 1] : null;
+    const sameConditions = !!(previous && entry.friction === previous.friction && Number(entry.cars) === Number(previous.cars) && entry.propulsion === previous.propulsion && Number(entry.accel || 0) === Number(previous.accel || 0) && entry.goal === previous.goal);
+    const delta = sameConditions
+      ? 'Delta vs prior: speed ' + signed((Number(entry.maxSpeed) - Number(previous.maxSpeed)) * 3.6, 0) + ' km/h · peak force ' + signed(Number(entry.maxGV) - Number(previous.maxGV), 1) + ' g'
+      : index ? 'New comparison set — conditions or goal changed.' : 'Baseline measurement — use this as the comparison anchor.';
+    const goal = guidedGoalLabel(entry.goal);
+    const goalValue = fmt(Number(entry.goalValue) || 0, 1) + ' ' + goalUnit(entry.goal);
+    const conditionText = (entry.friction === 'ideal' ? 'ideal' : 'realistic') + ' friction · ' + (Number(entry.cars) || '?') + ' cars · ' + (entry.propulsion === 'launch' ? 'LSM launch' : 'chain lift');
+    const outcomeColor = entry.goalPassed ? 'var(--good)' : 'var(--warn)';
+    const predictionText = 'Speed ' + (entry.speedCorrect ? '✓' : '—') + ' · force location ' + (entry.forceCorrect ? '✓' : '—');
+    return '<li style="list-style:none;border-left:2px solid ' + (entry.goalPassed ? 'var(--good)' : 'var(--line2)') + ';padding:0 0 10px 12px;margin:0 0 10px">' +
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap">' +
+        '<b>Attempt ' + (Number(entry.attempt) || index + 1) + ' · revision ' + (Number(entry.revision) || 0) + '</b>' +
+        '<span style="color:' + outcomeColor + ';font:600 10px var(--mono)">' + (entry.goalPassed ? 'GOAL MET' : 'IN PROGRESS') + '</span>' +
+      '</div>' +
+      '<div class="chnote" style="margin-top:3px">' + goal + ' · measured <b>' + goalValue + '</b> · top speed <b>' + fmt((Number(entry.maxSpeed) || 0) * 3.6, 0) + ' km/h</b> · peak <b>' + fmt(Number(entry.maxGV) || 0, 1) + ' g</b></div>' +
+      '<div class="chnote" style="margin-top:3px">' + conditionText + ' · prediction: ' + predictionText + '</div>' +
+      '<div class="chnote" style="margin-top:3px;color:' + (sameConditions ? 'var(--ink2)' : 'var(--warn)') + '">' + delta + '</div>' +
+    '</li>';
+  }).join('');
+  const matched = history.filter(entry => entry.speedCorrect && entry.forceCorrect).length;
+  const goalsMet = history.filter(entry => entry.goalPassed).length;
+  return '<div class="card" data-clab-experiment-timeline="true">' +
+    '<p class="eyebrow">Experiment timeline</p>' +
+    '<p class="hint" style="margin:0 0 10px">A revision is evidence only when the controlled conditions stay the same. Changed-condition runs remain visible, but they start a new comparison set.</p>' +
+    '<div class="chnote" style="margin:0 0 10px">' + history.length + ' recorded attempt' + (history.length === 1 ? '' : 's') + ' · ' + matched + ' prediction match' + (matched === 1 ? '' : 'es') + ' · ' + goalsMet + ' goal' + (goalsMet === 1 ? '' : 's') + ' met</div>' +
+    renderGuidedHistoryTrend(history) +
+    '<ol aria-label="Guided experiment timeline" style="margin:0;padding:0">' + rows + '</ol>' +
+    '<div class="btnrow" style="margin-top:8px"><button type="button" data-clab-history-csv>Download history CSV</button><button type="button" data-clab-teacher-report>Download teacher report</button><span class="chnote" style="align-self:center">Graph all saved attempts outside the simulator.</span></div>' +
+  '</div>';
+}
+function guidedHistoryEntries(){
+  return Array.isArray(guidedRecord.history) ? guidedRecord.history.filter(entry => entry && typeof entry === 'object') : [];
+}
+function csvCell(value){
+  return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+}
+function guidedCsvNumber(value, digits){
+  const number = Number(value);
+  return Number.isFinite(number) ? Number(number.toFixed(digits)) : '';
+}
+function guidedDesignNodeCount(entry){
+  try{
+    const points = JSON.parse(entry && entry.designKey || '');
+    return Array.isArray(points) ? points.length : '';
+  }catch(_e){
+    return '';
+  }
+}
+function buildGuidedHistoryCsv(){
+  const history = guidedHistoryEntries();
+  const columns = ['attempt', 'revision', 'goal', 'goal_value', 'goal_unit', 'goal_passed', 'top_speed_kmh', 'peak_vertical_g', 'minimum_vertical_g', 'speed_prediction', 'force_prediction', 'speed_prediction_correct', 'force_prediction_correct', 'friction', 'cars', 'propulsion', 'acceleration_mps2', 'track_nodes'];
+  const label = value => value === 'speedUp' ? 'speed up' : value === 'slowDown' ? 'slow down' : value || '';
+  const rows = history.map(entry => [
+    Number(entry.attempt) || '',
+    Number(entry.revision) || 0,
+    guidedGoalLabel(entry.goal),
+    guidedCsvNumber(entry.goalValue, 2),
+    guidedGoalUnit(entry.goal),
+    !!entry.goalPassed,
+    guidedCsvNumber((Number(entry.maxSpeed) || 0) * 3.6, 2),
+    guidedCsvNumber(entry.maxGV, 2),
+    guidedCsvNumber(entry.minGV, 2),
+    label(entry.speed),
+    entry.force || '',
+    !!entry.speedCorrect,
+    !!entry.forceCorrect,
+    entry.friction || '',
+    Number(entry.cars) || '',
+    entry.propulsion === 'launch' ? 'LSM launch' : entry.propulsion === 'chain' ? 'chain lift' : entry.propulsion || '',
+    guidedCsvNumber(entry.accel, 2),
+    guidedDesignNodeCount(entry)
+  ].map(csvCell).join(','));
+  return [columns.map(csvCell).join(','), ...rows].join('\r\n') + '\r\n';
+}
+function bindGuidedHistoryExport(){
+  const body = __clabGet('clab-reportBody');
+  const button = body && body.querySelector('[data-clab-history-csv]');
+  if(!button) return;
+  button.addEventListener('click', () => {
+    const blob = new Blob([buildGuidedHistoryCsv()], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'coaster_lab_guided_history.csv';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  });
+}
+
+function guidedHtmlEscape(value){
+  return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+}
+function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){
+  const safeHistory = Array.isArray(history) ? history : [];
+  const selectedSummary = safeHistory.length >= 2 ? renderExperimentComparisonSummary(safeHistory, fromIndex, toIndex) : '<p class="note">This is the baseline run. Complete another guided attempt to create a controlled comparison.</p>';
+  const selectedOverlay = safeHistory.length >= 2 ? renderGuidedTraceOverlay(safeHistory, fromIndex, toIndex) : '<div class="panel"><h2>Telemetry overlay</h2><p>A second guided run is needed before curves can be compared.</p></div>';
+  const trend = renderGuidedHistoryTrend(safeHistory);
+  const conclusion = conclusionText || (safeHistory.length >= 2 ? guidedComparisonConclusion(safeHistory, fromIndex, toIndex) : 'Claim: This run is my baseline measurement.\n\nEvidence: I recorded the goal, speed, force, predictions, and controlled conditions above.\n\nReasoning: I need a second run with one track change and the same settings before I can claim what caused a difference.');
+  const condition = guidedRecord.conditions || {};
+  const conditionText = (condition.friction || 'not recorded') + ' friction; ' + (Number(condition.cars) || '?') + ' cars; ' + (condition.propulsion === 'launch' ? 'LSM launch at ' + fmt(Number(condition.accel) || 0, 1) + ' m/s^2' : 'chain lift');
+  const rubric = guidedRubricSummary();
+  const reviewStatus = guidedReviewStatusText();
+  const quality = safeHistory.length >= 2 ? guidedExperimentQuality(safeHistory, Math.max(0, safeHistory.length - 2), safeHistory.length - 1) : guidedLatestEvidenceQuality(safeHistory);
+  const rows = safeHistory.map(entry => '<tr><td>' + guidedHtmlEscape('Attempt ' + (Number(entry.attempt) || '?') + ' / revision ' + (Number(entry.revision) || 0)) + '</td><td>' + guidedHtmlEscape(guidedGoalLabel(entry.goal)) + '</td><td>' + guidedHtmlEscape(guidedGoalValueText(entry)) + '</td><td>' + guidedHtmlEscape(fmt((Number(entry.maxSpeed) || 0) * 3.6, 1) + ' km/h') + '</td><td>' + guidedHtmlEscape(fmt(Number(entry.maxGV) || 0, 1) + ' g') + '</td><td>' + (entry.goalPassed ? 'Met' : 'In progress') + '</td></tr>').join('');
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coaster Lab experiment report</title><style>' +
+    ':root{--ink:#18212b;--ink2:#425466;--ink3:#687887;--line:#d9e1e8;--line2:#aebdca;--card2:#f5f8fa;--accent:#2878c8;--good:#198754;--warn:#a15c00}*{box-sizing:border-box}body{margin:0;background:#eef3f6;color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:900px;margin:0 auto;padding:28px;background:#fff;min-height:100vh}h1{margin:0 0 4px;font-size:28px}h2{font-size:17px;margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}.meta,.note,.chnote{color:var(--ink2);font-size:12px}.panel{border:1px solid var(--line);border-radius:8px;padding:12px;margin:12px 0;background:var(--card2)}.conclusion{white-space:pre-wrap;border-left:4px solid var(--accent);padding:10px 12px;background:#f7fbff}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:7px 6px;vertical-align:top}th{background:var(--card2);color:var(--ink2)}svg{max-width:100%;height:auto}@media print{body{background:#fff}main{max-width:none;padding:0}.no-print{display:none}.panel{break-inside:avoid}}' +
+    '</style></head><body><main><h1>Coaster Lab experiment report</h1><p class="meta">Generated ' + guidedHtmlEscape(new Date().toLocaleString()) + '</p>' +
+    '<section class="panel"><h2>Experiment setup</h2><p><b>Controlled conditions:</b> ' + guidedHtmlEscape(conditionText) + '</p><p><b>Saved attempts:</b> ' + safeHistory.length + '</p></section>' +
+    '<section><h2>Goal trend</h2>' + trend + '</section>' +
+    '<section><h2>Experiment quality</h2>' + renderGuidedEvidenceQuality(quality) + '</section>' +
+    '<section><h2>Selected comparison</h2>' + selectedSummary + selectedOverlay + '</section>' +
+    '<section><h2>Run evidence</h2><div class="table-wrap"><table><thead><tr><th>Run</th><th>Goal</th><th>Measured goal</th><th>Top speed</th><th>Peak vertical force</th><th>Outcome</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6">No completed guided runs.</td></tr>') + '</tbody></table></div></section>' +
+    '<section><h2>Classroom rubric</h2><p><b>Score:</b> ' + rubric.earned + '/' + rubric.max + ' (' + rubric.percent + '%)</p><p><b>Review status:</b> ' + guidedHtmlEscape(reviewStatus) + '</p><p><b>Student reflection:</b> ' + guidedHtmlEscape(guidedRecord.studentReflection || 'None recorded.') + '</p><p><b>Teacher/mentor notes:</b> ' + guidedHtmlEscape(guidedRecord.teacherNotes || 'None recorded.') + '</p></section>' +
+    '<section><h2>Claim; Evidence; Reasoning</h2><div class="conclusion">' + guidedHtmlEscape(conclusion) + '</div></section>' +
+    '<p class="meta">This report describes the educational simulation results. Use the controlled-condition warning before making a causal claim.</p>' +
+    '</main></body></html>';
+}
+function downloadGuidedTeacherReport(){
+  const history = guidedHistoryEntries();
+  if(!history.length){ banner('Complete a guided run before downloading the teacher report.', 'fail', 2800); return; }
+  const body = __clabGet('clab-reportBody');
+  const board = body && body.querySelector('[data-clab-experiment-compare]');
+  const from = board && board.querySelector('[data-clab-compare-from]');
+  const to = board && board.querySelector('[data-clab-compare-to]');
+  const conclusion = board && board.querySelector('[data-clab-comparison-conclusion]');
+  const fromIndex = from ? Number(from.value) : Math.max(0, history.length - 2);
+  const toIndex = to ? Number(to.value) : history.length - 1;
+  const html = buildGuidedTeacherReport(history, fromIndex, toIndex, conclusion && conclusion.value.trim());
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'coaster_lab_experiment_report.html';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+}
+function bindGuidedTeacherReport(){
+  const body = __clabGet('clab-reportBody');
+  const button = body && body.querySelector('[data-clab-teacher-report]');
+  if(!button) return;
+  button.addEventListener('click', downloadGuidedTeacherReport);
+}
+
+function guidedExperimentConditionsMatch(a, b){
+  return !!(a && b && a.friction === b.friction && Number(a.cars) === Number(b.cars) && a.propulsion === b.propulsion && Number(a.accel || 0) === Number(b.accel || 0));
+}
+function guidedExperimentDiff(a, b){
+  const changes = [];
+  if((a && a.friction) !== (b && b.friction)) changes.push('friction ' + (a && a.friction || 'unknown') + ' -> ' + (b && b.friction || 'unknown'));
+  if(Number(a && a.cars) !== Number(b && b.cars)) changes.push('train length ' + (Number(a && a.cars) || '?') + ' -> ' + (Number(b && b.cars) || '?') + ' cars');
+  if((a && a.propulsion) !== (b && b.propulsion) || Number(a && a.accel || 0) !== Number(b && b.accel || 0)){
+    const propulsion = entry => entry && entry.propulsion === 'launch' ? 'LSM launch (' + fmt(Number(entry.accel) || 0, 1) + ' m/s^2)' : 'chain lift';
+    changes.push('propulsion ' + propulsion(a) + ' -> ' + propulsion(b));
+  }
+  if((a && a.goal) !== (b && b.goal)) changes.push('goal changed');
+  return changes.length ? changes.join('; ') : 'No controlled setting changed.';
+}
+function guidedDesignChangeStats(beforeEntry, afterEntry){
+  let before;
+  let after;
+  try{ before = JSON.parse(beforeEntry && beforeEntry.designKey || ''); after = JSON.parse(afterEntry && afterEntry.designKey || ''); }catch(_e){ return { available: false, changed: 0, largestHeight: 0, largestBank: 0 }; }
+  if(!Array.isArray(before) || !Array.isArray(after)) return { available: false, changed: 0, largestHeight: 0, largestBank: 0 };
+  let changed = 0;
+  let largestHeight = 0;
+  let largestBank = 0;
+  for(let i = 0; i < Math.max(before.length, after.length); i++){
+    const b = before[i] || [];
+    const a = after[i] || [];
+    const dx = Number(a[0]) - Number(b[0]);
+    const dy = Number(a[1]) - Number(b[1]);
+    const dz = Number(a[2]) - Number(b[2]);
+    const db = Number(a[3]) - Number(b[3]);
+    if(![dx, dy, dz, db].every(Number.isFinite)) continue;
+    if(Math.hypot(dx, dy, dz) > 0.05 || Math.abs(db) > 0.05) changed++;
+    largestHeight = Math.max(largestHeight, Math.abs(dy));
+    largestBank = Math.max(largestBank, Math.abs(db));
+  }
+  return { available: true, changed, largestHeight, largestBank };
+}
+function guidedDesignChangeSummary(beforeEntry, afterEntry){
+  const stats = guidedDesignChangeStats(beforeEntry, afterEntry);
+  if(!stats.available) return 'Track-node change detail unavailable.';
+  if(!stats.changed) return 'No measurable track-node change recorded.';
+  const parts = [stats.changed + ' track node' + (stats.changed === 1 ? '' : 's') + ' changed'];
+  if(stats.largestHeight > 0.05) parts.push('largest height shift ' + fmt(stats.largestHeight, 1) + ' m');
+  if(stats.largestBank > 0.05) parts.push('largest bank shift ' + fmt(stats.largestBank, 0) + ' deg');
+  return parts.join('; ') + '.';
+}
+function guidedExperimentQuality(history, fromIndex, toIndex){
+  const safeHistory = Array.isArray(history) ? history : [];
+  const before = safeHistory[fromIndex];
+  const after = safeHistory[toIndex];
+  if(!before || !after || fromIndex === toIndex) return { level: 'needsRevision', label: 'Needs revision', score: 0, conditionsMatch: false, goalMatch: false, trackChanged: false, safetyOk: false, telemetryComplete: false, traceComplete: false, lateralDataComplete: false, safetyIssues: [], reasons: ['Choose two different saved runs before comparing evidence.'], recommendation: 'Select an earlier baseline and a later revision.' };
+  const conditionsMatch = guidedExperimentConditionsMatch(before, after);
+  const goalMatch = before.goal === after.goal;
+  const design = guidedDesignChangeStats(before, after);
+  const reasons = [];
+  const safetyIssues = [];
+  const coreValues = [before.maxSpeed, before.maxGV, before.minGV, before.goalValue, after.maxSpeed, after.maxGV, after.minGV, after.goalValue];
+  const telemetryComplete = coreValues.every(value => Number.isFinite(Number(value)));
+  const traceComplete = [before.trace, after.trace].every(trace => Array.isArray(trace) && trace.length > 4);
+  const lateralDataComplete = [before.maxLat, after.maxLat].every(value => Number.isFinite(Number(value)));
+  if(!conditionsMatch) reasons.push('friction, train length, propulsion, or launch acceleration changed');
+  if(!goalMatch) reasons.push('the selected challenge changed');
+  if(!design.available) reasons.push('track-node change detail is unavailable');
+  else if(!design.changed) reasons.push('no measurable track-node change was recorded');
+  if(!telemetryComplete) reasons.push('one run is missing usable measured values');
+  if(!traceComplete) reasons.push('a compact telemetry trace is missing for one run');
+  if(!lateralDataComplete) reasons.push('lateral-force data is missing from one older run');
+  [{ label: 'earlier', entry: before }, { label: 'later', entry: after }].forEach(run => {
+    const maxGV = Number(run.entry.maxGV);
+    const minGV = Number(run.entry.minGV);
+    const maxLat = Number(run.entry.maxLat);
+    if(Number.isFinite(maxGV) && maxGV > LIM.gvMax) safetyIssues.push(run.label + ' run exceeded +' + fmt(LIM.gvMax, 1) + ' g vertical force (' + fmt(maxGV, 1) + ' g)');
+    if(Number.isFinite(minGV) && minGV < LIM.gvMin) safetyIssues.push(run.label + ' run exceeded ' + fmt(LIM.gvMin, 1) + ' g vertical force (' + fmt(minGV, 1) + ' g)');
+    if(Number.isFinite(maxLat) && maxLat > LIM.glat) safetyIssues.push(run.label + ' run exceeded ±' + fmt(LIM.glat, 1) + ' g lateral force (' + fmt(maxLat, 1) + ' g)');
+  });
+  safetyIssues.forEach(issue => reasons.push(issue));
+  const blocking = !conditionsMatch || !goalMatch || !design.available || !design.changed || !telemetryComplete || safetyIssues.length > 0;
+  const level = blocking ? 'needsRevision' : (!traceComplete || !lateralDataComplete ? 'partial' : 'valid');
+  const label = level === 'valid' ? 'Valid' : level === 'partial' ? 'Partial' : 'Needs revision';
+  let recommendation = 'Valid controlled comparison: the same conditions and goal were used, a track change was recorded, and both runs stayed inside the simulation safety limits.';
+  if(level === 'partial') recommendation = 'The main measurements can be compared, but preserve complete telemetry for a stronger evidence record.';
+  if(level === 'needsRevision'){
+    if(safetyIssues.length) recommendation = 'Revise the design to lower the flagged forces, then run it again before treating this pair as evidence.';
+    else if(!conditionsMatch || !goalMatch) recommendation = 'Restore the original conditions and challenge, then change one track node at a time.';
+    else if(!design.available || !design.changed) recommendation = 'Change one track node measurably, keep the conditions fixed, and run the revised design.';
+    else if(!telemetryComplete) recommendation = 'Complete both runs so speed, force, and goal measurements are available.';
+  }
+  return { level, label, score: level === 'valid' ? 2 : level === 'partial' ? 1 : 0, conditionsMatch, goalMatch, trackChanged: !!(design.available && design.changed), safetyOk: safetyIssues.length === 0, telemetryComplete, traceComplete, lateralDataComplete, safetyIssues, reasons, recommendation };
+}
+function guidedLatestEvidenceQuality(history){
+  const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
+  if(safeHistory.length < 2) return { level: 'partial', label: 'Partial', score: 0, conditionsMatch: false, goalMatch: false, trackChanged: false, safetyOk: true, telemetryComplete: false, traceComplete: false, lateralDataComplete: false, safetyIssues: [], reasons: ['Only a baseline run is saved.'], recommendation: 'Complete a revised run with the same conditions and one measurable track-node change.' };
+  return guidedExperimentQuality(safeHistory, safeHistory.length - 2, safeHistory.length - 1);
+}
+function renderGuidedEvidenceQuality(quality){
+  const safe = quality || guidedLatestEvidenceQuality();
+  const color = safe.level === 'valid' ? 'var(--good)' : safe.level === 'partial' ? 'var(--accent)' : 'var(--warn)';
+  const reasonHtml = safe.reasons && safe.reasons.length ? '<div style="margin-top:5px">' + safe.reasons.map(reason => '<span style="display:block">· ' + guidedHtmlEscape(reason) + '</span>').join('') + '</div>' : '';
+  return '<div data-clab-evidence-quality="' + guidedHtmlEscape(safe.level) + '" style="margin:8px 0;padding:9px 10px;border:1px solid ' + color + ';border-radius:6px;background:var(--card2);color:var(--ink2)">' +
+    '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="color:' + color + '">Evidence quality: ' + guidedHtmlEscape(safe.label) + '</b><span class="chnote">score ' + safe.score + '/2</span></div>' +
+    '<div style="margin-top:4px">' + guidedHtmlEscape(safe.recommendation) + '</div>' + reasonHtml +
+  '</div>';
+}
+function guidedAdaptiveNextChallenge(goal){
+  return ({ hill20: 'airtime3', airtime3: 'gentle4', gentle4: 'hill20' })[goal] || 'hill20';
+}
+function guidedAdaptiveRecommendation(history){
+  const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
+  if(!safeHistory.length) return { stage: 'foundation', challenge: 'hill20', title: 'Foundation: build a smooth 20 m hill', reason: 'Start with one measurable hill so height, energy, and safety have a clear baseline.' };
+  const latest = safeHistory[safeHistory.length - 1];
+  const quality = guidedLatestEvidenceQuality(safeHistory);
+  if(quality.level === 'needsRevision') return { stage: 'safety', challenge: 'gentle4', title: 'Safety reset: finish below 4.0 vertical g', reason: quality.recommendation };
+  if(quality.level === 'partial') return { stage: 'evidence', challenge: latest.goal || activeChallenge || 'hill20', title: 'Evidence practice: repeat ' + guidedGoalLabel(latest.goal || activeChallenge || 'hill20'), reason: quality.recommendation };
+  if(!latest.goalPassed) return { stage: 'refine', challenge: latest.goal || activeChallenge || 'hill20', title: 'Refine: meet the ' + guidedGoalLabel(latest.goal || activeChallenge || 'hill20') + ' goal', reason: 'Your comparison is valid. Keep the controls fixed and make one more targeted track revision.' };
+  const next = guidedAdaptiveNextChallenge(latest.goal || activeChallenge);
+  return { stage: 'progression', challenge: next, title: 'Next rung: ' + guidedGoalLabel(next), reason: 'The last comparison was valid and the goal was met. Try a new engineering target while preserving a clear baseline.' };
+}
+function guidedAdaptiveProgress(history){
+  const safeHistory = Array.isArray(history) ? history : guidedHistoryEntries();
+  const recommendation = guidedAdaptiveRecommendation(safeHistory);
+  const goals = ['hill20', 'airtime3', 'gentle4'];
+  const items = goals.map(goal => {
+    const runs = safeHistory.filter(entry => entry && entry.goal === goal);
+    let quality = null;
+    for(let i = safeHistory.length - 1; i > 0; i--){
+      if(safeHistory[i] && safeHistory[i].goal === goal && safeHistory[i - 1] && safeHistory[i - 1].goal === goal){
+        quality = guidedExperimentQuality(safeHistory, i - 1, i);
+        break;
+      }
+    }
+    return { goal, runs: runs.length, passed: runs.some(entry => !!entry.goalPassed), evidence: !!(quality && quality.level === 'valid'), active: recommendation.challenge === goal };
+  });
+  return { items, goalsMet: items.filter(item => item.passed).length, evidenceReady: items.filter(item => item.evidence).length, recommendation };
+}
+function renderAdaptiveProgress(history){
+  if(!adaptiveProgressEl || !adaptiveProgressTrackEl) return;
+  const progress = guidedAdaptiveProgress(history);
+  const labels = { hill20: '20 m hill', airtime3: '3 s airtime', gentle4: '< 4.0 g' };
+  adaptiveProgressTrackEl.innerHTML = progress.items.map(item => {
+    const color = item.active ? 'var(--accent)' : item.evidence || item.passed ? 'var(--good)' : item.runs ? 'var(--warn)' : 'var(--line2)';
+    const badge = item.active ? 'CURRENT' : item.evidence ? 'VALIDATED' : item.passed ? 'GOAL MET' : item.runs ? 'PRACTICE' : 'QUEUED';
+    const detail = item.evidence ? 'controlled comparison' : item.passed ? 'target reached' : item.runs ? 'keep testing' : 'not started';
+    return '<span data-clab-adaptive-step="' + item.goal + '" role="listitem" style="display:flex;flex-direction:column;gap:3px;min-width:0;padding:7px 6px;border:1px solid ' + color + ';border-radius:5px;background:var(--card2)"><b style="font-size:11px;color:' + color + ';overflow-wrap:anywhere">' + guidedHtmlEscape(labels[item.goal] || 'Challenge') + '</b><small class="chnote" style="color:' + color + '">' + badge + '</small><small class="chnote" style="overflow-wrap:anywhere">' + detail + '</small></span>';
+  }).join('');
+  if(adaptiveProgressCountEl) adaptiveProgressCountEl.textContent = progress.goalsMet + '/3 goals met · ' + progress.evidenceReady + '/3 validated';
+  if(adaptiveProgressHintEl){
+    adaptiveProgressHintEl.textContent = progress.evidenceReady ? 'Validated comparisons unlock progression; use the current rung to decide what to revise next.' : progress.goalsMet ? 'A goal is met, but the next rung still needs a controlled before-and-after comparison.' : 'Complete a first run, revise one node, and keep the settings fixed to build the evidence path.';
+  }
+}function updateAdaptiveChallenge(){
+  if(!adaptiveCoachEl) return;
+  const recommendation = guidedAdaptiveRecommendation();
+  if(adaptiveTitleEl) adaptiveTitleEl.textContent = recommendation.title;
+  if(adaptiveReasonEl) adaptiveReasonEl.textContent = recommendation.reason;
+  const selected = activeChallenge === recommendation.challenge;
+  const locked = guidedConditionsLocked();
+  if(adaptiveAcceptEl){
+    adaptiveAcceptEl.disabled = selected;
+    adaptiveAcceptEl.textContent = selected ? 'Current challenge' : locked ? 'Start new challenge' : 'Use recommendation';
+    adaptiveAcceptEl.setAttribute('aria-label', selected ? recommendation.title + ' is selected' : 'Use adaptive recommendation: ' + recommendation.title);
+  }
+  renderAdaptiveProgress();
+}
+async function acceptAdaptiveChallenge(){
+  if(sim.running || !adaptiveAcceptEl) return;
+  const recommendation = guidedAdaptiveRecommendation();
+  if(activeChallenge === recommendation.challenge){
+    banner('The adaptive recommendation is already selected.', '', 2200);
+    return;
+  }
+  if(guidedConditionsLocked()){
+    const ok = await clabConfirm('Start a new adaptive challenge? This ends the current controlled comparison but keeps its saved evidence.', { title: 'Start adaptive challenge', confirmText: 'Start new challenge', cancelText: 'Keep current experiment', tone: 'warning' }, 'The adaptive challenge was not started.');
+    if(!ok) return;
+    guidedRecord.conditions = null;
+    persistGuidedRecord();
+    resetGuidedPrediction();
+    setGuidedState('ready');
+  }
+  activeChallenge = recommendation.challenge;
+  if(challengeSelect) challengeSelect.value = activeChallenge;
+  try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
+  updateDesignChallenge();
+  updateAdaptiveChallenge();
+  banner('Adaptive challenge selected: ' + recommendation.title + '.', 'pass', 3400);
+}
+function guidedGoalUnit(goal){
+  return goal === 'hill20' ? 'm' : goal === 'airtime3' ? 's' : 'g';
+}
+function guidedGoalValueText(entry){
+  return fmt(Number(entry && entry.goalValue) || 0, 1) + ' ' + guidedGoalUnit(entry && entry.goal);
+}
+function guidedComparisonConclusion(history, fromIndex, toIndex){
+  const before = history[fromIndex];
+  const after = history[toIndex];
+  if(!before || !after || fromIndex === toIndex) return 'Choose two different saved runs to generate a conclusion.';
+  const designChange = guidedDesignChangeSummary(before, after);
+  const quality = guidedExperimentQuality(history, fromIndex, toIndex);
+  const conditionText = entry => (entry.friction || 'unknown') + ' friction, ' + (Number(entry.cars) || '?') + ' cars, ' + (entry.propulsion === 'launch' ? 'LSM launch' : 'chain lift');
+  if(quality.level !== 'valid'){
+    return 'Claim: I need stronger evidence before attributing this difference to the track revision alone.\n\nEvidence: ' + designChange + ' Evidence quality is ' + quality.label.toLowerCase() + ': ' + quality.recommendation + '\n\nReasoning: ' + (quality.reasons.join('; ') || 'The selected pair does not yet meet the comparison criteria.') + ' The earlier run used ' + conditionText(before) + ', while the later run used ' + conditionText(after) + '.';
+  }
+  const signed = (value, digits) => (value >= 0 ? '+' : '') + fmt(value, digits);
+  const speedDelta = (Number(after.maxSpeed) - Number(before.maxSpeed)) * 3.6;
+  const forceDelta = Number(after.maxGV) - Number(before.maxGV);
+  const goalDelta = Number(after.goalValue) - Number(before.goalValue);
+  return 'Claim: The later track revision changed the measured ride while the controlled conditions stayed fixed.\n\nEvidence: ' + designChange + ' Top speed changed by ' + signed(speedDelta, 0) + ' km/h, peak vertical force changed by ' + signed(forceDelta, 1) + ' g, and the ' + guidedGoalLabel(after.goal) + ' measure changed by ' + signed(goalDelta, 1) + ' ' + guidedGoalUnit(after.goal) + '. The goal was ' + (after.goalPassed ? 'met' : 'not met yet') + ' on the later run.\n\nReasoning: Because both runs used ' + conditionText(after) + ' and the same challenge, the measured differences are evidence of what the track revision changed. My next step is to decide whether the tradeoff improves the ride and safety.';
+}
+function renderExperimentComparisonSummary(history, fromIndex, toIndex){
+  const before = history[fromIndex];
+  const after = history[toIndex];
+  if(!before || !after || fromIndex === toIndex) return '<p class="chnote" style="margin:0">Choose two different saved runs.</p>';
+  const sameSettings = guidedExperimentConditionsMatch(before, after);
+  const sameGoal = before.goal === after.goal;
+  const directlyComparable = sameSettings && sameGoal;
+  const quality = guidedExperimentQuality(history, fromIndex, toIndex);
+  const signed = (value, digits) => (value >= 0 ? '+' : '') + fmt(value, digits);
+  let html = '<p class="chnote" style="margin:0 0 6px"><b>Attempt ' + (Number(before.attempt) || fromIndex + 1) + ' -> attempt ' + (Number(after.attempt) || toIndex + 1) + '</b></p>';
+  html += renderGuidedEvidenceQuality(quality);
+  html += '<p class="chnote" style="margin:0 0 6px">' + guidedDesignChangeSummary(before, after) + '</p>';
+  if(!directlyComparable || quality.level === 'needsRevision'){
+    if(!directlyComparable) html += '<p class="chnote" style="margin:0;color:var(--warn)"><b>Not a clean before-and-after:</b> ' + guidedExperimentDiff(before, after) + '. Keep those settings fixed when you want the next run to isolate one track revision.</p>';
+    return html;
+  }
+  const speedDelta = (Number(after.maxSpeed) - Number(before.maxSpeed)) * 3.6;
+  const forceDelta = Number(after.maxGV) - Number(before.maxGV);
+  const goalDelta = Number(after.goalValue) - Number(before.goalValue);
+  html += '<p class="chnote" style="margin:0">Controlled delta: top speed <b>' + signed(speedDelta, 0) + ' km/h</b> · peak vertical force <b>' + signed(forceDelta, 1) + ' g</b> · goal measure <b>' + signed(goalDelta, 1) + ' ' + guidedGoalUnit(after.goal) + '</b>.</p>';
+  html += '<p class="chnote" style="margin:6px 0 0;color:' + (after.goalPassed ? 'var(--good)' : 'var(--ink2)') + '">Goal: <b>' + guidedGoalLabel(after.goal) + '</b> · ' + guidedGoalValueText(before) + ' -> ' + guidedGoalValueText(after) + ' · ' + (after.goalPassed ? 'met on the later run.' : 'not met on the later run yet.') + '</p>';
+  return html;
+}function renderGuidedTraceOverlay(history, fromIndex, toIndex){
+  const before = history[fromIndex];
+  const after = history[toIndex];
+  const earlier = before && Array.isArray(before.trace) ? before.trace.filter(point => point && Number.isFinite(Number(point.s))) : [];
+  const later = after && Array.isArray(after.trace) ? after.trace.filter(point => point && Number.isFinite(Number(point.s))) : [];
+  if(!earlier.length || !later.length){
+    return '<div data-clab-trace-overlay="true" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 3px">Telemetry overlay</p><p class="hint" style="margin:0">A compact trace is not available for one selected older run. Complete new guided runs with this version to unlock curve comparisons.</p></div>';
+  }
+  const metrics = [
+    { key: 'v', label: 'Speed', unit: 'm/s', digits: 1 },
+    { key: 'g', label: 'Vertical force', unit: 'g', digits: 1 },
+    { key: 'gl', label: 'Lateral force', unit: 'g', digits: 1 }
+  ];
+  const left = 58;
+  const right = 378;
+  const rowHeight = 76;
+  const rowTop = 18;
+  const maxCircuit = Math.max(0.001, ...earlier.map(point => Number(point.s) || 0), ...later.map(point => Number(point.s) || 0));
+  const x = point => left + (right - left) * Math.max(0, Math.min(1, (Number(point.s) || 0) / maxCircuit));
+  const line = (trace, metric, y, lo, hi) => trace.map(point => {
+    const value = Number(point[metric.key]);
+    const ratio = Number.isFinite(value) ? (value - lo) / Math.max(0.001, hi - lo) : 0;
+    return x(point).toFixed(1) + ',' + (y + rowHeight - 18 - Math.max(0, Math.min(1, ratio)) * (rowHeight - 28)).toFixed(1);
+  }).join(' ');
+  const rows = metrics.map((metric, index) => {
+    const allValues = earlier.concat(later).map(point => Number(point[metric.key])).filter(Number.isFinite);
+    const rawMin = Math.min(...allValues);
+    const rawMax = Math.max(...allValues);
+    const padding = Math.max(metric.key === 'v' ? 0.5 : 0.08, (rawMax - rawMin) * 0.12);
+    const lo = rawMin - padding;
+    const hi = rawMax + padding;
+    const y = rowTop + index * rowHeight;
+    return '<text x="4" y="' + (y + 12) + '" fill="var(--ink2)" font-size="11" font-weight="600">' + metric.label + '</text>' +
+      '<text x="' + (left - 5) + '" y="' + (y + 25) + '" text-anchor="end" fill="var(--ink3)" font-size="9">' + fmt(hi, metric.digits) + '</text>' +
+      '<text x="' + (left - 5) + '" y="' + (y + rowHeight - 14) + '" text-anchor="end" fill="var(--ink3)" font-size="9">' + fmt(lo, metric.digits) + '</text>' +
+      '<line x1="' + left + '" y1="' + (y + 22) + '" x2="' + right + '" y2="' + (y + 22) + '" stroke="var(--line2)" />' +
+      '<line x1="' + left + '" y1="' + (y + rowHeight - 18) + '" x2="' + right + '" y2="' + (y + rowHeight - 18) + '" stroke="var(--line2)" />' +
+      '<polyline points="' + line(earlier, metric, y, lo, hi) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
+      '<polyline points="' + line(later, metric, y, lo, hi) + '" fill="none" stroke="var(--good)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />';
+  }).join('');
+  return '<div data-clab-trace-overlay="true" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card2)">' +
+    '<p class="eyebrow" style="margin:0 0 3px">Telemetry overlay</p>' +
+    '<p class="chnote" style="margin:0 0 5px"><span style="color:var(--accent)">Earlier run</span> · <span style="color:var(--good)">Later run</span> · normalized circuit position</p>' +
+    '<svg viewBox="0 0 390 260" role="img" aria-label="Overlay comparing speed, vertical force, and lateral force for two guided runs" style="display:block;width:100%;height:auto;overflow:visible">' + rows +
+      '<text x="' + left + '" y="250" fill="var(--ink3)" font-size="9">start</text><text x="' + right + '" y="250" text-anchor="end" fill="var(--ink3)" font-size="9">end of circuit</text>' +
+    '</svg>' +
+  '</div>';
+}
+function renderExperimentComparisonBoard(){
+  const history = guidedHistoryEntries();
+  if(history.length < 2) return '';
+  const fromIndex = history.length - 2;
+  const toIndex = history.length - 1;
+  const option = (entry, index, selected) => '<option value="' + index + '"' + (selected ? ' selected' : '') + '>Attempt ' + (Number(entry.attempt) || index + 1) + ' / revision ' + (Number(entry.revision) || 0) + ' - ' + guidedGoalLabel(entry.goal) + '</option>';
+  const optionsFrom = history.map((entry, index) => option(entry, index, index === fromIndex)).join('');
+  const optionsTo = history.map((entry, index) => option(entry, index, index === toIndex)).join('');
+  return '<div class="card" data-clab-experiment-compare="true">' +
+    '<p class="eyebrow">Compare saved runs</p>' +
+    '<p class="hint" style="margin:0 0 10px">Choose any two attempts. The board separates track changes from changed conditions so your conclusion stays evidence-based.</p>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<label class="hint" for="clab-compareFrom">Earlier run<select id="clab-compareFrom" data-clab-compare-from class="clab-sel" style="display:block;width:100%;margin-top:4px">' + optionsFrom + '</select></label>' +
+      '<label class="hint" for="clab-compareTo">Later run<select id="clab-compareTo" data-clab-compare-to class="clab-sel" style="display:block;width:100%;margin-top:4px">' + optionsTo + '</select></label>' +
+    '</div>' +
+    '<div data-clab-compare-output style="margin-top:10px">' + renderExperimentComparisonSummary(history, fromIndex, toIndex) + '</div>' +
+    '<div data-clab-compare-trace style="margin-top:10px">' + renderGuidedTraceOverlay(history, fromIndex, toIndex) + '</div>' +
+    '<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">' +
+      '<p class="eyebrow">Claim - Evidence - Reasoning</p>' +
+      '<p class="hint" style="margin:0 0 6px">Edit this evidence-based conclusion in your own words, then copy it into a lab report.</p>' +
+      '<textarea data-clab-comparison-conclusion rows="7" aria-label="Experiment conclusion" style="display:block;width:100%;box-sizing:border-box;resize:vertical;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)"></textarea>' +
+      '<div class="btnrow" style="margin-top:7px"><button type="button" data-clab-copy-conclusion>Copy conclusion</button><span data-clab-copy-status class="chnote" role="status" aria-live="polite"></span></div>' +
+    '</div>' +
+  '</div>';
+}function bindExperimentComparison(){
+  const body = __clabGet('clab-reportBody');
+  const board = body && body.querySelector('[data-clab-experiment-compare]');
+  if(!board) return;
+  const from = board.querySelector('[data-clab-compare-from]');
+  const to = board.querySelector('[data-clab-compare-to]');
+  const output = board.querySelector('[data-clab-compare-output]');
+  const trace = board.querySelector('[data-clab-compare-trace]');
+  const conclusion = board.querySelector('[data-clab-comparison-conclusion]');
+  const copy = board.querySelector('[data-clab-copy-conclusion]');
+  const status = board.querySelector('[data-clab-copy-status]');
+  if(!from || !to || !output || !trace || !conclusion) return;
+  const update = () => {
+    const history = guidedHistoryEntries();
+    const fromIndex = Number(from.value);
+    const toIndex = Number(to.value);
+    output.innerHTML = renderExperimentComparisonSummary(history, fromIndex, toIndex);
+    trace.innerHTML = renderGuidedTraceOverlay(history, fromIndex, toIndex);
+    conclusion.value = guidedComparisonConclusion(history, fromIndex, toIndex);
+  };
+  from.addEventListener('change', update);
+  to.addEventListener('change', update);
+  if(copy) copy.addEventListener('click', async () => {
+    const value = conclusion.value.trim();
+    if(!value){ if(status) status.textContent = 'Write a conclusion first.'; return; }
+    const done = message => { if(status) status.textContent = message; };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(value); done('Conclusion copied.'); return; }catch(_e){}
+    }
+    const pasted = await clabPrompt('Copy your conclusion:', value, { title: 'Copy experiment conclusion', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Conclusion copy is unavailable.');
+    if(pasted !== null) done('Conclusion ready to paste.');
+  });
+  update();
+}function computeGuidedRubricSummary(){
+  const history = guidedHistoryEntries();
+  const attempts = history.length;
+  const predictionMatches = history.filter(entry => entry.speedCorrect && entry.forceCorrect).length;
+  const predictionRate = attempts ? predictionMatches / attempts : 0;
+  const qualityPairs = history.slice(1).map((entry, index) => guidedExperimentQuality(history, index, index + 1));
+  const validEvidencePairs = qualityPairs.filter(quality => quality.level === 'valid').length;
+  const partialEvidencePairs = qualityPairs.filter(quality => quality.level === 'partial').length;
+  const needsRevisionPairs = qualityPairs.filter(quality => quality.level === 'needsRevision').length;
+  const comparablePairs = validEvidencePairs + partialEvidencePairs;
+  const safeRuns = history.filter(entry => Number(entry.maxGV) <= 4 && Number(entry.minGV) >= -1).length;
+  const goalsMet = history.filter(entry => entry.goalPassed).length;
+  const noteLength = String(guidedRecord.studentReflection || '').trim().length;
+  const criteria = [
+    { key: 'prediction', label: 'Prediction + check', score: attempts && predictionRate >= 0.75 ? 2 : attempts && predictionRate > 0 ? 1 : 0, note: attempts ? predictionMatches + ' of ' + attempts + ' runs matched both predictions.' : 'Complete a guided run and check the measured evidence.' },
+    { key: 'evidence', label: 'Controlled evidence', score: validEvidencePairs > 0 ? 2 : partialEvidencePairs > 0 ? 1 : 0, note: validEvidencePairs ? validEvidencePairs + ' valid controlled comparison' + (validEvidencePairs === 1 ? '' : 's') + ' recorded.' : partialEvidencePairs ? 'A partial comparison exists; complete the telemetry record and keep the controls fixed.' : 'Complete a second run with one measurable track-node change and the same conditions.' },
+    { key: 'reasoning', label: 'Student reasoning', score: noteLength >= 160 ? 2 : noteLength >= 60 ? 1 : 0, note: noteLength >= 160 ? 'The student explanation has enough detail to review.' : noteLength >= 60 ? 'Add more detail about why the evidence supports the claim.' : 'Add a short explanation connecting the track change to the measured result.' },
+    { key: 'safety', label: 'Safety + goal', score: safeRuns === attempts && goalsMet > 0 ? 2 : safeRuns === attempts && attempts > 0 ? 1 : 0, note: attempts ? safeRuns + ' of ' + attempts + ' runs stayed inside the simplified force limits; ' + goalsMet + ' goal' + (goalsMet === 1 ? '' : 's') + ' met.' : 'Run the coaster to measure safety and goal progress.' }
+  ];
+  const max = criteria.reduce((total, criterion) => total + 2 * (guidedRubricWeights[criterion.key] || 1), 0);
+  const earned = criteria.reduce((total, criterion) => total + criterion.score * (guidedRubricWeights[criterion.key] || 1), 0);
+  return { criteria, earned, max, percent: max ? Math.round(earned / max * 100) : 0, attempts, goalsMet, predictionMatches, comparablePairs, validEvidencePairs, partialEvidencePairs, needsRevisionPairs };
+}function guidedRubricSummary(){
+  const live = computeGuidedRubricSummary();
+  const snapshot = guidedReview && guidedReview.locked ? guidedReview.snapshot : null;
+  if(!snapshot) return live;
+  const saved = new Map(snapshot.criteria.map(criterion => [criterion.key, criterion]));
+  return {
+    ...live,
+    criteria: live.criteria.map(criterion => {
+      const frozen = saved.get(criterion.key);
+      return frozen ? { ...criterion, score: frozen.score, note: frozen.note } : criterion;
+    }),
+    earned: snapshot.earned,
+    max: snapshot.max,
+    percent: snapshot.percent,
+    attempts: snapshot.attempts,
+    goalsMet: snapshot.goalsMet,
+    predictionMatches: snapshot.predictionMatches,
+    comparablePairs: snapshot.comparablePairs,
+    validEvidencePairs: snapshot.validEvidencePairs,
+    partialEvidencePairs: snapshot.partialEvidencePairs,
+    needsRevisionPairs: snapshot.needsRevisionPairs
+  };
+}
+function guidedRubricBody(summary, locked){
+  const disabled = locked ? ' disabled' : '';
+  const options = weight => [1, 2, 3].map(value => '<option value="' + value + '"' + (value === weight ? ' selected' : '') + '>' + value + 'x weight</option>').join('');
+  return summary.criteria.map(criterion => {
+    const weight = guidedRubricWeights[criterion.key] || 1;
+    const width = Math.round(criterion.score / 2 * 100);
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--line)">' +
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><b>' + guidedHtmlEscape(criterion.label) + '</b><span class="chnote">' + criterion.score + '/2 · ' + (criterion.score * weight) + '/' + (2 * weight) + ' pts</span><select class="clab-sel" data-clab-rubric-weight="' + criterion.key + '" aria-label="' + guidedHtmlEscape(criterion.label) + ' rubric weight"' + disabled + '>' + options(weight) + '</select></div>' +
+      '<div style="height:5px;margin:6px 0 4px;border-radius:4px;background:var(--line);overflow:hidden"><i style="display:block;width:' + width + '%;height:100%;background:' + (criterion.score === 2 ? 'var(--good)' : criterion.score === 1 ? 'var(--accent)' : 'var(--warn)') + '"></i></div>' +
+      '<div class="chnote">' + guidedHtmlEscape(criterion.note) + '</div>' +
+    '</div>';
+  }).join('');
+}
+function guidedRubricSummaryText(summary){
+  const lines = ['COASTER LAB - classroom progress', 'Rubric score: ' + summary.earned + '/' + summary.max + ' (' + summary.percent + '%)', 'Attempts: ' + summary.attempts + ' | goals met: ' + summary.goalsMet + ' | prediction matches: ' + summary.predictionMatches + ' | usable comparisons: ' + summary.comparablePairs + ' (valid ' + summary.validEvidencePairs + '; partial ' + summary.partialEvidencePairs + '; needs revision ' + summary.needsRevisionPairs + ')', ''];
+  summary.criteria.forEach(criterion => lines.push(criterion.label + ': ' + criterion.score + '/2 - ' + criterion.note));
+  if(String(guidedRecord.studentReflection || '').trim()) lines.push('', 'Student reflection:', String(guidedRecord.studentReflection).trim());
+  return lines.join('\n');
+}
+function guidedReviewSnapshot(summary){
+  return {
+    earned: summary.earned,
+    max: summary.max,
+    percent: summary.percent,
+    attempts: summary.attempts,
+    goalsMet: summary.goalsMet,
+    predictionMatches: summary.predictionMatches,
+    comparablePairs: summary.comparablePairs,
+    validEvidencePairs: summary.validEvidencePairs,
+    partialEvidencePairs: summary.partialEvidencePairs,
+    needsRevisionPairs: summary.needsRevisionPairs,
+    criteria: summary.criteria.map(criterion => ({ key: criterion.key, score: criterion.score, note: criterion.note }))
+  };
+}
+function renderClassroomRubric(){
+  const history = guidedHistoryEntries();
+  if(!history.length) return '';
+  const summary = guidedRubricSummary();
+  const quality = guidedLatestEvidenceQuality(history);
+  const locked = !!guidedReview.locked;
+  const disabled = locked ? ' disabled' : '';
+  return '<div class="card" data-clab-classroom-rubric="true" data-clab-review-locked="' + String(locked) + '">' +
+    '<p class="eyebrow">Classroom rubric</p>' +
+    '<p class="hint" style="margin:0 0 8px">Teacher-set weights and feedback make the score reviewable. The local lock is a workflow aid, not authentication; student simulation controls remain available.</p>' +
+    '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><b data-clab-rubric-total>' + summary.earned + '/' + summary.max + ' points · ' + summary.percent + '%</b><span data-clab-review-status class="chnote" role="status" aria-live="polite">' + guidedHtmlEscape(guidedReviewStatusText()) + '</span></div>' +
+        renderGuidedEvidenceQuality(quality) +
+'<div data-clab-rubric-body style="margin-top:6px">' + guidedRubricBody(summary, locked) + '</div>' +
+    '<label class="hint" for="clab-studentReflection" style="display:block;margin-top:10px">Student reflection / CER reasoning <textarea id="clab-studentReflection" data-clab-student-reflection rows="4" maxlength="2400" placeholder="Explain how the controlled evidence supports your claim..."' + disabled + ' style="display:block;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)">' + guidedHtmlEscape(guidedRecord.studentReflection || '') + '</textarea></label>' +
+    '<label class="hint" for="clab-rubricNotes" style="display:block;margin-top:10px">Teacher/mentor notes <textarea id="clab-rubricNotes" data-clab-rubric-notes rows="4" maxlength="2400" placeholder="Add feedback or a next-step prompt..."' + disabled + ' style="display:block;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)">' + guidedHtmlEscape(guidedRecord.teacherNotes || '') + '</textarea></label>' +
+    '<label class="hint" for="clab-reviewer" style="display:block;margin-top:10px">Reviewer name (optional) <input id="clab-reviewer" data-clab-reviewer maxlength="120" value="' + guidedHtmlEscape(guidedReview.reviewer || '') + '" placeholder="Teacher or mentor"' + disabled + ' style="display:block;width:100%;box-sizing:border-box;margin-top:4px;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:8px;font:12px/1.45 var(--sans)"></label>' +
+    '<div class="btnrow" style="margin-top:7px"><button type="button" data-clab-copy-rubric>Copy student summary</button><button type="button" data-clab-finalize-review' + (locked ? ' disabled' : '') + '>Finalize review</button><button type="button" class="ghost" data-clab-reopen-review' + (locked ? '' : ' disabled') + '>Reopen review</button><button type="button" class="ghost" data-clab-reset-rubric' + disabled + '>Reset weights</button><span data-clab-rubric-status class="chnote" role="status" aria-live="polite"></span></div>' +
+  '</div>';
+}
+function bindClassroomRubric(){
+  const body = __clabGet('clab-reportBody');
+  const card = body && body.querySelector('[data-clab-classroom-rubric]');
+  if(!card) return;
+  const rubricBody = card.querySelector('[data-clab-rubric-body]');
+  const status = card.querySelector('[data-clab-rubric-status]');
+  const total = card.querySelector('[data-clab-rubric-total]');
+  const update = () => {
+    const summary = guidedRubricSummary();
+    if(rubricBody) rubricBody.innerHTML = guidedRubricBody(summary, !!guidedReview.locked);
+    if(total) total.textContent = summary.earned + '/' + summary.max + ' points · ' + summary.percent + '%';
+  };
+  const refresh = () => {
+    const next = renderClassroomRubric();
+    if(next){ card.outerHTML = next; bindClassroomRubric(); }
+  };
+  card.addEventListener('change', event => {
+    const target = event.target;
+    if(target && target.matches('[data-clab-rubric-weight]')){
+      if(guidedReview.locked) return;
+      guidedRubricWeights[target.dataset.clabRubricWeight] = Math.max(1, Math.min(3, Math.trunc(Number(target.value) || 1)));
+      persistGuidedRubricWeights();
+      update();
+    }
+  });
+  card.addEventListener('input', event => {
+    const target = event.target;
+    if(guidedReview.locked) return;
+    if(target && target.matches('[data-clab-rubric-notes]')){
+      guidedRecord.teacherNotes = String(target.value || '').slice(0, 2400);
+      persistGuidedRecord();
+      update();
+    }
+    if(target && target.matches('[data-clab-student-reflection]')){
+      guidedRecord.studentReflection = String(target.value || '').slice(0, 2400);
+      persistGuidedRecord();
+      update();
+    }
+    if(target && target.matches('[data-clab-reviewer]')){
+      guidedReview.reviewer = String(target.value || '').slice(0, 120);
+      persistGuidedReview();
+    }
+  });
+  card.addEventListener('click', async event => {
+    const target = event.target;
+    if(target && target.matches('[data-clab-finalize-review]')){
+      if(guidedReview.locked) return;
+      const latestQuality = guidedLatestEvidenceQuality();
+      const qualityWarning = latestQuality.level === 'needsRevision' ? ' The latest evidence is flagged as needs revision: ' + latestQuality.recommendation : '';
+      const ok = await clabConfirm('Finalize the current rubric and freeze its score?' + qualityWarning + ' You can reopen the local review later.', { title: 'Finalize teacher review', confirmText: 'Finalize review', cancelText: 'Keep editing', tone: 'warning' }, 'Review confirmation is unavailable, so the review was not finalized.');
+      if(!ok) return;
+      const reviewerInput = card.querySelector('[data-clab-reviewer]');
+      const summary = computeGuidedRubricSummary();
+      guidedReview = { locked: true, finalizedAt: new Date().toISOString(), reviewer: String(reviewerInput ? reviewerInput.value : guidedReview.reviewer || '').slice(0, 120), snapshot: guidedReviewSnapshot(summary) };
+      persistGuidedReview();
+      refresh();
+      banner('Teacher review finalized locally. The rubric score and feedback are now locked.', 'pass', 3600);
+      return;
+    }
+    if(target && target.matches('[data-clab-reopen-review]')){
+      if(!guidedReview.locked) return;
+      const ok = await clabConfirm('Reopen the local teacher review so its weights and feedback can be edited?', { title: 'Reopen teacher review', confirmText: 'Reopen review', cancelText: 'Keep finalized', tone: 'warning' }, 'Review confirmation is unavailable, so the review stayed finalized.');
+      if(!ok) return;
+      guidedReview = { locked: false, finalizedAt: '', reviewer: guidedReview.reviewer || '', snapshot: null };
+      persistGuidedReview();
+      refresh();
+      banner('Teacher review reopened. Update the rubric, then finalize it again when ready.', 'pass', 3400);
+      return;
+    }
+    if(target && target.matches('[data-clab-reset-rubric]')){
+      if(guidedReview.locked) return;
+      guidedRubricWeights = { ...GUIDED_RUBRIC_DEFAULTS };
+      persistGuidedRubricWeights();
+      update();
+      if(status) status.textContent = 'Rubric weights reset.';
+      return;
+    }
+    if(!target || !target.matches('[data-clab-copy-rubric]')) return;
+    const value = guidedRubricSummaryText(guidedRubricSummary());
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      try{ await navigator.clipboard.writeText(value); if(status) status.textContent = 'Student summary copied.'; return; }catch(_e){}
+    }
+    const pasted = await clabPrompt('Copy student progress summary:', value, { title: 'Copy student summary', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Summary copy is unavailable.');
+    if(pasted !== null && status) status.textContent = 'Summary ready to paste.';
+  });
+}
 function renderReport(tele){
   lastTele = tele;
   const sc = computeScores(tele);
@@ -3384,6 +4225,11 @@ function renderReport(tele){
   html += rating('Intensity',  intensity,  adj(intensity,  ['mild', 'moderate', 'strong', 'extreme', 'brutal']));
   html += rating('Nausea',     nausea,     adj(nausea,     ['calm', 'queasy', 'spinny', 'rough', 'lawsuit']));
   html += '</div>';
+  html += renderPredictionEvidence(tele);
+  html += renderRevisionComparison(tele);
+  html += renderExperimentTimeline(tele);
+  html += renderExperimentComparisonBoard();
+  html += renderClassroomRubric();
   syncRestraintStyle();
   html += renderRiderSafety(tele);
   html += renderSeatCard(tele);
@@ -3441,6 +4287,10 @@ function renderReport(tele){
   }
   html += '</div>';
   __clabGet('clab-reportBody').innerHTML = html;
+  bindExperimentComparison();
+  bindGuidedHistoryExport();
+  bindGuidedTeacherReport();
+  bindClassroomRubric();
   if(tele.trace.length > 5){
     bindTelemetryReplay(tele);
     drawTraces(tele);
@@ -4070,11 +4920,333 @@ const safetyList = __clabGet('clab-safetyList');
 const challengeSelect = __clabGet('clab-designChallenge');
 const challengeFill = __clabGet('clab-challengeFill');
 const challengeStatus = __clabGet('clab-challengeStatus');
+const adaptiveCoachEl = __clabGet('clab-adaptiveCoach');
+const adaptiveTitleEl = __clabGet('clab-adaptiveTitle');
+const adaptiveReasonEl = __clabGet('clab-adaptiveReason');
+const adaptiveAcceptEl = __clabGet('clab-btnAdaptiveAccept');
+const adaptiveProgressEl = __clabGet('clab-adaptiveProgress');
+const adaptiveProgressCountEl = __clabGet('clab-adaptiveProgressCount');
+const adaptiveProgressTrackEl = __clabGet('clab-adaptiveProgressTrack');
+const adaptiveProgressHintEl = __clabGet('clab-adaptiveProgressHint');
 let activeChallenge = (() => { try{ return localStorage.getItem('coaster_lab_challenge') || 'hill20'; }catch(_e){ return 'hill20'; } })();
 if(!['hill20', 'airtime3', 'gentle4'].includes(activeChallenge)) activeChallenge = 'hill20';
+const guidedWelcomeEl = __clabGet('clab-guidedWelcome');
+const guidedTextEl = __clabGet('clab-guidedText');
+const guidedStepEl = __clabGet('clab-guidedStep');
+const guidedRecordEl = __clabGet('clab-guidedRecord');
+const guidedConditionsEl = __clabGet('clab-guidedConditions');
+const guidedActionEl = __clabGet('clab-guidedAction');
+const guidedReviseEl = __clabGet('clab-guidedRevise');
+const guidedSkipEl = __clabGet('clab-guidedSkip');
+const guidedPredictionEl = __clabGet('clab-guidedPrediction');
+const guidedSpeedEl = __clabGet('clab-guidedSpeed');
+const guidedForceEl = __clabGet('clab-guidedForce');
+const guidedFeedbackEl = __clabGet('clab-guidedFeedback');
+const guidedCompareEl = __clabGet('clab-guidedCompare');
+const guidedExportEl = __clabGet('clab-guidedExport');
+const guidedClearEl = __clabGet('clab-guidedClear');
+function persistGuidedState(){
+  try{ localStorage.setItem(GUIDED_STATE_KEY, guidedState); }catch(_e){}
+}
+function persistGuidedRecord(){
+  try{ localStorage.setItem(GUIDED_RECORD_KEY, JSON.stringify(guidedRecord)); }catch(_e){}
+}
+function guidedConditionSnapshot(){
+  return {
+    friction: friction ? 'realistic' : 'ideal',
+    cars: TRAIN_CARS,
+    propulsion: design.propulsion.mode,
+    accel: Number(design.propulsion.accel) || 0,
+    challenge: activeChallenge
+  };
+}
+function guidedConditionsLocked(){
+  return !!(guidedRecord.conditions && ['building', 'predicting', 'testing', 'tested'].includes(guidedState));
+}
+function guidedConditionText(conditions){
+  if(!conditions) return 'Controlled experiment starts with the current settings. Change one track node per revision.';
+  const propulsion = conditions.propulsion === 'launch' ? 'LSM launch' : 'chain lift';
+  const thrust = conditions.propulsion === 'launch' ? ' at ' + fmt(Number(conditions.accel) || 0) + ' m/s^2' : '';
+  return 'Controlled conditions: ' + (conditions.friction || 'unknown') + ' friction · ' + (conditions.cars || '?') + ' cars · ' + propulsion + thrust + ' · goal ' + guidedGoalLabel(conditions.challenge) + '. Change one track node per revision.';
+}
+function guidedRejectConditionChange(){
+  if(!guidedConditionsLocked()) return false;
+  banner('Guided conditions are locked. Change only one track node, then run the next experiment.', '', 3200);
+  return true;
+}
+function guidedGoalLabel(goal){
+  return { hill20: '20 m hill', airtime3: '3 seconds of airtime', gentle4: 'peak force below 4.0 g' }[goal] || 'selected challenge';
+}
+function guidedGoalSnapshot(tele){
+  const goal = activeChallenge;
+  if(goal === 'hill20'){
+    const value = Math.max(...design.points.map(p => p.y));
+    return { goal, value, passed: value >= 20 && safetyFindings.length === 0 };
+  }
+  if(goal === 'airtime3'){
+    const value = Number(tele && tele.airtime) || 0;
+    return { goal, value, passed: value >= 3 };
+  }
+  const value = Number(tele && tele.maxGV);
+  return { goal, value: Number.isFinite(value) ? value : 0, passed: Number.isFinite(value) && value <= 4 };
+}
+function guidedGoalDelta(previous, latest){
+  const delta = Number(latest.goalValue) - Number(previous.goalValue);
+  const signed = (value, digits) => (value >= 0 ? '+' : '') + fmt(value, digits);
+  if(latest.goal === 'hill20') return 'hill height delta ' + signed(delta, 1) + ' m';
+  if(latest.goal === 'airtime3') return 'airtime delta ' + signed(delta, 1) + ' s';
+  return 'peak force delta ' + signed(delta, 1) + ' g';
+}
+function guidedComparison(tele){
+  const history = Array.isArray(guidedRecord.history) ? guidedRecord.history : [];
+  if(!history.length) return null;
+  const latest = history[history.length - 1];
+  if(tele && latest.designKey && tele.designKey && packetDesignFingerprintFromKey(latest.designKey) !== packetDesignFingerprintFromKey(tele.designKey)) return null;
+  if(history.length < 2) return { baseline: true, text: 'Baseline run saved for ' + guidedGoalLabel(latest.goal) + '. Revise one node to compare a new design.' };
+  const previous = history[history.length - 2];
+  const sameConditions = !!(latest.friction && previous.friction && latest.friction === previous.friction && Number(latest.cars) === Number(previous.cars) && latest.propulsion && previous.propulsion && latest.propulsion === previous.propulsion && Number(latest.accel || 0) === Number(previous.accel || 0));
+  if(!sameConditions) return { baseline: false, comparable: false, text: 'The last two runs changed friction, train length, or propulsion. Restore the same conditions before using the delta.' };
+  const sameGoal = !!(latest.goal && previous.goal && latest.goal === previous.goal);
+  if(!sameGoal) return { baseline: false, comparable: false, text: 'The selected challenge changed, so this run starts a new experiment. Keep the same goal to compare its progress.' };
+  const latestSpeed = Number(latest.maxSpeed), previousSpeed = Number(previous.maxSpeed);
+  const latestForce = Number(latest.maxGV), previousForce = Number(previous.maxGV);
+  if(!Number.isFinite(latestSpeed) || !Number.isFinite(previousSpeed) || !Number.isFinite(latestForce) || !Number.isFinite(previousForce)){
+    return { baseline: false, text: 'A previous run is saved. Run the revised design again to compare its measured evidence.' };
+  }
+  const signed = (value, digits) => (value >= 0 ? '+' : '') + fmt(value, digits);
+  return {
+    baseline: false,
+    speedDelta: latestSpeed - previousSpeed,
+    forceDelta: latestForce - previousForce,
+    goalDelta: Number(latest.goalValue) - Number(previous.goalValue),
+    text: 'Since attempt ' + (previous.attempt || '?') + ': top speed delta ' + signed((latestSpeed - previousSpeed) * 3.6, 0) + ' km/h; peak vertical force delta ' + signed(latestForce - previousForce, 1) + ' g; ' + guidedGoalDelta(previous, latest) + ' for ' + guidedGoalLabel(latest.goal) + '; ' + (latest.goalPassed ? 'goal met.' : 'goal not met yet.')
+  };
+}
+function syncGuidedWelcome(){
+  if(!guidedWelcomeEl) return;
+  const active = ['ready', 'building', 'predicting', 'testing', 'tested'].includes(guidedState);
+  guidedWelcomeEl.hidden = !active;
+  if(!active) return;
+  const copy = {
+    ready: ['Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.', 'Step 1 of 4 - Shape the track', 'Begin guided build'],
+    building: ['Choose the highest glowing node, raise it into a smooth hill, then make a prediction before the test.', 'Step 1 of 4 - Shape the track', 'Make prediction'],
+    predicting: ['Use the energy story to predict first: height becomes speed, and tight curves create stronger vertical force.', 'Step 2 of 4 - Predict the ride', 'Run and check'],
+    testing: ['The train is running. Watch the HUD as height trades for speed, then read the evidence when it finishes.', 'Step 3 of 4 - Observe the ride', 'Running...'],
+    tested: ['Your prediction is compared with the measured report. Revise one node and run the loop again.', 'Step 4 of 4 - Revise the design', 'Open report']
+  }[guidedState];
+  if(guidedTextEl) guidedTextEl.textContent = copy[0];
+  if(guidedRecordEl) guidedRecordEl.textContent = 'Attempts: ' + guidedRecord.attempts + ' - revisions: ' + guidedRecord.revisions + ' - saved runs: ' + (Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0);
+  if(guidedConditionsEl) guidedConditionsEl.textContent = guidedConditionText(guidedRecord.conditions);
+  if(guidedStepEl) guidedStepEl.innerHTML = '<b>' + copy[1].split(' - ')[0] + '</b> - ' + copy[1].split(' - ')[1];
+  if(guidedPredictionEl) guidedPredictionEl.hidden = !['predicting', 'tested'].includes(guidedState);
+  if(guidedFeedbackEl) guidedFeedbackEl.hidden = guidedState !== 'tested' || !guidedPrediction.feedback;
+  const comparison = guidedComparison();
+  if(guidedCompareEl){
+    const showComparison = guidedState === 'tested' && !!comparison;
+    guidedCompareEl.hidden = !showComparison;
+    guidedCompareEl.textContent = showComparison ? comparison.text : '';
+  }
+  if(guidedExportEl) guidedExportEl.disabled = !(Array.isArray(guidedRecord.history) && guidedRecord.history.length);
+  if(guidedClearEl) guidedClearEl.disabled = !(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length));
+  if(guidedReviseEl) guidedReviseEl.hidden = guidedState !== 'tested';
+  if(guidedSpeedEl && guidedPrediction.speed) guidedSpeedEl.value = guidedPrediction.speed;
+  if(guidedForceEl && guidedPrediction.force) guidedForceEl.value = guidedPrediction.force;
+  if(guidedActionEl){
+    guidedActionEl.textContent = copy[2];
+    guidedActionEl.disabled = guidedState === 'testing' || sim.running;
+  }
+}
+function guidedNotebookText(){
+  const history = Array.isArray(guidedRecord.history) ? guidedRecord.history : [];
+  const lines = [
+    'COASTER LAB - guided experiment notebook',
+    'Attempts: ' + guidedRecord.attempts + ' | Revisions: ' + guidedRecord.revisions,
+    ''
+  ];
+  if(!history.length){
+    lines.push('No completed guided runs yet.');
+    return lines.join('\n');
+  }
+  for(const entry of history){
+    const speed = entry.speed === 'speedUp' ? 'speed up' : 'slow down';
+    const force = entry.force || 'not recorded';
+    const goal = guidedGoalLabel(entry.goal);
+    const goalValue = entry.goal === 'hill20' ? fmt(entry.goalValue, 1) + ' m' : entry.goal === 'airtime3' ? fmt(entry.goalValue, 1) + ' s' : fmt(entry.goalValue, 1) + ' g';
+    lines.push('Run ' + entry.attempt + ' (revision ' + entry.revision + ')');
+    lines.push('Goal: ' + goal + ' | measured ' + goalValue + ' | ' + (entry.goalPassed ? 'met' : 'not met'));
+    lines.push('Prediction: speed ' + speed + '; strongest force near the ' + force + '.');
+    lines.push('Evidence: max speed ' + fmt((Number(entry.maxSpeed) || 0) * 3.6, 0) + ' km/h; peak vertical force ' + fmt(Number(entry.maxGV) || 0, 1) + ' g.');
+    lines.push('Conditions: ' + (entry.friction || 'unknown') + ' friction; ' + (entry.cars || '?') + ' cars; ' + (entry.propulsion || 'unknown') + ' propulsion.');
+    lines.push('Prediction check: ' + (entry.speedCorrect ? 'speed matched' : 'speed differed') + '; ' + (entry.forceCorrect ? 'force location matched' : 'force location differed') + '.');
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+async function copyGuidedNotebook(){
+  const value = guidedNotebookText();
+  const done = () => banner('Experiment log copied - ready to hand in or paste into a lab report.', 'pass', 3000);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try{ await navigator.clipboard.writeText(value); done(); return; }catch(_e){}
+  }
+  const pasted = await clabPrompt('Copy your experiment log:', value, { title: 'Copy experiment notebook', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Notebook export is unavailable.');
+  if(pasted !== null) done();
+}
+if(guidedExportEl) guidedExportEl.addEventListener('click', copyGuidedNotebook);
+async function clearGuidedNotebook(){
+  if(sim.running){
+    banner('Finish the current run before clearing the notebook.', 'fail', 2600);
+    return;
+  }
+  if(!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length))){
+    banner('The guided notebook is already empty.', '', 2200);
+    return;
+  }
+  const ok = await clabConfirm('Clear the guided experiment notebook? Your coaster design will stay unchanged.', { title: 'Clear experiment notebook', confirmText: 'Clear notebook', cancelText: 'Keep notebook', tone: 'warning' }, 'Notebook confirmation is unavailable, so the notebook was kept.');
+  if(!ok) return;
+  guidedRecord = { attempts: 0, revisions: 0, prediction: null, history: [], conditions: null, studentReflection: '', teacherNotes: '' };
+  guidedReview = { locked: false, finalizedAt: '', reviewer: '', snapshot: null };
+  persistGuidedReview();
+  persistGuidedRecord();
+  resetGuidedPrediction();
+  setGuidedState('ready');
+  banner('Notebook cleared. Your coaster design is still here; start a fresh experiment.', 'pass', 3200);
+}
+if(guidedClearEl) guidedClearEl.addEventListener('click', clearGuidedNotebook);
+function guidedPredictionReady(){
+  return !!(guidedSpeedEl && guidedForceEl && guidedSpeedEl.value && guidedForceEl.value);
+}
+function guidedActualSpeed(tele){
+  if(!tele || !Array.isArray(tele.trace) || !tele.trace.length) return 'slowDown';
+  const firstV = Number(tele.trace[0].v) || 0;
+  const peakV = tele.trace.reduce((best, point) => Math.max(best, Number(point.v) || 0), firstV);
+  return peakV > firstV + 4 ? 'speedUp' : 'slowDown';
+}
+function guidedPeakZone(tele){
+  if(!tele || !Array.isArray(tele.trace) || !tele.trace.length || !track || !Array.isArray(track.y)) return 'track';
+  const peak = tele.trace.reduce((best, point) => point.g > best.g ? point : best, tele.trace[0]);
+  const y = trackAt(peak.s).y;
+  const lo = Math.min(...track.y), hi = Math.max(...track.y);
+  const ratio = (y - lo) / Math.max(1, hi - lo);
+  return ratio < 0.35 ? 'valley' : ratio > 0.68 ? 'hill' : 'turn';
+}
+function guidedTraceSnapshot(tele){
+  const raw = tele && Array.isArray(tele.trace) ? tele.trace : [];
+  const valid = raw.filter(point => point && [point.s, point.v, point.g, point.gl].every(value => Number.isFinite(Number(value))));
+  if(!valid.length) return [];
+  const stride = Math.max(1, Math.ceil(valid.length / 72));
+  return valid.filter((point, index) => index === 0 || index === valid.length - 1 || index % stride === 0).map(point => ({
+    s: Number(Number(point.s).toFixed(3)),
+    v: Number(Number(point.v).toFixed(3)),
+    g: Number(Number(point.g).toFixed(3)),
+    gl: Number(Number(point.gl).toFixed(3))
+  }));
+}
+function updateGuidedPredictionFeedback(tele){
+  if(!tele || !Array.isArray(tele.trace) || !tele.trace.length) return;
+  const actualSpeed = guidedActualSpeed(tele);
+  const actualForce = guidedPeakZone(tele);
+  const speedCorrect = guidedPrediction.speed === actualSpeed;
+  const forceCorrect = guidedPrediction.force === actualForce;
+  const speedText = speedCorrect ? 'Speed prediction: correct - the train sped up after the drop.' : 'Speed prediction: the measured ride ' + (actualSpeed === 'speedUp' ? 'sped up' : 'slowed down') + ' after the drop.';
+  const forceText = forceCorrect ? 'Force prediction: correct - the peak appeared near the ' + actualForce + '.' : 'Force prediction: the peak appeared near the ' + actualForce + '.';
+  guidedPrediction = { ...guidedPrediction, feedback: speedText + ' ' + forceText, speedCorrect, forceCorrect, actualForce };
+  guidedRecord.prediction = guidedPrediction;
+  const goalSnapshot = guidedGoalSnapshot(tele);
+  const historyEntry = {
+    attempt: guidedRecord.attempts,
+    revision: guidedRecord.revisions,
+    speed: guidedPrediction.speed,
+    force: guidedPrediction.force,
+    speedCorrect, forceCorrect, actualForce,
+    maxSpeed: Number.isFinite(tele.maxV) ? tele.maxV : 0,
+    maxGV: Number.isFinite(tele.maxGV) ? tele.maxGV : 0,
+    minGV: Number.isFinite(tele.minGV) ? tele.minGV : 0,
+    maxLat: Number.isFinite(tele.maxLat) ? tele.maxLat : 0,
+    accel: Number(design.propulsion.accel) || 0,
+    friction: tele.fricUsed ? 'realistic' : 'ideal',
+    cars: TRAIN_CARS,
+    propulsion: design.propulsion.mode,
+    goal: goalSnapshot.goal,
+    goalValue: goalSnapshot.value,
+    goalPassed: goalSnapshot.passed,
+    designKey: tele.designKey,
+    trace: guidedTraceSnapshot(tele)
+  };
+  guidedRecord.history = [...(guidedRecord.history || []), historyEntry].slice(-5);
+  persistGuidedRecord();
+  if(guidedFeedbackEl){
+    guidedFeedbackEl.textContent = guidedPrediction.feedback + ' Peak vertical force: ' + fmt(tele.maxGV, 1) + ' g.';
+    guidedFeedbackEl.hidden = false;
+  }
+}
+function setGuidedState(next){
+  guidedState = next;
+  persistGuidedState();
+  syncGuidedWelcome();
+}
+function resetGuidedPrediction(){
+  guidedPrediction = { speed: '', force: '', feedback: '', speedCorrect: null, forceCorrect: null, actualForce: '' };
+  if(guidedSpeedEl) guidedSpeedEl.value = '';
+  if(guidedForceEl) guidedForceEl.value = '';
+  if(guidedFeedbackEl){ guidedFeedbackEl.textContent = ''; guidedFeedbackEl.hidden = true; }
+}
+function beginGuidedAction(){
+  if(sim.running) return;
+  if(guidedState === 'ready'){
+    resetGuidedPrediction();
+    activeChallenge = guidedRecord.history && guidedRecord.history.length ? activeChallenge : 'hill20';
+    if(challengeSelect){
+      challengeSelect.value = activeChallenge;
+      try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
+    }
+    guidedRecord.conditions = guidedConditionSnapshot();
+    persistGuidedRecord();
+    setGuidedState('building');
+    enterTrackEditor();
+    banner('Guided build started - raise the selected node into a smooth hill, then make a prediction.', 'pass', 3600);
+    return;
+  }
+  if(guidedState === 'building'){
+    setGuidedState('predicting');
+    try{ guidedSpeedEl && guidedSpeedEl.focus({ preventScroll: true }); }catch(_e){}
+    banner('Prediction checkpoint - choose what height and curvature will do to the train.', 'pass', 3600);
+    return;
+  }
+  if(guidedState === 'predicting'){
+    if(!guidedPredictionReady()){
+      banner('Choose both predictions before running the ride.', 'fail', 2800);
+      try{ (guidedSpeedEl && !guidedSpeedEl.value ? guidedSpeedEl : guidedForceEl).focus({ preventScroll: true }); }catch(_e){}
+      return;
+    }
+    guidedPrediction = { ...guidedPrediction, speed: guidedSpeedEl.value, force: guidedForceEl.value, designKey: JSON.stringify(design.points) };
+    guidedRecord.attempts += 1;
+    persistGuidedRecord();
+    startRun(false);
+    if(sim.running) setGuidedState('testing');
+    return;
+  }
+  if(guidedState === 'tested'){
+    activateTab(__clabGet('clab-tab-report-btn'));
+    try{ __clabGet('clab-tab-report-btn').focus({ preventScroll: true }); }catch(_e){}
+  }
+}
+if(guidedActionEl) guidedActionEl.addEventListener('click', beginGuidedAction);
+if(guidedReviseEl) guidedReviseEl.addEventListener('click', () => {
+  if(sim.running) return;
+  resetGuidedPrediction();
+  guidedRecord.revisions += 1
+  persistGuidedRecord()
+  setGuidedState('building');
+  enterTrackEditor();
+  banner('Revise one node, then make a new prediction before the next run.', 'pass', 3600);
+});
+if(guidedSkipEl) guidedSkipEl.addEventListener('click', () => {
+  setGuidedState('complete');
+  banner('Full lab unlocked · use the Build, Certify, Report, and Missions panels at your own pace.', 'pass', 3200);
+});
 function updateDesignChallenge(tele = lastTele){
   if(!challengeSelect || !challengeFill || !challengeStatus) return;
-  const sameDesign = !!(tele && tele.designKey === JSON.stringify(design.points));
+  const sameDesign = !!(tele && packetDesignFingerprintFromKey(tele.designKey) === packetDesignKey(design.points));
   let pct = 0, done = false, text = '';
   if(activeChallenge === 'hill20'){
     const maxH = Math.max(...design.points.map(p => p.y));
@@ -4096,13 +5268,22 @@ function updateDesignChallenge(tele = lastTele){
   challengeStatus.textContent = text;
   challengeStatus.classList.toggle('done', done);
   challengeSelect.value = activeChallenge;
+  updateAdaptiveChallenge();
 }
 challengeSelect.value = activeChallenge;
 challengeSelect.addEventListener('change', () => {
+  if(guidedConditionsLocked()){
+    activeChallenge = guidedRecord.conditions.challenge || 'hill20';
+    challengeSelect.value = activeChallenge;
+    guidedRejectConditionChange();
+    updateDesignChallenge();
+    return;
+  }
   activeChallenge = challengeSelect.value;
   try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
   updateDesignChallenge();
 });
+if(adaptiveAcceptEl) adaptiveAcceptEl.addEventListener('click', acceptAdaptiveChallenge);
 __clabGet('clab-btnChallengeRun').addEventListener('click', () => {
   if(sim.running) banner('Finish or stop the current run first.', 'fail', 2200);
   else startRun(false);
@@ -4438,18 +5619,25 @@ function syncPropUI(){
   }
 }
 __clabGet('clab-btnChain').addEventListener('click', () => {
+  if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; }
   design.propulsion.mode = 'chain';
   fullRebuild(); syncPropUI(); saveDesign();
 });
 __clabGet('clab-btnLaunch').addEventListener('click', () => {
+  if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; }
   design.propulsion.mode = 'launch';
   fullRebuild(); syncPropUI(); saveDesign();
 });
 slLaunch.addEventListener('input', () => {
+  if(guidedConditionsLocked()){
+    slLaunch.value = String(Number(guidedRecord.conditions.accel) || 0);
+    __clabGet('clab-slLaunchV').textContent = fmt(Number(guidedRecord.conditions.accel) || 0) + ' m/s²';
+    return;
+  }
   design.propulsion.accel = parseFloat(slLaunch.value);
   __clabGet('clab-slLaunchV').textContent = fmt(design.propulsion.accel) + ' m/s²';
 });
-slLaunch.addEventListener('change', () => { fullRebuild(); syncPropUI(); saveDesign(); });
+slLaunch.addEventListener('change', () => { if(guidedConditionsLocked()){ syncPropUI(); guidedRejectConditionChange(); return; } fullRebuild(); syncPropUI(); saveDesign(); });
 
 /* ---------------- sound (synthesized, off by default) ---------------- */
 const audio = { enabled: false, ctx: null, master: null, windFilt: null, windGain: null,
@@ -4556,6 +5744,14 @@ __clabGet('clab-btnRun').addEventListener('click', () => {
   if(!sel) return;
   sel.addEventListener('change', () => {
     if(sim.running){ banner('Stop the train before changing it.', 'fail', 2400); sel.value = String(TRAIN_CARS); return; }
+    if(guidedConditionsLocked()){
+      const lockedCars = Number(guidedRecord.conditions.cars) || TRAIN_CARS;
+      design.cars = lockedCars;
+      sel.value = String(lockedCars);
+      syncTrainLength();
+      guidedRejectConditionChange();
+      return;
+    }
     design.cars = Math.max(DESIGN_BOUNDS.carsMin,
       Math.min(DESIGN_BOUNDS.carsMax, parseInt(sel.value, 10) || DESIGN_BOUNDS.carsDefault));
     fullRebuild(); saveDesign();
@@ -4591,6 +5787,13 @@ __clabGet('clab-btnView').addEventListener('click', e => {
   if(xrayMode) colorizeSpine();
 });
 __clabGet('clab-btnFric').addEventListener('click', e => {
+  if(guidedConditionsLocked()){
+    friction = guidedRecord.conditions.friction === 'realistic';
+    e.target.textContent = 'Friction: ' + (friction ? 'Realistic' : 'Off (ideal)');
+    e.target.setAttribute('aria-pressed', String(friction));
+    guidedRejectConditionChange();
+    return;
+  }
   friction = !friction;
   e.target.textContent = 'Friction: ' + (friction ? 'Realistic' : 'Off (ideal)');
   e.target.setAttribute('aria-pressed', String(friction));
@@ -4603,6 +5806,257 @@ function importDesign(str){
   design = parseDesignJson(str);
   selIdx = -1;
   fullRebuild(); syncPointCard(); saveDesign();
+}
+const LAB_PACKET_SCHEMA = 1;
+const LAB_PACKET_MAX_JSON_CHARS = 128 * 1024;
+const LAB_PACKET_MAX_TRACE_POINTS = 240;
+function packetNumber(value, fallback = 0){
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+function packetDesignKey(points){
+  return JSON.stringify((Array.isArray(points) ? points : []).map(p => [
+    packetNumber(p && p.x).toFixed(4),
+    packetNumber(p && p.y).toFixed(4),
+    packetNumber(p && p.z).toFixed(4),
+    packetNumber(p && p.bank).toFixed(4)
+  ]));
+}
+function packetDesignFingerprintFromKey(rawKey){
+  if(typeof rawKey !== 'string' || !rawKey.length) return '';
+  try{ return packetDesignKey(JSON.parse(rawKey)); }catch(_e){ return ''; }
+}
+function packetTrace(rawTrace){
+  if(!Array.isArray(rawTrace)) return [];
+  const valid = rawTrace.filter(p => p && Number.isFinite(Number(p.s)) && Number.isFinite(Number(p.v)) && Number.isFinite(Number(p.g)) && Number.isFinite(Number(p.gl)));
+  if(!valid.length) return [];
+  const stride = Math.max(1, Math.ceil(valid.length / LAB_PACKET_MAX_TRACE_POINTS));
+  return valid.filter((p, i) => i === 0 || i === valid.length - 1 || i % stride === 0).map(p => ({
+    s: packetNumber(p.s), v: packetNumber(p.v), g: packetNumber(p.g), gl: packetNumber(p.gl)
+  }));
+}
+function packetMarkers(rawMarkers){
+  const out = {};
+  if(!rawMarkers || typeof rawMarkers !== 'object') return out;
+  Object.keys(rawMarkers).slice(0, 12).forEach(key => {
+    const marker = rawMarkers[key];
+    if(!marker || typeof marker !== 'object') return;
+    out[key] = {
+      v: packetNumber(marker.v),
+      gV: packetNumber(marker.gV),
+      gLat: packetNumber(marker.gLat)
+    };
+  });
+  return out;
+}
+function packetSeats(rawSeats){
+  if(!Array.isArray(rawSeats)) return [];
+  return rawSeats.filter(s => s && Number.isFinite(Number(s.minGV))).slice(0, DESIGN_BOUNDS.carsMax).map(s => ({
+    maxGV: packetNumber(s.maxGV),
+    minGV: packetNumber(s.minGV),
+    maxLat: packetNumber(s.maxLat),
+    airtime: packetNumber(s.airtime),
+    sMin: Number.isFinite(Number(s.sMin)) ? Number(s.sMin) : null
+  }));
+}
+function packetForceEpisode(raw){
+  return {
+    ratio: Math.max(0, packetNumber(raw && raw.ratio)),
+    level: packetNumber(raw && raw.level),
+    dur: Math.max(0, packetNumber(raw && raw.dur))
+  };
+}
+function packetSustain(raw){
+  const worst = raw && raw.worst && typeof raw.worst === 'object' ? raw.worst : {};
+  return {
+    pos: raw && raw.pos && typeof raw.pos === 'object' ? {
+      dur: Math.max(0, packetNumber(raw.pos.dur)),
+      level: packetNumber(raw.pos.level)
+    } : null,
+    neg: raw && raw.neg && typeof raw.neg === 'object' ? {
+      dur: Math.max(0, packetNumber(raw.neg.dur)),
+      level: packetNumber(raw.neg.level)
+    } : null,
+    lat: raw && raw.lat && typeof raw.lat === 'object' ? {
+      dur: Math.max(0, packetNumber(raw.lat.dur)),
+      level: packetNumber(raw.lat.level)
+    } : null,
+    worst: {
+      pos: packetForceEpisode(worst.pos),
+      neg: packetForceEpisode(worst.neg),
+      lat: packetForceEpisode(worst.lat)
+    }
+  };
+}
+function packetTelemetrySnapshot(tele){
+  if(!tele || typeof tele !== 'object' || tele.status !== 'complete') return null;
+  const expectedDesignKey = JSON.stringify(design.points);
+  const expectedFingerprint = packetDesignKey(design.points);
+
+  const trace = packetTrace(tele.trace);
+  if(!trace.length) return null;
+  return {
+    status: 'complete',
+    designKey: typeof tele.designKey === 'string' ? tele.designKey : expectedDesignKey,
+    designFingerprint: packetDesignFingerprintFromKey(tele.designKey) || expectedFingerprint,
+
+    fricUsed: !!tele.fricUsed,
+    L: packetNumber(tele.L, track && track.L ? track.L : 0),
+    duration: Math.max(0, packetNumber(tele.duration)),
+    maxV: Math.max(0, packetNumber(tele.maxV)),
+    maxGV: packetNumber(tele.maxGV),
+    minGV: packetNumber(tele.minGV),
+    maxLat: Math.max(0, packetNumber(tele.maxLat)),
+    airtime: Math.max(0, packetNumber(tele.airtime)),
+    latSec: Math.max(0, packetNumber(tele.latSec)),
+    inversions: Math.max(0, Math.trunc(packetNumber(tele.inversions))),
+    heat: Math.max(0, packetNumber(tele.heat)),
+    rolledBack: !!tele.rolledBack,
+    violations: Array.isArray(tele.violations) ? tele.violations.filter(v => typeof v === 'string').slice(0, 20) : [],
+    markers: packetMarkers(tele.markers),
+    trace,
+    sus: packetSustain(tele.sus),
+    seats: packetSeats(tele.seats)
+  };
+}
+function packetTelemetryRestore(raw, expectedDesignKey, expectedFingerprint){
+  if(!raw || typeof raw !== 'object' || raw.status !== 'complete') return null;
+  if(raw.designKey && !packetDesignFingerprintFromKey(raw.designKey)) return null;
+  const trace = packetTrace(raw.trace);
+  if(!trace.length) return null;
+  return {
+    status: 'complete',
+    designKey: typeof raw.designKey === 'string' ? raw.designKey : expectedDesignKey,
+    designFingerprint: raw.designFingerprint || packetDesignFingerprintFromKey(raw.designKey) || expectedFingerprint,
+    fricUsed: !!raw.fricUsed,
+    L: Math.max(0, packetNumber(raw.L)),
+    duration: Math.max(0, packetNumber(raw.duration)),
+    maxV: Math.max(0, packetNumber(raw.maxV)),
+    maxGV: packetNumber(raw.maxGV),
+    minGV: packetNumber(raw.minGV),
+    maxLat: Math.max(0, packetNumber(raw.maxLat)),
+    airtime: Math.max(0, packetNumber(raw.airtime)),
+    latSec: Math.max(0, packetNumber(raw.latSec)),
+    inversions: Math.max(0, Math.trunc(packetNumber(raw.inversions))),
+    heat: Math.max(0, packetNumber(raw.heat)),
+    rolledBack: !!raw.rolledBack,
+    violations: Array.isArray(raw.violations) ? raw.violations.filter(v => typeof v === 'string').slice(0, 20) : [],
+    markers: packetMarkers(raw.markers),
+    trace,
+    lastTraceS: trace[trace.length - 1].s,
+    markSs: {},
+    sus: packetSustain(raw.sus),
+    seats: packetSeats(raw.seats),
+    photos: []
+  };
+}
+function clearPacketReport(){
+  stopTelemetryReplay(true);
+  lastTele = null;
+  runHistory.ideal = null;
+  runHistory.real = null;
+  const body = __clabGet('clab-reportBody');
+  if(body) body.innerHTML = '<p class="hint">No completed runs yet. Press <b>▶ Test run</b> and the telemetry report will land here.</p>';
+}
+function exportLabPacket(){
+  return JSON.stringify({
+    type: 'coaster-lab-packet',
+    version: LAB_PACKET_SCHEMA,
+    exportedAt: new Date().toISOString(),
+    design: JSON.parse(exportDesign()),
+    guided: {
+      state: guidedState,
+      record: guidedRecord,
+      challenge: activeChallenge,
+      rubric: guidedRubricWeights,
+      review: guidedReview
+    },
+    settings: {
+      friction: friction ? 'realistic' : 'ideal',
+      cars: TRAIN_CARS,
+      propulsion: { mode: design.propulsion.mode, accel: design.propulsion.accel },
+      challenge: activeChallenge,
+
+    },
+    evidence: packetTelemetrySnapshot(lastTele)
+  });
+}
+function parseLabPacket(raw){
+  if(typeof raw !== 'string' || !raw.length) throw new Error('empty lab packet');
+  if(raw.length > LAB_PACKET_MAX_JSON_CHARS) throw new Error('lab packet is too large');
+  const packet = JSON.parse(raw);
+  if(!packet || typeof packet !== 'object' || packet.type !== 'coaster-lab-packet' || packet.version !== LAB_PACKET_SCHEMA){
+    throw new Error('unsupported lab packet');
+  }
+  if(!packet.design || typeof packet.design !== 'object') throw new Error('lab packet has no design');
+  return packet;
+}
+function importLabPacket(str){
+  const packet = parseLabPacket(str);
+  const importedDesign = parseDesignJson(JSON.stringify(packet.design));
+  const expectedDesignKey = JSON.stringify(importedDesign.points);
+  const expectedFingerprint = packetDesignKey(importedDesign.points);
+  const importedEvidence = packetTelemetryRestore(packet.evidence, expectedDesignKey, expectedFingerprint);
+  const guided = packet.guided && typeof packet.guided === 'object' ? packet.guided : {};
+  const rawRecord = guided.record && typeof guided.record === 'object' ? guided.record : {};
+  const rawSettings = packet.settings && typeof packet.settings === 'object' ? packet.settings : {};
+  const rawConditions = rawRecord.conditions && typeof rawRecord.conditions === 'object' ? rawRecord.conditions : null;
+  const goals = ['hill20', 'airtime3', 'gentle4'];
+  const candidateChallenge = rawSettings.challenge || guided.challenge || (rawConditions && rawConditions.challenge);
+  const importedChallenge = goals.includes(candidateChallenge) ? candidateChallenge : 'hill20';
+  const validStates = ['new', 'ready', 'building', 'predicting', 'testing', 'tested', 'complete'];
+  const importedState = validStates.includes(guided.state) ? guided.state : 'new';
+  const importedRecord = {
+    attempts: Math.max(0, Math.trunc(Number(rawRecord.attempts) || 0)),
+    revisions: Math.max(0, Math.trunc(Number(rawRecord.revisions) || 0)),
+    prediction: rawRecord.prediction && typeof rawRecord.prediction === 'object' ? rawRecord.prediction : null,
+    history: Array.isArray(rawRecord.history) ? rawRecord.history.filter(item => item && typeof item === 'object').slice(-5) : [],
+    studentReflection: typeof rawRecord.studentReflection === 'string' ? rawRecord.studentReflection.slice(0, 2400) : '',
+    teacherNotes: typeof rawRecord.teacherNotes === 'string' ? rawRecord.teacherNotes.slice(0, 2400) : '',
+    conditions: rawConditions ? {
+      friction: rawConditions.friction === 'ideal' ? 'ideal' : 'realistic',
+      cars: Math.max(DESIGN_BOUNDS.carsMin, Math.min(DESIGN_BOUNDS.carsMax, Math.trunc(Number(rawConditions.cars) || importedDesign.cars || DESIGN_BOUNDS.carsDefault))),
+      propulsion: rawConditions.propulsion === 'launch' ? 'launch' : 'chain',
+      accel: Math.max(0, Number(rawConditions.accel) || 0),
+      challenge: importedChallenge
+    } : null
+  };
+  const frictionSetting = rawSettings.friction || (rawConditions && rawConditions.friction);
+  design = importedDesign;
+  const importedReview = normalizeGuidedReview(guided.review);
+  guidedRubricWeights = normalizeGuidedRubricWeights(guided.rubric);
+  persistGuidedRubricWeights();
+  guidedReview = importedReview;
+  persistGuidedReview();
+  guidedRecord = importedRecord;
+  guidedState = importedState;
+  activeChallenge = importedChallenge;
+  friction = frictionSetting === 'ideal' ? false : true;
+  selIdx = -1;
+  fullRebuild();
+  syncPointCard();
+  syncPropUI();
+  const fricButton = __clabGet('clab-btnFric');
+  if(fricButton){
+    fricButton.textContent = 'Friction: ' + (friction ? 'Realistic' : 'Off (ideal)');
+    fricButton.setAttribute('aria-pressed', String(friction));
+  }
+  if(challengeSelect) challengeSelect.value = activeChallenge;
+  try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
+  saveDesign();
+  persistGuidedRecord();
+  persistGuidedState();
+  if(importedEvidence){
+    runHistory.ideal = null;
+    runHistory.real = null;
+    runHistory[importedEvidence.fricUsed ? 'real' : 'ideal'] = importedEvidence;
+    renderReport(importedEvidence);
+  } else {
+    clearPacketReport();
+  }
+  updateDesignChallenge(importedEvidence || null);
+  syncGuidedWelcome();
+  return true;
 }
 function showDesignRecovery(){
   if(!designRecovery) return;
@@ -4642,6 +6096,32 @@ __clabGet('clab-btnImport').addEventListener('click', async () => {
   catch(_e){ banner('That doesn’t look like a Coaster Lab design.', 'fail', 3000); }
 });
 
+
+__clabGet('clab-btnPacketExport').addEventListener('click', async () => {
+  const s = exportLabPacket();
+  const done = () => banner('Lab packet copied — it includes your design and notebook.', 'pass', 3200);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try { await navigator.clipboard.writeText(s); done(); return; } catch(_e) {}
+  }
+  const value = await clabPrompt('Copy your Coaster Lab packet:', s, { title: 'Copy lab packet', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Lab-packet copy is unavailable.');
+  if(value !== null) done();
+});
+__clabGet('clab-btnPacketImport').addEventListener('click', async () => {
+  if(sim.running){
+    banner('Finish or stop the current run before opening a lab packet.', 'fail', 2600);
+    return;
+  }
+  const s = await clabPrompt('Paste a Coaster Lab packet:', '', { title: 'Open lab packet', placeholder: 'Paste packet JSON data', confirmText: 'Open packet', cancelText: 'Cancel', multiline: true }, 'Lab-packet import is unavailable.');
+  if(!s) return;
+  const confirmed = await clabConfirm('Open this lab packet? Your current design and notebook will be replaced.', { title: 'Replace current lab', confirmText: 'Open packet', cancelText: 'Keep current lab' }, 'Lab-packet import is unavailable.');
+  if(!confirmed) return;
+  try{
+    importLabPacket(s);
+    banner('Lab packet opened — design, notebook, and conditions restored.', 'pass', 3600);
+  }catch(_e){
+    banner('That doesn’t look like a valid Coaster Lab packet.', 'fail', 3200);
+  }
+});
 
 /* ---------------- FX quality toggle ---------------- */
 let fxLite = localStorage.getItem('coaster_lab_fx') === 'lite';
@@ -6151,6 +7631,7 @@ function rideCardFacts(){
     certDate: get('coaster_lab_certified'),
     best: get('coaster_lab_ride_best'),
     tele: lastTele,
+    prediction: predictionEvidence(lastTele),
     spec, seats
   };
 }
@@ -6879,6 +8360,7 @@ setLevel(level);
 syncPointCard();
 snapshot();
 renderMissions();
+syncGuidedWelcome();
 if(fxLite) applyFx();
 placeTrain();
 showDesignRecovery();
@@ -6902,7 +8384,54 @@ rootEl._lab = {
     if(sim.running) stopRun();
     return sim.tele && sim.tele.status;
   },
+  guidedRun: () => {
+    if(guidedState === 'ready') beginGuidedAction();
+    if(guidedState === 'building') beginGuidedAction();
+    if(guidedState === 'predicting'){
+      if(guidedSpeedEl) guidedSpeedEl.value = 'speedUp';
+      if(guidedForceEl) guidedForceEl.value = 'valley';
+      beginGuidedAction();
+      return rootEl._lab.fastRun(false, false);
+    }
+    return sim.tele && sim.tele.status;
+  },
+  telemetrySummary: () => {
+    const t = lastTele;
+    if(!t) return null;
+    return {
+      status: t.status,
+      duration: +(t.duration || 0).toFixed(3),
+      maxV: +(t.maxV || 0).toFixed(3),
+      minGV: +(t.minGV == null ? 0 : t.minGV).toFixed(3),
+      maxGV: +(t.maxGV || 0).toFixed(3),
+      maxLat: +(t.maxLat || 0).toFixed(3),
+      airtime: +(t.airtime || 0).toFixed(3),
+      trace: Array.isArray(t.trace) ? t.trace.map(p => ({ s: +p.s.toFixed(2), v: +p.v.toFixed(2), g: +p.g.toFixed(2), gl: +p.gl.toFixed(2) })) : [],
+      violations: Array.isArray(t.violations) ? t.violations.slice() : []
+    };
+  },
   designInfo: () => ({ pts: design.points.length, mode: design.propulsion.mode }),
+  guidedInfo: () => ({ state: guidedState, points: design.points.length, welcomeVisible: !!guidedWelcomeEl && !guidedWelcomeEl.hidden, prediction: { speed: guidedPrediction.speed, force: guidedPrediction.force, feedback: guidedPrediction.feedback, speedCorrect: guidedPrediction.speedCorrect, forceCorrect: guidedPrediction.forceCorrect }, notebook: { attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, hasPrediction: !!guidedRecord.prediction, historyLength: Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0, exportReady: Array.isArray(guidedRecord.history) && guidedRecord.history.length > 0, packetReady: (() => { try{ return exportLabPacket().length > 0; }catch(_e){ return false; } })(), clearReady: !!(guidedRecord.attempts || guidedRecord.revisions || (Array.isArray(guidedRecord.history) && guidedRecord.history.length)), conditionsLocked: guidedConditionsLocked(), conditions: guidedRecord.conditions, packetEvidenceReady: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length), packetControlsVisible: !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport')) }, evidenceVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-prediction-evidence]')), comparisonVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-guided-comparison]')), timelineVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-timeline]')), comparisonBoardVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-experiment-compare]')), conclusionVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-comparison-conclusion]')), historyExportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-csv]')), historyTrendVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-history-trend]')), traceOverlayVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-trace-overlay]')), teacherReportVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-teacher-report]')), classroomRubricVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-classroom-rubric]')), evidenceQualityVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-evidence-quality]')), adaptiveVisible: !!adaptiveCoachEl, adaptiveChallenge: guidedAdaptiveRecommendation().challenge, adaptiveStage: guidedAdaptiveRecommendation().stage, adaptiveProgressVisible: !!adaptiveProgressEl && !!adaptiveProgressTrackEl, adaptiveProgress: (() => { const progress = guidedAdaptiveProgress(); return { goalsMet: progress.goalsMet, evidenceReady: progress.evidenceReady }; })(), reviewVisible: !!(__clabGet('clab-reportBody') && __clabGet('clab-reportBody').querySelector('[data-clab-review-status]')), reviewLocked: !!guidedReview.locked }),
+  packetRoundTrip: () => {
+    const before = { points: design.points.length, attempts: guidedRecord.attempts, revisions: guidedRecord.revisions, state: guidedState, rubric: JSON.stringify(guidedRubricWeights), review: JSON.stringify(guidedReview), studentReflection: guidedRecord.studentReflection || '', teacherNotes: guidedRecord.teacherNotes || '' };
+
+    try{
+      importLabPacket(exportLabPacket());
+      const controls = !!(__clabGet('clab-btnPacketExport') && __clabGet('clab-btnPacketImport'));
+      return {
+        pass: controls && !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length) && design.points.length === before.points && guidedRecord.attempts === before.attempts && guidedRecord.revisions === before.revisions && guidedState === before.state && !!guidedRecord.conditions && JSON.stringify(guidedRubricWeights) === before.rubric && JSON.stringify(guidedReview) === before.review && (guidedRecord.studentReflection || '') === before.studentReflection && (guidedRecord.teacherNotes || '') === before.teacherNotes && !!(guidedRecord.history[guidedRecord.history.length - 1] && Array.isArray(guidedRecord.history[guidedRecord.history.length - 1].trace) && guidedRecord.history[guidedRecord.history.length - 1].trace.length),
+        controls,
+        evidence: !!(lastTele && lastTele.status === 'complete' && Array.isArray(lastTele.trace) && lastTele.trace.length),
+        points: design.points.length,
+        attempts: guidedRecord.attempts,
+        revisions: guidedRecord.revisions,
+        state: guidedState
+      };
+    }catch(e){
+      return { pass: false, error: String(e && e.message || e) };
+    }
+  },
+  trackInfo: () => ({ length: +track.L.toFixed(2), samples: M, crest: track.sCrest == null ? null : +track.sCrest.toFixed(2) }),
   randomize: (seed, style) => generateCoaster(seed == null ? null : seed, style || 'auto'),
   genOnce: (seed, style) => {
     const raw = randomDesign(seed, style && style !== 'auto' ? { style } : null);
@@ -6922,7 +8451,7 @@ rootEl._lab = {
     }
     return { L: +track.L.toFixed(1), pts: out };
   },
-  exportDesign, importDesign,
+  exportDesign, importDesign, exportLabPacket, importLabPacket,
   elementPreview: kind => buildElementPoints(kind, design.points[Math.max(0, selIdx)], design.points[(Math.max(0, selIdx) + 1) % design.points.length]),
   safetyFindings: () => safetyFindings.map(f => ({ ...f })),
   missions: () => Object.keys(missionsDone),
@@ -7032,6 +8561,9 @@ rootEl._lab = {
     return { worstGVhi, worstGVlo, worstGL, nodes };
   }
 };
+if(typeof window !== 'undefined' && window.__testHooks){
+  window.__testHooks.coasterLab = rootEl._lab;
+}
 console.log('[coasterlab] selftest ' + JSON.stringify(rootEl._selftest));
 renderer.setAnimationLoop(animate);
 

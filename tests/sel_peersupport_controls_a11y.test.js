@@ -21,4 +21,21 @@ describe('Peer Support chat control accessibility', () => {
     const text = source();
     expect(text).not.toContain("fontSize: '13px', outline: 'none'");
   });
+
+  it('gives practice choices full labels and announces exercise progress', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Exercise ' + (idx + 1) + ' of ' + exercises.length");
+    expect(text).toContain("'aria-label': 'Response ' + String.fromCharCode(65 + oi) + ': ' + opt.text");
+    expect(text).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(text).toContain("announceToSR('Exercise ' + (idx + 2) + ' of ' + exercises.length + '. Choose your response.')");
+  });
+
+  it('exposes OARS and AI role-play status semantics', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': s.label + ': ' + count + ' used'");
+    expect(text).toContain("'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Rapport with ' + aiScenario.peerName");
+    expect(text).toContain("role: 'status', 'aria-live': 'polite', 'aria-label': aiScenario.peerName + ' is typing'");
+    expect(text).toContain("role: 'region', 'aria-live': 'polite', 'aria-label': 'OARS conversation feedback'");
+  });
+
 });

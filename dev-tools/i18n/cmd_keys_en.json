@@ -7,6 +7,8 @@
   "cmd.apply_lesson_template_hint": "Starts a new plan from one of your saved templates",
   "cmd.apply_lesson_template_missing": "I could not find a template called ",
   "cmd.apply_lesson_template_which": "Which template? ",
+  "cmd.cancel": "Cancel",
+  "cmd.cancelled": "Cancellation requested. The current operation will stop when its provider honors it.",
   "cmd.clear_my_answers": "Clear my answers (start over)",
   "cmd.clear_my_answers_done": "Confirm in the dialog to clear your answers.",
   "cmd.clear_my_answers_hint": "Reset your responses on this activity",
@@ -293,6 +295,7 @@
   "cmd.resume_latest_work_done": "Resumed ",
   "cmd.resume_latest_work_hint": "Open the most recent saved item directly",
   "cmd.resume_latest_work_none": "No saved work is available yet.",
+  "cmd.retry": "Retry",
   "cmd.review_teacher_feedback": "Review teacher feedback",
   "cmd.review_teacher_feedback_hint": "Hear returned feedback when it is available",
   "cmd.review_teacher_feedback_none": "No returned teacher feedback is available yet.",
@@ -445,5 +448,6 @@
   "palette.nav": "navigate",
   "palette.no_match": "No matching command. The bot chat (and soon voice) understands free-form requests.",
   "palette.placeholder": "Type a command — “bigger text”, “educator hub”, “read this page”…",
-  "palette.run": "run"
+  "palette.run": "run",
+  "palette.unavailable": "This command is not available in the current context."
 }

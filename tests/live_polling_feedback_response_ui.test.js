@@ -68,6 +68,8 @@ describe('Feedback Response teacher composer runtime', () => {
     expect(host.textContent).toContain('Private drafting, teacher-reviewed feedback');
     expect(host.textContent).toContain('Broadcast to 0 guests');
     expect(host.querySelector('input[type="checkbox"]').checked).toBe(true);
-    expect(host.querySelector('button[disabled]').textContent).toContain('Broadcast to 0 guests');
+    const disabledBroadcast = Array.from(host.querySelectorAll('button[disabled]'))
+      .find(button => button.textContent.includes('Broadcast to 0 guests'));
+    expect(disabledBroadcast).toBeTruthy();
   });
 });

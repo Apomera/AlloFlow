@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "alloflow-standards-snapshot/v1",
+  "dataset": {
+    "provider": "fixture-local-standards",
+    "datasetVersion": "fixture-2026-08-01",
+    "snapshotId": "fixture-local-standards-2026-08-01",
+    "generatedAt": "2026-08-01T00:00:00.000Z",
+    "license": "Synthetic fixture for local development and tests; not an official standards source.",
+    "attribution": "AlloFlow synthetic standards fixture",
+    "sourceUrls": []
+  },
+  "standards": [
+    {
+      "id": "ngss:4-ess2-1",
+      "code": "4-ESS2-1",
+      "label": "Make observations and measurements to identify evidence of weathering or erosion.",
+      "text": "Make observations and measurements to provide evidence of the effects of weathering or the rate of erosion by water, ice, wind, or vegetation.",
+      "framework": "NGSS",
+      "jurisdiction": "US",
+      "grade": "4",
+      "subject": "Science",
+      "sourceUrls": []
+    },
+    {
+      "id": "ngss:5-ess2-1",
+      "code": "5-ESS2-1",
+      "label": "Earth systems interact in observable ways.",
+      "text": "Develop a model using an example to describe ways the geosphere, biosphere, hydrosphere, and/or atmosphere interact.",
+      "framework": "NGSS",
+      "jurisdiction": "US",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrls": []
+    },
+    {
+      "id": "state:5-ess2-1",
+      "code": "5-ESS2-1",
+      "label": "Describe interactions among Earth systems.",
+      "text": "Use evidence to describe how Earth's systems interact in a local or regional example.",
+      "framework": "State Science",
+      "jurisdiction": "NY",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrls": []
+    },
+    {
+      "id": "ngss:5-ps1-1",
+      "code": "5-PS1-1",
+      "label": "Matter is made of particles too small to be seen.",
+      "text": "Develop a model to describe that matter is made of particles too small to be seen.",
+      "framework": "NGSS",
+      "jurisdiction": "US",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrls": []
+    },
+    {
+      "id": "ngss:5-ess3-1",
+      "code": "5-ESS3-1",
+      "label": "Communicate how communities use science to protect Earth's systems.",
+      "text": "Obtain and combine information about ways individual communities use science ideas to protect the Earth's resources and environment.",
+      "framework": "NGSS",
+      "jurisdiction": "US",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrls": []
+    },
+    {
+      "id": "ccss:ri.5.1",
+      "code": "CCSS.ELA-LITERACY.RI.5.1",
+      "label": "Quote accurately from a text when explaining what the text says explicitly.",
+      "text": "Quote accurately from a text when explaining what the text says explicitly and when drawing inferences from the text.",
+      "framework": "CCSS ELA",
+      "jurisdiction": "US",
+      "grade": "5",
+      "subject": "ELA",
+      "sourceUrls": []
+    }
+  ],
+  "relationships": [
+    {
+      "fromId": "ngss:4-ess2-1",
+      "toId": "ngss:5-ess2-1",
+      "type": "precedes",
+      "source": "fixture"
+    },
+    {
+      "fromId": "ngss:5-ess2-1",
+      "toId": "ngss:5-ps1-1",
+      "type": "relatedTo",
+      "source": "fixture"
+    },
+    {
+      "fromId": "ngss:5-ess2-1",
+      "toId": "ngss:5-ess3-1",
+      "type": "supports",
+      "source": "fixture"
+    },
+    {
+      "fromId": "ngss:5-ess2-1",
+      "toId": "ccss:ri.5.1",
+      "type": "supports",
+      "source": "fixture"
+    },
+    {
+      "fromId": "state:5-ess2-1",
+      "toId": "ngss:5-ess2-1",
+      "type": "alignedTo",
+      "source": "fixture"
+    }
+  ]
+}

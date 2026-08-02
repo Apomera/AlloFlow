@@ -193,8 +193,8 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     const now = Date.now();
     const day = 24 * 60 * 60 * 1000;
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
-      { id: 'Spanish::due', language: 'Spanish', term: 'due', meaning: 'due', nextReviewAt: 0 },
-      { id: 'Spanish::day', language: 'Spanish', term: 'day', meaning: 'day', nextReviewAt: now + 12 * 60 * 60 * 1000 },
+      { id: 'Spanish::due', language: 'Spanish', term: 'due', meaning: 'due', tags: ['Unit 1'], nextReviewAt: 0 },
+      { id: 'Spanish::day', language: 'Spanish', term: 'day', meaning: 'day', tags: ['Unit 2'], nextReviewAt: now + 12 * 60 * 60 * 1000 },
       { id: 'Spanish::week', language: 'Spanish', term: 'week', meaning: 'week', nextReviewAt: now + 3 * day },
       { id: 'Spanish::later', language: 'Spanish', term: 'later', meaning: 'later', nextReviewAt: now + 8 * day },
       { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', nextReviewAt: 0 },
@@ -207,7 +207,9 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     expect(Array.from(forecast.querySelectorAll('dd')).map((node) => node.textContent))
       .toEqual(['1', '1', '1', '1']);
     expect(forecast.textContent).toContain('not a deadline');
-    await expectNoAxeViolations('upcoming review forecast');
+    expect(host.querySelector('[aria-labelledby="lingua-tag-progress-title"]')).toBeTruthy();
+    expect(host.querySelector('[aria-labelledby="lingua-review-momentum-title"]').textContent).toContain('No reviews recorded in this window yet.');
+    await expectNoAxeViolations('upcoming review forecast with tag progress');
   });
 
   it('has no axe violations in an expanded saved-word review history', async () => {
@@ -265,6 +267,20 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     expect(host.querySelector('label[for="lingua-review-tag"]')).toBeTruthy();
     expect(scope.getAttribute('aria-describedby')).toBe('lingua-review-scope-help');
     expect(Array.from(scope.options).map((option) => option.textContent)).toEqual(['All due words', 'Greetings', 'Unit 1']);
+    const queue = host.querySelector('[aria-labelledby="lingua-review-queue-title"]');
+    expect(queue).toBeTruthy();
+    expect(queue.querySelector('[role="status"]').textContent).toContain('1 due now · 1 ready to review');
+    const orderLabel = Array.from(queue.querySelectorAll('label')).find((node) => node.htmlFor === 'lingua-review-order');
+    expect(orderLabel).toBeTruthy();
+    const order = queue.querySelector('#lingua-review-order');
+    expect(order).toBeTruthy();
+    expect(order.getAttribute('aria-describedby')).toBe('review-order-help');
+    const size = queue.querySelector('#lingua-review-size');
+    expect(size).toBeTruthy();
+    expect(size.getAttribute('aria-describedby')).toBe('review-session-size-help');
+    const preview = queue.querySelector('ol[aria-label]');
+    expect(preview).toBeTruthy();
+    expect(preview.getAttribute('aria-label')).toBe('Queue preview');
     await expectNoAxeViolations('review prompt with tag focus');
 
     await click('Skip for now');
@@ -278,9 +294,7 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     expect(reviewRegion.textContent).toContain('Returned 1 set-aside cards');
     await expectNoAxeViolations('set-aside card returned');
     await click('Reveal answer');
-    const revealedTerm = Array.from(host.querySelectorAll('[lang="es-ES"]')).find(
-      (node) => node.textContent === 'hola',
-    );
+    const revealedTerm = host.querySelector('.lingua-focus-target[lang="es-ES"]');
     expect(document.activeElement).toBe(revealedTerm);
     const reviewAnnouncement = Array.from(host.querySelectorAll('[role="status"][aria-atomic="true"]')).find(
       (node) => node.textContent.includes('Answer revealed'),
@@ -301,9 +315,7 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await expectNoAxeViolations('completed review with undo');
 
     await click('Undo last review');
-    const restoredTerm = Array.from(host.querySelectorAll('[lang="es-ES"]')).find(
-      (node) => node.textContent === 'hola',
-    );
+    const restoredTerm = host.querySelector('.lingua-focus-target[lang="es-ES"]');
     expect(document.activeElement).toBe(restoredTerm);
     expect(reviewRegion.textContent).toContain('Review undone');
     expect(findButton('Undo last review')).toBeFalsy();
@@ -988,7 +1000,13 @@ describe('Lingua Practice destructive-action dialogs', () => {
     expect(host.querySelector('label[for="lingua-saved-search"]')).toBeTruthy();
     expect(host.querySelector('label[for="lingua-saved-language"]')).toBeTruthy();
     expect(host.querySelector('label[for="lingua-saved-tag"]')).toBeTruthy();
+    expect(host.querySelector('label[for="lingua-saved-status"]')).toBeTruthy();
     expect(host.querySelector('label[for="lingua-saved-sort"]')).toBeTruthy();
+    expect(host.querySelectorAll('.lingua-status-badge').length).toBeGreaterThan(0);
+    expect(host.querySelector('[aria-labelledby="lingua-saved-status-summary-title"]')).toBeTruthy();
+    expect(host.querySelector('[data-saved-review-id]')).toBeTruthy();
+    expect(host.querySelectorAll('[data-saved-select-id]').length).toBeGreaterThan(0);
+    expect(findButton('Select visible')).toBeTruthy();
     await expectNoAxeViolations('populated saved-word organizer');
 
     const addWord = findButton('Add a word');
@@ -1078,6 +1096,7 @@ describe('Lingua Practice visible focus and forced colors', () => {
   it('styles programmatic focus targets and compact controls accessibly', async () => {
     await mount();
 
+    expect(host.querySelector('[role="dialog"]').getAttribute('lang')).toBe('en-US');
     const forcedColorsStyle = Array.from(host.querySelectorAll('style')).find(
       (node) => node.textContent.includes('forced-colors: active'),
     );
@@ -1085,6 +1104,12 @@ describe('Lingua Practice visible focus and forced colors', () => {
     expect(forcedColorsStyle.textContent).toContain('Highlight');
     expect(forcedColorsStyle.textContent).toContain('CanvasText');
     expect(forcedColorsStyle.textContent).toContain('[aria-current="page"]');
+    expect(forcedColorsStyle.textContent).toContain('button:focus-visible');
+    expect(forcedColorsStyle.textContent).toContain('lingua-review-scope');
+    expect(forcedColorsStyle.textContent).toContain('theme-contrast .lingua-tag-chip');
+    expect(forcedColorsStyle.textContent).toContain('theme-contrast .lingua-status-badge');
+    expect(forcedColorsStyle.textContent).toContain('theme-contrast .lingua-status-chip');
+    expect(forcedColorsStyle.textContent).toContain('transition:none !important');
 
     const setupHeading = Array.from(host.querySelectorAll('h3')).find(
       (node) => node.textContent.includes('Practice language from'),

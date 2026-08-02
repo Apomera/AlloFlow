@@ -215,6 +215,203 @@ describe('Canvas workspace recovery helpers', () => {
   });
 });
 
+describe('Storage and Recovery Manager v1 policies', () => {
+  const MB = 1024 * 1024;
+
+  it('preserves Standard and deterministically resolves Automatic', () => {
+    expect(recovery.resolvePolicy('standard')).toMatchObject({
+      id: 'standard',
+      effectiveId: 'standard',
+      maxSnapshots: 8,
+      maxTotalBytes: 150 * MB,
+      maxOfflineItems: 50
+    });
+    expect(recovery.resolvePolicy('compact')).toMatchObject({
+      id: 'compact',
+      effectiveId: 'compact',
+      maxSnapshots: 4,
+      maxTotalBytes: 50 * MB,
+      maxOfflineItems: 20
+    });
+    expect(recovery.chooseAutomaticPolicy()).toBe('standard');
+    expect(recovery.chooseAutomaticPolicy({ usage: 100 * MB, quota: 1024 * MB })).toBe('standard');
+    expect(recovery.chooseAutomaticPolicy({ usage: 850 * MB, quota: 1024 * MB })).toBe('compact');
+    expect(recovery.chooseAutomaticPolicy({ usage: 950 * MB, quota: 1024 * MB })).toBe('compact');
+    expect(recovery.resolvePolicy('automatic', { usage: 850 * MB, quota: 1024 * MB }, 'standard').effectiveId).toBe('compact');
+    expect(recovery.resolvePolicy('automatic', { usage: 100 * MB, quota: 1024 * MB }, 'compact').effectiveId).toBe('standard');
+  });
+
+  it('previews both recovery and offline-resource removals before a policy change', () => {
+    let store = recovery.emptyStore();
+    for (let index = 0; index < 5; index += 1) {
+      const day = String(10 + index).padStart(2, '0');
+      store = recovery.upsert(store, snapshot('preview-' + index, '2026-07-' + day + 'T12:00:00.000Z'));
+    }
+    const preview = recovery.previewPolicyChange(store, 'compact', null, 47);
+    expect(preview.policy).toMatchObject({ id: 'compact', maxSnapshots: 4, maxOfflineItems: 20 });
+    expect(preview.removedSnapshots).toBe(1);
+    expect(preview.removedOfflineItems).toBe(27);
+    expect(preview.store.snapshots).toHaveLength(4);
+  });
+
+  it('keeps pinned work through count pressure and makes unpinned work eligible again', () => {
+    const snapshots = Array.from({ length: 9 }, (_, index) => {
+      const item = snapshot('w' + (index + 1), `2026-07-${String(10 + index).padStart(2, '0')}T12:00:00.000Z`);
+      item.pinned = index === 0;
+      return item;
+    });
+    const retained = recovery.normalizeStore({ version: 1, snapshots });
+    expect(retained.snapshots.map(item => item.id)).toEqual(['w9', 'w8', 'w7', 'w6', 'w5', 'w4', 'w3', 'w1']);
+    expect(retained.snapshots.find(item => item.id === 'w1').pinned).toBe(true);
+
+    const allPinned = recovery.normalizeStore({
+      version: 1,
+      snapshots: snapshots.map(item => ({ ...item, pinned: true }))
+    });
+    expect(allPinned.snapshots).toHaveLength(9);
+    expect(recovery.retentionStatus(allPinned)).toMatchObject({ pinnedCount: 9, overTarget: true });
+
+    const unpinned = recovery.setPinned(allPinned, 'w1', false);
+    expect(unpinned.snapshots).toHaveLength(8);
+    expect(unpinned.snapshots.some(item => item.id === 'w1')).toBe(false);
+  });
+
+  it('removes embedded media explicitly while preserving pins, text, and remote links', () => {
+    const full = snapshot('media-action', '2026-07-18T12:00:00.000Z');
+    full.pinned = true;
+    full.workspace.history[0].data = {
+      imageUrl: 'data:image/png;base64,AAAA',
+      remoteImage: 'https://example.edu/keep.png',
+      prompt: 'Keep this text'
+    };
+    const stored = recovery.upsert(recovery.emptyStore(), full);
+    const stripped = recovery.removeMedia(stored, 'media-action');
+    const saved = stripped.snapshots[0];
+    expect(saved.pinned).toBe(true);
+    expect(saved.workspace.history[0].data.imageUrl).toBeNull();
+    expect(saved.workspace.history[0].data.remoteImage).toBe('https://example.edu/keep.png');
+    expect(saved.workspace.history[0].data.prompt).toBe('Keep this text');
+    expect(saved.omittedAssetManifest.some(item => item.reason === 'user-remove-media')).toBe(true);
+
+    const repeated = recovery.removeMedia(stripped, 'media-action');
+    expect(repeated.snapshots[0].omittedAssets).toBe(saved.omittedAssets);
+    expect(repeated.snapshots[0].omittedAssetManifest).toEqual(saved.omittedAssetManifest);
+
+    const noMediaStore = recovery.upsert(recovery.emptyStore(), snapshot('no-media', '2026-07-21T12:00:00.000Z'));
+    const noMediaResult = recovery.removeMedia(noMediaStore, 'no-media');
+    expect(noMediaResult.snapshots[0].assetPolicy).toBe('full');
+    expect(noMediaResult).toEqual(noMediaStore);
+
+    const mediaOnly = snapshot('media-only', '2026-07-22T12:00:00.000Z', 0);
+    mediaOnly.workspace.builderDraft = { imageUrl: 'data:image/png;base64,AAAA' };
+    const mediaOnlyStore = recovery.upsert(recovery.emptyStore(), mediaOnly);
+    expect(mediaOnlyStore.snapshots).toHaveLength(1);
+    expect(recovery.removeMedia(mediaOnlyStore, 'media-only')).toEqual(mediaOnlyStore);
+  });
+
+  it('preserves pin state across same-workspace autosaves until an explicit pin action changes it', () => {
+    let store = recovery.upsert(recovery.emptyStore(), snapshot('pin-autosave', '2026-07-18T12:00:00.000Z'));
+    store = recovery.setPinned(store, 'pin-autosave', true);
+    const later = snapshot('pin-autosave', '2026-07-19T12:00:00.000Z');
+    later.pinned = false;
+    store = recovery.upsert(store, later);
+    expect(store.snapshots[0].pinned).toBe(true);
+
+    store = recovery.setPinned(store, 'pin-autosave', false);
+    const stalePinnedAutosave = snapshot('pin-autosave', '2026-07-20T12:00:00.000Z');
+    stalePinnedAutosave.pinned = true;
+    store = recovery.upsert(store, stalePinnedAutosave);
+    expect(store.snapshots[0].pinned).toBe(false);
+  });
+
+  it('drops empty drafts, keeps meaningful drafts, and only ages drafts under Compact', () => {
+    const whitespace = snapshot('whitespace', '2026-07-01T00:00:00.000Z', 0);
+    whitespace.workspace.inputText = '   ';
+    whitespace.workspace.builderDraft = { html: '  ', savedAt: '2026-07-01T00:00:00.000Z' };
+    expect(recovery.normalizeSnapshot(whitespace)).toBeNull();
+
+    const meaningful = snapshot('meaningful', '2026-07-01T00:00:00.000Z', 0);
+    meaningful.workspace.builderDraft = { html: '<p>Lesson outline</p>' };
+    expect(recovery.normalizeSnapshot(meaningful)?.resourceCount).toBe(0);
+
+    const newest = snapshot('newest', '2026-08-01T00:00:00.000Z');
+    const nowMs = Date.parse('2026-08-01T00:00:00.000Z');
+    const standard = recovery.normalizeStore({
+      version: 1,
+      retentionPolicy: 'standard',
+      snapshots: [newest, meaningful]
+    }, { nowMs });
+    expect(standard.snapshots.map(item => item.id)).toContain('meaningful');
+
+    const compact = recovery.normalizeStore({
+      version: 1,
+      retentionPolicy: 'compact',
+      effectiveRetentionPolicy: 'compact',
+      snapshots: [newest, meaningful]
+    }, { nowMs });
+    expect(compact.snapshots.map(item => item.id)).not.toContain('meaningful');
+
+    meaningful.pinned = true;
+    const pinnedCompact = recovery.normalizeStore({
+      version: 1,
+      retentionPolicy: 'compact',
+      effectiveRetentionPolicy: 'compact',
+      snapshots: [newest, meaningful]
+    }, { nowMs });
+    expect(pinnedCompact.snapshots.map(item => item.id)).toContain('meaningful');
+  });
+
+  it('executes the quota ladder deterministically and never degrades non-quota failures', async () => {
+    const full = snapshot('quota', '2026-07-18T12:00:00.000Z');
+    full.workspace.history[0].data.imageUrl = 'data:image/png;base64,AAAA';
+    full.workspace.builderDraft = { html: '<p>Draft</p>', storedByteLength: 42 };
+    const quota = () => Object.assign(new Error('Quota exceeded'), { name: 'QuotaExceededError' });
+
+    const fullWrites = [];
+    const fullResult = await recovery.saveWithQuotaFallback(full, async candidate => {
+      fullWrites.push(candidate);
+      return { ok: true };
+    });
+    expect(fullResult).toMatchObject({ degraded: false, stage: 'full' });
+    expect(fullWrites).toHaveLength(1);
+
+    let attempts = 0;
+    const mediaResult = await recovery.saveWithQuotaFallback(full, async candidate => {
+      attempts += 1;
+      if (attempts === 1) throw quota();
+      return candidate;
+    });
+    expect(mediaResult).toMatchObject({ degraded: true, stage: 'media' });
+    expect(mediaResult.savedSnapshot.workspace.history[0].data.imageUrl).toBeNull();
+
+    attempts = 0;
+    const draftResult = await recovery.saveWithQuotaFallback(full, async candidate => {
+      attempts += 1;
+      if (attempts < 3) throw quota();
+      return candidate;
+    });
+    expect(draftResult).toMatchObject({ degraded: true, stage: 'builder-draft' });
+    expect(draftResult.savedSnapshot.workspace.history[0].data.imageUrl).toBeNull();
+    expect(draftResult.savedSnapshot.workspace.builderDraft).toBeNull();
+    expect(attempts).toBe(3);
+
+    const networkError = new Error('network unavailable');
+    attempts = 0;
+    await expect(recovery.saveWithQuotaFallback(full, async () => {
+      attempts += 1;
+      throw networkError;
+    })).rejects.toBe(networkError);
+    expect(attempts).toBe(1);
+
+    attempts = 0;
+    await expect(recovery.saveWithQuotaFallback(full, async () => {
+      attempts += 1;
+      throw quota();
+    })).rejects.toMatchObject({ name: 'QuotaExceededError' });
+    expect(attempts).toBe(3);
+  });
+});
+
 
 describe('Canvas full resource-pack recovery state', () => {
   it('sanitizes and defaults teacher delivery settings without retaining unknown fields', () => {
@@ -307,7 +504,7 @@ describe('Canvas workspace recovery integration contracts', () => {
     // asserted here: the recovery dialog gate renders BEFORE both landing
     // gates (DOM order = paint order for these siblings), keeps its
     // data-attribute + top z-band, and LaunchPadView precedes OnboardingCoach.
-    const recoveryGate = anti.indexOf('{isCanvas && isAppReady && canvasRecoveryDialogMode && (');
+    const recoveryGate = anti.indexOf("{isAppReady && canvasRecoveryDialogMode && (isCanvas || canvasRecoveryDialogMode === 'manage') && (");
     const recoveryGateHeader = anti.slice(recoveryGate, anti.indexOf('role="dialog"', recoveryGate));
     const launchPadGate = anti.indexOf('{isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView', recoveryGate);
     const coachGate = anti.indexOf('{isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.OnboardingCoach', launchPadGate + 1);
@@ -348,6 +545,7 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(builder).toContain('selectedProfileId,');
     expect(builder).toContain('studentProjectSettings: _alloNormalizeStudentProjectSettings(studentProjectSettings)');
     expect(builder).toContain('selAuthoringState: _alloCaptureCanvasSelAuthoringState()');
+    expect(builder).toContain('pinned: existing?.pinned === true');
     expect(builder).not.toContain('MAX_OFFLINE_ITEMS');
     expect(builder).not.toContain('apiKey');
     expect(builder).not.toContain('auth');
@@ -411,7 +609,8 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(anti).toContain('workspaceRecovery: snapshot');
     expect(anti).toContain("Object.prototype.hasOwnProperty.call(parsed, 'workspaceRecovery')");
     expect(anti).toContain('await restoreCanvasWorkspaceSnapshot(imported)');
-    expect(anti).toContain("{ version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: reducedSnapshot }");
+    expect(anti).toContain('ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(');
+    expect(anti).toContain("{ version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: candidate }");
     expect(anti).not.toContain('ALLO_WORKSPACE_RECOVERY.upsert(baseStore, reducedSnapshot)');
     expect(anti).not.toContain('nextStore.snapshots.map(item => ALLO_WORKSPACE_RECOVERY.stripLargeAssets');
   });
@@ -433,7 +632,7 @@ describe('Canvas workspace recovery integration contracts', () => {
     const autosaveStart = anti.indexOf('const result = await queueCanvasRecoveryStorage');
     const autosaveEnd = anti.indexOf('return { nextStore, degraded }', autosaveStart);
     const autosave = anti.slice(autosaveStart, autosaveEnd);
-    expect(autosave).toContain('await deviceStorage.mutateRecovery(');
+    expect(autosave).toContain('candidate => deviceStorage.mutateRecovery(');
     expect(autosave).toContain("action: 'upsert'");
     expect(autosave).toContain('{ queue: false }');
     expect(autosave).not.toContain('const rawStore = await deviceStorage.get');

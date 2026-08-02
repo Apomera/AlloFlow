@@ -1090,6 +1090,332 @@ var require_tmp_research_hub_entry = __commonJS({
         };
         return { status: counts.action ? "action_needed" : counts.review ? "review_recommended" : "ready", counts, issues, generatedAt: Date.now() };
       }
+      function researchAlloDate(value) {
+        if (typeof value === "number" && isFinite(value)) return value;
+        var parsed = Date.parse(String(value == null ? "" : value));
+        return isFinite(parsed) ? parsed : null;
+      }
+      function researchAlloRecordDate(record) {
+        if (!record || typeof record !== "object") return null;
+        return researchAlloDate(record.ts || record.createdAt || record.startedAt || record.acceptedAt || record.generatedAt || record.queuedAt || record.updatedAt);
+      }
+      function researchAlloClip(value, max) {
+        return String(value == null ? "" : value).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max || 120);
+      }
+      function researchAlloRowsInWindow(records, range, nowMs) {
+        var days = range === "30d" ? 30 : range === "90d" ? 90 : null;
+        var cutoff = days == null ? -Infinity : nowMs - days * 864e5;
+        var excludedUndated = 0;
+        var rows = (Array.isArray(records) ? records : []).filter(function(record) {
+          if (days == null) return true;
+          var timestamp = researchAlloRecordDate(record);
+          if (timestamp == null) {
+            excludedUndated += 1;
+            return false;
+          }
+          return timestamp >= cutoff && timestamp <= nowMs + 864e5;
+        });
+        return { rows, excludedUndated };
+      }
+      function researchAlloMonth(record) {
+        var timestamp = researchAlloRecordDate(record);
+        if (timestamp == null) return "";
+        try {
+          return new Date(timestamp).toISOString().slice(0, 7);
+        } catch (_) {
+          return "";
+        }
+      }
+      function researchAlloCode(prefix, index) {
+        return prefix + String(index + 1).padStart(3, "0");
+      }
+      function researchAlloCountMap(items) {
+        var result = /* @__PURE__ */ Object.create(null);
+        (Array.isArray(items) ? items : []).forEach(function(item) {
+          var key = researchAlloClip(item || "unknown", 60) || "unknown";
+          result[key] = (result[key] || 0) + 1;
+        });
+        return result;
+      }
+      function buildResearchHubAlloSheetEnvelope(source, options) {
+        var input = source || {};
+        var journal = input.journal || {};
+        var opts = options || {};
+        var createdAt = String(opts.createdAt || (/* @__PURE__ */ new Date()).toISOString());
+        var nowMs = researchAlloDate(createdAt);
+        if (nowMs == null) nowMs = Date.now();
+        var dateRange = ["30d", "90d", "all"].indexOf(opts.dateRange) !== -1 ? opts.dateRange : "90d";
+        var selected = Object.assign({ overview: true, claims: true, evidence: true, provenance: true }, opts.datasets || {});
+        var graph = input.graph || buildEvidenceGraph(journal);
+        var audit = input.audit || buildInquiryAudit(journal);
+        var claims = [];
+        (Array.isArray(journal.claims) ? journal.claims : []).forEach(function(claim) {
+          claims.push({ record: claim, key: "claim:" + String(claim && (claim.id || claim.text || claims.length)), type: "claim" });
+        });
+        (Array.isArray(journal.designClaims) ? journal.designClaims : []).forEach(function(claim) {
+          claims.push({ record: claim, key: "design-claim:" + String(claim && (claim.id || claim.text || claims.length)), type: "design_claim" });
+        });
+        if (journal.humanitiesPosition && typeof journal.humanitiesPosition === "object") claims.push({ record: journal.humanitiesPosition, key: "humanities-position:" + String(journal.humanitiesPosition.id || journal.humanitiesPosition.text || claims.length), type: "humanities_position" });
+        var evidence = [];
+        (Array.isArray(journal.sources) ? journal.sources : []).forEach(function(record) {
+          evidence.push({ record, key: "source:" + String(record && (record.id || record.citation || evidence.length)), type: "source" });
+        });
+        (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).forEach(function(record) {
+          evidence.push({ record, key: "evidence:" + String(record && (record.id || record.text || evidence.length)), type: "evidence" });
+        });
+        (Array.isArray(journal.capturedArtifacts) ? journal.capturedArtifacts : []).forEach(function(record) {
+          evidence.push({ record, key: "tool-artifact:" + String(record && (record.id || record.title || evidence.length)), type: "tool_artifact" });
+        });
+        (Array.isArray(journal.testRun) ? journal.testRun : []).forEach(function(record) {
+          evidence.push({ record, key: "test-result:" + String(record && (record.id || record.criterionId || evidence.length)), type: "test_result" });
+        });
+        (Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots : []).forEach(function(record) {
+          evidence.push({ record, key: "model:" + String(record && (record.id || record.title || evidence.length)), type: "model" });
+        });
+        var relationships = Array.isArray(journal.claimEvidenceLinks) ? journal.claimEvidenceLinks : [];
+        var claimWindow = researchAlloRowsInWindow(claims.map(function(item) {
+          return item.record;
+        }), dateRange, nowMs);
+        var evidenceWindow = researchAlloRowsInWindow(evidence.map(function(item) {
+          return item.record;
+        }), dateRange, nowMs);
+        var relationshipWindow = researchAlloRowsInWindow(relationships, dateRange, nowMs);
+        var selectedClaims = claims.filter(function(item) {
+          return claimWindow.rows.indexOf(item.record) !== -1;
+        });
+        var selectedEvidence = evidence.filter(function(item) {
+          return evidenceWindow.rows.indexOf(item.record) !== -1;
+        });
+        var claimByKey = /* @__PURE__ */ Object.create(null);
+        selectedClaims.forEach(function(item, index) {
+          claimByKey[item.key] = researchAlloCode("C", index);
+        });
+        var evidenceByKey = /* @__PURE__ */ Object.create(null);
+        selectedEvidence.forEach(function(item, index) {
+          evidenceByKey[item.key] = researchAlloCode("E", index);
+        });
+        function findClaimKey(link) {
+          var id = link && (link.claimId || link.claim && link.claim.id || link.claim);
+          return selectedClaims.filter(function(item) {
+            return String(item.record && item.record.id || "") === String(id || "");
+          })[0];
+        }
+        function evidenceKeyForId(id) {
+          return selectedEvidence.filter(function(item) {
+            return String(item.record && item.record.id || "") === String(id || "");
+          })[0];
+        }
+        var claimRows = selectedClaims.map(function(item, index) {
+          var links = relationshipWindow.rows.filter(function(link) {
+            return findClaimKey(link) === item;
+          });
+          var relationshipTypes = [];
+          var warrantCount = 0;
+          var evidenceCount = 0;
+          links.forEach(function(link) {
+            var relation = researchAlloClip(link.relationship || link.relation || "supports", 40) || "supports";
+            relationshipTypes.push(relation);
+            if (String(link.warrant || "").trim()) warrantCount += 1;
+            evidenceCount += (Array.isArray(link.evidenceIds) ? link.evidenceIds.length : 0) + (Array.isArray(link.counterEvidenceIds || link.counterevidenceIds) ? (link.counterEvidenceIds || link.counterevidenceIds).length : 0);
+          });
+          return { id: "research-claim-" + (index + 1), values: {
+            claim_code: claimByKey[item.key] || researchAlloCode("C", index),
+            claim_type: item.type,
+            created_month: researchAlloMonth(item.record),
+            statement_present: !!String(item.record && (item.record.text || item.record.label || "")).trim(),
+            evidence_link_count: evidenceCount,
+            relationship_count: links.length,
+            support_link_count: relationshipTypes.filter(function(type) {
+              return type === "supports";
+            }).length,
+            complicate_link_count: relationshipTypes.filter(function(type) {
+              return type === "complicates";
+            }).length,
+            contradict_link_count: relationshipTypes.filter(function(type) {
+              return type === "contradicts";
+            }).length,
+            warrant_present: warrantCount > 0,
+            method_pack: researchAlloClip(item.record && item.record.methodPackId || journal.activeMethodPack, 80),
+            inquiry_episode_present: !!(item.record && item.record.inquiryEpisodeId),
+            privacy_status: "text and stable IDs excluded"
+          } };
+        });
+        var evidenceRows = selectedEvidence.map(function(item, index) {
+          var linked = [];
+          var relationTypes = [];
+          relationshipWindow.rows.forEach(function(link) {
+            var ids = (Array.isArray(link.evidenceIds) ? link.evidenceIds : []).concat(Array.isArray(link.counterEvidenceIds || link.counterevidenceIds) ? link.counterEvidenceIds || link.counterevidenceIds : []);
+            if (ids.some(function(id) {
+              return evidenceKeyForId(id) === item;
+            })) {
+              var claim = findClaimKey(link);
+              if (claim && linked.indexOf(claim) === -1) linked.push(claim);
+              relationTypes.push(researchAlloClip(link.relationship || link.relation || "supports", 40) || "supports");
+            }
+          });
+          var record = item.record || {};
+          var receipt = record.reproducibilityReceipt || {};
+          var integration = record.integrationHealth || {};
+          return { id: "research-evidence-" + (index + 1), values: {
+            evidence_code: evidenceByKey[item.key] || researchAlloCode("E", index),
+            evidence_type: item.type,
+            created_month: researchAlloMonth(record),
+            linked_claim_count: linked.length,
+            relationship_types: Object.keys(researchAlloCountMap(relationTypes)).join(", "),
+            tag_present: !!String(record.tag || "").trim(),
+            citation_present: !!String(record.citation || "").trim(),
+            approved_summary_present: !!String(record.summary || record.text || "").trim(),
+            reproducibility_status: researchAlloClip(receipt.status || "not_recorded", 40),
+            integration_status: researchAlloClip(integration.status || record.integrationContractStatus || "not_recorded", 40),
+            privacy_review_status: record.privacyFindings && record.privacyFindings.length ? "review_findings" : "no_exported_content",
+            privacy_status: "content, files, notes, citations, and stable IDs excluded"
+          } };
+        });
+        var families = [
+          { label: "sources", records: Array.isArray(journal.sources) ? journal.sources : [], provenance: function(record) {
+            return !!(record && (record.citation || record.sourceUrl || record.humanitiesContext));
+          }, review: function(record) {
+            return !!(record && record.sift && ["failed_SIFT", "unvetted"].indexOf(record.sift.tier) !== -1);
+          } },
+          { label: "tool artifacts", records: Array.isArray(journal.capturedArtifacts) ? journal.capturedArtifacts : [], provenance: function(record) {
+            return !!(record && (record.provenance || record.integrationContract));
+          }, review: function(record) {
+            return !!(record && (!record.reproducibilityReceipt || record.reproducibilityReceipt.status !== "complete"));
+          } },
+          { label: "inquiry episodes", records: Array.isArray(journal.inquiryEpisodes) ? journal.inquiryEpisodes : [], provenance: function(record) {
+            return !!(record && (record.methodPackId || record.laneId));
+          }, review: function() {
+            return false;
+          } },
+          { label: "evidence relationships", records: relationshipWindow.rows, provenance: function(record) {
+            return !!(record && (record.warrant || record.methodPackId || record.inquiryEpisodeId));
+          }, review: function(record) {
+            return !(record && String(record.warrant || "").trim());
+          } }
+        ];
+        var provenanceRows = [];
+        families.forEach(function(family, index) {
+          var selectedRecords = researchAlloRowsInWindow(family.records, dateRange, nowMs).rows;
+          var withProvenance = selectedRecords.filter(family.provenance).length;
+          var needsReview = selectedRecords.filter(family.review).length;
+          provenanceRows.push({ id: "research-provenance-" + (index + 1), values: {
+            record_family: family.label,
+            record_count: selectedRecords.length,
+            provenance_present_count: withProvenance,
+            provenance_missing_count: selectedRecords.length - withProvenance,
+            needs_review_count: needsReview,
+            privacy_status: "status and counts only; record identifiers excluded"
+          } });
+        });
+        var overviewValues = {
+          date_range: dateRange,
+          inquiry_status: researchAlloClip(journal.activeLane ? "active_inquiry" : "not_started", 40),
+          active_lane: researchAlloClip(journal.activeLane, 80),
+          active_method_pack: researchAlloClip(journal.activeMethodPack, 80),
+          question_present: !!String(journal.questionTitle || "").trim(),
+          claim_count: selectedClaims.length,
+          evidence_count: selectedEvidence.length,
+          relationship_count: relationshipWindow.rows.length,
+          source_count: (journal.sources || []).length,
+          captured_artifact_count: selectedEvidence.filter(function(item) {
+            return item.type === "tool_artifact";
+          }).length,
+          graph_status: researchAlloClip(graph.status || "unknown", 40),
+          graph_diagnostic_count: Array.isArray(graph.diagnostics) ? graph.diagnostics.length : 0,
+          audit_status: researchAlloClip(audit.status || "unknown", 40),
+          audit_action_count: audit.counts && audit.counts.action || 0,
+          audit_review_count: audit.counts && audit.counts.review || 0,
+          integration_healthy_count: (input.integrationHealth || {}).healthy || 0,
+          integration_review_count: (input.integrationHealth || {}).needsReview || 0,
+          integration_action_count: (input.integrationHealth || {}).actionNeeded || 0,
+          privacy_status: "reduced-data copy; learner text, files, citations, notes, and stable identifiers excluded"
+        };
+        var tableSpecs = [
+          { key: "overview", id: "research-overview", title: "Research Hub overview", columns: [
+            ["date_range", "Date range", "category"],
+            ["inquiry_status", "Inquiry status", "category"],
+            ["active_lane", "Active lane", "category"],
+            ["active_method_pack", "Active method pack", "category"],
+            ["question_present", "Question present", "boolean"],
+            ["claim_count", "Claim count", "number"],
+            ["evidence_count", "Evidence count", "number"],
+            ["relationship_count", "Relationship count", "number"],
+            ["source_count", "Source count", "number"],
+            ["captured_artifact_count", "Captured artifact count", "number"],
+            ["graph_status", "Graph status", "category"],
+            ["graph_diagnostic_count", "Graph diagnostic count", "number"],
+            ["audit_status", "Audit status", "category"],
+            ["audit_action_count", "Audit action count", "number"],
+            ["audit_review_count", "Audit review count", "number"],
+            ["integration_healthy_count", "Integration healthy count", "number"],
+            ["integration_review_count", "Integration review count", "number"],
+            ["integration_action_count", "Integration action count", "number"],
+            ["privacy_status", "Privacy status", "text"]
+          ], rows: [{ id: "research-overview-1", values: overviewValues }] },
+          { key: "claims", id: "research-claim-summary", title: "Research Hub claim relationship summary", columns: [
+            ["claim_code", "Claim code", "category"],
+            ["claim_type", "Claim type", "category"],
+            ["created_month", "Created month", "category"],
+            ["statement_present", "Statement present", "boolean"],
+            ["evidence_link_count", "Evidence link count", "number"],
+            ["relationship_count", "Relationship count", "number"],
+            ["support_link_count", "Support links", "number"],
+            ["complicate_link_count", "Complicate links", "number"],
+            ["contradict_link_count", "Contradict links", "number"],
+            ["warrant_present", "Warrant present", "boolean"],
+            ["method_pack", "Method pack", "category"],
+            ["inquiry_episode_present", "Inquiry episode present", "boolean"],
+            ["privacy_status", "Privacy status", "text"]
+          ], rows: claimRows, sourceRowCount: claims.length },
+          { key: "evidence", id: "research-evidence-summary", title: "Research Hub evidence metadata summary", columns: [
+            ["evidence_code", "Evidence code", "category"],
+            ["evidence_type", "Evidence type", "category"],
+            ["created_month", "Created month", "category"],
+            ["linked_claim_count", "Linked claim count", "number"],
+            ["relationship_types", "Relationship types", "text"],
+            ["tag_present", "Tag present", "boolean"],
+            ["citation_present", "Citation present", "boolean"],
+            ["approved_summary_present", "Approved summary present", "boolean"],
+            ["reproducibility_status", "Reproducibility status", "category"],
+            ["integration_status", "Integration status", "category"],
+            ["privacy_review_status", "Privacy review status", "category"],
+            ["privacy_status", "Privacy status", "text"]
+          ], rows: evidenceRows, sourceRowCount: evidence.length },
+          { key: "provenance", id: "research-provenance-summary", title: "Research Hub provenance and receipt summary", columns: [
+            ["record_family", "Record family", "category"],
+            ["record_count", "Record count", "number"],
+            ["provenance_present_count", "Provenance present count", "number"],
+            ["provenance_missing_count", "Provenance missing count", "number"],
+            ["needs_review_count", "Needs review count", "number"],
+            ["privacy_status", "Privacy status", "text"]
+          ], rows: provenanceRows }
+        ];
+        var tables = tableSpecs.filter(function(spec) {
+          return selected[spec.key] !== false;
+        }).map(function(spec) {
+          return { id: spec.id, title: spec.title, columns: spec.columns.map(function(column) {
+            return { key: column[0], label: column[1], type: column[2] };
+          }), rows: spec.rows, sourceRowCount: spec.sourceRowCount == null ? spec.rows.length : spec.sourceRowCount };
+        });
+        var excludedUndated = claimWindow.excludedUndated + evidenceWindow.excludedUndated + relationshipWindow.excludedUndated;
+        return {
+          kind: "alloflow.tabular.v1",
+          version: 1,
+          source: { tool: "research-hub", label: "Research Hub", version: "1" },
+          title: "Research Hub evidence metadata summary",
+          createdAt,
+          classification: { level: "sensitive-education-data", studentIdentifierIncluded: false, freeTextNotesIncluded: false },
+          privacy: { scope: "educator-selected", identifierIncluded: false, reducedData: true, notesIncluded: false, transferEnablesAI: false },
+          tables,
+          provenance: { dateRange, selectedDatasets: tableSpecs.filter(function(spec) {
+            return selected[spec.key] !== false;
+          }).map(function(spec) {
+            return spec.key;
+          }), excludedUndatedCount: excludedUndated, privacyStatus: "reduced-data copy", exclusions: ["claim text", "evidence text", "citations", "files", "notes", "stable record identifiers", "learner interpretation", "credentials"] },
+          capabilities: { writeBack: false, aiEnabled: false, transferEnablesAI: false },
+          metadata: { dateRange, tableCount: tables.length, excludedUndatedCount: excludedUndated, privacyStatus: "reduced-data copy" }
+        };
+      }
       function EvidenceGraphView(props) {
         var graph = props.graph || { nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [], status: "ready" };
         var _drafts = useState({});
@@ -3286,6 +3612,51 @@ var require_tmp_research_hub_entry = __commonJS({
           lineHeight: 1.5
         } }, /* @__PURE__ */ React.createElement("strong", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527} "), t("research_hub.lane_under_construction_title") || "This lane didn\u2019t load."), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0" } }, t("research_hub.lane_under_construction_body") || "The Hub and your inquiry journal are working. This lane\u2019s workspace failed to load \u2014 try closing and reopening the Research Hub, or reload the page.")), /* @__PURE__ */ React.createElement("details", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontWeight: 700 } }, t("research_hub.lane_preview_summary") || "Preview the loop"), /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", lineHeight: 1.55 } }, t("research_hub.lane_preview_body_" + lane.id) || 'In this lane you move through its stages in any order, with explicit "loop back" affordances so revising is the point \u2014 not a setback.')));
       }
+      function ResearchAlloSheetReviewDialog(props) {
+        var artifact = props.artifact || { tables: [], provenance: {}, metadata: {} };
+        var tables = Array.isArray(artifact.tables) ? artifact.tables : [];
+        var selected = props.datasets || {};
+        var selectedTables = tables.filter(function(table) {
+          var key = table.id === "research-overview" ? "overview" : table.id === "research-claim-summary" ? "claims" : table.id === "research-evidence-summary" ? "evidence" : "provenance";
+          return selected[key] !== false;
+        });
+        useEffect(function() {
+          if (!props.isOpen) return void 0;
+          var onKeyDown = function(event) {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              if (typeof props.onClose === "function") props.onClose();
+            }
+          };
+          document.addEventListener("keydown", onKeyDown, true);
+          return function() {
+            document.removeEventListener("keydown", onKeyDown, true);
+          };
+        }, [props.isOpen, props.onClose]);
+        if (!props.isOpen) return null;
+        var datasetLabels = { overview: "Inquiry overview", claims: "Claim relationships", evidence: "Evidence metadata", provenance: "Provenance health" };
+        return /* @__PURE__ */ React.createElement("div", { role: "presentation", onClick: function(event) {
+          if (event.target === event.currentTarget && typeof props.onClose === "function") props.onClose();
+        }, style: { position: "fixed", inset: 0, zIndex: 90, background: "rgba(15,23,42,0.68)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-labelledby": "research-allosheet-title", "aria-describedby": "research-allosheet-description", onClick: function(event) {
+          event.stopPropagation();
+        }, style: { width: "100%", maxWidth: "680px", maxHeight: "90vh", overflowY: "auto", background: "#fff", borderRadius: "16px", boxShadow: "0 25px 70px rgba(0,0,0,.4)", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-allosheet-title", style: { margin: 0, fontSize: "18px", color: "#1e1b4b" } }, "Review Research Hub summaries in AlloSheet"), /* @__PURE__ */ React.createElement("p", { id: "research-allosheet-description", style: { margin: "6px 0 0", fontSize: "12px", lineHeight: 1.5, color: "#475569" } }, "Choose a time window and bounded metadata tables. Claim text, evidence text, citations, files, notes, stable IDs, and learner interpretation stay in Research Hub.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose, "aria-label": "Close Research Hub AlloSheet review", style: { minWidth: "44px", minHeight: "44px", borderRadius: "8px", border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "18px", fontWeight: 800 } }, "\xD7")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "14px", display: "grid", gap: "12px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 800, color: "#334155" } }, "Date window", /* @__PURE__ */ React.createElement("select", { "aria-label": "Research Hub AlloSheet date window", value: props.dateRange, onChange: function(event) {
+          props.onChangeDateRange(event.target.value);
+        }, style: { display: "block", width: "100%", minHeight: "44px", marginTop: "4px", border: "1px solid #94a3b8", borderRadius: "8px", padding: "8px", background: "#fff", color: "#0f172a" } }, /* @__PURE__ */ React.createElement("option", { value: "30d" }, "Last 30 days"), /* @__PURE__ */ React.createElement("option", { value: "90d" }, "Last 90 days"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved inquiry records"))), /* @__PURE__ */ React.createElement("fieldset", { style: { border: "1px solid #cbd5e1", borderRadius: "10px", padding: "10px 12px" } }, /* @__PURE__ */ React.createElement("legend", { style: { padding: "0 4px", fontSize: "12px", fontWeight: 900, color: "#334155" } }, "Tables to include"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: "8px" } }, Object.keys(datasetLabels).map(function(key) {
+          return /* @__PURE__ */ React.createElement("label", { key, style: { display: "flex", alignItems: "center", gap: "8px", minHeight: "44px", fontSize: "12px", color: "#334155" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected[key] !== false, onChange: function(event) {
+            props.onChangeDataset(key, event.target.checked);
+          } }), datasetLabels[key]);
+        }))), /* @__PURE__ */ React.createElement("div", { "aria-label": "Research Hub AlloSheet transfer preview", style: { display: "grid", gap: "8px" } }, selectedTables.length ? selectedTables.map(function(table) {
+          return /* @__PURE__ */ React.createElement("div", { key: table.id, style: { border: "1px solid #cbd5e1", borderRadius: "9px", padding: "9px 10px", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "12px", color: "#1e293b" } }, table.title), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "3px", fontSize: "11px", color: "#475569" } }, (table.rows || []).length + " rows \xB7 " + (table.columns || []).length + " bounded fields"));
+        }) : /* @__PURE__ */ React.createElement("div", { role: "status", style: { padding: "10px", borderRadius: "8px", background: "#fff7ed", color: "#9a3412", fontSize: "12px" } }, "Select at least one table to continue.")), /* @__PURE__ */ React.createElement("div", { role: "note", style: { padding: "9px 10px", borderRadius: "9px", background: "#eef2ff", border: "1px solid #c7d2fe", color: "#3730a3", fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Reduced-data copy:"), " ", artifact.metadata && artifact.metadata.excludedUndatedCount ? artifact.metadata.excludedUndatedCount + " undated record(s) are outside this bounded window. " : "", "AlloSheet receives status, counts, relationship shape, method tags, and receipt health only. AI and writeback remain disabled.")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "16px", display: "flex", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose, style: { minHeight: "44px", padding: "8px 14px", borderRadius: "8px", border: "1px solid #94a3b8", background: "#fff", color: "#334155", fontWeight: 800 } }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !selectedTables.length, onClick: function() {
+          var result = typeof props.onTransfer === "function" ? props.onTransfer(selectedTables) : null;
+          if (result && typeof result.then === "function") result.then(function() {
+            if (typeof props.onClose === "function") props.onClose();
+          }).catch(function() {
+          });
+          else if (typeof props.onClose === "function") props.onClose();
+        }, style: { minHeight: "44px", padding: "8px 14px", borderRadius: "8px", border: 0, background: selectedTables.length ? "#4338ca" : "#94a3b8", color: "#fff", fontWeight: 900 } }, "Open selected tables"))));
+      }
       function ResearchHub(props) {
         var t = typeof props.t === "function" ? props.t : function(k) {
           return k;
@@ -3331,6 +3702,15 @@ var require_tmp_research_hub_entry = __commonJS({
         var _mediaStatus = useState("checking");
         var mediaStatus = _mediaStatus[0];
         var setMediaStatus = _mediaStatus[1];
+        var _researchAlloOpen = useState(false);
+        var researchAlloOpen = _researchAlloOpen[0];
+        var setResearchAlloOpen = _researchAlloOpen[1];
+        var _researchAlloDateRange = useState("90d");
+        var researchAlloDateRange = _researchAlloDateRange[0];
+        var setResearchAlloDateRange = _researchAlloDateRange[1];
+        var _researchAlloDatasets = useState({ overview: true, claims: true, evidence: true, provenance: true });
+        var researchAlloDatasets = _researchAlloDatasets[0];
+        var setResearchAlloDatasets = _researchAlloDatasets[1];
         var importInputRef = useRef(null);
         var closeHandlerRef = useRef(onClose);
         closeHandlerRef.current = onClose;
@@ -3492,6 +3872,14 @@ var require_tmp_research_hub_entry = __commonJS({
         var storageHealth = useMemo(function() {
           return researchStorageHealth(journal);
         }, [journal]);
+        var researchAlloArtifact = useMemo(function() {
+          var builder = typeof props.buildResearchHubAlloSheetEnvelope === "function" ? props.buildResearchHubAlloSheetEnvelope : buildResearchHubAlloSheetEnvelope;
+          return builder({ journal, graph: evidenceGraph, audit: inquiryAudit, integrationHealth }, { dateRange: researchAlloDateRange, datasets: researchAlloDatasets });
+        }, [journal, evidenceGraph, inquiryAudit, integrationHealth, researchAlloDateRange, researchAlloDatasets, props.buildResearchHubAlloSheetEnvelope]);
+        var openResearchAlloSheet = function(selectedTables) {
+          if (typeof props.onOpenAlloSheet !== "function") return false;
+          return props.onOpenAlloSheet(Object.assign({}, researchAlloArtifact, { tables: selectedTables || researchAlloArtifact.tables }));
+        };
         var legacyArtifacts = (journal.capturedArtifacts || []).filter(function(artifact) {
           return artifact && (!artifact.integrationContract || artifact.integrationContractStatus === "legacy_contract");
         });
@@ -3902,7 +4290,9 @@ var require_tmp_research_hub_entry = __commonJS({
               gap: "12px",
               flexWrap: "wrap",
               borderRadius: "20px 20px 0 0"
-            } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
+            } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), isTeacherMode && typeof props.onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+              setResearchAlloOpen(true);
+            }, "aria-label": "Review Research Hub summaries in AlloSheet", style: { background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "999px", padding: "6px 12px", cursor: "pointer", fontSize: "11px", fontWeight: 800 } }, "Review in AlloSheet"), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
               "button",
               {
                 type: "button",
@@ -3957,7 +4347,27 @@ var require_tmp_research_hub_entry = __commonJS({
               flex: 1
             } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } }, educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : activeLane ? activeLane.label : t("research_hub.method_selector_title") || "Choose an inquiry approach"), showExitHint && /* @__PURE__ */ React.createElement("div", { "data-research-exit-hint": "true", role: "status", "aria-live": "polite", style: { display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "12px", border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Your Research Hub stayed open."), " Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
               setShowExitHint(false);
-            }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), journal.loadWarning && /* @__PURE__ */ React.createElement("div", { role: "alert", "data-research-recovery-warning": "true", style: { padding: "12px 14px", borderRadius: "12px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Read-only recovery mode"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 8px", fontSize: "11px", lineHeight: 1.5 } }, journal.loadWarning), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadRecoveryCopy, style: { minHeight: "44px", padding: "7px 11px", borderRadius: "9px", border: "1px solid #d97706", background: "#fff", color: "#92400e", fontWeight: 800, cursor: "pointer" } }, "Download untouched recovery copy")), pendingCapture && /* @__PURE__ */ React.createElement("section", { "data-research-capture-review": "true", "aria-labelledby": "research-capture-review-title", style: { padding: "14px", borderRadius: "15px", border: "2px solid #0d9488", background: "linear-gradient(135deg,#f0fdfa,#ffffff)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.6px", color: "#0f766e" } }, "Tool artifact awaiting your approval"), /* @__PURE__ */ React.createElement("h3", { id: "research-capture-review-title", style: { margin: "3px 0 0", fontSize: "15px", color: "#134e4a" } }, pendingCapture.title), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", color: "#475569" } }, pendingCapture.sourceToolName + " \xB7 " + pendingCapture.artifactKind)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color: "#0f766e" } }, readCaptureInbox().length + " queued")), /* @__PURE__ */ React.createElement("p", { style: { margin: "9px 0 0", fontSize: "11px", lineHeight: 1.55, color: "#334155" } }, pendingCapture.summary), pendingCapture.privacyFindings && pendingCapture.privacyFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { "data-capture-privacy-findings": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", background: "#f5f3ff", border: "1px solid #c4b5fd", fontSize: "10px", color: "#5b21b6" } }, /* @__PURE__ */ React.createElement("strong", null, "Automated privacy checks:"), " ", pendingCapture.privacyFindings.map(function(finding) {
+            }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), journal.loadWarning && /* @__PURE__ */ React.createElement("div", { role: "alert", "data-research-recovery-warning": "true", style: { padding: "12px 14px", borderRadius: "12px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#78350f" } }, /* @__PURE__ */ React.createElement("strong", null, "Read-only recovery mode"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 8px", fontSize: "11px", lineHeight: 1.5 } }, journal.loadWarning), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: downloadRecoveryCopy, style: { minHeight: "44px", padding: "7px 11px", borderRadius: "9px", border: "1px solid #d97706", background: "#fff", color: "#92400e", fontWeight: 800, cursor: "pointer" } }, "Download untouched recovery copy")), researchAlloOpen && /* @__PURE__ */ React.createElement(
+              ResearchAlloSheetReviewDialog,
+              {
+                isOpen: researchAlloOpen,
+                artifact: researchAlloArtifact,
+                dateRange: researchAlloDateRange,
+                datasets: researchAlloDatasets,
+                onChangeDateRange: setResearchAlloDateRange,
+                onChangeDataset: function(key, value) {
+                  setResearchAlloDatasets(function(previous) {
+                    var next = Object.assign({}, previous);
+                    next[key] = value;
+                    return next;
+                  });
+                },
+                onClose: function() {
+                  setResearchAlloOpen(false);
+                },
+                onTransfer: openResearchAlloSheet
+              }
+            ), pendingCapture && /* @__PURE__ */ React.createElement("section", { "data-research-capture-review": "true", "aria-labelledby": "research-capture-review-title", style: { padding: "14px", borderRadius: "15px", border: "2px solid #0d9488", background: "linear-gradient(135deg,#f0fdfa,#ffffff)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.6px", color: "#0f766e" } }, "Tool artifact awaiting your approval"), /* @__PURE__ */ React.createElement("h3", { id: "research-capture-review-title", style: { margin: "3px 0 0", fontSize: "15px", color: "#134e4a" } }, pendingCapture.title), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", color: "#475569" } }, pendingCapture.sourceToolName + " \xB7 " + pendingCapture.artifactKind)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color: "#0f766e" } }, readCaptureInbox().length + " queued")), /* @__PURE__ */ React.createElement("p", { style: { margin: "9px 0 0", fontSize: "11px", lineHeight: 1.55, color: "#334155" } }, pendingCapture.summary), pendingCapture.privacyFindings && pendingCapture.privacyFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { "data-capture-privacy-findings": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", background: "#f5f3ff", border: "1px solid #c4b5fd", fontSize: "10px", color: "#5b21b6" } }, /* @__PURE__ */ React.createElement("strong", null, "Automated privacy checks:"), " ", pendingCapture.privacyFindings.map(function(finding) {
               return finding.code + (finding.count ? " \xD7" + finding.count : "");
             }).join(" \xB7 ")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", padding: "8px 10px", borderRadius: "9px", background: "#ecfeff", fontSize: "10px", color: "#155e75" } }, /* @__PURE__ */ React.createElement("strong", null, "Privacy/provenance:"), " ", pendingCapture.provenance && pendingCapture.provenance.privacy || "No raw files or direct identifiers included."), pendingCapture.integrationContract ? /* @__PURE__ */ React.createElement("details", { "data-capture-integration-contract": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", border: "1px solid #99f6e4", background: "#f0fdfa", fontSize: "10px", color: "#134e4a" } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontWeight: 900 } }, "Tool contract & reproducibility receipt \xB7 ", pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.status || "missing"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", display: "grid", gap: "3px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Declared version:"), " ", pendingCapture.integrationContract.version || pendingCapture.sourceToolVersion || "unknown"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "License:"), " ", pendingCapture.integrationContract.license && (pendingCapture.integrationContract.license.spdx || pendingCapture.integrationContract.license.name) || "not declared"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Citation guidance:"), " ", pendingCapture.integrationContract.citation && pendingCapture.integrationContract.citation.text || "not declared"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Supported approaches:"), " ", (pendingCapture.integrationContract.supportedMethodPacks || []).join(", ") || "not declared"), pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.missingFields && pendingCapture.reproducibilityReceipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", pendingCapture.reproducibilityReceipt.missingFields.join(", ")), pendingCapture.reproducibilityReceipt && pendingCapture.reproducibilityReceipt.limitations && pendingCapture.reproducibilityReceipt.limitations.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Declared limitations:"), " ", pendingCapture.reproducibilityReceipt.limitations.join(" \xB7 ")))) : /* @__PURE__ */ React.createElement("div", { "data-capture-unregistered-warning": "true", style: { marginTop: "8px", padding: "7px 9px", borderRadius: "9px", border: "1px solid #fcd34d", background: "#fffbeb", fontSize: "10px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Unregistered integration:"), " no versioned contract, license, citation, or tool-specific receipt requirements were provided. Review carefully before approval."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: "10px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 800, color: "#334155" } }, "What do you notice or infer? ", /* @__PURE__ */ React.createElement("span", { style: { color: "#b91c1c" } }, "(required)"), /* @__PURE__ */ React.createElement("textarea", { value: captureNote, onChange: function(e) {
               setCaptureNote(e.target.value.slice(0, 2e3));
@@ -4356,6 +4766,7 @@ var require_tmp_research_hub_entry = __commonJS({
         }
         return /* @__PURE__ */ React.createElement(PlaceholderLaneView, { t, lane, onBack });
       }
+      window.buildResearchHubAlloSheetEnvelope = buildResearchHubAlloSheetEnvelope;
       window.AlloModules = window.AlloModules || {};
       window.AlloModules.ResearchHub = ResearchHub;
       window.AlloModules.ResearchHub.__tier = 4;
@@ -4400,6 +4811,7 @@ var require_tmp_research_hub_entry = __commonJS({
           assessResearchArtifactIntegration,
           summarizeIntegrationHealth,
           buildInquiryAudit,
+          buildResearchHubAlloSheetEnvelope,
           buildEvidenceGraph,
           buildW3CWebAnnotations,
           buildCslJson,

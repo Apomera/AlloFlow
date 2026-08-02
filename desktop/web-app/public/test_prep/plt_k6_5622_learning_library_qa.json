@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0", "visibility": "public",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:37.039Z",
   "libraryId": "praxis-plt-k6-5622-learning-library",
   "packId": "praxis-plt-k6-5622",
   "standard": {
@@ -31,8 +31,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
-    "learningLibrarySha256": "3c48daa7a98fc5f43b3c1eed8207ec7811a7bc825bede03b1613cf7c42bb8903",
+    "sourceItemsSha256": "baeddfd59216900d23076a140d8c3702fb1c873af6f854c3004587749f10c788",
+    "learningLibrarySha256": "207a9a6736dc093f5a88af5a9afee77da87cb568034deb0ddb9df34db1e15070",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

@@ -2335,6 +2335,388 @@
   // ═════════════════════════════════════════════════════════
   // SECTION 3 — Persistence helpers
   // ═════════════════════════════════════════════════════════
+
+
+  // ─── Dynamic Assessment → AlloSheet handoff ─────────────────────────────
+  // The adapter is intentionally pure and one-way. It exports scored probe
+  // metadata and bounded progress summaries, never student responses,
+  // examiner narrative, intake/referral text, prompt text, or answer keys.
+  var DA_ALLOSHEET_KIND = "alloflow.tabular.v1";
+  var DA_ALLOSHEET_LIMITS = {
+    maxTables: 3,
+    maxColumnsPerTable: 40,
+    maxRowsPerTable: 200,
+    maxCellCharacters: 1200,
+    maxEnvelopeBytes: 2000000,
+    minimumAggregateSessions: 5
+  };
+
+  function daAlloByteLength(value) {
+    var text = typeof value === "string" ? value : JSON.stringify(value);
+    try {
+      if (typeof TextEncoder === "function") return new TextEncoder().encode(text).length;
+    } catch (_) {}
+    try { return unescape(encodeURIComponent(text)).length; } catch (_) { return text.length; }
+  }
+  function daAlloText(value, max) {
+    return String(value == null ? "" : value)
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ")
+      .slice(0, Math.min(DA_ALLOSHEET_LIMITS.maxCellCharacters, max || DA_ALLOSHEET_LIMITS.maxCellCharacters));
+  }
+  function daAlloNumber(value) {
+    if (value == null || value === "") return null;
+    var number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+  function daAlloRound(value, digits) {
+    if (!Number.isFinite(value)) return null;
+    var factor = Math.pow(10, digits == null ? 2 : digits);
+    return Math.round(value * factor) / factor;
+  }
+  function daAlloColumn(key, label, type) {
+    var allowed = { text: true, number: true, boolean: true, date: true, datetime: true, duration: true, category: true };
+    return { key: daAlloText(key, 80), label: daAlloText(label, 160), type: allowed[type] ? type : "text" };
+  }
+  function daAlloCell(value, type) {
+    if (value == null) return null;
+    if (type === "number") return daAlloNumber(value);
+    if (type === "boolean") return value === true;
+    return daAlloText(value);
+  }
+  function daAlloHash(value, prefix) {
+    var text = String(value == null ? "" : value);
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (prefix || "code-") + (hash >>> 0).toString(16).padStart(8, "0");
+  }
+  function daAlloDateValue(session) {
+    var raw = session && (session.dateCompleted || session.dateStarted);
+    var time = raw ? new Date(raw).getTime() : NaN;
+    return Number.isFinite(time) ? time : null;
+  }
+  function daAlloDate(session) {
+    var time = daAlloDateValue(session);
+    return time == null ? "" : new Date(time).toISOString().slice(0, 10);
+  }
+  function daAlloDateTime(value) {
+    var time = value ? new Date(value).getTime() : NaN;
+    return Number.isFinite(time) ? new Date(time).toISOString() : null;
+  }
+  function daAlloTable(id, title, columns, candidateRows, sourceRowCount) {
+    var safeColumns = (Array.isArray(columns) ? columns : [])
+      .slice(0, DA_ALLOSHEET_LIMITS.maxColumnsPerTable);
+    var rows = [];
+    var sourceRows = Array.isArray(candidateRows) ? candidateRows : [];
+    for (var i = 0; i < sourceRows.length && rows.length < DA_ALLOSHEET_LIMITS.maxRowsPerTable; i++) {
+      var source = sourceRows[i] || {};
+      var values = {};
+      safeColumns.forEach(function (column) {
+        values[column.key] = daAlloCell(source.values && source.values[column.key], column.type);
+      });
+      rows.push({ id: daAlloText(source.id || (id + "-" + (i + 1)), 120), values: values });
+    }
+    return {
+      id: daAlloText(id, 80),
+      title: daAlloText(title, 180),
+      columns: safeColumns,
+      rows: rows,
+      rowCount: rows.length,
+      sourceRowCount: Math.max(rows.length, Math.floor(Number(sourceRowCount) || 0)),
+      truncated: rows.length < sourceRows.length
+    };
+  }
+  function daAlloSessionItem(session, itemId) {
+    var item = ITEMS_BY_ID[itemId] || null;
+    if (item) return item;
+    var custom = session && Array.isArray(session.customBankSnapshot) ? session.customBankSnapshot : [];
+    for (var i = 0; i < custom.length; i++) {
+      if (custom[i] && custom[i].id === itemId) return custom[i];
+    }
+    return null;
+  }
+  function daAlloStats(session) {
+    var results = Array.isArray(session && session.itemResults) ? session.itemResults : [];
+    var pre = results.filter(function (r) { return r && r.phase === "pretest"; });
+    var post = results.filter(function (r) { return r && r.phase === "posttest"; });
+    var mediation = results.filter(function (r) { return r && r.phase === "mediation"; });
+    var transfer = results.filter(function (r) { return r && r.phase === "transfer"; });
+    var itemCount = Array.isArray(session && session.sessionItemIds) ? session.sessionItemIds.length : 0;
+    var preSum = sumItemResultScores(pre);
+    var postSum = sumItemResultScores(post);
+    var transferSum = sumItemResultScores(transfer);
+    var max = maxPossibleScore(itemCount);
+    var transferMax = maxPossibleScore(transfer.length);
+    var solvedMediation = mediation.filter(function (r) { return r.finalCorrect === true; }).length;
+    var levels = mediation.map(function (r) { return daAlloNumber(r.promptLevelReached); }).filter(function (v) { return v != null; });
+    return {
+      pre: pre, post: post, mediation: mediation, transfer: transfer,
+      preSum: preSum, postSum: postSum, transferSum: transferSum,
+      max: max, transferMax: transferMax,
+      growth: postSum - preSum,
+      modifiabilityIndex: computeModifiabilityIndex(preSum, postSum, itemCount),
+      tier: modifiabilityTier(computeModifiabilityIndex(preSum, postSum, itemCount)),
+      mediationSuccessRate: mediation.length ? solvedMediation / mediation.length : null,
+      meanScaffoldLevel: levels.length ? levels.reduce(function (sum, value) { return sum + value; }, 0) / levels.length : null
+    };
+  }
+  function daAlloSessionList(input, dateRange, nowMs) {
+    var workspace = input && typeof input === "object" ? input : {};
+    var source = Array.isArray(workspace.sessions) ? workspace.sessions.slice() : [];
+    if (workspace.activeSession && typeof workspace.activeSession === "object") {
+      var activeId = workspace.activeSession.id;
+      if (!source.some(function (session) { return session && session.id && session.id === activeId; })) source.push(workspace.activeSession);
+    }
+    var days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : null;
+    var cutoff = days == null ? null : nowMs - (days * 86400000);
+    return source.filter(function (session) {
+      if (!session || !Array.isArray(session.itemResults)) return false;
+      if (cutoff == null) return true;
+      var time = daAlloDateValue(session);
+      return time != null && time >= cutoff && time <= nowMs;
+    }).sort(function (a, b) { return (daAlloDateValue(b) || 0) - (daAlloDateValue(a) || 0); });
+  }
+  function daAlloIdentifierColumns(identifierIncluded) {
+    return identifierIncluded ? [daAlloColumn("student_identifier", "Student identifier", "text")] : [];
+  }
+  function daAlloWithIdentifier(values, identifierIncluded, studentIdentifier) {
+    return identifierIncluded ? Object.assign({ student_identifier: studentIdentifier }, values) : values;
+  }
+
+  function buildDynamicAssessmentAlloSheetEnvelope(input, options) {
+    var workspace = input && typeof input === "object" ? input : {};
+    var settings = options && typeof options === "object" ? options : {};
+    var mode = settings.mode === "detailed" ? "detailed" : "summary";
+    var dateRange = ["all", "30d", "7d"].indexOf(settings.dateRange) >= 0 ? settings.dateRange : "all";
+    var createdCandidate = settings.createdAt || new Date().toISOString();
+    var createdMs = new Date(createdCandidate).getTime();
+    var nowMs = Number.isFinite(createdMs) ? createdMs : Date.now();
+    var createdAt = new Date(nowMs).toISOString();
+    var studentIdentifier = daAlloText(workspace.studentIdentifier || workspace.studentName || "", 160);
+    var identifierIncluded = settings.includeStudentIdentifier === true && !!studentIdentifier;
+    var requested = settings.datasets && typeof settings.datasets === "object" ? settings.datasets : {};
+    var datasets = {
+      sessionSummary: requested.sessionSummary !== false,
+      probeResults: requested.probeResults !== false,
+      progressSummary: requested.progressSummary !== false
+    };
+    var sessions = daAlloSessionList(workspace, dateRange, nowMs);
+    var sessionRows = [];
+    var probeRows = [];
+    var progressGroups = {};
+    var learnerCode = "learner-1";
+
+    sessions.forEach(function (session, sessionIndex) {
+      var stats = daAlloStats(session);
+      var sessionCode = daAlloHash(session.id || (daAlloDate(session) + "-" + sessionIndex), "session-");
+      sessionRows.push({
+        id: sessionCode,
+        values: daAlloWithIdentifier({
+          learner_code: learnerCode,
+          session_code: sessionCode,
+          date: daAlloDate(session),
+          domain: session && session.isCustomBank ? "custom" : (session && session.domain || "unspecified"),
+          difficulty: session && session.difficulty || "unspecified",
+          mediation_mode: session && session.mode === "ai" ? "ai-mediated" : "clinician-led",
+          items_administered: Array.isArray(session && session.sessionItemIds) ? session.sessionItemIds.length : 0,
+          pretest_sum: stats.preSum,
+          posttest_sum: stats.postSum,
+          max_score: stats.max,
+          growth_points: stats.growth,
+          modifiability_index: daAlloRound(stats.modifiabilityIndex, 3),
+          modifiability_tier: stats.tier && stats.tier.id || "unknown",
+          transfer_sum: stats.transfer.length ? stats.transferSum : null,
+          transfer_max: stats.transfer.length ? stats.transferMax : null,
+          transfer_percent: stats.transfer.length && stats.transferMax > 0 ? daAlloRound((stats.transferSum / stats.transferMax) * 100, 1) : null,
+          mediation_attempts: stats.mediation.length,
+          mediation_success_rate: stats.mediationSuccessRate == null ? null : daAlloRound(stats.mediationSuccessRate, 3),
+          mean_scaffold_level: stats.meanScaffoldLevel == null ? null : daAlloRound(stats.meanScaffoldLevel, 2),
+          session_status: session && session.dateCompleted ? "completed" : "active-summary"
+        }, identifierIncluded, studentIdentifier)
+      });
+
+      var itemIds = Array.isArray(session && session.sessionItemIds) ? session.sessionItemIds : [];
+      (Array.isArray(session && session.itemResults) ? session.itemResults : []).forEach(function (result, resultIndex) {
+        if (!result) return;
+        var itemPosition = itemIds.indexOf(result.itemId);
+        var itemCode = "item-" + (itemPosition >= 0 ? itemPosition + 1 : resultIndex + 1);
+        var item = daAlloSessionItem(session, result.itemId) || {};
+        var construct = daAlloText(item.construct || "unspecified", 240);
+        var domain = daAlloText(session && session.isCustomBank ? "custom" : (session && session.domain || "unspecified"), 80);
+        var groupKey = domain + "\u001f" + construct;
+        if (!progressGroups[groupKey]) {
+          progressGroups[groupKey] = {
+            learnerCode: learnerCode, domain: domain, construct: construct,
+            sessions: {}, probes: 0, preN: 0, preCorrect: 0, postN: 0, postCorrect: 0,
+            mediationN: 0, mediationCorrect: 0, scaffoldTotal: 0, scaffoldN: 0,
+            movedN: 0, pairedN: 0
+          };
+        }
+        var group = progressGroups[groupKey];
+        group.sessions[sessionCode] = true;
+        group.probes += 1;
+        if (result.phase === "pretest") { group.preN += 1; if (result.finalCorrect) group.preCorrect += 1; }
+        if (result.phase === "posttest") { group.postN += 1; if (result.finalCorrect) group.postCorrect += 1; }
+        if (result.phase === "mediation") {
+          group.mediationN += 1;
+          if (result.finalCorrect) group.mediationCorrect += 1;
+          var level = daAlloNumber(result.promptLevelReached);
+          if (level != null) { group.scaffoldTotal += level; group.scaffoldN += 1; }
+        }
+        var rowValues = daAlloWithIdentifier({
+          learner_code: learnerCode,
+          session_code: sessionCode,
+          date: daAlloDate(session),
+          domain: domain,
+          difficulty: session && session.difficulty || "unspecified",
+          item_code: itemCode,
+          construct: construct,
+          construct_tags: Array.isArray(item.constructTags) ? item.constructTags.slice(0, 12).map(function (tag) { return daAlloText(tag, 80); }).join("; ") : "",
+          phase: daAlloText(result.phase || "unspecified", 40),
+          prompt_level: daAlloNumber(result.promptLevelReached),
+          support_type: daAlloText(result.supportType || "none", 60),
+          final_correct: result.finalCorrect === true,
+          score_awarded: daAlloNumber(result.scoreAwarded),
+          access_read_aloud_helped: result.accessReadAloudHelped === true,
+          access_simplified_helped: result.accessSimplifiedHelped === true,
+          access_l1_helped: result.accessL1Helped === true,
+          observation_tag_count: Array.isArray(result.observationTags) ? result.observationTags.length : 0,
+          attempted_at: daAlloDateTime(result.attemptedAt)
+        }, identifierIncluded, studentIdentifier);
+        probeRows.push({ id: sessionCode + "-probe-" + (resultIndex + 1), values: rowValues });
+        if (result.phase === "pretest" || result.phase === "posttest") {
+          // Pair only by the coded session/item key. No response text or
+          // narrative is needed to calculate the movement count.
+          var pairKey = sessionCode + "\u001f" + itemCode;
+          group[pairKey] = group[pairKey] || {};
+          group[pairKey][result.phase] = result.finalCorrect === true;
+        }
+      });
+    });
+
+    var progressRows = Object.keys(progressGroups).map(function (key, index) {
+      var group = progressGroups[key];
+      var sessionCount = Object.keys(group.sessions).length;
+      Object.keys(group).forEach(function (property) {
+        if (property.indexOf("session-") !== 0) return;
+        var pair = group[property];
+        if (pair && typeof pair.pretest === "boolean" && typeof pair.posttest === "boolean") {
+          group.pairedN += 1;
+          if (!pair.pretest && pair.posttest) group.movedN += 1;
+        }
+      });
+      var suppressed = sessionCount < DA_ALLOSHEET_LIMITS.minimumAggregateSessions;
+      var status = suppressed ? "suppressed (<" + DA_ALLOSHEET_LIMITS.minimumAggregateSessions + " sessions)" : "reported";
+      return {
+        id: "progress-" + (index + 1),
+        values: daAlloWithIdentifier({
+          learner_code: group.learnerCode,
+          domain: group.domain,
+          construct: group.construct,
+          session_count: sessionCount,
+          probe_count: group.probes,
+          pretest_n: group.preN,
+          pretest_pass_rate: suppressed || !group.preN ? null : daAlloRound(group.preCorrect / group.preN, 3),
+          posttest_n: group.postN,
+          posttest_pass_rate: suppressed || !group.postN ? null : daAlloRound(group.postCorrect / group.postN, 3),
+          mediation_n: group.mediationN,
+          mediation_success_rate: suppressed || !group.mediationN ? null : daAlloRound(group.mediationCorrect / group.mediationN, 3),
+          mean_scaffold_level: suppressed || !group.scaffoldN ? null : daAlloRound(group.scaffoldTotal / group.scaffoldN, 2),
+          wrong_to_right_n: group.movedN,
+          modifiability_sensitivity: suppressed || !group.pairedN ? null : daAlloRound(group.movedN / group.pairedN, 3),
+          privacy_status: status
+        }, identifierIncluded, studentIdentifier)
+      };
+    });
+
+    var tables = [];
+    if (datasets.sessionSummary) {
+      tables.push(daAlloTable("da-session-summary", "Dynamic Assessment session summary", daAlloIdentifierColumns(identifierIncluded).concat([
+        daAlloColumn("learner_code", "Learner code", "text"), daAlloColumn("session_code", "Session code", "text"),
+        daAlloColumn("date", "Date", "date"), daAlloColumn("domain", "Domain", "category"),
+        daAlloColumn("difficulty", "Difficulty", "category"), daAlloColumn("mediation_mode", "Mediation mode", "category"),
+        daAlloColumn("items_administered", "Items administered", "number"), daAlloColumn("pretest_sum", "Pretest score", "number"),
+        daAlloColumn("posttest_sum", "Posttest score", "number"), daAlloColumn("max_score", "Max score", "number"),
+        daAlloColumn("growth_points", "Growth points", "number"), daAlloColumn("modifiability_index", "Modifiability index", "number"),
+        daAlloColumn("modifiability_tier", "Modifiability tier", "category"), daAlloColumn("transfer_sum", "Transfer score", "number"),
+        daAlloColumn("transfer_max", "Transfer max", "number"), daAlloColumn("transfer_percent", "Transfer percent", "number"),
+        daAlloColumn("mediation_attempts", "Mediation attempts", "number"), daAlloColumn("mediation_success_rate", "Mediation success rate", "number"),
+        daAlloColumn("mean_scaffold_level", "Mean scaffold level", "number"), daAlloColumn("session_status", "Session status", "category")
+      ]), sessionRows, sessionRows.length));
+    }
+    if (datasets.probeResults && mode === "detailed") {
+      tables.push(daAlloTable("da-probe-results", "Coded Dynamic Assessment probe results", daAlloIdentifierColumns(identifierIncluded).concat([
+        daAlloColumn("learner_code", "Learner code", "text"), daAlloColumn("session_code", "Session code", "text"),
+        daAlloColumn("date", "Date", "date"), daAlloColumn("domain", "Domain", "category"),
+        daAlloColumn("difficulty", "Difficulty", "category"), daAlloColumn("item_code", "Item code", "text"),
+        daAlloColumn("construct", "Construct", "text"), daAlloColumn("construct_tags", "Construct tags", "text"),
+        daAlloColumn("phase", "Phase", "category"), daAlloColumn("prompt_level", "Prompt level", "number"),
+        daAlloColumn("support_type", "Support type", "category"), daAlloColumn("final_correct", "Final correct", "boolean"),
+        daAlloColumn("score_awarded", "Score awarded", "number"), daAlloColumn("access_read_aloud_helped", "Read-aloud helped", "boolean"),
+        daAlloColumn("access_simplified_helped", "Simplified text helped", "boolean"), daAlloColumn("access_l1_helped", "Home-language support helped", "boolean"),
+        daAlloColumn("observation_tag_count", "Observation tag count", "number"), daAlloColumn("attempted_at", "Attempted at", "datetime")
+      ]), probeRows, probeRows.length));
+    }
+    if (datasets.progressSummary) {
+      tables.push(daAlloTable("da-progress-summary", "Dynamic Assessment progress summary", daAlloIdentifierColumns(identifierIncluded).concat([
+        daAlloColumn("learner_code", "Learner code", "text"), daAlloColumn("domain", "Domain", "category"),
+        daAlloColumn("construct", "Construct", "text"), daAlloColumn("session_count", "Sessions", "number"),
+        daAlloColumn("probe_count", "Probes", "number"), daAlloColumn("pretest_n", "Pretest n", "number"),
+        daAlloColumn("pretest_pass_rate", "Pretest pass rate", "number"), daAlloColumn("posttest_n", "Posttest n", "number"),
+        daAlloColumn("posttest_pass_rate", "Posttest pass rate", "number"), daAlloColumn("mediation_n", "Mediation n", "number"),
+        daAlloColumn("mediation_success_rate", "Mediation success rate", "number"), daAlloColumn("mean_scaffold_level", "Mean scaffold level", "number"),
+        daAlloColumn("wrong_to_right_n", "Wrong to right n", "number"), daAlloColumn("modifiability_sensitivity", "Modifiability sensitivity", "number"),
+        daAlloColumn("privacy_status", "Privacy status", "category")
+      ]), progressRows, progressRows.length));
+    }
+    if (!tables.length) tables.push(daAlloTable("da-session-summary", "Dynamic Assessment session summary", [daAlloColumn("status", "Status", "text")], [], 0));
+
+    var cutoffDays = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : null;
+    var envelope = {
+      kind: DA_ALLOSHEET_KIND,
+      version: 1,
+      source: { tool: "dynamic-assessment", label: "Dynamic Assessment", version: "1.2.0" },
+      title: identifierIncluded ? "Dynamic Assessment - " + studentIdentifier : "Dynamic Assessment data review",
+      createdAt: createdAt,
+      classification: {
+        level: "sensitive-education-record",
+        label: "Sensitive student education data",
+        identifierIncluded: identifierIncluded,
+        freeTextNotesIncluded: false
+      },
+      privacy: {
+        scope: "dynamic-assessment-selected",
+        identifierIncluded: identifierIncluded,
+        notesIncluded: false,
+        reducedData: true,
+        transferEnablesAI: false
+      },
+      tables: tables.slice(0, DA_ALLOSHEET_LIMITS.maxTables),
+      provenance: {
+        sourceTool: "dynamic-assessment",
+        transferMode: mode,
+        dateRange: dateRange,
+        datasets: Object.keys(datasets).filter(function (key) { return datasets[key]; }),
+        filters: { cutoff: cutoffDays == null ? null : new Date(nowMs - (cutoffDays * 86400000)).toISOString() },
+        sourceCounts: { sessions: sessions.length, probeResults: probeRows.length, progressGroups: progressRows.length },
+        suppression: { minimumAggregateSessions: DA_ALLOSHEET_LIMITS.minimumAggregateSessions, appliesTo: "progress_summary rates and sensitivity", missingWorkInferred: false },
+        excludedFields: ["studentResponseText", "examinerObservation", "sessionNote", "intake", "prompt", "correctAnswer", "AI transcript"],
+        limits: DA_ALLOSHEET_LIMITS
+      },
+      capabilities: { writeBack: false, aiEnabled: false }
+    };
+    while (daAlloByteLength(envelope) >= DA_ALLOSHEET_LIMITS.maxEnvelopeBytes) {
+      var largest = envelope.tables.filter(function (table) { return table.rows.length > 0; }).sort(function (a, b) { return b.rows.length - a.rows.length; })[0];
+      if (!largest) break;
+      largest.rows.pop();
+      largest.rowCount = largest.rows.length;
+      largest.truncated = true;
+    }
+    return envelope;
+  }
+
   function loadState() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -5334,6 +5716,30 @@
     var stTuple = useState(loadState);
     var state = stTuple[0];
     var setState = stTuple[1];
+
+    // Dynamic Assessment → AlloSheet review state. The review is local to
+    // this mounted module; no artifact is created until the educator confirms.
+    var daAlloReviewTuple = useState(false);
+    var daAlloReviewOpen = daAlloReviewTuple[0];
+    var setDaAlloReviewOpen = daAlloReviewTuple[1];
+    var daAlloDateTuple = useState("all");
+    var daAlloDateRange = daAlloDateTuple[0];
+    var setDaAlloDateRange = daAlloDateTuple[1];
+    var daAlloModeTuple = useState("summary");
+    var daAlloMode = daAlloModeTuple[0];
+    var setDaAlloMode = daAlloModeTuple[1];
+    var daAlloDatasetTuple = useState({ sessionSummary: true, probeResults: true, progressSummary: true });
+    var daAlloDatasets = daAlloDatasetTuple[0];
+    var setDaAlloDatasets = daAlloDatasetTuple[1];
+    var daAlloIdentifierTuple = useState(false);
+    var daAlloIncludeIdentifier = daAlloIdentifierTuple[0];
+    var setDaAlloIncludeIdentifier = daAlloIdentifierTuple[1];
+    var daAlloBusyTuple = useState(false);
+    var daAlloBusy = daAlloBusyTuple[0];
+    var setDaAlloBusy = daAlloBusyTuple[1];
+    var daAlloFeedbackTuple = useState({ kind: "", text: "" });
+    var daAlloFeedback = daAlloFeedbackTuple[0];
+    var setDaAlloFeedback = daAlloFeedbackTuple[1];
     function patch(partial) {
       setState(function (prev) {
         // Accept a partial object OR a (prev)=>partial function. The functional
@@ -5366,6 +5772,75 @@
     }
     function updateSessionNote(text) {
       patchSession({ sessionNote: String(text || "").slice(0, 4000) });
+    }
+
+    function daAlloWorkspace() {
+      var sessions = Array.isArray(state.sessions) ? state.sessions.slice() : [];
+      var active = state.activeSession;
+      if (active && active.currentPhase === "summary" && !sessions.some(function (session) { return session && session.id === active.id; })) sessions.push(active);
+      return {
+        sessions: sessions,
+        activeSession: active && active.currentPhase === "summary" ? active : null,
+        studentIdentifier: (active && active.studentNickname) || props.studentNickname || ""
+      };
+    }
+    function openDaAlloReview() {
+      setDaAlloFeedback({ kind: "", text: "" });
+      setDaAlloReviewOpen(true);
+    }
+    function closeDaAlloReview() {
+      if (daAlloBusy) return;
+      setDaAlloReviewOpen(false);
+      setDaAlloFeedback({ kind: "", text: "" });
+    }
+    useEffect(function () {
+      if (!daAlloReviewOpen || typeof document === "undefined") return;
+      var opener = document.activeElement;
+      var timer = setTimeout(function () {
+        try {
+          var first = document.querySelector("[data-da-allosheet-initial]");
+          if (first && typeof first.focus === "function") first.focus();
+        } catch (_) {}
+      }, 0);
+      return function () {
+        clearTimeout(timer);
+        try { if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus(); } catch (_) {}
+      };
+    }, [daAlloReviewOpen]);
+    function transferDaAlloReview() {
+      if (daAlloBusy) return;
+      if (typeof props.onOpenAlloSheet !== "function") {
+        setDaAlloFeedback({ kind: "error", text: "AlloSheet is not available in this host yet. The Dynamic Assessment data remains unchanged." });
+        return;
+      }
+      var envelope = buildDynamicAssessmentAlloSheetEnvelope(daAlloWorkspace(), {
+        dateRange: daAlloDateRange,
+        mode: daAlloMode,
+        datasets: daAlloDatasets,
+        includeStudentIdentifier: daAlloIncludeIdentifier,
+        createdAt: new Date().toISOString()
+      });
+      var rowCount = envelope.tables.reduce(function (sum, table) { return sum + table.rows.length; }, 0);
+      if (rowCount === 0) {
+        setDaAlloFeedback({ kind: "error", text: "No completed Dynamic Assessment results match these filters. Choose a wider date range." });
+        return;
+      }
+      setDaAlloBusy(true);
+      setDaAlloFeedback({ kind: "status", text: "Opening the reviewed tables in AlloSheet…" });
+      try {
+        var pending = props.onOpenAlloSheet(envelope);
+        if (pending === false || pending == null) throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
+        Promise.resolve(pending).then(function () {
+          setDaAlloReviewOpen(false);
+          setDaAlloFeedback({ kind: "", text: "" });
+          announce("Dynamic Assessment tables opened in AlloSheet for review. No data was written back.");
+        }).catch(function (error) {
+          setDaAlloFeedback({ kind: "error", text: error && error.message ? error.message : "AlloSheet could not finish the review." });
+        }).finally(function () { setDaAlloBusy(false); });
+      } catch (error) {
+        setDaAlloFeedback({ kind: "error", text: error && error.message ? error.message : "AlloSheet could not open these tables." });
+        setDaAlloBusy(false);
+      }
     }
 
     // Phase U — timing computation helpers. activeSession.dateStarted is
@@ -12468,6 +12943,81 @@
     }
 
     // ─── Summary screen ───
+
+    function renderDaAlloReview() {
+      if (!daAlloReviewOpen) return null;
+      var preview = buildDynamicAssessmentAlloSheetEnvelope(daAlloWorkspace(), {
+        dateRange: daAlloDateRange,
+        mode: daAlloMode,
+        datasets: daAlloDatasets,
+        includeStudentIdentifier: daAlloIncludeIdentifier,
+        createdAt: new Date().toISOString()
+      });
+      var previewRows = preview.tables.reduce(function (sum, table) { return sum + table.rows.length; }, 0);
+      function toggleDataset(key) {
+        setDaAlloDatasets(function (previous) { return Object.assign({}, previous, (function () { var next = {}; next[key] = !previous[key]; return next; })()); });
+      }
+      return h("div", {
+        role: "presentation",
+        onClick: function (event) { if (event.target === event.currentTarget) closeDaAlloReview(); },
+        onKeyDown: function (event) { if (event.key === "Escape") closeDaAlloReview(); },
+        style: { position: "fixed", inset: 0, zIndex: 2100, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }
+      },
+        h("div", {
+          role: "dialog", "aria-modal": "true", "aria-labelledby": "da-allosheet-review-title", "aria-describedby": "da-allosheet-review-description",
+          className: "da-card", style: { width: "min(720px, 100%)", maxHeight: "min(760px, 94vh)", overflowY: "auto", padding: 20, boxShadow: "0 18px 60px rgba(0,0,0,0.38)" }
+        },
+          h("div", { style: { display: "flex", alignItems: "flex-start", gap: 12, justifyContent: "space-between" } },
+            h("div", null,
+              h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "One-way reviewed handoff"),
+              h("h2", { id: "da-allosheet-review-title", style: { margin: "3px 0 0", fontSize: 19, color: "var(--da-ink)" } }, "Open Dynamic Assessment in AlloSheet"),
+              h("p", { id: "da-allosheet-review-description", style: { margin: "7px 0 0", color: "var(--da-ink-2)", fontSize: 12.5, lineHeight: 1.55 } }, "Review exactly which bounded tables will be copied. This does not change Dynamic Assessment, enable AI, or allow AlloSheet to write back.")
+            ),
+            h("button", { type: "button", onClick: closeDaAlloReview, disabled: daAlloBusy, "aria-label": "Close AlloSheet review", style: { border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", borderRadius: 8, padding: "5px 10px", cursor: daAlloBusy ? "not-allowed" : "pointer", fontFamily: "inherit", fontWeight: 800 } }, "×")
+          ),
+          h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginTop: 16 } },
+            h("label", { style: { display: "grid", gap: 5, fontSize: 12, color: "var(--da-ink-2)", fontWeight: 700 } }, "Date range",
+              h("select", { "aria-label": "Date range for AlloSheet transfer", value: daAlloDateRange, onChange: function (event) { setDaAlloDateRange(event.target.value); }, style: { padding: "8px 9px", borderRadius: 7, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" } },
+                h("option", { value: "all" }, "All available sessions"), h("option", { value: "30d" }, "Last 30 days"), h("option", { value: "7d" }, "Last 7 days")
+              )
+            ),
+            h("label", { style: { display: "grid", gap: 5, fontSize: 12, color: "var(--da-ink-2)", fontWeight: 700 } }, "Table detail",
+              h("select", { "aria-label": "Table detail for AlloSheet transfer", value: daAlloMode, onChange: function (event) { setDaAlloMode(event.target.value); }, style: { padding: "8px 9px", borderRadius: 7, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" } },
+                h("option", { value: "summary" }, "Summary only"), h("option", { value: "detailed" }, "Include coded probe rows")
+              )
+            )
+          ),
+          h("fieldset", { style: { margin: "15px 0 0", border: "1px solid var(--da-border)", borderRadius: 8, padding: "10px 12px" } },
+            h("legend", { style: { padding: "0 5px", fontSize: 12, fontWeight: 800, color: "var(--da-ink)" } }, "Tables to copy"),
+            [
+              ["sessionSummary", "Session summary", "Scores, growth, modifiability tier, and mediation metrics."],
+              ["progressSummary", "Progress summary", "Construct-level rates; derived rates stay blank until at least 5 sessions."],
+              ["probeResults", "Coded probe results", "Per-item phase/scaffold/score fields only; no responses or narrative."],
+            ].map(function (entry) {
+              var enabled = entry[0] !== "probeResults" || daAlloMode === "detailed";
+              return h("label", { key: "da-allosheet-dataset-" + entry[0], style: { display: "flex", alignItems: "flex-start", gap: 8, margin: "7px 0", opacity: enabled ? 1 : 0.55 } },
+                h("input", { type: "checkbox", "aria-label": entry[1] + " table for AlloSheet transfer", checked: !!daAlloDatasets[entry[0]], disabled: !enabled || daAlloBusy, onChange: function () { toggleDataset(entry[0]); }, style: { marginTop: 2 } }),
+                h("span", null, h("strong", null, entry[1]), h("span", { style: { display: "block", fontSize: 11, fontWeight: 400, color: "var(--da-muted)", lineHeight: 1.4 } }, enabled ? entry[2] : "Select ‘Include coded probe rows’ above to enable this table."))
+              );
+            })
+          ),
+          h("label", { style: { display: "flex", alignItems: "flex-start", gap: 8, marginTop: 13, fontSize: 12, color: "var(--da-ink-2)" } },
+            h("input", { type: "checkbox", "aria-label": "Include student identifier in AlloSheet transfer", checked: daAlloIncludeIdentifier, disabled: daAlloBusy || !(daAlloWorkspace().studentIdentifier), onChange: function (event) { setDaAlloIncludeIdentifier(event.target.checked); }, style: { marginTop: 2 } }),
+            h("span", null, h("strong", null, "Include student identifier"), h("span", { style: { display: "block", fontSize: 11, color: "var(--da-muted)", lineHeight: 1.4 } }, "Optional and off by default. Leaving it off uses a coded learner label instead."))
+          ),
+          h("div", { role: "status", "aria-live": "polite", style: { marginTop: 14, padding: "9px 11px", borderRadius: 8, background: "var(--da-blue-tint)", border: "1px solid var(--da-blue-border)", color: "var(--da-ink-2)", fontSize: 11.5, lineHeight: 1.5 } },
+            "Preview: " + preview.tables.length + " table" + (preview.tables.length === 1 ? "" : "s") + ", " + previewRows + " row" + (previewRows === 1 ? "" : "s") + ". Raw responses, examiner notes, intake text, prompts, and answer keys are excluded."
+          ),
+          preview.provenance && preview.provenance.suppression ? h("p", { style: { margin: "9px 0 0", fontSize: 11, color: "var(--da-muted)", lineHeight: 1.5 } }, "Privacy rule: progress rates and modifiability sensitivity are suppressed for construct groups with fewer than 5 sessions. Missing work is not inferred.") : null,
+          daAlloFeedback.text ? h("div", { role: daAlloFeedback.kind === "error" ? "alert" : "status", style: { marginTop: 10, color: daAlloFeedback.kind === "error" ? "var(--da-red-text)" : "var(--da-ink-2)", fontSize: 12 } }, daAlloFeedback.text) : null,
+          h("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 } },
+            h("button", { type: "button", "data-da-allosheet-initial": "true", onClick: closeDaAlloReview, disabled: daAlloBusy, style: { padding: "8px 13px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", cursor: daAlloBusy ? "not-allowed" : "pointer", fontFamily: "inherit", fontWeight: 700 } }, "Cancel"),
+            h("button", { type: "button", onClick: transferDaAlloReview, disabled: daAlloBusy || previewRows === 0, style: { padding: "8px 14px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", cursor: daAlloBusy || previewRows === 0 ? "not-allowed" : "pointer", fontFamily: "inherit", fontWeight: 800 } }, daAlloBusy ? "Opening AlloSheet…" : "Open in AlloSheet")
+          )
+        )
+      );
+    }
+
     function renderSummaryScreen() {
       var s = state.activeSession;
       var pretestResults = s.itemResults.filter(function (r) { return r.phase === "pretest"; });
@@ -12508,7 +13058,13 @@
             "aria-label": "Reopen the session at the last recorded item to re-score it",
             title: "Steps back into the session, re-presenting the most recently recorded item with its response restored.",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
-          }, "↩ Reopen last item") : null
+          }, "↩ Reopen last item") : null,
+          h("button", {
+            onClick: openDaAlloReview,
+            "aria-label": "Review Dynamic Assessment tables before opening AlloSheet",
+            title: "Choose a bounded summary or coded probe transfer. AlloSheet cannot write back to Dynamic Assessment.",
+            style: { background: "var(--da-blue-tint)", border: "1px solid var(--da-blue-border)", color: "var(--da-accent-text)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 800 }
+          }, "📊 Open in AlloSheet")
         ),
 
         // Bridge the h1 → h3 heading jump: every result card below is an h3,
@@ -14192,6 +14748,7 @@
         // Phase E — Hidden-onscreen print packet. Made visible only by
         // the @media print CSS rule. Lives inside the summary so it's
         // in the DOM the moment the clinician clicks the print button.
+        renderDaAlloReview(),
         renderPrintPacket(),
         // Phase S — Hidden-onscreen family letter block. Revealed only when
         // body[data-da-print-mode='family-letter'] is set immediately before
@@ -14265,6 +14822,8 @@
     buildDaNarrativeSection: buildDaNarrativeSection,
     exportSessionToReportWriter: exportSessionToReportWriter,
     // Public query helper for sibling tools (Student Analytics, Report Writer, etc.)
+    // Dynamic Assessment → AlloSheet one-way handoff
+    buildDynamicAssessmentAlloSheetEnvelope: buildDynamicAssessmentAlloSheetEnvelope,
     getSessionsByStudent: getSessionsByStudent
   };
   console.log("[CDN] DynamicAssessment loaded (Phases A–BB: math " + MATH_ITEMS.length + ", reading " + READING_ITEMS.length + ", working-memory " + WM_ITEMS.length + ", language " + LANGUAGE_ITEMS.length + " — " + (MATH_ITEMS.length + READING_ITEMS.length + WM_ITEMS.length + LANGUAGE_ITEMS.length) + " items total)");

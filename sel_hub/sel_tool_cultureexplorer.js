@@ -653,6 +653,7 @@ window.SelHub = window.SelHub || {
             var data = JSON.parse(cleaned);
             var newExplored = exploredCultures.indexOf(culture) < 0 ? exploredCultures.concat([culture]) : exploredCultures;
             updMulti({ cultureData: data, aiLoading: false, explored: newExplored, greeting: data.greeting, questionsAsked: questionsAsked + 1 });
+            if (announceToSR) announceToSR('Culture exploration ready for ' + culture + '.');
             ctx.awardXP(8);
             checkBadges({ explored: newExplored, questionsAsked: questionsAsked + 1 });
 
@@ -691,6 +692,7 @@ window.SelHub = window.SelHub || {
         callGemini(prompt).then(function(resp) {
           var newQ = questionsAsked + 1;
           updMulti({ followUpAnswer: resp, aiLoading: false, questionsAsked: newQ });
+          if (announceToSR) announceToSR('Follow-up answer ready');
           ctx.awardXP(5);
           checkBadges({ questionsAsked: newQ });
         }).catch(function() { upd('aiLoading', false); });
@@ -899,7 +901,7 @@ window.SelHub = window.SelHub || {
       var badgesEarned = d.badgesEarned || [];
 
       return h('div', { className: 'selh-cultureexplorer space-y-4 animate-in fade-in duration-200' },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
         // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
         (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),
 
@@ -930,7 +932,7 @@ window.SelHub = window.SelHub || {
             { id: 'journal', label: '\uD83D\uDCD3 Journal' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
-            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
               className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
             }, t.label);
           })
@@ -1009,7 +1011,7 @@ window.SelHub = window.SelHub || {
               h('div', {  className: 'p-3 flex flex-wrap gap-2' },
                 region.cultures.map(function(culture) {
                   var isExplored = exploredCultures.indexOf(culture) >= 0;
-                  return h('button', { key: culture,
+                  return h('button', { key: culture, 'aria-label': (isExplored ? 'Explore again: ' : 'Explore: ') + culture, 'aria-pressed': isExplored,
                     onClick: function() { updMulti({ culture: culture, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(culture, 'traditions'); },
                     className: 'px-3 py-1.5 rounded-full text-xs font-bold border transition-all hover:scale-105 ' +
                       (isExplored ? 'bg-cyan-100 border-cyan-600 text-cyan-700' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600 hover:bg-cyan-50')
@@ -1032,7 +1034,7 @@ window.SelHub = window.SelHub || {
             Object.keys(WORLD_MAP_DATA).map(function(key) {
               var reg = WORLD_MAP_DATA[key];
               var visited = mapRegionsVisited.indexOf(key) >= 0;
-              return h('button', { key: key, onClick: function() {
+              return h('button', { key: key, 'aria-label': reg.label + (visited ? ', visited' : ''), 'aria-pressed': visited, onClick: function() {
                   var newVisited = mapRegionsVisited.indexOf(key) < 0 ? mapRegionsVisited.concat([key]) : mapRegionsVisited;
                   updMulti({ mapRegion: key, mapRegionsVisited: newVisited });
                   ctx.awardXP(3);
@@ -1049,7 +1051,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Region detail view
-          mapRegion && WORLD_MAP_DATA[mapRegion] && h('div', {  className: 'space-y-4' },
+          mapRegion && WORLD_MAP_DATA[mapRegion] && h('div', { role: 'region', 'aria-label': WORLD_MAP_DATA[mapRegion].label + ' cultural highlights', className: 'space-y-4' },
             h('button', { 'aria-label': 'All Regions', onClick: function() { upd('mapRegion', null); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Regions'),
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-4 text-center' },
               h('div', { className: 'text-3xl mb-1' }, WORLD_MAP_DATA[mapRegion].emoji),
@@ -1624,18 +1626,18 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE ═══
-        tab === 'explore' && h('div', {  className: 'space-y-4' },
+        tab === 'explore' && h('div', { role: 'region', 'aria-labelledby': 'culture-explore-title', className: 'space-y-4' },
 
           // Culture header + back
           h('div', {  className: 'flex items-center gap-2' },
             h('button', { 'aria-label': 'All Cultures', onClick: function() { upd('tab', 'choose'); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Cultures'),
-            h('h3', { className: 'text-lg font-black text-slate-800' }, selectedCulture || 'Select a culture')
+            h('h3', { id: 'culture-explore-title', className: 'text-lg font-black text-slate-800' }, selectedCulture || 'Select a culture')
           ),
 
           // Aspect selector
           h('div', {  className: 'flex flex-wrap gap-2' },
             EXPLORE_ASPECTS.map(function(aspect) {
-              return h('button', { key: aspect.id,
+              return h('button', { key: aspect.id, 'aria-label': aspect.label, 'aria-pressed': selectedAspect === aspect.id,
                 onClick: function() { updMulti({ aspect: aspect.id, cultureData: null, cultureImage: null, followUpAnswer: null }); exploreCulture(selectedCulture, aspect.id); },
                 className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
                   (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
@@ -1650,7 +1652,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Culture data display
-          cultureData && h('div', {  className: 'space-y-4' },
+          cultureData && h('div', { role: 'region', 'aria-label': 'Culture exploration: ' + selectedCulture, 'aria-live': 'polite', className: 'space-y-4' },
 
             // Greeting
             greeting && h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
@@ -1662,11 +1664,11 @@ window.SelHub = window.SelHub || {
             // Image + Overview
             h('div', { className: 'bg-white rounded-2xl border-2 border-cyan-200 overflow-hidden' },
               (cultureImage || imageLoading) && h('div', { className: 'w-full' },
-                imageLoading ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Generating cultural illustration', className: 'w-full h-48 bg-cyan-50 flex items-center justify-center' }, h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDFA8'))
+                imageLoading ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', 'aria-label': 'Generating cultural illustration', className: 'w-full h-48 bg-cyan-50 flex items-center justify-center' }, h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDFA8'))
                 : cultureImage && h('img', { src: cultureImage, alt: 'Illustration of ' + selectedCulture, className: 'w-full h-48 object-cover' })
               ),
               h('div', { className: 'p-5' },
-                h('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, cultureData.title || selectedCulture),
+                h('h4', { id: 'culture-explore-content-title', className: 'text-sm font-bold text-slate-800 mb-2' }, cultureData.title || selectedCulture),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, cultureData.overview)
               )
             ),
@@ -1720,7 +1722,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Follow-up answer
-            d.followUpAnswer && h('div', {  className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4' },
+            d.followUpAnswer && h('div', { role: 'region', 'aria-label': 'Follow-up answer', 'aria-live': 'polite', className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4' },
               h('div', {  className: 'flex items-start gap-2' },
                 h(Sparkles, { size: 14, className: 'text-cyan-500 mt-0.5 shrink-0' }),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.followUpAnswer)
@@ -1757,7 +1759,7 @@ window.SelHub = window.SelHub || {
           quizActive && !quizDone && quizQuestions[quizIndex] && h('div', { className: 'space-y-4' },
             // Progress bar
             h('div', { className: 'flex items-center gap-3' },
-              h('div', { className: 'flex-1 bg-slate-200 rounded-full h-2' },
+              h('div', { role: 'progressbar', 'aria-label': 'Culture quiz progress', 'aria-valuemin': 1, 'aria-valuemax': quizQuestions.length, 'aria-valuenow': quizIndex + 1, 'aria-valuetext': 'Question ' + (quizIndex + 1) + ' of ' + quizQuestions.length, className: 'flex-1 bg-slate-200 rounded-full h-2' },
                 h('div', { className: 'bg-cyan-600 h-2 rounded-full transition-all', style: { width: ((quizIndex + 1) / quizQuestions.length * 100) + '%' } })
               ),
               h('span', { className: 'text-xs font-bold text-slate-600' }, (quizIndex + 1) + '/' + quizQuestions.length)
@@ -1770,7 +1772,7 @@ window.SelHub = window.SelHub || {
 
             // Question
             h('div', { className: 'bg-white rounded-2xl border-2 border-cyan-200 p-5' },
-              h('p', { className: 'text-sm font-bold text-slate-800 mb-4' }, quizQuestions[quizIndex].q),
+              h('p', { id: 'culture-quiz-question', className: 'text-sm font-bold text-slate-800 mb-4' }, quizQuestions[quizIndex].q),
               h('div', { className: 'space-y-2' },
                 quizQuestions[quizIndex].opts.map(function(opt, oi) {
                   var isCorrect = oi === quizQuestions[quizIndex].ans;
@@ -1786,7 +1788,7 @@ window.SelHub = window.SelHub || {
                   } else {
                     btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-600 hover:bg-cyan-50';
                   }
-                  return h('button', { key: oi, onClick: function() { handleQuizAnswer(oi); }, disabled: answered,
+                  return h('button', { key: oi, 'aria-label': 'Choice ' + String.fromCharCode(65 + oi) + ': ' + opt, 'aria-describedby': 'culture-quiz-question', 'aria-pressed': isChosen, onClick: function() { handleQuizAnswer(oi); }, disabled: answered,
                     className: btnClass
                   }, String.fromCharCode(65 + oi) + '. ' + opt);
                 })
@@ -1800,7 +1802,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Quiz done
-          quizActive && quizDone && h('div', {  className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
+          quizActive && quizDone && h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Culture quiz results', className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
             h('div', {  className: 'text-5xl' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\u2B50' : '\uD83D\uDCDA'),
             h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
             h('p', { className: 'text-3xl font-black ' + (quizScore >= 8 ? 'text-green-600' : quizScore >= 5 ? 'text-amber-600' : 'text-slate-600') }, quizScore + '/10'),
@@ -1868,12 +1870,13 @@ window.SelHub = window.SelHub || {
                     placeholder: 'Write your thoughts...',
                     className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
                   }),
-                  entryVal.length > 20 && !completed && h('button', { onClick: function() {
+                  entryVal.length > 20 && !completed && h('button', { 'aria-label': 'Save reflection for: ' + jp.prompt, onClick: function() {
                       var newCompleted = journalPromptsCompleted.concat([jp.id]);
                       var newCount = journalCount + 1;
                       updMulti({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                       ctx.awardXP(8);
                       addToast('Reflection saved!', 'success');
+                      if (announceToSR) announceToSR('Reflection saved for: ' + jp.prompt);
                       checkBadges({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                     },
                     className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors'
@@ -1882,7 +1885,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Progress
-            h('div', {  className: 'mt-3 text-center text-xs text-amber-600 font-bold' },
+            h('div', { role: 'progressbar', 'aria-label': 'Guided journal progress', 'aria-valuemin': 0, 'aria-valuemax': JOURNAL_PROMPTS.length, 'aria-valuenow': journalPromptsCompleted.length, 'aria-valuetext': journalPromptsCompleted.length + ' of ' + JOURNAL_PROMPTS.length + ' prompts completed', className: 'mt-3 text-center text-xs text-amber-600 font-bold' },
               journalPromptsCompleted.length + '/' + JOURNAL_PROMPTS.length + ' prompts completed')
           ),
 
@@ -1911,6 +1914,7 @@ window.SelHub = window.SelHub || {
                 updMulti({ journalCount: newCount });
                 ctx.awardXP(10);
                 addToast('Journal saved!', 'success');
+                if (announceToSR) announceToSR('Culture journal entry saved');
                 if (ctx.celebrate) ctx.celebrate();
                 checkBadges({ journalCount: newCount });
               },

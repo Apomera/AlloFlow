@@ -120,6 +120,9 @@ async function startTestRunner(t, overrides = {}) {
       return false;
     },
     async close() {},
+    ...(typeof overrides.validatePdfUaCli === 'function'
+      ? { validatePdfUaCli: overrides.validatePdfUaCli }
+      : {}),
   }));
 
   const app = createRunnerServer({
@@ -235,6 +238,48 @@ test('runs a PDF once, uploads raw artifacts, and returns cached small metadata'
   assert.deepEqual(status.json, first.json);
 });
 
+test('publishes bounded veraPDF evidence when the driver exposes the CLI', async (t) => {
+  const validatorCalls = [];
+  const runner = await startTestRunner(t, {
+    validatePdfUaCli: async ({ filePath, timeoutMs, maxBytes }) => {
+      validatorCalls.push({ filePath, timeoutMs, maxBytes });
+      assert.deepEqual(await fsp.readFile(filePath), OUTPUT_PDF);
+      return {
+        status: 'noncompliant',
+        validator: 'veraPDF',
+        profile: 'ua1',
+        validatorVersion: '1.30.2',
+        failedRules: 2,
+        failedChecks: 3,
+        passedRules: 104,
+        passedChecks: 4459,
+      };
+    },
+  });
+  const request = runRequest('job-verapdf-evidence');
+  const result = await call(runner.baseUrl, '/v1/run', {
+    method: 'POST',
+    body: request,
+  });
+
+  assert.equal(result.response.status, 200);
+  assert.equal(validatorCalls.length, 1);
+  assert.equal(validatorCalls[0].timeoutMs, 120000);
+  assert.equal(validatorCalls[0].maxBytes > OUTPUT_PDF.length, true);
+  const report = JSON.parse(
+    runner.uploaded.get(request.output.reportUrl).body.toString('utf8'),
+  );
+  assert.deepEqual(report.pdfUaValidation, {
+    status: 'noncompliant',
+    validator: 'veraPDF',
+    profile: 'ua1',
+    validatorVersion: '1.30.2',
+    failedRules: 2,
+    failedChecks: 3,
+    passedRules: 104,
+    passedChecks: 4459,
+  });
+});
 test('same job id with different immutable request is rejected', async (t) => {
   const runner = await startTestRunner(t);
   const request = runRequest();

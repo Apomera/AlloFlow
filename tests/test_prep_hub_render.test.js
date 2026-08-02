@@ -415,7 +415,9 @@ describe('Test Prep Hub render flow', () => {
     expect(findButton('Remove from review')).toBeTruthy();
 
     const stored = JSON.parse(localStorage.getItem('alloflow_test_prep_review_items_v1'));
-    expect(stored[pack.id]).toEqual([pack.items[0].id]);
+    expect(stored).toMatchObject({ schemaVersion: 2 });
+    const currentScope = stored.scopes.find((scope) => scope.packId === pack.id && scope.packVersion && scope.packContentFingerprint);
+    expect(currentScope.itemIds).toEqual([pack.items[0].id]);
 
     await clickButton('Practice options');
     expect(host.textContent).toContain('1 question saved');
@@ -621,7 +623,8 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Answer:');
     await clickButton('Know it');
     const saved = JSON.parse(localStorage.getItem('alloflow_test_prep_flashcards_eppp-part-one_v1'));
-    expect(Object.values(saved).some((entry) => entry.rating === 'know' && entry.intervalDays === 1 && entry.dueAt > entry.lastReviewedAt)).toBe(true);
+    expect(saved).toMatchObject({ schemaVersion: 2 });
+    expect(saved.scopes.some((scope) => Object.values(scope.schedule).some((entry) => entry.rating === 'know' && entry.intervalDays === 1 && entry.dueAt > entry.lastReviewedAt))).toBe(true);
     await expectNoAxeViolations('flashcard study mode');
 
     await clickButton('Memory aids');

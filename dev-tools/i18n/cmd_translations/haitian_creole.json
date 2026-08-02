@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio louvri.",
   "cmd.open_video_studio_hint": "Anrejistre, mete soutit epi edite videyo demonstrasyon",
   "palette.ctx.videoStudio": "Isit — Video Studio",
-  "palette.close": "Fèmen palèt kòmand la"
+  "palette.close": "Fèmen palèt kòmand la",
+  "cmd.apply_lesson_template": "Kòmanse ak yon modèl ki sove",
+  "cmd.apply_lesson_template_done": "Kòmanse apati ",
+  "cmd.apply_lesson_template_hint": "Kòmanse yon nouvo plan ak youn nan modèl ou sove yo",
+  "cmd.apply_lesson_template_missing": "Mwen pa t jwenn yon modèl ki rele ",
+  "cmd.apply_lesson_template_which": "Ki modèl?",
+  "cmd.rebuild_lesson_step": "Rebati yon etap nan plan an",
+  "cmd.rebuild_lesson_step_done": "Ap rebati etap ",
+  "cmd.rebuild_lesson_step_hint": "Rejenere yon sèl resous — di nimewo etap la",
+  "cmd.rebuild_lesson_step_missing": "Mwen pa t jwenn etap sa a nan plan an.",
+  "cmd.rebuild_lesson_step_none": "plan an poko gen etap.",
+  "cmd.rebuild_lesson_step_which": "Ki etap?",
+  "cmd.run_lesson_blueprint": "Jenere plan leson an",
+  "cmd.run_lesson_blueprint_done": "Ap jenere plan an — ou ka suiv chak etap sou kat la.",
+  "cmd.run_lesson_blueprint_hint": "Jenere tout resous ki nan plan aktyèl la",
+  "cmd.cancelled": "Yo mande anile. Operasyon aktyèl la ap kanpe lè founisè li sipòte sa."
 }

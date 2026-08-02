@@ -146,9 +146,17 @@
     // a window resize event so canvases that listen re-measure, and Escape to exit). Never throws.
     if (typeof window !== 'undefined' && !window.__alloStemFS) {
       var _stemFsProps = { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', width: '100vw', height: '100vh', margin: '0', 'border-radius': '0', 'z-index': '99998', background: '#0f172a' };
+      var _stemFsNotify = function(el, active) {
+        try {
+          if (!el || !el.setAttribute) return;
+          if (active) el.setAttribute('data-allo-fullscreen-active', 'true');
+          else el.removeAttribute('data-allo-fullscreen-active');
+        } catch (e) {}
+      };
       var _stemFsExit = function(el) {
         if (!el) return;
         el.__alloFsOn = false;
+        _stemFsNotify(el, false);
         var s = el.style, saved = el.__alloFsSaved || {};
         Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
         try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
@@ -156,6 +164,7 @@
       };
       var _stemFsEnter = function(el) {
         el.__alloFsSaved = {}; el.__alloFsOn = true;
+        _stemFsNotify(el, true);
         var s = el.style;
         Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
         el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
@@ -240,8 +249,23 @@
           var self = this;
           var wantOrbit = opts.orbit === true;
           if (window.THREE && (!wantOrbit || window.THREE.OrbitControls)) return Promise.resolve(window.THREE);
+          // Prefer the app's pinned local r128 asset so bundled/offline desktop
+          // builds do not wait on a school-network CDN timeout. CDN fallbacks keep
+          // the hosted Canvas surface resilient when the local asset is absent.
+          var localThreeUrls = [];
+          try {
+            var stemScripts = document.getElementsByTagName('script');
+            for (var si = 0; si < stemScripts.length; si++) {
+              var stemSrc = stemScripts[si].src || '';
+              if (stemSrc.indexOf('stem_lab_module.js') !== -1) {
+                localThreeUrls.push(new URL('../vendor/three-r128/three.min.js', stemSrc).href);
+                break;
+              }
+            }
+          } catch (localThreeError) {}
+          var coreUrls = localThreeUrls.concat(['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js']);
           var core = window.THREE ? Promise.resolve(true) : self.loadScriptResilient(
-            ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'],
+            coreUrls,
             { cacheKey: 'three-core', check: function () { return !!window.THREE; }, failMessage: opts.failMessage || 'The 3D engine could not load. School network filters sometimes block CDNs — retry, or check the connection.' });
           return core.then(function () {
             if (!wantOrbit || window.THREE.OrbitControls) return true;
@@ -2823,7 +2847,7 @@
         try {
           var _toSave = {};
           // @tool waterCycle
-          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', '_tutorialSeen'].forEach(function (k) {
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
           // flightSim progression (badges, visited airports, flight time,
@@ -4023,7 +4047,7 @@
               React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
               React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEM Lab XP Progress"),
               React.createElement("span", { className: "ml-auto text-xs font-black text-amber-700 px-2.5 py-1 rounded-full", style: { background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', boxShadow: '0 2px 6px rgba(245,158,11,0.3)' } }, totalStemXP + " Total XP"),
-              React.createElement("button", { onClick: function() { _setShowXpPanel(false); }, "aria-label": "Close XP panel", className: "ml-2 p-1 rounded-full hover:bg-amber-200 transition-colors text-amber-600" }, "\u2715")
+              React.createElement("button", { onClick: function() { _setShowXpPanel(false); }, "aria-label": "Close XP panel", className: "ml-2 p-1 rounded-full hover:bg-amber-200 transition-colors text-amber-800" }, "\u2715")
             ),
             (function () {
               // ── Dynamic XP activity discovery ──
@@ -4188,7 +4212,7 @@
           value: mathInput,
           onChange: e => setMathInput(e.target.value),
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
-          className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
+          className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
@@ -5101,7 +5125,7 @@
               // its own icon) so it cannot be re-encoded into mojibake.
               // NB: no apostrophes in comments inside this array — the catalog gate
               // tracks quote state as it scans and an unpaired one blinds it.
-              { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, animate, save, and privacy-review accessible GIS projects: import CSV/GeoJSON, join attributes, choropleth breaks, buffers, change-over-time, and an accessible data-table twin.', color: 'teal', ready: true },
+              { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
@@ -5480,7 +5504,7 @@
                 if (d._categoryFilter) upd('_categoryFilter', '');
               },
               placeholder: "Search " + _totalToolCount + " tools...",
-              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
+              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
@@ -5660,7 +5684,7 @@
             // Active station indicator
             _activeStation ? React.createElement("div", { className: "flex items-center gap-2 flex-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200" },
               React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDFAF Station: " + _activeStation.name),
-              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold" }, "Grade " + _activeStation.grade) : null,
+              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Grade " + _activeStation.grade) : null,
               React.createElement("button", { "aria-label": "Exit Station",
                 onClick: function() { _setActiveStationId(null); },
                 className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
@@ -5730,7 +5754,7 @@
                   else if (quest.type === 'freeResponse' && (quest.params.minLength || 30) >= 60) difficulty = 'hard';
                   else if (quest.type === 'freeResponse') difficulty = 'medium';
                   else if (quest.type === 'toolQuest') difficulty = 'medium';
-                  var diffColors = { easy: 'bg-green-100 text-green-600', medium: 'bg-amber-100 text-amber-600', hard: 'bg-red-100 text-red-600' };
+                  var diffColors = { easy: 'bg-green-100 text-green-700', medium: 'bg-amber-100 text-amber-800', hard: 'bg-red-100 text-red-700' };
                   var diffLabels = { easy: '\u2605', medium: '\u2605\u2605', hard: '\u2605\u2605\u2605' };
                   return React.createElement("div", { key: quest.qid, className: "bg-white rounded-lg px-2.5 py-2 border " + (disp.done ? 'border-green-300 bg-green-50/50' : 'border-amber-200') },
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
@@ -6214,7 +6238,7 @@
                 className: "flex-1 py-2 rounded-lg text-sm font-bold transition-all " +
                   (Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length > 0
                     ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                    : "bg-slate-200 text-slate-400 cursor-not-allowed")
+                    : "bg-slate-200 text-slate-700 cursor-not-allowed")
               }, "\uD83D\uDCCC Save Station"),
               React.createElement("button", { "aria-label": "Cancel",
                 onClick: function() { _setShowStationBuilder(false); },
@@ -6233,7 +6257,7 @@
                     key: st.id, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white border border-indigo-100 text-xs"
                   },
                     React.createElement("span", { className: "font-bold text-indigo-800 flex-1" }, st.name),
-                    st.grade ? React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold" }, "Gr " + st.grade) : null,
+                    st.grade ? React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold" }, "Gr " + st.grade) : null,
                     React.createElement("span", { className: "text-[11px] text-slate-500" }, st.tools.length + " tools"),
                     st.timeEstimate ? React.createElement("span", { className: "text-[11px] text-slate-500" }, st.timeEstimate) : null,
                     React.createElement("button", { "aria-label": "Load saved station",
@@ -6264,7 +6288,7 @@
           _activeStation ? React.createElement("div", { className: "mb-4 bg-emerald-50 rounded-xl border border-emerald-200 p-3" },
             React.createElement("div", { className: "flex items-center gap-2 mb-1" },
               React.createElement("span", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDFAF " + _activeStation.name),
-              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-700 font-bold" }, "Grade " + _activeStation.grade) : null,
+              _activeStation.grade ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-800 font-bold" }, "Grade " + _activeStation.grade) : null,
               _activeStation.timeEstimate ? React.createElement("span", { className: "text-[10px] text-emerald-600" }, "\u23F1 " + _activeStation.timeEstimate) : null,
               React.createElement("span", { className: "text-[10px] text-emerald-600" }, _activeStation.tools.length + " tools")
             ),
@@ -6828,7 +6852,7 @@
               // to bypass it for explicit user-initiated speak actions.
               opts = opts || {};
               if (!opts.force && !_canvasNarrateTTSEnabled()) return Promise.resolve(null);
-              return callTTS(text, voice, speed).then(function(url) {
+              return callTTS(text, voice, speed, opts).then(function(url) {
                 if (url) { var a = new Audio(url); a.play().catch(function() {}); }
                 return url;
               }).catch(function(e) { console.warn('[STEM TTS]', e && e.message); return null; });

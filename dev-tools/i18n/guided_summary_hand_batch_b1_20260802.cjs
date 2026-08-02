@@ -1,0 +1,26 @@
+const keys = ['summary_completed', 'summary_emoji', 'summary_label', 'summary_resources', 'summary_skipped'];
+const make = (values) => Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+module.exports = {
+  acholi: make(['Otum', 'Kony pa emoji', 'Rik pa tyeko pa Mode ma gin telo', 'Jami', 'Ojwayo']),
+  amharic: make(['ተጠናቋል', 'የኢሞጂ ድጋፍ', 'የተመራ ሁነታ ማጠናቀቂያ ማጠቃለያ', 'ሀብቶች', 'ተዘለለ']),
+  arabic: make(['مكتمل', 'دعم الرموز التعبيرية', 'ملخص إكمال الوضع الموجّه', 'الموارد', 'تم التخطي']),
+  bengali: make(['সম্পন্ন', 'ইমোজি সমর্থন', 'নির্দেশিত মোডের সমাপ্তির সারাংশ', 'রিসোর্স', 'বাদ দেওয়া হয়েছে']),
+  burmese: make(['ပြီးစီးပါပြီ', 'အီမိုဂျီ ပံ့ပိုးမှု', 'လမ်းညွှန်မုဒ် ပြီးစီးမှု အနှစ်ချုပ်', 'အရင်းအမြစ်များ', 'ကျော်သွားသည်']),
+  chin_falam: make(['A tling', 'Emoji bawmnak', 'Hruaitu Mode dihnihna hopa', 'Hmanruah', 'Skip']),
+  chin_hakha: make(['A tling', 'Emoji bawmnak', 'Hruaitu Mode dihnihna hopa', 'Hmanruah', 'Skip']),
+  chinese_simplified: make(['已完成', '支持表情符号', '引导模式完成摘要', '资源', '已跳过']),
+  chinese_traditional: make(['已完成', '支援表情符號', '引導模式完成摘要', '資源', '已跳過']),
+  dari: make(['تکمیل شد', 'پشتیبانی از ایموجی', 'خلاصهٔ تکمیل حالت راهنمایی‌شده', 'منابع', 'رد شد']),
+  dutch: make(['Voltooid', 'Emoji-ondersteuning', 'Samenvatting voltooiing begeleide modus', 'Bronnen', 'Overgeslagen']),
+  esperanto: make(['Kompletigita', 'Emoji-subteno', 'Resumo de kompletigo de la gvidata reĝimo', 'Rimedoj', 'Preterlasita']),
+  farsi: make(['تکمیل شد', 'پشتیبانی از ایموجی', 'خلاصهٔ تکمیل حالت هدایت‌شده', 'منابع', 'رد شد']),
+  french: make(['Terminé', 'Prise en charge des émojis', 'Résumé de fin du mode guidé', 'Ressources', 'Ignoré']),
+  french_canadian: make(['Terminé', 'Prise en charge des émojis', 'Résumé de fin du mode guidé', 'Ressources', 'Ignoré']),
+  german: make(['Abgeschlossen', 'Emoji-Unterstützung', 'Zusammenfassung zum Abschluss des geführten Modus', 'Ressourcen', 'Übersprungen']),
+  greek: make(['Ολοκληρώθηκε', 'Υποστήριξη emoji', 'Περίληψη ολοκλήρωσης καθοδηγούμενης λειτουργίας', 'Πόροι', 'Παραλείφθηκε']),
+  gujarati: make(['પૂર્ણ', 'ઇમોજી સપોર્ટ', 'માર્ગદર્શિત મોડ પૂર્ણતાનો સારાંશ', 'સંસાધનો', 'છોડ્યું']),
+  haitian_creole: make(['Fini', 'Sipò emoji', 'Rezime fini Mòd Gid la', 'Resous', 'Sote']),
+  hausa: make(['An kammala', 'Tallafin emoji', 'Taƙaitaccen kammala Yanayin Jagora', 'Albarkatu', 'An tsallake']),
+  hebrew: make(['הושלם', 'תמיכה באימוג׳י', 'סיכום השלמת המצב המודרך', 'משאבים', 'דולג']),
+  hindi: make(['पूरा हुआ', 'इमोजी सहायता', 'निर्देशित मोड पूर्णता सारांश', 'संसाधन', 'छोड़ा गया']),
+};

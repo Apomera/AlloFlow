@@ -741,6 +741,7 @@ window.SelHub = window.SelHub || {
             { role: 'socrates', text: resp }
           ]);
           updMulti({ dialogue: newHistory, aiLoading: false, dialogueInput: '' });
+          if (announceToSR) announceToSR('Socratic response ready');
           ctx.awardXP(5);
         }).catch(function() {
           upd('aiLoading', false);
@@ -847,7 +848,7 @@ window.SelHub = window.SelHub || {
 
       // ═══ RENDER ═══
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
@@ -880,7 +881,7 @@ window.SelHub = window.SelHub || {
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
           ].map(function(t) {
-            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
               className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700')
             }, t.label);
           })
@@ -951,7 +952,7 @@ window.SelHub = window.SelHub || {
         // ═══ BRANCHING SCENARIOS TAB ═══
         tab === 'branching' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF33 Ethical Scenarios'),
+            h('h3', { id: 'ethical-branch-title', className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF33 Ethical Scenarios'),
             h('p', { className: 'text-sm text-slate-600' }, 'Choose wisely \u2014 every decision has consequences.')
           ),
 
@@ -959,7 +960,7 @@ window.SelHub = window.SelHub || {
           !d.branchingId && h('div', {  className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             (BRANCHING_SCENARIOS[gradeBand] || BRANCHING_SCENARIOS.elementary).map(function(sc) {
               var completed = (d.dilemmasCompleted || []).indexOf(sc.id) !== -1;
-              return h('button', { key: sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
+              return h('button', { key: sc.id, 'aria-label': sc.title + (completed ? ', completed' : ''), 'aria-describedby': 'ethical-scenario-description-' + sc.id, onClick: function() { updMulti({ branchingId: sc.id, branchChoice: null, branchReflection: '' }); },
                 className: 'p-4 rounded-2xl border-2 bg-white text-left hover:border-emerald-600 hover:shadow-md transition-all ' + (completed ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200')
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -967,7 +968,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'font-bold text-sm text-slate-800' }, sc.title),
                   completed && h('span', { className: 'ml-auto text-emerald-500 text-xs font-bold' }, '\u2713 Done')
                 ),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sc.scenario.substring(0, 100) + '...')
+                h('p', { id: 'ethical-scenario-description-' + sc.id, className: 'text-xs text-slate-600 leading-relaxed' }, sc.scenario.substring(0, 100) + '...')
               );
             })
           ),
@@ -978,9 +979,9 @@ window.SelHub = window.SelHub || {
             var sc = scenarios.find(function(s) { return s.id === d.branchingId; });
             if (!sc) return null;
 
-            return h('div', {  className: 'space-y-4' },
+            return h('div', { role: 'region', 'aria-labelledby': 'ethical-branch-title', className: 'space-y-4' },
               // Back button
-              h('button', {  onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
+              h('button', { 'aria-label': 'Back to all ethical scenarios', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
 
               // Scenario card
               h('div', {  className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
@@ -994,9 +995,9 @@ window.SelHub = window.SelHub || {
 
               // Choices
               !d.branchChoice && h('div', {  className: 'space-y-2' },
-                h('h4', { className: 'text-sm font-bold text-slate-700' }, 'What would you do?'),
+                h('h4', { id: 'ethical-choice-prompt', className: 'text-sm font-bold text-slate-700' }, 'What would you do?'),
                 sc.choices.map(function(ch, idx) {
-                  return h('button', { key: idx, onClick: function() {
+                  return h('button', { key: idx, 'aria-label': 'Choice ' + String.fromCharCode(65 + idx) + ': ' + ch.text, 'aria-describedby': 'ethical-choice-prompt', onClick: function() {
                     var completed = (d.dilemmasCompleted || []).slice();
                     if (completed.indexOf(sc.id) === -1) completed.push(sc.id);
                     updMulti({ branchChoice: idx, dilemmasCompleted: completed });
@@ -1022,7 +1023,7 @@ window.SelHub = window.SelHub || {
                 if (!chosen) return null;
                 return h('div', { className: 'space-y-3' },
                   // Chosen answer
-                  h('div', { className: 'bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4' },
+                  h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                       h('span', { className: 'text-sm font-bold text-indigo-700' }, 'Your choice:'),
                       h('span', { className: 'text-sm' }, renderStars(chosen.stars))
@@ -1055,10 +1056,11 @@ window.SelHub = window.SelHub || {
 
                   // Reflection textarea
                   h('div', {  className: 'bg-white border border-slate-400 rounded-xl p-4' },
-                    h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Reflect: Why did you choose this? Would you change your answer?'),
+                    h('label', { id: 'ethical-branch-reflection-label', className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u270D\uFE0F Reflect: Why did you choose this? Would you change your answer?'),
                     h('textarea', { value: d.branchReflection || '', onChange: function(e) { upd('branchReflection', e.target.value); },
                       placeholder: 'I chose this because...',
                       className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-emerald-300',
+                      'aria-labelledby': 'ethical-branch-reflection-label',
                       'aria-label': 'Reflection on ethical choice'
                     })
                   ),
@@ -1085,7 +1087,7 @@ window.SelHub = window.SelHub || {
                   }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\uD83D\uDCAC Discuss with AI'),
 
                   // AI discussion response
-                  d.branchAIDiscussion && h('div', {  className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
+                  d.branchAIDiscussion && h('div', { role: 'region', 'aria-label': 'AI discussion response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' },
                     h('div', {  className: 'flex items-center gap-2 mb-2' },
                       h(Sparkles, { size: 14, className: 'text-emerald-500' }),
                       h('h4', { className: 'text-sm font-bold text-emerald-700' }, 'AI Response')
@@ -1271,7 +1273,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ SOCRATIC DIALOGUE TAB ═══
-        tab === 'dialogue' && h('div', { className: 'space-y-4' },
+        tab === 'dialogue' && h('div', { role: 'region', 'aria-label': 'Socratic dialogue', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCAC Socratic Dialogue'),
             h('p', { className: 'text-sm text-slate-600' }, selectedDilemma ? 'Exploring: ' + selectedDilemma.title : 'Select a dilemma first, then share your thinking.')
@@ -1284,9 +1286,9 @@ window.SelHub = window.SelHub || {
           selectedDilemma && h('div', { className: 'space-y-3' },
             // Dialogue history
             (_ethicsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
-            dialogueHistory.length > 0 && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
+            dialogueHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Socratic dialogue history', 'aria-live': 'polite', 'aria-relevant': 'additions', 'aria-busy': aiLoading ? 'true' : 'false', className: 'space-y-2 max-h-[400px] overflow-y-auto' },
               dialogueHistory.map(function(msg, i) {
-                return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
+                return h('div', { key: i, role: 'article', 'aria-label': msg.role === 'student' ? 'Your response' : 'Socrates response', className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
                   h('div', { className: 'max-w-[80%] rounded-2xl px-4 py-3 ' + (msg.role === 'student' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800 border border-slate-400') },
                     h('div', { className: 'text-[10px] font-bold mb-1 ' + (msg.role === 'student' ? 'text-indigo-200' : 'text-slate-300') }, msg.role === 'student' ? 'You' : '\uD83C\uDFDB\uFE0F Socrates'),
                     h('p', { className: 'text-sm leading-relaxed' }, msg.text)
@@ -1298,6 +1300,8 @@ window.SelHub = window.SelHub || {
             dialogueHistory.length === 0 && h('div', { className: 'bg-slate-50 rounded-xl p-4 text-center' },
               h('p', { className: 'text-sm text-slate-600' }, 'Share your initial thoughts about "', selectedDilemma.title, '" and I\'ll ask you questions to deepen your reasoning.')
             ),
+
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs text-indigo-600 min-h-[1.25rem] text-center' }, aiLoading ? 'Socrates is thinking…' : ''),
 
             // Input
             h('div', { className: 'flex gap-2' },
@@ -1351,17 +1355,17 @@ window.SelHub = window.SelHub || {
 
             return h('div', {  className: 'space-y-4' },
               // Progress bar
-              h('div', {  className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+              h('div', { role: 'progressbar', 'aria-label': 'Moral reasoning assessment progress', 'aria-valuemin': 1, 'aria-valuemax': total, 'aria-valuenow': step + 1, 'aria-valuetext': 'Question ' + (step + 1) + ' of ' + total, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', {  className: 'bg-purple-500 h-full transition-all duration-300', style: { width: Math.round((step / total) * 100) + '%' } })
               ),
-              h('p', { className: 'text-[10px] text-slate-600 text-center' }, 'Question ' + (step + 1) + ' of ' + total),
+              h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[10px] text-slate-600 text-center' }, 'Question ' + (step + 1) + ' of ' + total),
 
               // Scenario
               h('div', {  className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' }, sc.scenario),
                 callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
 
-                h('label', { className: 'text-xs font-bold text-slate-600 block mb-2' }, 'What would you do, and WHY? (The "why" is what matters most)'),
+                h('label', { id: 'ethical-kohlberg-question-label', className: 'text-xs font-bold text-slate-600 block mb-2' }, 'What would you do, and WHY? (The "why" is what matters most)'),
                 h('textarea', { value: answers[sc.id] || '', onChange: function(e) {
                   var newAnswers = {};
                   for (var k in answers) { if (answers.hasOwnProperty(k)) newAnswers[k] = answers[k]; }
@@ -1370,6 +1374,7 @@ window.SelHub = window.SelHub || {
                 },
                   placeholder: 'I would... because...',
                   className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-purple-300',
+                  'aria-labelledby': 'ethical-kohlberg-question-label',
                   'aria-label': 'Your moral reasoning response'
                 }),
 
@@ -1954,7 +1959,7 @@ window.SelHub = window.SelHub || {
             h('span', {  className: 'text-4xl block mb-3' }, '\uD83C\uDF32'),
             h('h4', { className: 'text-base font-bold text-green-800 mb-2' }, 'Build Your Ethical Decision Tree'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed mb-3' }, 'Think through an ethical question step by step. At each step, you\u2019ll go deeper into the reasoning. At the end, you\u2019ll have a clear summary of your thinking process.'),
-            h('button', { onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
+            h('button', { 'aria-label': 'Start building an ethical decision tree', onClick: function() { updMulti({ dtStarted: true, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', decisionTreeComplete: false, dtSummary: null }); },
               className: 'px-6 py-3 bg-green-700 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors'
             }, 'Start Building')
           ),
@@ -1971,12 +1976,12 @@ window.SelHub = window.SelHub || {
             var currentStep = steps[step];
             if (!currentStep) return null;
 
-            return h('div', { className: 'space-y-4' },
+            return h('div', { role: 'region', 'aria-labelledby': 'ethical-tree-step-label', className: 'space-y-4' },
               // Progress
-              h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+              h('div', { role: 'progressbar', 'aria-label': 'Decision tree progress', 'aria-valuemin': 1, 'aria-valuemax': steps.length, 'aria-valuenow': step + 1, 'aria-valuetext': 'Step ' + (step + 1) + ' of ' + steps.length, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-green-500 h-full transition-all duration-300', style: { width: Math.round(((step + 1) / steps.length) * 100) + '%' } })
               ),
-              h('p', { className: 'text-[10px] text-slate-600 text-center' }, 'Step ' + (step + 1) + ' of ' + steps.length),
+              h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[10px] text-slate-600 text-center' }, 'Step ' + (step + 1) + ' of ' + steps.length),
 
               // Previous steps summary (show completed steps)
               step > 0 && h('div', { className: 'space-y-2' },
@@ -1990,11 +1995,13 @@ window.SelHub = window.SelHub || {
 
               // Current step
               h('div', { className: 'bg-white rounded-2xl border-2 border-green-200 p-5' },
-                h('h4', { className: 'text-sm font-bold text-green-800 mb-2' }, currentStep.label),
-                h('p', { className: 'text-xs text-slate-600 mb-3' }, currentStep.prompt),
+                h('h4', { id: 'ethical-tree-step-label', 'aria-live': 'polite', className: 'text-sm font-bold text-green-800 mb-2' }, currentStep.label),
+                h('p', { id: 'ethical-tree-step-prompt', className: 'text-xs text-slate-600 mb-3' }, currentStep.prompt),
                 h('textarea', { value: d[currentStep.field] || '', onChange: function(e) { upd(currentStep.field, e.target.value); },
                   placeholder: currentStep.placeholder,
                   className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-green-300',
+                  'aria-labelledby': 'ethical-tree-step-label',
+                  'aria-describedby': 'ethical-tree-step-prompt',
                   'aria-label': currentStep.label
                 }),
 
@@ -2011,13 +2018,14 @@ window.SelHub = window.SelHub || {
 
               // Navigation
               h('div', {  className: 'flex gap-2' },
-                step > 0 && h('button', { onClick: function() { upd('dtStep', step - 1); },
+                step > 0 && h('button', { 'aria-label': 'Previous decision-tree step', onClick: function() { upd('dtStep', step - 1); },
                   className: 'px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200'
                 }, '\u2190 Previous'),
                 h('div', {  className: 'flex-1' }),
-                step < steps.length - 1 && h('button', { 'aria-label': ') +', onClick: function() {
+                step < steps.length - 1 && h('button', { 'aria-label': 'Next: ' + steps[step + 1].label, onClick: function() {
                   if (d[currentStep.field] && d[currentStep.field].length > 5) {
                     upd('dtStep', step + 1);
+                    if (announceToSR) announceToSR(steps[step + 1].label);
                     ctx.awardXP(3);
                   } else {
                     addToast('Please write a response before moving to the next step.');
@@ -2025,7 +2033,7 @@ window.SelHub = window.SelHub || {
                 },
                   className: 'px-4 py-2 bg-green-700 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
                 }, 'Next \u2192'),
-                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { onClick: function() {
+                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { 'aria-label': 'Complete ethical decision tree', onClick: function() {
                   // Generate summary
                   var summaryText = '\u2550\u2550\u2550 ETHICAL DECISION TREE SUMMARY \u2550\u2550\u2550\n\n' +
                     '\u2753 ETHICAL QUESTION:\n' + (d.dtQuestion || '') + '\n\n' +
@@ -2034,6 +2042,7 @@ window.SelHub = window.SelHub || {
                     '\uD83C\uDFDB\uFE0F FRAMEWORK ANALYSIS:\n' + (d.dtFrameworks || '') + '\n\n' +
                     '\u2705 MY DECISION:\n' + (d.dtDecision || '') + '\n';
                   updMulti({ decisionTreeComplete: true, dtSummary: summaryText });
+                  if (announceToSR) announceToSR('Ethical decision tree complete');
                   ctx.awardXP(15);
                   addToast('\uD83C\uDF32 Decision Tree Builder badge earned!');
                 },
@@ -2066,7 +2075,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full px-4 py-2 bg-green-100 border border-green-600 rounded-lg text-xs font-bold text-green-700 hover:bg-green-200 transition-colors'
             }, '\uD83D\uDCCB Copy to Clipboard'),
 
-            h('button', { onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
+            h('button', { 'aria-label': 'Build another ethical decision tree', onClick: function() { updMulti({ dtStarted: false, decisionTreeComplete: false, dtStep: 0, dtQuestion: '', dtAffected: '', dtActions: '', dtFrameworks: '', dtDecision: '', dtSummary: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83C\uDF32 Build Another Decision Tree')
           )

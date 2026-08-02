@@ -2,5 +2,5 @@
   "name": "alloflow",
   "displayName": "AlloFlow",
   "version": "0.1.0",
-  "description": "Sandbox-local PDF accessibility remediation with no AlloFlow document service."
+  "description": "Sandbox-local PDF accessibility remediation with no AlloFlow document service, paid Worker, institution account, or separate model API key."
 }

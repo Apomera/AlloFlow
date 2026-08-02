@@ -1304,6 +1304,35 @@ const _activeAsyncCommands = /* @__PURE__ */ new Map();
 function _commandExecutionKey(ctx, command) {
   return getCommandAudience(ctx || {}) + ":" + String(command && command.id || "");
 }
+function _watchCommandStop(ctx, command, entry, shouldStop) {
+  if (!entry || typeof shouldStop !== "function") return null;
+  let timerId = null;
+  const clear = () => {
+    const activeTimerId = timerId;
+    if (activeTimerId != null) {
+      clearInterval(activeTimerId);
+      timerId = null;
+    }
+    if (entry.stopPollId === activeTimerId) entry.stopPollId = null;
+  };
+  const poll = () => {
+    let wanted = false;
+    try {
+      wanted = !!shouldStop();
+    } catch (_) {
+    }
+    if (!wanted || entry.cancelled) {
+      if (entry.cancelled) clear();
+      return;
+    }
+    cancelCommand(ctx, command.id, { startedAt: entry.startedAt });
+    clear();
+  };
+  poll();
+  if (entry.cancelled) return null;
+  timerId = setInterval(poll, 50);
+  return timerId;
+}
 function _awaitCommandCompletion(completion, timeoutMs, t, command, via) {
   let timerId = null;
   const timer = new Promise((resolve) => {
@@ -1330,6 +1359,7 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   if (cmd.destructive && !opts.confirmed) return { handled: true, narration: _commandConfirmationText(cmd, ctx, t), commandId: cmd.id, via: "confirm", confirmationRequired: true };
   const safeParams = sanitizeCommandParams(cmd, params || {});
   const via = opts.via || "confirm";
+  const stopRequested = typeof opts.shouldStop === "function" ? opts.shouldStop : null;
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
     try {
       ctx.closeOtherPanels(cmd.opensPanel);
@@ -1340,38 +1370,66 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
     const executionKey = _commandExecutionKey(ctx, cmd);
     const active = _activeAsyncCommands.get(executionKey);
     if (active) {
-      if (opts.awaitCompletion) return _awaitCommandCompletion(active.completion, opts.timeoutMs || 18e4, t, cmd, via);
-      return { handled: true, ok: true, pending: true, deduplicated: true, narration: active.pendingNarration, commandId: cmd.id, via, completion: active.completion };
+      const shared = { handled: true, ok: true, pending: true, deduplicated: true, narration: active.pendingNarration, commandId: cmd.id, via, completion: active.completion, startedAt: active.startedAt, cancellable: true };
+      if (opts.awaitCompletion) {
+        const stopPollId = _watchCommandStop(ctx, cmd, active, stopRequested);
+        return _awaitCommandCompletion(active.completion, opts.timeoutMs || 18e4, t, cmd, via).then((result) => {
+          if (stopPollId != null) clearInterval(stopPollId);
+          return result;
+        });
+      }
+      return shared;
+    }
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    const pendingNarration = cmd.pendingNarration || t("cmd.working", "Working...");
+    const startedAt = Date.now();
+    let entry = null;
+    const commandCtx = Object.assign({}, ctx || {});
+    commandCtx.isCommandCancelled = () => !!(entry && entry.cancelled);
+    if (controller) {
+      commandCtx.signal = controller.signal;
+      commandCtx.abortSignal = controller.signal;
     }
     let action;
     try {
-      action = Promise.resolve(cmd.runAsync(ctx, safeParams));
+      action = Promise.resolve(cmd.runAsync(commandCtx, safeParams, { signal: controller ? controller.signal : null, commandId: cmd.id, startedAt }));
     } catch (error) {
       const narration = t("router.failed", "That did not work: ") + (error && error.message || "unknown");
       _emitCommandLifecycle(ctx, cmd, "error", narration, via, !opts.awaitCompletion, { params: safeParams, retryable: true });
       const failed = { handled: true, ok: false, narration, commandId: cmd.id, via };
       return opts.awaitCompletion ? Promise.resolve(failed) : failed;
     }
-    const pendingNarration = cmd.pendingNarration || t("cmd.working", "Working...");
-    const startedAt = Date.now();
-    _emitCommandLifecycle(ctx, cmd, "pending", pendingNarration, via, false, { params: safeParams, startedAt, retryable: false });
-    let entry = null;
+    _emitCommandLifecycle(ctx, cmd, "pending", pendingNarration, via, false, { params: safeParams, startedAt, retryable: false, cancellable: true });
+    const cancelledResult = () => ({ handled: true, ok: false, cancelled: true, narration: t("cmd.cancelled", "Cancellation requested. The current operation will stop when its provider honors it."), commandId: cmd.id, via, startedAt });
     const completion = action.then((message) => {
+      if (entry && entry.cancelled) return cancelledResult();
       const narration = message || t("router.done", "Done.");
       _recordCommandUse(cmd.id);
-      _emitCommandLifecycle(ctx, cmd, "success", narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: false });
-      return { handled: true, ok: true, narration, commandId: cmd.id, via };
+      _emitCommandLifecycle(ctx, cmd, "success", narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: false, cancellable: false });
+      return { handled: true, ok: true, narration, commandId: cmd.id, via, startedAt };
     }).catch((error) => {
+      if (entry && entry.cancelled) return cancelledResult();
       const narration = t("router.failed", "That did not work: ") + (error && error.message || "unknown");
-      _emitCommandLifecycle(ctx, cmd, "error", narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: true });
-      return { handled: true, ok: false, narration, commandId: cmd.id, via };
+      _emitCommandLifecycle(ctx, cmd, "error", narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: true, cancellable: false });
+      return { handled: true, ok: false, narration, commandId: cmd.id, via, startedAt };
     }).finally(() => {
+      if (entry && entry.stopPollId != null) {
+        clearInterval(entry.stopPollId);
+        entry.stopPollId = null;
+      }
       if (_activeAsyncCommands.get(executionKey) === entry) _activeAsyncCommands.delete(executionKey);
     });
-    entry = { completion, pendingNarration, startedAt };
+    entry = { command: cmd, completion, pendingNarration, startedAt, params: safeParams, via, controller, cancelled: false, stopPollId: null };
     _activeAsyncCommands.set(executionKey, entry);
-    if (!opts.awaitCompletion) return { handled: true, ok: true, pending: true, narration: pendingNarration, commandId: cmd.id, via, completion };
-    return _awaitCommandCompletion(completion, opts.timeoutMs || 18e4, t, cmd, via);
+    if (stopRequested) entry.stopPollId = _watchCommandStop(ctx, cmd, entry, stopRequested);
+    if (!opts.awaitCompletion) return { handled: true, ok: true, pending: true, narration: pendingNarration, commandId: cmd.id, via, completion, startedAt, cancellable: true };
+    return _awaitCommandCompletion(completion, opts.timeoutMs || 18e4, t, cmd, via).then((result) => {
+      if (result && result.timedOut && entry && entry.stopPollId != null) {
+        clearInterval(entry.stopPollId);
+        entry.stopPollId = null;
+      }
+      return result;
+    });
   }
   try {
     const message = cmd.run(ctx, safeParams);
@@ -1380,6 +1438,28 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   } catch (error) {
     return { handled: true, ok: false, narration: t("router.failed", "That did not work: ") + (error && error.message || "unknown"), commandId: cmd.id, via };
   }
+}
+function cancelCommand(ctx, commandOrId, opts = {}) {
+  const t = _mkT(ctx && ctx.t);
+  const id = String(commandOrId && typeof commandOrId === "object" ? commandOrId.id : commandOrId || "");
+  if (!id) return { handled: false, commandId: id };
+  const executionKey = getCommandAudience(ctx || {}) + ":" + id;
+  const active = _activeAsyncCommands.get(executionKey);
+  const visibleCommand = buildAlloCommands(ctx).find((c) => c.id === id);
+  const cmd = active && active.command || visibleCommand;
+  if (!cmd || typeof cmd.runAsync !== "function") return { handled: false, commandId: id };
+  if (!active || opts.startedAt != null && String(active.startedAt) !== String(opts.startedAt)) return { handled: false, commandId: cmd.id };
+  if (active.cancelled) return { handled: true, ok: false, cancelled: true, commandId: cmd.id, completion: active.completion };
+  active.cancelled = true;
+  if (active.controller) {
+    try {
+      active.controller.abort();
+    } catch (_) {
+    }
+  }
+  const narration = t("cmd.cancelled", "Cancellation requested. The current operation will stop when its provider honors it.");
+  _emitCommandLifecycle(ctx, cmd, "cancelled", narration, active.via, true, { params: active.params, startedAt: active.startedAt, retryable: false, cancellable: false, cancelled: true });
+  return { handled: true, ok: false, cancelled: true, narration, commandId: cmd.id, via: active.via, completion: active.completion, startedAt: active.startedAt };
 }
 function runCommandById(ctx, id, params, opts = {}) {
   return executeCommand(ctx, id, params, opts);
@@ -1467,9 +1547,18 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
+  const stopRequested = opts.signal || typeof opts.shouldStop === "function" ? () => {
+    if (opts.signal && opts.signal.aborted) return true;
+    if (typeof opts.shouldStop !== "function") return false;
+    try {
+      return !!opts.shouldStop();
+    } catch (_) {
+      return false;
+    }
+  } : null;
   if (!list.length) return { ok: false, failedStep: 0, results, remainingSteps: [], reason: t("plan.empty", "There were no steps to run.") };
   for (let i = 0; i < list.length; i++) {
-    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
+    if (stopRequested && stopRequested()) return { ok: false, stopped: true, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
     const s = list[i] || {};
     const ctx = getCtx();
     const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
@@ -1493,12 +1582,15 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
     }
     let r = null;
     try {
-      r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: "plan", timeoutMs: opts.timeoutMs });
+      r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: "plan", timeoutMs: opts.timeoutMs, shouldStop: stopRequested });
     } catch (e) {
       r = { handled: false, narration: e && e.message || "unknown" };
     }
     results.push(r);
-    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
+    if (!r || !r.handled || r.ok === false) {
+      const cancelled = !!(r && r.cancelled);
+      return { ok: false, stopped: cancelled, cancelled, failedStep: i, results, remainingSteps: list.slice(i), reason: cancelled ? t("plan.stopped", "Stopped before step ") + (i + 1) + "." : r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
+    }
     if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, remainingSteps: list.slice(i + 1), reason: (cmd.label || s.commandId) + t("plan.step_timeout", " is taking a while and is still working in the background. I\u2019ve held the remaining steps \u2014 once it finishes, ask me again for the rest.") };
     if (typeof opts.onStep === "function") {
       try {
@@ -1777,6 +1869,9 @@ const CMD_GROUP = {
   open_assessment_builder: "create",
   open_udl_guide: "help",
   open_command_blueprints: "create",
+  run_lesson_blueprint: "create",
+  rebuild_lesson_step: "create",
+  apply_lesson_template: "create",
   create_activity_rubric: "create",
   share_assignment: "create",
   preview_assignment_as_student: "navigate",
@@ -1867,6 +1962,9 @@ const CMD_CONTEXT = {
   open_assessment_builder: ["educatorHub", "content"],
   open_udl_guide: ["educatorHub", "content"],
   open_command_blueprints: ["educatorHub", "content"],
+  run_lesson_blueprint: ["content"],
+  rebuild_lesson_step: ["content"],
+  apply_lesson_template: ["content"],
   create_activity_rubric: ["content"],
   share_assignment: ["content"],
   preview_assignment_as_student: ["content"],
@@ -2205,7 +2303,12 @@ const AlloCommandPalette = ({ ctx }) => {
     });
   }, []);
   const runCmd = useCallback((cmd) => {
-    if (!cmd || cmd.available === false) return;
+    if (!cmd) return;
+    if (cmd.available === false) {
+      const reason = cmd.unavailableReason || t("palette.unavailable", "This command is not available in the current context.");
+      announce(reason, "info");
+      return;
+    }
     if (cmd.destructive && (!confirming || confirming !== cmd.id)) {
       setConfirming(cmd.id);
       return;
@@ -2332,7 +2435,7 @@ const AlloCommandProgress = ({ ctx }) => {
     const timer = clearTimersRef.current.get(progressKey);
     if (timer) clearTimeout(timer);
     clearTimersRef.current.delete(progressKey);
-    setItems((previous) => previous.filter((entry) => entry.progressKey !== progressKey));
+    setItems((previous) => previous.filter((entry) => entry && entry.progressKey !== progressKey));
   }, []);
   useEffect(() => {
     const onState = (event) => {
@@ -2343,10 +2446,10 @@ const AlloCommandProgress = ({ ctx }) => {
       if (priorTimer) clearTimeout(priorTimer);
       clearTimersRef.current.delete(progressKey);
       setItems((previous) => mergeCommandProgressItems(previous, detail));
-      if (detail.status === "success") {
+      if (detail.status === "success" || detail.status === "cancelled") {
         const timer = setTimeout(() => {
           clearTimersRef.current.delete(progressKey);
-          setItems((previous) => previous.filter((entry) => entry.progressKey !== progressKey));
+          setItems((previous) => previous.filter((entry) => entry && entry.progressKey !== progressKey));
         }, 4e3);
         clearTimersRef.current.set(progressKey, timer);
       }
@@ -2364,10 +2467,19 @@ const AlloCommandProgress = ({ ctx }) => {
     if (result && result.handled) dismiss(item.progressKey);
     else setItems((previous) => previous.map((entry) => entry.progressKey === item.progressKey ? Object.assign({}, entry, { narration: t("cmd.failed", "That command is no longer available here."), retryable: false }) : entry));
   }, [ctx, dismiss, t]);
+  const cancel = useCallback((item) => {
+    if (!item || item.status !== "pending" || !item.cancellable) return;
+    const result = cancelCommand(ctx, item.commandId, { startedAt: item.startedAt });
+    if (!result || !result.handled) setItems((previous) => previous.map((entry) => entry.progressKey === item.progressKey ? Object.assign({}, entry, { narration: t("cmd.failed", "That command is no longer available here."), cancellable: false }) : entry));
+  }, [ctx, t]);
   if (!items.length) return null;
   return /* @__PURE__ */ React.createElement("section", { "aria-label": "Command progress", "data-help-ignore": "true", className: "fixed bottom-4 right-4 z-[11900] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 no-print" }, items.map((item) => {
     const pending = item.status === "pending";
     const failed = item.status === "error";
+    const cancelled = item.status === "cancelled";
+    const commandLabel = item.label || item.commandId;
+    const cancelLabel = (t("cmd.cancel", "Cancel") + " " + commandLabel).trim();
+    const retryLabel = (t("cmd.retry", "Retry") + " " + commandLabel).trim();
     return /* @__PURE__ */ React.createElement(
       "article",
       {
@@ -2375,14 +2487,14 @@ const AlloCommandProgress = ({ ctx }) => {
         role: "status",
         "aria-live": failed ? "assertive" : "polite",
         "aria-atomic": "true",
-        className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
+        className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : cancelled ? "border-amber-300 bg-amber-50 text-amber-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : t("router.done", "Done."))), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), className: "mt-2 min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, "Retry")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": "Dismiss progress for " + (item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\xE2\x8F\xB3" : failed ? "\xE2\u0161\xA0\xEF\xB8\x8F" : cancelled ? "\xE2\x8F\xB9\xEF\xB8\x8F" : "\xE2\u0153\u2026"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Cancel"), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, "Retry"))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": "Dismiss progress for " + (item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xC3\u2014")))
     );
   }));
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

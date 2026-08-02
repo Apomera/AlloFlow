@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "A ti ṣí Video Studio.",
   "cmd.open_video_studio_hint": "Ṣe àkọsílẹ̀, fi àkọlé sí i kí o sì ṣàtúnṣe àwọn fídíò ìtọ́nisọ́nà",
   "palette.ctx.videoStudio": "Níbí — Video Studio",
-  "palette.close": "Ti pátákó àṣẹ pa"
+  "palette.close": "Ti pátákó àṣẹ pa",
+  "cmd.apply_lesson_template": "Bẹ̀rẹ̀ láti inú àwòrán tí a fipamọ́",
+  "cmd.apply_lesson_template_done": "A ti bẹ̀rẹ̀ láti ",
+  "cmd.apply_lesson_template_hint": "Ó bẹ̀rẹ̀ ètò tuntun láti inú ọ̀kan nínú àwọn àwòrán tí o fipamọ́",
+  "cmd.apply_lesson_template_missing": "Mi ò rí àwòrán tí a pè ní ",
+  "cmd.apply_lesson_template_which": "Àwòrán wo?",
+  "cmd.rebuild_lesson_step": "Tún kọ́ ìgbésẹ̀ kan nínú ètò",
+  "cmd.rebuild_lesson_step_done": "A ń tún kọ́ ìgbésẹ̀ ",
+  "cmd.rebuild_lesson_step_hint": "Ó tún dá orísun kan sílẹ̀ — sọ nọ́mbà ìgbésẹ̀",
+  "cmd.rebuild_lesson_step_missing": "Mi ò rí ìgbésẹ̀ yẹn nínú ètò.",
+  "cmd.rebuild_lesson_step_none": "ètò náà kò tíì ní ìgbésẹ̀ kankan.",
+  "cmd.rebuild_lesson_step_which": "Ìgbésẹ̀ wo?",
+  "cmd.run_lesson_blueprint": "Ṣẹ̀dá ètò ẹ̀kọ́",
+  "cmd.run_lesson_blueprint_done": "A ń ṣẹ̀dá ètò náà — o lè wo gbogbo ìgbésẹ̀ lórí káàdì.",
+  "cmd.run_lesson_blueprint_hint": "Ó ṣẹ̀dá gbogbo àwọn orísun nínú ètò ìsinsìnyí",
+  "cmd.cancelled": "A ti béèrè fún fífagilé. Iṣẹ́ tó ń lọ yìí yóò dúró nígbà tí olùpèsè rẹ̀ bá ṣe àtìlẹ́yìn fún un."
 }

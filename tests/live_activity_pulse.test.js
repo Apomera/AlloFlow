@@ -310,6 +310,9 @@ describe('attention queue and activity timeline helpers', () => {
     expect(queue[0].reasons).toContain('signal_stuck');
     expect(queue.find(item => item.uid === 'u2').reasons).toContain('presence_disconnected');
     expect(queue.find(item => item.uid === 'u3').reasons).toEqual(expect.arrayContaining(['activity_waiting', 'resource_unopened']));
+    expect(queue[0].evidenceSources).toContain('student_signal');
+    expect(queue.find(item => item.uid === 'u3').evidenceSources).toEqual(expect.arrayContaining(['activity_status', 'delivery_status']));
+    expect(api.liveAttentionSourceLabel('delivery_status')).toBe('Delivery status');
     const serialized = JSON.stringify(queue);
     expect(serialized).not.toContain('Private Name');
     expect(serialized).not.toContain('private prompt');
@@ -397,6 +400,35 @@ describe('attention queue and activity timeline helpers', () => {
     expect(queue).toEqual([]);
   });
 
+  it('keeps failed or long-loading exact assignments in the queue and ignores stale status nonces', () => {
+    const queue = api.buildLiveAttentionQueue({
+      now: 600000,
+      sessionMode: 'student',
+      roster: {
+        failed: { resourceId: 'support', resourceAt: 500000, viewingResourceId: 'support', viewingResourceAt: 500000, viewingResourceStatus: 'failed', viewingAt: 599000 },
+        loading: { resourceId: 'support', resourceAt: 500000, viewingResourceId: 'old', viewingResourceAt: 500000, viewingResourceStatus: 'loading', viewingAt: 599000 },
+        ready: { resourceId: 'support', resourceAt: 500000, viewingResourceId: 'support', viewingResourceAt: 500000, viewingResourceStatus: 'ready', viewingAt: 599000 },
+        staleFailure: { resourceId: 'support', resourceAt: 500000, viewingResourceId: 'support', viewingResourceAt: 400000, viewingResourceStatus: 'failed', viewingAt: 599000 },
+      },
+      activitySnapshots: [],
+    });
+    expect(queue.map(item => item.uid)).toEqual(['failed', 'loading']);
+    expect(queue[0].reasons).toContain('resource_failed');
+    expect(queue[1].reasons).toContain('resource_loading');
+    expect(queue[0].evidenceSources).toEqual(['delivery_status']);
+  });
+
+  it('releases only the exact resource assignment that reached ready/opened state', () => {
+    const acknowledged = api.buildAcknowledgedLiveResourceOverrides({
+      ready: { resourceId: 'support', resourceAt: 500, viewingResourceId: 'support', viewingResourceAt: 500, viewingResourceStatus: 'ready', viewingAt: 600 },
+      legacy: { resourceId: 'support', resourceAt: 500, viewingResourceId: 'support', viewingAt: 600 },
+      failedSameId: { resourceId: 'support', resourceAt: 500, viewingResourceId: 'support', viewingResourceAt: 500, viewingResourceStatus: 'failed', viewingAt: 600 },
+      loadingSameId: { resourceId: 'support', resourceAt: 500, viewingResourceId: 'support', viewingResourceAt: 500, viewingResourceStatus: 'loading', viewingAt: 600 },
+      staleReady: { resourceId: 'support', resourceAt: 500, viewingResourceId: 'support', viewingResourceAt: 400, viewingResourceStatus: 'ready', viewingAt: 600 },
+    });
+    expect(acknowledged).toEqual(['ready', 'legacy', 'staleReady']);
+  });
+
   it('builds a newest-first timeline with counts only and no uid map', () => {
     const timeline = api.buildLiveActivityTimeline([{
       activityId: 'older',
@@ -420,6 +452,56 @@ describe('attention queue and activity timeline helpers', () => {
     expect(timeline[0].counts).toMatchObject({ invited: 1, working: 1, submitted: 0 });
     expect(JSON.stringify(timeline)).not.toContain('secretUid');
     expect(timeline[0]).not.toHaveProperty('participantStatus');
+  });
+});
+
+describe('derived Class Debrief', () => {
+  it('derives honest participation, moderation, revision, and ready findings from status metadata only', () => {
+    const findings = api.buildLiveClassDebrief({ activitySnapshots: [{
+      activityId: 'feedback-review', family: 'polling', kind: 'feedback_response', phase: 'review',
+      audienceUids: ['u1', 'u2', 'u3'], participantStatus: { u1: 'revised', u2: 'submitted', u3: 'waiting' },
+      counts: { feedbackSent: 2, approved: 1, hidden: 0 }, updatedAt: 300,
+      prompt: 'DO_NOT_COPY_PROMPT', responses: [{ uid: 'u2', text: 'DO_NOT_COPY_RESPONSE' }], codename: 'DO_NOT_COPY_NAME',
+    }, {
+      activityId: 'rating-done', family: 'polling', kind: 'rating', phase: 'closed',
+      audienceUids: ['u4', 'u5'], participantStatus: { u4: 'submitted', u5: 'submitted' }, updatedAt: 200,
+    }] }, 10);
+    expect(findings.map(item => item.kind)).toEqual(expect.arrayContaining([
+      'awaiting_review', 'participation_follow_up', 'revision_opportunity', 'ready_to_advance',
+    ]));
+    expect(findings.find(item => item.kind === 'participation_follow_up').uids).toEqual(['u3']);
+    expect(findings.find(item => item.kind === 'revision_opportunity').uids).toEqual(['u2']);
+    const serialized = JSON.stringify(findings);
+    expect(serialized).not.toMatch(/DO_NOT_COPY|"prompt":|"responses":|"codename":/);
+    expect(JSON.stringify(findings)).not.toContain('misconception');
+  });
+
+  it('reuses the existing bounded multi-student sender for an exact debrief cohort', async () => {
+    const onSendToStudents = vi.fn().mockResolvedValue({ sent: 1, failed: 0 });
+    const props = {
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support', currentResourceId: 'support',
+      roster: { u1: { name: 'Ana' }, u2: { name: 'Bo' } },
+      activitySnapshots: [{
+        activityId: 'poll-done', family: 'polling', kind: 'multiple_choice', phase: 'closed',
+        audienceUids: ['u1', 'u2'], participantStatus: { u1: 'waiting', u2: 'submitted' }, updatedAt: 200,
+      }],
+      getTitle: item => item.title, getIcon: () => null, onOpenResource: vi.fn(),
+      onSendToStudent: vi.fn(), onSendToStudents, now: 300, t: () => undefined,
+    };
+    let tree = api.LiveLessonRunPanel(props);
+    let nodes = walk(tree);
+    const debrief = nodes.find(node => node.props && node.props['data-live-class-debrief'] === 'derived-status-only');
+    expect(debrief).toBeTruthy();
+    expect(nodeText(debrief)).toContain('Participation follow-up');
+    const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send Support resource to 1 debrief student');
+    await send.props.onClick();
+    expect(onSendToStudents).toHaveBeenCalledWith(['u1'], { id: 'support', type: 'simplified', title: 'Support resource' });
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    nodes = walk(tree);
+    expect(nodes.some(node => node.props && node.props.role === 'status' && nodeText(node).includes('Assigned Support resource to 1 student.'))).toBe(true);
   });
 });
 
@@ -646,6 +728,9 @@ describe('attention queue multi-student scaffold action', () => {
     const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send Support resource to 1 selected student');
     await send.props.onClick();
     expect(onSendToStudents).toHaveBeenCalledWith(['u1'], { id: 'support', type: 'simplified', title: 'Support resource' });
+    const provenance = nodes.find(node => node.props && node.props['data-live-attention-provenance'] === 'status-metadata-only');
+    expect(provenance).toBeTruthy();
+    expect(provenance.props['aria-label']).toContain('Student signal');
   });
 
   it('selects a same-group instructional pattern and sends only the flagged students', async () => {

@@ -1,0 +1,23 @@
+module.exports = {
+  karen: {
+    'toasts.building_accessible_docx': 'Word file တၢ်သုးတၢ်ကွဲး သ့ၣ်ညါသ့အဂီၢ် တီထွင်နေသည်…',
+    'toasts.building_accessible_pptx': 'PowerPoint file တၢ်သုးတၢ်ကွဲး သ့ၣ်ညါသ့အဂီၢ် တီထွင်နေသည်…',
+    'toasts.batch_tagging': '📄 ZIP အတွက် tagged PDF များ ဖန်တီးနေသည် — scan file များက အချိန်ပိုယူမည် (file တစ်ခုစီတွင် OCR လုပ်နေသည်)…',
+    'toasts.builder_edits_preserved': '✋ သင်ကိုယ်တိုင်ပြင်ထားတာတွေ သိမ်းထားသည် — preview ကို ပြန်မဖန်တီးပါ။ Export သို့မဟုတ် builder ပိတ်ပြီး သိမ်းပါ၊ ထို့နောက် settings ပြောင်းပါ။',
+    'toasts.builder_edits_synced': '✏️ Builder ပြင်ဆင်ချက်များကို remediated document ထဲ သိမ်းပြီး — Tagged PDF / Word / PowerPoint export များတွင် ပါဝင်ပြီ။',
+    'toasts.pptx_ai_theme': '🎨 ခေါင်းစဉ်နှင့်ကိုက်ညီသော palette အတွက် AI ကိုမေးနေသည် (ဖတ်ရလွယ်ကူမှုကို ဤနေရာတွင် ထိန်းထားသည်)…',
+    'toasts.make_accessible_fixing': '✨ Audit ပြီးပြီ — အလိုအလျောက် ပြုပြင်နေသည် (click မလို)…',
+    'toasts.tagged_pdf_saved_see_report': '📄 Tagged PDF သိမ်းပြီး — report အပြည့်အစုံသည် download ခလုတ်များအပေါ်တွင် ရှိသည် (✕ ဖြင့်ပိတ်ပါ)။',
+    'toasts.no_open_image_slot': 'Preview ထဲတွင် ဖွင့်ထားသော image slot မကျန်တော့ပါ — အစားထိုးရန် thumbnail ကို image တစ်ခုအပေါ် ဆွဲချပါ။',
+    'toasts.extracted_image_inserted': '🖼 ပထမဖွင့်ထားသော image slot ထဲ ထည့်ပြီး — အခြားနေရာလိုလျှင် thumbnail ကို ဆွဲချပါ။',
+    'toasts.html_downloaded': '🌐 HTML download ပြီး — browser မည်သည့်အရာမဆို ဖွင့်နိုင်သည်။',
+    'toasts.odt_downloaded': '📄 OpenDocument (.odt) download ပြီး — LibreOffice၊ Google Docs သို့မဟုတ် Word ဖြင့် ဖွင့်နိုင်သည်။',
+    'toasts.daisy_downloaded': '🔊 DAISY talking-book package (.zip) download ပြီး — DAISY reader ဖြင့် ဖွင့်ပါ။',
+    'toasts.mo_no_voice': 'Voice service မရနိုင်သဖြင့် read-along audio ကို ယခုမဖန်တီးနိုင်ပါ။',
+    'toasts.mo_busy': 'Read-along export တစ်ခု လုပ်ဆောင်နေပြီးဖြစ်သည်။',
+    'toasts.mo_no_text': 'ဖတ်ပြရန် readable text မတွေ့ပါ။',
+    'toasts.mo_no_audio': '⚠ Read-along ebook သိမ်းပြီးသော်လည်း audio မဖန်တီးနိုင်ပါ (voice service မရနိုင်)။ Text နှင့် sync structure များ မပျက်ပါ။',
+    'toasts.mo_done': 'Read-along ebook download ပြီး',
+    'toasts.audio_unavailable_now': 'Audio မရနိုင်သေးပါ (job တစ်ခု လုပ်နေခြင်း သို့မဟုတ် voice service ပိတ်ထားခြင်း ဖြစ်နိုင်သည်)။',
+  },
+};

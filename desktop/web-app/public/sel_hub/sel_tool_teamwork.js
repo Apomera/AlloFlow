@@ -611,7 +611,7 @@ window.SelHub = window.SelHub || {
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
             h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
@@ -633,7 +633,7 @@ window.SelHub = window.SelHub || {
               rows: 2,
               style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#1e293b'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
             }),
-            h('button', { 'aria-label': 'Save Reflection',
+            h('button', { 'aria-label': 'Save teamwork reflection',
               onClick: function() {
                 if (!reflectionSkill) { addToast('Select a skill first!', 'info'); return; }
                 var entry = { skill: reflectionSkill, note: reflectionNote, activity: activityType, timestamp: Date.now() };
@@ -665,15 +665,44 @@ window.SelHub = window.SelHub || {
           { id: 'progress',    label: '\uD83D\uDCC8 Progress' }
         ];
 
-        var tabBar = h('div', {           role: 'tablist', 'aria-label': 'Teamwork & Collaboration tabs',
-          style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        var selectTeamworkTab = function(nextTab) {
+          var next = tabs.find(function(item) { return item.id === nextTab; });
+          if (!next) return;
+          upd('activeTab', next.id);
+          trackTab(next.id);
+          if (soundEnabled) sfxClick();
+          if (announceToSR) announceToSR(next.label + ' tab selected');
+        };
+
+        var tabBar = h('div', {
+          style: { display: 'flex', alignItems: 'center', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'hidden' }
         },
+          h('div', { role: 'tablist', 'aria-label': 'Teamwork & Collaboration tabs',
+            style: { display: 'flex', flex: 1, gap: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+          },
           tabs.map(function(t) {
             var isActive = activeTab === t.id;
             return h('button', { 'aria-label': t.label,
               key: t.id,
-              onClick: function() { upd('activeTab', t.id); trackTab(t.id); if (soundEnabled) sfxClick(); },
+              id: 'teamwork-tab-' + t.id,
+              'data-teamwork-tab': t.id,
+              onClick: function() { selectTeamworkTab(t.id); },
+              onKeyDown: function(e) {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                e.preventDefault();
+                var currentIdx = tabs.findIndex(function(item) { return item.id === t.id; });
+                var nextIdx;
+                if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = tabs.length - 1;
+                else nextIdx = (currentIdx + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + tabs.length) % tabs.length;
+                var nextTab = tabs[nextIdx];
+                selectTeamworkTab(nextTab.id);
+                var nextButton = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-teamwork-tab="' + nextTab.id + '"]') : null;
+                if (nextButton && nextButton.focus) nextButton.focus();
+              },
               'aria-selected': isActive,
+              'aria-controls': 'teamwork-tab-panel',
+              'tabIndex': isActive ? 0 : -1,
               role: 'tab',
               style: {
                 padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
@@ -681,15 +710,16 @@ window.SelHub = window.SelHub || {
                 transition: 'all 0.15s'
               }
             }, t.label);
-          }),
+          })
+          ),
           // Sound toggle
-          h('button', { 'aria-label': 'Toggle sound',
+          h('button', { 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled,
             onClick: function() { upd('soundEnabled', !soundEnabled); },
             style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8') },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
-          h('button', { 'aria-label': 'Toggle panel',
+          h('button', { 'aria-label': 'Show teamwork badges', 'aria-expanded': showBadgesPanel,
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
             style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8'), position: 'relative' }
           },
@@ -774,7 +804,7 @@ window.SelHub = window.SelHub || {
           );
 
           return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-            tabBar, badgePopup, h('div', { style: { flex: 1, overflow: 'auto' } }, panelContent)
+            tabBar, badgePopup, h('div', { id: 'teamwork-tab-panel', role: 'tabpanel', 'aria-labelledby': 'teamwork-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, panelContent)
           );
         }
 
@@ -881,7 +911,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? _teaBg('#334155') : ACCENT, color: roleReflectionSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, roleReflectionSaved ? '\u2713 Saved' : 'Save Reflection'),
                 // AI Coach button
-                h('button', { 'aria-label': 'AI Coach button',
+                h('button', { 'aria-label': coachLoading ? 'Team coach is responding' : 'Ask team role coach',
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
                     if (!callGemini) { addToast('AI not available.', 'error'); return; }
@@ -922,7 +952,7 @@ window.SelHub = window.SelHub || {
                 }, coachLoading ? 'Thinking...' : '\u2728 AI Coach')
               ),
               // AI response \u2014 always-rendered live region so SR users get notified
-              h('div', { role: 'region', 'aria-label': 'Team coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+              h('div', { role: 'region', 'aria-label': 'Team role coach response', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': coachLoading ? 'true' : 'false' },
                 coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
                   h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
                   h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
@@ -946,7 +976,7 @@ window.SelHub = window.SelHub || {
 
           challengesContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFD7\uFE0F Collaborative Challenges'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
+            h('p', { role: 'status', style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               'Challenge ' + ((challengeIdx % chList.length) + 1) + ' of ' + chList.length
             ),
 
@@ -1053,7 +1083,7 @@ window.SelHub = window.SelHub || {
 
           scenariosContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFAD Teamwork Scenarios'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
+            h('p', { role: 'status', style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               'Scenario ' + ((scenarioIdx % SCENARIOS.length) + 1) + ' of ' + SCENARIOS.length + ' \u00B7 ' + answeredCount + ' answered'
             ),
 
@@ -1104,6 +1134,7 @@ window.SelHub = window.SelHub || {
                           if (allPerfect) tryAwardBadge('perfect_scenarios');
                         }
                         ctx.announceToSR && ctx.announceToSR('Choice selected. ' + ch.rating + ' out of 3 stars.');
+                        if (totalAnswered >= SCENARIOS.length && announceToSR) announceToSR('All teamwork scenarios completed');
                       },
                       disabled: answered,
                       style: {
@@ -1195,7 +1226,7 @@ window.SelHub = window.SelHub || {
                 disabled: coachLoading,
                 style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: coachLoading ? _teaBg('#334155') : '#6366f1', color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
               }, coachLoading ? 'Thinking...' : '\u2728 Ask Coach'),
-              h('div', { role: 'region', 'aria-label': 'Coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+              h('div', { role: 'region', 'aria-label': 'Teamwork challenge coach response', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': coachLoading ? 'true' : 'false' },
                 coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: _teaBg('#0f172a'), border: '1px solid #6366f144' } },
                   h('p', { style: { fontSize: 10, color: _teaFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
                   h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
@@ -1467,6 +1498,7 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxCorrect();
                   addToast('Team contract saved! +20 XP', 'success');
                   celebrate && celebrate();
+                  if (announceToSR) announceToSR('Team contract saved');
                 },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? _teaBg('#334155') : ACCENT, color: contractSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
@@ -1537,7 +1569,7 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
               'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
             ),
-            h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
+            h('div', { role: 'status', style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
 
             // Questions (not yet submitted)
             !commStyleDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
@@ -1569,7 +1601,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Submit button
-            !commStyleDone && h('button', { 'aria-label': 'questions',
+            !commStyleDone && h('button', { 'aria-label': answeredQuestions === totalQuestions ? 'Submit communication style assessment' : 'Complete all communication style questions',
               onClick: function() {
                 if (answeredQuestions < totalQuestions) { addToast('Answer all ' + totalQuestions + ' questions first!', 'info'); return; }
                 var results = calcCommStyleResults();
@@ -1581,6 +1613,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxCorrect();
                 addToast('Communication style discovered! +25 XP', 'success');
                 celebrate && celebrate();
+                if (announceToSR) announceToSR('Communication style assessment complete');
               },
               style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : _teaBg('#334155'), color: answeredQuestions === totalQuestions ? '#0f172a' : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
             }, answeredQuestions === totalQuestions ? '\u2705 Discover My Style' : 'Answer all ' + totalQuestions + ' questions'),
@@ -1724,7 +1757,7 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
               'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
             ),
-            h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } },
+            h('div', { role: 'status', style: { fontSize: 11, color: _teaFg('#94a3b8'), textAlign: 'center', marginBottom: 16 } },
               'Scenario ' + ((vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length) + 1) + ' of ' + VIRTUAL_TEAM_SCENARIOS.length + ' \u00B7 ' + vtAnsweredCount + ' completed'
             ),
 
@@ -1886,6 +1919,7 @@ window.SelHub = window.SelHub || {
                     awardXP(20);
                     if (soundEnabled) sfxCorrect();
                     addToast('Conflict converted! +20 XP', 'success');
+                    if (announceToSR) announceToSR('Conflict converted to collaboration');
                     if (newCount >= 3) tryAwardBadge('conflict_converter');
                   }).catch(function(err) {
                     upd('conflictLoading', false);
@@ -1917,7 +1951,7 @@ window.SelHub = window.SelHub || {
             // History
             conflictHistory.length > 0 && h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCDD Conversion History'),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('div', { role: 'log', 'aria-label': 'Conflict conversion history', 'aria-live': 'polite', 'aria-relevant': 'additions', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 conflictHistory.slice(-5).reverse().map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _teaBg('#1e293b'), border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
@@ -2028,10 +2062,11 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxCorrect();
                   addToast('Retrospective saved! +20 XP', 'success');
                   celebrate && celebrate();
+                  if (announceToSR) announceToSR('Team retrospective saved');
                 },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? _teaBg('#334155') : ACCENT, color: retroSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
-              h('button', { 'aria-label': 'success',
+              h('button', { 'aria-label': 'Export retrospective as text',
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards === 0) { addToast('Add some cards before exporting!', 'info'); return; }
@@ -2074,7 +2109,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: _teaBg('#3b82f6'), color: _teaFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCE4 Export as Text'),
-              h('button', { 'aria-label': 'Clear All',
+              h('button', { 'aria-label': 'Clear retrospective cards',
                 onClick: function() {
                   upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
                   if (soundEnabled) sfxClick();
@@ -2240,6 +2275,7 @@ window.SelHub = window.SelHub || {
         var content = rolesContent || challengesContent || scenariosContent || commStyleContent || virtualTeamContent || conflictToolContent || retroContent || quizContent || contractContent || progressContent;
 
         return h('div', { className: 'selh-teamwork', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('teamwork', h, ctx) : null),
           tabBar,
           heroBand,
@@ -2247,7 +2283,7 @@ window.SelHub = window.SelHub || {
           // Persists across tab navigation until reset.
           (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+          h('div', { id: 'teamwork-tab-panel', role: 'tabpanel', 'aria-labelledby': 'teamwork-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content)
         );
       })();
     }

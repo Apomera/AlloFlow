@@ -25,6 +25,25 @@ var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, 
 // Change these HERE only — every consumer interpolates from them.
 var SEVERITY_WEIGHTS = { critical: 15, serious: 10, moderate: 5, minor: 2 };
 var PIPELINE_DEFAULTS = { targetScore: 95 };
+// Optional assignment due-date metadata for offline submissions. Keep this
+// validator strict: a date-only or timezone-less value is not an instant and
+// must never be interpreted as UTC by accident. The exported contract stores
+// the instant as ISO-8601 plus the educator's IANA timezone for display.
+function _alloNormalizeSubmissionDueAt(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(text)) return '';
+  var parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : '';
+}
+function _alloNormalizeSubmissionDueTimeZone(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!text || text.length > 80 || /[\u0000-\u001f\u007f]/.test(text)) return '';
+  if (text !== 'UTC' && !/^[A-Za-z][A-Za-z0-9._+-]*(?:\/[A-Za-z0-9._+-]+)+$/.test(text)) return '';
+  try {
+    var resolved = new Intl.DateTimeFormat('en-US', { timeZone: text }).resolvedOptions().timeZone;
+    return resolved ? text : '';
+  } catch (_) { return ''; }
+}
 // Shared per-call HTML chunk budget. Was defined FOUR times ("16000" at HTML_FIX_CHUNK,
 // AUDIT_CHUNK_SIZE, MAX_CHUNK, POLISH_CHUNK) with the same maxOutputTokens=65536 rationale —
 // if the model's output budget changes, change it here. (Vision page-chunking is separate:
@@ -9977,7 +9996,8 @@ var createDocPipeline = function(deps) {
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   // ── Resilient CDN loader (shared) ──────────────────────────────────────────
-  // The pipeline pulls pdf.js / pako / Tesseract / fontkit from a CDN. A single
+  // The host can preload pdf.js / pako / Tesseract / fontkit from a local vendor bundle;
+  // the browser app retains CDN fallback for installations that do not ship those assets. A single
   // hard-coded URL means a blocked or slow CDN (common on locked-down K-12 networks)
   // silently disables a whole feature with no signal to the teacher. This tries each
   // URL in turn until the library's global appears, and on TOTAL failure records the
@@ -10062,7 +10082,8 @@ var createDocPipeline = function(deps) {
     ], () => !!window.pdfjsLib);
     if (!ok) throw new Error('pdf.js unavailable (all CDN sources failed)');
     if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   };
 
@@ -11809,7 +11830,7 @@ var createDocPipeline = function(deps) {
           const _renderScales = _renderFailureStreak > 0 ? [1.0] : [2.0, 1.25, 1.0];
           for (const _sc of _renderScales) {
             const _vp = page.getViewport({ scale: _sc });
-            const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
+            const _c = document.createElement('canvas');
             _c.width = _vp.width; _c.height = _vp.height;
             let _renderTask = null;
             try {
@@ -11904,7 +11925,7 @@ var createDocPipeline = function(deps) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (mixed-page OCR p' + p + ')'); // bound getPage — pdf.js worker can stall
           const viewport = page.getViewport({ scale: 2.0 });
-          canvas = document.createElement('canvas'); if (typeof canvas.setAttribute === 'function') canvas.setAttribute('aria-hidden', 'true');
+          canvas = document.createElement('canvas');
           canvas.width = viewport.width; canvas.height = viewport.height;
           const cctx = canvas.getContext('2d');
           await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
@@ -17178,7 +17199,7 @@ HTML section ${chunkNum}/${chunks.length}:
       img.onload = () => {
         clearTimeout(to);
         try {
-          const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
+          const c = document.createElement('canvas');
           c.width = 8; c.height = 8;
           const g = c.getContext('2d', { willReadFrequently: true });
           g.drawImage(img, 0, 0, 8, 8);
@@ -21161,7 +21182,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
                   script.setAttribute('data-pdfjs', 'true');
                   script.onload = () => {
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                     resolve();
                   };
                   script.onerror = () => reject(new Error('Failed to load PDF.js'));
@@ -21235,7 +21257,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   let viewport = null, canvas = null;
                   for (const _sc of [1.5, 1.0]) {
                     const _vp = page.getViewport({ scale: _sc });
-                    const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
+                    const _c = document.createElement('canvas');
                     _c.width = _vp.width; _c.height = _vp.height;
                     try {
                       await _awaitImageWork(_withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 1.5 ? 30000 : 20000, 'page.render p' + pg + ' @' + _sc + 'x'));
@@ -21308,7 +21330,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   const _cropIsNearUniform = (srcCanvas, strict) => {
                     try {
                       const S = 24;
-                      const tiny = document.createElement('canvas'); tiny.setAttribute('aria-hidden', 'true'); tiny.width = S; tiny.height = S;
+                      const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
                       const tctx = tiny.getContext('2d');
                       tctx.drawImage(srcCanvas, 0, 0, S, S);
                       const data = tctx.getImageData(0, 0, S, S).data;
@@ -21363,7 +21385,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       imgOpIdx++;
                       if (pos && pos.w > 20 && pos.h > 20) {
                         try {
-                          const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
+                          const crop = document.createElement('canvas');
                           crop.width = Math.round(pos.w);
                           crop.height = Math.round(pos.h);
                           crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
@@ -21395,7 +21417,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       let y = 0, h = canvas.height * 0.2;
                       if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
                       else if (pos.includes('middle')) { y = canvas.height * 0.3; h = canvas.height * 0.35; }
-                      const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
+                      const crop = document.createElement('canvas');
                       crop.width = canvas.width; crop.height = h;
                       crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
                       // The fallback is a blind position-guess (no XObject geometry), so it
@@ -24349,7 +24371,7 @@ window.__pdfCropImage = function(imgId) {
     clearError();
     var tmpImg = new Image();
     tmpImg.onload = function() {
-      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
+      var c = document.createElement('canvas');
       c.width = Math.round(sw); c.height = Math.round(sh);
       c.getContext('2d').drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, c.width, c.height);
       var dataUrl = c.toDataURL('image/jpeg', 0.85);
@@ -26037,11 +26059,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // the verification state partial rather than certifying unbound content.
       const _verificationHtmlBinding = await _alloCreateVerificationHtmlBinding(accessibleHtml);
       _throwIfRunCancelled();
-      const _verificationState = _alloApplyVerificationHtmlBinding(
+      let _verificationState = _alloApplyVerificationHtmlBinding(
         _derivedVerificationState,
         !!_verificationHtmlBinding,
         _ALLO_VERIFICATION_HTML_BINDING_REASON
       );
+      // Shared provenance makes this result replayable: the exact audited bytes,
+      // profile, engine summaries, and evidence digest travel with the claim.
+      const _sharedEvidenceForProvenance = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
+      if (_sharedEvidenceForProvenance && typeof _sharedEvidenceForProvenance.attachEvidenceProvenance === 'function') {
+        _verificationState = _sharedEvidenceForProvenance.attachEvidenceProvenance(_verificationState, {
+          profile: 'document-remediation',
+          capturedAt: new Date(_startTime).toISOString(),
+          artifactBinding: _verificationHtmlBinding,
+          artifactFingerprint: _verificationHtmlBinding && typeof _sharedEvidenceForProvenance.bindingFingerprint === 'function'
+            ? _sharedEvidenceForProvenance.bindingFingerprint(_verificationHtmlBinding)
+            : null,
+          evidence: { ai: verification, axe: axeResults, equalAccess: eaResults },
+          findings: verification && Array.isArray(verification.issues) ? verification.issues : [],
+        }, 'document-remediation');
+      }
       const _finalAiEvidenceAvailable = _alloUsableCompleteAiAudit(verification)
         && !_aiVerificationIncomplete
         && _finalAiAuditedHtml === accessibleHtml;
@@ -26121,6 +26158,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         requiresManualReview: _verificationState.requiresManualReview,
         verificationReviewCount: _verificationState.reviewCount,
         verificationReasons: _verificationState.reasons,
+        evidenceSchemaVersion: _verificationState.evidenceSchemaVersion || null,
+        evidenceProfile: _verificationState.evidenceProfile || 'document-remediation',
+        evidenceProvenance: _verificationState.evidenceProvenance || null,
+        evidenceManifest: _verificationState.evidenceManifest || null,
         beforeScore,
         beforeAxeScore,
         // Carry the BEFORE audit's page-slice provenance so the UI can mark the
@@ -27275,7 +27316,7 @@ tr { page-break-inside: avoid; }
   .conformance-pct { font-size: 14px; color: #64748b; font-weight: 600; }
   .stat-pill { display: inline-block; padding: 8px 16px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
   .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
-  details summary { outline: 2px solid transparent; outline-offset: 2px; }
+  details summary { outline: none; }
   details summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 4px; }
   a { color: #2563eb; }
   @media print {
@@ -36094,6 +36135,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionPublicKeyJson = _hasSubmission
           ? `<script type="application/json" id="alloflow-class-public-key">${JSON.stringify(cfg.classPublicJwk).replace(/</g, '\\u003c')}</script>`
           : '';
+      const _submissionDueAt = !isWorksheet ? _alloNormalizeSubmissionDueAt(cfg.dueAt) : '';
+      const _submissionDueTimeZone = _submissionDueAt ? _alloNormalizeSubmissionDueTimeZone(cfg.dueTimeZone) : '';
+      const _submissionIdentity = !isWorksheet ? {
+          ...(typeof cfg.classId === 'string' && cfg.classId.trim() ? { classId: cfg.classId.trim().slice(0, 160) } : {}),
+          ...(typeof cfg.assignmentId === 'string' && cfg.assignmentId.trim() ? { assignmentId: cfg.assignmentId.trim().slice(0, 160) } : {}),
+          ...(_submissionDueAt ? { dueDate: {
+              schemaVersion: 1,
+              dueAt: _submissionDueAt,
+              ...(_submissionDueTimeZone ? { timeZone: _submissionDueTimeZone } : {}),
+              source: 'teacher-export'
+          } } : {})
+      } : {};
+      const _submissionIdentityJson = Object.keys(_submissionIdentity).length
+          ? `<script type="application/json" id="alloflow-submission-identity">${JSON.stringify(_submissionIdentity).replace(/</g, '\\u003c')}</script>`
+          : '';
       // INLINE_ENCRYPT_SCRIPT comes from window.AlloModules.SubmissionCrypto.
       // Lazy lookup per feedback_iife_lazy_lookup.md — SubmissionCrypto loads
       // separately and is not guaranteed at this module's IIFE-load time.
@@ -36124,6 +36180,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     var publicJwk;
                     try { publicJwk = JSON.parse(keyEl.textContent); }
                     catch (e) { btn.disabled = true; btn.textContent = 'Save unavailable (key missing)'; return; }
+                    var identity = {};
+                    try { var identityEl = document.getElementById('alloflow-submission-identity'); identity = identityEl ? JSON.parse(identityEl.textContent) : {}; }
+                    catch (e) { identity = {}; }
                     var _esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
                     var _collectResponses = function() {
                         var out = {};
@@ -36168,11 +36227,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 docTitle: document.title || 'Worksheet',
                                 timestamp: new Date().toISOString(),
                                 responses: _collectResponses(),
-                                schemaVersion: 1
+                                schemaVersion: 2,
+                                ...(identity.classId ? { classId: identity.classId } : {}),
+                                ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
+                                ...(identity.dueDate ? { dueDate: identity.dueDate } : {})
                             };
                             var encrypted = await window.__alloflowEncryptSubmission(payload, publicJwk);
                             var fileJson = {
-                                schemaVersion: 1,
+                                schemaVersion: 2,
                                 nickname: payload.nickname,
                                 docTitle: payload.docTitle,
                                 timestamp: payload.timestamp,
@@ -36239,6 +36301,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
         <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForScript(_objectProfileManifest)}</script>
         ${_submissionPublicKeyJson}
+        ${_submissionIdentityJson}
         ${_submissionEncryptScript}
         <style>
           /* Keep downloaded HTML useful offline: only explicit teacher-selected
@@ -36345,14 +36408,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           .interactive-textarea:focus { outline: 2px solid #6366f1; border-color: #6366f1; }
           .interactive-blank { border: none; border-bottom: 2px solid #cbd5e1; padding: 0 5px; background: transparent; font-family: inherit; width: 150px; transition: border-color 0.2s; font-weight: bold; color: #1e40af; }
-          .interactive-blank:focus { border-bottom-color: #4f46e5; outline: 2px solid #4f46e5; outline-offset: 2px; }
+          .interactive-blank:focus { border-bottom-color: #4f46e5; outline: none; }
           .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
           .mcq-label:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
           /* Keyboard focus: a visible 2px indigo outline + soft outer ring.
              Replaces the browser default focus ring (which the radio sometimes
              eats) so keyboard-only users can see what they're about to pick.
              WCAG 2.4.7 (Focus Visible). */
-          .mcq-label:focus-within { background-color: #eef2ff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.18); outline: 2px solid #6366f1; outline-offset: 1px; }
+          .mcq-label:focus-within { background-color: #eef2ff; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.18); outline: none; }
           /* Selected state: the option containing a checked radio gets a
              persistent indigo accent so students can scan back and see what
              they already picked. WCAG 1.4.11 (Non-text Contrast). */
@@ -36564,7 +36627,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-note-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 6px 6px 0 0; }
           .alloflow-note-editor-btn { background: rgba(255,255,255,0.75); border: 0; padding: 1px 6px; border-radius: 3px; font-weight: 700; cursor: pointer; font-size: 10px; }
           .alloflow-note-editor-btn:hover { background: rgba(255,255,255,1); }
-          .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: 2px solid transparent; outline-offset: 2px; font-family: inherit; box-sizing: border-box; } .alloflow-note-editor textarea:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+          .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: none; font-family: inherit; box-sizing: border-box; }
 
           /* ─── Annotation pulse animation (Phase 5) ─── */
           @keyframes alloflow-anno-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
@@ -39224,6 +39287,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 (function() {
                     var pbtn = document.getElementById('alloflow-savejson-btn');
                     if (!pbtn) return;
+                    var identity = {};
+                    try { var identityEl = document.getElementById('alloflow-submission-identity'); identity = identityEl ? JSON.parse(identityEl.textContent) : {}; }
+                    catch (e) { identity = {}; }
                     var pcta = document.getElementById('alloflow-savejson-cta');
                     if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
                     if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
@@ -39239,7 +39305,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         var up = new URLSearchParams(window.location.search);
                         var nick = up.get('nickname') || await window.__alloflowPrompt({ title: 'Save your answers', description: 'Enter a name or nickname so your teacher can identify this answer file.', label: 'Name or nickname', confirmLabel: 'Save answers', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var payload = { schemaVersion: 1, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect() };
+                        var payload = { schemaVersion: 2, kind: 'alloflow-student-submission', nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);

@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio a fost deschis.",
   "cmd.open_video_studio_hint": "Înregistrează, subtitrează și editează tutoriale",
   "palette.ctx.videoStudio": "Aici — Video Studio",
-  "palette.close": "Închide paleta de comenzi"
+  "palette.close": "Închide paleta de comenzi",
+  "cmd.apply_lesson_template": "Începe de la un șablon salvat",
+  "cmd.apply_lesson_template_done": "Început de la ",
+  "cmd.apply_lesson_template_hint": "Începe un plan nou dintr-unul dintre șabloanele salvate",
+  "cmd.apply_lesson_template_missing": "Nu am găsit un șablon numit ",
+  "cmd.apply_lesson_template_which": "Ce șablon?",
+  "cmd.rebuild_lesson_step": "Reconstruiește un pas al planului",
+  "cmd.rebuild_lesson_step_done": "Se reconstruiește pasul ",
+  "cmd.rebuild_lesson_step_hint": "Regenerează o singură resursă — spune numărul pasului",
+  "cmd.rebuild_lesson_step_missing": "Nu am găsit acel pas în plan.",
+  "cmd.rebuild_lesson_step_none": "planul nu are încă pași.",
+  "cmd.rebuild_lesson_step_which": "Ce pas?",
+  "cmd.run_lesson_blueprint": "Generează planul lecției",
+  "cmd.run_lesson_blueprint_done": "Se generează planul — poți urmări fiecare pas pe card.",
+  "cmd.run_lesson_blueprint_hint": "Generează toate resursele din planul curent",
+  "cmd.cancelled": "Anularea a fost solicitată. Operația curentă se va opri când furnizorul o va suporta."
 }

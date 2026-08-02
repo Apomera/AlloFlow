@@ -23,6 +23,25 @@ var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, 
 // Change these HERE only — every consumer interpolates from them.
 var SEVERITY_WEIGHTS = { critical: 15, serious: 10, moderate: 5, minor: 2 };
 var PIPELINE_DEFAULTS = { targetScore: 95 };
+// Optional assignment due-date metadata for offline submissions. Keep this
+// validator strict: a date-only or timezone-less value is not an instant and
+// must never be interpreted as UTC by accident. The exported contract stores
+// the instant as ISO-8601 plus the educator's IANA timezone for display.
+function _alloNormalizeSubmissionDueAt(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(text)) return '';
+  var parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : '';
+}
+function _alloNormalizeSubmissionDueTimeZone(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!text || text.length > 80 || /[\u0000-\u001f\u007f]/.test(text)) return '';
+  if (text !== 'UTC' && !/^[A-Za-z][A-Za-z0-9._+-]*(?:\/[A-Za-z0-9._+-]+)+$/.test(text)) return '';
+  try {
+    var resolved = new Intl.DateTimeFormat('en-US', { timeZone: text }).resolvedOptions().timeZone;
+    return resolved ? text : '';
+  } catch (_) { return ''; }
+}
 // Shared per-call HTML chunk budget. Was defined FOUR times ("16000" at HTML_FIX_CHUNK,
 // AUDIT_CHUNK_SIZE, MAX_CHUNK, POLISH_CHUNK) with the same maxOutputTokens=65536 rationale —
 // if the model's output budget changes, change it here. (Vision page-chunking is separate:
@@ -9975,7 +9994,8 @@ var createDocPipeline = function(deps) {
   // ── Deterministic extraction helpers (Step 0 of pipeline) ──
   // Lazy-load pdf.js once — reuses the existing pattern from runPdfAccessibilityAudit
   // ── Resilient CDN loader (shared) ──────────────────────────────────────────
-  // The pipeline pulls pdf.js / pako / Tesseract / fontkit from a CDN. A single
+  // The host can preload pdf.js / pako / Tesseract / fontkit from a local vendor bundle;
+  // the browser app retains CDN fallback for installations that do not ship those assets. A single
   // hard-coded URL means a blocked or slow CDN (common on locked-down K-12 networks)
   // silently disables a whole feature with no signal to the teacher. This tries each
   // URL in turn until the library's global appears, and on TOTAL failure records the
@@ -10060,7 +10080,8 @@ var createDocPipeline = function(deps) {
     ], () => !!window.pdfjsLib);
     if (!ok) throw new Error('pdf.js unavailable (all CDN sources failed)');
     if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   };
 
@@ -21159,7 +21180,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
                   script.setAttribute('data-pdfjs', 'true');
                   script.onload = () => {
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                     resolve();
                   };
                   script.onerror = () => reject(new Error('Failed to load PDF.js'));
@@ -26035,11 +26057,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // the verification state partial rather than certifying unbound content.
       const _verificationHtmlBinding = await _alloCreateVerificationHtmlBinding(accessibleHtml);
       _throwIfRunCancelled();
-      const _verificationState = _alloApplyVerificationHtmlBinding(
+      let _verificationState = _alloApplyVerificationHtmlBinding(
         _derivedVerificationState,
         !!_verificationHtmlBinding,
         _ALLO_VERIFICATION_HTML_BINDING_REASON
       );
+      // Shared provenance makes this result replayable: the exact audited bytes,
+      // profile, engine summaries, and evidence digest travel with the claim.
+      const _sharedEvidenceForProvenance = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
+      if (_sharedEvidenceForProvenance && typeof _sharedEvidenceForProvenance.attachEvidenceProvenance === 'function') {
+        _verificationState = _sharedEvidenceForProvenance.attachEvidenceProvenance(_verificationState, {
+          profile: 'document-remediation',
+          capturedAt: new Date(_startTime).toISOString(),
+          artifactBinding: _verificationHtmlBinding,
+          artifactFingerprint: _verificationHtmlBinding && typeof _sharedEvidenceForProvenance.bindingFingerprint === 'function'
+            ? _sharedEvidenceForProvenance.bindingFingerprint(_verificationHtmlBinding)
+            : null,
+          evidence: { ai: verification, axe: axeResults, equalAccess: eaResults },
+          findings: verification && Array.isArray(verification.issues) ? verification.issues : [],
+        }, 'document-remediation');
+      }
       const _finalAiEvidenceAvailable = _alloUsableCompleteAiAudit(verification)
         && !_aiVerificationIncomplete
         && _finalAiAuditedHtml === accessibleHtml;
@@ -26119,6 +26156,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         requiresManualReview: _verificationState.requiresManualReview,
         verificationReviewCount: _verificationState.reviewCount,
         verificationReasons: _verificationState.reasons,
+        evidenceSchemaVersion: _verificationState.evidenceSchemaVersion || null,
+        evidenceProfile: _verificationState.evidenceProfile || 'document-remediation',
+        evidenceProvenance: _verificationState.evidenceProvenance || null,
+        evidenceManifest: _verificationState.evidenceManifest || null,
         beforeScore,
         beforeAxeScore,
         // Carry the BEFORE audit's page-slice provenance so the UI can mark the
@@ -36092,6 +36133,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionPublicKeyJson = _hasSubmission
           ? `<script type="application/json" id="alloflow-class-public-key">${JSON.stringify(cfg.classPublicJwk).replace(/</g, '\\u003c')}</script>`
           : '';
+      const _submissionDueAt = !isWorksheet ? _alloNormalizeSubmissionDueAt(cfg.dueAt) : '';
+      const _submissionDueTimeZone = _submissionDueAt ? _alloNormalizeSubmissionDueTimeZone(cfg.dueTimeZone) : '';
+      const _submissionIdentity = !isWorksheet ? {
+          ...(typeof cfg.classId === 'string' && cfg.classId.trim() ? { classId: cfg.classId.trim().slice(0, 160) } : {}),
+          ...(typeof cfg.assignmentId === 'string' && cfg.assignmentId.trim() ? { assignmentId: cfg.assignmentId.trim().slice(0, 160) } : {}),
+          ...(_submissionDueAt ? { dueDate: {
+              schemaVersion: 1,
+              dueAt: _submissionDueAt,
+              ...(_submissionDueTimeZone ? { timeZone: _submissionDueTimeZone } : {}),
+              source: 'teacher-export'
+          } } : {})
+      } : {};
+      const _submissionIdentityJson = Object.keys(_submissionIdentity).length
+          ? `<script type="application/json" id="alloflow-submission-identity">${JSON.stringify(_submissionIdentity).replace(/</g, '\\u003c')}</script>`
+          : '';
       // INLINE_ENCRYPT_SCRIPT comes from window.AlloModules.SubmissionCrypto.
       // Lazy lookup per feedback_iife_lazy_lookup.md — SubmissionCrypto loads
       // separately and is not guaranteed at this module's IIFE-load time.
@@ -36122,6 +36178,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     var publicJwk;
                     try { publicJwk = JSON.parse(keyEl.textContent); }
                     catch (e) { btn.disabled = true; btn.textContent = 'Save unavailable (key missing)'; return; }
+                    var identity = {};
+                    try { var identityEl = document.getElementById('alloflow-submission-identity'); identity = identityEl ? JSON.parse(identityEl.textContent) : {}; }
+                    catch (e) { identity = {}; }
                     var _esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
                     var _collectResponses = function() {
                         var out = {};
@@ -36166,11 +36225,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 docTitle: document.title || 'Worksheet',
                                 timestamp: new Date().toISOString(),
                                 responses: _collectResponses(),
-                                schemaVersion: 1
+                                schemaVersion: 2,
+                                ...(identity.classId ? { classId: identity.classId } : {}),
+                                ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
+                                ...(identity.dueDate ? { dueDate: identity.dueDate } : {})
                             };
                             var encrypted = await window.__alloflowEncryptSubmission(payload, publicJwk);
                             var fileJson = {
-                                schemaVersion: 1,
+                                schemaVersion: 2,
                                 nickname: payload.nickname,
                                 docTitle: payload.docTitle,
                                 timestamp: payload.timestamp,
@@ -36237,6 +36299,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
         <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForScript(_objectProfileManifest)}</script>
         ${_submissionPublicKeyJson}
+        ${_submissionIdentityJson}
         ${_submissionEncryptScript}
         <style>
           /* Keep downloaded HTML useful offline: only explicit teacher-selected
@@ -39222,6 +39285,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 (function() {
                     var pbtn = document.getElementById('alloflow-savejson-btn');
                     if (!pbtn) return;
+                    var identity = {};
+                    try { var identityEl = document.getElementById('alloflow-submission-identity'); identity = identityEl ? JSON.parse(identityEl.textContent) : {}; }
+                    catch (e) { identity = {}; }
                     var pcta = document.getElementById('alloflow-savejson-cta');
                     if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
                     if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
@@ -39237,7 +39303,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         var up = new URLSearchParams(window.location.search);
                         var nick = up.get('nickname') || await window.__alloflowPrompt({ title: 'Save your answers', description: 'Enter a name or nickname so your teacher can identify this answer file.', label: 'Name or nickname', confirmLabel: 'Save answers', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var payload = { schemaVersion: 1, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect() };
+                        var payload = { schemaVersion: 2, kind: 'alloflow-student-submission', nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);

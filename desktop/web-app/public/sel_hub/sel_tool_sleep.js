@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
 // sel_tool_sleep.js — Sleep & Rest Lab
-// Adolescent sleep is a public-health crisis: ~75% of US high
-// schoolers get less than the AAP-recommended 8-10 hours. Sleep
-// deprivation has measurable effects on mood, anxiety, immune
-// function, academic performance, and risk-taking.
+// Sleep needs change as children grow: common guidance is 9-12 hours for ages 6-12
+// and 8-10 hours for ages 13-18. Insufficient sleep affects mood, anxiety, immune
+// function, learning, and daytime safety. The tool adapts its guidance by grade band.
+// This tool: psychoeducation, sleep self-assessment, sleep diary, evidence-based sleep skills, common barriers, and clear clinician signals.
 // This tool: psychoeducation, sleep self-assessment, sleep diary,
 // evidence-based sleep hygiene + CBT-I-adjacent skills, common
 // barriers and what helps each, when to see a clinician.
@@ -116,11 +116,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
     { id: 'sc7', text: 'Hours of screen time in bed in the last hour before sleep?', min: 0, max: 4, suffix: 'hrs', defaultV: 1 }
   ];
 
+  var SLEEP_GUIDANCE = {
+    elementary: {
+      minHours: 9,
+      label: 'For ages 6-12, the usual sleep range is 9-12 hours per 24 hours.',
+      title: 'Sleep helps your growing brain and body.',
+      intro: 'Sleep supports learning, mood, attention, and physical health. For ages 6-12, the usual range is 9-12 hours per 24 hours. This lab is a pattern check; ask a trusted adult to help with any changes.'
+    },
+    middle: {
+      minHours: 8,
+      label: 'For ages 13-18, the usual sleep range is 8-10 hours per 24 hours.',
+      title: 'Sleep is not optional. It is foundation.',
+      intro: 'During puberty, the body clock often shifts later. For ages 13-18, the usual range is 8-10 hours per 24 hours. This lab helps you spot patterns, not grade yourself.'
+    },
+    high: {
+      minHours: 8,
+      label: 'For ages 13-18, the usual sleep range is 8-10 hours per 24 hours.',
+      title: 'Sleep is not optional. It is foundation.',
+      intro: 'For ages 13-18, the usual range is 8-10 hours per 24 hours. About 3 in 4 US high schoolers get less. This lab helps you spot patterns, not grade yourself.'
+    }
+  };
   function defaultState() {
     return {
       view: 'home',
       selfCheck: {},          // itemId -> number
-      diary: [],              // [{date, bedtime, waketime, hours, quality, notes}]
+      diary: [],              // [{date, bedtime, waketime, hours, quality, notes, experiment}]
       lastUpdated: null
     };
   }
@@ -135,7 +155,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
   window.SelHub.registerTool('sleep', {
     icon: '😴',
     label: 'Sleep & Rest',
-    desc: 'Adolescent sleep is a public-health crisis: ~3 of 4 US high schoolers get less than the AAP-recommended 8-10 hours. This tool: sleep psychoeducation, a self-check, sleep diary, common barriers and what works for each, and clear signals for when to see a doctor. From AAP, CDC, National Sleep Foundation, Carskadon research.',
+    desc: 'Age-aware sleep psychoeducation for K-12: age-based sleep guidance, a self-check, sleep diary, common barriers and what works for each, and clear signals for when to ask a trusted adult or clinician. From CDC, AAP, National Sleep Foundation, and Carskadon research.',
     color: 'indigo',
     category: 'self-regulation',
     render: function(ctx) {
@@ -156,6 +176,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var addToast = ctx.addToast;
 
       var d = labToolData.sleep || defaultState();
+      var _sleBand = (ctx && ctx.gradeBand) || 'high';
+      var _sleGuidance = SLEEP_GUIDANCE[_sleBand] || SLEEP_GUIDANCE.high;
       function setS(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.sleep) || defaultState();
@@ -206,7 +228,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         return h('div', {
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _sleFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Persistent sleep problems are medical, not just willpower. If 4+ weeks of good sleep hygiene have not helped, see a doctor. Crisis Text Line: text HOME to 741741.'
+          'Persistent sleep problems are not a willpower test. If they last 4+ weeks, or you snore/gasp, feel exhausted despite enough time in bed, or sleep problems affect safety or daily life, tell a trusted adult and ask about a doctor or sleep specialist.'
         );
       }
 
@@ -214,49 +236,57 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // HOME — why sleep matters
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
+        var impactItems = _sleBand === 'elementary'
+          ? [
+              'Mood and emotional regulation',
+              'Attention, memory, and learning',
+              'Immune function and physical recovery',
+              'Energy and daytime participation',
+              'Appetite and overall physical wellbeing'
+            ]
+          : [
+              'Mood and emotional regulation',
+              'Anxiety (sleep loss and anxiety can reinforce each other)',
+              'Memory and learning',
+              'Reaction time and daytime safety',
+              'Immune function and recovery',
+              'Appetite and physical wellbeing',
+              'Risk-taking and impulsive choices'
+            ];
+
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: _sleFg('#c7d2fe'), marginBottom: 4 } }, 'Sleep is not optional. It is foundation.'),
-            h('p', { style: { margin: 0, color: _sleFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
-              'The American Academy of Pediatrics recommends 8-10 hours of sleep per night for adolescents ages 13-18. About 3 in 4 US high schoolers get less. The result, at population scale: more anxiety, more depression, worse academic performance, worse driving, weaker immune systems, more risk-taking. The single biggest lever for adolescent wellbeing is probably sleep.'
-            )
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _sleFg('#c7d2fe'), marginBottom: 4 } }, _sleGuidance.title),
+            h('p', { style: { margin: 0, color: _sleFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } }, _sleGuidance.intro)
           ),
 
-          // The biology
           h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#c7d2fe'), marginBottom: 10 } }, '🧠 Adolescent sleep biology is real'),
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#c7d2fe'), marginBottom: 10 } }, 'How sleep and body clocks work'),
             h('p', { style: { margin: '0 0 8px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
-              'At puberty, the body\'s circadian rhythm shifts later by about 2 hours. This is biology, not laziness. A 15-year-old who is wide awake at 11pm and groggy at 7am is doing what their body is built to do. Mary Carskadon\'s research at Brown established this in the 1990s and it has been replicated extensively.'
+              _sleBand === 'elementary'
+                ? 'Sleep supports learning, memory, mood, attention, and physical recovery. Sleep needs change as you grow, so the goal is a steady pattern that fits your body and life.'
+                : 'During puberty, the body clock often shifts later. This is biology, not laziness. A student who is wide awake at 11pm and groggy at 7am may be working against a real body-clock shift.'
             ),
             h('p', { style: { margin: 0, color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
-              'School start times that begin before 8:30am force adolescents to wake before their biological wake time. This is the structural cause of much adolescent sleep deprivation. The AAP, CDC, and AMA all officially recommend later school start times for middle and high school.'
+              'Schedules, noise, caregiving, homework, jobs, and school start times can all compete with sleep. Some barriers are structural, not a personal failure. Use the Barriers tab to choose one change you can control and ask an adult for help with the rest.'
             )
           ),
 
-          // What it affects
           h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fca5a5'), marginBottom: 8 } }, '⚠ Sleep deprivation affects (this is measurable, not theoretical):'),
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fca5a5'), marginBottom: 8 } }, 'What too little sleep can affect'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
-              h('li', null, 'Mood (more irritable, more depressed, less emotional regulation)'),
-              h('li', null, 'Anxiety (both ways — anxiety worsens sleep, sleep loss worsens anxiety)'),
-              h('li', null, 'Memory and learning (you consolidate memories DURING sleep; less sleep = less learning sticks)'),
-              h('li', null, 'Reaction time and decision-making (driving while sleep-deprived = driving while drunk, by measure)'),
-              h('li', null, 'Immune function (more colds, slower recovery)'),
-              h('li', null, 'Appetite hormones (less sleep = more hunger for high-calorie food)'),
-              h('li', null, 'Risk-taking (less sleep = more impulsive choices)')
+              impactItems.map(function(item, i) { return h('li', { key: i }, item); })
             )
           ),
 
-          // Roadmap
           h('div', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Tools in this lab'),
-          stepCard('✓ Quick sleep check', '7 questions to see where your sleep is right now. Takes 2 minutes.', function() { goto('check'); }, '#22c55e'),
-          stepCard('🚧 Common barriers', 'The 8 most common things that block adolescent sleep, with what actually works for each.', function() { goto('barriers'); }, '#f59e0b'),
-          stepCard('📓 Sleep diary', 'Track your sleep for 1-2 weeks to find patterns. Most useful tool for diagnosis.', function() { goto('diary'); }, _sleBg('#0ea5e9')),
+          stepCard('Quick sleep check', 'Seven questions to see where your sleep is right now. Takes about 2 minutes.', function() { goto('check'); }, '#22c55e'),
+          stepCard('Common barriers', 'Eight common barriers, with practical ideas. Pick one change to test for a week.', function() { goto('barriers'); }, '#f59e0b'),
+          stepCard('Sleep diary', 'Track sleep for 1-2 weeks to find patterns. Add the one change you are testing so you can review what helped.', function() { goto('diary'); }, _sleBg('#0ea5e9')),
 
           softPointer()
         );
       }
-
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
           style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _sleBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _sleFg('#e2e8f0') } },
@@ -283,7 +313,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         var screens = sc.sc7;
 
         var flags = [];
-        if (schoolNight !== undefined && schoolNight < 8) flags.push({ severity: 'warning', text: 'You\'re below the AAP-recommended 8-10 hours on school nights.' });
+        if (schoolNight !== undefined && schoolNight < _sleGuidance.minHours) flags.push({ severity: 'warning', text: 'Your school-night sleep is below the age-based guide. ' + _sleGuidance.label + ' Use this as a conversation starter, not a grade.' });
         if (fallAsleep !== undefined && fallAsleep > 30) flags.push({ severity: 'warning', text: 'Taking more than 30 minutes to fall asleep regularly is a CBT-I flag. Look at the Barriers tab — stress and screens are the usual culprits.' });
         if (rested !== undefined && rested <= 4) flags.push({ severity: 'alert', text: 'Low rested rating + low daily function = real impact. Time to take this seriously.' });
         if (weekendDelta !== null && weekendDelta >= 3) flags.push({ severity: 'warning', text: 'Sleeping ' + weekendDelta + ' more hours on weekends than weekdays. Your body is paying back the debt; this is called "social jet lag." Try to narrow the gap.' });
@@ -292,7 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bbf7d0'), lineHeight: 1.65 } },
             h('strong', null, '✓ Quick sleep check. '),
-            'Use a typical week, not your best or worst. Honest answers help you see your real pattern.'
+            _sleGuidance.label + ' Use a typical week, not your best or worst. This is a pattern check, not a diagnosis. You can skip any question.'
           ),
 
           SELF_CHECK.map(function(item) {
@@ -312,7 +342,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           }),
 
           // Flags / interpretation
-          flags.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
+          flags.length > 0 ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Sleep check observations', style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fde68a'), marginBottom: 8 } }, '🚩 What stands out'),
             flags.map(function(f, i) {
               var color = f.severity === 'alert' ? '#ef4444' : f.severity === 'warning' ? '#f59e0b' : _sleBg('#0ea5e9');
@@ -331,7 +361,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _sleFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🚧 The 8 most common barriers. '),
-            'Find yours. Pick ONE to work on for a week — most people improve sleep significantly with one change. Stacking changes works, but one at a time is more sustainable.'
+            'Find yours. Pick ONE to work on for a week. One change is easier to test and stick with; stacking changes can come later.'
           ),
 
           BARRIERS.map(function(b) {
@@ -365,10 +395,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           var hours = parseFloat(document.getElementById('sl-hours').value);
           var quality = parseInt(document.getElementById('sl-quality').value, 10);
           var notes = document.getElementById('sl-notes').value;
+          var experiment = document.getElementById('sl-experiment').value;
           if (!date) return;
-          var entry = { date: date, bedtime: bed, waketime: wake, hours: hours, quality: quality, notes: notes };
+          var entry = { date: date, bedtime: bed, waketime: wake, hours: hours, quality: quality, notes: notes, experiment: experiment };
           setS({ diary: (d.diary || []).concat([entry]) });
           document.getElementById('sl-notes').value = '';
+          document.getElementById('sl-experiment').value = '';
         }
         function removeEntry(i) {
           var nx = (d.diary || []).slice();
@@ -389,7 +421,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bae6fd'), lineHeight: 1.65 } },
             h('strong', null, '📓 The sleep diary. '),
-            'Log for 1-2 weeks to see your pattern. The diary is the single most useful tool for figuring out what is going on with your sleep — and what your doctor will ask for if you see one.'
+            'Log for 1-2 weeks to see your pattern. This is a pattern-finding record, not a diagnosis, and it can help you explain what is happening to a trusted adult, school nurse, or clinician.'
           ),
 
           // Stats
@@ -441,6 +473,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             h('label', { htmlFor: 'sl-notes', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Notes (caffeine, screens, what helped or hurt)'),
             h('input', { id: 'sl-notes', type: 'text', placeholder: 'Optional notes',
               style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
+            h('label', { htmlFor: 'sl-experiment', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'One change I am testing (optional)'),
+            h('input', { id: 'sl-experiment', type: 'text', placeholder: 'e.g. charge phone outside bedroom',
+              style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
             h('button', { onClick: addEntry, 'aria-label': 'Add diary entry',
               style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sleBg('#0ea5e9'), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
           ),
@@ -454,7 +489,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                 h('span', { style: { fontSize: 12, color: _sleFg('#cbd5e1') } }, '🛏 ' + (e.bedtime || '–') + ' → ⏰ ' + (e.waketime || '–')),
                 h('span', { style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700 } }, e.hours + 'h'),
                 h('span', { style: { fontSize: 12, color: e.quality >= 7 ? _sleFg('#86efac') : e.quality >= 4 ? _sleFg('#fde68a') : _sleFg('#fca5a5') } }, e.quality + '/10'),
-                e.notes ? h('span', { style: { flex: 1, fontSize: 11, color: _sleFg('#94a3b8'), fontStyle: 'italic', minWidth: 100 } }, e.notes) : h('span', { style: { flex: 1 } }),
+                e.notes || e.experiment ? h('span', { style: { flex: 1, fontSize: 11, color: _sleFg('#94a3b8'), fontStyle: 'italic', minWidth: 100 } }, (e.notes ? e.notes : '') + (e.experiment ? (e.notes ? ' | ' : '') + 'Tried: ' + e.experiment : '')) : h('span', { style: { flex: 1 } }),
                 h('button', { onClick: function() { removeEntry(diary.length - 1 - i); }, 'aria-label': 'Remove entry',
                   style: { background: 'transparent', border: '1px solid #475569', color: _sleFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
@@ -617,7 +652,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                       h('td', { style: { padding: 5 } }, e.waketime || '–'),
                       h('td', { style: { padding: 5, textAlign: 'right', fontWeight: 700 } }, e.hours || '–'),
                       h('td', { style: { padding: 5, textAlign: 'right' } }, (e.quality !== undefined ? e.quality + '/10' : '–')),
-                      h('td', { style: { padding: 5, fontSize: 11, fontStyle: 'italic' } }, e.notes || '')
+                      h('td', { style: { padding: 5, fontSize: 11, fontStyle: 'italic' } }, (e.notes ? e.notes : '') + (e.experiment ? (e.notes ? ' | ' : '') + 'Tried: ' + e.experiment : ''))
                     );
                   })
                 )

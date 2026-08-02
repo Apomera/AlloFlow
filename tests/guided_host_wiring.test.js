@@ -62,16 +62,26 @@ describe('Guided Mode host wiring', () => {
       ['persona', 'persona'],
       ['adventure', 'adventure'],
       ['lesson-plan', 'lesson-plan'],
+      ['directions', 'directions'],
+      ['word-sounds', 'ui-tool-wordsounds'],
     ]) {
       expect(block).toContain(`'${type}': '${stepId}'`);
     }
-    // The effect must index into the ACTIVE (possibly subset) step list, not GUIDED_STEPS.
-    const effectStart = app.indexOf('const _guidedHistLenRef');
+    // The effect must index into the ACTIVE (possibly subset) step list, record batched
+    // history writes, and advance the captured step at most once.
+    const effectStart = app.indexOf('const _guidedSeenHistoryIdsRef');
     expect(effectStart).toBeGreaterThan(-1);
-    const effect = app.slice(effectStart, app.indexOf('}, [history, guidedMode, guidedStep, guidedSelectedIds]);', effectStart));
-    expect(effect).toContain('guidedActiveSteps[guidedStep]');
-    expect(effect).toContain('len !== prevLen + 1');
+    const effect = app.slice(effectStart, app.indexOf('// Fluency export helpers.', effectStart));
+    expect(effect).toContain('guidedActiveSteps[currentIndex]');
+    expect(effect).toContain('const added = []');
+    expect(effect).toContain('_guidedAdvanceTokenRef');
+    expect(effect).toContain('_guidedCurrentStepRef.current !== currentIndex');
+    expect(effect).toContain('setGuidedStep(currentIndex + 1)');
+    expect(effect).toContain('current.phase !== following.phase');
     expect(effect).toContain('setGuidedCreatedHistoryIds');
+    expect(app).toContain("const _guidedDeliveryAdvanceRef = useRef('')");
+    expect(app).toContain("['exportCreated', 'shareCreated', 'liveStarted'].filter");
+    expect(app).toContain("guidedActiveSteps[guidedStep]?.id !== 'package-deliver'");
     expect(dispatcher).not.toContain('typeToGuidedId');
     expect(dispatcher).not.toMatch(/setTimeout\([^)]*setGuidedStep/);
   });
@@ -151,6 +161,21 @@ describe('Guided Mode host wiring', () => {
     expect(app).toContain('createdHistoryIds: guidedCreatedHistoryIds');
     expect(app).toContain('planBrief: guidedPlanBrief');
     expect(app).toContain('guidedPlanBrief={guidedPlanBrief}');
+    expect(app).toContain('savedAt, guidedStep');
+    expect(app).toContain("setGuidedProgressSaveState({ status: 'saved', at: savedAt })");
+    expect(app).toContain("setGuidedProgressSaveState({ status: 'error', at: null })");
+    expect(app).toContain('guidedProgressSaveState={guidedProgressSaveState}');
+    expect(app).toContain('guidedSaveRetryToken');
+    expect(app).toContain('retryGuidedProgressSave={retryGuidedProgressSave}');
+    expect(app).toContain('openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null}');
+    expect(app).toContain('guidedTourProgress: guidedMode ?');
+    expect(app).toContain('savedAt: guidedProgressSaveState.at || new Date().toISOString()');
+    expect(app).toContain('stepId: guidedActiveSteps[guidedStep]?.id || null');
+    expect(app).toContain('setGuidedPlanBrief: value => setGuidedPlanBrief(normalizeGuidedPlanBrief(value))');
+    expect(miscHandlers).toContain("const _stepById = typeof _gtp.stepId === 'string'");
+    expect(miscHandlers).toContain('deps.setGuidedPlanBrief(_gtp.planBrief)');
+    expect(banner).toContain('openGuidedProjectBackup');
+    expect(banner).toContain('retryGuidedProgressSave');
     expect(banner).toContain('_createdIdSet.has(h.id)');
   });
 
@@ -167,6 +192,10 @@ describe('Guided Mode pause semantics', () => {
   it('exits without resetting persisted progress and confirms where it can be resumed', () => {
     expect(app).toContain("const handleExitGuidedMode = () => {");
     expect(app).toContain("addToast(t('guided.progress_saved') || 'Guided progress saved. Resume anytime from Setup.', 'success')");
+    expect(app).toContain("guidedProgressSaveState.status === 'error'");
+    expect(app).toContain("t('guided.progress_not_saved_exit')");
+    expect(banner).toContain('requestResumeLater');
+    expect(banner).toContain('pendingUnsafeExit');
     const handler = app.slice(app.indexOf('const handleExitGuidedMode'), app.indexOf('const [showGuidedTip'));
     expect(handler).not.toContain('resetGuidedProgress');
     expect(handler).not.toContain('localStorage.removeItem');
@@ -262,13 +291,33 @@ describe('Guided Mode improvement wiring', () => {
   });
 });
 describe('Guided Mode controlled-journey safeguards', () => {
-  it('makes automatic advancement opt-in and persists the preference', () => {
-    expect(app).toContain("localStorage.getItem('allo_guided_auto_advance') === 'true'");
-    expect(app).toContain('if (!guidedMode || !guidedAutoAdvance || len !== prevLen + 1) return;');
+  it('defaults automatic advancement on, persists the preference, and pauses on errors', () => {
+    expect(app).toContain("return saved === null ? true : saved === 'true'");
+    expect(app).toContain('if (!guidedAutoAdvance || guidedStepError) return;');
     expect(app).toContain('guidedAutoAdvance={guidedAutoAdvance}');
     expect(banner).toContain('role="switch" aria-checked={!!guidedAutoAdvance}');
   });
 
+  it('supports focused recovery, contextual adjustment, and actionable handoff', () => {
+    expect(app).toContain('guidedNavigationUndo={guidedNavigationUndo}');
+    expect(app).toContain('undoGuidedNavigation={undoGuidedNavigation}');
+    expect(banner).toContain('allo-guided-resume-card');
+    expect(banner).toContain('allo-guided-focus-more');
+    expect(banner).toContain('askGuideAboutRemaining');
+    expect(banner).toContain('Preserve completed work and protected milestones');
+    expect(banner).toContain('allo-guided-inline-preview');
+    expect(banner).toContain('readinessFixes.map');
+    expect(banner).toContain('requestStartTeaching');
+    expect(banner).toContain('pendingReadinessAction');
+    expect(banner).toContain('readinessRemainingItems');
+    expect(banner).toContain('allo-guided-primary-actions');
+    expect(app).toContain('guidedAdvanceNotice={guidedAdvanceNotice}');
+    expect(app).toContain('undoGuidedAutoAdvance={undoGuidedAutoAdvance}');
+    expect(app).toContain('_guidedCurrentStepRef.current !== currentIndex');
+    expect(banner).toContain('allo-guided-advance-handoff');
+    expect(banner).toContain('allo-guided-journey-context');
+    expect(banner).toContain('allo-guided-resource-shelf');
+  });
   it('locks all generation variants and requires the source/final bookends', () => {
     expect(app).toContain('isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting}');
     expect(app).toContain("new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'directions', 'package-deliver', '_final'])");

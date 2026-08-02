@@ -2,7 +2,39 @@
 'use strict';
 const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'..');
 const waitBuffer=new Int32Array(new SharedArrayBuffer(4));
-function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data);return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
+function writeGeneratedFile(file, data) {
+  const expected = Buffer.from(String(data), 'utf8');
+  let error;
+  for (let attempt = 1; attempt <= 8; attempt++) {
+    try {
+      fs.writeFileSync(file, expected);
+      if (!fs.readFileSync(file).equals(expected)) throw new Error('Generated legacy asset failed byte verification: ' + file);
+      return;
+    } catch (caught) {
+      error = caught;
+      if (caught && caught.code === 'UNKNOWN' && fs.existsSync(file)) {
+        const backup = file + '.codex-backup';
+        const replacement = file + '.codex-replacement';
+        try {
+          fs.copyFileSync(file, backup);
+          fs.writeFileSync(replacement, expected);
+          fs.unlinkSync(file);
+          try { fs.renameSync(replacement, file); }
+          catch (renameError) { fs.copyFileSync(backup, file); throw renameError; }
+          try { fs.unlinkSync(backup); } catch (_) {}
+          if (!fs.readFileSync(file).equals(expected)) throw new Error('Generated legacy asset failed byte verification: ' + file);
+          return;
+        } catch (replacementError) {
+          error = replacementError;
+          try { if (fs.existsSync(replacement)) fs.unlinkSync(replacement); } catch (_) {}
+          try { if (fs.existsSync(backup)) fs.unlinkSync(backup); } catch (_) {}
+        }
+      }
+      if (attempt < 8) Atomics.wait(waitBuffer, 0, 0, 150 * attempt);
+    }
+  }
+  throw error;
+}
 if(!process.argv.includes('--allow-legacy-collapse'))throw Error('Refusing to collapse canonical test-prep packs without --allow-legacy-collapse. Use only inside the guarded full rebuild pipeline.');
 const dirs=[path.join(root,'test_prep'),path.join(root,'desktop/web-app','public','test_prep')];
 const sourceDir=dirs[0];let prepared=0;

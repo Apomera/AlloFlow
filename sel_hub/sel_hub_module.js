@@ -1,4 +1,4 @@
-// sel_hub_module.js — v1.0.0
+﻿// sel_hub_module.js — v1.0.0
 // SEL Hub (Social-Emotional Learning) — plugin-only architecture
 // All tools load as separate CDN-hashed files via window.SelHub.registerTool()
 // Modeled after stem_lab_module.js but designed plugin-first (no inline tools).
@@ -167,6 +167,41 @@
             time: '3-10 min',
             purpose: 'Use a structured support path when emotions feel urgent or unsafe.',
             next: 'Choose the closest support option and involve a trusted adult or crisis service when needed.'
+          },
+          conflicttheater: {
+            time: '8-15 min',
+            purpose: 'Practice a fictional conflict scene and test restorative language without treating the tool as mediation.',
+            next: 'Choose a fictional scene, try one response, and debrief what would need adult support in real life.'
+          },
+          restorativeCircle: {
+            time: '15-30 min',
+            purpose: 'Plan or facilitate a restorative group process with clear norms and adult guidance.',
+            next: 'Set the circle agreements first, then choose a prompt; never require public disclosure.'
+          },
+          strengths: {
+            time: '5-10 min',
+            purpose: 'Reflect on strengths and growth areas without producing a score or diagnosis.',
+            next: 'Choose a strength, connect it to a real example, and name one way to use it.'
+          },
+          viaStrengths: {
+            time: '8-15 min',
+            purpose: 'Use a VIA-inspired self-sort as a reflection activity, not a formal assessment.',
+            next: 'Sort the strengths, notice patterns, and write one example that grounds the result.'
+          },
+          perma: {
+            time: '8-15 min',
+            purpose: 'Take a reflective wellbeing snapshot across PERMA domains plus Health.',
+            next: 'Use the snapshot to choose a conversation or small experiment, not to label yourself.'
+          },
+          advocacy: {
+            time: '5-12 min',
+            purpose: 'Practice everyday language for expressing needs and asking for support.',
+            next: 'Choose a situation, draft a short ask, and decide who could help.'
+          },
+          selfAdvocacy: {
+            time: '10-20 min',
+            purpose: 'Build a concrete school-support plan for IEP, 504, accommodations, or disclosure choices.',
+            next: 'Choose one support need, gather your questions, and identify a trusted adult to involve.'
           }
         },
         registerTool: function(id, config) {
@@ -207,6 +242,7 @@
           var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
           if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
           var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
+          var guidance = SEL_TOOL_GUIDANCE[id] || {};
           var savePolicy = (typeof ctx.getSavePolicy === 'function') ? ctx.getSavePolicy(id) : {
             checkpointLabel: 'Private checkpoint',
             sharePacketLabel: 'Share Packet eligible'
@@ -348,7 +384,9 @@
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', { style: { color: muted, marginRight: 6 } }, 'Saved work'),
                 'Tool checkpoints stay private here unless you choose them for a Share Packet.'
-              )
+              ),
+              guidance.boundary && h('div', { role: 'note', style: { flex: '1 1 100%', padding: '9px 11px', borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : '#f59e0b'), background: isContrast ? '#000000' : (isDark ? '#2e2410' : '#fffbeb'), color: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#78350f'), fontSize: 12, lineHeight: 1.45 } },
+                h('strong', null, 'Use with care: '), guidance.boundary)
             ),
             h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
           );
@@ -570,7 +608,13 @@
       safety: { time: '8-15 min', format: 'Solo', cue: 'Preview first; avoid forced disclosure.', sensitive: true },
       crisiscompanion: { time: '3-10 min', format: 'Solo', cue: 'For urgent support skills, not a class assignment.', sensitive: true },
       griefLoss: { time: '10-20 min', format: 'Solo', cue: 'Preview first; use opt-out alternatives.', sensitive: true },
-      identitySupport: { time: '8-15 min', format: 'Solo', cue: 'Use with privacy and opt-out care.', sensitive: true }
+      identitySupport: { time: '8-15 min', format: 'Solo', cue: 'Use with privacy and opt-out care.', sensitive: true },
+      traumaPsychoed: { time: '8-15 min', format: 'Solo or educator-guided', cue: 'Psychoeducation only; offer opt-out and a trusted-adult path.', sensitive: true },
+      substancePsychoed: { time: '8-15 min', format: 'Solo or health lesson', cue: 'Preview harm-reduction framing and provide adult/medical supports.', sensitive: true },
+      healthyRelationships: { time: '10-20 min', format: 'Solo or health lesson', cue: 'Preview consent and safety language; never require personal disclosure.', sensitive: true },
+      bodyStory: { time: '8-15 min', format: 'Solo', cue: 'Body-respect framing; offer opt-out and avoid weight-focused discussion.', sensitive: true },
+      genogram: { time: '10-20 min', format: 'Solo', cue: 'Family reflection only; sharing should be optional.', sensitive: true },
+      sensoryRegulation: { time: '8-15 min', format: 'Solo or support planning', cue: 'Use identity-affirming language and let students choose what to share.', sensitive: true }
     };
 
     var SEL_TEACHER_LAUNCH_PLANS = [
@@ -1706,7 +1750,7 @@
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
         { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '5-12' },
         { id: 'wheelOfLife', icon: '\uD83D\uDEDE', label: 'Wheel of Life',      desc: 'Spider chart of 8 life domains, each rated 1 to 10. A self-portrait of where life is full and where it is thin right now. From the coaching tradition (Meyer 1960s; Co-Active Coaching). Heuristic; not a validated psychometric.', color: 'amber', recommendedRange: '5-12' },
-        { id: 'perma',       icon: '\uD83C\uDF3B', label: 'PERMA Wellbeing',    desc: 'Self-check on the five (six) domains of human flourishing: Positive emotion, Engagement, Relationships, Meaning, Accomplishment, Health. 24 items, bar-chart result, per-domain reflection. From Seligman; pairs with VIA Strengths.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'perma',       icon: '\uD83C\uDF3B', label: 'PERMA Wellbeing',    desc: 'Self-check on the five PERMA domains plus a Health reflection: Positive emotion, Engagement, Relationships, Meaning, Accomplishment, and Health. 24 items, bar-chart result, per-domain reflection. From Seligman; pairs with VIA Strengths.', color: 'amber', recommendedRange: '5-12' },
 
         // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
         { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
@@ -1750,6 +1794,7 @@
         { id: 'path',        icon: '\uD83E\uDDED', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'valuesCommittedAction', icon: '\uD83E\uDDED', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
         { id: 'careerCompass', icon: '\uD83E\uDDED', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'selfAdvocacy', icon: '\uD83D\uDDE3\uFE0F', label: 'Self-Advocacy Studio', desc: 'Build a concrete school-support plan for IEP or 504 questions, accommodations, disclosure choices, and asking trusted adults for help.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -1758,7 +1803,7 @@
 
         // ── Relationship Skills ──
         { id: '_cat_RelationshipSkills', icon: '\uD83D\uDCAC', label: 'Relationship Skills', desc: '', color: 'slate', category: true },
-        { id: 'conflict',    icon: '\u2696\uFE0F', label: 'Conflict Resolution', desc: 'Practice resolving conflicts with role-play scenarios and I-statements.', color: 'orange', recommendedRange: '2-12' },
+        { id: 'conflict',    icon: '\u2696\uFE0F', label: 'Conflict Resolution', desc: 'Practice a low-stakes or hypothetical conflict with perspective-taking, I-statements, de-escalation, and repair choices. If someone is unsafe, involve an adult instead of negotiating alone.', color: 'orange', recommendedRange: '2-12' },
         { id: 'social',      icon: '\uD83D\uDDE3\uFE0F', label: 'Social Skills Lab',  desc: 'Practice conversation skills, active listening, body language, and cooperation.', color: 'sky', recommendedRange: 'K-8' },
         { id: 'teamwork',    icon: '\uD83E\uDD1C\uD83E\uDD1B', label: 'Teamwork Builder', desc: 'Collaborative challenges and team role exploration.', color: 'lime', recommendedRange: 'K-12' },
         { id: 'dearMan',     icon: '\uD83D\uDDE3\uFE0F', label: 'DEAR MAN',          desc: 'Build a script for a hard ask in seven steps: Describe, Express, Assert, Reinforce, Mindful, Appear confident, Negotiate. From DBT Interpersonal Effectiveness (Linehan); the most-used assertive-communication script in school counseling. Pairs with Self-Advocacy.', color: 'blue', recommendedRange: '5-12' },
@@ -1778,21 +1823,21 @@
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
-        { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
+        { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles with established norms, adult guidance, and care around cultural roots. Not for forced disclosure or active safety risk.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'care-of-self' },
         { id: 'friendship', icon: '\uD83E\uDD1D', label: 'Friendship Builder', desc: 'Explore friendship styles, repair strategies, and healthy relationship patterns.', color: 'amber', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
         { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-direction' },
         { id: 'execfunction', icon: '\uD83E\uDDE0', label: 'Executive Function', desc: 'Strategies for the harder parts of getting things done: starting tasks, holding focus, planning ahead, and tracking time.', color: 'cyan', recommendedRange: '3-12', _cat: 'self-direction' },
-        { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
+        { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Advocacy Practice', desc: 'Rehearse general scripts for expressing needs, asking for support, and speaking up in everyday situations.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
         { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
         { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Roleplay', desc: 'Practice social scenarios and AI peer roleplay with branching dialogue.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
-        { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
+        { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Practice a fictional conflict with two AI characters in an immersive scene. Beta role-play only; do not use it to mediate active harm.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
         { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-regulation' },
       ];
       // Insert each dynamic tool after its category header
@@ -1927,6 +1972,36 @@
         disabilityVoices: { tier: 'practice' }
       };
 
+      // Student-facing wayfinding for overlapping tool families. These short
+      // cues help students choose by purpose rather than framework name.
+      var SEL_TOOL_GUIDANCE = {
+        zones: { mode: 'Start here', note: 'Name what is happening before choosing a strategy.' },
+        emotions: { mode: 'Name it', note: 'Build precise feeling words and notice intensity.' },
+        coping: { mode: 'Calm now', note: 'Try one body or grounding strategy, then notice what changed.' },
+        mindfulness: { mode: 'Calm now', note: 'A low-writing pause for breathing, attention, or body awareness.' },
+        anxietyToolkit: { mode: 'Make a plan', note: 'Sort worry from action and choose one practical next step.' },
+        windowOfTolerance: { mode: 'Understand patterns', note: 'Map arousal signs and supports over time; it is not a diagnosis.' },
+        stressBucket: { mode: 'Make a plan', note: 'Look at pressures and supports together, including pressures outside your control.' },
+        bigFeelings: { mode: 'Understand patterns', note: 'Use anger as information and plan a safer pause or repair.' },
+        conflict: { mode: 'Practice repair', note: 'Best for low-stakes or hypothetical conflict practice.', boundary: 'If there are threats, coercion, bullying, abuse, or an unsafe power difference, pause and involve a trusted adult instead of negotiating alone.' },
+        conflicttheater: { mode: 'Role-play', note: 'Beta immersive practice with fictional characters; do not use it to mediate active harm.', boundary: 'Real threats, abuse, or bullying need adult support and a safety response, not a role-play exercise.' },
+        restorativeCircle: { mode: 'Facilitated group', note: 'Use with established circle norms and an adult facilitator.', boundary: 'Do not use a circle to pressure someone into public disclosure or to handle active safety risk.' },
+        strengths: { mode: 'Reflect', note: 'Open-ended strengths reflection with no score, rank, or diagnosis.' },
+        viaStrengths: { mode: 'Reflect', note: 'A self-sort for reflection, not the official VIA survey or a psychometric result.' },
+        perma: { mode: 'Reflect', note: 'A wellbeing snapshot to prompt conversation, not a mental-health assessment.' },
+        advocacy: { mode: 'Practice speaking up', note: 'General scripts and rehearsal for expressing needs and asking for support.' },
+        selfAdvocacy: { mode: 'Make a support plan', note: 'Use for concrete IEP, 504, accommodation, disclosure, or school-support planning.' },
+        crisiscompanion: { mode: 'Urgent support', note: 'A support guide for you or a friend; it is not a crisis screener or a substitute for an adult.', boundary: 'If anyone may be in immediate danger or may act on thoughts of self-harm, stop here and contact a trusted adult or emergency/crisis support now.' },
+        safety: { mode: 'Get support', note: 'Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.', boundary: 'If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.' },
+        griefLoss: { mode: 'Move gently', note: 'A private companion for grief and loss; skip anything that feels too much.', boundary: 'If grief feels unbearable, you feel unsafe, or someone else is at risk, involve a trusted adult or crisis support.' },
+        traumaPsychoed: { mode: 'Learn, not diagnose', note: 'Psychoeducation about trauma responses; not a screener or treatment.', boundary: 'You do not need to disclose trauma here. Pause and seek a trusted adult or counselor if content brings up something unsafe.' },
+        substancePsychoed: { mode: 'Learn and get support', note: 'Harm-reduction information and reflection; not a screener or permission to use substances.', boundary: 'Do not use this tool for an overdose or urgent medical situation; contact emergency help or a trusted adult.' },
+        healthyRelationships: { mode: 'Check boundaries', note: 'Explore consent and relationship patterns without labeling a person or relationship.', boundary: 'If a relationship includes threats, coercion, or violence, seek adult help; do not confront someone alone.' },
+        identitySupport: { mode: 'Explore identity', note: 'Affirming reflection and community support; sharing is optional.', boundary: 'Keep personal information private and involve a trusted adult if you feel unsafe.' },
+        bodyStory: { mode: 'Practice body respect', note: 'Body appreciation and media literacy; not weight-loss or eating-disorder assessment.', boundary: 'If food, body image, or exercise feels unsafe or consuming, talk with a trusted adult or health professional.' },
+        genogram: { mode: 'Map carefully', note: 'Personal family reflection; not a clinical assessment and sharing is optional.', boundary: 'Skip family details that feel unsafe or private; ask a trusted adult for support.' },
+        sensoryRegulation: { mode: 'Understand needs', note: 'Build a sensory profile and accommodations; not a diagnosis.', boundary: 'Choose supports that feel safe; share accommodations only when you want to.' }
+      };
       function _selShortDesc(tool) {
         var desc = (tool && tool.desc) ? String(tool.desc).trim() : '';
         if (!desc) return '';
@@ -1968,10 +2043,14 @@
 
       function _selToolSearchText(tool) {
         if (!tool) return '';
+        var guidance = SEL_TOOL_GUIDANCE[tool.id] || {};
         return [
           tool.label || '',
           tool.desc || '',
           tool.recommendedRange || '',
+          guidance.mode || '',
+          guidance.note || '',
+          guidance.boundary || '',
           _selSearchAliasMap[tool.id] || ''
         ].join(' ').toLowerCase();
       }
@@ -3115,7 +3194,11 @@
           { key: 'friend', icon: '\uD83E\uDD1D', label: 'Friend conflict', query: 'friend conflict' },
           { key: 'write', icon: '\uD83D\uDCD3', label: 'Write it out', query: 'write' },
           { key: 'decision', icon: '\u2696\uFE0F', label: 'Make a decision', query: 'decision' },
-          { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' }
+          { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' },
+          { key: 'crisis', icon: '\uD83D\uDEE1\uFE0F', label: 'Unsafe or in crisis', query: 'crisis help unsafe' },
+          { key: 'relationshipSafety', icon: '\uD83D\uDC9E', label: 'Relationship safety', query: 'healthy relationship boundaries consent abuse' },
+          { key: 'schoolSupport', icon: '\uD83D\uDCE3', label: 'School support', query: 'school support IEP 504 accommodation advocate' },
+          { key: 'grief', icon: '\uD83D\uDD6F\uFE0F', label: 'Grief or loss', query: 'grief loss' }
         ];
         var _recentWorkItems = (!activePathway && !activeStation) ? _selRecentWorkItems() : [];
         var _shareableSnapshotCount = (!activePathway && !activeStation) ? _selSharePacketItems().length : 0;
@@ -3937,6 +4020,7 @@
               var cardColor = colorMap[tool.color] || '#3b82f6';
               var shortDesc = _selShortDesc(tool);
               var teacherCue = _teacherToolCue(tool.id);
+              var guidance = SEL_TOOL_GUIDANCE[tool.id] || {};
 
               return h('button', {
                 key: tool.id,
@@ -3944,7 +4028,7 @@
                 onClick: function() {
                   openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : '') + (teacherCue ? '. Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''),
+                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : '') + (guidance.mode ? '. Best for: ' + guidance.mode + '. ' + guidance.note : '') + (guidance.boundary ? '. Use with care: ' + guidance.boundary : '') + (teacherCue ? '. Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''),
                 title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
@@ -3977,6 +4061,10 @@
                   })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, shortDesc),
+                guidance.mode && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 } },
+                  h('span', { style: { alignSelf: 'flex-start', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 4, background: cardColor + '22', color: cardColor, textTransform: 'uppercase', letterSpacing: 0.3 } }, guidance.mode),
+                  h('span', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35 } }, guidance.note)
+                ),
                 teacherCue && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
                   h('span', { style: { fontSize: 10, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time + ' | ' + teacherCue.format),
                   teacherCue.sensitive && h('span', {

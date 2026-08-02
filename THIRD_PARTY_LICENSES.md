@@ -171,11 +171,14 @@ uses an open range.
 | [JSZip](https://stuk.github.io/jszip/) | packaging multi-file exports | MIT / GPLv3 (AlloFlow uses MIT) | Copyright (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso |
 | [pako](https://github.com/nodeca/pako) | zlib compression | MIT | Copyright (C) 2014-2017 by Vitaly Puzrin and Andrey Tupitsin |
 
+| [Apache Arrow](https://arrow.apache.org) | columnar data protocol bundled with DuckDB-Wasm | Apache-2.0 | Copyright (c) Apache Software Foundation |
+
 ### Math, science & simulations
 | Library | Used for | License | Copyright |
 |---|---|---|---|
 | [math.js](https://mathjs.org) | math engine | Apache-2.0 | Copyright (C) 2013-present Jos de Jong |
 | [jStat](https://github.com/jstat/jstat) | statistics library | MIT | Copyright (c) 2013 jStat |
+| [DuckDB-Wasm](https://duckdb.org/docs/stable/clients/wasm/overview) | local analytical SQL over Data Studio tables (duckdb-assets/) | MIT | Copyright (c) DuckDB Foundation and contributors |
 | [Acorn](https://github.com/acornjs/acorn) | JavaScript parser (code sandbox) | MIT | Copyright (C) 2012-2022 by various contributors (see AUTHORS) |
 | [CircuitJS1](https://github.com/pfalstad/circuitjs1) | circuit simulator (Circuit Shelf; iframe) | GPLv2 | Copyright (c) Paul Falstad and Iain Sharp |
 | [Mol*](https://molstar.org) | 3D molecular-structure viewer | MIT | Copyright (c) 2017-present Mol* contributors |
@@ -396,6 +399,6 @@ Same as BSD 2-Clause, plus a third clause:
 
 ---
 
-_Last reviewed: 2026-07-28. This NOTICES file mirrors `OSS_CREDITS` in
+_Last reviewed: 2026-08-01. This NOTICES file mirrors `OSS_CREDITS` in
 `view_info_modal_source.jsx`; `dev-tools/check_oss_credits.cjs` fails the build if
 they drift or if a credited library is missing its entry here._

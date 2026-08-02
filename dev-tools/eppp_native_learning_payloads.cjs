@@ -541,8 +541,15 @@ function buildNativeDiagramProjection({
   };
 }
 
+const legacyStringLiteralContext = vm.createContext(Object.create(null), {
+  name: 'eppp-legacy-string-literal-decoder',
+  codeGeneration: { strings: false, wasm: false },
+});
+
 function decodeLegacyStringLiteral(quote, body) {
-  return vm.runInNewContext(`${quote}${body}${quote}`, Object.create(null), { timeout: 100 });
+  const literal = `${quote}${body}${quote}`;
+  return new vm.Script(literal, { filename: 'eppp-legacy-string-literal.js' })
+    .runInContext(legacyStringLiteralContext, { timeout: 1000 });
 }
 
 function legacyGlossaryDeclarations(source) {

@@ -516,133 +516,134 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
   await runFirestoreWriteTasks(writeTasks);
   return resourcesForSessionDoc;
 };
+const SESSION_ASSET_READ_ATTEMPTS = 3;
+const SESSION_ASSET_RETRY_BASE_MS = 120;
+const waitForSessionAssetRetry = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const createSessionAssetHydrationError = (assetId, reason, cause) => {
+  const error = new Error('Live session resource is temporarily unavailable.');
+  error.name = 'SessionAssetHydrationError';
+  error.code = 'session-asset-unavailable';
+  error.assetId = String(assetId || '').slice(0, 160);
+  error.reason = String(reason || 'unavailable').slice(0, 80);
+  if (cause) error.cause = cause;
+  return error;
+};
+const getSessionAssetSnapshotWithRetry = async (appId, assetId, options = {}) => {
+  const attempts = Math.max(1, Math.min(5, Math.round(Number(options.attempts) || SESSION_ASSET_READ_ATTEMPTS)));
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const snap = await getDoc(getSessionAssetRef(appId, assetId));
+      if (snap && snap.exists()) return snap;
+      lastError = createSessionAssetHydrationError(assetId, 'missing');
+    } catch (error) {
+      lastError = createSessionAssetHydrationError(assetId, 'read-failed', error);
+    }
+    if (attempt < attempts) await waitForSessionAssetRetry(SESSION_ASSET_RETRY_BASE_MS * attempt);
+  }
+  throw lastError || createSessionAssetHydrationError(assetId, 'unavailable');
+};
 const loadChunkedAssetString = async (appId, payload) => {
-  if (!payload || !Array.isArray(payload.chunks)) return "";
-  const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getDoc(getSessionAssetRef(appId, chunkId))));
-  return chunkSnaps.map((chunkSnap) => chunkSnap.exists() ? (chunkSnap.data() || {}).data || "" : "").join("");
+  if (!payload || !Array.isArray(payload.chunks) || payload.chunks.length === 0) {
+    throw createSessionAssetHydrationError('', 'invalid-chunk-manifest');
+  }
+  const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getSessionAssetSnapshotWithRetry(appId, chunkId)));
+  return chunkSnaps.map((chunkSnap, index) => {
+    const data = (chunkSnap.data() || {}).data;
+    if (typeof data !== 'string') throw createSessionAssetHydrationError(payload.chunks[index], 'invalid-chunk');
+    return data;
+  }).join('');
 };
 const hydrateResourcesManifest = async (appId, resources) => {
   const source = Array.isArray(resources) ? resources : [];
   const expanded = [];
   for (const item of source) {
-    if (!item || typeof item !== "object" || !item.__alloResourcesManifestRef) {
+    if (!item || typeof item !== 'object' || !item.__alloResourcesManifestRef) {
       expanded.push(item);
       continue;
     }
-    try {
-      const manifestSnap = await getDoc(getSessionAssetRef(appId, item.__alloResourcesManifestRef));
-      if (!manifestSnap.exists()) continue;
-      const payload = manifestSnap.data() || {};
-      let manifestJson = "";
-      if (payload.kind === "sessionResourcesManifest" && typeof payload.data === "string") {
-        manifestJson = payload.data;
-      } else if (payload.kind === "sessionResourcesManifestChunks" && Array.isArray(payload.chunks)) {
-        manifestJson = await loadChunkedAssetString(appId, payload);
-      }
-      if (!manifestJson) continue;
-      const manifestItems = JSON.parse(manifestJson);
-      if (Array.isArray(manifestItems)) expanded.push(...manifestItems);
-    } catch (e) {
-      warnLog("Failed to load session resources manifest", item.__alloResourcesManifestRef);
+    const manifestId = item.__alloResourcesManifestRef;
+    const manifestSnap = await getSessionAssetSnapshotWithRetry(appId, manifestId);
+    const payload = manifestSnap.data() || {};
+    let manifestJson = '';
+    if (payload.kind === 'sessionResourcesManifest' && typeof payload.data === 'string') {
+      manifestJson = payload.data;
+    } else if (payload.kind === 'sessionResourcesManifestChunks' && Array.isArray(payload.chunks)) {
+      manifestJson = await loadChunkedAssetString(appId, payload);
     }
+    if (!manifestJson) throw createSessionAssetHydrationError(manifestId, 'invalid-manifest');
+    let manifestItems;
+    try { manifestItems = JSON.parse(manifestJson); }
+    catch (error) { throw createSessionAssetHydrationError(manifestId, 'invalid-manifest-json', error); }
+    if (!Array.isArray(manifestItems)) throw createSessionAssetHydrationError(manifestId, 'invalid-manifest-shape');
+    expanded.push(...manifestItems);
   }
   return expanded;
 };
 const hydrateSessionAssets = async (appId, resources) => {
   const manifestResources = await hydrateResourcesManifest(appId, resources);
   const hydrated = structuredClone(manifestResources);
-  const resourceFetchPromises = [];
-  hydrated.forEach((item, index) => {
-    if (!item || typeof item !== "object" || !item.__alloResourceRef) return;
-    const assetRef = getSessionAssetRef(appId, item.__alloResourceRef);
-    const promise = getDoc(assetRef).then(async (snap) => {
-      if (!snap.exists()) return;
-      const payload = snap.data() || {};
-      if (payload.kind === "sessionResource" && payload.resource) {
-        hydrated[index] = payload.resource;
-        return;
-      }
-      if (payload.kind === "sessionResourceChunks" && Array.isArray(payload.chunks)) {
-        const json = await loadChunkedAssetString(appId, payload);
-        try {
-          hydrated[index] = JSON.parse(json);
-        } catch (e) {
-          warnLog("Failed to parse session resource chunks", item.__alloResourceRef);
-        }
-      }
-    }).catch(() => warnLog("Failed to load session resource", item.__alloResourceRef));
-    resourceFetchPromises.push(promise);
-  });
-  await Promise.all(resourceFetchPromises);
-
+  await Promise.all(hydrated.map(async (item, index) => {
+    if (!item || typeof item !== 'object' || !item.__alloResourceRef) return;
+    const resourceId = item.__alloResourceRef;
+    const snap = await getSessionAssetSnapshotWithRetry(appId, resourceId);
+    const payload = snap.data() || {};
+    if (payload.kind === 'sessionResource' && payload.resource) {
+      hydrated[index] = payload.resource;
+      return;
+    }
+    if (payload.kind === 'sessionResourceChunks' && Array.isArray(payload.chunks)) {
+      const json = await loadChunkedAssetString(appId, payload);
+      try { hydrated[index] = JSON.parse(json); }
+      catch (error) { throw createSessionAssetHydrationError(resourceId, 'invalid-resource-json', error); }
+      return;
+    }
+    throw createSessionAssetHydrationError(resourceId, 'invalid-resource');
+  }));
   const fetchPromises = [];
   const restoreField = (obj, key) => {
     const val = obj[key];
-    if (val && typeof val === "string" && val.startsWith("ref::")) {
-      const assetId = val.split("ref::")[1];
-      const assetRef = getSessionAssetRef(appId, assetId);
-      const promise = getDoc(assetRef).then(async (snap) => {
-        if (snap.exists()) {
-          const payload = snap.data() || {};
-          if (payload.kind === "sessionImageChunks" && Array.isArray(payload.chunks)) {
-            obj[key] = await loadChunkedAssetString(appId, payload);
-          } else {
-            obj[key] = payload.data;
-          }
-        }
-      }).catch((e) => warnLog("Failed to load asset", assetId));
-      fetchPromises.push(promise);
+    if (val && typeof val === 'string' && val.startsWith('ref::')) {
+      const assetId = val.slice('ref::'.length);
+      fetchPromises.push((async () => {
+        const snap = await getSessionAssetSnapshotWithRetry(appId, assetId);
+        const payload = snap.data() || {};
+        const restored = payload.kind === 'sessionImageChunks' && Array.isArray(payload.chunks)
+          ? await loadChunkedAssetString(appId, payload)
+          : payload.data;
+        if (typeof restored !== 'string') throw createSessionAssetHydrationError(assetId, 'invalid-image');
+        obj[key] = restored;
+      })());
     }
   };
-  // Inverse of processJsonField: fetch the chunked JSON asset and parse it
-  // back into the object field. A missing/broken asset resolves to null so
-  // consumers fall back honestly instead of seeing a "jsonref::" string.
   const restoreJsonField = (obj, key) => {
     const val = obj && obj[key];
-    if (val && typeof val === "string" && val.startsWith("jsonref::")) {
-      const assetId = val.slice("jsonref::".length);
-      const promise = getDoc(getSessionAssetRef(appId, assetId)).then(async (snap) => {
-        if (!snap.exists()) {
-          obj[key] = null;
-          return;
-        }
+    if (val && typeof val === 'string' && val.startsWith('jsonref::')) {
+      const assetId = val.slice('jsonref::'.length);
+      fetchPromises.push((async () => {
+        const snap = await getSessionAssetSnapshotWithRetry(appId, assetId);
         const payload = snap.data() || {};
         const json = Array.isArray(payload.chunks) ? await loadChunkedAssetString(appId, payload) : payload.data;
-        try {
-          obj[key] = JSON.parse(json || "null");
-        } catch (_) {
-          obj[key] = null;
-        }
-      }).catch(() => {
-        obj[key] = null;
-        warnLog("Failed to load asset", assetId);
-      });
-      fetchPromises.push(promise);
+        try { obj[key] = JSON.parse(json || 'null'); }
+        catch (error) { throw createSessionAssetHydrationError(assetId, 'invalid-json-asset', error); }
+      })());
     }
   };
   hydrated.forEach((item) => {
-    if (item.type === "image" && item.data) {
-      restoreField(item.data, "imageUrl");
+    if (item.type === 'image' && item.data) restoreField(item.data, 'imageUrl');
+    if (item.type === 'glossary' && Array.isArray(item.data)) item.data.forEach((term) => restoreField(term, 'image'));
+    if (item.type === 'adventure' && item.data) {
+      restoreField(item.data, 'sceneImage');
+      if (Array.isArray(item.data.inventory)) item.data.inventory.forEach((inv) => restoreField(inv, 'image'));
     }
-    if (item.type === "glossary" && Array.isArray(item.data)) {
-      item.data.forEach((term) => restoreField(term, "image"));
-    }
-    if (item.type === "adventure" && item.data) {
-      restoreField(item.data, "sceneImage");
-      if (Array.isArray(item.data.inventory)) {
-        item.data.inventory.forEach((inv) => restoreField(inv, "image"));
-      }
-    }
-    if (item.type === "persona" && Array.isArray(item.data)) {
-      item.data.forEach((p) => restoreField(p, "avatarUrl"));
-    }
-    if (item.type === "word-sounds" && Array.isArray(item.data)) {
+    if (item.type === 'persona' && Array.isArray(item.data)) item.data.forEach((persona) => restoreField(persona, 'avatarUrl'));
+    if (item.type === 'word-sounds' && Array.isArray(item.data)) {
       item.data.forEach((wordItem) => {
-        if (!wordItem || typeof wordItem !== "object") return;
-        restoreField(wordItem, "image");
-        restoreJsonField(wordItem, "_ttsAssets");
-        restoreJsonField(wordItem, "_decodingAssets");
-        restoreJsonField(wordItem, "_aacAssets");
+        if (!wordItem || typeof wordItem !== 'object') return;
+        restoreField(wordItem, 'image');
+        restoreJsonField(wordItem, '_ttsAssets');
+        restoreJsonField(wordItem, '_decodingAssets');
+        restoreJsonField(wordItem, '_aacAssets');
       });
     }
   });

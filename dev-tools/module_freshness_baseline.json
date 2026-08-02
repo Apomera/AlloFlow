@@ -1,8 +1,7 @@
 {
   "note": "Modules known to be behind their source. A NEW entry fails check_module_freshness; a rebuilt one must be removed. Regenerate deliberately with --update.",
-  "updated": "2026-07-27",
+  "updated": "2026-08-02",
   "stale": [
-    "anchor_charts_module.js",
-    "view_sentence_frames_module.js"
+    "anchor_charts_module.js"
   ]
 }

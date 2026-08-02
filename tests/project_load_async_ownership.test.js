@@ -167,6 +167,86 @@ describe('general project-load asynchronous ownership', () => {
     window.AlloModules = {};
   });
 
+  it('restores Guided progress by stable step ID and carries the planning brief', async () => {
+    const { handleLoadProject } = makeRuntime();
+    const state = {};
+    const guided = {
+      step: vi.fn(),
+      selectedIds: vi.fn(),
+      completedIds: vi.fn(),
+      skippedIds: vi.fn(),
+      createdHistoryIds: vi.fn(),
+      deliveryEvidence: vi.fn(),
+      planBrief: vi.fn(),
+      mode: vi.fn(),
+    };
+    const fixture = {
+      mode: 'teacher',
+      history: [{ id: 'guided-project', type: 'lesson-plan', data: {} }],
+      guidedTourProgress: {
+        version: 1,
+        guidedStep: 1,
+        stepId: 'directions',
+        selectedIds: ['lesson-plan', 'directions', 'export', 'unknown-tool'],
+        completedSteps: ['lesson-plan', 'unknown-tool'],
+        skippedSteps: ['export'],
+        createdHistoryIds: ['artifact-1', 'artifact-1', '', 42],
+        deliveryEvidence: { directionsSaved: true, exportCreated: false, invented: true },
+        planBrief: { goal: 'Build an accessible lesson', reasons: ['learner variability'] },
+      },
+    };
+    const project = makeDeps('guided', async () => true, state);
+    Object.assign(project.deps, {
+      guidedStepIds: ['source-input', 'lesson-plan', 'directions', 'export'],
+      setGuidedStep: guided.step,
+      setGuidedSelectedIds: guided.selectedIds,
+      setGuidedCompletedIds: guided.completedIds,
+      setGuidedSkippedIds: guided.skippedIds,
+      setGuidedCreatedHistoryIds: guided.createdHistoryIds,
+      setGuidedDeliveryEvidence: guided.deliveryEvidence,
+      setGuidedPlanBrief: guided.planBrief,
+      setGuidedMode: guided.mode,
+    });
+
+    handleLoadProject(
+      { target: { files: [{ contents: JSON.stringify(fixture) }] } },
+      project.deps
+    );
+    await vi.waitFor(() => expect(project.lifecycle).toContainEqual({ phase: 'complete', success: true }));
+
+    expect(guided.selectedIds).toHaveBeenCalledWith(['lesson-plan', 'directions', 'export']);
+    expect(guided.step).toHaveBeenCalledWith(2);
+    expect(guided.completedIds).toHaveBeenCalledWith(['lesson-plan']);
+    expect(guided.skippedIds).toHaveBeenCalledWith(['export']);
+    expect(guided.createdHistoryIds).toHaveBeenCalledWith(['artifact-1']);
+    expect(guided.deliveryEvidence).toHaveBeenCalledWith({ directionsSaved: true });
+    expect(guided.planBrief).toHaveBeenCalledWith(fixture.guidedTourProgress.planBrief);
+    expect(guided.mode).toHaveBeenCalledWith(true);
+  });
+
+  it('falls back to the legacy numeric Guided step when no stable ID was saved', async () => {
+    const { handleLoadProject } = makeRuntime();
+    const state = {};
+    const setGuidedStep = vi.fn();
+    const fixture = {
+      mode: 'teacher',
+      history: [{ id: 'legacy-guided', type: 'lesson-plan', data: {} }],
+      guidedTourProgress: { version: 1, guidedStep: 2, selectedIds: null },
+    };
+    const project = makeDeps('legacy-guided', async () => true, state);
+    Object.assign(project.deps, {
+      guidedStepIds: ['source-input', 'lesson-plan', 'directions', 'export'],
+      setGuidedStep,
+    });
+
+    handleLoadProject(
+      { target: { files: [{ contents: JSON.stringify(fixture) }] } },
+      project.deps
+    );
+    await vi.waitFor(() => expect(project.lifecycle).toContainEqual({ phase: 'complete', success: true }));
+    expect(setGuidedStep).toHaveBeenCalledWith(2);
+  });
+
   it('does not finalize a lifecycle that failed to acquire ownership', () => {
     const { createManager } = makeRuntime();
     const onComplete = vi.fn();

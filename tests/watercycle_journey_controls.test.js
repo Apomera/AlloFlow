@@ -64,9 +64,9 @@ describe('Water Cycle journey playback controls', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain("upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyPaused', false);");
+      expect(source).toContain("upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyLastPath', ''); upd('journeyPaused', false);");
       expect(source).toContain("upd('journeyActive', false); upd('journeyState', 'idle'); upd('journeyPaused', false);");
-      expect(source).toContain("updMulti({ journeyState: 'ocean', journeyPaused: false });");
+      expect(source).toContain("updMulti({ journeyState: 'ocean', journeyPaused: false, journeyLastPath: '' });");
     });
   });
 });

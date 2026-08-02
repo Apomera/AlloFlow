@@ -783,6 +783,8 @@
     var progress = storyMapProgress(story);
     var plan = normalizeInquiryPlan(model.inquiryPlan || {});
     var planProgress = inquiryPlanProgress(plan);
+    var teacherReview = normalizeTeacherReview(model.teacherReview || {});
+    var teacherProgress = teacherReviewProgress(teacherReview);
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GIS Studio Investigation Packet</title><style>' +
       'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:30px}header,section,article{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}h1{margin:.15rem 0}h2{color:#0f5f5a}h3{margin-bottom:4px}.kicker{color:#0f766e;font-weight:900;letter-spacing:.1em;font-size:.75rem}.meta{color:#52636f;font-size:.9rem}.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{background:#ecfeff;border-radius:10px;padding:12px}.trail{padding-left:24px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.callout{border-left:5px solid #d97706;background:#fff7ed;padding:14px}.actions button{padding:10px 14px}@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section,article{break-inside:avoid-page}}' +
       '</style></head><body><main><header><p class="kicker">GIS STUDIO INVESTIGATION PACKET</p><h1>' + escapeHTML(model.title || 'Untitled GIS investigation') + '</h1><p>' + escapeHTML(story.subtitle) + '</p><p class="meta">Generated ' + escapeHTML(generated) + '. Teacher handoff format: claim, evidence sequence, quality review, and next questions in one accessible document.</p></header>' +
@@ -791,7 +793,8 @@
       '<section><h2>Quality and uncertainty review</h2><p>' + escapeHTML(review.summary) + ' ' + review.errors + ' required check' + (review.errors === 1 ? '' : 's') + '; ' + review.warnings + ' highlighted limitation' + (review.warnings === 1 ? '' : 's') + '.</p><div class="table-wrap"><table><caption>Quality checks and next actions</caption><thead><tr><th scope="col">Check</th><th scope="col">Status</th><th scope="col">Finding</th><th scope="col">Next action</th></tr></thead><tbody>' + qualityRows + '</tbody></table></div></section>' +
       (rows.length ? '<section><h2>Data-table twin</h2><div class="table-wrap"><table><caption>Mapped records referenced by this packet</caption><thead><tr><th scope="col">Record</th><th scope="col">Geometry</th><th scope="col">Value</th></tr></thead><tbody>' + dataRows + '</tbody></table></div></section>' : '') +
       '<section><h2>Investigation plan</h2><p><strong>Question:</strong> ' + escapeHTML(plan.question) + '</p><p><strong>Working claim:</strong> ' + escapeHTML(plan.claim || 'Not written yet.') + '</p><p><strong>Evidence plan:</strong> ' + escapeHTML(plan.evidencePlan) + '</p><p><strong>Alternative explanation:</strong> ' + escapeHTML(plan.alternative) + '</p><p><strong>Next step:</strong> ' + escapeHTML(plan.nextStep) + '</p><p>' + planProgress.complete + ' of ' + planProgress.total + ' planning checks complete.</p></section>' +
-+      '<section><h2>Sources, method, and handoff questions</h2><dl><dt><strong>Dataset</strong></dt><dd>' + escapeHTML(provenance.datasetTitle || 'Not specified') + '</dd><dt><strong>Source</strong></dt><dd>' + escapeHTML(provenance.source || 'Not specified') + '</dd><dt><strong>Method</strong></dt><dd>' + escapeHTML(provenance.method || 'Not specified') + '</dd><dt><strong>Limitations</strong></dt><dd>' + escapeHTML(provenance.limitations || 'Not specified') + '</dd></dl><p><strong>Next questions:</strong> What additional date, field observation, comparison group, or source would make the working claim more trustworthy?</p><p>This packet organizes evidence; it does not turn spatial association into causation.</p></section></main></body></html>';
+      '<section><h2>Teacher review</h2><p><strong>Reviewer:</strong> ' + escapeHTML(teacherReview.reviewer || 'Not named') + ' &middot; <strong>Status:</strong> ' + escapeHTML(teacherReview.status) + ' &middot; <strong>Rubric score:</strong> ' + teacherProgress.points + '/' + teacherProgress.max + '</p><p>' + escapeHTML(teacherReview.overall || 'No teacher feedback recorded yet.') + '</p><p><strong>Next revision:</strong> ' + escapeHTML(teacherReview.nextRevision || 'No next revision recorded yet.') + '</p></section>' +
+      '<section><h2>Sources, method, and handoff questions</h2><dl><dt><strong>Dataset</strong></dt><dd>' + escapeHTML(provenance.datasetTitle || 'Not specified') + '</dd><dt><strong>Source</strong></dt><dd>' + escapeHTML(provenance.source || 'Not specified') + '</dd><dt><strong>Method</strong></dt><dd>' + escapeHTML(provenance.method || 'Not specified') + '</dd><dt><strong>Limitations</strong></dt><dd>' + escapeHTML(provenance.limitations || 'Not specified') + '</dd></dl><p><strong>Next questions:</strong> What additional date, field observation, comparison group, or source would make the working claim more trustworthy?</p><p>This packet organizes evidence; it does not turn spatial association into causation.</p></section></main></body></html>';
   }
 
   var GIS_INQUIRY_TEMPLATES = {
@@ -822,6 +825,45 @@
     var plan = normalizeInquiryPlan(value), keys = ['question', 'evidence', 'alternative', 'nextStep'];
     var complete = keys.filter(function (key) { return plan.checklist[key]; }).length;
     return { complete: complete, total: keys.length, percent: Math.round(complete / keys.length * 100), ready: complete === keys.length };
+  }
+
+  var GIS_TEACHER_RUBRIC = [
+    { id: 'question', label: 'Question and claim', prompt: 'Is the question specific, spatial, and open to evidence?' },
+    { id: 'evidence', label: 'Evidence sequence', prompt: 'Does the map, table, and Story Map support the claim?' },
+    { id: 'quality', label: 'Data quality', prompt: 'Are provenance, units, missingness, and privacy addressed?' },
+    { id: 'limitations', label: 'Limitations and next steps', prompt: 'Does the investigation name uncertainty and a useful next step?' }
+  ];
+
+  function normalizeTeacherReview(value) {
+    value = value || {};
+    var ratings = value.ratings && typeof value.ratings === 'object' ? value.ratings : {};
+    var normalized = {};
+    GIS_TEACHER_RUBRIC.forEach(function (item) { var rating = Number(ratings[item.id]); normalized[item.id] = Number.isFinite(rating) ? Math.max(0, Math.min(3, Math.round(rating))) : 0; });
+    var statuses = ['draft', 'revise', 'ready'];
+    return {
+      reviewer: String(value.reviewer || '').slice(0, 160),
+      status: statuses.indexOf(value.status) >= 0 ? value.status : 'draft',
+      overall: String(value.overall || '').slice(0, 2000),
+      nextRevision: String(value.nextRevision || '').slice(0, 1500),
+      ratings: normalized,
+      reviewedAt: String(value.reviewedAt || '').slice(0, 80)
+    };
+  }
+
+  function teacherReviewProgress(value) {
+    var review = normalizeTeacherReview(value), total = GIS_TEACHER_RUBRIC.length;
+    var rated = GIS_TEACHER_RUBRIC.filter(function (item) { return review.ratings[item.id] > 0; }).length;
+    var points = GIS_TEACHER_RUBRIC.reduce(function (sum, item) { return sum + review.ratings[item.id]; }, 0);
+    return { rated: rated, total: total, points: points, max: total * 3, percent: Math.round(points / (total * 3) * 100), ready: review.status === 'ready' && rated === total && !!review.overall.trim() };
+  }
+
+  function buildTeacherReviewReport(model) {
+    model = model || {};
+    var review = normalizeTeacherReview(model.review || model), progress = teacherReviewProgress(review);
+    var rubricRows = GIS_TEACHER_RUBRIC.map(function (item) { return '<tr><th scope="row">' + escapeHTML(item.label) + '</th><td>' + review.ratings[item.id] + ' / 3</td><td>' + escapeHTML(item.prompt) + '</td></tr>'; }).join('');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GIS Studio Teacher Review</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:30px}header,section{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}h1{margin:.15rem 0}h2{color:#0f5f5a}.score{font-size:2rem;font-weight:900;color:#0f766e}.callout{border-left:5px solid #d97706;background:#fff7ed;padding:14px}table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.actions button{padding:10px 14px}@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p>GIS STUDIO</p><h1>Teacher Review</h1><p>Reviewer: ' + escapeHTML(review.reviewer || 'Not named') + '. Status: ' + escapeHTML(review.status) + '.</p><p class="score">' + progress.points + ' / ' + progress.max + '</p><p>' + progress.rated + ' of ' + progress.total + ' rubric areas rated.</p></header><div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div><section><h2>Overall feedback</h2><p>' + escapeHTML(review.overall || 'No overall feedback recorded yet.') + '</p><p><strong>Next revision:</strong> ' + escapeHTML(review.nextRevision || 'No next revision recorded yet.') + '</p></section><section><h2>Accessible rubric table</h2><table><caption>Teacher review rubric</caption><thead><tr><th scope="col">Area</th><th scope="col">Rating</th><th scope="col">Prompt</th></tr></thead><tbody>' + rubricRows + '</tbody></table></section><section class="callout"><h2>Review meaning</h2><p>Ratings guide revision and conversation; they are not a grade substitute or a claim that the mapped data are correct. Recheck the source and limitations before making decisions.</p></section></main></body></html>';
   }
 
   function normalizeJoinKey(value) {
@@ -1624,7 +1666,7 @@
     desc: 'Build, plan, compare, compose, sequence, review, and export accessible GIS and remote-sensing investigations.',
     color: 'teal',
     category: 'geo',
-    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'story map', 'evidence storyboard', 'quality review', 'uncertainty review', 'investigation packet', 'teacher handoff', 'inquiry planner', 'research question', 'buffer', 'choropleth', 'coordinates', 'map projections'],
+    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'story map', 'evidence storyboard', 'quality review', 'uncertainty review', 'investigation packet', 'teacher handoff', 'inquiry planner', 'research question', 'teacher review', 'rubric feedback', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
       joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
@@ -1642,6 +1684,7 @@
       buildDataQualityReport: buildDataQualityReport,
       buildInvestigationPacketReport: buildInvestigationPacketReport,
       normalizeInquiryPlan: normalizeInquiryPlan, inquiryPlanProgress: inquiryPlanProgress, inquiryTemplates: GIS_INQUIRY_TEMPLATES,
+      normalizeTeacherReview: normalizeTeacherReview, teacherReviewProgress: teacherReviewProgress, teacherRubric: GIS_TEACHER_RUBRIC, buildTeacherReviewReport: buildTeacherReviewReport,
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
@@ -1662,6 +1705,7 @@
       { id: 'remote_sensing', label: 'Analyze a remote-sensing change scene', icon: '\uD83D\uDEF0\uFE0F', check: function (d) { return !!d.gisRemoteSensingCompleted; }, progress: function (d) { return d.gisRemoteSensingCompleted ? 'Evidence exported' : d.gisRemoteSensingStarted ? 'In progress' : 'Not yet'; } },
       { id: 'story_map', label: 'Sequence a claim-evidence story map', icon: '\uD83D\uDCDA', check: function (d) { return !!d.gisStoryMapExported; }, progress: function (d) { return d.gisStoryMapExported ? 'Exported' : d.gisStoryMapStarted ? 'In progress' : 'Not yet'; } },
       { id: 'quality_review', label: 'Complete a GIS data-quality review', icon: '\u2705', check: function (d) { return !!d.gisQualityReviewed; }, progress: function (d) { return d.gisQualityReviewed ? 'Reviewed' : 'Not yet'; } },
+      { id: 'teacher_review', label: 'Complete a teacher review and revision', icon: '\uD83D\uDCAC', check: function (d) { return !!d.gisTeacherReviewCompleted; }, progress: function (d) { return d.gisTeacherReviewCompleted ? 'Ready' : d.gisTeacherReviewStarted ? 'In progress' : 'Not yet'; } },
       { id: 'inquiry_planner', label: 'Plan a testable spatial investigation', icon: '\uD83E\uDDED', check: function (d) { return !!d.gisInquiryPlanCompleted; }, progress: function (d) { return d.gisInquiryPlanCompleted ? 'Planned' : d.gisInquiryPlanStarted ? 'In progress' : 'Not yet'; } },
       { id: 'investigation_packet', label: 'Build a teacher-ready investigation packet', icon: '\uD83D\uDCC4', check: function (d) { return !!d.gisInvestigationPacketExported; }, progress: function (d) { return d.gisInvestigationPacketExported ? 'Exported' : d.gisInvestigationPacketStarted ? 'In progress' : 'Not yet'; } },
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
@@ -1686,6 +1730,7 @@
         var s10 = React.useState('mercator'), projection = s10[0], setProjection = s10[1];
         var s11 = React.useState(60), latitude = s11[0], setLatitude = s11[1];
         var s12 = React.useState('Loading the interactive map. The table is ready now.'), mapStatus = s12[0], setMapStatus = s12[1];
+        var mapLoadingState = React.useState(true), mapLoading = mapLoadingState[0], setMapLoading = mapLoadingState[1];
         var s13 = React.useState(initial.gisBasemap || 'street'), basemap = s13[0], setBasemap = s13[1];
         var s14 = React.useState(EXAMPLE_GEOJSON), geoText = s14[0], setGeoText = s14[1];
         var s15 = React.useState(null), geoData = s15[0], setGeoData = s15[1];
@@ -1717,6 +1762,8 @@
         var s41 = React.useState(initial.gisCompareLeftBasemap || 'street'), compareLeftBasemap = s41[0], setCompareLeftBasemap = s41[1];
         var s42 = React.useState(initial.gisCompareRightBasemap || 'satellite'), compareRightBasemap = s42[0], setCompareRightBasemap = s42[1];
         var s43 = React.useState('Loading synchronized comparison maps. The comparison tables are ready now.'), compareStatus = s43[0], setCompareStatus = s43[1];
+        var compareMapReadyState = React.useState(false), compareMapReady = compareMapReadyState[0], setCompareMapReady = compareMapReadyState[1];
+        var compareMapUnavailableState = React.useState(false), compareMapUnavailable = compareMapUnavailableState[0], setCompareMapUnavailable = compareMapUnavailableState[1];
         var s44 = React.useState(''), comparisonObservation = s44[0], setComparisonObservation = s44[1];
         var s45 = React.useState(initial.gisActiveMission || GIS_MISSIONS[0].id), activeMissionId = s45[0], setActiveMissionId = s45[1];
         var s46 = React.useState(initial.gisMissionProgress || {}), missionProgress = s46[0], setMissionProgress = s46[1];
@@ -1729,6 +1776,8 @@
         var s53 = React.useState(''), timeError = s53[0], setTimeError = s53[1];
         var s54 = React.useState(''), timeObservation = s54[0], setTimeObservation = s54[1];
         var s55 = React.useState('Loading before-and-after maps. The change table is ready now.'), timeStatus = s55[0], setTimeStatus = s55[1];
+        var timeMapReadyState = React.useState(false), timeMapReady = timeMapReadyState[0], setTimeMapReady = timeMapReadyState[1];
+        var timeMapUnavailableState = React.useState(false), timeMapUnavailable = timeMapUnavailableState[0], setTimeMapUnavailable = timeMapUnavailableState[1];
         var s56 = React.useState('Untitled GIS project'), projectTitle = s56[0], setProjectTitle = s56[1];
         var s57 = React.useState(normalizeProvenance({ source: 'Classroom learning data', limitations: 'Verify illustrative data with authoritative sources before making decisions.' })), provenance = s57[0], setProvenance = s57[1];
         var s58 = React.useState(3), privacyDigits = s58[0], setPrivacyDigits = s58[1];
@@ -1737,7 +1786,7 @@
         // Declared with the other useState calls, never conditionally, so hook order
         // is fixed on every render.
         var s60 = React.useState(false), leafletBlocked = s60[0], setLeafletBlocked = s60[1];
-        var s60 = React.useState(null), recoveryDraft = s60[0], setRecoveryDraft = s60[1];
+        var recoveryState = React.useState(null), recoveryDraft = recoveryState[0], setRecoveryDraft = recoveryState[1];
         var s61 = React.useState(''), projectError = s61[0], setProjectError = s61[1];
         var s62 = React.useState(false), autosaveReady = s62[0], setAutosaveReady = s62[1];
         var s63 = React.useState(normalizeMapComposition(initial.gisComposer || {})), composer = s63[0], setComposer = s63[1];
@@ -1752,6 +1801,8 @@
         var s72 = React.useState('Investigation Packet ready. Combine your evidence before handing it off.'), packetStatus = s72[0], setPacketStatus = s72[1];
         var s73 = React.useState(normalizeInquiryPlan(initial.gisInquiryPlan || {})), inquiryPlan = s73[0], setInquiryPlan = s73[1];
         var s74 = React.useState('Investigation Planner ready. Choose a question type and name the evidence you need.'), plannerStatus = s74[0], setPlannerStatus = s74[1];
+        var s75 = React.useState(normalizeTeacherReview(initial.gisTeacherReview || {})), teacherReview = s75[0], setTeacherReview = s75[1];
+        var s76 = React.useState('Teacher Review ready. Score the rubric and leave a next revision.'), teacherReviewStatus = s76[0], setTeacherReviewStatus = s76[1];
         var mapNode = React.useRef(null);
         var mapViewState = React.useRef(null);
         var compareLeftNode = React.useRef(null);
@@ -1857,6 +1908,7 @@
         var storyProgress = storyMapProgress(storyMap);
         var qualityReview = buildDataQualityReview({ importedRows: importedRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
         var inquiryProgress = inquiryPlanProgress(inquiryPlan);
+        var teacherProgress = teacherReviewProgress(teacherReview);
         var remoteAfterClass = remoteSelectedCell.quality === 'cloud'
           ? { label: remoteSensing.cloudMask ? 'Masked cloud' : 'Cloud-contaminated signal', evidence: remoteSensing.cloudMask ? 'No surface classification is made through cloud cover' : 'Raw reflectance is dominated by cloud, not surface cover' }
           : classifySpectralPixel(remoteSelectedCell.afterBands);
@@ -1867,6 +1919,15 @@
 
         function formatArea(squareKm) {
           return analysisUnit === 'imperial' ? (squareKm * 0.386102).toFixed(2) + ' mi\u00B2' : squareKm.toFixed(2) + ' km\u00B2';
+        }
+
+        function interactiveMapSurface(ref, label, height, pending, unavailable) {
+          var message = unavailable
+            ? 'Interactive map unavailable. The equivalent data table remains available.'
+            : 'Preparing interactive map?';
+          return h('div', { style: { position: 'relative', height: height, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#102c3b' } },
+            h('div', { ref: ref, tabIndex: 0, role: 'application', 'aria-label': label, 'aria-busy': pending ? 'true' : 'false', style: { height: '100%', overflow: 'hidden', background: '#102c3b' } }),
+            pending && h('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18, boxSizing: 'border-box', background: 'linear-gradient(135deg,#102c3b,#173e4d)', color: '#cfe8f3', fontSize: 12, fontWeight: 700, textAlign: 'center' } }, message));
         }
 
         function comparisonLabel(choice) {
@@ -1951,22 +2012,25 @@
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
-        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan]);
+        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan, teacherReview]);
 
-        React.useEffect(function () {
+        React.useLayoutEffect(function () {
           if (tab !== 'map' || !mapNode.current) return undefined;
+          setMapLoading(basemap !== 'none');
           // "No basemap" must make NO request — returning before getLeaflet() is what
           // makes that true, since getLeaflet injects the unpkg <script>/<link> as a
           // side effect the moment it is called. The schematic renders in place of
           // this node, so there is nothing to tear down.
           if (basemap === 'none') {
             setMapStatus('Offline schematic map. Drawn on this device — no map tiles or map libraries were requested.');
+            setMapLoading(false);
             return undefined;
           }
           var active = true, map = null;
           getLeaflet().then(function (L) {
             if (!active || !L || !mapNode.current) {
               if (active) {
+                setMapLoading(false);
                 setLeafletBlocked(!L);
                 setMapStatus('The online base map is unavailable, so the offline schematic is shown instead. The synchronized data table remains available.');
               }
@@ -2092,6 +2156,7 @@
             var instruction = analysisMode === 'distance' ? 'Click map vertices to measure a path.' :
               analysisMode === 'buffer' ? 'Click the map to place the buffer center.' : 'Click the map to find the nearest point.';
             setMapStatus('Interactive base map ready. ' + records.length + ' records mapped. ' + instruction);
+            setMapLoading(false);
           });
           return function () {
             active = false;
@@ -2099,12 +2164,17 @@
           };
         }, [tab, source, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit]);
 
-        React.useEffect(function () {
+        React.useLayoutEffect(function () {
           if (tab !== 'compare' || !compareLeftNode.current || !compareRightNode.current) return undefined;
+          setCompareMapReady(false);
+          setCompareMapUnavailable(false);
           var active = true, leftMap = null, rightMap = null;
           getLeaflet().then(function (L) {
             if (!active || !L || !compareLeftNode.current || !compareRightNode.current) {
-              if (active) setCompareStatus('Comparison basemaps are unavailable. Both accessible comparison tables remain ready.');
+              if (active) {
+                setCompareMapUnavailable(true);
+                setCompareStatus('Comparison basemaps are unavailable. Both accessible comparison tables remain ready.');
+              }
               return;
             }
             compareLeftNode.current.innerHTML = '';
@@ -2173,6 +2243,7 @@
             }
             leftMap.on('moveend', function () { synchronize(leftMap, rightMap); });
             rightMap.on('moveend', function () { synchronize(rightMap, leftMap); });
+            setCompareMapReady(true);
             setCompareStatus('Comparison maps ready and synchronized. Pan or zoom either map to move both.');
           });
           return function () {
@@ -2198,12 +2269,17 @@
           return function () { window.clearInterval(timer); };
         }, [timePlaying, timeYears.join('|')]);
 
-        React.useEffect(function () {
+        React.useLayoutEffect(function () {
           if (tab !== 'timeline' || !timeLeftNode.current || !timeRightNode.current) return undefined;
+          setTimeMapReady(false);
+          setTimeMapUnavailable(false);
           var active = true, leftMap = null, rightMap = null;
           getLeaflet().then(function (L) {
             if (!active || !L || !timeLeftNode.current || !timeRightNode.current) {
-              if (active) setTimeStatus('Timeline basemaps are unavailable. The synchronized change table remains ready.');
+              if (active) {
+                setTimeMapUnavailable(true);
+                setTimeStatus('Timeline basemaps are unavailable. The synchronized change table remains ready.');
+              }
               return;
             }
             timeLeftNode.current.innerHTML = '';
@@ -2249,6 +2325,7 @@
             }
             leftMap.on('moveend', function () { sync(leftMap, rightMap); });
             rightMap.on('moveend', function () { sync(rightMap, leftMap); });
+            setTimeMapReady(true);
             setTimeStatus('Before-and-after maps ready and synchronized. Baseline ' + effectiveBaseline + '; focus year ' + effectiveFocusYear + '.');
           });
           return function () {
@@ -2706,7 +2783,7 @@
               h('div', null,
                 offlineMap
                   ? schematicMap()
-                  : h('div', { ref: mapNode, tabIndex: 0, role: 'application', 'aria-label': 'Interactive GIS map. Use keyboard controls to pan and zoom. An equivalent table follows.', style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                  : interactiveMapSurface(mapNode, 'Interactive GIS map. Use keyboard controls to pan and zoom. An equivalent table follows.', 390, mapLoading, false),
                 h('p', { role: 'status', style: { margin: '7px 2px 0', color: '#a7c7d8', fontSize: 11 } }, mapStatus),
                 geoValues.length > 0 ? h('div', { role: 'list', 'aria-label': classification + ' choropleth legend for ' + geoMetric, style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', color: '#b7d2df', fontSize: 10 } },
                   legendBounds.slice(0, -1).map(function (lower, index) {
@@ -2849,7 +2926,8 @@
               remoteSensing: remoteSensing,
               storyMap: storyMap,
               qualityReview: qualityReviewState,
-              inquiryPlan: inquiryPlan
+              inquiryPlan: inquiryPlan,
+              teacherReview: teacherReview
             }
           }, new Date().toISOString());
         }
@@ -2913,7 +2991,8 @@
           setStoryMap(normalizeStoryMap(work.storyMap || {}));
           setQualityReviewState(normalizeQualityReviewState(work.qualityReview || {}));
           setInquiryPlan(normalizeInquiryPlan(work.inquiryPlan || {}));
-          var allowedTabs = ['project', 'composer', 'remote', 'story', 'quality', 'planner', 'packet', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
+          setTeacherReview(normalizeTeacherReview(work.teacherReview || {}));
+          var allowedTabs = ['project', 'composer', 'remote', 'story', 'quality', 'planner', 'review', 'packet', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
           setTab(allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project');
           setTimePlaying(false);
           setProjectError('');
@@ -3486,7 +3565,7 @@
         }
 
         function investigationPacketModel() {
-          return { title: projectTitle, claim: inquiryPlan.claim || composer.claim || comparisonObservation || timeObservation || (storyMap.slides[0] && storyMap.slides[0].narrative) || '', storyMap: storyMap, inquiryPlan: inquiryPlan, qualityReview: qualityReview, reviewState: qualityReviewState, provenance: provenance, rows: composerRows, generated: new Date().toLocaleString() };
+          return { title: projectTitle, claim: inquiryPlan.claim || composer.claim || comparisonObservation || timeObservation || (storyMap.slides[0] && storyMap.slides[0].narrative) || '', storyMap: storyMap, inquiryPlan: inquiryPlan, teacherReview: teacherReview, qualityReview: qualityReview, reviewState: qualityReviewState, provenance: provenance, rows: composerRows, generated: new Date().toLocaleString() };
         }
 
         function downloadInvestigationPacket() {
@@ -3520,6 +3599,31 @@
           setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true);
           if (inquiryPlanProgress(next).ready) persist('gisInquiryPlanCompleted', true);
           setPlannerStatus(inquiryPlanProgress(next).complete + '/' + inquiryPlanProgress(next).total + ' planning checks complete.');
+        }
+
+        function updateTeacherReviewField(field, value) {
+          var next = normalizeTeacherReview(Object.assign({}, teacherReview, (function () { var item = {}; item[field] = value; return item; })()));
+          setTeacherReview(next); persist('gisTeacherReview', next); persist('gisTeacherReviewStarted', true);
+          if (next.status === 'ready' && teacherReviewProgress(next).ready) persist('gisTeacherReviewCompleted', true);
+          setTeacherReviewStatus('Teacher review updated.');
+        }
+
+        function updateTeacherRating(field, value) {
+          var ratings = Object.assign({}, teacherReview.ratings); ratings[field] = Number(value);
+          var next = normalizeTeacherReview(Object.assign({}, teacherReview, { ratings: ratings }));
+          setTeacherReview(next); persist('gisTeacherReview', next); persist('gisTeacherReviewStarted', true); if (next.status === 'ready' && teacherReviewProgress(next).ready) persist('gisTeacherReviewCompleted', true); setTeacherReviewStatus('Rubric rating updated.');
+        }
+
+        function downloadTeacherReview() {
+          var html = buildTeacherReviewReport({ review: teacherReview });
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = 'gis-studio-teacher-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000); persist('gisTeacherReviewStarted', true); setTeacherReviewStatus('Teacher review downloaded.'); announce('Teacher review downloaded.');
+        }
+
+        function printTeacherReview() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) { setTeacherReviewStatus('The print window was blocked. Download the teacher review instead.'); return; }
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildTeacherReviewReport({ review: teacherReview })); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisTeacherReviewStarted', true); announce('Print-ready teacher review opened.');
         }
 
         function comparisonTable(series, side) {
@@ -3568,11 +3672,11 @@
             h('section', { 'aria-label': 'Synchronized comparison maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 12 } },
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Left: ' + comparisonLabel(leftChoice)),
-                h('div', { ref: compareLeftNode, tabIndex: 0, role: 'application', 'aria-label': 'Left interactive comparison map showing ' + comparisonLabel(leftChoice), style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                interactiveMapSurface(compareLeftNode, 'Left interactive comparison map showing ' + comparisonLabel(leftChoice), 390, !compareMapReady, compareMapUnavailable),
                 h('p', { style: { color: '#a7c7d8', fontSize: 10 } }, 'Legend: low teal → high rose. ' + leftStats.count + ' records.')),
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Right: ' + comparisonLabel(rightChoice)),
-                h('div', { ref: compareRightNode, tabIndex: 0, role: 'application', 'aria-label': 'Right interactive comparison map showing ' + comparisonLabel(rightChoice), style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                interactiveMapSurface(compareRightNode, 'Right interactive comparison map showing ' + comparisonLabel(rightChoice), 390, !compareMapReady, compareMapUnavailable),
                 h('p', { style: { color: '#a7c7d8', fontSize: 10 } }, 'Legend: low teal → high rose. ' + rightStats.count + ' records.'))),
             h('p', { role: 'status', style: { margin: 0, color: '#a7c7d8', fontSize: 11 } }, compareStatus),
             h('section', { 'aria-labelledby': 'gis-evidence-heading', style: panel },
@@ -3993,6 +4097,44 @@
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: function () { setTab('map'); persist('gisTab', 'map'); }, style: primary }, 'Open Map Workspace'), h('button', { type: 'button', onClick: function () { setTab('story'); persist('gisTab', 'story'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Build Story Map'), h('button', { type: 'button', onClick: function () { setTab('packet'); persist('gisTab', 'packet'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Review Investigation Packet'))));
         }
 
+        function teacherReviewView() {
+          var statusColor = teacherReview.status === 'ready' ? '#86efac' : teacherReview.status === 'revise' ? '#fde68a' : '#a7c7d8';
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-review-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'NOTICE • RESPOND • REVISE'),
+              h('h2', { id: 'gis-review-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Teacher Review'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Use the rubric to make the investigation stronger. Feedback is saved with the project and carried into the Investigation Packet.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10, marginTop: 13 } },
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 800 } }, 'Reviewer', h('input', { type: 'text', value: teacherReview.reviewer, maxLength: 160, onChange: function (event) { updateTeacherReviewField('reviewer', event.target.value); }, style: control })),
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 800 } }, 'Review status', h('select', { value: teacherReview.status, onChange: function (event) { updateTeacherReviewField('status', event.target.value); }, style: control }, h('option', { value: 'draft' }, 'Draft'), h('option', { value: 'revise' }, 'Revise and resubmit'), h('option', { value: 'ready' }, 'Ready to share')))),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 12 } }, h('strong', { style: { color: statusColor, fontSize: 26 } }, teacherProgress.points + '/' + teacherProgress.max), h('span', { style: { color: statusColor, fontSize: 11, fontWeight: 800 } }, teacherProgress.rated + '/' + teacherProgress.total + ' rubric areas rated' + (teacherProgress.ready ? ' • review complete' : ''))),
+              h('p', { role: 'status', style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 11 } }, teacherReviewStatus)),
+            h('section', { 'aria-labelledby': 'gis-review-rubric-heading', style: panel },
+              h('h2', { id: 'gis-review-rubric-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Accessible review rubric'),
+              h('div', { style: { display: 'grid', gap: 9 } }, GIS_TEACHER_RUBRIC.map(function (item) {
+                return h('div', { key: item.id, style: { display: 'grid', gridTemplateColumns: 'minmax(170px,1fr) minmax(120px,160px)', gap: 10, alignItems: 'center', padding: 10, borderRadius: 9, background: '#071827' } },
+                  h('div', null,
+                    h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 12 } }, item.label),
+                    h('span', { style: { color: '#a7c7d8', fontSize: 10 } }, item.prompt)
+                  ),
+                  h('label', { style: { display: 'grid', gap: 4, fontSize: 10, fontWeight: 800 } }, 'Rating (0-3)',
+                    h('select', { value: teacherReview.ratings[item.id], onChange: function (event) { updateTeacherRating(item.id, event.target.value); }, style: control },
+                      h('option', { value: 0 }, '0 - not yet reviewed'),
+                      h('option', { value: 1 }, '1 - emerging'),
+                      h('option', { value: 2 }, '2 - solid'),
+                      h('option', { value: 3 }, '3 - strong')
+                    )
+                  )
+                );
+              })),
+              h('label', { style: { display: 'grid', gap: 5, marginTop: 12, fontSize: 11, fontWeight: 800 } }, 'Overall feedback', h('textarea', { value: teacherReview.overall, maxLength: 2000, rows: 5, onChange: function (event) { updateTeacherReviewField('overall', event.target.value); }, placeholder: 'Name the strongest reasoning move and one thing to revise.', style: Object.assign({}, control, { resize: 'vertical' }) })),
+              h('label', { style: { display: 'grid', gap: 5, marginTop: 9, fontSize: 11, fontWeight: 800 } }, 'Next revision', h('textarea', { value: teacherReview.nextRevision, maxLength: 1500, rows: 3, onChange: function (event) { updateTeacherReviewField('nextRevision', event.target.value); }, placeholder: 'What should the learner check, add, or reconsider next?', style: Object.assign({}, control, { resize: 'vertical' }) }))),
+            h('section', { 'aria-labelledby': 'gis-review-export-heading', style: panel },
+              h('h2', { id: 'gis-review-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Export and continue'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, 'The standalone review is useful for a conference; the Investigation Packet carries the same review beside the evidence and quality safeguards.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, h('button', { type: 'button', onClick: downloadTeacherReview, style: primary }, 'Download teacher review'), h('button', { type: 'button', onClick: printTeacherReview, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'), h('button', { type: 'button', onClick: function () { setTab('packet'); persist('gisTab', 'packet'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Open Investigation Packet'))));
+        }
+
         function projectView() {
           var inventory = [
             importedRows.length + ' imported point records',
@@ -4124,10 +4266,10 @@
             h('section', { 'aria-label': 'Synchronized before and after maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 12 } },
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Baseline: ' + effectiveBaseline),
-                h('div', { ref: timeLeftNode, tabIndex: 0, role: 'application', 'aria-label': 'Baseline interactive map for ' + effectiveBaseline, style: { height: 370, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } })),
+                interactiveMapSurface(timeLeftNode, 'Baseline interactive map for ' + effectiveBaseline, 370, !timeMapReady, timeMapUnavailable)),
               h('div', null,
                 h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Focus year: ' + effectiveFocusYear),
-                h('div', { ref: timeRightNode, tabIndex: 0, role: 'application', 'aria-label': 'Focus-year interactive map for ' + effectiveFocusYear, style: { height: 370, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }))),
+                interactiveMapSurface(timeRightNode, 'Focus-year interactive map for ' + effectiveFocusYear, 370, !timeMapReady, timeMapUnavailable))),
             h('p', { role: 'status', style: { margin: 0, color: '#a7c7d8', fontSize: 11 } }, timeStatus),
             h('section', { 'aria-labelledby': 'gis-change-summary-heading', style: panel },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
@@ -4249,7 +4391,7 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['story', 'Story Map'], ['quality', 'Quality Review'], ['planner', 'Investigation Planner'], ['packet', 'Investigation Packet'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
+        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['story', 'Story Map'], ['quality', 'Quality Review'], ['planner', 'Investigation Planner'], ['review', 'Teacher Review'], ['packet', 'Investigation Packet'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
         return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
@@ -4262,7 +4404,7 @@
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
-          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'story' ? storyMapView() : tab === 'quality' ? qualityReviewView() : tab === 'planner' ? investigationPlannerView() : tab === 'packet' ? investigationPacketView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
+          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'story' ? storyMapView() : tab === 'quality' ? qualityReviewView() : tab === 'planner' ? investigationPlannerView() : tab === 'review' ? teacherReviewView() : tab === 'packet' ? investigationPacketView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },
             'Learning data: density values are rounded approximations; the access index, practice polygons, coastal guide, and remote-sensing raster are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }

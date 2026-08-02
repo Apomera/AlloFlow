@@ -1,0 +1,67 @@
+{
+  "reviewVersion": "alloflow-learning-commons-pilot-review/v1",
+  "ok": true,
+  "snapshot": {
+    "provider": "Learning Commons Knowledge Graph",
+    "datasetVersion": "v1.11.0",
+    "snapshotId": "learning-commons-v1-11-0-massachusetts-science-5-structural-current-5da6fb36ffb0933e",
+    "contentDigest": "5da6fb36ffb0933e9bc59050f16dfea59d47d7d7f529fe876b2104ca9b365165",
+    "sourceIntegrity": {
+      "nodes": {
+        "bytes": 292652341,
+        "sha256": "FFC142F72450C9692A9E547207CBA3E0CD4012EB00C1D1BE6AACED165C4139C5",
+        "etag": "\"0a46dded494853cd90e81295c96c3abb-35\"",
+        "lastModified": "2026-07-09T21:56:05Z",
+        "url": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/nodes.jsonl"
+      },
+      "relationships": {
+        "bytes": 520406049,
+        "sha256": "74389D5E438E7A7F23E1128539827533AE08ACACC73C9F3E4C81CC07A8916B21",
+        "etag": "\"0017e742cae8adcc87bf090aeb710cc1-63\"",
+        "lastModified": "2026-07-09T21:56:05Z",
+        "url": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/relationships.jsonl"
+      }
+    }
+  },
+  "counts": {
+    "records": 44,
+    "resolvableStandards": 25,
+    "structuralNodes": 19,
+    "frameworkNodes": 1,
+    "relationships": 43,
+    "relationshipTypes": [
+      "hasChild"
+    ]
+  },
+  "coverage": {
+    "missingFramework": 0,
+    "missingFrameworkId": 0,
+    "missingSource": 0,
+    "structuralExposed": 0,
+    "richestNeighborhood": {
+      "sourceStandardId": "c41777a4-55f6-47cc-ad65-589ea2f0e103",
+      "nodes": 10,
+      "relationships": 9,
+      "truncated": false
+    }
+  },
+  "checks": {
+    "validation": true,
+    "hasResolvableStandards": true,
+    "hasStructuralNodes": true,
+    "structuralNodesExcludedFromResolution": true,
+    "resolvableFrameworkCoverage": true,
+    "resolvableFrameworkIdCoverage": true,
+    "resolvableSourceCoverage": true,
+    "sourceIntegrityPresent": true,
+    "attributionPresent": true,
+    "boundedNeighborhoodEdges": true,
+    "neighborhoodEndpointsValid": true,
+    "contextProvenanceMatches": true
+  },
+  "validation": {
+    "ok": true,
+    "warnings": []
+  },
+  "failures": []
+}

@@ -17,6 +17,8 @@ losslessly.
 - A local audit for blanks, duplicates, and surrounding whitespace.
 - Deterministic local filtering, grouping, counts, numeric summaries, bar
   comparisons, and date trends with an equivalent narrative and semantic table.
+- A local column profile that reports inferred types, completeness, distinct counts,
+  and typed ranges before an educator chooses a grouping or measure.
 - Explicit save/reopen for the complete bounded local workspace in one
   validated `.allosheet.json` file.
 - An AI flow that defaults to structure-only context.
@@ -138,7 +140,11 @@ descriptive and never claims causation.
 The analysis code is deterministic: it does not call AI, mutate cells, write
 back, or contact a source tool. Recipes and derived results are not stored in a
 workspace file; the educator reruns them against the reopened source tables so
-saved charts cannot silently become stale.
+saved charts cannot silently become stale. After an analysis runs, **Download
+result CSV** saves only the grouped labels and calculated metrics currently shown;
+it does not include the source table, change the workbook save state, or enter a
+workspace file. Formula-like labels are hardened for spreadsheet applications,
+and the downloaded summary should still be stored securely.
 
 ### Portable bounded workspace files
 
@@ -199,6 +205,65 @@ narrative, safety and SEL information, audio, transcripts, automatic tier
 decisions, recommendations, and generated narrative. It is a one-way reviewed
 copy and cannot change a learner, goal, intervention, or tier.
 
+Dynamic Assessment supports a reviewed **Open in AlloSheet** copy from a
+completed session summary. The educator can choose a date range, summary or
+detailed mode, and the session, probe, and progress tables independently. The
+default is summary mode with coded learner/session/item IDs and no raw response
+or narrative fields. The optional `da-probe-results` table is available only
+in detailed mode; `da-progress-summary` suppresses derived rates and
+sensitivity until at least five sessions exist. Student identifier inclusion
+is an explicit opt-in. The handoff is one-way with AI and writeback disabled.
+
+Live Polling supports a reviewed **Open in AlloSheet** copy of the current
+post-session aggregate snapshot. The educator can select the session, item,
+coded answer distribution, and 15-minute time-summary tables. Totals and
+nonzero answer buckets below five are suppressed. Prompts, codenames, peer
+identifiers, signaling, routing, feedback, Q&A, peer-showcase content, and
+free-text responses are excluded. Teacher-authored choice labels are off by
+default and require an explicit opt-in. The handoff is one-way with AI and
+writeback disabled.
+
+### 6. Reading and Math Fluency
+
+The reviewed Reading and Math Fluency adapter is implemented. From the educator’s
+Fluency panel, an accessible nested review lets the educator choose a 30-day,
+90-day, or all-record window and select session measures, trend summaries, and
+error categories. Reading rows carry WCPM, accuracy, duration, running-record
+error counts, reading level, and explicitly documented benchmark context. Math
+rows carry DCPM, accuracy, duration, operation, difficulty, and bounded attempt
+counts.
+
+Session codes are fresh transfer-local labels. Passage text and titles, source
+and reference text, audio, transcripts, feedback, word-level classifications,
+inserted or “student said” text, problem text, student answers, attempt logs,
+and reviewer identity are excluded. Trend and error aggregates are suppressed
+per measure family until three sessions exist; reading benchmark-ready status
+still requires three calibrated, distinct parallel forms from one passage set.
+The handoff is one-way with `aiEnabled: false`, `writeBack: false`,
+and `transferEnablesAI: false`, and Canvas/Desktop use the same popup bridge.
+
+### 7. Accessibility Lab
+
+The reviewed Accessibility Lab adapter is implemented. From the artifact list,
+an accessible nested review lets the educator choose a 30-day, 90-day, or
+all-review window and select artifact review, WCAG criterion, and monthly trend
+tables. Review rows carry transfer-local artifact codes, artifact type, audit
+status, remediation status, manual check counts, automated violation counts,
+finding counts, and review-history counts.
+
+Criterion rows use bounded rule and WCAG codes with impact, evidence source,
+remediation status, and counts. Artifact titles and content, student-entered
+text, DOM/HTML, selectors, code excerpts, descriptions, notes, fingerprints,
+bindings, replay keys, and stable history IDs are excluded. The handoff is
+one-way with `aiEnabled: false`, `writeBack: false`, and
+`transferEnablesAI: false`, and Canvas/Desktop use the same popup bridge.
+
+### 8. Research Hub / Evidence Graph
+
+Research Hub now supports an educator-mode Review in AlloSheet handoff. The source review offers 30-day, 90-day, and all-record windows plus four bounded datasets: inquiry overview, claim relationships, evidence metadata, and provenance health.
+
+The copy uses fresh transfer-local C001-style and E001-style codes and excludes claim/evidence text, citations, files, credentials, notes, stable record IDs, and unapproved learner interpretation. It reports counts, relationship shape, method tags, audit/integration status, reproducibility status, and provenance completeness. The envelope is one-way with AI disabled, writeback disabled, and transfer-time AI disabled; Canvas and Desktop use the same authenticated popup bridge.
+
 Submission Inbox supports a reviewed **Open in AlloSheet** copy of records the
 educator explicitly saved to its gradebook. The educator may select assignments
 and either the last 30 days, the last 90 days (the default), or all available
@@ -208,13 +273,15 @@ document-title group; the educator may instead include all saved
 records. The fixed tables are `saved_submission_summary` and
 `saved_score_summary`.
 
-Submission Inbox does not store stable learner or assignment IDs for these
-records. `unique_class_nickname_count` therefore counts unique saved class
-nicknames, not verified unique learners. Reusing a nickname may merge different
-people, changing a nickname may split one person, and repeated documents with
-the same title in one class may merge into one assignment group. The source
-review visibly discloses its 2,000-source-record and 200-grade-results-per-record
-limits and reports truncation.
+Submission Inbox v2 records store a stable class ID, an opaque assignment ID,
+and a roster learner ID only after an exact roster match or explicit educator
+confirmation of a normalized match. Class identity survives encryption-key
+rotation. Legacy and unresolved records remain readable and use the prior
+class-name/title/nickname fallback. The source review and provenance report
+stable-versus-fallback coverage. `unique_class_nickname_count` is retained as
+a compatibility field but is labeled as unique saved learner groups. The
+source review also discloses its 2,000-source-record and
+200-grade-results-per-record limits and reports truncation.
 
 Source-only assignment/class labels distinguish same-titled assignments in the
 review. Each selected assignment/class group becomes a fresh transfer-local
@@ -224,12 +291,16 @@ storage keys do not cross the boundary. Score-derived statistics and
 distributions are suppressed for samples below five and whenever a nonzero
 score band or status would expose a group smaller than five.
 
-A saved gradebook record may contain AI-assisted scoring or feedback. Its
-presence is not an attestation that a person reviewed the result. Submission
-Inbox does not currently provide reliable due dates, structured rubric
-criteria, or human-review status, so the handoff makes no missing, late,
-criterion-level, or human-verified claims. The copy is one-way and neither
-enables AI nor writes anything back to Submission Inbox.
+A saved gradebook record may contain AI-assisted scoring or feedback. Saving
+alone is not an attestation. The educator can explicitly mark the current grade
+revision human reviewed; regrading invalidates that attestation. AlloSheet v2
+reports privacy-suppressed reviewed-versus-pending counts and never receives
+the underlying stable IDs. Exported assignments may also carry a validated ISO
+due instant and IANA timezone. AlloSheet reports on-time or late submission
+counts only when a submission timestamp and due instant are both present, and
+suppresses any nonzero late/on-time/unknown bucket below five. It never infers
+missing work because the handoff has no roster denominator. The copy is one-way
+and neither enables AI nor writes anything back to Submission Inbox.
 
 AlloSheet performs its own validation and shows an isolated second review with
 the stable source ID and version, privacy flags, provenance, exact field names
@@ -254,8 +325,7 @@ consent workflow. Any future writeback integration must use a new, narrowly
 allowlisted and educator-reviewed contract; it must not silently extend this
 handoff.
 
-The ranked follow-up plan for Dynamic Assessment, Live Polling, Fluency,
-Accessibility Lab, and Research Hub
+The ranked follow-up plan for Fluency, Accessibility Lab, and Research Hub (now implemented)
 is in
 [`docs/allosheet_integration_roadmap.md`](../docs/allosheet_integration_roadmap.md).
 

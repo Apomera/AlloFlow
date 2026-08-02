@@ -689,4 +689,47 @@ describe('mirrored data contract (reading_library/)', () => {
     });
     expect(mismatches).toEqual([]);
   });
+  describe('reading-set contract', () => {
+    it('stores ordered catalog metadata without page content', () => {
+      const payload = RL._buildReadingSet('Week 1 · Weather', [
+        {
+          slug: 'nasa-weather', title: 'Weather Watch', sourceId: 'nasa', language: 'English', level: 5,
+          contentType: 'article', license: 'Public domain', source: { url: 'https://nasa.gov/weather' }, pages: [{ text: 'do not copy' }],
+        },
+        {
+          slug: 'openstax-climate', title: 'Climate', sourceId: 'openstax', language: 'English', level: 6,
+          contentType: 'chapter', license: 'CC BY 4.0', source: { url: 'https://openstax.org/books/climate/pages/1' },
+        },
+      ]);
+      expect(payload.schema).toBe('allo-reading-set@1');
+      expect(payload.title).toBe('Week 1 · Weather');
+      expect(payload.books.map((book) => [book.order, book.slug])).toEqual([
+        [1, 'nasa-weather'], [2, 'openstax-climate'],
+      ]);
+      expect(payload.books[0]).toMatchObject({ sourceId: 'nasa', sourceName: 'NASA', sourceUrl: 'https://nasa.gov/weather' });
+      expect(payload.books[1]).toMatchObject({ sourceId: 'openstax', license: 'CC BY 4.0' });
+      expect(payload.books[0]).not.toHaveProperty('pages');
+      expect(payload).toHaveProperty('rightsNote');
+    });
+
+    it('makes the set key stable for the same title and order', () => {
+      const a = RL._buildReadingSet('My set', [{ slug: 'a', title: 'A' }, { slug: 'b', title: 'B' }]);
+      const b = RL._buildReadingSet('My set', [{ slug: 'a', title: 'A' }, { slug: 'b', title: 'B' }]);
+      const reordered = RL._buildReadingSet('My set', [{ slug: 'b', title: 'B' }, { slug: 'a', title: 'A' }]);
+      expect(a.setKey).toBe(b.setKey);
+      expect(reordered.setKey).not.toBe(a.setKey);
+    });
+
+    it('normalizes imported metadata and rejects unsafe source URLs', () => {
+      const normalized = RL._normalizeReadingSet({
+        schema: 'allo-reading-set@1', title: 'Imported', books: [{
+          slug: 'book-a', title: 'A', sourceUrl: 'https://example.org/a', licenseUrl: 'javascript:alert(1)',
+        }],
+      });
+      expect(normalized).toMatchObject({ schema: 'allo-reading-set@1', title: 'Imported' });
+      expect(normalized.books[0].sourceUrl).toBe('https://example.org/a');
+      expect(normalized.books[0].licenseUrl).toBeNull();
+      expect(RL._normalizeReadingSet({ schema: 'wrong', books: [] })).toBeNull();
+    });
+  });
 });

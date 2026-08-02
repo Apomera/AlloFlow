@@ -5,6 +5,37 @@ var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
+function alloTeacherStableId(prefix) {
+  var value = '';
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') value = crypto.randomUUID();
+  } catch (e) {}
+  if (!value) value = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 14);
+  return prefix + '-' + value;
+}
+
+function alloEnsureTeacherRosterIdentity(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  var students = value.students && typeof value.students === 'object' && !Array.isArray(value.students)
+    ? value.students : {};
+  var legacyClassId = value.submissionKey && typeof value.submissionKey.classId === 'string'
+    ? value.submissionKey.classId.trim() : '';
+  var classId = typeof value.classId === 'string' && value.classId.trim()
+    ? value.classId.trim() : (legacyClassId || alloTeacherStableId('CLS'));
+  var currentIds = value.learnerIds && typeof value.learnerIds === 'object' && !Array.isArray(value.learnerIds)
+    ? value.learnerIds : {};
+  var learnerIds = {};
+  var changed = classId !== value.classId;
+  Object.keys(students).forEach(function(codename) {
+    var existing = typeof currentIds[codename] === 'string' ? currentIds[codename].trim() : '';
+    learnerIds[codename] = existing || alloTeacherStableId('LRN');
+    if (!existing) changed = true;
+  });
+  if (Object.keys(currentIds).length !== Object.keys(learnerIds).length) changed = true;
+  if (!changed) return value;
+  return Object.assign({}, value, { classId: classId, learnerIds: learnerIds });
+}
+
 const rosterSessionCsvCell = (value) => {
   const raw = value === null || value === undefined ? '' : String(value);
   const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
@@ -91,7 +122,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       ? dialog?.querySelector('[data-safe-default="true"]')
       : dialog?.querySelector('button');
     focusTarget?.focus();
-  }, [submissionDialog]);  if (!isOpen) return null;
+  }, [submissionDialog]);
+  useEffect(() => {
+    if (!isOpen || typeof setRosterKey !== 'function') return;
+    setRosterKey(previous => alloEnsureTeacherRosterIdentity(previous));
+  }, [isOpen, setRosterKey]);
+  if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
@@ -106,10 +142,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         const data = JSON.parse(ev.target.result);
         if (data && typeof data === 'object' && !Array.isArray(data) && (data.groups || data.students)) {
           const asRecord = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-          setRosterKey({
+          setRosterKey(alloEnsureTeacherRosterIdentity({
             className: typeof data.className === 'string' ? data.className : '',
+            classId: typeof data.classId === 'string' ? data.classId : '',
             groups: asRecord(data.groups),
             students: asRecord(data.students),
+            learnerIds: asRecord(data.learnerIds),
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
             sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
@@ -120,7 +158,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             // Class Goals travel too (re-validated by normalizeClassGoals on read).
             ...(Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {}),
             ...(Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {})
-          });
+          }));
           if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
         }
       } catch(err) { console.error('Invalid roster JSON:', err); }
@@ -131,7 +169,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleExport = () => {
     const exportData = {
             ...(rosterKey || { groups: {}, students: {} }),
-            exportVersion: 2,
+            exportVersion: 3,
             exportDate: new Date().toISOString()
         };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -171,14 +209,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     setSubmissionDialog(null);
     try {
       const { publicJwk, privateJwk } = await SC.generateClassKeypair();
-      const classId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('class-' + Date.now());
+      const normalizedRoster = alloEnsureTeacherRosterIdentity(rosterKey || { groups: {}, students: {} });
+      const classId = normalizedRoster.classId;
+      const keyId = alloTeacherStableId('KEY');
       const createdAt = new Date().toISOString();
       // Download the private key file
       const keyFile = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         kind: 'alloflow-class-key',
         className: rosterKey?.className || '',
         classId: classId,
+        keyId: keyId,
         createdAt: createdAt,
         privateJwk: privateJwk
       };
@@ -193,11 +234,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
       // Store the public key in roster for future exports
       setRosterKey(prev => ({
-        ...(prev || { groups: {}, students: {} }),
+        ...alloEnsureTeacherRosterIdentity(prev || { groups: {}, students: {} }),
         className: prev?.className || '',
         groups: prev?.groups || {},
         students: prev?.students || {},
-        submissionKey: { publicJwk: publicJwk, classId: classId, createdAt: createdAt }
+        classId: classId,
+        submissionKey: { publicJwk: publicJwk, classId: classId, keyId: keyId, createdAt: createdAt }
       }));
       // Keep the recovery warning visible until the teacher acknowledges it.
       setSubmissionDialog({ kind: 'complete' });
@@ -250,10 +292,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     }
     const displayName = useCustomName && newStudentName.trim() ? newStudentName.trim() : '';
     setRosterKey(prev => ({
-      ...(prev || { groups: {} }),
+      ...alloEnsureTeacherRosterIdentity(prev || { groups: {} }),
       className: prev?.className || '',
       groups: prev?.groups || {},
       students: { ...(prev?.students || {}), [codename]: newStudentGroup || '' },
+      learnerIds: { ...(prev?.learnerIds || {}), [codename]: alloTeacherStableId('LRN') },
       displayNames: { ...(prev?.displayNames || {}), ...(displayName ? { [codename]: displayName } : {}) }
     }));
     setNewStudentName('');
@@ -262,6 +305,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleRemoveStudent = (name) => {
     setRosterKey(prev => {
       const ns = { ...prev.students }; delete ns[name];
+      const ni = { ...(prev.learnerIds || {}) }; delete ni[name];
       const nd = { ...(prev.displayNames || {}) }; delete nd[name];
       const np = { ...(prev.progressHistory || {}) }; delete np[name];
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
@@ -276,7 +320,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         } : session.insightBrief;
         return { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
       });
-      return { ...prev, students: ns, displayNames: nd, progressHistory: np, sessionHistory: nh };
+      return { ...prev, students: ns, learnerIds: ni, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
   };
   const handleMoveStudent = (name, toGroup) => {

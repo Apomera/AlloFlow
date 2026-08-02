@@ -41,9 +41,14 @@ service cloud.firestore {
           // (2026-07-12: structured numbers + pattern-checked ids only — see
           // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications),
           // and lastSeen (2026-07-16: ms-timestamp presence heartbeat, ~60s).
+          // hostPresence is host-owned lease metadata; students cannot alter top-level host fields.
           return resource.data.get('roster', {})
             .diff(request.resource.data.get('roster', {}))
-            .affectedKeys().hasOnly([request.auth.uid]);
+            .affectedKeys().hasOnly([request.auth.uid])
+            && (!('viewingResourceStatus' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', null) == null
+              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', '')
+                in ['loading', 'ready', 'failed']);
         }
         function quizNestedOnlySelf(field) {
           return !(field in resource.data.get('quizState', {})
@@ -115,9 +120,16 @@ service cloud.firestore {
           return resource.data.get('democracy', {})
               .diff(request.resource.data.get('democracy', {}))
               .affectedKeys().hasOnly(['votes'])
+            && resource.data.get('democracy', {}).get('isActive', false) == true
+            && resource.data.get('democracy', {}).get('phase', '') == 'voting'
             && resource.data.get('democracy', {}).get('votes', {})
               .diff(request.resource.data.get('democracy', {}).get('votes', {}))
-              .affectedKeys().hasOnly([request.auth.uid]);
+              .affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '') is string
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '').size() >= 1
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '').size() <= 500
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '')
+              in resource.data.get('democracy', {}).get('activeOptions', []);
         }
         function escapeRoomTeamPlay() {
           // Collaborative escape room: team progress is SHARED game state by

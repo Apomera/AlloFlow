@@ -11,6 +11,8 @@
   var popup = null;
   var busy = false;
   var bridgeToken = '';
+  var bridgeTokenIssuedAt = 0;
+  var bridgeTokenExpiresAt = 0;
   var launcher = null;
   var bridgeReady = false;
   var popupMonitor = null;
@@ -78,6 +80,33 @@
     } catch (_) {
       return '';
     }
+  }
+
+  var BRIDGE_TOKEN_TTL_MS = 15 * 60 * 1000;
+
+  function clearBridgeToken() {
+    bridgeToken = '';
+    bridgeTokenIssuedAt = 0;
+    bridgeTokenExpiresAt = 0;
+  }
+
+  function issueBridgeToken() {
+    var next = createBridgeToken();
+    var issuedAt = Date.now();
+    if (!next || !Number.isFinite(issuedAt) || issuedAt <= 0) {
+      clearBridgeToken();
+      return '';
+    }
+    bridgeToken = next;
+    bridgeTokenIssuedAt = issuedAt;
+    bridgeTokenExpiresAt = issuedAt + BRIDGE_TOKEN_TTL_MS;
+    return bridgeToken;
+  }
+
+  function isBridgeTokenFresh() {
+    return !!bridgeToken
+      && bridgeTokenIssuedAt > 0
+      && bridgeTokenExpiresAt > Date.now();
   }
 
   function safeText(value, max) {
@@ -305,7 +334,7 @@
 
   function reply(source, requestId, payload) {
     try {
-      if (!source || source.closed || !targetOrigin() || !bridgeToken) return;
+      if (!source || source.closed || !targetOrigin() || !isBridgeTokenFresh()) return;
       source.postMessage(Object.assign({}, payload || {}, {
         type: 'allosheet-ai-response',
         requestId: requestId,
@@ -401,7 +430,7 @@
   }
 
   function sendNextTransfer(source) {
-    if (!bridgeReady || !source || source.closed || !targetOrigin()) return false;
+    if (!bridgeReady || !source || source.closed || !targetOrigin() || !isBridgeTokenFresh()) return false;
     if (!activeTransfer) activeTransfer = transferQueue.shift() || null;
     if (!activeTransfer || activeTransfer.posted) return false;
     var entry = activeTransfer;
@@ -496,6 +525,24 @@
     popupMonitor = null;
   }
 
+  function notifyPairingExpired(reason) {
+    try {
+      if (!popup || popup.closed || !targetOrigin() || !bridgeToken) return;
+      popup.postMessage({
+        type: 'allosheet-pairing-expired',
+        version: 1,
+        bridgeToken: bridgeToken,
+        reason: safeText(reason || 'AlloSheet pairing expired. Reopen it from AlloFlow.', 240),
+      }, targetOrigin());
+    } catch (_) {}
+  }
+
+  function expirePairing() {
+    if (!bridgeToken) return;
+    notifyPairingExpired('AlloSheet pairing expired. Reopen it from AlloFlow.');
+    closePopupConnection('AlloSheet pairing expired. Reopen it from AlloFlow.');
+  }
+
   function closePopupConnection(reason) {
     var returnTarget = launcher;
     stopPopupMonitor();
@@ -504,7 +551,7 @@
       'allosheet-transfer-closed'
     ));
     popup = null;
-    bridgeToken = '';
+    clearBridgeToken();
     launcher = null;
     bridgeReady = false;
     restoreLauncherFocus(returnTarget);
@@ -515,6 +562,7 @@
     if (typeof window.setInterval !== 'function') return;
     popupMonitor = window.setInterval(function () {
       if (popup && popup.closed) closePopupConnection('AlloSheet closed before this transfer finished.');
+      else if (popup && !isBridgeTokenFresh()) expirePairing();
     }, 500);
   }
 
@@ -621,6 +669,7 @@
     if (!data || typeof data !== 'object' || typeof data.type !== 'string') return;
     if (!popup || event.source !== popup) return;
     if (!pageOrigin || pageOrigin === 'null' || event.origin !== pageOrigin) return;
+    if (!isBridgeTokenFresh()) { expirePairing(); return; }
     if (data.version !== 1 || !bridgeToken || data.bridgeToken !== bridgeToken) return;
     if (data.type === 'allosheet-hello') {
       try {
@@ -628,7 +677,8 @@
           type: 'allosheet-ready',
           ai: isAiAvailable(),
           version: 1,
-          bridgeToken: bridgeToken
+          bridgeToken: bridgeToken,
+          pairingExpiresAt: bridgeTokenExpiresAt
         }, targetOrigin());
         bridgeReady = true;
         sendNextTransfer(event.source);
@@ -672,14 +722,15 @@
         ? window.document.activeElement
         : null;
     } catch (_) { launcher = null; }
+    if (popup && !popup.closed && !isBridgeTokenFresh()) expirePairing();
     if (!popup || popup.closed) {
       bridgeReady = false;
-      bridgeToken = createBridgeToken();
+      issueBridgeToken();
       var hostOrigin = '';
       try { hostOrigin = new URL(window.location.href).origin; } catch (_) {}
       if (!bridgeToken || !targetOrigin() || !/^https?:\/\//i.test(hostOrigin)) {
         bridgeReady = false;
-        bridgeToken = '';
+        clearBridgeToken();
         try { window.alert('AlloSheet could not create a secure companion connection.'); } catch (_) {}
         return null;
       }
@@ -699,7 +750,7 @@
         popup = null;
       }
       if (!popup) {
-        bridgeToken = '';
+        clearBridgeToken();
         bridgeReady = false;
         try { window.alert('Allow pop-ups for this page, then open AlloSheet again.'); } catch (_) {}
         return null;
@@ -742,6 +793,12 @@
     open: open,
     openTransfer: openTransfer,
     isOpen: function () { return !!(popup && !popup.closed); },
+    getPairingStatus: function () {
+      return {
+        paired: !!(popup && !popup.closed && bridgeReady && isBridgeTokenFresh()),
+        expiresAt: isBridgeTokenFresh() ? bridgeTokenExpiresAt : null
+      };
+    },
     companionUrl: pageUrl
   };
   window.AlloSheetHostBridge = bridge;

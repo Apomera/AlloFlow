@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio открыт.",
   "cmd.open_video_studio_hint": "Записывайте, субтитруйте и монтируйте обучающие видео",
   "palette.ctx.videoStudio": "Здесь — Video Studio",
-  "palette.close": "Закрыть командную палитру"
+  "palette.close": "Закрыть командную палитру",
+  "cmd.apply_lesson_template": "Начать с сохранённого шаблона",
+  "cmd.apply_lesson_template_done": "Начато с ",
+  "cmd.apply_lesson_template_hint": "Создаёт новый план на основе одного из сохранённых шаблонов",
+  "cmd.apply_lesson_template_missing": "Не удалось найти шаблон с названием ",
+  "cmd.apply_lesson_template_which": "Какой шаблон?",
+  "cmd.rebuild_lesson_step": "Пересоздать один шаг плана",
+  "cmd.rebuild_lesson_step_done": "Пересоздаётся шаг ",
+  "cmd.rebuild_lesson_step_hint": "Перегенерирует один ресурс — назовите номер шага",
+  "cmd.rebuild_lesson_step_missing": "Не удалось найти этот шаг в плане.",
+  "cmd.rebuild_lesson_step_none": "в плане пока нет шагов.",
+  "cmd.rebuild_lesson_step_which": "Какой шаг?",
+  "cmd.run_lesson_blueprint": "Создать план урока",
+  "cmd.run_lesson_blueprint_done": "План создаётся — вы можете следить за каждым шагом на карточке.",
+  "cmd.run_lesson_blueprint_hint": "Создаёт все ресурсы текущего плана",
+  "cmd.cancelled": "Запрошена отмена. Текущая операция остановится, когда провайдер её поддержит."
 }

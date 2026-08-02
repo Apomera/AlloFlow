@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio খোলা হয়েছে।",
   "cmd.open_video_studio_hint": "ওয়াকথ্রু রেকর্ড, ক্যাপশন ও সম্পাদনা করুন",
   "palette.ctx.videoStudio": "এখানে — Video Studio",
-  "palette.close": "কমান্ড প্যালেট বন্ধ করুন"
+  "palette.close": "কমান্ড প্যালেট বন্ধ করুন",
+  "cmd.apply_lesson_template": "সংরক্ষিত টেমপ্লেট থেকে শুরু করুন",
+  "cmd.apply_lesson_template_done": "এটি থেকে শুরু হয়েছে: ",
+  "cmd.apply_lesson_template_hint": "আপনার সংরক্ষিত টেমপ্লেটগুলোর একটি দিয়ে নতুন পরিকল্পনা শুরু করে",
+  "cmd.apply_lesson_template_missing": "এই নামে কোনো টেমপ্লেট খুঁজে পাইনি: ",
+  "cmd.apply_lesson_template_which": "কোন টেমপ্লেট?",
+  "cmd.rebuild_lesson_step": "পরিকল্পনার একটি ধাপ পুনর্গঠন করুন",
+  "cmd.rebuild_lesson_step_done": "ধাপ পুনর্গঠন করা হচ্ছে: ",
+  "cmd.rebuild_lesson_step_hint": "একটি রিসোর্স পুনরায় তৈরি করে — ধাপের নম্বর বলুন",
+  "cmd.rebuild_lesson_step_missing": "পরিকল্পনায় সেই ধাপটি খুঁজে পাইনি।",
+  "cmd.rebuild_lesson_step_none": "পরিকল্পনায় এখনও কোনো ধাপ নেই।",
+  "cmd.rebuild_lesson_step_which": "কোন ধাপ?",
+  "cmd.run_lesson_blueprint": "পাঠ পরিকল্পনা তৈরি করুন",
+  "cmd.run_lesson_blueprint_done": "পরিকল্পনা তৈরি হচ্ছে — কার্ডে প্রতিটি ধাপ দেখতে পারবেন।",
+  "cmd.run_lesson_blueprint_hint": "বর্তমান পরিকল্পনার সব রিসোর্স তৈরি করে",
+  "cmd.cancelled": "বাতিলের অনুরোধ করা হয়েছে। প্রদানকারী এটি সমর্থন করলে বর্তমান কাজটি থেমে যাবে।"
 }

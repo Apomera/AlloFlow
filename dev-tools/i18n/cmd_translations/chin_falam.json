@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio a hung cang.",
   "cmd.open_video_studio_hint": "Lam hruainak video khumh, caption chap le remh",
   "palette.ctx.videoStudio": "Hika — Video Studio",
-  "palette.close": "Command palette khar"
+  "palette.close": "Command palette khar",
+  "cmd.apply_lesson_template": "Template khawmi in thawk",
+  "cmd.apply_lesson_template_done": "Hi he thawk: ",
+  "cmd.apply_lesson_template_hint": "Na template khawmi pakhat in plan thar thawk",
+  "cmd.apply_lesson_template_missing": "Template ah min a pekmi ka hmuh khawh lo: ",
+  "cmd.apply_lesson_template_which": "Template zeih?",
+  "cmd.rebuild_lesson_step": "Plan laa pakhat thar in tuah",
+  "cmd.rebuild_lesson_step_done": "Laa thar in tuah lio: ",
+  "cmd.rebuild_lesson_step_hint": "Gin hmang pakhat thar in tuah — laa number chim",
+  "cmd.rebuild_lesson_step_missing": "Plan chungah laa cu ka hmuh khawh lo.",
+  "cmd.rebuild_lesson_step_none": "Plan ah laa a um hrih lo.",
+  "cmd.rebuild_lesson_step_which": "Laa zeih?",
+  "cmd.run_lesson_blueprint": "Cawnnak plan chuah",
+  "cmd.run_lesson_blueprint_done": "Plan chuah lio — card cungah laa pakhat cio na hmuh khawh.",
+  "cmd.run_lesson_blueprint_hint": "Hi plan chungah gin hmang zapi chuah",
+  "cmd.cancelled": "Hneek ding cu ngen a si. Tuah lio hna hi a provider nih a pawm tikah a ding."
 }

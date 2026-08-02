@@ -272,7 +272,18 @@ window.StemLab = window.StemLab || {
       var showShortcuts = d.showShortcuts || false;
       var quizType = d.quizType || 'correlation';
       var quizTypesUsed = d.quizTypesUsed || {};
+      var kernelSQL = d.kernelSQL || 'SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data';
+      var kernelBusy = !!d.kernelBusy;
+      var kernelError = d.kernelError || '';
+      var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
 
+      var kernelRecipeId = d.kernelRecipeId || '';
+      var kernelRecipes = window.AlloDataKernel && typeof window.AlloDataKernel.suggestRecipes === 'function' ? window.AlloDataKernel.suggestRecipes(points) : [];
+      var kernelHistory = window.AlloDataKernel && window.AlloDataKernel.queryHistory && typeof window.AlloDataKernel.queryHistory.list === 'function' ? window.AlloDataKernel.queryHistory.list() : [];
+      var applyKernelRecipe = function(recipe) {
+        if (!recipe) return;
+        updMulti({ kernelSQL: recipe.sql, kernelRecipeId: recipe.id, kernelError: '', kernelResult: null });
+      };
       var pal = palettes.find(function(p) { return p.id === paletteId; }) || palettes[0];
 
       // ══════════════════════════════════════════════════════════════
@@ -563,9 +574,29 @@ window.StemLab = window.StemLab || {
         var newUndo = pushUndo();
         updMulti({ points: ds.pts, undoStack: newUndo, xLabel: ds.xLabel || '', yLabel: ds.yLabel || '', stepMode: false });
       };
+      var runKernelQuery = function() {
+        var kernel = window.AlloDataKernel;
+        if (!kernel || typeof kernel.queryRows !== 'function') {
+          updMulti({ kernelBusy: false, kernelError: 'Local analytical engine is still loading. Please try again in a moment.', kernelResult: null });
+          return;
+        }
+        updMulti({ kernelSQL: kernelSQL, kernelBusy: true, kernelError: '', kernelResult: null });
+        Promise.resolve().then(function() { return kernel.queryRows(points, kernelSQL); }).then(function(result) {
+          var rows = Array.isArray(result.rows) ? result.rows.slice(0, 100) : [];
+          var columns = rows.length ? Object.keys(rows[0]) : ((result.provenance && result.provenance.columns) || []);
+          if (kernel.queryHistory && typeof kernel.queryHistory.record === 'function') kernel.queryHistory.record({ tool: 'dataPlot', recipe: kernelRecipeId || null, sql: result.query || kernelSQL, backend: result.backend || 'local', rowCount: rows.length, sourceRowCount: result.provenance && result.provenance.rowCount, columns: result.provenance && result.provenance.columns });
+          updMulti({ kernelBusy: false, kernelError: '', kernelResult: { rows: rows, columns: columns, backend: result.backend || 'local', provenance: result.provenance || null, summary: result.summary || null } });
+          if (announceToSR) announceToSR('Local query returned ' + rows.length + ' row' + (rows.length === 1 ? '' : 's') + '.');
+          if (addToast) addToast('Local query complete (' + rows.length + ' rows)', 'success');
+        }).catch(function(error) {
+          var message = error && error.message ? error.message : String(error || 'Query failed');
+          updMulti({ kernelBusy: false, kernelError: message, kernelResult: null });
+          if (addToast) addToast('Local query failed: ' + message, 'error');
+        });
+      };
       var saveChart = function() {
         if (n === 0) return;
-        var item = { id: 'dp_' + Date.now(), points: JSON.parse(JSON.stringify(points)), xLabel: xLabel, yLabel: yLabel, chartType: chartType, n: n, r2: regR2, timestamp: Date.now() };
+        var item = { id: 'dp_' + Date.now(), points: JSON.parse(JSON.stringify(points)), xLabel: xLabel, yLabel: yLabel, chartType: chartType, n: n, r2: regR2, timestamp: Date.now(), kernel: kernelResult ? { recipe: kernelRecipeId || null, sql: kernelSQL, backend: kernelResult.backend, provenance: kernelResult.provenance, rows: kernelResult.rows, notebook: { version: 1, entries: kernelHistory } } : null };
         saveGallery(galleryItems.concat([item]));
         upd('_galleryRefresh', Date.now());
         if (addToast) addToast('\uD83D\uDCBE Chart saved!', 'success');
@@ -1453,10 +1484,10 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-[11px] text-slate-600 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.if_x', 'If X =')),
-                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': t('stem.dataplot.x_value_for_prediction', 'X value for prediction'), className: 'w-24 px-2 py-1.5 border-2 border-indigo-600 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-400', placeholder: '?' }),
+                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': t('stem.dataplot.x_value_for_prediction', 'X value for prediction'), className: 'w-24 px-2 py-1.5 border-2 border-indigo-600 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-500', placeholder: '?' }),
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.then_y', 'then Y \u2248')),
                     h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
-                    predX !== '' && predResult && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },
+                    predX !== '' && predResult && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') },
                       predIsExtrapolation ? '\u26A0\uFE0F Extrapolation (outside data range!)' : '\u2705 Interpolation (within data range)')
                   )
                 )
@@ -1529,6 +1560,37 @@ window.StemLab = window.StemLab || {
                 h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
                 h('button', { 'aria-label': t('stem.dataplot.stop_3', 'Stop'), onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, t('stem.dataplot.stop_4', 'Stop'))
               )
+          ),
+
+          // ── Local analytical workspace ──
+          h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-300' },
+            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-1' }, '🧮 Local analytical workspace'),
+            h('div', { className: 'text-[11px] text-slate-600 mb-2' }, 'Run read-only SQL over the current X/Y points. Data stays in this browser; the result includes its local provenance.'),
+            h('textarea', { value: kernelSQL, onChange: function(e) { upd('kernelSQL', e.target.value); upd('kernelRecipeId', ''); }, rows: 2, spellCheck: false, 'aria-label': 'Local analytical SQL query', className: 'w-full px-3 py-2 text-xs font-mono border border-indigo-500 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 resize-y', placeholder: 'SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data' }),
+            kernelRecipes.length > 0 && h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
+              h('label', { htmlFor: 'dp-kernel-recipe', className: 'text-[11px] font-bold text-indigo-700' }, 'Starter recipe'),
+              h('select', { id: 'dp-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, className: 'flex-1 min-w-[180px] px-2 py-1.5 text-[11px] border border-indigo-500 rounded-lg bg-white text-indigo-900' },
+                h('option', { value: '' }, 'Choose a local analysis…'),
+                kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); })
+              ),
+              h('span', { className: 'text-[10px] text-indigo-500' }, 'Recipes use the current column shape.')
+            ),
+            h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
+              h('button', { onClick: runKernelQuery, disabled: kernelBusy || !points.length, className: 'px-3 py-1.5 bg-indigo-700 text-white font-bold rounded-lg text-xs hover:bg-indigo-800 disabled:opacity-40' }, kernelBusy ? '⏳ Loading local engine…' : '▶ Run local query'),
+              !points.length && h('span', { className: 'text-[11px] text-slate-500' }, 'Add at least one point first.')
+            ),
+            kernelError && h('div', { role: 'alert', className: 'mt-2 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 whitespace-pre-wrap' }, kernelError),
+            kernelResult && h('div', { className: 'mt-3 border-t border-indigo-100 pt-2' },
+              h('div', { className: 'text-[11px] text-indigo-700 font-bold mb-1' }, 'Result · ' + kernelResult.rows.length + ' row' + (kernelResult.rows.length === 1 ? '' : 's') + ' · ' + (kernelResult.backend || 'local')),
+              kernelResult.provenance && h('div', { className: 'text-[10px] text-slate-500 mb-2' }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
+              kernelResult.rows.length > 0 && h('div', { className: 'overflow-x-auto' },
+                h('table', { className: 'w-full text-[11px] border-collapse' },
+                  h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, className: 'text-left px-2 py-1 bg-indigo-50 border border-indigo-100 font-bold text-indigo-800' }, column); }))),
+                  h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, className: 'px-2 py-1 border border-indigo-100 font-mono text-slate-700' }, row[column] == null ? '—' : String(row[column])); })); }))
+                )
+              ),
+              kernelResult.rows.length === 100 && h('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'Showing the first 100 result rows.')
+            )
           ),
 
           // ── CSV Import ──

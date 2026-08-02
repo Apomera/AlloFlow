@@ -565,7 +565,50 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(suggestion.changed).toBe(false);
     expect(suggestion.changes).toEqual([]);
   });
-  it('multi-point sampling catches a caption that straddles a dark shape (center alone would pass)', () => {
+  it('supports page add, object assignment, page reorder, and page removal', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Pages', T0);
+    ST.stAppend(d, { type: 'page.add', at: 1 }, 'user', T0);
+    const pageOne = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', page: 1, frame: { x: 10, y: 10, w: 40, h: 40 }, z: 1 } }, 'user', T0 + 1).object.id;
+    const pageZero = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'ellipse', frame: { x: 80, y: 10, w: 40, h: 40 }, z: 2 } }, 'user', T0 + 2).object.id;
+    expect(d.pageCount).toBe(2);
+    expect(ST.stObjectsOnPage(d.objects, 0).map(o => o.id)).toEqual([pageZero]);
+    expect(ST.stObjectsOnPage(d.objects, 1).map(o => o.id)).toEqual([pageOne]);
+
+    ST.stAppend(d, { type: 'object.page', target: pageZero, page: 1 }, 'user', T0 + 3);
+    expect(ST.stObjectPage(d.objects.find(o => o.id === pageZero))).toBe(1);
+
+    ST.stAppend(d, { type: 'page.add', at: 1 }, 'user', T0 + 4);
+    expect(d.pageCount).toBe(3);
+    expect(ST.stObjectsOnPage(d.objects, 2).map(o => o.id).sort()).toEqual([pageOne, pageZero].sort());
+
+    ST.stAppend(d, { type: 'page.reorder', from: 2, to: 1 }, 'user', T0 + 5);
+    expect(ST.stObjectPage(d.objects.find(o => o.id === pageOne))).toBe(1);
+    expect(ST.stObjectPage(d.objects.find(o => o.id === pageZero))).toBe(1);
+
+    ST.stAppend(d, { type: 'page.remove', at: 1 }, 'user', T0 + 6);
+    expect(d.pageCount).toBe(2);
+    expect(ST.stObjectsOnPage(d.objects, 1)).toHaveLength(0);
+  });
+  it('reorders reading order within one page without moving through another page', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Local order', T0);
+    ST.stAppend(d, { type: 'page.add', at: 1 }, 'user', T0);
+    const first = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', frame: { x: 10, y: 10, w: 40, h: 40 }, z: 1 } }, 'user', T0 + 1).object.id;
+    const otherPage = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', page: 1, frame: { x: 10, y: 70, w: 40, h: 40 }, z: 2 } }, 'user', T0 + 2).object.id;
+    const last = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', frame: { x: 10, y: 130, w: 40, h: 40 }, z: 3 } }, 'user', T0 + 3).object.id;
+
+    ST.stAppend(d, { type: 'object.reorder', target: last, toIndex: 0, page: 0 }, 'user', T0 + 4);
+    expect(ST.stObjectsOnPage(d.objects, 0).map(o => o.id)).toEqual([last, first]);
+    expect(ST.stObjectsOnPage(d.objects, 1).map(o => o.id)).toEqual([otherPage]);
+  });  it('keeps the final page and clamps out-of-range object page values', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Page bounds', T0);
+    ST.stAppend(d, { type: 'page.remove', at: 0 }, 'user', T0);
+    expect(d.pageCount).toBe(1);
+
+    ST.stAppend(d, { type: 'page.add', at: 99 }, 'user', T0 + 1);
+    const id = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', page: 99, frame: { x: 10, y: 10, w: 40, h: 40 }, z: 1 } }, 'user', T0 + 2).object.id;
+    expect(d.pageCount).toBe(2);
+    expect(ST.stObjectPage(d.objects.find(o => o.id === id))).toBe(1);
+  });  it('multi-point sampling catches a caption that straddles a dark shape (center alone would pass)', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Straddle', T0);
     // dark shape covering only the LEFT region (x 0..200), under the text
     ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#000000', decorative: true, frame: { x: 0, y: 0, w: 200, h: 100 }, z: 1 } }, 'user', T0);
@@ -853,6 +896,41 @@ describe('Studio visual ergonomics helpers', () => {
     expect(moved.find(p => p.id === 'a').frame).toEqual({ x: 20, y: 10, w: 50, h: 20, rotation: 0 });
     expect(moved.find(p => p.id === 'b').frame).toEqual({ x: 170, y: 90, w: 50, h: 30, rotation: 0 });
   });
+  it('previews snap-aware group drags while keeping locked members fixed', () => {
+    const canvas = { w: 300, h: 200 };
+    const objects = [
+      { id: 'a', frame: { x: 40, y: 20, w: 40, h: 20 } },
+      { id: 'b', frame: { x: 100, y: 70, w: 40, h: 20 } },
+      { id: 'locked', locked: true, frame: { x: 160, y: 100, w: 30, h: 20 } }
+    ];
+    const moved = ST.stDragFramesAsGroup(objects, ['a', 'b', 'locked'], 10, 15, canvas, { snap: false });
+    expect(moved.frames.map((entry) => entry.id)).toEqual(['a', 'b']);
+    expect(moved.frames.find((entry) => entry.id === 'a').frame).toMatchObject({ x: 50, y: 35, w: 40, h: 20 });
+    expect(moved.frames.find((entry) => entry.id === 'b').frame).toMatchObject({ x: 110, y: 85, w: 40, h: 20 });
+    expect(moved.bounds).toEqual({ x: 50, y: 35, w: 100, h: 70 });
+    expect(moved.guides).toEqual([]);
+
+    const snapped = ST.stDragFramesAsGroup(objects, ['a', 'b'], 3, 0, canvas, { snap: true, threshold: 8 });
+    expect(snapped.frames.find((entry) => entry.id === 'a').frame.x).toBe(48);
+    expect(snapped.guides).toEqual(expect.arrayContaining([expect.objectContaining({ axis: 'x', label: 'left margin' })]));
+  });
+  it('scales a selection from its shared anchor and can preserve proportions', () => {
+    const canvas = { w: 240, h: 160 };
+    const objects = [
+      { id: 'a', frame: { x: 20, y: 20, w: 40, h: 20 } },
+      { id: 'b', frame: { x: 100, y: 60, w: 20, h: 20 } },
+      { id: 'locked', locked: true, frame: { x: 40, y: 40, w: 10, h: 10 } }
+    ];
+    const stretched = ST.stResizeFramesAsGroup(objects, ['a', 'b', 'locked'], 50, 30, canvas, { minSize: 12 });
+    expect(stretched.frames.map((entry) => entry.id)).toEqual(['a', 'b']);
+    expect(stretched.frames.find((entry) => entry.id === 'a').frame).toMatchObject({ x: 20, y: 20, w: 60, h: 30 });
+    expect(stretched.frames.find((entry) => entry.id === 'b').frame).toMatchObject({ x: 140, y: 80, w: 30, h: 30 });
+    expect(stretched.bounds).toEqual({ x: 20, y: 20, w: 150, h: 90 });
+
+    const proportional = ST.stResizeFramesAsGroup(objects, ['a', 'b'], 50, 0, canvas, { minSize: 12, keepRatio: true });
+    expect(proportional.scale).toEqual({ x: 1.5, y: 1.5 });
+    expect(proportional.frames.find((entry) => entry.id === 'b').frame).toMatchObject({ x: 140, y: 80, w: 30, h: 30 });
+  });
   it('skips locked objects when group layout actions would change frames', () => {
     const objects = [
       { id: 'a', locked: true, frame: { x: 0, y: 0, w: 50, h: 20 } },
@@ -924,6 +1002,9 @@ describe('Studio visual ergonomics helpers', () => {
     const canvas = { w: 816, h: 1056 };
     const desktop = ST.stStudioLayout(1280, 900);
     expect(ST.stCanvasFitScale(canvas, desktop, { w: 1280, h: 900 })).toBe(0.62);
+    expect(ST.stSelectionZoomScale({ x: 100, y: 100, w: 200, h: 120 }, canvas, { w: 600, h: 420 }, 24)).toBe(1.5);
+    expect(ST.stSelectionZoomScale({ x: 0, y: 0, w: 700, h: 700 }, canvas, { w: 600, h: 420 }, 24)).toBe(0.53);
+    expect(ST.stSelectionZoomScale(null, canvas, { w: 600, h: 420 }, 24)).toBeNull();
     const phone = ST.stStudioLayout(390, 740);
     const fit = ST.stCanvasFitScale(canvas, phone, { w: 390, h: 740 });
     expect(fit).toBeGreaterThanOrEqual(0.34);
@@ -1512,7 +1593,7 @@ describe('AlloStudio keyboard shortcut reference (stShortcutList)', () => {
   it('documents the core editing shortcuts that the handler binds', () => {
     const byId = {};
     ST.stShortcutList().forEach((s) => { byId[s.id] = s; });
-    ['undo', 'redo', 'duplicate', 'selectAll', 'save', 'forward', 'backward', 'zoomFit', 'commandPalette', 'help'].forEach((id) => {
+    ['undo', 'redo', 'duplicate', 'selectAll', 'save', 'forward', 'backward', 'zoomFit', 'findText', 'commandPalette', 'help'].forEach((id) => {
       expect(byId[id]).toBeTruthy();
     });
     expect(byId.duplicate.mod).toBe(true);
@@ -1535,7 +1616,7 @@ describe('AlloStudio quick action command palette helpers', () => {
       recommendedExport: ST.stRecommendedExportAction(d)
     });
     const ids = commands.map(c => c.id);
-    expect(ids).toEqual(expect.arrayContaining(['insert-heading1', 'fix-next-a11y', 'export-recommended', 'select-all', 'duplicate-selection', 'portfolio', 'align-left', 'page-width-selection', 'reading-later']));
+    expect(ids).toEqual(expect.arrayContaining(['insert-heading1', 'fix-next-a11y', 'export-recommended', 'select-all', 'duplicate-selection', 'portfolio', 'find-text', 'align-left', 'page-width-selection', 'reading-later']));
     expect(commands.find(c => c.id === 'fix-next-a11y').enabled).toBe(true);
     expect(commands.filter(c => c.id.startsWith('select-object:')).length).toBe(2);
     expect(ST.stFilterCommandPaletteItems(commands, '').some(c => c.id.startsWith('select-object:'))).toBe(false);
@@ -1558,11 +1639,19 @@ describe('AlloStudio quick action command palette helpers', () => {
     expect(single['reading-earlier'].enabled).toBe(true);
     expect(single['reading-later'].enabled).toBe(true);
     expect(single['distribute-x'].enabled).toBe(false);
+    expect(single['arrange-card-grid'].enabled).toBe(false);
+    expect(single['match-size'].enabled).toBe(false);
 
     const group = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [a, b, c], selectedId: c }).map(cmd => [cmd.id, cmd]));
     expect(group['align-left'].enabled).toBe(true);
     expect(group['distribute-x'].enabled).toBe(true);
     expect(group['distribute-y'].enabled).toBe(true);
+    expect(group['arrange-stack-horizontal'].enabled).toBe(true);
+    expect(group['arrange-two-column'].enabled).toBe(true);
+    expect(group['arrange-card-grid'].enabled).toBe(true);
+    expect(group['match-width'].enabled).toBe(true);
+    expect(group['match-height'].enabled).toBe(true);
+    expect(group['match-size'].enabled).toBe(true);
     expect(group['page-width-selection'].enabled).toBe(false);
     expect(group['lock-selection'].enabled).toBe(true);
     expect(group['unlock-selection'].enabled).toBe(false);
@@ -1571,6 +1660,70 @@ describe('AlloStudio quick action command palette helpers', () => {
     const mixed = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [a, b, c], selectedId: c }).map(cmd => [cmd.id, cmd]));
     expect(mixed['unlock-selection'].enabled).toBe(true);
     expect(ST.stFilterCommandPaletteItems(mixed ? Object.values(mixed) : [], 'distribute horizontal').map(c => c.id)).toContain('distribute-x');
+  });
+  it('finds text blocks case-insensitively and reports repeated matches', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Find', T0);
+    const first = addText(d, 'Water cycle: water moves through the sky.').object.id;
+    const second = addText(d, 'A forest cycle is different.', 'heading2').object.id;
+    const matches = ST.stFindTextMatches(d.objects, 'WATER');
+    expect(matches.map((match) => match.id)).toEqual([first]);
+    expect(matches[0]).toMatchObject({ count: 2, role: 'body' });
+    expect(matches[0].snippet.toLowerCase()).toContain('water');
+    expect(ST.stFindTextMatches(d.objects, 'missing')).toEqual([]);
+    expect(ST.stFindTextMatches(d.objects, '')).toEqual([]);
+    expect(second).not.toBe(matches[0].id);
+  });
+  it('replaces text while preserving run styles and skips locked blocks', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Replace', T0);
+    const firstId = addText(d, 'Water Water cycle').object.id;
+    const first = d.objects.find((object) => object.id === firstId);
+    first.runs.push({ text: ' note', style: { italic: true } });
+    const lockedId = addText(d, 'Water stays locked').object.id;
+    const locked = d.objects.find((object) => object.id === lockedId);
+    locked.locked = true;
+    const result = ST.stReplaceTextInObjects(d.objects, 'water', 'River');
+    expect(result).toMatchObject({ matchCount: 2, objectCount: 1, skippedLocked: 1 });
+    expect(result.patches[0].patch.runs[0].text).toBe('River River cycle');
+    expect(result.patches[0].patch.runs[0].style.size).toBe(16);
+    expect(result.patches[0].patch.runs[1]).toEqual({ text: ' note', style: { italic: true } });
+    const onlyLocked = ST.stReplaceTextInObjects(d.objects, 'water', 'River', { ids: [locked.id] });
+    expect(onlyLocked).toMatchObject({ matchCount: 0, objectCount: 0, skippedLocked: 1 });
+  });
+  it('models selection recipes for columns, rows, and cards while preserving locked objects', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Recipes', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 260, y: 180, w: 90, h: 40 }, z: 1 } }, 'user', T0).object;
+    const b = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 80, y: 40, w: 120, h: 50 }, z: 2 } }, 'user', T0).object;
+    const c = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 440, y: 280, w: 70, h: 60 }, z: 3, locked: true } }, 'user', T0).object;
+    const ids = [a.id, b.id, c.id];
+    const vertical = ST.stArrangeFramesAsGroup(d.objects, ids, 'stack-vertical', { gap: 12 });
+    expect(vertical.map((p) => p.id)).toEqual([b.id, a.id]);
+    expect(vertical[0].frame.x).toBe(80);
+    expect(vertical[1].frame.y).toBe(102);
+    const horizontal = ST.stArrangeFramesAsGroup(d.objects, ids, 'stack-horizontal', { gap: 8 });
+    expect(horizontal[0].frame.y).toBe(40);
+    expect(horizontal[1].frame.x).toBe(208);
+    const columns = ST.stArrangeFramesAsGroup(d.objects, [a.id, b.id], 'two-column', { gap: 10 });
+    expect(columns).toHaveLength(2);
+    expect(columns[1].frame.x).toBeGreaterThan(columns[0].frame.x);
+    const sameSize = ST.stMatchFramesAsGroup(d.objects, ids, 'size');
+    expect(sameSize.map((p) => p.id)).toEqual([a.id, b.id]);
+    expect(sameSize[0].frame.w).toBe(120);
+    expect(sameSize[0].frame.h).toBe(50);
+    expect(sameSize[1].frame.w).toBe(120);
+    expect(sameSize[1].frame.h).toBe(50);
+    expect(ST.stMatchFramesAsGroup(d.objects, [a.id], 'size')).toEqual([]);
+    expect(ST.stMatchFramesAsGroup(d.objects, [a.id, b.id], 'unknown')).toEqual([]);
+    expect(ST.stArrangeFramesAsGroup(d.objects, [a.id], 'stack-vertical')).toEqual([]);
+  });
+  it('exposes recipe commands only when enough unlocked objects are selected', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Recipe commands', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 10, y: 10, w: 60, h: 40 }, z: 1 } }, 'user', T0).object.id;
+    const b = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 90, y: 10, w: 60, h: 40 }, z: 2 } }, 'user', T0).object.id;
+    const none = Object.fromEntries(ST.stCommandPaletteItems(d, {}).map((cmd) => [cmd.id, cmd]));
+    expect(none['arrange-card-grid'].enabled).toBe(false);
+    const group = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [a, b] }).map((cmd) => [cmd.id, cmd]));
+    expect(group['arrange-stack-vertical'].enabled).toBe(true);
+    expect(ST.stFilterCommandPaletteItems(Object.values(group), 'two column')).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'arrange-two-column' })]));
   });
 });
 

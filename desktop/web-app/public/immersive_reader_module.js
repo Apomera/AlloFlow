@@ -1388,6 +1388,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
           new Promise((resolveLater) => {
             watchdogTimer = setTimeout(() => {
               resolveTimedOut = true;
+              try {
+                requestController?.abort();
+              } catch (_) {
+              }
               resolveLater(null);
             }, KARAOKE_RESOLVE_WATCHDOG_MS);
           })
@@ -1468,6 +1472,14 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         if (token === playTokenRef.current) {
           finishAudioLoad(audioLoadOwner);
           console.warn("[Karaoke] Generated audio element reported a playback error.");
+          try {
+            window.__alloInvalidateTtsUrl?.(url);
+          } catch (_) {
+          }
+          try {
+            window.__alloQuarantineReadAloudAudio?.(sentenceText, { code: "playback-error" }, { lane: "reference", occurrence: occurrenceForIndex(idx) });
+          } catch (_) {
+          }
           setIsPlaying(false);
         }
       });
@@ -1602,8 +1614,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   }, [prepState, sentences]);
   const playStudentTake = useCallback(() => {
     try {
+      const sentence = sentences[sentenceIdx];
+      const occurrence = occurrenceForIndex(sentenceIdx);
+      const inspected = typeof window.__alloInspectReadAloudAudio === "function" ? window.__alloInspectReadAloudAudio(sentence, "student", { occurrence }) : null;
       const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent;
-      const url = st && st.get(sentences[sentenceIdx]);
+      const url = inspected?.url || st && st.get(sentence);
       if (!url) return;
       try {
         if (audioRef.current) {
@@ -1618,7 +1633,19 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       }
       const a = new Audio(url);
       a.playbackRate = playbackSpeedRef.current || 1;
-      a.play().catch(() => {
+      audioRef.current = a;
+      a.onended = () => {
+        if (audioRef.current === a) audioRef.current = null;
+      };
+      a.onerror = () => {
+        if (audioRef.current === a) audioRef.current = null;
+        try {
+          window.__alloQuarantineReadAloudAudio?.(sentence, { code: "playback-error" }, { lane: "student", occurrence });
+        } catch (_) {
+        }
+      };
+      a.play().catch((error) => {
+        if (error?.name !== "NotAllowedError") a.onerror?.();
       });
     } catch (e) {
     }
@@ -1638,20 +1665,54 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const rec = new MediaRecorder(stream);
       const chunks = [];
-      rec.ondataavailable = (e) => {
-        if (e.data && e.data.size) chunks.push(e.data);
-      };
-      rec.onstop = async () => {
+      const recordingState = { rec, stream, timer: null, totalBytes: 0, tooLarge: false, failed: false };
+      const cleanupRecording = () => {
+        if (recordingState.timer) {
+          clearTimeout(recordingState.timer);
+          recordingState.timer = null;
+        }
         try {
           stream.getTracks().forEach((tr) => tr.stop());
         } catch (e) {
         }
+        if (_recRef.current === recordingState) _recRef.current = null;
         setRecording(false);
+      };
+      rec.ondataavailable = (e) => {
+        if (!e.data || !e.data.size) return;
+        recordingState.totalBytes += e.data.size;
+        if (recordingState.totalBytes > 2 * 1024 * 1024) {
+          recordingState.tooLarge = true;
+          try {
+            if (rec.state !== "inactive") rec.stop();
+          } catch (_) {
+          }
+          return;
+        }
+        chunks.push(e.data);
+      };
+      rec.onerror = () => {
+        cleanupRecording();
+        recordingState.failed = true;
+        setPlaybackFallbackNotice("Recording stopped because the microphone stream failed.");
+      };
+      rec.onstop = async () => {
+        cleanupRecording();
+        if (recordingState.failed) return;
+        if (recordingState.tooLarge) {
+          setPlaybackFallbackNotice("Recording stopped at the 2 MB per-sentence limit. Try a shorter take.");
+          return;
+        }
         if (!chunks.length) return;
         const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+        if (!blob.size || blob.size > 2 * 1024 * 1024) {
+          setPlaybackFallbackNotice("The recording is too large to save. Try a shorter take.");
+          return;
+        }
+        const occurrence = occurrenceForIndex(sentenceIdx);
         if (isTeacher) {
           if (typeof window.__alloStoreRecordedSentenceAudio === "function") {
-            const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, "human-teacher");
+            const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, "human-teacher", { occurrence });
             if (ok) {
               warmedRef.current.delete(sentenceIdx);
               warmPromisesRef.current.delete(sentenceIdx);
@@ -1661,7 +1722,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
           }
         } else {
           if (typeof window.__alloStoreStudentSentenceAudio === "function") {
-            const ok = await window.__alloStoreStudentSentenceAudio(sentence, blob);
+            const ok = await window.__alloStoreStudentSentenceAudio(sentence, blob, { occurrence });
             if (ok) {
               setStudentTakeTick((x) => x + 1);
               playStudentTake();
@@ -1669,10 +1730,22 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
           }
         }
       };
-      _recRef.current = { rec, stream };
-      rec.start();
+      _recRef.current = recordingState;
+      rec.start(1e3);
+      recordingState.timer = setTimeout(() => {
+        try {
+          if (rec.state !== "inactive") rec.stop();
+        } catch (_) {
+          cleanupRecording();
+        }
+      }, 6e4);
       setRecording(true);
     } catch (e) {
+      try {
+        _recRef.current?.stream?.getTracks?.().forEach((tr) => tr.stop());
+      } catch (_) {
+      }
+      _recRef.current = null;
       setRecording(false);
     }
   }, [recording, sentences, sentenceIdx, playSentence, playStudentTake, isTeacher]);
@@ -1680,8 +1753,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     if (!isOpen) {
       try {
         const r = _recRef.current;
+        if (r && r.timer) clearTimeout(r.timer);
         if (r && r.rec && r.rec.state !== "inactive") r.rec.stop();
         if (r && r.stream) r.stream.getTracks().forEach((tr) => tr.stop());
+        _recRef.current = null;
       } catch (e) {
       }
       setRecording(false);

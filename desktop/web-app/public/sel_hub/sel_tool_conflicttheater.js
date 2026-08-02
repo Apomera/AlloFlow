@@ -840,6 +840,7 @@ window.SelHub = window.SelHub || {
               studentInput: '',
               _userTier: 3
             });
+            announceSR('Practice paused. Please use the support resources below.');
             return;
           }
         }
@@ -969,6 +970,7 @@ window.SelHub = window.SelHub || {
           if (ending) {
             stateUpdate.mode = 'ending';
             stateUpdate.ending = ending;
+            announceSR('Conversation complete: ' + ending + '.');
             if (ending === 'resolved') { sfxResolve(); celebrate && celebrate(); awardXP && awardXP('conflicttheater', 30); }
             else if (ending === 'deepened') { sfxBreakdown(); }
             else { awardXP && awardXP('conflicttheater', 15); }
@@ -1043,7 +1045,7 @@ window.SelHub = window.SelHub || {
           }
         }).catch(function() {
           upd({ loading: false });
-          addToast && addToast('Could not get character responses. Try again.', 'error');
+          addToast && addToast('Could not get character responses. Try again.', 'error'); announceSR('Character responses were unavailable. Try again.');
         });
       }
 
@@ -1493,7 +1495,7 @@ window.SelHub = window.SelHub || {
       }
 
       // Stage with scene SVG + overlaid character portraits
-      var stage = h('div', { className: 'ct-stage', style: { marginBottom: 12 } },
+      var stage = h('div', { className: 'ct-stage', role: 'img', 'aria-label': 'Conflict scene with ' + characters.map(function(c) { return c.name; }).join(' and '), style: { marginBottom: 12 } },
         scene.svg(h),
         _renderStagePortrait(characters[0], { left: '8%' }),
         _renderStagePortrait(characters[1], { right: '8%' })
@@ -1503,14 +1505,14 @@ window.SelHub = window.SelHub || {
       var meters = h('div', { style: { display: 'flex', gap: 12, marginBottom: 12, padding: 12, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 10 } },
         h('div', { style: { flex: 1 } },
           h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Harmony'),
-          h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-valuenow': Math.round(harmony), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Harmony meter' },
+          h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-valuenow': Math.round(harmony), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Harmony with ' + characters.map(function(c) { return c.name; }).join(' and ') + ': ' + Math.round(harmony) + ' percent' },
             h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmonyColor } })
           ),
           h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), marginTop: 4 } }, Math.round(harmony) + ' / 100')
         ),
         characters.map(function(c) {
           var mood = charMoods[c.id] || 'calm';
-          return h('div', { key: c.id, style: { textAlign: 'center', minWidth: 70 } },
+          return h('div', { key: c.id, 'aria-label': c.name + ' is ' + mood, style: { textAlign: 'center', minWidth: 70 } },
             h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, c.name),
             h('div', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), textTransform: 'capitalize' } }, mood)
           );
@@ -1518,7 +1520,7 @@ window.SelHub = window.SelHub || {
       );
 
       // Dialogue history
-      var dialogueView = h('div', { role: 'log', 'aria-live': 'polite', 'aria-busy': loading ? 'true' : 'false', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: 240, overflowY: 'auto', padding: 8 } },
+      var dialogueView = h('div', { role: 'log', 'aria-label': 'Conflict conversation', 'aria-live': 'polite', 'aria-busy': loading ? 'true' : 'false', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: 240, overflowY: 'auto', padding: 8 } },
         dialogue.length === 0
           ? h('div', { style: { fontSize: 12, color: _cftFg('#64748b'), fontStyle: 'italic', textAlign: 'center', padding: 20 } }, 'Open the conversation. What would you say?')
           : dialogue.map(function(m, i) {
@@ -1529,7 +1531,8 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 600, padding: '0 6px' } }, who + (m.bodyLanguage ? ' · ' + m.bodyLanguage : '')),
                 h('div', { className: bubbleClass }, m.text)
               );
-            })
+            }),
+        loading && h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Characters are responding' }, 'Characters are responding...')
       );
 
       // Coach hint card (dismissible)
@@ -1551,7 +1554,7 @@ window.SelHub = window.SelHub || {
         characters.concat([{ id: 'both', name: 'Mediate (both)' }]).map(function(opt) {
           var on = addressing === opt.id;
           return h('button', { key: opt.id,
-            role: 'radio', 'aria-checked': on ? 'true' : 'false',
+            role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': 'Address ' + opt.name,
             onClick: function() { upd('addressing', opt.id); },
             style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? _cftBg('#14b8a6') : '#475569'), background: on ? '#134e4a' : 'transparent', color: on ? '#ccfbf1' : _cftFg('#94a3b8'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
           }, opt.name);
@@ -1574,7 +1577,7 @@ window.SelHub = window.SelHub || {
           style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
         }),
         h('button', {
-          'aria-label': loading ? 'Waiting' : 'Send message',
+          'aria-label': loading ? 'Waiting for characters to respond' : 'Send message',
           onClick: function() { if (studentInput.trim() && !loading) sendTurn(); },
           disabled: loading || !studentInput.trim(),
           style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: loading || !studentInput.trim() ? '#334155' : _cftBg('#14b8a6'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }

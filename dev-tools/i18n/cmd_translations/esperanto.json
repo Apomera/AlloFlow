@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio malfermita.",
   "cmd.open_video_studio_hint": "Registru, subtekstigu kaj redaktu gvidvideojn",
   "palette.ctx.videoStudio": "Ĉi tie — Video Studio",
-  "palette.close": "Fermi la komandopaletron"
+  "palette.close": "Fermi la komandopaletron",
+  "cmd.apply_lesson_template": "Komenci per konservita ŝablono",
+  "cmd.apply_lesson_template_done": "Komencita per ",
+  "cmd.apply_lesson_template_hint": "Komencas novan planon el unu el viaj konservitaj ŝablonoj",
+  "cmd.apply_lesson_template_missing": "Mi ne trovis ŝablonon nomatan ",
+  "cmd.apply_lesson_template_which": "Kiun ŝablonon?",
+  "cmd.rebuild_lesson_step": "Rekonstrui unu paŝon de la plano",
+  "cmd.rebuild_lesson_step_done": "Rekonstruas paŝon ",
+  "cmd.rebuild_lesson_step_hint": "Regeneras unu rimedon — diru la paŝnumeron",
+  "cmd.rebuild_lesson_step_missing": "Mi ne trovis tiun paŝon en la plano.",
+  "cmd.rebuild_lesson_step_none": "la plano ankoraŭ ne havas paŝojn.",
+  "cmd.rebuild_lesson_step_which": "Kiun paŝon?",
+  "cmd.run_lesson_blueprint": "Generi la lecionplanon",
+  "cmd.run_lesson_blueprint_done": "Generas la planon — vi povas rigardi ĉiun paŝon sur la karto.",
+  "cmd.run_lesson_blueprint_hint": "Generas ĉiun rimedon en la nuna plano",
+  "cmd.cancelled": "Nuligo petita. La nuna operacio haltos kiam ĝia provizanto tion subtenos."
 }

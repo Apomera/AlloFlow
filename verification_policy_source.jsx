@@ -1,8 +1,12 @@
-// verification_policy_source.jsx — canonical remediation verification policy.
-// This is intentionally independent of React and the PDF pipeline so every
-// surface interprets AI, axe-core, and Equal Access evidence identically.
+// verification_policy_source.jsx - compatibility facade for shared remediation policy.
+// AccessibilityEvidence owns the canonical implementation; this module preserves
+// the historical VerificationPolicy API and its offline fallback.
 
 function _alloDeriveVerificationState(input) {
+  var _sharedEvidence = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
+  if (_sharedEvidence && typeof _sharedEvidence.deriveVerificationState === 'function') {
+    return _sharedEvidence.deriveVerificationState(input || {});
+  }
   input = input || {};
   var ai = input.ai || input.verificationAudit || null;
   var axe = input.axe || input.axeAudit || null;
@@ -192,6 +196,10 @@ function _alloDeriveVerificationState(input) {
 }
 
 function _alloUnavailableVerificationState(reason) {
+  var _sharedEvidence = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
+  if (_sharedEvidence && typeof _sharedEvidence.unavailableVerificationState === 'function') {
+    return _sharedEvidence.unavailableVerificationState(reason);
+  }
   var why = String(reason || 'verification-policy-module-unavailable');
   var coverage = {
     standard: 'WCAG 2.2 AA',

@@ -813,3 +813,127 @@ describe('Guided banner - persistent brief, resilient checkpoints, and launchpad
     b.cleanup();
   });
 });
+
+describe('Guided banner - deliberate student-readiness launch gate', () => {
+  it('lists unresolved checks before teaching and allows an intentional override', () => {
+    const finalSteps = [{ id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review the lesson.', success: 'All set.' }];
+    const oldDirections = { id: 'old-directions', type: 'directions', title: 'Directions from another lesson' };
+    const openGuidedDocumentBuilder = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: finalSteps, allGuidedSteps: finalSteps, guidedStep: 0,
+      history: [oldDirections], guidedCreatedHistoryIds: [],
+      guidedDeliveryEvidence: {},
+      openGuidedDocumentBuilder,
+    }));
+
+    act(() => { b.button('Start teaching').click(); });
+    expect(openGuidedDocumentBuilder).not.toHaveBeenCalled();
+    expect(b.text()).toContain('Review before starting class');
+    expect(b.text()).toContain('Student directions are saved');
+    expect(b.text()).toContain('6 student-readiness checks still need attention');
+
+    act(() => { b.button('Start teaching anyway').click(); });
+    expect(openGuidedDocumentBuilder).toHaveBeenCalledTimes(1);
+    b.cleanup();
+  });
+
+  it('requires confirmation before finishing with checks remaining', () => {
+    const finalSteps = [{ id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review the lesson.', success: 'All set.' }];
+    const handleCompleteGuidedMode = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: finalSteps, allGuidedSteps: finalSteps, guidedStep: 0,
+      guidedDeliveryEvidence: {},
+      openGuidedDocumentBuilder: vi.fn(),
+      handleCompleteGuidedMode,
+    }));
+
+    act(() => { b.button('Finish with checks remaining').click(); });
+    expect(handleCompleteGuidedMode).not.toHaveBeenCalled();
+    expect(b.text()).toContain('Finish Guided Mode with open checks?');
+    act(() => { b.button('Finish anyway').click(); });
+    expect(handleCompleteGuidedMode).toHaveBeenCalledTimes(1);
+    expect(handleCompleteGuidedMode.mock.calls[0][0]).toMatchObject({ readinessCount: 0, readinessTotal: 6 });
+    b.cleanup();
+  });
+});
+
+describe('Guided banner - truthful autosave and safe exit', () => {
+  it('shows when the active Guided run was saved on this device', () => {
+    const b = mountBanner(baseProps({
+      guidedProgressSaveState: { status: 'saved', at: '2026-08-01T20:15:00.000Z' },
+    }));
+    expect(b.text()).toContain('Saved on this device at');
+    expect(b.host.querySelector('.allo-guided-progress-save')?.getAttribute('data-state')).toBe('saved');
+    b.cleanup();
+  });
+
+  it('does not silently exit when device storage failed', () => {
+    const handleExitGuidedMode = vi.fn();
+    const retryGuidedProgressSave = vi.fn();
+    const openGuidedProjectBackup = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedProgressSaveState: { status: 'error', at: null },
+      handleExitGuidedMode, retryGuidedProgressSave, openGuidedProjectBackup,
+    }));
+    expect(b.text()).toContain('Progress is not saved');
+    act(() => { b.button('Resume later').click(); });
+    expect(handleExitGuidedMode).not.toHaveBeenCalled();
+    expect(b.text()).toContain('Progress could not be saved');
+    expect(b.button('Retry save')).toBeTruthy();
+    expect(b.button('Save project backup')).toBeTruthy();
+    act(() => { b.button('Save project backup').click(); });
+    expect(openGuidedProjectBackup).toHaveBeenCalledTimes(1);
+    act(() => { b.button('Retry save').click(); });
+    expect(retryGuidedProgressSave).toHaveBeenCalledTimes(1);
+    act(() => { b.button('Keep Guided Mode open').click(); });
+    expect(handleExitGuidedMode).not.toHaveBeenCalled();
+    expect(b.text()).not.toContain('Exit without saving');
+
+    act(() => { b.button('Resume later').click(); });
+    act(() => { b.button('Exit without saving').click(); });
+    expect(handleExitGuidedMode).toHaveBeenCalledTimes(1);
+    b.cleanup();
+  });
+});
+
+describe('Guided banner - continuous journey handoff and resource shelf', () => {
+  it('explains automatic advancement and lets the teacher review or go back', () => {
+    const result = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis', summary: 'Key language and concept barriers.' };
+    const openGuidedHistoryItem = vi.fn();
+    const undoGuidedAutoAdvance = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedStep: 2,
+      history: [result], guidedCreatedHistoryIds: ['analysis-1'],
+      guidedAdvanceNotice: { fromStep: 1, fromId: 'analysis', toId: 'faq', historyId: 'analysis-1', at: Date.now() },
+      openGuidedHistoryItem, undoGuidedAutoAdvance, clearGuidedAdvanceNotice: vi.fn(),
+    }));
+    expect(b.text()).toContain('Analyze Source Material is ready');
+    expect(b.text()).toContain('Now guiding you through FAQ');
+    act(() => { b.button('Review result').click(); });
+    act(() => { b.button('Go back').click(); });
+    expect(openGuidedHistoryItem).toHaveBeenCalledWith(result);
+    expect(undoGuidedAutoAdvance).toHaveBeenCalledTimes(1);
+    b.cleanup();
+  });
+
+  it('keeps created resources reachable throughout the run and previews why/output/next', () => {
+    const analysis = { id: 'analysis-1', type: 'analysis', title: 'Barrier analysis' };
+    const faq = { id: 'faq-1', type: 'faq', title: 'Student FAQ' };
+    const openGuidedHistoryItem = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedStep: 1,
+      history: [analysis, faq], guidedCreatedHistoryIds: ['analysis-1', 'faq-1'],
+      openGuidedHistoryItem,
+    }));
+    expect(b.text()).toContain('Lesson resources');
+    expect(b.text()).toContain('Barrier analysis');
+    expect(b.text()).toContain('Student FAQ');
+    expect(b.text()).toContain('Why now');
+    expect(b.text()).toContain('You’ll create');
+    expect(b.text()).toContain('Next');
+    const resourceButton = Array.from(b.host.querySelectorAll('.allo-guided-resource-shelf button')).find(button => button.textContent.includes('Student FAQ'));
+    act(() => { resourceButton.click(); });
+    expect(openGuidedHistoryItem).toHaveBeenCalledWith(faq);
+    b.cleanup();
+  });
+});

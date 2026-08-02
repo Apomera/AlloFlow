@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio imefunguliwa.",
   "cmd.open_video_studio_hint": "Rekodi, weka manukuu na uhariri video za maelekezo",
   "palette.ctx.videoStudio": "Hapa — Video Studio",
-  "palette.close": "Funga paleti ya amri"
+  "palette.close": "Funga paleti ya amri",
+  "cmd.apply_lesson_template": "Anza kutoka kwenye kiolezo kilichohifadhiwa",
+  "cmd.apply_lesson_template_done": "Imeanza kutoka ",
+  "cmd.apply_lesson_template_hint": "Huanzisha mpango mpya kutoka kwenye mojawapo ya violezo ulivyohifadhi",
+  "cmd.apply_lesson_template_missing": "Sikuweza kupata kiolezo kinachoitwa ",
+  "cmd.apply_lesson_template_which": "Kiolezo kipi?",
+  "cmd.rebuild_lesson_step": "Unda upya hatua moja ya mpango",
+  "cmd.rebuild_lesson_step_done": "Inaandaa upya hatua ",
+  "cmd.rebuild_lesson_step_hint": "Hutengeneza rasilimali moja upya — sema nambari ya hatua",
+  "cmd.rebuild_lesson_step_missing": "Sikuweza kupata hatua hiyo kwenye mpango.",
+  "cmd.rebuild_lesson_step_none": "mpango bado hauna hatua.",
+  "cmd.rebuild_lesson_step_which": "Hatua ipi?",
+  "cmd.run_lesson_blueprint": "Tengeneza mpango wa somo",
+  "cmd.run_lesson_blueprint_done": "Mpango unatengenezwa — unaweza kufuatilia kila hatua kwenye kadi.",
+  "cmd.run_lesson_blueprint_hint": "Hutengeneza rasilimali zote kwenye mpango wa sasa",
+  "cmd.cancelled": "Ombi la kughairi limetumwa. Operesheni ya sasa itasimama mtoa huduma wake akiunga mkono hilo."
 }

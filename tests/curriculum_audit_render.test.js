@@ -121,6 +121,10 @@ function auditFixture() {
         },
         auditScope: {
           includedArtifactIds: ['lesson-1', 'quiz-1'],
+          includedArtifacts: [
+            { id: 'lesson-1', title: 'Lesson Plan', type: 'lesson-plan', timestamp: '2026-07-31T12:00:00.000Z' },
+            { id: 'quiz-1', title: 'Exit Quiz', type: 'quiz', timestamp: '2026-07-31T12:05:00.000Z' }
+          ],
           includedTypes: ['lesson-plan', 'quiz'],
           selectionMode: 'explicit artifact IDs',
           excludedArtifactCount: 1,
@@ -182,14 +186,16 @@ function auditFixture() {
 beforeAll(() => {
   window.React = { createElement, Fragment };
   window.AlloIcons = {};
+  loadAlloModule('concept_graph_engine_module.js');
   loadAlloModule('view_alignment_report_module.js');
 });
 
-function renderAuditTree(generatedContent = auditFixture()) {
+function renderAuditTree(generatedContent = auditFixture(), extraProps = {}) {
   const View = window.AlloModules.AlignmentReportView;
   return View({
     generatedContent,
-    t: () => 'Curriculum audit summary'
+    t: () => 'Curriculum audit summary',
+    ...extraProps,
   });
 }
 
@@ -232,6 +238,188 @@ describe('rendered curriculum audit report', () => {
       expect(target.props['aria-labelledby']).toBe(`${target.props.id}-heading`);
       expect(findById(tree, `${target.props.id}-heading`)?.type).toBe('h3');
     });
+  });
+
+  it('renders a readable graph-backed Alignment Map for audited standards', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Partially Aligned',
+      totalStandards: 1,
+      passCount: 0,
+      reviseCount: 1,
+      perStandard: [{
+        standard: 'NGSS 5-LS1-1',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'The text explains plant structures.', artifactIds: ['lesson-1'], attributionSource: 'audit-model' },
+          activityAlignment: { status: 'Partially Aligned', evidence: 'The model activity needs an extension.' },
+          assessmentAlignment: { status: 'Not Aligned', evidence: 'The exit ticket does not yet test the target.' }
+        },
+        overallDetermination: 'Revise',
+        gaps: [{ text: 'Add evidence to the exit ticket.', artifactIds: ['quiz-1'], attributionSource: 'teacher' }],
+        adminRecommendation: 'Add a short exit ticket.'
+      }]
+    };
+
+    const panel = findById(renderAuditTree(fixture), 'audit-alignment-map');
+    expect(panel?.type).toBe('section');
+    expect(panel?.props['aria-labelledby']).toBe('audit-alignment-map-heading');
+    expect(panel?.props['data-graph-version']).toBe('acg/v1');
+    expect(findById(panel, 'audit-alignment-map-heading')?.type).toBe('h3');
+    expect(textContent(panel)).toContain('NGSS 5-LS1-1');
+    expect(textContent(panel)).toContain('The text explains plant structures.');
+    expect(textContent(panel)).toContain('Explicit artifact attribution (1)');
+    expect(textContent(panel)).toContain('Evidence source: Lesson Plan');
+    expect(textContent(panel)).toContain('Attribution source: Audit model');
+    expect(textContent(panel)).toContain('Add evidence to the exit ticket.');
+    expect(textContent(panel)).toContain('Explicit finding attribution (1)');
+    expect(textContent(panel)).toContain('Finding source: Exit Quiz');
+    expect(textContent(panel)).toContain('Attribution source: Teacher');
+    expect(textContent(panel)).toContain('Grounding: AlloFlow curriculum audit');
+    expect(textContent(panel)).toContain('Audited artifact scope (2)');
+    expect(textContent(panel)).toContain('Lesson Plan');
+    expect(textContent(panel)).toContain('Exit Quiz');
+    expect(findAll(panel, (node) => node.type === 'ul' && node.props['aria-label'] === 'Evidence for NGSS 5-LS1-1')).toHaveLength(1);
+  });
+
+  it('offers source confirmation only through the host callback and forwards the graph edge', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Partially Aligned',
+      perStandard: [{
+        standard: 'STD-1',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'The lesson explains the target.', artifactIds: ['lesson-1'] },
+          activityAlignment: { status: 'Partially Aligned', evidence: 'The activity needs an extension.' },
+          assessmentAlignment: { status: 'Not Aligned', evidence: 'The quiz needs a stronger check.' },
+        },
+        overallDetermination: 'Revise',
+        gaps: [{ text: 'The quiz needs a stronger check.', artifactIds: ['quiz-1'] }],
+        adminRecommendation: 'Add a short exit ticket.',
+      }],
+    };    const calls = [];
+    const panel = findById(renderAuditTree(fixture, {
+      onConfirmAttribution: (payload) => calls.push(payload),
+    }), 'audit-alignment-map');
+    const buttons = findAll(panel, (node) => node.type === 'button' && String(node.props['aria-label'] || '').startsWith('Confirm source:'));
+    expect(buttons).toHaveLength(2);
+    buttons[0].props.onClick();
+    expect(calls).toHaveLength(1);
+    expect(calls[0].edgeId).toMatch(/^evidence-artifact-/);
+    expect(calls[0].graph.version).toBe('acg/v1');
+  });
+
+  it('offers graph export only through the host callback and forwards the bounded graph', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Partially Aligned',
+      perStandard: [{
+        standard: 'STD-1',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'The lesson explains the target.', artifactIds: ['lesson-1'] },
+          activityAlignment: { status: 'Partially Aligned', evidence: 'The activity needs an extension.' },
+          assessmentAlignment: { status: 'Not Aligned', evidence: 'The quiz needs a stronger check.' },
+        },
+        overallDetermination: 'Revise',
+        gaps: [{ text: 'The quiz needs a stronger check.', artifactIds: ['quiz-1'] }],
+        adminRecommendation: 'Add a short exit ticket.',
+      }],
+    };
+    const calls = [];
+    const panel = findById(renderAuditTree(fixture, {
+      onExportAlignmentGraph: (payload) => calls.push(payload),
+    }), 'audit-alignment-map');
+    const buttons = findAll(panel, (node) => node.type === 'button' && node.props['aria-label'] === 'Export alignment graph JSON');
+    expect(buttons).toHaveLength(1);
+    buttons[0].props.onClick();
+    expect(calls).toHaveLength(1);
+    expect(calls[0].graph.version).toBe('acg/v1');
+    expect(calls[0].graph.meta.alignmentMap.provenancePolicy).toBe('explicit-attribution-only');
+    expect(findAll(findById(renderAuditTree(fixture), 'audit-alignment-map'), (node) => node.type === 'button' && node.props['aria-label'] === 'Export alignment graph JSON')).toHaveLength(0);
+  });
+  it('renders a saved teacher-confirmed graph state without changing audit standards data', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Partially Aligned',
+      perStandard: [{
+        standard: 'STD-1',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'The lesson explains the target.', artifactIds: ['lesson-1'] },
+          activityAlignment: { status: 'Partially Aligned', evidence: 'The activity needs an extension.' },
+          assessmentAlignment: { status: 'Not Aligned', evidence: 'The quiz needs a stronger check.' },
+        },
+        overallDetermination: 'Revise',
+        gaps: [{ text: 'The quiz needs a stronger check.', artifactIds: ['quiz-1'] }],
+        adminRecommendation: 'Add a short exit ticket.',
+      }],
+    };    const engine = window.AlloModules.ConceptGraphEngine;
+    const graph = engine.fromAlignmentAudit({ standards: fixture.data.comprehensive.standards }, { auditScope: fixture.data.comprehensive.auditScope });
+    const edge = graph.edges.find((candidate) => candidate.relationType === 'evidenceFrom');
+    fixture.data.comprehensive.alignmentMapGraph = engine.confirmExplicitAttributions(graph, [{ edgeId: edge.id, confirmedAt: '2026-08-01T12:00:00.000Z' }]);
+    const panel = findById(renderAuditTree(fixture, { onConfirmAttribution: () => {} }), 'audit-alignment-map');
+    expect(textContent(panel)).toContain('Teacher-confirmed relationships are saved in a derived graph snapshot');
+    expect(textContent(panel)).toContain('Teacher confirmed');
+    expect(fixture.data.comprehensive.standards.perStandard[0].analysis.textAlignment.evidence).toBe('The lesson explains the target.');
+  });
+
+  it('surfaces exact local standards context in the Alignment Map when available', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Aligned',
+      perStandard: [{
+        standard: 'NGSS 5-LS1-1',
+        overallDetermination: 'Pass',
+        analysis: { textAlignment: { status: 'Aligned', evidence: 'The text explains plant structures.' } }
+      }]
+    };
+    const target = { id: 'std:ls1-1', code: '5-LS1-1', label: 'Plant structures', kind: 'standard', resolvable: true, framework: 'NGSS', sourceUrl: 'https://example.test/ngss' };
+    const group = { id: 'group:life', label: 'Life Science', text: 'A grouping for life science relationships.', kind: 'group', resolvable: false, framework: 'NGSS', sourceUrl: 'https://example.test/ngss/life' };
+    const previous = window.AlloModules.StandardsProvider;
+    window.AlloModules.StandardsProvider = {
+      getRegisteredProvider: () => ({
+        resolveStandard: () => ({ status: 'resolved', match: target }),
+        getNeighborhood: () => ({
+          rootId: target.id,
+          nodes: [target, group],
+          relationships: [{ fromId: group.id, toId: target.id, type: 'hasChild', source: target.sourceUrl }],
+          truncated: false
+        })
+      })
+    };
+    try {
+      const panel = findById(renderAuditTree(fixture), 'audit-alignment-map');
+      expect(textContent(panel)).toContain('Standards graph: 1/1 exact target connected');
+      expect(textContent(panel)).toContain('Standards context: 5-LS1-1');
+      expect(textContent(panel)).toContain('Parent/group: Life Science (group)');
+      expect(textContent(panel)).toContain('Source verified');
+      expect(textContent(panel)).toContain('A grouping for life science relationships.');
+      expect(textContent(panel)).toContain('Open source record');
+    } finally {
+      if (previous) window.AlloModules.StandardsProvider = previous;
+      else delete window.AlloModules.StandardsProvider;
+    }
+  });
+  it('keeps the Alignment Map readable when the graph engine is unavailable', () => {
+    const fixture = auditFixture();
+    fixture.data.comprehensive.standards = {
+      status: 'Aligned',
+      perStandard: [{
+        standard: 'CCSS.ELA-LITERACY.RI.3.3',
+        analysis: {
+          textAlignment: { status: 'Aligned', evidence: 'Fallback evidence remains visible.' }
+        },
+        overallDetermination: 'Pass'
+      }]
+    };
+    const engine = window.AlloModules.ConceptGraphEngine;
+    const originalAdapter = engine.fromAlignmentAudit;
+    engine.fromAlignmentAudit = undefined;
+    try {
+      const panel = findById(renderAuditTree(fixture), 'audit-alignment-map');
+      expect(panel?.props['data-graph-version']).toBe('audit-fallback');
+      expect(textContent(panel)).toContain('Fallback evidence remains visible.');
+    } finally {
+      engine.fromAlignmentAudit = originalAdapter;
+    }
   });
 
   it('keeps all dimension navigation available for older audits without dimensionScores', () => {

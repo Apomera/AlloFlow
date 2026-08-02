@@ -51,8 +51,8 @@ describe('post-remediation toast — never claim success when content integrity 
     expect(selectToast({ integrityWarning: true, finalAfterScore: null, outcomeState: 'success' })).not.toBe('integrity');
     // and a clean successful run still reaches success
     expect(selectToast({ integrityWarning: false, finalAfterScore: 95, outcomeState: 'success' })).toBe('success');
-    expect(src).toContain('✅ PDF remediated! Score:');
-    expect(src).toContain('some source text may be missing — review the Diff before distributing');
+    expect(src).toContain('✅ PDF remediated and fully verified! Score:');
+    expect(src).toContain('Some source content may be missing — review the Diff to confirm.');
   });
 });
 

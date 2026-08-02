@@ -7,6 +7,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { validAudioBase64 } from './lib/audio_fixtures.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
@@ -172,7 +173,14 @@ describe('SimplifiedView Edit Audio mode', () => {
       await Promise.resolve();
     });
 
-    expect(window.__alloRegenerateSentenceAudio).toHaveBeenCalledWith('First sentence.');
+    expect(window.__alloRegenerateSentenceAudio).toHaveBeenCalledWith(
+      'First sentence.',
+      expect.objectContaining({
+        occurrence: 0,
+        identity: 'source:0:0',
+        profile: expect.objectContaining({ voice: 'Kore', language: 'English' }),
+      }),
+    );
     expect(button('Regenerate audio for sentence 1')).toBeTruthy();
     expect(button('Remove saved audio for sentence 1')).toBeTruthy();
     expect(button('Play audio for sentence 1').disabled).toBe(false);
@@ -190,7 +198,14 @@ describe('SimplifiedView Edit Audio mode', () => {
       await Promise.resolve();
     });
 
-    expect(window.__alloRemoveSentenceAudio).toHaveBeenCalledWith('First sentence.');
+    expect(window.__alloRemoveSentenceAudio).toHaveBeenCalledWith(
+      'First sentence.',
+      expect.objectContaining({
+        occurrence: 0,
+        identity: 'source:0:0',
+        profile: expect.objectContaining({ voice: 'Kore', language: 'English' }),
+      }),
+    );
     expect(audioInstances[0].pause).toHaveBeenCalled();
     expect(button('Generate audio for sentence 1')).toBeTruthy();
     expect(button('Play audio for sentence 1').disabled).toBe(true);
@@ -464,7 +479,7 @@ describe('SimplifiedView Edit Audio mode', () => {
       'Short second sentence.',
     ];
     playbackUnits.forEach((sentence) => {
-      expect(store.put(sentence, Buffer.from('clip').toString('base64'), 'audio/mpeg', 'ai-played', {
+      expect(store.put(sentence, validAudioBase64(), 'audio/mpeg', 'ai-played', {
         voice: 'Kore', speed: 1, language: 'English', provider: 'played-tts-mp3',
       })).toBeTruthy();
     });

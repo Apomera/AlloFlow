@@ -83,6 +83,120 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(l.lookAt.x).toBe(l.framePos.x);
   });
 
+  it('adapts live camera framing to captions, images, reliefs, and sculptures', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    expect(source).toContain('function _applyAdaptiveFraming(l, ref)');
+    expect(source).toContain('new THREE.Box3()');
+    expect(source).toContain('ref.mat.displacementMap');
+    expect(source).toContain('if (palace.route[curIdx] === id) stopTargets(curIdx);');
+    expect(source).toContain('var _roomLights = {}, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {};');
+    expect(source).toContain('new THREE.LineBasicMaterial');
+    expect(source).toContain('function _setRoomOutlineMode()');
+    expect(source).toContain('outline.opacity = active ? (overview ? 0.68 : 0.32)');
+    expect(source).toContain('function roomMasterySummary(palace, mastery)');
+    expect(source).toContain('var _roomLights = {}, _roomLabels = {}, _roomPortals = {}, _roomOutlines = {}, _roomHeatmaps = {}');
+    expect(source).toContain('function _setRoomHeatmapState()');
+    expect(source).toContain('memory_palace.mastery_room_average');
+    expect(source).toContain('function _roomMasteryColor(value)');
+    expect(source).toContain('var routeGuide = new THREE.Group()');
+    expect(source).toContain('function _setRouteGuideState()');
+    expect(source).toContain('routeGuide.visible = !!overview');
+    expect(source).toContain('marker.rotation.x = Math.PI / 2');
+    expect(source).toContain('function _setMasteryLegendState()');
+    expect(source).toContain('memory_palace.mastery_needs_practice');
+    expect(source).toContain('masteryLegend.hidden = !show');
+    expect(source).toContain('memory_palace.mastery_current');
+    expect(source).toContain('function _setRoomBadgeState()');
+    expect(source).toContain('memory_palace.room_current');
+    expect(source).toContain('roomBadgeDot.style.backgroundColor');
+    expect(source).toContain('hud.appendChild(roomBadge)');
+    expect(source).toContain('var progressWrap = document.createElement');
+    expect(source).toContain('progressFill.style.width =');
+    expect(source).toContain('focusCard = null, focusCardKicker');
+    expect(source).toContain('function _setFocusCardState()');
+    expect(source).toContain('var show = !recall && !overview && !freeMode && !state.xrActive && !!l');
+    expect(source).toContain("memory_palace.focus_picture");
+    expect(source).toContain('holder.appendChild(focusCard);');
+    expect(source).toContain('focusCard = null;');
+    expect(source).toContain('var completionGlow = null');
+    expect(source).toContain('function _setCompletionCardState()');
+    expect(source).toContain('var complete = !recall && !overview && !freeMode && !state.xrActive && total > 0');
+    expect(source).toContain('memory_palace.complete_walk_again');
+    expect(source).toContain('completionOverviewBtn.onclick');
+    expect(source).toContain('completionCard = null;');
+    expect(source).toContain('var journeyMap = null');
+    expect(source).toContain('function _setJourneyMapState()');
+    expect(source).toContain("journeyMap.setAttribute('aria-label', _tr(t, 'memory_palace.journey_map'");
+    expect(source).toContain('var journeyGroups = {}');
+    expect(source).toContain("button.setAttribute('data-journey-index', String(stop.index))");
+    expect(source).toContain('journeyMapStops.push({ index: stop.index');
+    expect(source).toContain("var show = !!overview && !routeVisible && !recall && journeyMapStops.length > 0");
+    expect(source).toContain("journeyMap.hidden = !show");
+    expect(source).toContain('journeyMap = null;');
+    expect(source).toContain('var frameMeshes = [], frameRefs = {}, _emptyBeacons = []');
+    expect(source).toContain('var isEmptyLocus = !img && !((opts && opts.objects) || {})[l.id]');
+    expect(source).toContain('new THREE.RingGeometry(13, 17, 28)');
+    expect(source).toContain('var nearby = _nearEmptyId === beacon.id');
+    expect(source).toContain('beaconVisible = !!beaconRef && beaconRef.empty && !recall');
+    expect(source).toContain('_emptyBeacons.length = 0');
+    expect(source).toContain('function _ensureEmptyBeacon(ref)');
+    expect(source).toContain('_ensureEmptyBeacon(ref);');
+    expect(source).toContain('var nextStopBeacon = null');
+    expect(source).toContain('new THREE.CylinderGeometry(5, 8, 76, 12)');
+    expect(source).toContain('function _setNextStopBeaconState()');
+    expect(source).toContain('var show = !!freeMode && !overview && !recall');
+    expect(source).toContain('var nextWave = reduce ? 0.5');
+    expect(source).toContain('nextStopBeacon = null;');
+    expect(source).toContain('var guidedTether = null');
+    expect(source).toContain('function _setGuidedTetherState()');
+    expect(source).toContain('!recall && !overview && !freeMode && !state.xrActive && targetIdx < palace.route.length');
+    expect(source).toContain('guidedTether.line.geometry.dispose');
+    expect(source).toContain('guidedTether = null;');
+    expect(source).toContain('var arrivalHalo = null');
+    expect(source).toContain('function _setArrivalHaloState()');
+    expect(source).toContain('arrivalHalo.outer.material.opacity');
+    expect(source).toContain('arrivalHalo = null;');
+    expect(source).toContain('freeNavCompass = null');
+    expect(source).toContain("freeNavCompass.title = _tr(t, 'memory_palace.free_compass'");
+    expect(source).toContain('freeNavCompassArrow.style.cssText');
+    expect(source).toContain("freeNavCompassArrow.style.transform = 'rotate('");
+    expect(source).toContain('freeNavCompass.hidden = !headingGlyph');
+    expect(source).toContain('function _hideCtrlHint()');
+    expect(source).toContain('ctrlHintTimer = window.setTimeout(_hideCtrlHint');
+    expect(source).toContain('flex-wrap:wrap');
+    expect(source).toContain('font-size:0.8125rem');
+    expect(source).toContain('function _syncDockLayout()');
+    expect(source).toContain('new window.ResizeObserver(_syncDockLayout)');
+    expect(source).toContain('freeNavCue.style.bottom = overlayBottom');
+    expect(source).toContain('function _setActiveRoom(roomIdx)');
+    expect(source).toContain('portal.emissiveIntensity = Number(key) === _activeRoomIdx');
+    expect(source).toContain('roomIdx: ri');
+    expect(source).toContain('function _syncFreeRoomContext()');
+    expect(source).toContain('var focusRef = freeMode ? _freeStopRef : _hlRef;');
+    expect(source).toContain('_syncFreeRoomContext();');
+    expect(source).toContain('function _updateFreeCue(roomIdx, ref)');
+    expect(source).toContain("freeNavCue.setAttribute('aria-live', 'polite')");
+    expect(source).toContain('freeNavText.textContent = roomLabel +');
+    expect(source).toContain('var freeNavCue = null, freeNavText = null, freeReturnBtn = null');
+    expect(source).toContain('headingGlyph =');
+    expect(source).toContain('freeReturnBtn.onclick = function () { goTo(curIdx); }');
+    expect(source).toContain("freeReturnBtn.setAttribute('aria-label', _tr(t, 'memory_palace.free_return'");
+    expect(source).toContain('stopRing: stopRing');
+    expect(source).toContain('light.intensity = Number(key) === _activeRoomIdx');
+    expect(source).toContain('var roomLinks = [], roomLinkSeen = {}');
+    expect(source).toContain('roomLinks: roomLinks');
+    expect(source).toContain('var crossLinkGroup = new THREE.Group()');
+    expect(source).toContain('function _setCrossLinkState()');
+    expect(source).toContain('var show = !!overview && !recall && crossLinks.length > 0');
+    expect(source).toContain('link.label.visible = show && active');
+    expect(source).toContain('var focusedCrossLink = -1');
+    expect(source).toContain('function _focusCrossLink(index)');
+    expect(source).toContain('memory_palace.connections_hint');
+    expect(source).toContain('focusButton.onclick = function () { _focusCrossLink(linkIdx); }');
+    expect(source).toContain('function _jumpToRoom(roomIdx)');
+    expect(source).toContain('jumpButton.onclick = function (event)');
+    expect(source).toContain('_setCrossLinkState();');
+  });
   it('alternates walls left/right within a room (classic loci pattern)', () => {
     const p = MP.buildPalace(sampleData());
     const byId = {}; p.loci.forEach((l) => { byId[l.id] = l; });
@@ -97,6 +211,27 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     const empty = MP.buildPalace({ main: 'X', branches: [] });
     expect(empty.route).toEqual(['__entry']);
     expect(empty.rooms.length).toBe(1);
+  });
+
+  it('summarizes mastery by room with average strength and coverage', () => {
+    const p = MP.buildPalace(sampleData());
+    const summary = MP.roomMasterySummary(p, {
+      b0_i0: { strength: 1 },
+      b0_i1: { strength: 0.5 },
+      b1_i0: { strength: 0 }
+    });
+    expect(summary[0]).toEqual({ count: 0, rated: 0, average: null, coverage: 0 });
+    expect(summary[1]).toEqual({ count: 2, rated: 2, average: 0.75, coverage: 1 });
+    expect(summary[2]).toEqual({ count: 2, rated: 1, average: 0, coverage: 0.5 });
+  });
+
+  it('normalizes explicit non-linear branch connections into room links', () => {
+    const p = MP.buildPalace({ main: 'X', branches: [
+      { title: 'A', items: ['a'], connections: [{ target: 2, label: 'supports' }] },
+      { title: 'B', items: ['b'], connections: [{ target: 2, label: '' }] },
+      { title: 'C', items: ['c'], connections: [] }
+    ] });
+    expect(p.roomLinks).toEqual([{ fromRoomIdx: 1, toRoomIdx: 3, label: 'supports' }]);
   });
 });
 

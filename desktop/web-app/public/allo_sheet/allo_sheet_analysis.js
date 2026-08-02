@@ -429,6 +429,51 @@
     return model;
   }
 
+  function profileRange(values, type) {
+    if (!values.length) return null;
+    if (type === 'number' || type === 'duration') {
+      var numericValues = values.map(strictNumber).filter(function (value) { return value !== null; });
+      if (!numericValues.length) return null;
+      return { minimum: Math.min.apply(Math, numericValues), maximum: Math.max.apply(Math, numericValues), validCount: numericValues.length };
+    }
+    if (type === 'date') {
+      var dates = values.map(function (value) { return String(value).trim(); }).filter(validIsoDate);
+      if (!dates.length) return null;
+      dates.sort();
+      return { minimum: dates[0], maximum: dates[dates.length - 1], validCount: dates.length };
+    }
+    if (type === 'datetime') {
+      var dateTimes = values.map(function (value) { return String(value).trim(); }).filter(validIsoDateTime);
+      if (!dateTimes.length) return null;
+      dateTimes.sort();
+      return { minimum: dateTimes[0], maximum: dateTimes[dateTimes.length - 1], validCount: dateTimes.length };
+    }
+    return null;
+  }
+
+  function buildColumnProfile(records, columns, declaredDetails) {
+    var copiedRecords = (records || []).slice();
+    var copiedColumns = (columns || []).map(String);
+    var columnTypes = inferColumnTypes(copiedRecords, copiedColumns, declaredDetails);
+    var profiles = copiedColumns.map(function (column) {
+      var values = copiedRecords.map(function (record) { return record && record.fields ? record.fields[column] : ''; });
+      var nonBlankValues = values.filter(function (value) { return !isBlank(value); });
+      var distinct = Object.create(null);
+      nonBlankValues.forEach(function (value) { distinct[typeof value + ':' + String(value).trim()] = true; });
+      return {
+        column: column,
+        type: columnTypes[column],
+        identifierLike: IDENTIFIER_PATTERN.test(column),
+        filledCount: nonBlankValues.length,
+        blankCount: values.length - nonBlankValues.length,
+        distinctCount: Object.keys(distinct).length,
+        range: profileRange(nonBlankValues, columnTypes[column])
+      };
+    });
+    var profile = { sourceRowCount: copiedRecords.length, columns: profiles, columnTypes: columnTypes };
+    profile.narrative = 'Profiled ' + profiles.length + ' column' + (profiles.length === 1 ? '' : 's') + ' across ' + copiedRecords.length + ' loaded row' + (copiedRecords.length === 1 ? '' : 's') + '. Values stay in this window; the profile contains structure and counts only.';
+    return profile;
+  }
   return Object.freeze({
     MAX_VISUAL_GROUPS: MAX_VISUAL_GROUPS,
     isBlank: isBlank,
@@ -438,6 +483,7 @@
     filterRecords: filterRecords,
     aggregateGroups: aggregateGroups,
     trendPositionFractions: trendPositionFractions,
-    buildAnalysis: buildAnalysis
+    buildAnalysis: buildAnalysis,
+    buildColumnProfile: buildColumnProfile
   });
 });

@@ -1,0 +1,38 @@
+{
+  "manifestVersion": "alloflow-upstream-source/v1",
+  "reviewedAt": "2026-08-01",
+  "provider": "Learning Commons Knowledge Graph",
+  "dataset": "Academic Standards",
+  "exportVersion": "v1.11.0",
+  "datasetLastUpdated": "2026-06-18",
+  "access": {
+    "mode": "public UTF-8 JSONL files",
+    "apiKeyRequired": false,
+    "nodesUrl": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/nodes.jsonl",
+    "relationshipsUrl": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/relationships.jsonl"
+  },
+  "sourceIntegrity": {
+    "nodes": {
+      "bytes": 292652341,
+      "sha256": "FFC142F72450C9692A9E547207CBA3E0CD4012EB00C1D1BE6AACED165C4139C5",
+      "etag": "\"0a46dded494853cd90e81295c96c3abb-35\"",
+      "lastModified": "2026-07-09T21:56:05Z"
+    },
+    "relationships": {
+      "bytes": 520406049,
+      "sha256": "74389D5E438E7A7F23E1128539827533AE08ACACC73C9F3E4C81CC07A8916B21",
+      "etag": "\"0017e742cae8adcc87bf090aeb710cc1-63\"",
+      "lastModified": "2026-07-09T21:56:05Z"
+    }
+  },
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received state standards and written permission under CC BY-4.0 from 1EdTech.",
+  "sourceDocumentation": [
+    "https://docs.learningcommons.org/knowledge-graph/datasets/academic-standards",
+    "https://docs.learningcommons.org/knowledge-graph/using-knowledge-graph/local-files",
+    "https://docs.learningcommons.org/knowledge-graph/resources/license",
+    "https://docs.learningcommons.org/knowledge-graph/resources/terms-of-use"
+  ],
+  "distributionDecision": "Importer-only. Do not commit the full upstream corpus. Generate reviewed jurisdiction/subject subsets and preserve license, attribution, source URLs, CASE UUIDs, and CASE URIs.",
+  "usageBoundary": "Use as instructional alignment evidence with educator judgment. Do not present graph matches as official certification or use them for high-stakes grading, placement, or evaluation."
+}

@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Binuksan ang Video Studio.",
   "cmd.open_video_studio_hint": "Mag-record, maglagay ng caption, at mag-edit ng mga walkthrough",
   "palette.ctx.videoStudio": "Dito — Video Studio",
-  "palette.close": "Isara ang command palette"
+  "palette.close": "Isara ang command palette",
+  "cmd.apply_lesson_template": "Magsimula sa naka-save na template",
+  "cmd.apply_lesson_template_done": "Nagsimula mula sa ",
+  "cmd.apply_lesson_template_hint": "Nagsisimula ng bagong plano mula sa isa sa iyong mga naka-save na template",
+  "cmd.apply_lesson_template_missing": "Hindi ko makita ang template na tinatawag na ",
+  "cmd.apply_lesson_template_which": "Aling template?",
+  "cmd.rebuild_lesson_step": "Buuin muli ang isang hakbang ng plano",
+  "cmd.rebuild_lesson_step_done": "Binubuo muli ang hakbang ",
+  "cmd.rebuild_lesson_step_hint": "Muling bumubuo ng isang resource — sabihin ang numero ng hakbang",
+  "cmd.rebuild_lesson_step_missing": "Hindi ko makita ang hakbang na iyon sa plano.",
+  "cmd.rebuild_lesson_step_none": "wala pang mga hakbang ang plano.",
+  "cmd.rebuild_lesson_step_which": "Aling hakbang?",
+  "cmd.run_lesson_blueprint": "Bumuo ng lesson plan",
+  "cmd.run_lesson_blueprint_done": "Binubuo ang plano — makikita mo ang bawat hakbang sa card.",
+  "cmd.run_lesson_blueprint_hint": "Binubuo ang lahat ng resource sa kasalukuyang plano",
+  "cmd.cancelled": "Hiniling ang pagkansela. Hihinto ang kasalukuyang operasyon kapag sinusuportahan ito ng provider nito."
 }

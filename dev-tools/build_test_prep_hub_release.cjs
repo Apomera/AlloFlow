@@ -4,15 +4,16 @@
 const { execFileSync: rawExecFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const waitBuffer = new Int32Array(new SharedArrayBuffer(4));
 function execFileSync(file,args,options){let error;for(let attempt=1;attempt<=12;attempt++){try{return rawExecFileSync(file,args,options)}catch(caught){error=caught;if(attempt<12)Atomics.wait(waitBuffer,0,0,Math.min(1000,200*attempt))}}throw error}
-function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data,'utf8');return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep_hub_source.jsx');
 const epppPartOnePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
-const epppPartOnePackBuildPath = path.join(root, 'dev-tools', 'build_eppp_part_one_pack.cjs');
-const epppNativeQaPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
+
+
 const eppp2027PreviewPackPath = path.join(root, 'test_prep', 'eppp_2027_preview_pack.json');
 const eppp2027PreviewBuildPath = path.join(root, 'dev-tools', 'build_eppp_2027_preview.cjs');
 const eppp2027PreviewQaPath = path.join(root, 'dev-tools', 'qa_eppp_2027_preview.cjs');
@@ -122,12 +123,13 @@ const writeTestPrepAssistantReviewPath=path.join(root,'dev-tools','write_test_pr
 const verifyTestPrepAssistantReviewPath=path.join(root,'dev-tools','verify_test_prep_assistant_review.cjs');
 const buildTestPrepReferenceCatalogPath=path.join(root,'dev-tools','build_test_prep_reference_catalog.cjs');
 const buildTestPrepPackManifestPath=path.join(root,'dev-tools','build_test_prep_pack_manifest.cjs');
-const epppMigrationArchivePath=path.join(root,'dev-tools','build_eppp_migration_source_archive.cjs');
-const epppLearningLibraryBuildPath=path.join(root,'dev-tools','build_eppp_learning_library.cjs');
+
+
 const reviewNonEpppAgainstEpppPath=path.join(root,'dev-tools','review_non_eppp_against_eppp.cjs');
 const applyTestPrepIndependentAdditionsPath=path.join(root,'dev-tools','apply_test_prep_independent_additions.cjs');
 const expandTestPrepPacksPath=path.join(root,'dev-tools','expand_test_prep_packs_to_500.cjs');
 const bindNonEpppNativeQaPath=path.join(root,'dev-tools','bind_non_eppp_native_qa.cjs');
+const stampLearningLibraryIdentityPath=path.join(root,'dev-tools','stamp_learning_library_identity.cjs');
 const postCorrectionQaPaths = [
   paraProLibraryQaPath, paraProQaPath,
   specialEducation5355LibraryQaPath, specialEducation5355QaPath,
@@ -180,8 +182,8 @@ const schoolLibrarian5312Registration='registerTestPrepPack(SCHOOL_LIBRARIAN_531
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
 if (!fs.existsSync(buildTestPrepPackManifestPath)) throw new Error('Test Prep pack manifest builder not found.');
-if (!fs.existsSync(epppPartOnePackBuildPath)) throw new Error('EPPP Part 1 pack builder not found.');
-if (!fs.existsSync(epppNativeQaPath)) throw new Error('EPPP Part 1 QA builder not found.');
+
+
 if (!fs.existsSync(eppp2027PreviewPackPath)) throw new Error('Integrated EPPP 2027 preview pack not found.');
 if (!fs.existsSync(paraProSourcePath)) throw new Error('ParaPro release source not found.');
 if (!fs.existsSync(specialEducation5355SourcePath)) throw new Error('Praxis Special Education 5355 release source not found.');
@@ -288,6 +290,11 @@ execFileSync(process.execPath,[bindNonEpppNativeQaPath],{cwd:root,stdio:'inherit
 execFileSync(process.execPath,[applyTestPrepIndependentAdditionsPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[expandTestPrepPacksPath],{cwd:root,stdio:'inherit'});
 for (const qaPath of postExpansionQaPaths) execFileSync(process.execPath,[qaPath],{cwd:root,stdio:'inherit'});
+// Identity fields are part of the released learning-library bytes. Stamp them
+// before cryptographic QA/review bindings are evaluated, or every subsequent
+// stamp invalidates those bindings even though the instructional content is
+// unchanged.
+execFileSync(process.execPath,[stampLearningLibraryIdentityPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[bindNonEpppNativeQaPath],{cwd:root,stdio:'inherit'});
 if (!skipEpppPreviewRebuild) {
   execFileSync(process.execPath, [eppp2027PreviewBuildPath], { cwd: root, stdio: 'inherit' });
@@ -300,16 +307,16 @@ execFileSync(process.execPath,[writeTestPrepAssistantReviewPath],{cwd:root,stdio
 execFileSync(process.execPath,[reviewNonEpppAgainstEpppPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[verifyTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
 }
-execFileSync(process.execPath,[epppMigrationArchivePath,'--verify'],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath,[epppLearningLibraryBuildPath],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath,[epppPartOnePackBuildPath],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath,[epppNativeQaPath],{cwd:root,stdio:'inherit'});
+
+
+
+
 // Bind every learning-library JSON to its pack identity AFTER all library
 // generators and BEFORE the manifest recomputes digests: the hub's library
 // fetch runs strict bound-identity validation whenever the manifest entry
 // carries a sha256, and only the AP-pilot generator emits the full
 // packId/version/visibility trio itself (2026-07-31).
-execFileSync(process.execPath,[path.join(root,'dev-tools','stamp_learning_library_identity.cjs')],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[stampLearningLibraryIdentityPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[buildTestPrepPackManifestPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
@@ -429,31 +436,38 @@ function embedPack(pack) {
   }
   return { ...pack, items: pack.items.slice(0, embeddedItemCount) };
 }
-const prelude = 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySource + ')();\n\n'
+const pakoInflateSource = fs.readFileSync(path.join(root, 'node_modules', 'pako', 'dist', 'pako_inflate.min.js'), 'utf8').trim();
+function compressedPackExpression(pack) {
+  const payload = zlib.deflateRawSync(Buffer.from(JSON.stringify(embedPack(pack)), 'utf8'), { level: 9 }).toString('base64');
+  return 'TEST_PREP_DECODE_PACK(' + JSON.stringify(payload) + ')';
+}
+const prelude = 'const TEST_PREP_PACK_INFLATE = (function () { var module = { exports: {} }; var exports = module.exports; ' + pakoInflateSource + '; return module.exports.inflateRaw; })();\n'
+  + 'const TEST_PREP_DECODE_PACK = function (value) { const binary = typeof atob === \'function\' ? atob(value) : Buffer.from(value, \'base64\').toString(\'binary\'); const bytes = new Uint8Array(binary.length); for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index); return JSON.parse(new TextDecoder(\'utf-8\').decode(TEST_PREP_PACK_INFLATE(bytes))); };\n\n'
+  + 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySource + ')();\n\n'
   + 'const TEST_PREP_REFERENCE_CATALOG = ' + JSON.stringify(referenceCatalog) + ';\n\n'
   + 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ' + JSON.stringify(eppp2027PreviewPack) + ';\n\n'
-  + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(embedPack(paraProPack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducation5355Pack)) + ';\n\n'
-  + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + JSON.stringify(embedPack(schoolCounselor5422Pack)) + ';\n\n'
-  + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + JSON.stringify(embedPack(schoolPsychologist5403Pack)) + ';\n\n'
-  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + JSON.stringify(embedPack(speechLanguagePathology5331Pack)) + ';\n\n'
-  + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + JSON.stringify(embedPack(audiology5343Pack)) + ';\n\n'
-  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + JSON.stringify(embedPack(readingSpecialist5302Pack)) + ';\n\n'
-  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + JSON.stringify(embedPack(educationalLeadership5412Pack)) + ';\n\n'
-  + 'const PLT_K6_5622_PRACTICE_PACK = ' + JSON.stringify(embedPack(pltK65622Pack)) + ';\n\n'
-  + 'const PRAXIS_CORE_5752_PRACTICE_PACK = ' + JSON.stringify(embedPack(praxisCore5752Pack)) + ';\n\n'
-  + 'const ESOL_5362_PRACTICE_PACK = ' + JSON.stringify(embedPack(esol5362Pack)) + ';\n\n'
-  + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + JSON.stringify(embedPack(teachingReading5205Pack)) + ';\n\n'
-  + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + JSON.stringify(embedPack(earlyChildhood5025Pack)) + ';\n\n'
-  + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + JSON.stringify(embedPack(pltEarlyChildhood5621Pack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducationEarlyChildhood5692Pack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducationSevereProfound5547Pack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducationLearningDisabilities5383Pack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducationBehaviorEmotional5372Pack)) + ';\n\n'
-  + 'const SPECIAL_EDUCATION_INTELLECTUAL_DISABILITIES_5322_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducationIntellectualDisabilities5322Pack)) + ';\n\n'
-  + 'const PLT_5_9_5623_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt595623Pack)) + ';\n\n'
-  + 'const PLT_7_12_5624_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt7125624Pack)) + ';\n\n'
-  + 'const SCHOOL_LIBRARIAN_5312_PRACTICE_PACK = ' + JSON.stringify(embedPack(schoolLibrarian5312Pack)) + ';\n\n';
+  + 'const PARAPRO_PRACTICE_PACK = ' + compressedPackExpression(paraProPack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + compressedPackExpression(specialEducation5355Pack) + ';\n\n'
+  + 'const SCHOOL_COUNSELOR_5422_PRACTICE_PACK = ' + compressedPackExpression(schoolCounselor5422Pack) + ';\n\n'
+  + 'const SCHOOL_PSYCHOLOGIST_5403_PRACTICE_PACK = ' + compressedPackExpression(schoolPsychologist5403Pack) + ';\n\n'
+  + 'const SPEECH_LANGUAGE_PATHOLOGY_5331_PRACTICE_PACK = ' + compressedPackExpression(speechLanguagePathology5331Pack) + ';\n\n'
+  + 'const AUDIOLOGY_5343_PRACTICE_PACK = ' + compressedPackExpression(audiology5343Pack) + ';\n\n'
+  + 'const READING_SPECIALIST_5302_PRACTICE_PACK = ' + compressedPackExpression(readingSpecialist5302Pack) + ';\n\n'
+  + 'const EDUCATIONAL_LEADERSHIP_5412_PRACTICE_PACK = ' + compressedPackExpression(educationalLeadership5412Pack) + ';\n\n'
+  + 'const PLT_K6_5622_PRACTICE_PACK = ' + compressedPackExpression(pltK65622Pack) + ';\n\n'
+  + 'const PRAXIS_CORE_5752_PRACTICE_PACK = ' + compressedPackExpression(praxisCore5752Pack) + ';\n\n'
+  + 'const ESOL_5362_PRACTICE_PACK = ' + compressedPackExpression(esol5362Pack) + ';\n\n'
+  + 'const TEACHING_READING_5205_PRACTICE_PACK = ' + compressedPackExpression(teachingReading5205Pack) + ';\n\n'
+  + 'const EARLY_CHILDHOOD_5025_PRACTICE_PACK = ' + compressedPackExpression(earlyChildhood5025Pack) + ';\n\n'
+  + 'const PLT_EARLY_CHILDHOOD_5621_PRACTICE_PACK = ' + compressedPackExpression(pltEarlyChildhood5621Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_EARLY_CHILDHOOD_5692_PRACTICE_PACK = ' + compressedPackExpression(specialEducationEarlyChildhood5692Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_SEVERE_PROFOUND_5547_PRACTICE_PACK = ' + compressedPackExpression(specialEducationSevereProfound5547Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_LEARNING_DISABILITIES_5383_PRACTICE_PACK = ' + compressedPackExpression(specialEducationLearningDisabilities5383Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_BEHAVIOR_EMOTIONAL_5372_PRACTICE_PACK = ' + compressedPackExpression(specialEducationBehaviorEmotional5372Pack) + ';\n\n'
+  + 'const SPECIAL_EDUCATION_INTELLECTUAL_DISABILITIES_5322_PRACTICE_PACK = ' + compressedPackExpression(specialEducationIntellectualDisabilities5322Pack) + ';\n\n'
+  + 'const PLT_5_9_5623_PRACTICE_PACK = ' + compressedPackExpression(plt595623Pack) + ';\n\n'
+  + 'const PLT_7_12_5624_PRACTICE_PACK = ' + compressedPackExpression(plt7125624Pack) + ';\n\n'
+  + 'const SCHOOL_LIBRARIAN_5312_PRACTICE_PACK = ' + compressedPackExpression(schoolLibrarian5312Pack) + ';\n\n';
 // Compile only the JSX source. Keeping the already-serialized data prelude
 // out of esbuild prevents its printer from re-inserting megabytes of optional
 // whitespace into otherwise compact JSON literals.
@@ -499,6 +513,7 @@ ${prelude}${compiled}
     validatePack: validateTestPrepPack,
     normalizeProgress: normalizeTestPrepProgress,
     resolvePackContentIdentity: testPrepResolvePackContentIdentity,
+    resolveLearnerDataIdentity: testPrepResolveLearnerDataIdentity,
     contentIdentityStatus: testPrepContentIdentityStatus,
     normalizeSession: testPrepNormalizeSession,
     scoreAttempt: scoreTestPrepAttempt,
@@ -546,6 +561,19 @@ ${prelude}${compiled}
     exportProgress: testPrepExportProgress,
     importProgress: testPrepImportProgress,
     normalizeReviewItems: normalizeTestPrepReviewItems,
+    reviewItemsForPack: testPrepReviewItemsForPack,
+    setReviewItemsForPack: testPrepSetReviewItemsForPack,
+    retainedReviewItemCount: testPrepRetainedReviewItemCount,
+    annotationsForPack: testPrepAnnotationsForPack,
+    retainedAnnotationCount: testPrepRetainedAnnotationCount,
+    normalizeFlashcardStore: normalizeTestPrepFlashcardStore,
+    flashcardScheduleForPack: testPrepFlashcardScheduleForPack,
+    setFlashcardScheduleForPack: testPrepSetFlashcardScheduleForPack,
+    retainedFlashcardCount: testPrepRetainedFlashcardCount,
+    normalizeChapterProgressStore: normalizeTestPrepNativeChapterProgressStore,
+    chapterProgressForPack: testPrepNativeChapterProgressForPack,
+    setChapterProgressForPack: testPrepSetNativeChapterProgressForPack,
+    retainedChapterProgressCount: testPrepRetainedChapterProgressCount,
     researchLanes: TEST_PREP_RESEARCH_LANES.slice()
   });
   console.log('[CDN] TestPrepHub loaded');

@@ -1817,6 +1817,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
         img.crossOrigin = 'anonymous';
         img.onload = () => {
             const canvas = document.createElement('canvas');
+            canvas.setAttribute('aria-hidden', 'true');
             canvas.width = img.naturalWidth;
             canvas.height = img.naturalHeight;
             const ctx = canvas.getContext('2d');

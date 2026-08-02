@@ -1154,6 +1154,45 @@ function GroupSessionModal(props) {
     t("groups.done_button")
   ))));
 }
+
+function FluencyAlloSheetReviewDialog(props) {
+  const {
+    artifact,
+    dateRange,
+    datasets,
+    onChangeDateRange,
+    onChangeDataset,
+    onClose,
+    onTransfer
+  } = props;
+  if (!artifact) return null;
+  React.useEffect(() => {
+    const handleKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+  const tableSummary = (artifact.tables || []).map((table) => (table.title || table.id) + ': ' + (table.rowCount || 0) + ' row(s)').join(' | ');
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[320] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4", role: "presentation", onMouseDown: (event) => { if (event.target === event.currentTarget) onClose(); } }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "fluency-allosheet-title",
+      "aria-describedby": "fluency-allosheet-description",
+      tabIndex: -1,
+      onKeyDown: (event) => { if (event.key === "Escape") onClose(); },
+      className: "bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "p-5 border-b border-slate-200 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "fluency-allosheet-title", className: "text-lg font-black text-slate-900" }, "Review Fluency summaries in AlloSheet"), /* @__PURE__ */ React.createElement("p", { id: "fluency-allosheet-description", className: "text-sm text-slate-600 mt-1" }, "Choose a time window and bounded summaries. Passage content, audio, word-level text, problem text, and answers stay out of the transfer.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "shrink-0 rounded-lg p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "aria-label": "Close Fluency AlloSheet review" }, /* @__PURE__ */ React.createElement(X, { size: 20 }))),
+    /* @__PURE__ */ React.createElement("div", { className: "p-5 space-y-5" }, /* @__PURE__ */ React.createElement("label", { className: "block text-sm font-bold text-slate-800" }, "Time window", /* @__PURE__ */ React.createElement("select", { value: dateRange, onChange: (event) => onChangeDateRange(event.target.value), className: "mt-1 block w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500", "aria-label": "Fluency summary time window" }, /* @__PURE__ */ React.createElement("option", { value: "30d" }, "Last 30 days"), /* @__PURE__ */ React.createElement("option", { value: "90d" }, "Last 90 days"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All available records"))), /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-slate-200 p-3" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-sm font-bold text-slate-800" }, "Include summaries"), [
+      ["measures", "Session measures (WCPM / DCPM, accuracy, timing)"],
+      ["trends", "Trend summary (median, range, evidence kind)"],
+      ["errors", "Error categories (counts only)"],
+    ].map(([key, label]) => /* @__PURE__ */ React.createElement("label", { key: key, className: "flex items-start gap-2 py-1 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: datasets[key] !== false, onChange: (event) => onChangeDataset(key, event.target.checked), className: "mt-0.5 h-4 w-4 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500", "aria-label": label }), /* @__PURE__ */ React.createElement("span", null, label)))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl bg-indigo-50 border border-indigo-200 p-3", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wide text-indigo-900" }, "Preview"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900 mt-1" }, artifact.metadata?.sessionCount || 0, " session(s) | ", tableSummary || "No selected tables"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-800 mt-2" }, artifact.metadata?.aggregateStatus === "available" ? "Trend and error summaries are descriptive aggregates." : "Trend and error summaries remain suppressed until three sessions are available.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900" }, "AlloSheet opens in a separate popup. No destination write-back or AI processing is enabled.")),
+    /* @__PURE__ */ React.createElement("div", { className: "p-5 border-t border-slate-200 flex flex-wrap justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onTransfer, disabled: !(artifact.tables || []).length, className: "px-4 py-2 rounded-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, "Open selected summaries"))
+  ));
+}
+
 function FluencyModePanel(props) {
   const {
     ConfettiExplosion,
@@ -1193,10 +1232,28 @@ function FluencyModePanel(props) {
     fluencyAssessments = [],
     isTeacherMode,
     saveFluencyReview,
-    summarizeFluencyEvidence
+    summarizeFluencyEvidence,
+    buildFluencyAlloSheetEnvelope,
+    mathFluencyHistory = [],
+    onOpenAlloSheet
   } = props;
   const [isReviewingFluency, setIsReviewingFluency] = React.useState(false);
   const [fluencyReviewDraft, setFluencyReviewDraft] = React.useState(null);
+  const [isFluencyAlloSheetReviewOpen, setIsFluencyAlloSheetReviewOpen] = React.useState(false);
+  const [fluencyAlloSheetDateRange, setFluencyAlloSheetDateRange] = React.useState('90d');
+  const [fluencyAlloSheetDatasets, setFluencyAlloSheetDatasets] = React.useState({ measures: true, trends: true, errors: true });
+  const fluencyAlloSheetArtifact = typeof buildFluencyAlloSheetEnvelope === 'function'
+    ? buildFluencyAlloSheetEnvelope({ readingAssessments: fluencyAssessments, mathFluencyHistory: mathFluencyHistory }, {
+      dateRange: fluencyAlloSheetDateRange,
+      datasets: fluencyAlloSheetDatasets
+    })
+    : null;
+  const openFluencyAlloSheet = () => {
+    if (!fluencyAlloSheetArtifact || typeof onOpenAlloSheet !== 'function') return;
+    const result = onOpenAlloSheet(fluencyAlloSheetArtifact);
+    if (result && typeof result.then === 'function') result.then((opened) => { if (opened !== false) setIsFluencyAlloSheetReviewOpen(false); });
+    else if (result !== false) setIsFluencyAlloSheetReviewOpen(false);
+  };
   const beginFluencyReview = () => {
     if (!fluencyResult?.wordData) return;
     setFluencyReviewDraft({
@@ -1416,6 +1473,17 @@ function FluencyModePanel(props) {
       },
       /* @__PURE__ */ React.createElement(Download, { size: 15 }),
       " Export Fluency CSV"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setIsFluencyAlloSheetReviewOpen(true),
+        disabled: !isTeacherMode || typeof onOpenAlloSheet !== "function" || typeof buildFluencyAlloSheetEnvelope !== "function",
+        className: "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 disabled:opacity-50 transition-colors",
+        "aria-label": "Review Fluency summaries in AlloSheet",
+        "data-help-key": "fluency_mode_open_allosheet_btn"
+      },
+      /* @__PURE__ */ React.createElement(FileText, { size: 15 }),
+      " Review in AlloSheet"
     ))) : /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl" }, fluencyTranscript && /* @__PURE__ */ React.createElement("div", { className: "mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-300 italic" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold uppercase text-xs text-rose-400 block mb-1" }, t("fluency.hearing_label")), '"', fluencyTranscript, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center", "data-help-key": "fluency_mode_passage_display" }, typeof generatedContent?.data === "string" ? generatedContent?.data.split("--- ENGLISH TRANSLATION ---")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\[\d+\]/g, "").replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, "").replace(/https?:\/\/[^\s]+/g, "").replace(/^#{1,6}\s/gm, "").replace(/\*{1,3}/g, "").trim() : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 italic text-base" }, t("fluency.format_error"))))),
     /* @__PURE__ */ React.createElement("div", { className: "p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4" }, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-500 animate-pulse motion-reduce:animate-none" : fluencyTimeRemaining <= 30 ? "text-yellow-500" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-500" : fluencyStatus === "processing" ? "text-indigo-500 animate-pulse motion-reduce:animate-none" : "text-slate-600"}` }, fluencyStatus === "listening" ? t("fluency.listening") : fluencyStatus === "processing" ? t("fluency.processing") : fluencyStatus === "complete" ? t("fluency.complete") : t("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
       "button",
@@ -1444,7 +1512,15 @@ function FluencyModePanel(props) {
         "aria-label": fluencyStatus === "listening" ? t("fluency.stop_recording") : fluencyStatus === "processing" ? t("fluency.processing") : t("fluency.start_recording")
       },
       fluencyStatus === "listening" ? /* @__PURE__ */ React.createElement(StopCircle, { size: 32, className: "fill-current" }) : fluencyStatus === "processing" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "animate-spin motion-reduce:animate-none" }) : fluencyStatus === "complete" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 32 }) : /* @__PURE__ */ React.createElement(Mic, { size: 32, className: "fill-current" })
-    )))
+    )), isFluencyAlloSheetReviewOpen && React.createElement(FluencyAlloSheetReviewDialog, {
+      artifact: fluencyAlloSheetArtifact,
+      dateRange: fluencyAlloSheetDateRange,
+      datasets: fluencyAlloSheetDatasets,
+      onChangeDateRange: setFluencyAlloSheetDateRange,
+      onChangeDataset: (key, value) => setFluencyAlloSheetDatasets((prev) => ({ ...prev, [key]: value })),
+      onClose: () => setIsFluencyAlloSheetReviewOpen(false),
+      onTransfer: openFluencyAlloSheet
+    }))
   ));
 }
 function SourceGenPanel(props) {

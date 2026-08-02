@@ -36,7 +36,10 @@
   }
 
   var VERSION = 'acg/v1';
-  var EDGE_TYPES = { sequence: 1, prerequisite: 1, cause: 1, contrast: 1, elaborates: 1, associates: 1 };
+  var EDGE_TYPES = {
+    sequence: 1, prerequisite: 1, cause: 1, contrast: 1, elaborates: 1, associates: 1,
+    alignedTo: 1, evidencedBy: 1, assessedBy: 1, contains: 1, relatedTo: 1, generatedFor: 1
+  };
 
   function isNum(v) { return typeof v === 'number' && !isNaN(v); }
   function num(v, d) { return isNum(v) ? v : d; }
@@ -856,7 +859,611 @@
     return g;
   }
 
+  // ── Alignment audit → acg ───────────────────────────────────────────────
+  // This is a projection, not a round-trip. It deliberately preserves the
+  // audit's evidence and provenance while refusing to infer artifact links
+  // from free-text phrases such as "Artifact 3".
+  function auditText(value) { return value == null ? '' : String(value).trim(); }
+  function auditIdPart(value) {
+    var out = auditText(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return out || 'item';
+  }
+  function auditToken(value) {
+    return auditText(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/^\s+|\s+$/g, '');
+  }
+  function normalizeAttributionSource(value, fallback) {
+    var normalized = auditText(value).toLowerCase();
+    if (normalized === 'audit-model' || normalized === 'teacher' || normalized === 'deterministic-check' || normalized === 'unknown') return normalized;
+    return fallback || 'unknown';
+  }
+  function exactStandardsContextRecord(records, query) {
+    var q = auditToken(query);
+    if (!q || !Array.isArray(records)) return null;
+    var matches = records.filter(function (record) {
+      if (!record || record.resolvable === false) return false;
+      return [record.code, record.id, record.label].some(function (value) { return auditToken(value) === q; });
+    });
+    return matches.length === 1 ? matches[0] : null;
+  }
+  function resolveStandardsContextRecord(provider, standardsContext, query) {
+    var direct = exactStandardsContextRecord(standardsContext && standardsContext.standards, query);
+    if (direct) return { status: 'resolved', record: direct };
+    if (!provider || typeof provider.resolveStandard !== 'function') return { status: 'unavailable', record: null };
+    try {
+      var result = provider.resolveStandard(query);
+      if (result && result.status === 'resolved' && result.match && result.match.resolvable !== false) {
+        return { status: 'resolved', record: result.match };
+      }
+      return { status: result && result.status ? String(result.status) : 'not-found', record: null };
+    } catch (e) {
+      return { status: 'unavailable', record: null };
+    }
+  }
+  function standardsContextNodeId(record, usedIds) {
+    var base = 'standards-context-' + auditIdPart(record && record.id);
+    var id = base, suffix = 2;
+    while (usedIds[id] && usedIds[id] !== String(record && record.id)) id = base + '-' + suffix++;
+    usedIds[id] = String(record && record.id);
+    return id;
+  }
+  function standardsContextNode(record, id) {
+    return {
+      id: id,
+      label: auditText(record && (record.label || record.code || record.id)) || 'Standards context',
+      type: 'standardsContext',
+      category: 'Standards context',
+      role: 'context',
+      contextId: auditText(record && record.id) || null,
+      code: auditText(record && record.code) || null,
+      kind: auditText(record && record.kind) || 'standard',
+      resolvable: record && record.resolvable !== false,
+      framework: auditText(record && record.framework) || null,
+      frameworkId: auditText(record && record.frameworkId) || null,
+      text: auditText(record && (record.text || record.description)) || null,
+      sourceUrl: auditText(record && record.sourceUrl) || null
+    };
+  }
+  function contextRelationshipType(type) {
+    return String(type || '').toLowerCase() === 'haschild' ? 'contains' : 'relatedTo';
+  }
+  function normalizeAuditStatus(value) {
+    var raw = auditText(value), lower = raw.toLowerCase();
+    if (!raw) return 'Not evaluated';
+    if (lower === 'pass' || lower === 'aligned' || lower === 'source verified') return 'Aligned';
+    if (lower.indexOf('partial') !== -1) return 'Partially aligned';
+    if (lower === 'revise' || lower.indexOf('not aligned') !== -1 || lower === 'fail' || lower === 'failed') return 'Not aligned';
+    if (lower.indexOf('source unavailable') !== -1 || lower === 'unavailable') return 'Source unavailable';
+    if (lower.indexOf('inference') !== -1) return 'Inference only';
+    if (lower === 'not evaluated' || lower === 'not applicable' || lower === 'incomplete') return 'Not evaluated';
+    return 'Not evaluated';
+  }
+  function fromAlignmentAudit(input, opts) {
+    opts = opts || {};
+    var root = input;
+    if (root && root.content && root.content.comprehensive) root = root.content.comprehensive;
+    else if (root && root.comprehensive) root = root.comprehensive;
+    if (!root || typeof root !== 'object') root = {};
+    var standards = (root.standards && typeof root.standards === 'object') ? root.standards : root;
+    var reports = Array.isArray(input) ? input : (Array.isArray(standards.perStandard) ? standards.perStandard : (Array.isArray(standards.reports) ? standards.reports : []));
+    var standardsContext = opts.standardsContext || root.standardsContext || standards.standardsContext || null;
+    var auditScope = opts.auditScope || root.auditScope || standards.auditScope || null;
+    var contextProvenance = standardsContext && typeof standardsContext === 'object' && standardsContext.provenance ? standardsContext.provenance : null;
+    var provenance = opts.provenance || contextProvenance || root.provenance || standards.provenance || null;
+    var auditStatus = normalizeAuditStatus(standards.status);
+    var title = auditText(opts.title || root.title) || 'Curriculum alignment audit';
+    var g = emptyGraph();
+    g.title = title;
+    g.meta = {
+      alignmentAudit: {
+        provider: auditText(opts.provider || (standardsContext && standardsContext.provider) || (provenance && provenance.provider)) || 'AlloFlow curriculum audit',
+        datasetVersion: auditText(opts.datasetVersion || (standardsContext && standardsContext.datasetVersion) || (provenance && provenance.datasetVersion)) || null,
+        snapshotId: auditText(opts.snapshotId || (standardsContext && standardsContext.snapshotId) || (provenance && provenance.snapshotId)) || null,
+        generatedAt: auditText(opts.generatedAt || (root.auditMetadata && root.auditMetadata.generatedAt)) || null,
+        status: auditStatus,
+        rawStatus: auditText(standards.status) || null,
+        standardsCount: reports.length,
+        passCount: typeof standards.passCount === 'number' ? standards.passCount : null,
+        reviseCount: typeof standards.reviseCount === 'number' ? standards.reviseCount : null,
+        provenance: provenance && typeof provenance === 'object' ? Object.assign({}, provenance) : null,
+        auditScope: auditScope && typeof auditScope === 'object' ? Object.assign({}, auditScope) : null,
+        standardsContext: standardsContext && typeof standardsContext === 'object' ? Object.assign({}, standardsContext) : null
+      }
+    };
+
+    var standardsProvider = opts.standardsProvider && typeof opts.standardsProvider === 'object' ? opts.standardsProvider : null;
+    var standardsGraph = {
+      enabled: !!standardsProvider,
+      provider: auditText((standardsContext && standardsContext.provider) || (provenance && provenance.provider)) || null,
+      datasetVersion: auditText((standardsContext && standardsContext.datasetVersion) || (provenance && provenance.datasetVersion)) || null,
+      snapshotId: auditText((standardsContext && standardsContext.snapshotId) || (provenance && provenance.snapshotId)) || null,
+      matchedTargets: 0,
+      unresolvedTargets: [],
+      contextNodes: 0,
+      contextRelationships: 0,
+      truncatedTargets: 0
+    };
+    g.meta.alignmentAudit.standardsGraph = standardsGraph;
+    g.meta.alignmentMap = {
+      version: 'alloflow-alignment-map/v2',
+      targetNodeType: 'standard',
+      contextNodeType: 'standardsContext',
+      evidenceNodeType: 'auditEvidence',
+      scopeNodeType: 'auditArtifact',
+      attributionMode: 'explicit-only',
+      attributionEdgeType: 'evidenceFrom',
+      findingAttributionEdgeType: 'findingFrom',
+      provenancePolicy: 'explicit-attribution-only',
+      attributionSources: ['audit-model', 'teacher', 'deterministic-check', 'unknown']
+    };
+    var contextNodeIds = {};
+    var contextEdgeKeys = {};
+    var contextGraphIds = {};
+    function ensureContextNode(record) {
+      var key = auditText(record && record.id);
+      if (!key) return null;
+      if (contextGraphIds[key]) return contextGraphIds[key];
+      var id = standardsContextNodeId(record, contextNodeIds);
+      contextGraphIds[key] = id;
+      g.nodes.push(standardsContextNode(record, id));
+      standardsGraph.contextNodes++;
+      return id;
+    }
+    var auditId = 'alignment-audit';
+    g.nodes.push({ id: auditId, label: title, type: 'audit', category: 'Audit', status: auditStatus });
+    var scopeArtifacts = auditScope && Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : [];
+    if (!scopeArtifacts.length && auditScope && Array.isArray(auditScope.includedArtifactIds)) {
+      scopeArtifacts = auditScope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id, title: 'Audited artifact ' + id, type: 'unknown' }; });
+    }
+    if (auditScope && typeof auditScope === 'object') {
+      g.meta.alignmentAudit.auditScopeGraph = {
+        nodeCount: scopeArtifacts.length,
+        truncated: Array.isArray(auditScope.includedArtifacts) && auditScope.includedArtifacts.length > scopeArtifacts.length,
+        selectionMode: auditText(auditScope.selectionMode) || null
+      };
+    }
+    var scopeArtifactNodeIds = {};
+    var attributionStats = { mode: 'explicit-only', evidenceLinks: 0, findingLinks: 0, evidenceBySource: {}, findingBySource: {} };
+    function noteAttribution(kind, source) {
+      var key = kind === 'finding' ? 'findingBySource' : 'evidenceBySource';
+      var normalized = normalizeAttributionSource(source, 'unknown');
+      attributionStats[key][normalized] = (attributionStats[key][normalized] || 0) + 1;
+    }
+    scopeArtifacts.forEach(function (artifact, artifactIndex) {
+      artifact = artifact && typeof artifact === 'object' ? artifact : { id: artifact };
+      var artifactKey = auditText(artifact.id) || ('artifact-' + artifactIndex);
+      var artifactNodeId = 'audit-artifact-' + artifactIndex + '-' + auditIdPart(artifactKey);
+      var artifactLabel = auditText(artifact.title) || ('Audited artifact ' + artifactKey);
+      var artifactType = auditText(artifact.type) || 'unknown';
+      g.nodes.push({
+        id: artifactNodeId,
+        label: artifactLabel,
+        type: 'auditArtifact',
+        category: 'Audit scope',
+        role: 'scope',
+        artifactId: artifactKey,
+        artifactType: artifactType,
+        timestamp: auditText(artifact.timestamp) || null,
+        status: 'Audited',
+        attributionSource: 'deterministic-check'
+      });
+      scopeArtifactNodeIds[artifactKey] = artifactNodeId;
+      g.edges.push({
+        id: 'scope-' + auditId + '-' + artifactIndex,
+        fromId: auditId,
+        toId: artifactNodeId,
+        type: 'contains',
+        relationType: 'auditScope',
+        provenance: 'alloflow-audit',
+        attributionSource: 'deterministic-check'
+      });
+    });
+    function explicitArtifactIds(value) {
+      if (!Array.isArray(value)) return [];
+      var seen = {};
+      return value.map(function (id) { return auditText(id); }).filter(function (id) {
+        if (!id || !scopeArtifactNodeIds[id] || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      }).slice(0, 12);
+    }
+    function explicitFindingAttribution(report, gap, gapText) {
+      var direct = gap && typeof gap === 'object' ? gap : null;
+      var directIds = direct && (direct.artifactIds || direct.findingArtifactIds);
+      if (Array.isArray(directIds)) return { artifactIds: explicitArtifactIds(directIds), attributionSource: direct.attributionSource };
+      var attributions = report && Array.isArray(report.findingAttributions) ? report.findingAttributions : [];
+      for (var attributionIndex = 0; attributionIndex < attributions.length; attributionIndex++) {
+        var attribution = attributions[attributionIndex];
+        if (attribution && auditText(attribution.text) === gapText) return { artifactIds: explicitArtifactIds(attribution.artifactIds || attribution.findingArtifactIds), attributionSource: attribution.attributionSource };
+      }
+      return { artifactIds: [], attributionSource: null };
+    }
+    g.meta.alignmentAudit.evidenceAttribution = attributionStats;
+    reports.forEach(function (report, ri) {
+      report = report && typeof report === 'object' ? report : {};
+      var standardLabel = auditText(report.standard) || ('Standard ' + (ri + 1));
+      var standardId = 'standard-' + ri + '-' + auditIdPart(standardLabel);
+      var standardRawStatus = report.overallDetermination || report.status;
+      var standardStatus = normalizeAuditStatus(standardRawStatus);
+      var standardNode = {
+        id: standardId,
+        label: standardLabel,
+        type: 'standard',
+        category: 'Standards',
+        role: 'target',
+        status: standardStatus,
+        rawStatus: auditText(standardRawStatus) || null,
+        standardBreakdown: report.standardBreakdown && typeof report.standardBreakdown === 'object' ? Object.assign({}, report.standardBreakdown) : null
+      };
+      g.nodes.push(standardNode);
+      g.edges.push({ id: 'contains-' + auditId + '-' + standardId, fromId: auditId, toId: standardId, type: 'contains', status: standardStatus, provenance: 'alloflow-audit', attributionSource: 'deterministic-check' });
+      var contextResolution = resolveStandardsContextRecord(standardsProvider, standardsContext, standardLabel);
+      if (contextResolution.record) {
+        var contextRecord = contextResolution.record;
+        standardNode.standardsContext = standardsContextNode(contextRecord, auditText(contextRecord.id) || standardId);
+        if (standardsProvider && typeof standardsProvider.getNeighborhood === 'function') {
+          var neighborhood = null;
+          try {
+            neighborhood = standardsProvider.getNeighborhood(contextRecord.id, {
+              depth: Number(opts.standardsContextDepth) || 2,
+              maxNodes: Number(opts.standardsContextMaxNodes) || 24,
+              maxEdges: Number(opts.standardsContextMaxEdges) || 48
+            });
+          } catch (e) {
+            neighborhood = null;
+          }
+          if (neighborhood && Array.isArray(neighborhood.nodes)) {
+            standardsGraph.matchedTargets++;
+            if (neighborhood.truncated) standardsGraph.truncatedTargets++;
+            var contextRecordsById = {};
+            neighborhood.nodes.forEach(function (node) {
+              var nodeKey = auditText(node && node.id);
+              if (nodeKey) contextRecordsById[nodeKey] = node;
+              if (nodeKey && nodeKey !== auditText(contextRecord.id)) ensureContextNode(node);
+            });
+            (Array.isArray(neighborhood.relationships) ? neighborhood.relationships : []).forEach(function (relationship, relationIndex) {
+              var fromKey = auditText(relationship && relationship.fromId);
+              var toKey = auditText(relationship && relationship.toId);
+              var fromId = fromKey === auditText(contextRecord.id) ? standardId : ensureContextNode(contextRecordsById[fromKey]);
+              var toId = toKey === auditText(contextRecord.id) ? standardId : ensureContextNode(contextRecordsById[toKey]);
+              if (!fromId || !toId || fromId === toId) return;
+              var relationType = auditText(relationship.type) || 'related';
+              var edgeType = contextRelationshipType(relationType);
+              var edgeKey = fromId + '|' + toId + '|' + relationType;
+              if (contextEdgeKeys[edgeKey]) return;
+              contextEdgeKeys[edgeKey] = true;
+              g.edges.push({
+                id: 'standards-context-' + standardId + '-' + relationIndex + '-' + auditIdPart(relationType),
+                fromId: fromId,
+                toId: toId,
+                type: edgeType,
+                relationType: relationType,
+                direction: relationship.direction || null,
+                source: relationship.source || null,
+                provenance: 'standards-provider',
+                attributionSource: 'deterministic-check'
+              });
+              standardsGraph.contextRelationships++;
+            });
+          } else {
+            standardsGraph.unresolvedTargets.push({ query: standardLabel, status: 'neighborhood-unavailable' });
+          }
+        }
+      } else if (standardsProvider) {
+        standardsGraph.unresolvedTargets.push({ query: standardLabel, status: contextResolution.status });
+      }
+
+      var analysis = report.analysis && typeof report.analysis === 'object' ? report.analysis : {};
+      [
+        { key: 'textAlignment', label: 'Text alignment', edgeType: 'evidencedBy' },
+        { key: 'activityAlignment', label: 'Activity alignment', edgeType: 'evidencedBy' },
+        { key: 'assessmentAlignment', label: 'Assessment alignment', edgeType: 'assessedBy' }
+      ].forEach(function (dimension) {
+        var section = analysis[dimension.key] && typeof analysis[dimension.key] === 'object' ? analysis[dimension.key] : {};
+        var rawStatus = section.status;
+        var status = normalizeAuditStatus(rawStatus);
+        var evidenceId = standardId + '-' + dimension.key;
+        var evidence = auditText(section.evidence);
+        var notes = auditText(section.notes);
+        var artifactIds = explicitArtifactIds(section.artifactIds || section.evidenceArtifactIds);
+        var evidenceAttributionSource = artifactIds.length ? normalizeAttributionSource(section.attributionSource, 'audit-model') : null;
+        g.nodes.push({
+          id: evidenceId,
+          label: dimension.label,
+          type: 'auditEvidence',
+          category: 'Alignment evidence',
+          status: status,
+          rawStatus: auditText(rawStatus) || null,
+          dimension: dimension.key,
+          evidence: evidence,
+          notes: notes,
+          artifactIds: artifactIds,
+          attribution: artifactIds.length ? 'explicit' : null,
+          attributionSource: evidenceAttributionSource
+        });
+        g.edges.push({
+          id: 'evidence-' + standardId + '-' + dimension.key,
+          fromId: standardId,
+          toId: evidenceId,
+          type: dimension.edgeType,
+          status: status,
+          evidence: evidence,
+          notes: notes,
+          provenance: 'alloflow-audit',
+          attributionSource: 'deterministic-check'
+        });
+        artifactIds.forEach(function (artifactId, artifactIndex) {
+          var artifactNodeId = scopeArtifactNodeIds[artifactId];
+          if (!artifactNodeId) return;
+          g.edges.push({
+            id: 'evidence-artifact-' + standardId + '-' + dimension.key + '-' + artifactIndex,
+            fromId: evidenceId,
+            toId: artifactNodeId,
+            type: 'supportedBy',
+            relationType: 'evidenceFrom',
+            artifactId: artifactId,
+            attribution: 'explicit',
+            attributionSource: evidenceAttributionSource,
+            provenance: 'alloflow-audit'
+          });
+          attributionStats.evidenceLinks++;
+          noteAttribution('evidence', evidenceAttributionSource);
+        });
+      });
+
+      (Array.isArray(report.gaps) ? report.gaps : []).forEach(function (gap, gi) {
+        var gapValue = gap && typeof gap === 'object' ? (gap.text || gap.finding || gap.label) : gap;
+        var gapText = auditText(gapValue);
+        if (!gapText) return;
+        var findingAttribution = explicitFindingAttribution(report, gap, gapText);
+        var findingArtifactIds = findingAttribution.artifactIds;
+        var findingAttributionSource = findingArtifactIds.length ? normalizeAttributionSource(findingAttribution.attributionSource, 'audit-model') : null;
+        var findingId = standardId + '-finding-' + gi;
+        g.nodes.push({ id: findingId, label: gapText, type: 'auditFinding', category: 'Audit findings', status: 'Not aligned', finding: gapText, artifactIds: findingArtifactIds, attribution: findingArtifactIds.length ? 'explicit' : null, attributionSource: findingAttributionSource });
+        g.edges.push({ id: 'finding-' + standardId + '-' + gi, fromId: standardId, toId: findingId, type: 'contains', status: 'Not aligned', provenance: 'alloflow-audit', attributionSource: 'deterministic-check' });
+        findingArtifactIds.forEach(function (artifactId, artifactIndex) {
+          var artifactNodeId = scopeArtifactNodeIds[artifactId];
+          if (!artifactNodeId) return;
+          g.edges.push({
+            id: 'finding-artifact-' + standardId + '-' + gi + '-' + artifactIndex,
+            fromId: findingId,
+            toId: artifactNodeId,
+            type: 'supportedBy',
+            relationType: 'findingFrom',
+            artifactId: artifactId,
+            attribution: 'explicit',
+            attributionSource: findingAttributionSource,
+            provenance: 'alloflow-audit'
+          });
+          attributionStats.findingLinks++;
+          noteAttribution('finding', findingAttributionSource);
+        });
+      });
+      var recommendation = auditText(report.adminRecommendation);
+      if (recommendation) {
+        var recommendationId = standardId + '-recommendation';
+        g.nodes.push({ id: recommendationId, label: recommendation, type: 'auditRecommendation', category: 'Audit findings', status: standardStatus, recommendation: recommendation });
+        g.edges.push({ id: 'recommendation-' + standardId, fromId: standardId, toId: recommendationId, type: 'contains', status: standardStatus, provenance: 'alloflow-audit', attributionSource: 'deterministic-check' });
+      }
+    });
+    g.layers = deriveLanes(g);
+    return g;
+  }
   // ── normalizeGraph — accept any known shape → acg (idempotent) ───────
+  // Create a derived graph in which a teacher confirms existing explicit
+  // evidence/finding relationships. This never creates a new artifact edge or
+  // mutates the original graph; the producer declaration remains in history.
+  function confirmExplicitAttributions(input, confirmations, opts) {
+    opts = opts || {};
+    var graph = normalizeGraph(input);
+    var requests = Array.isArray(confirmations) ? confirmations : [];
+    var requested = {};
+    requests.forEach(function (confirmation) {
+      if (!confirmation || typeof confirmation !== 'object') return;
+      var ids = Array.isArray(confirmation.edgeIds)
+        ? confirmation.edgeIds
+        : (confirmation.edgeId != null ? [confirmation.edgeId] : []);
+      ids.forEach(function (id) {
+        var key = auditText(id);
+        if (key) requested[key] = confirmation;
+      });
+    });
+    var nodeById = {};
+    (Array.isArray(graph.nodes) ? graph.nodes : []).forEach(function (node) {
+      if (node && node.id) nodeById[node.id] = node;
+    });
+    var changedEdgeIds = [];
+    var edges = (Array.isArray(graph.edges) ? graph.edges : []).map(function (edge) {
+      var request = edge && requested[auditText(edge.id)];
+      var fromNode = edge && nodeById[edge.fromId];
+      var toNode = edge && nodeById[edge.toId];
+      var isExplicitArtifactEdge = !!(edge
+        && edge.type === 'supportedBy'
+        && edge.attribution === 'explicit'
+        && (edge.relationType === 'evidenceFrom' || edge.relationType === 'findingFrom')
+        && fromNode
+        && (fromNode.type === 'auditEvidence' || fromNode.type === 'auditFinding')
+        && toNode
+        && toNode.type === 'auditArtifact');
+      if (!request || !isExplicitArtifactEdge || edge.attributionSource === 'teacher') return edge;
+      var originalSource = normalizeAttributionSource(edge.attributionSource, 'audit-model');
+      var history = Array.isArray(edge.attributionHistory) ? edge.attributionHistory.slice(0, 8) : [];
+      if (!history.some(function (entry) { return entry && entry.role === 'producer'; })) {
+        history.unshift({ source: originalSource, role: 'producer', method: 'declared' });
+      }
+      history.push({
+        source: 'teacher',
+        role: 'confirmation',
+        method: 'teacher-confirmed',
+        confirmedAt: auditText(request.confirmedAt || opts.confirmedAt) || null,
+        confirmedBy: auditText(request.confirmedBy || opts.confirmedBy) || null,
+        note: auditText(request.note || opts.note) || null
+      });
+      changedEdgeIds.push(edge.id);
+      return Object.assign({}, edge, {
+        attributionSource: 'teacher',
+        attributionHistory: history.slice(-8)
+      });
+    });
+    var alignmentMap = graph.meta && graph.meta.alignmentMap ? graph.meta.alignmentMap : {};
+    var alignmentAudit = graph.meta && graph.meta.alignmentAudit ? graph.meta.alignmentAudit : {};
+    var meta = Object.assign({}, graph.meta || {}, {
+      alignmentMap: Object.assign({}, alignmentMap, { attributionConfirmationPolicy: 'derived-copy-only' }),
+      alignmentAudit: Object.assign({}, alignmentAudit, {
+        attributionConfirmations: {
+          mode: 'derived-copy-only',
+          count: changedEdgeIds.length,
+          edgeIds: changedEdgeIds.slice(0, 100)
+        }
+      })
+    });
+    return Object.assign({}, graph, { nodes: (graph.nodes || []).slice(), edges: edges, meta: meta });
+  }
+  // Read-only Throughline contract for exported alignment graphs. This validator
+  // accepts only the explicit export schema and the alignment-map metadata; it does
+  // not infer evidence links from labels, phrases, or node proximity.
+  var ALIGNMENT_EXPORT_SCHEMA = 'alloflow-alignment-graph-export/v1';
+  var ALIGNMENT_NODE_TYPES = ['audit', 'standard', 'standardsContext', 'auditArtifact', 'auditEvidence', 'auditFinding', 'auditRecommendation'];
+  var ALIGNMENT_ATTRIBUTION_SOURCES = ['audit-model', 'teacher', 'deterministic-check', 'unknown'];
+
+  function alignmentStringList(value) {
+    if (!Array.isArray(value)) return [];
+    var seen = {};
+    return value.map(function (item) { return auditText(item).toLowerCase(); }).filter(function (item) {
+      if (!item || seen[item]) return false;
+      seen[item] = true;
+      return true;
+    });
+  }
+  function boundedAlignmentGraph(graph, opts) {
+    opts = opts || {};
+    var maxNodes = Math.max(1, Math.min(500, parseInt(opts.maxNodes, 10) || 240));
+    var maxEdges = Math.max(1, Math.min(1000, parseInt(opts.maxEdges, 10) || 480));
+    var sourceNodes = graph && Array.isArray(graph.nodes) ? graph.nodes : [];
+    var nodes = sourceNodes.slice(0, maxNodes);
+    var nodeIds = {};
+    nodes.forEach(function (node) { if (node && node.id) nodeIds[node.id] = true; });
+    var edges = (graph && Array.isArray(graph.edges) ? graph.edges : []).filter(function (edge) {
+      return edge && nodeIds[edge.fromId] && nodeIds[edge.toId];
+    }).slice(0, maxEdges);
+    var graphMeta = graph && graph.meta && typeof graph.meta === 'object' ? graph.meta : {};
+    var viewMeta = graphMeta.alignmentView && typeof graphMeta.alignmentView === 'object' ? graphMeta.alignmentView : {};
+    var meta = Object.assign({}, graphMeta, {
+      alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: nodes.length < sourceNodes.length || edges.length < ((graph && Array.isArray(graph.edges)) ? graph.edges.length : 0) })
+    });
+    var bounded = Object.assign({}, graph, { nodes: nodes, edges: edges, meta: meta });
+    bounded.layers = deriveLanes(bounded);
+    return bounded;
+  }
+  function alignmentExportError(code) {
+    return { ok: false, error: code, schema: ALIGNMENT_EXPORT_SCHEMA, graph: emptyGraph(), originalGraph: null, audit: null, filters: null, counts: { nodes: 0, edges: 0 } };
+  }
+  function normalizeAlignmentGraphExport(input, opts) {
+    opts = opts || {};
+    var payload = input;
+    if (input && input.version === VERSION && Array.isArray(input.nodes)) {
+      payload = { schema: ALIGNMENT_EXPORT_SCHEMA, graph: input };
+    }
+    if (!payload || typeof payload !== 'object' || payload.schema !== ALIGNMENT_EXPORT_SCHEMA) return alignmentExportError('invalid-export-schema');
+    var graph = normalizeGraph(payload.graph);
+    var alignmentMeta = graph && graph.meta && graph.meta.alignmentMap;
+    if (!graph || graph.version !== VERSION || !alignmentMeta || alignmentMeta.version !== 'alloflow-alignment-map/v2') return alignmentExportError('invalid-alignment-graph');
+    var originalGraph = null;
+    if (payload.originalGraph && typeof payload.originalGraph === 'object') {
+      var candidate = normalizeGraph(payload.originalGraph);
+      var candidateMeta = candidate && candidate.meta && candidate.meta.alignmentMap;
+      if (candidate && candidate.version === VERSION && candidateMeta && candidateMeta.version === 'alloflow-alignment-map/v2') originalGraph = boundedAlignmentGraph(candidate, opts);
+    }
+    return {
+      ok: true,
+      schema: payload.schema,
+      graph: boundedAlignmentGraph(graph, opts),
+      originalGraph: originalGraph,
+      audit: payload.audit && typeof payload.audit === 'object' ? Object.assign({}, payload.audit) : null,
+      filters: null,
+      counts: { nodes: graph.nodes.length, edges: graph.edges.length }
+    };
+  }
+  function alignmentNodeSearchText(node) {
+    if (!node || typeof node !== 'object') return '';
+    return [node.id, node.label, node.type, node.category, node.dimension, node.evidence, node.notes,
+      node.finding, node.recommendation, node.artifactId, node.artifactType, node.code, node.framework,
+      node.contextId, node.text, node.status].map(function (value) { return auditText(value); }).join(' ').toLowerCase();
+  }
+  function filterAlignmentGraph(input, filters, opts) {
+    opts = opts || {};
+    filters = filters && typeof filters === 'object' ? filters : {};
+    var normalized = normalizeAlignmentGraphExport(input, opts);
+    if (!normalized.ok) return normalized;
+    var graph = normalized.graph;
+    var requestedTypes = alignmentStringList(filters.nodeTypes || filters.types);
+    var requestedSources = alignmentStringList(filters.attributionSources || filters.sources);
+    var query = auditText(filters.query).toLowerCase();
+    var keepStructure = filters.keepStructure !== false;
+    var edgeSources = {};
+    (graph.edges || []).forEach(function (edge) {
+      var source = normalizeAttributionSource(edge && edge.attributionSource, 'unknown');
+      if (!edge || !source) return;
+      [edge.fromId, edge.toId].forEach(function (id) {
+        if (!id) return;
+        edgeSources[id] = edgeSources[id] || {};
+        edgeSources[id][source] = true;
+      });
+    });
+    var nodeById = {};
+    var visible = {};
+    var visibleNodes = [];
+    (graph.nodes || []).forEach(function (node) {
+      if (!node || !node.id) return;
+      nodeById[node.id] = node;
+      var type = auditText(node.type).toLowerCase() || 'node';
+      var structural = type === 'audit' || type === 'standard';
+      var typeMatch = !requestedTypes.length || requestedTypes.indexOf(type) >= 0 || (keepStructure && structural);
+      var nodeSource = auditText(node.attributionSource).toLowerCase();
+      var incidentSourceMatch = edgeSources[node.id] && requestedSources.length
+        ? requestedSources.some(function (source) { return !!edgeSources[node.id][source]; })
+        : false;
+      var sourceMatch = !requestedSources.length || requestedSources.indexOf(nodeSource) >= 0 || incidentSourceMatch || (keepStructure && structural);
+      var searchMatch = !query || alignmentNodeSearchText(node).indexOf(query) >= 0;
+      if (typeMatch && sourceMatch && searchMatch) { visible[node.id] = true; visibleNodes.push(node); }
+    });
+    var visibleEdges = (graph.edges || []).filter(function (edge) {
+      if (!edge || !visible[edge.fromId] || !visible[edge.toId]) return false;
+      if (!requestedSources.length) return true;
+      var edgeSource = auditText(edge.attributionSource).toLowerCase();
+      var structuralEdge = nodeById[edge.fromId] && nodeById[edge.toId]
+        && (nodeById[edge.fromId].type === 'audit' || nodeById[edge.fromId].type === 'standard'
+          || nodeById[edge.toId].type === 'audit' || nodeById[edge.toId].type === 'standard');
+      return requestedSources.indexOf(edgeSource) >= 0 || (keepStructure && structuralEdge);
+    });
+    var filtered = boundedAlignmentGraph(Object.assign({}, graph, { nodes: visibleNodes, edges: visibleEdges }), opts);
+    var sourceCounts = {};
+    visibleNodes.forEach(function (node) {
+      var source = auditText(node.attributionSource).toLowerCase();
+      if (source) sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+    });
+    visibleEdges.forEach(function (edge) {
+      var source = auditText(edge.attributionSource).toLowerCase();
+      if (source) sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+    });
+    filtered.meta = Object.assign({}, filtered.meta, {
+      alignmentView: Object.assign({}, filtered.meta && filtered.meta.alignmentView || {}, {
+        filters: { nodeTypes: requestedTypes, attributionSources: requestedSources, query: query, keepStructure: keepStructure },
+        visibleNodeTypes: visibleNodes.reduce(function (out, node) { var type = auditText(node.type).toLowerCase() || 'node'; out[type] = (out[type] || 0) + 1; return out; }, {}),
+        visibleAttributionSources: sourceCounts
+      })
+    });
+    return {
+      ok: true,
+      schema: normalized.schema,
+      graph: filtered,
+      originalGraph: normalized.originalGraph,
+      audit: normalized.audit,
+      filters: { nodeTypes: requestedTypes, attributionSources: requestedSources, query: query, keepStructure: keepStructure },
+      counts: { nodes: filtered.nodes.length, edges: filtered.edges.length },
+      outline: deriveOutline(filtered),
+      available: { nodeTypes: ALIGNMENT_NODE_TYPES.slice(), attributionSources: ALIGNMENT_ATTRIBUTION_SOURCES.slice() }
+    };
+  }
   function normalizeGraph(input) {
     if (!input || typeof input !== 'object') return emptyGraph();
     if (input.version === VERSION && Array.isArray(input.nodes)) return input;          // already acg
@@ -981,6 +1588,13 @@
     fromConceptMap: fromConceptMap,
     toConceptMap: toConceptMap,
     adaptGenerated: adaptGenerated,
+    fromAlignmentAudit: fromAlignmentAudit,
+    ALIGNMENT_EXPORT_SCHEMA: ALIGNMENT_EXPORT_SCHEMA,
+    ALIGNMENT_NODE_TYPES: ALIGNMENT_NODE_TYPES.slice(),
+    ALIGNMENT_ATTRIBUTION_SOURCES: ALIGNMENT_ATTRIBUTION_SOURCES.slice(),
+    normalizeAlignmentGraphExport: normalizeAlignmentGraphExport,
+    filterAlignmentGraph: filterAlignmentGraph,
+    confirmExplicitAttributions: confirmExplicitAttributions,
     buildSemanticGraphPrompt: buildSemanticGraphPrompt,
     parseSemanticGraph: parseSemanticGraph,
     layoutWithGemini: layoutWithGemini

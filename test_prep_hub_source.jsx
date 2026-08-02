@@ -1304,6 +1304,22 @@ function testPrepResolvePackContentIdentity(pack, manifestEntry) {
   });
 }
 
+function testPrepResolveLearnerDataIdentity(pack, manifestEntry) {
+  const packIdentity = testPrepResolvePackContentIdentity(pack, manifestEntry);
+  if (!packIdentity.packVersion) return packIdentity;
+  const input = pack && typeof pack === 'object' && !Array.isArray(pack) ? pack : {};
+  const entry = manifestEntry && typeof manifestEntry === 'object' && !Array.isArray(manifestEntry) &&
+    testPrepSlug(manifestEntry.id, '') === testPrepSlug(input.id, '') &&
+    String(manifestEntry.version || '').trim() === packIdentity.packVersion ? manifestEntry : null;
+  const libraryDigest = entry && /^[a-f0-9]{64}$/.test(String(entry.learningLibrarySha256 || '').trim().toLowerCase())
+    ? String(entry.learningLibrarySha256).trim().toLowerCase() : '';
+  if (!libraryDigest) return packIdentity;
+  return testPrepNormalizeContentIdentity({
+    packVersion: packIdentity.packVersion,
+    packContentFingerprint: 'tp-content-v1:' + testPrepContentFingerprintHash(packIdentity.packContentFingerprint + '@learning-library:' + libraryDigest),
+  });
+}
+
 function testPrepContentIdentityStatus(record, currentIdentity) {
   const recordIdentity = testPrepNormalizeContentIdentity(record);
   if (!recordIdentity.packVersion) return 'legacy-unbound';
@@ -1420,22 +1436,53 @@ function writeTestPrepProgress(progress) {
 
 function normalizeTestPrepReviewItems(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  const output = {};
-  Object.keys(input).slice(0, 50).forEach((packKey) => {
-    const packId = testPrepSlug(packKey, '');
-    if (!packId) return;
-    const itemIds = Array.from(new Set((Array.isArray(input[packKey]) ? input[packKey] : [])
-      .slice(0, 500)
-      .map((itemId) => testPrepSlug(itemId, ''))
-      .filter(Boolean)));
-    if (itemIds.length) output[packId] = itemIds;
+  const rawScopes = input.schemaVersion === 2 && Array.isArray(input.scopes)
+    ? input.scopes
+    : Object.keys(input).filter((key) => key !== 'schemaVersion' && key !== 'scopes').slice(0, 50).map((packId) => ({ packId, itemIds: input[packId] }));
+  const merged = new Map();
+  rawScopes.slice(0, 200).forEach((scope) => {
+    const entry = scope && typeof scope === 'object' && !Array.isArray(scope) ? scope : {};
+    const packId = testPrepSlug(entry.packId, '');
+    const identity = testPrepNormalizeContentIdentity(entry);
+    const itemIds = Array.from(new Set((Array.isArray(entry.itemIds) ? entry.itemIds : [])
+      .slice(0, 500).map((itemId) => testPrepSlug(itemId, '')).filter(Boolean)));
+    if (!packId || !itemIds.length) return;
+    const key = [packId, identity.packVersion, identity.packContentFingerprint].join('@');
+    const existing = merged.get(key);
+    if (existing) existing.itemIds = Array.from(new Set(existing.itemIds.concat(itemIds))).slice(0, 500);
+    else merged.set(key, { packId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, itemIds });
   });
-  return output;
+  return { schemaVersion: 2, scopes: Array.from(merged.values()).slice(-200) };
+}
+
+function testPrepReviewItemsForPack(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  const scope = normalizeTestPrepReviewItems(value).scopes.find((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) === 'current');
+  return scope ? scope.itemIds.slice() : [];
+}
+
+function testPrepRetainedReviewItemCount(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  return normalizeTestPrepReviewItems(value).scopes
+    .filter((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) !== 'current')
+    .reduce((sum, entry) => sum + entry.itemIds.length, 0);
+}
+
+function testPrepSetReviewItemsForPack(value, packId, contentIdentity, itemIds) {
+  const normalized = normalizeTestPrepReviewItems(value);
+  const safePackId = testPrepSlug(packId, '');
+  const identity = testPrepNormalizeContentIdentity(contentIdentity);
+  const safeItemIds = Array.from(new Set((Array.isArray(itemIds) ? itemIds : []).slice(0, 500).map((id) => testPrepSlug(id, '')).filter(Boolean)));
+  const scopes = normalized.scopes.filter((entry) => !(entry.packId === safePackId && testPrepContentIdentityStatus(entry, identity) === 'current'));
+  if (safePackId && identity.packVersion && safeItemIds.length) scopes.push({ packId: safePackId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, itemIds: safeItemIds });
+  return normalizeTestPrepReviewItems({ schemaVersion: 2, scopes });
 }
 
 function readTestPrepReviewItems() {
   try { return normalizeTestPrepReviewItems(JSON.parse(localStorage.getItem(TEST_PREP_REVIEW_STORAGE_KEY) || '{}')); }
-  catch (_) { return {}; }
+  catch (_) { return normalizeTestPrepReviewItems({}); }
 }
 
 function writeTestPrepReviewItems(value) {
@@ -1451,9 +1498,12 @@ function normalizeTestPrepAnnotations(value) {
     const packId = testPrepSlug(entry.packId, '');
     const text = String(entry.text || '').trim().slice(0, 4000);
     if (!packId || !text) return null;
+    const identity = testPrepNormalizeContentIdentity(entry);
     return {
       id: testPrepSlug(entry.id, ''),
       packId,
+      packVersion: identity.packVersion,
+      packContentFingerprint: identity.packContentFingerprint,
       targetType: ['general', 'question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response'].includes(entry.targetType) ? entry.targetType : 'general',
       targetId: testPrepSlug(entry.targetId, ''),
       targetLabel: String(entry.targetLabel || 'General pack note').trim().slice(0, 240),
@@ -1465,6 +1515,18 @@ function normalizeTestPrepAnnotations(value) {
     };
   }).filter(Boolean);
   return { records };
+}
+
+function testPrepAnnotationsForPack(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  return normalizeTestPrepAnnotations(value).records.filter((record) => record.packId === safePackId && testPrepContentIdentityStatus(record, current) === 'current');
+}
+
+function testPrepRetainedAnnotationCount(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  return normalizeTestPrepAnnotations(value).records.filter((record) => record.packId === safePackId && testPrepContentIdentityStatus(record, current) !== 'current').length;
 }
 
 function testPrepUpsertAnnotation(value, annotation, now) {
@@ -2073,6 +2135,103 @@ function normalizeTestPrepFlashcardSchedule(value) {
   return output;
 }
 
+function normalizeTestPrepFlashcardStore(value, fallbackPackId) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const rawScopes = input.schemaVersion === 2 && Array.isArray(input.scopes)
+    ? input.scopes
+    : Object.keys(input).length ? [{ packId: fallbackPackId, schedule: input }] : [];
+  const merged = new Map();
+  rawScopes.slice(0, 200).forEach((scope) => {
+    const entry = scope && typeof scope === 'object' && !Array.isArray(scope) ? scope : {};
+    const packId = testPrepSlug(entry.packId || fallbackPackId, '');
+    const identity = testPrepNormalizeContentIdentity(entry);
+    const schedule = normalizeTestPrepFlashcardSchedule(entry.schedule);
+    if (!packId || !Object.keys(schedule).length) return;
+    const key = [packId, identity.packVersion, identity.packContentFingerprint].join('@');
+    const existing = merged.get(key);
+    if (existing) existing.schedule = Object.assign({}, existing.schedule, schedule);
+    else merged.set(key, { packId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, schedule });
+  });
+  return { schemaVersion: 2, scopes: Array.from(merged.values()).slice(-200) };
+}
+
+function testPrepFlashcardScheduleForPack(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  const scope = normalizeTestPrepFlashcardStore(value, safePackId).scopes.find((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) === 'current');
+  return scope ? normalizeTestPrepFlashcardSchedule(scope.schedule) : {};
+}
+
+function testPrepRetainedFlashcardCount(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  return normalizeTestPrepFlashcardStore(value, safePackId).scopes
+    .filter((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) !== 'current')
+    .reduce((sum, entry) => sum + Object.keys(entry.schedule).length, 0);
+}
+
+function testPrepSetFlashcardScheduleForPack(value, packId, contentIdentity, schedule) {
+  const safePackId = testPrepSlug(packId, '');
+  const identity = testPrepNormalizeContentIdentity(contentIdentity);
+  const normalized = normalizeTestPrepFlashcardStore(value, safePackId);
+  const scopes = normalized.scopes.filter((entry) => !(entry.packId === safePackId && testPrepContentIdentityStatus(entry, identity) === 'current'));
+  const safeSchedule = normalizeTestPrepFlashcardSchedule(schedule);
+  if (safePackId && identity.packVersion && Object.keys(safeSchedule).length) scopes.push({ packId: safePackId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, schedule: safeSchedule });
+  return normalizeTestPrepFlashcardStore({ schemaVersion: 2, scopes }, safePackId);
+}
+
+function testPrepFlashcardStorageKey(packId) {
+  return 'alloflow_test_prep_flashcards_' + testPrepSlug(packId, 'pack') + '_v1';
+}
+
+function readTestPrepFlashcardStore(packId) {
+  try { return normalizeTestPrepFlashcardStore(JSON.parse(localStorage.getItem(testPrepFlashcardStorageKey(packId)) || '{}'), packId); }
+  catch (_) { return normalizeTestPrepFlashcardStore({}, packId); }
+}
+
+function writeTestPrepFlashcardStore(packId, value) {
+  const normalized = normalizeTestPrepFlashcardStore(value, packId);
+  try { localStorage.setItem(testPrepFlashcardStorageKey(packId), JSON.stringify(normalized)); } catch (_) {}
+  return normalized;
+}
+
+function normalizeTestPrepFlashcardStores(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const source = input.byPack && typeof input.byPack === 'object' && !Array.isArray(input.byPack) ? input.byPack : input;
+  const byPack = {};
+  Object.keys(source).slice(0, 100).forEach((rawPackId) => {
+    const packId = testPrepSlug(rawPackId, '');
+    if (!packId) return;
+    const store = normalizeTestPrepFlashcardStore(source[rawPackId], packId);
+    if (store.scopes.length) byPack[packId] = store;
+  });
+  return { schemaVersion: 1, byPack };
+}
+
+function readAllTestPrepFlashcardStores(packIds) {
+  const ids = new Set((Array.isArray(packIds) ? packIds : []).map((id) => testPrepSlug(id, '')).filter(Boolean));
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = String(localStorage.key(index) || '');
+      const prefix = 'alloflow_test_prep_flashcards_';
+      const suffix = '_v1';
+      if (key.startsWith(prefix) && key.endsWith(suffix)) ids.add(testPrepSlug(key.slice(prefix.length, -suffix.length), ''));
+    }
+  } catch (_) {}
+  const byPack = {};
+  ids.forEach((packId) => {
+    const store = readTestPrepFlashcardStore(packId);
+    if (store.scopes.length) byPack[packId] = store;
+  });
+  return normalizeTestPrepFlashcardStores({ byPack });
+}
+
+function writeAllTestPrepFlashcardStores(value) {
+  const normalized = normalizeTestPrepFlashcardStores(value);
+  Object.keys(normalized.byPack).forEach((packId) => writeTestPrepFlashcardStore(packId, normalized.byPack[packId]));
+  return normalized;
+}
+
 function testPrepRateFlashcard(schedule, cardId, rating, now) {
   const normalized = normalizeTestPrepFlashcardSchedule(schedule);
   const id = testPrepSlug(cardId, '');
@@ -2118,30 +2277,37 @@ function testPrepBuildFlashcardQueue(cards, schedule, options) {
 function testPrepExportProgress(progress, reviewItems, now, extras) {
   const optional = extras && typeof extras === 'object' && !Array.isArray(extras) ? extras : {};
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     kind: 'alloflow-test-prep-progress',
     exportedAt: Math.max(0, Math.floor(testPrepFinite(now, Date.now()))),
     progress: normalizeTestPrepProgress(progress),
     reviewItems: normalizeTestPrepReviewItems(reviewItems),
     annotations: normalizeTestPrepAnnotations(optional.annotations),
     studyPlans: normalizeTestPrepStudyPlans(optional.studyPlans),
+    flashcardStores: normalizeTestPrepFlashcardStores(optional.flashcardStores),
+    chapterProgress: normalizeTestPrepNativeChapterProgressStore(optional.chapterProgress),
   };
 }
 
 function testPrepImportProgress(value) {
   let input = value;
   if (typeof input === 'string') input = JSON.parse(input);
-  if (!input || typeof input !== 'object' || Array.isArray(input) || ![1, 2, 3].includes(input.schemaVersion) || input.kind !== 'alloflow-test-prep-progress') {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || ![1, 2, 3, 4].includes(input.schemaVersion) || input.kind !== 'alloflow-test-prep-progress') {
     throw new Error('Unsupported AlloFlow test-prep progress file.');
   }
   const importedProgress = input.schemaVersion < 3
     ? { attempts: (input.progress && Array.isArray(input.progress.attempts) ? input.progress.attempts : []).map((attempt) => Object.assign({}, attempt, { packVersion: '', packContentFingerprint: '' })) }
     : input.progress;
+  const importedAnnotations = input.schemaVersion < 4
+    ? { records: normalizeTestPrepAnnotations(input.annotations).records.map((record) => Object.assign({}, record, { packVersion: '', packContentFingerprint: '' })) }
+    : input.annotations;
   return {
     progress: normalizeTestPrepProgress(importedProgress),
     reviewItems: normalizeTestPrepReviewItems(input.reviewItems),
-    annotations: normalizeTestPrepAnnotations(input.annotations),
+    annotations: normalizeTestPrepAnnotations(importedAnnotations),
     studyPlans: normalizeTestPrepStudyPlans(input.studyPlans),
+    flashcardStores: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'flashcardStores') ? normalizeTestPrepFlashcardStores(input.flashcardStores) : null,
+    chapterProgress: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'chapterProgress') ? normalizeTestPrepNativeChapterProgressStore(input.chapterProgress) : null,
   };
 }
 
@@ -2953,12 +3119,60 @@ function normalizeTestPrepNativeChapterProgress(value) {
     complete === true && /^[a-zA-Z0-9_-]{1,140}$/.test(id)).map(([id]) => [id, true]));
 }
 
-function readTestPrepNativeChapterProgress() {
-  try {
-    return normalizeTestPrepNativeChapterProgress(JSON.parse(localStorage.getItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY) || '{}'));
-  } catch (_) {
-    return {};
-  }
+function normalizeTestPrepNativeChapterProgressStore(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const rawScopes = input.schemaVersion === 2 && Array.isArray(input.scopes)
+    ? input.scopes
+    : Object.keys(input).length ? [{ packId: 'eppp-part-one', progress: input }] : [];
+  const merged = new Map();
+  rawScopes.slice(0, 200).forEach((scope) => {
+    const entry = scope && typeof scope === 'object' && !Array.isArray(scope) ? scope : {};
+    const packId = testPrepSlug(entry.packId, '');
+    const identity = testPrepNormalizeContentIdentity(entry);
+    const progress = normalizeTestPrepNativeChapterProgress(entry.progress);
+    if (!packId || !Object.keys(progress).length) return;
+    const key = [packId, identity.packVersion, identity.packContentFingerprint].join('@');
+    const existing = merged.get(key);
+    if (existing) existing.progress = Object.assign({}, existing.progress, progress);
+    else merged.set(key, { packId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, progress });
+  });
+  return { schemaVersion: 2, scopes: Array.from(merged.values()).slice(-200) };
+}
+
+function testPrepNativeChapterProgressForPack(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  const scope = normalizeTestPrepNativeChapterProgressStore(value).scopes.find((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) === 'current');
+  return scope ? normalizeTestPrepNativeChapterProgress(scope.progress) : {};
+}
+
+function testPrepRetainedChapterProgressCount(value, packId, contentIdentity) {
+  const safePackId = testPrepSlug(packId, '');
+  const current = testPrepNormalizeContentIdentity(contentIdentity);
+  return normalizeTestPrepNativeChapterProgressStore(value).scopes
+    .filter((entry) => entry.packId === safePackId && testPrepContentIdentityStatus(entry, current) !== 'current')
+    .reduce((sum, entry) => sum + Object.keys(entry.progress).length, 0);
+}
+
+function testPrepSetNativeChapterProgressForPack(value, packId, contentIdentity, progress) {
+  const normalized = normalizeTestPrepNativeChapterProgressStore(value);
+  const safePackId = testPrepSlug(packId, '');
+  const identity = testPrepNormalizeContentIdentity(contentIdentity);
+  const scopes = normalized.scopes.filter((entry) => !(entry.packId === safePackId && testPrepContentIdentityStatus(entry, identity) === 'current'));
+  const safeProgress = normalizeTestPrepNativeChapterProgress(progress);
+  if (safePackId && identity.packVersion && Object.keys(safeProgress).length) scopes.push({ packId: safePackId, packVersion: identity.packVersion, packContentFingerprint: identity.packContentFingerprint, progress: safeProgress });
+  return normalizeTestPrepNativeChapterProgressStore({ schemaVersion: 2, scopes });
+}
+
+function readTestPrepNativeChapterProgressStore() {
+  try { return normalizeTestPrepNativeChapterProgressStore(JSON.parse(localStorage.getItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY) || '{}')); }
+  catch (_) { return normalizeTestPrepNativeChapterProgressStore({}); }
+}
+
+function writeTestPrepNativeChapterProgressStore(value) {
+  const normalized = normalizeTestPrepNativeChapterProgressStore(value);
+  try { localStorage.setItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY, JSON.stringify(normalized)); } catch (_) {}
+  return normalized;
 }
 
 function testPrepRenderNativeRuns(runs, keyPrefix) {
@@ -3215,11 +3429,11 @@ function TestPrepHub(props) {
   const [librarySearch, setLibrarySearch] = React.useState('');
   const [libraryDomain, setLibraryDomain] = React.useState('all');
   const [libraryChapterId, setLibraryChapterId] = React.useState('');
-  const [nativeChapterProgress, setNativeChapterProgress] = React.useState(readTestPrepNativeChapterProgress);
+  const [nativeChapterProgressStore, setNativeChapterProgressStore] = React.useState(readTestPrepNativeChapterProgressStore);
   const [libraryMode, setLibraryMode] = React.useState('chapters');
   const [flashcardIndex, setFlashcardIndex] = React.useState(0);
   const [flashcardRevealed, setFlashcardRevealed] = React.useState(false);
-  const [flashcardRatings, setFlashcardRatings] = React.useState({});
+  const [flashcardStore, setFlashcardStore] = React.useState({ schemaVersion: 2, scopes: [] });
   const [flashcardDueOnly, setFlashcardDueOnly] = React.useState(false);
   const [customQuizDomainIds, setCustomQuizDomainIds] = React.useState([]);
   const [customQuizLength, setCustomQuizLength] = React.useState(20);
@@ -3337,6 +3551,7 @@ function TestPrepHub(props) {
   const selectedPackContextId = selectedPack ? selectedPack.id : '';
   const selectedLearningLibraryEntry = selectedPack ? manifestEntryById.get(selectedPack.id) : null;
   const selectedPackContentIdentity = testPrepResolvePackContentIdentity(selectedPack, selectedLearningLibraryEntry);
+  const selectedLearnerDataIdentity = testPrepResolveLearnerDataIdentity(selectedPack, selectedLearningLibraryEntry);
   const savedSessionRevisionStatus = savedSession && selectedPack && savedSession.packId === selectedPack.id
     ? testPrepContentIdentityStatus(savedSession, selectedPackContentIdentity) : '';
   const selectedLearningLibraryIdentity = testPrepLearningLibraryIdentity(selectedPack, selectedLearningLibraryEntry);
@@ -3353,18 +3568,24 @@ function TestPrepHub(props) {
   currentItemIdRef.current = currentItem ? currentItem.id : '';
   const currentBatch = activePack ? testPrepBatchMeta(activePack, questionIndex) : null;
   const currentSection = selectedPack && selectedPack.sections[Math.floor(sourceStartIndex / Math.max(1, selectedPack.batchSize))] || null;
-  const savedReviewItemIds = selectedPack ? (reviewItems[selectedPack.id] || []).filter((itemId) => {
+  const savedReviewItemIds = selectedPack ? testPrepReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity).filter((itemId) => {
     const item = itemLookup.get(itemId);
     return item && item.examItemStatus !== 'not-approved-as-independent-exam-item';
   }) : [];
+  const retainedReviewItemCount = selectedPack ? testPrepRetainedReviewItemCount(reviewItems, selectedPack.id, selectedPackContentIdentity) : 0;
   const currentItemSavedForReview = !!(currentItem && savedReviewItemIds.includes(currentItem.id));
   const currentHandsFreeCompatibility = testPrepHandsFreeCompatibility(activePack || selectedPack, currentItem);
   const progressAnalytics = testPrepBuildProgressAnalytics(progress, selectedPackContextId, selectedPackContentIdentity);
   const smartReviewPlan = selectedPack ? testPrepBuildReviewSet(progress, selectedPack, { limit: Math.min(20, selectedPack.items.length), contentIdentity: selectedPackContentIdentity }) : null;
   const customQuizPlan = selectedPack ? testPrepBuildCustomQuiz(selectedPack, { domainIds: customQuizDomainIds, limit: customQuizLength, seed: selectedPack.id + '-custom-' + customQuizVariant }) : null;
   const targetedDomainPlan = selectedPack ? testPrepBuildTargetedSet(selectedPack, { domainId: targetDomainId, difficulties: testPrepTargetDifficultyValues(targetDifficultyFilter), limit: 20 }) : null;
-  const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations }) : { query: '', total: 0, counts: {}, results: [] };
-  const packAnnotations = selectedPack ? normalizeTestPrepAnnotations(annotations).records.filter((record) => record.packId === selectedPack.id) : [];
+  const packAnnotations = selectedPack ? testPrepAnnotationsForPack(annotations, selectedPack.id, selectedLearnerDataIdentity) : [];
+  const retainedAnnotationCount = selectedPack ? testPrepRetainedAnnotationCount(annotations, selectedPack.id, selectedLearnerDataIdentity) : 0;
+  const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations: { records: packAnnotations } }) : { query: '', total: 0, counts: {}, results: [] };
+  const flashcardRatings = selectedPack ? testPrepFlashcardScheduleForPack(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : {};
+  const retainedFlashcardCount = selectedPack ? testPrepRetainedFlashcardCount(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : 0;
+  const nativeChapterProgress = selectedPack ? testPrepNativeChapterProgressForPack(nativeChapterProgressStore, selectedPack.id, selectedLearnerDataIdentity) : {};
+  const retainedChapterProgressCount = selectedPack ? testPrepRetainedChapterProgressCount(nativeChapterProgressStore, selectedPack.id, selectedLearnerDataIdentity) : 0;
   const currentStudyPlan = selectedPack ? testPrepStudyPlanForPack(studyPlans, selectedPack.id) : { weeklyQuestions: 100, weeklySets: 3, activeDays: 3 };
   const studyPlanStatus = selectedPack ? testPrepBuildStudyPlanStatus(progress, studyPlans, selectedPack.id, Date.now(), selectedPackContentIdentity) : null;
   const availableSkills = testPrepPackSkillCatalog(selectedPack, learningLibrary);
@@ -3397,9 +3618,7 @@ function TestPrepHub(props) {
   }, [internalQaGateKey]);
 
   React.useEffect(() => {
-    const key = 'alloflow_test_prep_flashcards_' + (selectedPack ? selectedPack.id : 'none') + '_v1';
-    try { setFlashcardRatings(normalizeTestPrepFlashcardSchedule(JSON.parse(localStorage.getItem(key) || '{}') || {})); }
-    catch (_) { setFlashcardRatings({}); }
+    setFlashcardStore(selectedPack ? readTestPrepFlashcardStore(selectedPack.id) : { schemaVersion: 2, scopes: [] });
     setFlashcardDueOnly(false);
     setCustomQuizDomainIds([]);
     setTargetDomainId('');
@@ -3409,7 +3628,7 @@ function TestPrepHub(props) {
     setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
     setAnnotationDraft('');
     setAnnotationEditingId('');
-  }, [selectedPackId]);
+  }, [selectedPackId, selectedLearnerDataIdentity.packVersion, selectedLearnerDataIdentity.packContentFingerprint]);
 
   React.useEffect(() => {
     if (!isOpen) return undefined;
@@ -3838,14 +4057,10 @@ function TestPrepHub(props) {
       announce('Guided activities stay in their guided-review bank and are excluded from saved-question diagnostic review.', 'info');
       return;
     }
-    const normalized = normalizeTestPrepReviewItems(reviewItems);
-    const packItems = normalized[selectedPack.id] || [];
+    const packItems = testPrepReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity);
     const removing = packItems.includes(safeItemId);
     const nextPackItems = removing ? packItems.filter((id) => id !== safeItemId) : packItems.concat(safeItemId);
-    const next = Object.assign({}, normalized);
-    if (nextPackItems.length) next[selectedPack.id] = nextPackItems;
-    else delete next[selectedPack.id];
-    setReviewItems(writeTestPrepReviewItems(next));
+    setReviewItems(writeTestPrepReviewItems(testPrepSetReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity, nextPackItems)));
     announce(removing ? 'Question removed from saved review.' : 'Question saved for later review.', 'info');
   }
 
@@ -3978,6 +4193,8 @@ function TestPrepHub(props) {
     const next = testPrepUpsertAnnotation(annotations, {
       id: annotationEditingId,
       packId: selectedPack.id,
+      packVersion: selectedLearnerDataIdentity.packVersion,
+      packContentFingerprint: selectedLearnerDataIdentity.packContentFingerprint,
       targetType: annotationTarget.targetType,
       targetId: annotationTarget.targetId,
       targetLabel: annotationTarget.targetLabel,
@@ -4009,7 +4226,7 @@ function TestPrepHub(props) {
   }
   function exportPracticeProgress() {
     try {
-      const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans });
+      const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans, flashcardStores: readAllTestPrepFlashcardStores(packs.map((pack) => pack.id)), chapterProgress: nativeChapterProgressStore });
       if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') throw new Error('File export is unavailable in this browser.');
       const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
       const anchor = document.createElement('a');
@@ -4032,7 +4249,12 @@ function TestPrepHub(props) {
         setReviewItems(writeTestPrepReviewItems(imported.reviewItems));
         setAnnotations(writeTestPrepAnnotations(imported.annotations));
         setStudyPlans(writeTestPrepStudyPlans(imported.studyPlans));
-        announce('Test-prep progress, notes, and plans restored.', 'success');
+        if (imported.flashcardStores) {
+          writeAllTestPrepFlashcardStores(imported.flashcardStores);
+          setFlashcardStore(selectedPack ? readTestPrepFlashcardStore(selectedPack.id) : { schemaVersion: 2, scopes: [] });
+        }
+        if (imported.chapterProgress) setNativeChapterProgressStore(writeTestPrepNativeChapterProgressStore(imported.chapterProgress));
+        announce('Test-prep progress, notes, plans, flashcards, and chapter completion restored.', 'success');
       } catch (error) { announce(error && error.message ? error.message : 'Progress import failed.', 'warning'); }
       if (event.target) event.target.value = '';
     };
@@ -4499,12 +4721,11 @@ function TestPrepHub(props) {
   function toggleNativeChapterSection(section) {
     const sectionId = String(section && (section.runtimeSectionId || section.id) || '');
     if (!/^[a-zA-Z0-9_-]{1,140}$/.test(sectionId)) return;
-    setNativeChapterProgress((previous) => {
-      const next = normalizeTestPrepNativeChapterProgress(previous);
-      if (next[sectionId]) delete next[sectionId];
-      else next[sectionId] = true;
-      try { localStorage.setItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY, JSON.stringify(next)); } catch (_) {}
-      return next;
+    setNativeChapterProgressStore((previousStore) => {
+      const nextProgress = testPrepNativeChapterProgressForPack(previousStore, selectedPackContextId, selectedLearnerDataIdentity);
+      if (nextProgress[sectionId]) delete nextProgress[sectionId];
+      else nextProgress[sectionId] = true;
+      return writeTestPrepNativeChapterProgressStore(testPrepSetNativeChapterProgressForPack(previousStore, selectedPackContextId, selectedLearnerDataIdentity, nextProgress));
     });
   }
 
@@ -5046,6 +5267,8 @@ function TestPrepHub(props) {
                     </div>
                   ))}
 
+                  {retainedReviewItemCount > 0 && <p className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedReviewItemCount} saved question link{retainedReviewItemCount === 1 ? '' : 's'} retained from earlier or unidentified content revisions.</strong> They remain in backups but are excluded from this revision's saved-question review.</p>}
+
                   <section className="mt-5 rounded-2xl border border-sky-300 bg-sky-50/60 p-4" aria-labelledby="practice-banks-title">
                     <div className="flex flex-wrap items-end justify-between gap-2">
                       <div><p className="text-xs font-black uppercase tracking-wide text-sky-800">{selectedPack.guidedReviewBatchCount ? 'Learning activity banks' : 'Practice banks'}</p><h5 id="practice-banks-title" className="text-xl font-black text-slate-900">Choose a {selectedPack.batchSize}{selectedPack.guidedReviewBatchCount ? '-activity' : '-question practice'} bank</h5></div>
@@ -5326,6 +5549,7 @@ function TestPrepHub(props) {
                 const query = librarySearch.trim().toLowerCase();
                 const visible = learningLibrary.chapters.filter((chapter) => (libraryDomain === 'all' || chapter.domain === libraryDomain) && (!query || (chapter.title + ' ' + chapter.domain + ' ' + (chapter.sections || []).map((section) => section.heading).join(' ')).toLowerCase().includes(query)));
                 return <>
+                  {retainedChapterProgressCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedChapterProgressCount} completed section marker{retainedChapterProgressCount === 1 ? '' : 's'} retained from an earlier or unidentified learning-content revision.</strong> Current chapter progress starts separately.</p>}
                   <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Learning library inventory">
                     {([['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Knowledge checks', learningLibrary.summary.knowledgeChecks], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids], ['Diagrams', learningLibrary.summary.nativeDiagramPayloads || learningLibrary.summary.diagrams], ['Glossary terms', learningLibrary.summary.glossaryTerms]].concat(learningLibrary.summary.constructedResponseWorkshops ? [['Response workshops', learningLibrary.summary.constructedResponseWorkshops]] : [])).map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
                   </div>
@@ -5374,12 +5598,13 @@ function TestPrepHub(props) {
                 const rate = (rating) => {
                   if (!card) return;
                   const next = testPrepRateFlashcard(flashcardRatings, card.id, rating, Date.now());
-                  setFlashcardRatings(next);
-                  try { localStorage.setItem('alloflow_test_prep_flashcards_' + selectedPack.id + '_v1', JSON.stringify(next)); } catch (_) {}
+                  const nextStore = testPrepSetFlashcardScheduleForPack(flashcardStore, selectedPack.id, selectedLearnerDataIdentity, next);
+                  setFlashcardStore(writeTestPrepFlashcardStore(selectedPack.id, nextStore));
                   setFlashcardRevealed(false);
                   if (cards.length) setFlashcardIndex(Math.min(safeIndex, Math.max(0, cards.length - 2)));
                 };
                 return <section className="space-y-4" aria-labelledby="flashcard-study-title">
+                  {retainedFlashcardCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedFlashcardCount} flashcard schedule entr{retainedFlashcardCount === 1 ? 'y' : 'ies'} retained from earlier or unidentified learning-content revisions.</strong> They remain in backups but do not affect this revision's due queue.</p>}
                   <div><h4 id="flashcard-study-title" className="text-lg font-black text-slate-900">Flashcard study</h4><p className="text-sm text-slate-700">Reveal each answer, then schedule the next retrieval. “Study again” returns in 10 minutes; “Still learning” returns in 1 day; “Know it” advances through 1, 3, 7, 14, 30, 60, and 120-day intervals. This transparent schedule is not a readiness score.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedFlashcards || 0} source reviewed</p></div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search cards<input value={librarySearch} onChange={(event) => { setLibrarySearch(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
@@ -5585,6 +5810,7 @@ function TestPrepHub(props) {
           {tab === 'notes' && selectedPack && (
             <div className="mx-auto max-w-6xl space-y-5">
               <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-amber-800">Portable study workspace</p><h3 className="text-xl font-black text-slate-900">Notes & highlights</h3><p className="mt-1 max-w-3xl text-sm text-slate-700">Records are scoped to a test pack, searchable with available pack content, and included in progress backup files. Avoid storing sensitive personal or client information.</p></div><label className="text-sm font-bold text-slate-800">Test pack<select value={selectedPackContextId} onChange={(event) => setSelectedPackId(event.target.value)} className="mt-1 block rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-amber-600">{packs.map((pack) => <option key={pack.id} value={pack.id}>{pack.shortTitle}</option>)}</select></label></div>
+              {retainedAnnotationCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedAnnotationCount} annotation{retainedAnnotationCount === 1 ? '' : 's'} retained from earlier or unidentified learning-content revisions.</strong> They remain in backups but are not attached to the current material.</p>}
               <section className="rounded-2xl border border-amber-300 bg-white p-5 shadow-sm" aria-labelledby="annotation-editor-title">
                 <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-amber-800">Attached to {annotationTarget.targetType.replace(/-/g, ' ')}</p><h4 id="annotation-editor-title" className="mt-1 font-black text-slate-900">{annotationTarget.targetLabel}</h4></div>{annotationTarget.targetType !== 'general' && <button type="button" onClick={() => { setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' }); setAnnotationEditingId(''); }} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-600">Use general pack note</button>}</div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">

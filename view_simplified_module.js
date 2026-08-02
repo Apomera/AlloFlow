@@ -260,6 +260,8 @@ function SimplifiedView(props) {
   var theme = props.theme;
   var isTeacherToolbarExpanded = props.isTeacherToolbarExpanded;
   var downloadingContentId = props.downloadingContentId;
+  var playingContentId = props.playingContentId;
+  var isSimplifiedAudioDownloading = downloadingContentId === 'dl-simplified-main';
   var isClozeComplete = props.isClozeComplete;
   var isSideBySide = props.isSideBySide;
   var cursorStyles = props.cursorStyles;
@@ -512,6 +514,9 @@ function SimplifiedView(props) {
   var editAudioMediaRecorderRef = React.useRef(null);
   var editAudioMediaStreamRef = React.useRef(null);
   var editAudioChunksRef = React.useRef([]);
+  var editAudioRecordingTimerRef = React.useRef(null);
+  var editAudioRecordingStartedAtRef = React.useRef(0);
+  var EDIT_AUDIO_MAX_RECORDING_MS = 120000;
   var immersiveDialogRef = React.useRef(null);
   var phonicsDialogRef = React.useRef(null);
   var phonicsCloseRef = React.useRef(null);
@@ -532,15 +537,18 @@ function SimplifiedView(props) {
     setEditAudioPlayingKey(null);
     setEditAudioLoadingKey(null);
   };
-  var getReadAloudAudioKey = function (sentence) {
+  var getReadAloudAudioKey = function (sentence, identityOptions) {
+    var baseKey = '';
     try {
       var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-      if (KS && typeof KS.keyFor === 'function') return KS.keyFor(sentence);
+      if (KS && typeof KS.keyFor === 'function') baseKey = KS.keyFor(sentence);
     } catch (_) {}
-    return String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    if (!baseKey) baseKey = String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    var occurrence = identityOptions && Number.isInteger(Number(identityOptions.occurrence)) ? Number(identityOptions.occurrence) : 0;
+    return baseKey ? baseKey + '\u241f' + occurrence : '';
   };
-  var updateEditAudioPlaybackIssue = function (sentence, issue) {
-    var audioKey = getReadAloudAudioKey(sentence);
+  var updateEditAudioPlaybackIssue = function (sentence, issue, identityOptions) {
+    var audioKey = getReadAloudAudioKey(sentence, identityOptions);
     if (!audioKey) return;
     setEditAudioPlaybackErrors(function (prev) {
       var next = Object.assign({}, prev);
@@ -548,7 +556,7 @@ function SimplifiedView(props) {
       return next;
     });
   };
-  var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error) {
+  var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions) {
     if (error && error.name === 'NotAllowedError') {
       setEditAudioNotice('Audio playback was blocked. Press Play again.');
       return;
@@ -556,7 +564,7 @@ function SimplifiedView(props) {
     updateEditAudioPlaybackIssue(sentence, {
       code: error && error.name ? error.name : 'playback-failed',
       reason: 'The saved audio could not be decoded or loaded.'
-    });
+    }, identityOptions);
     setEditAudioNotice('Saved audio for sentence ' + sentenceNumber + ' could not be played. Rebuild or replace it.');
   };
   var setSaveTtsAsPlayedEnabled = function (value) {
@@ -576,7 +584,7 @@ function SimplifiedView(props) {
     var onAudioCapture = function (event) {
       var detail = event && event.detail ? event.detail : {};
       if (generatedContent && generatedContent.id && detail.resourceId && detail.resourceId !== generatedContent.id) return;
-      var key = getReadAloudAudioKey(detail.sentence);
+      var key = getReadAloudAudioKey(detail.sentence, detail);
       if (!key) return;
       if (detail.status === 'saving') {
         setSavingAudioKeys(function (prev) {
@@ -611,7 +619,7 @@ function SimplifiedView(props) {
         if (detail.status === 'error' || detail.status === 'limit') {
           setEditAudioNotice(detail.reason || 'Played TTS could not be saved. Generate that sentence again to retry.');
         } else {
-          updateEditAudioPlaybackIssue(detail.sentence, null);
+          updateEditAudioPlaybackIssue(detail.sentence, null, detail);
         }
         setAudioStatusTick(function (n) {
           return n + 1;
@@ -659,6 +667,8 @@ function SimplifiedView(props) {
         }
       } catch (_) {}
       editAudioPlayerRef.current = null;
+      if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+      editAudioRecordingTimerRef.current = null;
       var recorder = editAudioMediaRecorderRef.current;
       try {
         if (recorder && recorder.state !== 'inactive') {
@@ -697,18 +707,18 @@ function SimplifiedView(props) {
       return null;
     }
   };
-  var getStoredReadAloudAudioUrl = function (sentence) {
+  var getStoredReadAloudAudioUrl = function (sentence, identityOptions) {
     try {
       var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
       if (typeof sharedInspect === 'function') {
-        var inspection = sharedInspect(sentence, 'reference');
+        var inspection = sharedInspect(sentence, 'reference', identityOptions);
         if (inspection && inspection.storedUrl) return inspection.storedUrl;
         if (inspection && inspection.status === 'ready' && inspection.url) return inspection.url;
       }
     } catch (_) {}
     var st = getReadAloudStore();
     try {
-      return st && typeof st.get === 'function' ? st.get(sentence) : null;
+      return st && typeof st.get === 'function' ? st.get(sentence, identityOptions || {}) : null;
     } catch (_) {
       return null;
     }
@@ -775,19 +785,19 @@ function SimplifiedView(props) {
       return null;
     });
   }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
-  var getReadAloudAudioProvenance = function (sentence) {
+  var getReadAloudAudioProvenance = function (sentence, identityOptions) {
     var inspection = null;
     try {
       var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
-      if (typeof sharedInspect === 'function') inspection = sharedInspect(sentence, 'reference');
+      if (typeof sharedInspect === 'function') inspection = sharedInspect(sentence, 'reference', identityOptions);
     } catch (_) {}
     var st = getReadAloudStore();
     var source = inspection && inspection.source != null ? inspection.source : null;
     var metadata = inspection && inspection.metadata ? inspection.metadata : null;
     if (!inspection) {
       try {
-        if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
-        if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
+        if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence, identityOptions || {});
+        if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence, identityOptions || {});
       } catch (_) {}
     }
     if (source === 'human-teacher') return {
@@ -810,7 +820,7 @@ function SimplifiedView(props) {
     };
     var currentVoice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Kore';
     var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
-    var currentLanguage = leveledTextLanguage || 'English';
+    var currentLanguage = identityOptions && identityOptions.language ? identityOptions.language : leveledTextLanguage || 'English';
     var stale = inspection ? inspection.status === 'stale' : !metadata || Number(metadata.voiceResolverVersion) !== 2 || !!(metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase() || metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001 || metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase());
     var details = ['AI voice'];
     if (metadata && metadata.voice) details.push(metadata.voice);
@@ -823,30 +833,60 @@ function SimplifiedView(props) {
       stale: stale
     };
   };
-  var hasStoredReadAloudAudio = function (sentence) {
+  var hasStoredReadAloudAudio = function (sentence, identityOptions) {
     try {
       var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
       if (typeof sharedInspect === 'function') {
-        var inspection = sharedInspect(sentence, 'reference');
+        var inspection = sharedInspect(sentence, 'reference', identityOptions);
         if (inspection && inspection.status) return inspection.status === 'ready' || inspection.status === 'stale';
       }
     } catch (_) {}
     var st = getReadAloudStore();
     try {
-      return !!(st && st.has(sentence));
+      return !!(st && st.has(sentence, identityOptions || {}));
     } catch (_) {
       return false;
     }
   };
+  var getReadAloudIdentityOptions = function (entry) {
+    var language = entry && entry.language ? entry.language : leveledTextLanguage || 'English';
+    var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
+    var voice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Kore';
+    return {
+      occurrence: entry && Number.isInteger(Number(entry.occurrence)) ? Number(entry.occurrence) : 0,
+      identity: entry && entry.identity ? entry.identity : null,
+      language: language,
+      profile: {
+        voice: voice,
+        speed: speed,
+        synthesisRate: speed,
+        language: language,
+        voiceResolverVersion: 2
+      }
+    };
+  };
   var getReadAloudAudioSummary = function (sentences) {
     var list = Array.isArray(sentences) ? sentences : [];
+    var entries = list.map(function (item, index) {
+      return item && typeof item === 'object' ? item : {
+        text: String(item || ''),
+        occurrence: 0,
+        identity: 'legacy:' + index
+      };
+    });
     var sharedSummary = null;
     try {
       var summaryResolver = typeof window !== 'undefined' && window.__alloGetReadAloudAudioSummary;
-      if (typeof summaryResolver === 'function') sharedSummary = summaryResolver(list, 'reference');
+      if (typeof summaryResolver === 'function') {
+        sharedSummary = summaryResolver(entries.map(function (entry) {
+          return entry.text;
+        }), 'reference', {
+          entries: entries
+        });
+      }
     } catch (_) {}
-    var saved = sharedSummary ? Number(sharedSummary.ready || 0) + Number(sharedSummary.stale || 0) : list.reduce(function (n, sentence) {
-      return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0);
+    var saved = sharedSummary ? Number(sharedSummary.ready || 0) + Number(sharedSummary.stale || 0) : entries.reduce(function (n, entry) {
+      return n + (hasStoredReadAloudAudio(entry.text, getReadAloudIdentityOptions(entry)) ? 1 : 0);
     }, 0);
     var bytes = sharedSummary ? Number(sharedSummary.estimatedBytes || 0) : 0;
     var maxBytes = 0;
@@ -857,12 +897,12 @@ function SimplifiedView(props) {
     } catch (_) {}
     return {
       saved: saved,
-      total: list.length,
+      total: entries.length,
       bytes: bytes,
       maxBytes: maxBytes
     };
   };
-  var getReadAloudSentencesForText = function (rawText) {
+  var getReadAloudSentenceEntriesForText = function (rawText) {
     var text = typeof rawText === 'string' ? rawText : String(rawText || '');
     var isTableText = function (p) {
       return p.trim().startsWith('|') || p.indexOf('\n|') !== -1;
@@ -874,22 +914,75 @@ function SimplifiedView(props) {
       } catch (_) {}
       return splitTextToSentences(part);
     };
+    var splitBlock = function (block) {
+      return String(block || '').split(/\n{2,}/).flatMap(function (p) {
+        return isTableText(p) ? [] : splitForReadAloud(p);
+      });
+    };
     var parts = getSideBySideContent(text);
-    var list = parts ? parts.source.concat(parts.target).flatMap(function (p) {
-      return isTableText(p) ? [] : splitForReadAloud(p);
-    }) : text.split(/\n{2,}/).flatMap(function (p) {
-      return isTableText(p) ? [] : splitForReadAloud(p);
-    });
-    return list.map(cleanSentenceForAudio).filter(function (s) {
-      return s && s.trim().length > 0;
+    var sourceList = [];
+    var targetList = [];
+    if (parts) {
+      sourceList = parts.source.flatMap(function (p) {
+        return isTableText(p) ? [] : splitForReadAloud(p);
+      });
+      targetList = parts.target.flatMap(function (p) {
+        return isTableText(p) ? [] : splitForReadAloud(p);
+      });
+    } else {
+      var marker = '--- ENGLISH TRANSLATION ---';
+      var markerIndex = text.indexOf(marker);
+      if (markerIndex >= 0) {
+        sourceList = splitBlock(text.slice(0, markerIndex));
+        targetList = splitBlock(text.slice(markerIndex + marker.length));
+      } else {
+        sourceList = splitBlock(text);
+      }
+    }
+    var counts = new Map();
+    var makeEntries = function (list, language, scope) {
+      return list.map(function (sentence, index) {
+        var cleaned = cleanSentenceForAudio(sentence);
+        if (!cleaned || !cleaned.trim()) return null;
+        // Match Phase K and the shared service exactly: occurrence is scoped
+        // to identical spoken text. Case-folding here made distinct spoken
+        // sentences consume each other's duplicate slot.
+        var countKey = cleaned;
+        var occurrence = counts.get(countKey) || 0;
+        counts.set(countKey, occurrence + 1);
+        return {
+          text: cleaned,
+          language: language || 'English',
+          occurrence: occurrence,
+          identity: scope + ':' + index + ':' + occurrence
+        };
+      }).filter(Boolean);
+    };
+    return makeEntries(sourceList, leveledTextLanguage || 'English', 'source').concat(makeEntries(targetList, 'English', 'target'));
+  };
+  var getReadAloudSentencesForText = function (rawText) {
+    return getReadAloudSentenceEntriesForText(rawText).map(function (entry) {
+      return entry.text;
     });
   };
   var karaokeReaderSentences = React.useMemo(function () {
     return getReadAloudSentencesForText(simplifiedReadAloudText);
   }, [generatedContent && generatedContent.data]);
+  var activeReadAloudStatus = React.useMemo(function () {
+    if (!isPlaying || playingContentId && playingContentId !== 'simplified-main') return '';
+    var currentIndex = playbackState && Number(playbackState.currentIdx);
+    if (!Number.isInteger(currentIndex) || currentIndex < 0) return '';
+    var stateSentences = playbackState && Array.isArray(playbackState.sentences) ? playbackState.sentences : karaokeReaderSentences;
+    var currentSentence = stateSentences[currentIndex];
+    if (!currentSentence) return '';
+    return 'Reading sentence ' + (currentIndex + 1) + ': ' + String(currentSentence);
+  }, [isPlaying, playingContentId, playbackState && playbackState.currentIdx, playbackState && playbackState.sentences, karaokeReaderSentences]);
   var handlePrepareReadAloudAudio = async function () {
     if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
-    var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
+    var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
+    var sentences = entries.map(function (entry) {
+      return entry.text;
+    });
     if (!sentences.length) return;
     // Note: prep saves every sentence regardless of the capture toggle, and
     // capture now defaults ON — no longer force-enable it here, so a
@@ -906,6 +999,8 @@ function SimplifiedView(props) {
           done: done,
           total: total || sentences.length
         });
+      }, {
+        entries: entries
       });
       if (result && result.remaining) {
         setEditAudioNotice(result.failure && result.failure.reason || result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.');
@@ -920,20 +1015,20 @@ function SimplifiedView(props) {
       });
     }
   };
-  var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber) {
+  var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     if (!sentence || regenAudioKey) return;
     if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
       setEditAudioNotice('Sentence audio tools are still loading. Please try again.');
       return;
     }
-    var wasSaved = hasStoredReadAloudAudio(sentence);
+    var wasSaved = hasStoredReadAloudAudio(sentence, identityOptions);
     if (editAudioPlayerRef.current && editAudioPlayerRef.current._alloSentenceKey === key) stopEditAudioPlayback();
     setRegenAudioKey(key);
     setEditAudioNotice((wasSaved ? 'Regenerating' : 'Generating') + ' sentence ' + sentenceNumber + ' audio...');
     try {
-      var url = await window.__alloRegenerateSentenceAudio(sentence);
+      var url = await window.__alloRegenerateSentenceAudio(sentence, identityOptions || {});
       if (!url) throw new Error('No audio was returned');
-      updateEditAudioPlaybackIssue(sentence, null);
+      updateEditAudioPlaybackIssue(sentence, null, identityOptions);
       setAudioStatusTick(function (n) {
         return n + 1;
       });
@@ -944,7 +1039,7 @@ function SimplifiedView(props) {
       setRegenAudioKey(null);
     }
   };
-  var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber) {
+  var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     if (!sentence || editAudioLoadingKey) return;
     var current = editAudioPlayerRef.current;
     if (current && current._alloSentenceKey === key) {
@@ -959,15 +1054,15 @@ function SimplifiedView(props) {
       try {
         if (isFinite(current.duration) && current.currentTime >= current.duration) current.currentTime = 0;
         await current.play();
-        updateEditAudioPlaybackIssue(sentence, null);
+        updateEditAudioPlaybackIssue(sentence, null, identityOptions);
         setEditAudioPlayingKey(key);
         setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
       } catch (error) {
-        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
+        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
       }
       return;
     }
-    if (!hasStoredReadAloudAudio(sentence)) {
+    if (!hasStoredReadAloudAudio(sentence, identityOptions)) {
       setEditAudioNotice('Generate or record audio for sentence ' + sentenceNumber + ' before playing it.');
       return;
     }
@@ -976,7 +1071,7 @@ function SimplifiedView(props) {
     setEditAudioLoadingKey(key);
     setEditAudioNotice('Loading sentence ' + sentenceNumber + ' audio...');
     try {
-      var url = getStoredReadAloudAudioUrl(sentence);
+      var url = getStoredReadAloudAudioUrl(sentence, identityOptions);
       if (token !== editAudioPlayTokenRef.current) return;
       if (!url) throw new Error('No saved audio URL');
       var audio = new Audio(url);
@@ -994,7 +1089,7 @@ function SimplifiedView(props) {
         if (editAudioPlayerRef.current === audio) {
           editAudioPlayerRef.current = null;
           setEditAudioPlayingKey(null);
-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error);
+          reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error, identityOptions);
         }
       };
       editAudioPlayerRef.current = audio;
@@ -1005,20 +1100,22 @@ function SimplifiedView(props) {
         } catch (_) {}
         return;
       }
-      updateEditAudioPlaybackIssue(sentence, null);
+      updateEditAudioPlaybackIssue(sentence, null, identityOptions);
       setEditAudioPlayingKey(key);
       setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
     } catch (error) {
       if (token === editAudioPlayTokenRef.current) {
         editAudioPlayerRef.current = null;
         setEditAudioPlayingKey(null);
-        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
+        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
       }
     } finally {
       if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
     }
   };
   var releaseEditAudioStream = function () {
+    if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+    editAudioRecordingTimerRef.current = null;
     var stream = editAudioMediaStreamRef.current;
     try {
       if (stream) stream.getTracks().forEach(function (track) {
@@ -1027,7 +1124,7 @@ function SimplifiedView(props) {
     } catch (_) {}
     editAudioMediaStreamRef.current = null;
   };
-  var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber) {
+  var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     var activeRecorder = editAudioMediaRecorderRef.current;
     if (activeRecorder && activeRecorder._alloSentenceKey === key && activeRecorder.state !== 'inactive') {
       try {
@@ -1083,6 +1180,13 @@ function SimplifiedView(props) {
         if (event && event.data && event.data.size > 0) editAudioChunksRef.current.push(event.data);
       };
       recorder.onerror = function () {
+        recorder._alloFailed = true;
+        editAudioChunksRef.current = [];
+        if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
+        releaseEditAudioStream();
+        setEditAudioMicRequestKey(null);
+        setEditAudioRecordingKey(null);
+        setEditAudioRecordingSaveKey(null);
         setEditAudioNotice('The microphone stopped unexpectedly. Please record sentence ' + sentenceNumber + ' again.');
       };
       recorder.onstop = async function () {
@@ -1091,6 +1195,8 @@ function SimplifiedView(props) {
         if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
         releaseEditAudioStream();
         setEditAudioRecordingKey(null);
+        var durationMs = Math.max(0, Date.now() - (recorder._alloStartedAt || editAudioRecordingStartedAtRef.current || Date.now()));
+        if (recorder._alloFailed) return;
         if (!chunks.length) {
           setEditAudioNotice('No audio was captured for sentence ' + sentenceNumber + '.');
           return;
@@ -1101,12 +1207,14 @@ function SimplifiedView(props) {
         setEditAudioRecordingSaveKey(key);
         setEditAudioNotice('Saving the teacher recording for sentence ' + sentenceNumber + ' as MP3...');
         try {
-          var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher');
+          var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher', Object.assign({}, identityOptions || {}, {
+            durationMs: durationMs
+          }));
           if (saved === false) throw new Error('Recording was not saved');
           setAudioStatusTick(function (n) {
             return n + 1;
           });
-          updateEditAudioPlaybackIssue(sentence, null);
+          updateEditAudioPlaybackIssue(sentence, null, identityOptions);
           setEditAudioNotice('Teacher recording saved for sentence ' + sentenceNumber + '.');
         } catch (_) {
           setEditAudioNotice('Could not save the recording for sentence ' + sentenceNumber + '. Please try again.');
@@ -1115,11 +1223,27 @@ function SimplifiedView(props) {
         }
       };
       editAudioMediaRecorderRef.current = recorder;
+      recorder._alloFailed = false;
+      recorder._alloStartedAt = Date.now();
+      editAudioRecordingStartedAtRef.current = recorder._alloStartedAt;
       recorder.start(250);
+      editAudioRecordingTimerRef.current = setTimeout(function () {
+        if (editAudioMediaRecorderRef.current === recorder && recorder.state !== 'inactive') {
+          setEditAudioNotice('The two-minute recording limit was reached. Finishing sentence ' + sentenceNumber + '...');
+          try {
+            recorder.stop();
+          } catch (_) {
+            recorder.onerror();
+          }
+        }
+      }, EDIT_AUDIO_MAX_RECORDING_MS);
       setEditAudioMicRequestKey(null);
       setEditAudioRecordingKey(key);
       setEditAudioNotice('Recording sentence ' + sentenceNumber + '. Press Stop when finished.');
     } catch (_) {
+      editAudioMediaRecorderRef.current = null;
+      editAudioChunksRef.current = [];
+      releaseEditAudioStream();
       if (stream) {
         try {
           stream.getTracks().forEach(function (track) {
@@ -1134,7 +1258,7 @@ function SimplifiedView(props) {
       }
     }
   };
-  var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber) {
+  var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
     if (!sentence || removeAudioKey) return;
     if (typeof window.__alloRemoveSentenceAudio !== 'function') {
       setEditAudioNotice('Sentence audio removal is still loading. Please try again.');
@@ -1144,12 +1268,12 @@ function SimplifiedView(props) {
     setRemoveAudioKey(key);
     setEditAudioNotice('Removing saved audio for sentence ' + sentenceNumber + '...');
     try {
-      var removed = await window.__alloRemoveSentenceAudio(sentence);
+      var removed = await window.__alloRemoveSentenceAudio(sentence, identityOptions || {});
       if (removed === false) throw new Error('Audio was not removed');
       setAudioStatusTick(function (n) {
         return n + 1;
       });
-      updateEditAudioPlaybackIssue(sentence, null);
+      updateEditAudioPlaybackIssue(sentence, null, identityOptions);
       setEditAudioNotice('Saved audio removed from sentence ' + sentenceNumber + '.');
     } catch (_) {
       setEditAudioNotice('Could not remove the audio for sentence ' + sentenceNumber + '.');
@@ -1245,7 +1369,7 @@ function SimplifiedView(props) {
   }, [!!revisionData]);
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
-    var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
+    var sentences = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
     if (!sentences.length) return null;
     var summary = getReadAloudAudioSummary(sentences);
     var savingCount = Object.keys(savingAudioKeys || {}).length;
@@ -1315,13 +1439,15 @@ function SimplifiedView(props) {
       className: "mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800"
     }, editAudioNotice), /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar"
-    }, sentences.map(function (sentence, i) {
+    }, sentences.map(function (entry, i) {
+      var sentence = entry.text;
+      var identityOptions = getReadAloudIdentityOptions(entry);
       var key = 'simplified-' + i;
       var sentenceNumber = i + 1;
-      var audioKey = getReadAloudAudioKey(sentence);
+      var audioKey = getReadAloudAudioKey(sentence, identityOptions);
       var isSaving = !!savingAudioKeys[audioKey];
-      var isSaved = hasStoredReadAloudAudio(sentence);
-      var provenance = isSaved ? getReadAloudAudioProvenance(sentence) : {
+      var isSaved = hasStoredReadAloudAudio(sentence, identityOptions);
+      var provenance = isSaved ? getReadAloudAudioProvenance(sentence, identityOptions) : {
         source: null,
         label: 'No saved source',
         stale: false
@@ -1379,7 +1505,7 @@ function SimplifiedView(props) {
       }, /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
-          handlePlayEditAudioSentence(sentence, key, sentenceNumber);
+          handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: !isSaved || isLoading || controlsBlocked || anyRecordingWork || !!editAudioLoadingKey && !isLoading,
         "aria-pressed": isPlayingSentence,
@@ -1396,7 +1522,7 @@ function SimplifiedView(props) {
       }), /*#__PURE__*/React.createElement("span", null, isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play')), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
-          handleRegenerateReadAloudSentence(sentence, key, sentenceNumber);
+          handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: !!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy,
         "aria-label": `${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
@@ -1410,7 +1536,7 @@ function SimplifiedView(props) {
       }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
-          handleRecordEditAudioSentence(sentence, key, sentenceNumber);
+          handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: recordDisabled,
         "aria-pressed": isRecording,
@@ -1427,7 +1553,7 @@ function SimplifiedView(props) {
       }), /*#__PURE__*/React.createElement("span", null, isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record')), isSaved && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
-          handleRemoveReadAloudSentence(sentence, key, sentenceNumber);
+          handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: !!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy,
         "aria-label": `Remove saved audio for sentence ${sentenceNumber}`,
@@ -1442,7 +1568,12 @@ function SimplifiedView(props) {
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
+  }, activeReadAloudStatus && /*#__PURE__*/React.createElement("span", {
+    className: "sr-only",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, activeReadAloudStatus), isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
     ref: immersiveDialogRef,
     role: "dialog",
     "aria-modal": "true",
@@ -1974,16 +2105,24 @@ function SimplifiedView(props) {
     size: 14
   }), " ", t('common.copy_text')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'),
-    disabled: downloadingContentId === 'dl-simplified-main',
+    onClick: () => {
+      if (isSimplifiedAudioDownloading) {
+        try {
+          window.__alloCancelAudioDownload?.();
+        } catch (_) {}
+        return;
+      }
+      handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main');
+    },
+    title: isSimplifiedAudioDownloading ? 'Stop audio download' : t('simplified.tip_download_audio') || t('common.download_audio'),
+    "aria-label": isSimplifiedAudioDownloading ? 'Stop audio download' : t('common.download_audio') || 'Download audio',
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     "data-help-key": "simplified_download_audio"
-  }, downloadingContentId === 'dl-simplified-main' ? /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 14,
-    className: "animate-spin motion-reduce:animate-none"
+  }, isSimplifiedAudioDownloading ? /*#__PURE__*/React.createElement(StopCircle, {
+    size: 14
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
-  }), downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
+  }), isSimplifiedAudioDownloading ? t('common.stop') || 'Stop download' : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       if (ttsPrepState.busy) {
@@ -2735,6 +2874,7 @@ function SimplifiedView(props) {
             },
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
             role: interactionMode !== 'cloze' ? "button" : "text",
+            "aria-current": isActive ? "true" : undefined,
             "aria-label": `Read sentence: ${cleanText}`,
             className: `transition-colors duration-300 rounded px-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200' : ''} ${isActive ? 'bg-yellow-200 text-black shadow-sm' : ''} ${headerClass}`,
             title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
@@ -3050,6 +3190,7 @@ function SimplifiedView(props) {
               },
               tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
               role: interactionMode !== 'cloze' ? "button" : "text",
+              "aria-current": isActive ? "true" : undefined,
               "aria-label": `Read sentence: ${cleanText}`,
               className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`,
               title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
@@ -3186,6 +3327,7 @@ function SimplifiedView(props) {
             },
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
             role: interactionMode !== 'cloze' ? "button" : "text",
+            "aria-current": isActive ? "true" : undefined,
             "aria-label": `Read sentence: ${cleanText}`,
             className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'text-slate-700'} ${headerClass}`,
             title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""

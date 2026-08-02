@@ -1,0 +1,23 @@
+module.exports = {
+  maay_maay: {
+    'toasts.building_accessible_docx': 'Waxaa la dhisayaa fayl Word oo la heli karo…',
+    'toasts.building_accessible_pptx': 'Waxaa la dhisayaa fayl PowerPoint oo la heli karo…',
+    'toasts.batch_tagging': '📄 Waxaa loo samaynayaa PDF-yada tagged ZIP — faylasha la scan gareeyo waqti dheer ayay qaataan (OCR fayl kasta ayuu maraa)…',
+    'toasts.builder_edits_preserved': '✋ Wax-ka-beddellada gacantaada waa la hayaa — preview dib looma samayn. Export ama xir builder si loo kaydiyo, dabadeed settings beddel.',
+    'toasts.builder_edits_synced': '✏️ Wax-ka-beddellada builder-ka waxaa lagu kaydiyey dukumeentiga la saxay — Tagged PDF / Word / PowerPoint exports way ku jiraan.',
+    'toasts.pptx_ai_theme': '🎨 AI ayaa la waydiinayaa palette ku habboon mawduuca (akhris-fudaydka gudaha ayaa la ilaaliyaa)…',
+    'toasts.make_accessible_fixing': '✨ Audit waa dhammaatay — si toos ah ayaa loo saxayaa (click looma baahna)…',
+    'toasts.tagged_pdf_saved_see_report': '📄 Tagged PDF waa la kaydiyey — report-ka oo dhan wuxuu yaal korka badhamada download (✕ si loo xiro).',
+    'toasts.no_open_image_slot': 'Meel image furan ah kama hadhin preview — thumbnail ku jiid image gaar ah si aad u beddesho.',
+    'toasts.extracted_image_inserted': '🖼 Waxaa la geliyey booska image-ka furan ee ugu horreeya — thumbnail jiid haddii aad meel kale rabto.',
+    'toasts.html_downloaded': '🌐 HTML waa la soo dejiyey — browser kasta ayuu ka furmaa.',
+    'toasts.odt_downloaded': '📄 OpenDocument (.odt) waa la soo dejiyey — LibreOffice, Google Docs ama Word ayuu ka furmaa.',
+    'toasts.daisy_downloaded': '🔊 DAISY talking-book package (.zip) waa la soo dejiyey — ku fur DAISY reader.',
+    'toasts.mo_no_voice': 'Adeegga codku ma jiro, sidaas darteed read-along audio hadda lama samayn karo.',
+    'toasts.mo_busy': 'Read-along export hore ayuu u socdaa.',
+    'toasts.mo_no_text': 'Qoraal la akhriyi karo oo la sheego lama helin.',
+    'toasts.mo_no_audio': '⚠ Read-along ebook waa la kaydiyey, laakiin audio lama samayn karin (adeegga codku ma jiro). Qoraalka iyo sync structure-ku waa sax.',
+    'toasts.mo_done': 'Read-along ebook waa la soo dejiyey',
+    'toasts.audio_unavailable_now': 'Audio hadda lama heli karo (job ayaa socon kara ama adeegga codku wuu dansan yahay).',
+  },
+};

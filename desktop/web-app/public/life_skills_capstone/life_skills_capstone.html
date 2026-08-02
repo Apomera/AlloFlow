@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Day-in-the-Life Capstone</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  if (window.AFRAME) {
+    AFRAME.registerComponent('capstone-interactive', {
+      schema: { station: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsCapstone) window.lifeSkillsCapstone.focus(this.data.station);
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsCapstone) window.lifeSkillsCapstone.focus(this.data.station, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root { --bg:#081321; --panel:#102238; --panel2:#172d47; --line:#4b7197; --text:#f8fbff; --muted:#c8d8e9; --accent:#67e8f9; --good:#4ade80; --warn:#facc15; --danger:#fb7185; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: radial-gradient(circle at top, #163455 0, var(--bg) 55%); color: var(--text); }
+  body { padding: 18px; }
+  main { max-width: 1380px; margin: 0 auto; }
+  header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  h1 { margin:0; font-size:clamp(20px, 3vw, 30px); line-height:1.1; }
+  .sub { margin:6px 0 0; color:var(--muted); max-width:720px; font-size:13px; line-height:1.45; }
+  .badge { border:1px solid #70a4c8; border-radius:999px; padding:7px 11px; color:var(--accent); font-size:12px; font-weight:800; white-space:nowrap; }
+  .layout { display:grid; grid-template-columns:minmax(280px, 380px) minmax(0, 1fr); gap:14px; align-items:stretch; }
+  .panel, .scene-panel { background:rgba(16,34,56,.94); border:1px solid var(--line); border-radius:16px; box-shadow:0 18px 55px rgba(0,0,0,.28); }
+  .panel { padding:15px; }
+  .scene-panel { overflow:hidden; min-height:610px; }
+  .progress-line { display:flex; justify-content:space-between; gap:8px; align-items:center; color:var(--muted); font-size:12px; font-weight:800; margin-bottom:10px; }
+  #progressValue { color:var(--accent); font-variant-numeric:tabular-nums; }
+  .steps { list-style:none; padding:0; margin:0 0 13px; display:grid; gap:5px; }
+  .step { display:flex; width:100%; align-items:center; gap:7px; padding:7px 8px; border:1px solid #365575; border-radius:8px; color:var(--muted); font-size:11px; font-weight:700; cursor:pointer; text-align:left; }
+  .step.current { border-color:var(--warn); color:var(--text); background:rgba(250,204,21,.1); }
+  .step.done { border-color:var(--good); color:var(--good); background:rgba(74,222,128,.08); }
+  .step-dot { width:9px; height:9px; border-radius:50%; background:#5b7894; flex:0 0 auto; }
+  .step.current .step-dot { background:var(--warn); box-shadow:0 0 0 3px rgba(250,204,21,.18); }
+  .step.done .step-dot { background:var(--good); }
+  .eyebrow { color:var(--accent); font-size:11px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; margin:0 0 4px; }
+  h2 { font-size:18px; line-height:1.2; margin:0 0 7px; }
+  .situation, .instruction { color:var(--muted); font-size:13px; line-height:1.45; margin:0 0 10px; }
+  .instruction { color:var(--text); font-weight:750; }
+  .choices { display:grid; gap:7px; }
+  button { font:inherit; }
+  .choice, .tool, .view { appearance:none; border:1px solid #547b9d; background:#152d48; color:var(--text); border-radius:9px; padding:9px 10px; text-align:left; cursor:pointer; font-size:12px; font-weight:700; line-height:1.35; }
+  .choice:hover, .tool:hover, .view:hover { border-color:var(--accent); background:#1b3b5c; }
+  .choice:disabled { cursor:not-allowed; opacity:.72; }
+  .choice.safe { border-color:var(--good); background:rgba(74,222,128,.1); }
+  .hint { display:block; width:100%; margin-top:9px; border:1px solid transparent; border-radius:7px; background:rgba(250,204,21,.07); color:var(--warn); padding:6px 7px; text-align:left; cursor:pointer; font-size:11px; font-weight:800; }
+  .hint:hover { border-color:var(--warn); }
+  .feedback { min-height:42px; margin:9px 0 0; padding:8px; border-radius:8px; background:#0b1b2d; color:var(--muted); font-size:12px; line-height:1.4; }
+  .feedback.good { color:var(--good); background:rgba(74,222,128,.1); }
+  .feedback.error { color:#fecdd3; background:rgba(251,113,133,.1); }
+  .hint-text { color:var(--warn); font-size:11px; line-height:1.4; margin:6px 0 0; }
+  .debrief { margin-top:12px; padding:10px; border:1px solid #365575; border-radius:10px; background:rgba(11,27,45,.72); }
+  .debrief h2 { font-size:14px; margin:0 0 5px; }
+  .debrief-prompt { color:var(--muted); font-size:11px; line-height:1.35; margin:7px 0 5px; }
+  .debrief-group { display:flex; flex-wrap:wrap; gap:6px; }
+  .debrief button[aria-pressed="true"] { border-color:var(--accent); background:#0e7490; }
+  .debrief-feedback { min-height:18px; color:var(--good); font-size:11px; line-height:1.35; margin:7px 0 0; }
+  .debrief-label { display:block; color:var(--text); font-size:11px; line-height:1.35; margin:0 0 5px; }
+  .teachback { display:block; width:100%; box-sizing:border-box; min-height:68px; resize:vertical; border:1px solid #547b9d; border-radius:8px; background:#0b1b2d; color:var(--text); padding:8px; font:inherit; font-size:12px; line-height:1.4; }
+  .teachback::placeholder { color:#8ca6be; }
+  .debrief-actions { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:7px; }
+  .debrief-count { color:var(--muted); font-size:11px; }
+  .tools, .views { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .tool, .view { flex:1 1 100px; padding:7px 8px; font-size:11px; text-align:center; }
+  .tool.primary { background:#0e7490; border-color:#67e8f9; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  a-scene { display:block; width:100%; height:100%; min-height:610px; }
+  .scene-fallback { display:none; padding:20px; color:var(--muted); }
+  .scene-panel.no-aframe a-scene { display:none; }
+  .scene-panel.no-aframe .scene-fallback { display:block; }
+  button:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
+  @media (max-width: 850px) { body { padding:10px; } .layout { grid-template-columns:1fr; } .scene-panel, a-scene { min-height:480px; } }
+  @media (max-width: 480px) { .panel { padding:12px; } .scene-panel, a-scene { min-height:390px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Day-in-the-Life Capstone</h1>
+      <p class="sub">Move through a home and transit routine. Notice the risk, choose a safer next step, and keep your options open.</p>
+    </div>
+    <div class="badge" id="capstoneStatus">Guided sequence · 5 stations</div>
+  </header>
+  <div class="layout">
+    <section class="panel" aria-labelledby="stationTitle">
+      <div class="progress-line"><span>Capstone progress</span><span id="progressValue">0 / 5 stations</span></div>
+      <ol class="steps" id="steps" aria-label="Capstone stations"></ol>
+      <div class="decision">
+        <p class="eyebrow" id="stationLabel">Station 1</p>
+        <h2 id="stationTitle"></h2>
+        <p class="situation" id="situation"></p>
+        <p class="instruction" id="instruction"></p>
+        <div class="choices" id="choices" role="group" aria-label="Capstone choices"></div>
+        <button class="hint" id="hintButton" type="button">Show a hint</button>
+        <p class="hint-text" id="hintText" role="status" aria-live="polite" hidden></p>
+        <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+      </div>
+      <div class="views" aria-label="Scene view presets">
+        <button class="view" type="button" data-view="home">Home</button>
+        <button class="view" type="button" data-view="middle">Middle</button>
+        <button class="view" type="button" data-view="transit">Transit</button>
+      </div>
+      <div class="tools">
+        <button class="tool primary" id="focusButton" type="button">Focus current station</button>
+        <button class="tool" id="challengeButton" type="button" disabled>Start transfer challenge</button>
+        <button class="tool" id="resetButton" type="button">Start over</button>
+      </div>
+      <p id="challengeNote" class="hint-text" role="status" aria-live="polite" hidden></p>
+      <section id="debrief" class="debrief" aria-labelledby="debriefTitle" hidden>
+        <p class="eyebrow">Quick reflection</p>
+        <h2 id="debriefTitle">How ready do you feel to use this habit?</h2>
+        <p class="debrief-prompt">Choose a readiness level.</p>
+        <div class="debrief-group" id="confidenceChoices" role="group" aria-label="Readiness level">
+          <button class="tool" type="button" data-confidence="not-yet" aria-pressed="false">Not yet</button>
+          <button class="tool" type="button" data-confidence="getting-there" aria-pressed="false">Getting there</button>
+          <button class="tool" type="button" data-confidence="ready" aria-pressed="false">Ready to try</button>
+        </div>
+        <p class="debrief-prompt">What will help next?</p>
+        <div class="debrief-group" id="nextStepChoices" role="group" aria-label="Next practice step">
+          <button class="tool" type="button" data-next-step="replay" aria-pressed="false">Replay a station</button>
+          <button class="tool" type="button" data-next-step="explain" aria-pressed="false">Explain it to someone</button>
+          <button class="tool" type="button" data-next-step="checklist" aria-pressed="false">Use a checklist</button>
+        </div>
+        <p class="debrief-prompt">Teach back one safe first move (optional).</p>
+        <label class="debrief-label" for="teachBackInput">In your own words, what would you do first?</label>
+        <textarea id="teachBackInput" class="teachback" maxlength="180" rows="3" placeholder="Example: Stop the risk, then ask for help." aria-describedby="teachBackHint teachBackCount"></textarea>
+        <p id="teachBackHint" class="debrief-prompt">This is practice, not a scored answer.</p>
+        <div class="debrief-actions">
+          <button class="tool" id="saveTeachBackButton" type="button">Save teach-back</button>
+          <span id="teachBackCount" class="debrief-count" aria-live="polite">0 / 180</span>
+        </div>
+        <p id="teachBackFeedback" class="debrief-feedback" role="status" aria-live="polite">Optional practice; not saved yet.</p>
+        <p id="debriefFeedback" class="debrief-feedback" role="status" aria-live="polite">Reflection is optional.</p>
+      </section>
+      <div id="srStatus" class="sr-only" role="status" aria-live="polite"></div>
+    </section>
+    <section class="scene-panel" id="scenePanel" aria-label="Interactive day-in-the-life scene">
+      <div class="scene-fallback">The 3D scene is unavailable in this browser. Use the keyboard-accessible choices in the panel to complete the capstone.</div>
+      <a-scene id="capstoneScene" embedded renderer="antialias: true; colorManagement: true" background="color: #081321" fog="type: linear; color: #081321; near: 12; far: 38" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #b8d7ff; intensity: 1.2"></a-entity>
+        <a-entity light="type: directional; color: #fff3d1; intensity: 1.8" position="-2 7 5"></a-entity>
+        <a-plane position="0 0 -2" rotation="-90 0 0" width="18" height="16" material="color: #193554; roughness: 1"></a-plane>
+        <a-box position="0 3 -5" width="16" height="6" depth=".2" material="color: #122943; roughness: 1"></a-box>
+        <a-box position="-5.2 1.1 -2.5" width="2.8" height="1.8" depth="1.1" color="#b45309" capstone-interactive="station: stove"></a-box>
+        <a-cylinder position="-5.2 2.15 -2.5" radius=".22" height=".12" rotation="90 0 0" color="#facc15" capstone-interactive="station: stove"></a-cylinder>
+        <a-entity id="label-stove" position="-5.2 2.7 -2.5" text="value: KITCHEN\nStove; align: center; color: #fff7ed; width: 4"></a-entity>
+        <a-entity id="state-stove" position="-5.2 3.2 -2.5" visible="false"><a-sphere id="state-orb-stove" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-stove" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-box position="-1.8 1.15 -2.5" width="2.6" height="2" depth="1.2" color="#0f766e" capstone-interactive="station: lint"></a-box>
+        <a-box position="-1.8 1.1 -1.82" width="1.7" height=".75" depth=".08" color="#082f49" capstone-interactive="station: lint"></a-box>
+        <a-entity id="label-lint" position="-1.8 2.7 -2.5" text="value: LAUNDRY\nAirflow; align: center; color: #cffafe; width: 4"></a-entity>
+        <a-entity id="state-lint" position="-1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-lint" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-lint" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-box position="1.8 1.1 -2.5" width="2.6" height="1.8" depth="1.1" color="#2563eb" capstone-interactive="station: shutoff"></a-box>
+        <a-cylinder position="1.8 1.85 -1.9" radius=".3" height=".12" rotation="90 0 0" color="#93c5fd" capstone-interactive="station: shutoff"></a-cylinder>
+        <a-entity id="label-shutoff" position="1.8 2.7 -2.5" text="value: BATH\nWater shutoff; align: center; color: #dbeafe; width: 4"></a-entity>
+        <a-entity id="state-shutoff" position="1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-shutoff" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-shutoff" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-cylinder position="5.1 2.1 -2.5" radius=".82" height=".14" rotation="90 0 0" color="#f97316" capstone-interactive="station: alarm"></a-cylinder>
+        <a-cylinder position="5.1 2.1 -2.4" radius=".52" height=".16" rotation="90 0 0" color="#431407"></a-cylinder>
+        <a-entity id="label-alarm" position="5.1 3.25 -2.5" text="value: ENTRY\nAlarm + exit; align: center; color: #ffedd5; width: 4"></a-entity>
+        <a-entity id="state-alarm" position="5.1 3.75 -2.5" visible="false"><a-sphere id="state-orb-alarm" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-alarm" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-box position="0 1.25 2.5" width="4.4" height="2.1" depth="1.4" color="#075985" capstone-interactive="station: visibility"></a-box>
+        <a-box position="0 2.05 1.75" width="2.5" height=".7" depth=".08" color="#7dd3fc" capstone-interactive="station: visibility"></a-box>
+        <a-entity id="label-visibility" position="0 3.1 2.5" text="value: TRANSIT\nVisible stop; align: center; color: #e0f2fe; width: 5"></a-entity>
+        <a-entity id="state-visibility" position="0 3.6 2.5" visible="false"><a-sphere id="state-orb-visibility" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-visibility" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
+        <a-entity id="sceneMarker" position="0 .12 -2.5" visible="false">
+          <a-torus id="sceneMarkerRing" radius="1.25" radius-tubular=".045" rotation="90 0 0" color="#facc15" material="emissive: #facc15; emissiveIntensity: .7"></a-torus>
+        </a-entity>
+        <a-entity id="sceneNote" position="0 4.25 -2.7" text="value: FOCUS A STATION; align: center; color: #facc15; width: 7"></a-entity>
+        <a-camera id="camera" position="0 4.1 10" rotation="-12 0 0"></a-camera>
+      </a-scene>
+    </section>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var TASKS = [
+    { id: 'stove', room: 'Kitchen', title: 'Make the stove safer', situation: 'A pan handle points toward the edge and the heat is still on. What is the safest next move?', instruction: 'Choose the response that lowers burn and spill risk.', hint: 'Turn heat off when safe, keep the handle inward, and get help instead of carrying a hot pan.', choices: [
+      { id: 'safe', label: 'Turn the heat off, keep the handle inward, and get help if needed.', safe: true, feedback: 'Lowering heat and reducing a handle bump makes the kitchen safer.' },
+      { id: 'carry', label: 'Carry the hot pan to another room.', feedback: 'Moving a hot pan increases spill and burn risk. Leave it stable and get help.' },
+      { id: 'ignore', label: 'Leave it heating while you finish another task.', feedback: 'Active heat needs attention. Pause and make the stove safer first.' }
+    ] },
+    { id: 'lint', room: 'Laundry', title: 'Protect dryer airflow', situation: 'The dryer feels hot and the airflow seems weak before the next load. What should happen first?', instruction: 'Choose the response that protects the machine and the home.', hint: 'Heat plus weak airflow is a stop signal. Check lint and airflow before running another cycle.', choices: [
+      { id: 'safe', label: 'Stop the dryer, clear lint and airflow, and ask for help if heat or odor continues.', safe: true, feedback: 'Stopping first and checking airflow reduces heat and fire risk.' },
+      { id: 'repeat', label: 'Run another cycle so the clothes finish faster.', feedback: 'Extra cycles can add heat. Stop, check airflow, and get help if the problem continues.' },
+      { id: 'ignore', label: 'Cover the vent so the hot air stays inside.', feedback: 'Blocking airflow adds heat. Keep the path clear and stop if the dryer stays hot.' }
+    ] },
+    { id: 'shutoff', room: 'Bathroom', title: 'Control a water leak', situation: 'Water is pooling under a sink while you look for a tool. What should happen before inspection?', instruction: 'Choose the response that gives you control of the source.', hint: 'Stop the water, contain drips, then decide whether the repair is safe to continue.', choices: [
+      { id: 'safe', label: 'Close the small water shutoff, place a bucket, and ask for help if needed.', safe: true, feedback: 'Stopping water first limits damage and gives you control.' },
+      { id: 'open', label: 'Open the fitting immediately to find the leak.', feedback: 'Opening the fitting before stopping water can make the leak worse.' },
+      { id: 'wait', label: 'Leave the water running while you search for tools.', feedback: 'Contain the water and close the shutoff before gathering tools.' }
+    ] },
+    { id: 'alarm', room: 'Entry', title: 'Respond to an alarm', situation: 'A smoke or CO alarm chirps and you are not sure why. What is the safer first step?', instruction: 'Choose the response that keeps people informed and moving safely.', hint: 'Treat an alarm as information: tell a responsible adult and leave or call emergency help if danger is possible.', choices: [
+      { id: 'safe', label: 'Tell a responsible adult, check from a safe position, and leave or call emergency help if danger is possible.', safe: true, feedback: 'Treating an alarm as information and getting responsible help protects people.' },
+      { id: 'silence', label: 'Remove the battery and ignore the chirp.', feedback: 'Disabling an alarm can remove an important warning. Tell a responsible adult instead.' },
+      { id: 'climb', label: 'Climb on furniture to reach it quickly.', feedback: 'A fall adds risk. Get a responsible adult and use a safe plan.' }
+    ] },
+    { id: 'visibility', room: 'Transit', title: 'Choose a visible stop', situation: 'You reach an unfamiliar stop after dark, and traffic is moving nearby. What should you do?', instruction: 'Choose the response that keeps you visible and connected.', hint: 'Choose a visible, well-lit place, use lights or reflective gear, and ask official help if needed.', choices: [
+      { id: 'safe', label: 'Wait in a visible, well-lit place, use reflective or light gear, and ask official help if needed.', safe: true, feedback: 'Visibility and a reliable help point make an unfamiliar stop safer.' },
+      { id: 'hidden', label: 'Stand behind parked cars so traffic cannot see you.', feedback: 'Hidden areas make it harder for drivers and helpers to see you.' },
+      { id: 'cross', label: 'Cross the street quickly without checking traffic.', feedback: 'Pause and scan traffic before crossing. Visibility and a calm plan reduce risk.' }
+    ] }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var storageKey = 'alloflow-life-capstone-3d-progress-v1';
+  function loadState() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed : { done: {}, missteps: 0, hints: 0 };
+    } catch (_) { return { done: {}, missteps: 0, hints: 0 }; }
+  }
+  var saved = loadState();
+  var state = { mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: Array.isArray(saved.order) ? saved.order : TASKS.map(function (task) { return task.id; }), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
+  function shuffle(values) { var result = values.slice(); for (var i = result.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var swap = result[i]; result[i] = result[j]; result[j] = swap; } return result; }
+  function runTasks() { var ids = state.mode === 'challenge' ? state.order : TASKS.map(function (task) { return task.id; }); return ids.map(function (id) { return BY_ID[id]; }).filter(Boolean); }
+  function ensureChallengeChoices() { if (state.mode !== 'challenge') return; TASKS.forEach(function (task) { var savedIds = Array.isArray(state.challengeChoices[task.id]) ? state.challengeChoices[task.id] : []; var valid = savedIds.length === task.choices.length && savedIds.every(function (id) { return task.choices.some(function (choice) { return choice.id === id; }); }); if (!valid) state.challengeChoices[task.id] = shuffle(task.choices.map(function (choice) { return choice.id; })); }); }
+  ensureChallengeChoices();
+  function saveState() { try { window.localStorage.setItem(storageKey, JSON.stringify({ mode: state.mode, order: state.order, challengeChoices: state.challengeChoices, risk: state.risk, debrief: state.debrief, done: state.done, missteps: state.missteps, hints: state.hints, updatedAt: Date.now() })); } catch (_) {} }
+  function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function nextIndex() { var tasks = runTasks(); for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) return i; return tasks.length - 1; }
+  function postToOpener(payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), '*'); } catch (_) {} }
+  function announce(message) { var live = document.getElementById('srStatus'); live.textContent = ''; window.setTimeout(function () { live.textContent = message; }, 20); }
+  function setFeedback(message, tone) { state.feedback = message; state.tone = tone || ''; }
+  function setView(view) {
+    var camera = document.getElementById('camera');
+    var views = { home: { position: '0 4.1 10', rotation: '-12 0 0' }, middle: { position: '0 3.7 8', rotation: '-10 0 0' }, transit: { position: '0 3.4 4.8', rotation: '-8 180 0' } };
+    var selected = views[view] || views.middle;
+    camera.setAttribute('position', selected.position); camera.setAttribute('rotation', selected.rotation);
+    document.querySelectorAll('[data-view]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === view)); });
+    announce('Scene view: ' + view + '.');
+  }
+  function focus(station, announceIt) {
+    if (!BY_ID[station]) return;
+    state.focused = station;
+    var index = runTasks().findIndex(function (task) { return task.id === station; });
+    if (index >= 0) state.activeIndex = index;
+    renderScene(); render();
+    if (announceIt !== false) announce(BY_ID[station].title + ' is highlighted in the scene.');
+  }
+  function completeTask(task) {
+    if (state.done[task.id]) return;
+    state.done[task.id] = true; saveState();
+    var completed = doneCount();
+    if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'You practiced five connected safety decisions.', 'good'); postToOpener({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode }); announce(state.mode === 'challenge' ? 'Transfer challenge complete.' : 'Capstone complete.'); }
+    else { postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode }); setFeedback('Completed: ' + task.title + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '.'); }
+  }
+  function choose(choiceId) {
+    var task = runTasks()[state.activeIndex];
+    var choice = task && task.choices.find(function (item) { return item.id === choiceId; });
+    if (!task || !choice) return;
+    var revisiting = !!state.done[task.id];
+    state.hintShown = false;
+    if (choice.safe) {
+      delete state.risk[task.id];
+      if (revisiting) { saveState(); setFeedback('Rehearsed: ' + task.title + '. The station remains marked safe.', 'good'); announce('Rehearsed ' + task.title + '.'); }
+      else { completeTask(task); state.activeIndex = nextIndex(); state.focused = runTasks()[state.activeIndex].id; }
+    } else {
+      state.risk[task.id] = true; state.missteps += 1; saveState(); state.focused = task.id; setFeedback(choice.feedback + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + choice.feedback);
+    }
+    render(); renderScene();
+  }
+  function renderSteps() {
+    var list = document.getElementById('steps'); list.innerHTML = '';
+    runTasks().forEach(function (task, index) {
+      var item = document.createElement('li');
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'step' + (state.done[task.id] ? ' done' : '') + (!state.done[task.id] && index === state.activeIndex ? ' current' : '');
+      button.setAttribute('aria-label', (state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title);
+      if (index === state.activeIndex) button.setAttribute('aria-current', 'step');
+      button.innerHTML = '<span class="step-dot" aria-hidden="true"></span><span>' + (state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title + '</span>';
+      button.addEventListener('click', function () { focus(task.id, true); });
+      item.appendChild(button); list.appendChild(item);
+    });
+  }
+  function renderChoices(task) {
+    var wrap = document.getElementById('choices'); wrap.innerHTML = '';
+    var choices = state.mode === 'challenge' ? state.challengeChoices[task.id].map(function (id) { return task.choices.find(function (choice) { return choice.id === id; }); }).filter(Boolean) : task.choices;
+    choices.forEach(function (choice) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && state.mode !== 'challenge' ? ' safe' : ''); button.textContent = choice.label; button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
+    });
+  }
+  function render() {
+    var tasks = runTasks(); var task = tasks[state.activeIndex] || tasks[0]; var complete = doneCount() === tasks.length;
+    document.getElementById('progressValue').textContent = doneCount() + ' / ' + TASKS.length + ' stations';
+    document.getElementById('capstoneStatus').textContent = complete ? (state.mode === 'challenge' ? 'Transfer challenge complete' : 'Capstone complete') : (state.mode === 'challenge' ? 'Transfer challenge / ' : 'Guided sequence / ') + (state.missteps ? state.missteps + ' coaching moment' + (state.missteps === 1 ? '' : 's') : 'no coaching moments');
+    document.getElementById('stationLabel').textContent = 'Station ' + (state.activeIndex + 1) + ' of ' + TASKS.length + ' · ' + task.room;
+    document.getElementById('stationTitle').textContent = task.title;
+    document.getElementById('situation').textContent = task.situation;
+    document.getElementById('instruction').textContent = state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or choose another station.' : task.instruction;
+    renderChoices(task); renderSteps();
+    var hintButton = document.getElementById('hintButton'); hintButton.disabled = false; hintButton.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    var hintText = document.getElementById('hintText'); hintText.hidden = !state.hintShown; hintText.textContent = state.hintShown ? task.hint : '';
+    var feedback = document.getElementById('feedback'); feedback.textContent = state.feedback; feedback.className = 'feedback' + (state.tone ? ' ' + state.tone : '');
+    var challengeButton = document.getElementById('challengeButton'); challengeButton.disabled = !complete; challengeButton.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
+    var challengeNote = document.getElementById('challengeNote'); challengeNote.hidden = state.mode !== 'challenge' && !complete; challengeNote.textContent = state.mode === 'challenge' ? 'Order and answer choices were reshuffled. Safe-answer styling is intentionally hidden.' : 'Transfer challenge reshuffles the day and answer choices so you can practice the habit, not memorize the route.';
+    var teachBackInput = document.getElementById('teachBackInput'); if (teachBackInput && document.activeElement !== teachBackInput) teachBackInput.value = state.debriefDraft;
+    document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180';
+    var teachBackFeedback = document.getElementById('teachBackFeedback'); teachBackFeedback.textContent = state.teachBackMessage || (state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.');
+    var debrief = document.getElementById('debrief'); debrief.hidden = !complete;
+    document.querySelectorAll('[data-confidence]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-confidence') === state.debrief.confidence)); });
+    document.querySelectorAll('[data-next-step]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-next-step') === state.debrief.nextStep)); });
+    var confidenceNames = { 'not-yet': 'Not yet', 'getting-there': 'Getting there', ready: 'Ready to try' };
+    var nextStepNames = { replay: 'Replay a station', explain: 'Explain it to someone', checklist: 'Use a checklist' };
+    var debriefFeedback = document.getElementById('debriefFeedback');
+    debriefFeedback.textContent = state.debrief.confidence && state.debrief.nextStep ? 'Reflection saved: ' + confidenceNames[state.debrief.confidence] + ' · ' + nextStepNames[state.debrief.nextStep] + '.' : state.debrief.confidence ? 'Readiness saved. Choose one next step.' : state.debrief.nextStep ? 'Next step saved. Choose a readiness level.' : 'Reflection is optional.';
+  }
+  function renderScene() {
+    var task = runTasks()[state.activeIndex] || TASKS[0];
+    TASKS.forEach(function (item) {
+      var label = document.getElementById('label-' + item.id); if (label) label.setAttribute('color', state.risk[item.id] ? '#fb7185' : state.done[item.id] ? '#4ade80' : item.id === task.id ? '#facc15' : '#c8d8e9');
+      var status = document.getElementById('state-' + item.id);
+      var orb = document.getElementById('state-orb-' + item.id);
+      var statusLabel = document.getElementById('state-label-' + item.id);
+      var settled = !!state.done[item.id] && !state.risk[item.id];
+      var atRisk = !!state.risk[item.id];
+      var statusColor = settled ? '#4ade80' : '#fb7185';
+      if (status) status.setAttribute('visible', settled || atRisk);
+      if (orb) { orb.setAttribute('color', statusColor); orb.setAttribute('material', 'color: ' + statusColor + '; emissive: ' + statusColor + '; emissiveIntensity: .8'); }
+      if (statusLabel) statusLabel.setAttribute('text', 'value: ' + (settled ? 'SAFE' : 'RISK') + '; align: center; color: ' + statusColor + '; width: 2.2');
+    });
+    var focusId = state.focused || task.id;
+    var marker = document.getElementById('sceneMarker'); marker.setAttribute('position', itemPosition(focusId)); marker.setAttribute('visible', !state.done[focusId] || !!state.risk[focusId]);
+    var markerRing = document.getElementById('sceneMarkerRing'); var markerColor = state.risk[focusId] ? '#fb7185' : '#facc15'; if (markerRing) { markerRing.setAttribute('color', markerColor); markerRing.setAttribute('material', 'emissive: ' + markerColor + '; emissiveIntensity: .7'); }
+    document.getElementById('sceneNote').setAttribute('value', state.risk[task.id] ? 'RISK STILL ACTIVE\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase() : state.done[task.id] ? 'CHOOSE A STATION TO REVISIT' : 'FOCUS\n' + task.room.toUpperCase() + ' - ' + task.title.toUpperCase());
+  }
+  function itemPosition(id) { return ({ stove: '-5.2 .14 -2.5', lint: '-1.8 .14 -2.5', shutoff: '1.8 .14 -2.5', alarm: '5.1 .14 -2.5', visibility: '0 .14 2.5' })[id] || '0 .14 -2.5'; }
+  function recordDebrief(field, value) { state.debrief[field] = value; saveState(); render(); var message = field === 'confidence' ? 'Readiness saved.' : 'Next practice step saved.'; announce(message); if (state.debrief.confidence && state.debrief.nextStep) postToOpener({ type: 'alloflow-life-capstone-3d-debrief', confidence: state.debrief.confidence, nextStep: state.debrief.nextStep, teachBack: state.debrief.teachBack, mode: state.mode }); }
+  function saveTeachBack() { var text = String(state.debriefDraft || '').trim(); if (!text) { state.teachBackMessage = 'Write a sentence before saving, or leave it blank to skip.'; render(); announce('Write a sentence before saving the teach-back.'); return; } state.debrief.teachBack = text; state.debriefDraft = text; state.teachBackMessage = 'Teach-back saved.'; saveState(); render(); postToOpener({ type: 'alloflow-life-capstone-3d-teach-back', teachBack: text, mode: state.mode }); announce('Teach-back saved.'); }
+  function beginChallenge() { state.mode = 'challenge'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.risk = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Transfer challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length }); announce('Transfer challenge started with a new station order.'); }
+  document.getElementById('hintButton').addEventListener('click', function () { if (!state.hintShown) state.hints += 1; state.hintShown = true; saveState(); render(); announce('Hint: ' + runTasks()[state.activeIndex].hint); });
+  document.getElementById('focusButton').addEventListener('click', function () { focus(runTasks()[state.activeIndex].id, true); });
+  document.getElementById('challengeButton').addEventListener('click', beginChallenge);
+  document.querySelectorAll('[data-confidence]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('confidence', button.getAttribute('data-confidence')); }); });
+  document.querySelectorAll('[data-next-step]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('nextStep', button.getAttribute('data-next-step')); }); });
+  document.getElementById('teachBackInput').addEventListener('input', function () { state.debriefDraft = this.value.slice(0, 180); state.teachBackMessage = ''; document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180'; document.getElementById('teachBackFeedback').textContent = state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.'; });
+  document.getElementById('saveTeachBackButton').addEventListener('click', saveTeachBack);
+  document.getElementById('resetButton').addEventListener('click', function () { state.mode = 'guided'; state.order = TASKS.map(function (task) { return task.id; }); state.challengeChoices = {}; state.risk = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = 'stove'; state.hintShown = false; setFeedback('Fresh start. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-reset' }); announce('Capstone reset.'); });
+  document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
+  window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge };
+  var first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode });
+  if (!window.AFRAME) document.getElementById('scenePanel').classList.add('no-aframe');
+})();
+</script>
+</body>
+</html>

@@ -65,6 +65,11 @@ ${compiled}
     _meta: {
       allosheetMinimumScoreGroup: SI_ALLOSHEET_MIN_SCORE_GROUP,
       allosheetMaximumAssignments: SI_ALLOSHEET_MAX_ASSIGNMENTS,
+      gradeReviewSignature: siGradeReviewSignature,
+      normalizeSavedReviewState: siSavedReviewState,
+      normalizeDueDate: siAlloSheetDueDate,
+      parseDueAt: siAlloSheetDueAt,
+      deriveLateStatus: siAlloSheetLateStatus,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
       buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope

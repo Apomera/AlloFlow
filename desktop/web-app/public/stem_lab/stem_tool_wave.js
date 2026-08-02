@@ -3221,7 +3221,9 @@ const d = labToolData.wave;
         }
         var pathStr = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
         // Animated phase using time for visual interest (gentle wobble at user freq)
-        var anim = reducedMotion ? '' : 'animate-pulse'; // CSS-only; full animation handled by canvas tools elsewhere
+        var discoverReducedMotion = false;
+        try { discoverReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+        var anim = discoverReducedMotion ? '' : 'animate-pulse'; // CSS-only; full animation handled by canvas tools elsewhere
 
         function logObservation() {
           var obs = { f: lab.freq, T: lab.tension, lambda: parseFloat(wavelength.toFixed(3)), v: parseFloat(v.toFixed(2)) };

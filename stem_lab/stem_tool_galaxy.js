@@ -517,6 +517,43 @@ if (!window._galaxyHasLoadedOnce) {
 
           var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
 
+          // Ellipticals are pressure-supported, gas-poor stellar systems. Keep their
+          // point sources small and their diffuse light below the bloom clip point;
+          // spiral-only dust, gas and nursery layers are unavailable for this shape.
+          var morphologyVisual = galaxyType === 'elliptical' ? {
+            pointScale: 0.48,
+            glowPointSize: 0.034,
+            diskGlow: 0.62,
+            armGlow: 0.42,
+            coreGlow: 0.52,
+            bloomStrength: 0.55,
+            bloomThreshold: 0.04,
+            exposureBias: -0.12,
+            sparkleDensity: 0,
+            sparkleScale: 0.7,
+            diffractionScale: 0,
+            stellarOpacity: 0.28,
+            microStarOpacity: 0.32,
+            bulgeOpacity: 0.32,
+            hiddenLayers: { dust: true, gas: true, nebulae: true }
+          } : {
+            pointScale: 1,
+            glowPointSize: 0.046,
+            diskGlow: 1,
+            armGlow: 1,
+            coreGlow: 1,
+            bloomStrength: 1,
+            bloomThreshold: 0,
+            exposureBias: 0,
+            sparkleDensity: 1,
+            sparkleScale: 1,
+            diffractionScale: 1,
+            stellarOpacity: 1,
+            microStarOpacity: 1,
+            bulgeOpacity: 1,
+            hiddenLayers: {}
+          };
+
           var OBSERVE_MODES = [
             { key: 'visible', icon: '\uD83D\uDC41\uFE0F', label: __alloT('stem.galaxy.observe_visible_label', 'Visible'), target: 'galaxyType', accent: '#6366f1', desc: __alloT('stem.galaxy.observe_visible_desc', 'Human-eye color shows stars, dust shadows, and the overall shape of the galaxy.'), note: __alloT('stem.galaxy.observe_visible_note', 'Best for classifying galaxy shape and comparing star colors.') },
             { key: 'infrared', icon: '\uD83D\uDD25', label: __alloT('stem.galaxy.observe_infrared_label', 'Infrared'), target: 'dustLanes', accent: '#f97316', desc: __alloT('stem.galaxy.observe_infrared_desc', 'Infrared light passes through dusty lanes and reveals warm star-forming regions.'), note: __alloT('stem.galaxy.observe_infrared_note', 'Great for seeing through dust that blocks visible light.') },
@@ -533,6 +570,16 @@ if (!window._galaxyHasLoadedOnce) {
             gravity: { band: __alloT('stem.galaxy.instrument_gravity_band', 'Mass inference'), detector: __alloT('stem.galaxy.instrument_gravity_detector', 'Kinematics + lensing'), tracer: __alloT('stem.galaxy.instrument_gravity_tracer', 'Dark halo + shear arclets'), gradient: 'linear-gradient(90deg,#581c87,#a855f7,#e9d5ff,#67e8f9)' }
           };
           var activeInstrument = OBSERVATORY_INSTRUMENTS[observeMode] || OBSERVATORY_INSTRUMENTS.visible;
+          if (galaxyType === 'elliptical') {
+            var ellipticalInstrumentTracers = {
+              visible: __alloT('stem.galaxy.instrument_elliptical_visible_tracer', 'Old starlight + smooth profile'),
+              infrared: __alloT('stem.galaxy.instrument_elliptical_infrared_tracer', 'Evolved stars + very little dust'),
+              radio: __alloT('stem.galaxy.instrument_elliptical_radio_tracer', 'Weak cold-gas reservoir'),
+              xray: __alloT('stem.galaxy.instrument_elliptical_xray_tracer', 'Hot halo gas + compact core'),
+              gravity: __alloT('stem.galaxy.instrument_elliptical_gravity_tracer', 'Dark halo + pressure-supported stars')
+            };
+            activeInstrument = Object.assign({}, activeInstrument, { tracer: ellipticalInstrumentTracers[observeMode] || ellipticalInstrumentTracers.visible });
+          }
           var OBSERVE_GUIDES = {
             visible: {
               question: __alloT('stem.galaxy.guide_visible_question', 'Where does visible starlight disappear, and what is blocking it?'),
@@ -595,6 +642,44 @@ if (!window._galaxyHasLoadedOnce) {
             }
           };
           var activeObserveGuide = OBSERVE_GUIDES[observeMode] || OBSERVE_GUIDES.visible;
+          if (galaxyType === 'elliptical') {
+            var ELLIPTICAL_OBSERVE_GUIDES = {
+              visible: {
+                question: __alloT('stem.galaxy.guide_elliptical_visible_question', 'How smoothly does the light fade from the bright center to the outer halo?'),
+                sees: __alloT('stem.galaxy.guide_elliptical_visible_sees', 'A smooth ellipsoidal profile dominated by old, warm-colored stars'),
+                misses: __alloT('stem.galaxy.guide_elliptical_visible_misses', 'The dark halo and any very faint hot gas around the galaxy'),
+                inference: __alloT('stem.galaxy.guide_elliptical_visible_inference', 'The lack of arms, dust lanes, and blue nurseries indicates little recent star formation.'),
+                change: __alloT('stem.galaxy.guide_elliptical_visible_change', 'Warm starlight returns as a smooth oval with a concentrated but resolved core.'),
+                marks: [
+                  { label: __alloT('stem.galaxy.mark_elliptical_old_stars', 'Old warm stars'), detail: __alloT('stem.galaxy.mark_elliptical_old_stars_detail', 'dominate the smooth stellar halo'), lx: 4, ly: 34, tx: 38, ty: 46, anchor: 'left' },
+                  { label: __alloT('stem.galaxy.mark_elliptical_core', 'Concentrated core'), detail: __alloT('stem.galaxy.mark_elliptical_core_detail', 'brightness rises without forming a disk'), lx: 88, ly: 68, tx: 55, ty: 53, anchor: 'right' }
+                ]
+              },
+              infrared: {
+                question: __alloT('stem.galaxy.guide_elliptical_infrared_question', 'Does infrared reveal hidden nurseries, or mostly the same old stellar population?'),
+                sees: __alloT('stem.galaxy.guide_elliptical_infrared_sees', 'Long-lived cool stars and the galaxy\'s smooth stellar mass distribution'),
+                misses: __alloT('stem.galaxy.guide_elliptical_infrared_misses', 'Only a small amount of warm dust because ellipticals are usually gas-poor'),
+                inference: __alloT('stem.galaxy.guide_elliptical_infrared_inference', 'A similar visible and infrared shape supports an old population with little obscuring dust.'),
+                change: __alloT('stem.galaxy.guide_elliptical_infrared_change', 'The smooth old population remains while dust-dependent knots stay faint.'),
+                marks: [
+                  { label: __alloT('stem.galaxy.mark_elliptical_evolved_stars', 'Evolved stars'), detail: __alloT('stem.galaxy.mark_elliptical_evolved_stars_detail', 'remain bright in infrared'), lx: 4, ly: 34, tx: 39, ty: 48, anchor: 'left' },
+                  { label: __alloT('stem.galaxy.mark_elliptical_low_dust', 'Very little dust'), detail: __alloT('stem.galaxy.mark_elliptical_low_dust_detail', 'few hidden stellar nurseries'), lx: 88, ly: 68, tx: 65, ty: 57, anchor: 'right' }
+                ]
+              },
+              radio: {
+                question: __alloT('stem.galaxy.guide_elliptical_radio_question', 'How weak is the cold-hydrogen reservoir compared with a spiral galaxy?'),
+                sees: __alloT('stem.galaxy.guide_elliptical_radio_sees', 'A weak gas signal and occasional activity associated with the central black hole'),
+                misses: __alloT('stem.galaxy.guide_elliptical_radio_misses', 'Most of the old stellar population that defines the visible shape'),
+                inference: __alloT('stem.galaxy.guide_elliptical_radio_inference', 'Little cold hydrogen means little raw material is available for new stars.'),
+                change: __alloT('stem.galaxy.guide_elliptical_radio_change', 'Ordinary starlight fades without revealing spiral gas lanes.'),
+                marks: [
+                  { label: __alloT('stem.galaxy.mark_elliptical_gas_poor', 'Gas-poor body'), detail: __alloT('stem.galaxy.mark_elliptical_gas_poor_detail', 'weak cold-hydrogen signal'), lx: 4, ly: 34, tx: 39, ty: 50, anchor: 'left' },
+                  { label: __alloT('stem.galaxy.mark_elliptical_radio_core', 'Possible active core'), detail: __alloT('stem.galaxy.mark_elliptical_radio_core_detail', 'radio emission can trace black-hole activity'), lx: 88, ly: 68, tx: 55, ty: 53, anchor: 'right' }
+                ]
+              }
+            };
+            activeObserveGuide = ELLIPTICAL_OBSERVE_GUIDES[observeMode] || activeObserveGuide;
+          }
           var previousObserveKey = d.previousObserveMode && d.previousObserveMode !== observeMode ? d.previousObserveMode : null;
           var previousObserve = previousObserveKey ? (OBSERVE_MODES.find(function (m) { return m.key === previousObserveKey; }) || null) : null;
           var observeHistory = Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode];
@@ -869,6 +954,19 @@ if (!window._galaxyHasLoadedOnce) {
 
             ];
 
+          }
+
+          function getMorphologyAgeDistribution(ageDistribution) {
+            var distribution = (ageDistribution || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5]).slice();
+            if (galaxyType === 'elliptical') {
+              distribution[0] *= 0.04;
+              distribution[1] *= 0.08;
+              distribution[2] *= 0.18;
+              distribution[3] *= 0.45;
+              distribution[5] *= 1.15;
+              distribution[6] *= 1.18;
+            }
+            return distribution;
           }
 
 
@@ -1330,7 +1428,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             // Hoisted out of the per-star loop: with 100,000 stars the old code
             // allocated an array and re-ran reduce() once per star.
-            var pcts = ageDist || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5];
+            var pcts = getMorphologyAgeDistribution(ageDist);
 
             var pctTotal = pcts.reduce(function (a, b) { return a + b; }, 0);
 
@@ -1814,7 +1912,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starShaderMat = new THREE.ShaderMaterial({
 
-              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uDetail: { value: Math.min(1.5, detailScale) }, uPointScale: { value: morphologyVisual.pointScale }, uStellarOpacity: { value: morphologyVisual.stellarOpacity }, uDiffractionScale: { value: morphologyVisual.diffractionScale }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 }, uCameraDir: { value: new THREE.Vector3(0, 1, 0) }, uOpticalDetail: { value: resolvedQuality === 'cinematic' ? 1.35 : resolvedQuality === 'high' ? 1 : 0.78 }, uFocusDepth: { value: 1.2 }, uDepthOfField: { value: 0 } },
 
               vertexShader: [
 
@@ -1843,6 +1941,7 @@ if (!window._galaxyHasLoadedOnce) {
                 'uniform float uPR;',
 
                 'uniform float uDetail;',
+                'uniform float uPointScale;',
 
                 'uniform float uRotMode;',
 
@@ -1894,7 +1993,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vFocusDefocus = smoothstep(0.08, 0.72, abs(-mv.z - uFocusDepth) / max(uFocusDepth, 0.2)) * uDepthOfField;',
 
-                '  gl_PointSize = min(sz * uPR * (84.0 / max(-mv.z, 1.0)) * (1.0 + vFocusDefocus * 0.28), mix(13.0, 24.0, min(uDetail, 1.5)));',
+                '  gl_PointSize = min(sz * uPR * (84.0 / max(-mv.z, 1.0)) * (1.0 + vFocusDefocus * 0.28), mix(13.0, 24.0, min(uDetail, 1.5))) * uPointScale;',
 
                 '  gl_Position = projectionMatrix * mv;',
 
@@ -1921,6 +2020,8 @@ if (!window._galaxyHasLoadedOnce) {
                 'uniform float uObserve;',
 
                 'uniform float uOpticalDetail;',
+                'uniform float uStellarOpacity;',
+                'uniform float uDiffractionScale;',
 
                 // ── Star profile tuning ───────────────────────────────────────
                 // These three control how a single star reads. The old profile used
@@ -1953,7 +2054,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vec2 q = abs(gl_PointCoord - 0.5);',
 
-                '  float diffraction = max(exp(-q.x * 52.0) * (1.0 - smoothstep(0.05, 0.5, q.y)), exp(-q.y * 52.0) * (1.0 - smoothstep(0.05, 0.5, q.x))) * vBright * mix(0.72, 1.12, clamp(uOpticalDetail / 1.35, 0.0, 1.0));',
+                '  float diffraction = max(exp(-q.x * 52.0) * (1.0 - smoothstep(0.05, 0.5, q.y)), exp(-q.y * 52.0) * (1.0 - smoothstep(0.05, 0.5, q.x))) * vBright * mix(0.72, 1.12, clamp(uOpticalDetail / 1.35, 0.0, 1.0)) * uDiffractionScale;',
 
                 '  float airyRing = exp(-pow((d - 0.46) * 18.0, 2.0)) * vBright * clamp(vLuminosity / 2.4, 0.0, 1.0);',
 
@@ -2016,7 +2117,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  }',
 
-                '  gl_FragColor = vec4(col, alpha);',
+                '  gl_FragColor = vec4(col, alpha * uStellarOpacity);',
 
                 '}'
 
@@ -2039,13 +2140,14 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starData = starResult.data;
 
-            var visualGlow = { disk: 0.16, arms: 0.18, core: 0.42 };
-            var diskSheenMat = null, armGlowMat = null, coreFlare = null;
+            var visualGlow = { disk: 0.16 * morphologyVisual.diskGlow, arms: 0.18 * morphologyVisual.armGlow, core: 0.42 * morphologyVisual.coreGlow };
+            var diskSheenMat = null, armGlowMat = null, coreFlare = null, coreFlareBaseScaleX = galaxyType === 'elliptical' ? 0.34 : 0.58, coreFlareBaseScaleY = galaxyType === 'elliptical' ? 0.2 : 0.24;
             var coreLightBars = [];
             var streamlineGroup = new THREE.Group(); streamlineGroup.name = 'orbitalStreamlines'; streamlineGroup.renderOrder = 3; armGroup.add(streamlineGroup);
             var streamlineMats = [], streamlineGlow = 1;
             (function () {
-              var streamCount = galaxyType === 'irregular' ? 5 : galaxyType === 'elliptical' ? 5 : 7;
+              if (galaxyType === 'elliptical') return;
+              var streamCount = galaxyType === 'irregular' ? 5 : 7;
               var segments = 176;
               for (var si = 0; si < streamCount; si++) {
                 var pts = [];
@@ -2141,37 +2243,54 @@ if (!window._galaxyHasLoadedOnce) {
               var diskCtx = diskCv.getContext('2d');
               diskCtx = upscaleGalaxyCanvas(diskCv, diskCtx);
               var diskGrad = diskCtx.createRadialGradient(256, 256, 0, 256, 256, 245);
-              diskGrad.addColorStop(0, 'rgba(255,239,196,0.56)');
-              diskGrad.addColorStop(0.16, 'rgba(251,191,36,0.24)');
-              diskGrad.addColorStop(0.44, 'rgba(96,165,250,0.13)');
-              diskGrad.addColorStop(0.72, 'rgba(217,70,239,0.08)');
-              diskGrad.addColorStop(1, 'rgba(2,6,23,0)');
-              diskCtx.fillStyle = diskGrad; diskCtx.fillRect(0, 0, 512, 512);
-              diskCtx.save(); diskCtx.translate(256, 256); diskCtx.scale(1, 0.68);
-              var diskArms = Math.max(2, gType.arms || (galaxyType === 'elliptical' ? 2 : 3));
-              for (var da = 0; da < diskArms; da++) {
-                for (var pass = 0; pass < 3; pass++) {
-                  diskCtx.beginPath();
-                  for (var step = 0; step <= 95; step++) {
-                    var frac = step / 95;
-                    var rr = 18 + frac * 224;
-                    var aa = da / diskArms * Math.PI * 2 + frac * (gType.windTightness || 2.4) * 2.2 + pass * 0.038;
-                    var px = Math.cos(aa) * rr;
-                    var py = Math.sin(aa) * rr;
-                    if (step === 0) diskCtx.moveTo(px, py);
-                    else diskCtx.lineTo(px, py);
-                  }
-                  diskCtx.strokeStyle = pass === 0 ? 'rgba(125,211,252,0.22)' : pass === 1 ? 'rgba(244,114,182,0.16)' : 'rgba(253,224,71,0.11)';
-                  diskCtx.lineWidth = pass === 0 ? 16 : 9;
-                  diskCtx.lineCap = 'round';
-                  diskCtx.stroke();
-                }
+              if (galaxyType === 'elliptical') {
+                diskGrad.addColorStop(0, 'rgba(255,244,220,0.34)');
+                diskGrad.addColorStop(0.18, 'rgba(255,210,150,0.18)');
+                diskGrad.addColorStop(0.48, 'rgba(225,160,95,0.09)');
+                diskGrad.addColorStop(0.78, 'rgba(165,95,55,0.035)');
+                diskGrad.addColorStop(1, 'rgba(2,6,23,0)');
+              } else {
+                diskGrad.addColorStop(0, 'rgba(255,239,196,0.56)');
+                diskGrad.addColorStop(0.16, 'rgba(251,191,36,0.24)');
+                diskGrad.addColorStop(0.44, 'rgba(96,165,250,0.13)');
+                diskGrad.addColorStop(0.72, 'rgba(217,70,239,0.08)');
+                diskGrad.addColorStop(1, 'rgba(2,6,23,0)');
               }
-              diskCtx.restore();
+              diskCtx.fillStyle = diskGrad; diskCtx.fillRect(0, 0, 512, 512);
+              if (galaxyType !== 'elliptical') {
+                diskCtx.save(); diskCtx.translate(256, 256); diskCtx.scale(1, 0.68);
+                var diskArms = Math.max(2, gType.arms || 3);
+                for (var da = 0; da < diskArms; da++) {
+                  for (var pass = 0; pass < 3; pass++) {
+                    diskCtx.beginPath();
+                    for (var step = 0; step <= 95; step++) {
+                      var frac = step / 95;
+                      var rr = 18 + frac * 224;
+                      var aa = da / diskArms * Math.PI * 2 + frac * (gType.windTightness || 2.4) * 2.2 + pass * 0.038;
+                      var px = Math.cos(aa) * rr;
+                      var py = Math.sin(aa) * rr;
+                      if (step === 0) diskCtx.moveTo(px, py);
+                      else diskCtx.lineTo(px, py);
+                    }
+                    diskCtx.strokeStyle = pass === 0 ? 'rgba(125,211,252,0.22)' : pass === 1 ? 'rgba(244,114,182,0.16)' : 'rgba(253,224,71,0.11)';
+                    diskCtx.lineWidth = pass === 0 ? 16 : 9;
+                    diskCtx.lineCap = 'round';
+                    diskCtx.stroke();
+                  }
+                }
+                diskCtx.restore();
+              }
               var diskTex = tuneGalaxyTexture(new THREE.CanvasTexture(diskCv));
-              diskSheenMat = new THREE.MeshBasicMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-              var diskSheen = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), diskSheenMat);
-              diskSheen.rotation.x = Math.PI * 0.5;
+              var diskSheen;
+              if (galaxyType === 'elliptical') {
+                diskSheenMat = new THREE.SpriteMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending });
+                diskSheen = new THREE.Sprite(diskSheenMat);
+                diskSheen.scale.set(1.42, 0.86, 1);
+              } else {
+                diskSheenMat = new THREE.MeshBasicMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                diskSheen = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), diskSheenMat);
+                diskSheen.rotation.x = Math.PI * 0.5;
+              }
               diskSheen.position.y = -0.012;
               diskSheen.renderOrder = -2;
               armGroup.add(diskSheen);
@@ -2221,7 +2340,7 @@ if (!window._galaxyHasLoadedOnce) {
               }
               glowGeo.setAttribute('position', new THREE.BufferAttribute(glowPos, 3));
               glowGeo.setAttribute('color', new THREE.BufferAttribute(glowCol, 3));
-              armGlowMat = new THREE.PointsMaterial({ size: galaxyType === 'elliptical' ? 0.06 : 0.046, map: softTex, vertexColors: true, transparent: true, opacity: visualGlow.arms, depthWrite: false, blending: THREE.AdditiveBlending });
+              armGlowMat = new THREE.PointsMaterial({ size: morphologyVisual.glowPointSize, map: softTex, vertexColors: true, transparent: true, opacity: visualGlow.arms, depthWrite: false, blending: THREE.AdditiveBlending });
               var armGlowPoints = new THREE.Points(glowGeo, armGlowMat);
               armGlowPoints.renderOrder = 0;
               armGroup.add(armGlowPoints);
@@ -2251,7 +2370,7 @@ if (!window._galaxyHasLoadedOnce) {
                 microStarCol[ms * 3] = microColor.r; microStarCol[ms * 3 + 1] = microColor.g; microStarCol[ms * 3 + 2] = microColor.b;
               }
               microStarGeo.setAttribute('position', new THREE.BufferAttribute(microStarPos, 3)); microStarGeo.setAttribute('color', new THREE.BufferAttribute(microStarCol, 3));
-              var microStarMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.012 : 0.009, map: softTex, vertexColors: true, transparent: true, opacity: resolvedQuality === 'cinematic' ? 0.46 : 0.34, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
+              var microStarMat = new THREE.PointsMaterial({ size: resolvedQuality === 'cinematic' ? 0.012 : 0.009, map: softTex, vertexColors: true, transparent: true, opacity: (resolvedQuality === 'cinematic' ? 0.46 : 0.34) * morphologyVisual.microStarOpacity, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true });
               var microStarPoints = new THREE.Points(microStarGeo, microStarMat); microStarPoints.renderOrder = 1; armGroup.add(microStarPoints);
 
               var spCv = document.createElement('canvas'); spCv.setAttribute('aria-hidden', 'true'); spCv.width = 96; spCv.height = 96;
@@ -2302,8 +2421,10 @@ if (!window._galaxyHasLoadedOnce) {
               }
               var flareTex = tuneGalaxyTexture(new THREE.CanvasTexture(flareCv));
               coreFlare = new THREE.Sprite(new THREE.SpriteMaterial({ map: flareTex, transparent: true, opacity: visualGlow.core, depthWrite: false, blending: THREE.AdditiveBlending, rotation: 0 }));
-              coreFlare.scale.set(0.58, 0.24, 1);
+              var coreFlareScaleX = galaxyType === 'elliptical' ? 0.34 : 0.58, coreFlareScaleY = galaxyType === 'elliptical' ? 0.2 : 0.24;
+              coreFlare.scale.set(coreFlareBaseScaleX, coreFlareBaseScaleY, 1);
               coreFlare.renderOrder = 4;
+              coreFlare.visible = galaxyType !== 'elliptical';
               bulgeGroup.add(coreFlare);
 
               var barCv = document.createElement('canvas'); barCv.setAttribute('aria-hidden', 'true'); barCv.width = 384; barCv.height = 48;
@@ -2321,7 +2442,7 @@ if (!window._galaxyHasLoadedOnce) {
               barCore.addColorStop(1, 'rgba(255,255,255,0)');
               barCtx.fillStyle = barCore; barCtx.fillRect(144, 0, 96, 48);
               var barTex = tuneGalaxyTexture(new THREE.CanvasTexture(barCv));
-              [0, 1].forEach(function (barIdx) {
+              (galaxyType === 'elliptical' ? [] : [0, 1]).forEach(function (barIdx) {
                 var barMat = new THREE.SpriteMaterial({ map: barTex, transparent: true, opacity: barIdx ? 0.16 : 0.24, depthWrite: false, blending: THREE.AdditiveBlending, rotation: barIdx ? 0.08 : -0.05 });
                 var barSprite = new THREE.Sprite(barMat);
                 barSprite.scale.set(barIdx ? 0.82 : 1.12, barIdx ? 0.065 : 0.08, 1);
@@ -2352,26 +2473,26 @@ if (!window._galaxyHasLoadedOnce) {
               stellarWindBowShocks.forEach(function (bowShock) { stellarWindBowShockGroup.remove(bowShock); if (bowShock.geometry && bowShock.geometry.dispose) bowShock.geometry.dispose(); if (bowShock.material && bowShock.material.dispose) bowShock.material.dispose(); });
               stellarWindBowShocks = [];
               if (!sparkleTex || !starData || !starData.length) return;
-              var sparkleCount = Math.round(Math.min(96, Math.max(24, Math.floor(starData.length / 650))) * Math.min(1.25, detailScale));
+              var sparkleCount = Math.round(Math.min(96, Math.max(24, Math.floor(starData.length / 650))) * Math.min(1.25, detailScale) * morphologyVisual.sparkleDensity);
               for (var si2 = 0; si2 < sparkleCount; si2++) {
                 var idx = Math.floor(Math.random() * starData.length);
                 for (var tries = 0; tries < 8 && starData[idx].type && ['O', 'B', 'A', 'F'].indexOf(starData[idx].type.id) < 0; tries++) idx = Math.floor(Math.random() * starData.length);
                 var sd2 = starData[idx];
                 var sm = new THREE.SpriteMaterial({ map: sparkleTex, transparent: true, opacity: 0.18, depthWrite: false, blending: THREE.AdditiveBlending, color: sd2.type && sd2.type.color ? sd2.type.color : '#ffffff' });
                 var sprite = new THREE.Sprite(sm); sprite.position.set(sd2.x, sd2.y + 0.002, sd2.z);
-                var baseScale = 0.018 + Math.random() * 0.026; sprite.scale.set(baseScale, baseScale, 1);
+                var baseScale = (0.018 + Math.random() * 0.026) * morphologyVisual.sparkleScale; sprite.scale.set(baseScale, baseScale, 1);
                 sprite.userData = { baseScale: baseScale, phase: Math.random() * Math.PI * 2, baseOpacity: 0.12 + Math.random() * 0.18 }; setLuminousOverlayOrbitData(sprite, sd2);
                 sparkleGroup.add(sprite); sparkleSprites.push(sprite);
               }
               if (!chromaticHaloTex) return;
               var luminousCandidates = starData.slice().sort(function (a, b) { return (b.luminosity || 0) - (a.luminosity || 0); });
-              var chromaticHaloCount = Math.min(luminousCandidates.length, resolvedQuality === 'cinematic' ? 68 : resolvedQuality === 'high' ? 42 : 22);
+              var chromaticHaloCount = Math.min(luminousCandidates.length, Math.round((resolvedQuality === 'cinematic' ? 68 : resolvedQuality === 'high' ? 42 : 22) * morphologyVisual.sparkleDensity));
               for (var chromaticIndex = 0; chromaticIndex < chromaticHaloCount; chromaticIndex++) {
                 var luminousStar = luminousCandidates[chromaticIndex], luminosity = Math.max(0.5, luminousStar.luminosity || 1);
                 var haloMaterial = new THREE.SpriteMaterial({ map: chromaticHaloTex, color: 0xffffff, transparent: true, opacity: 0.08, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: Math.random() * Math.PI });
-                var haloSprite = new THREE.Sprite(haloMaterial), haloScale = 0.032 + Math.min(0.052, Math.sqrt(luminosity) * 0.014); haloSprite.position.set(luminousStar.x, luminousStar.y, luminousStar.z); haloSprite.scale.set(haloScale, haloScale, 1); haloSprite.userData = { baseScale: haloScale, baseOpacity: 0.055 + Math.min(0.1, luminosity * 0.018), phase: Math.random() * Math.PI * 2, luminosity: luminosity }; setLuminousOverlayOrbitData(haloSprite, luminousStar); haloSprite.renderOrder = 2; chromaticHaloGroup.add(haloSprite); chromaticHaloSprites.push(haloSprite);
+                var haloSprite = new THREE.Sprite(haloMaterial), haloScale = (0.032 + Math.min(0.052, Math.sqrt(luminosity) * 0.014)) * morphologyVisual.sparkleScale; haloSprite.position.set(luminousStar.x, luminousStar.y, luminousStar.z); haloSprite.scale.set(haloScale, haloScale, 1); haloSprite.userData = { baseScale: haloScale, baseOpacity: 0.055 + Math.min(0.1, luminosity * 0.018), phase: Math.random() * Math.PI * 2, luminosity: luminosity }; setLuminousOverlayOrbitData(haloSprite, luminousStar); haloSprite.renderOrder = 2; chromaticHaloGroup.add(haloSprite); chromaticHaloSprites.push(haloSprite);
               }
-              var bowShockCount = Math.min(luminousCandidates.length, resolvedQuality === 'cinematic' ? 34 : resolvedQuality === 'high' ? 22 : 12);
+              var bowShockCount = galaxyType === 'elliptical' ? 0 : Math.min(luminousCandidates.length, resolvedQuality === 'cinematic' ? 34 : resolvedQuality === 'high' ? 22 : 12);
               for (var bowShockIndex = 0; bowShockIndex < bowShockCount; bowShockIndex++) {
                 var windStar = luminousCandidates[bowShockIndex], windLuminosity = Math.max(0.5, windStar.luminosity || 1), bowShockScale = 0.014 + Math.min(0.024, Math.sqrt(windLuminosity) * 0.0045);
                 var bowShockMaterial = new THREE.MeshBasicMaterial({ color: bowShockIndex % 5 === 0 ? 0xf9a8d4 : bowShockIndex % 3 === 0 ? 0xfde68a : 0x67e8f9, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
@@ -2412,7 +2533,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
 
-            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }))); // bulge stars sum to a radiant core (dust lanes untouched — absorption physics)
+            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 * morphologyVisual.bulgeOpacity, blending: THREE.AdditiveBlending, depthWrite: false }))); // bulge stars sum to a radiant core (dust lanes untouched — absorption physics)
 
             // Bulge glow sprite
 
@@ -2433,7 +2554,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var bulgeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulgeTex, transparent: true, blending: THREE.AdditiveBlending }));
 
-            bulgeGlow.scale.set(0.9, 0.3, 1); bulgeGroup.add(bulgeGlow);
+            bulgeGlow.scale.set(galaxyType === 'elliptical' ? 0.82 : 0.9, galaxyType === 'elliptical' ? 0.48 : 0.3, 1); bulgeGroup.add(bulgeGlow);
 
 
 
@@ -2445,6 +2566,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             (function () {
 
+              if (galaxyType === 'elliptical') return;
               var dustCount = Math.round(12000 * detailScale);
 
               var dustGeo = new THREE.BufferGeometry();
@@ -2566,6 +2688,7 @@ if (!window._galaxyHasLoadedOnce) {
             var gasGroup = new THREE.Group(); gasGroup.name = 'gas';
             scene.add(gasGroup);
             (function () {
+              if (galaxyType === 'elliptical') return;
               var gasCount = Math.round(8000 * detailScale);
               var gasGeo = new THREE.BufferGeometry();
               var gasPos = new Float32Array(gasCount * 3);
@@ -2607,6 +2730,7 @@ if (!window._galaxyHasLoadedOnce) {
             var satelliteGroup = new THREE.Group(); satelliteGroup.name = 'satellitesAndTidalStreams';
             var globularGroup = new THREE.Group(); globularGroup.name = 'globularClusterHalo';
             bgGroup.add(globularGroup); bgGroup.add(satelliteGroup); scene.add(atmosphereGroup);
+            atmosphereGroup.visible = galaxyType !== 'elliptical';
             var volumetricDustSprites = [], starBirthSprites = [], satelliteMats = [], tidalStreamMats = [];
             var globularSprites = [], satelliteCoreSprites = [], dustFeatherMats = [], ionizedShells = [], supernovaRemnantArcs = [];
             var resolvedSatelliteMorphologyGroup = new THREE.Group(); resolvedSatelliteMorphologyGroup.name = 'resolvedSatelliteDwarfMorphologies'; satelliteGroup.add(resolvedSatelliteMorphologyGroup);
@@ -3482,6 +3606,7 @@ if (!window._galaxyHasLoadedOnce) {
             var nebulaSprites = [], nebulaWispSprites = [];
 
             NEBULAE.forEach(function (neb) {
+              if (galaxyType === 'elliptical') return;
 
               var nebCanvas = document.createElement('canvas'); nebCanvas.setAttribute('aria-hidden', 'true'); nebCanvas.width = 96; nebCanvas.height = 96;
 
@@ -3573,6 +3698,7 @@ if (!window._galaxyHasLoadedOnce) {
               var globuleTex = tuneGalaxyTexture(new THREE.CanvasTexture(globuleCv));
 
               NEBULAE.forEach(function (neb, nebIndex) {
+                if (galaxyType === 'elliptical') return;
                 var feedbackEligible = neb.type === 'Emission' || neb.type === 'Dark';
                 if (!feedbackEligible) return;
                 var rimCount = resolvedQuality === 'cinematic' ? 4 : resolvedQuality === 'high' ? 3 : 2;
@@ -3600,6 +3726,7 @@ if (!window._galaxyHasLoadedOnce) {
             // Labels for nebulae
 
             NEBULAE.forEach(function (neb) {
+              if (galaxyType === 'elliptical') return;
 
               var labelCanvas = document.createElement('canvas'); labelCanvas.setAttribute('aria-hidden', 'true'); labelCanvas.width = 288; labelCanvas.height = 52;
 
@@ -3653,13 +3780,19 @@ if (!window._galaxyHasLoadedOnce) {
             // Store layer references on canvas for toggle access
 
             canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup, dust: dustGroup, gas: gasGroup };
-            Object.keys(canvasEl._layers).forEach(function (layerKey) { canvasEl._layers[layerKey].visible = layers[layerKey] !== false; });
+            canvasEl._isLayerAllowed = function (layerKey) { return morphologyVisual.hiddenLayers[layerKey] !== true; };
             canvasEl._setDetailLayer = function (layerKey, visible) {
-              if (layerKey === 'dust') volumetricDustSprites.forEach(function (sprite) { sprite.visible = visible; });
-              if (layerKey === 'gas') starBirthSprites.forEach(function (sprite) { sprite.visible = visible; });
+              var detailVisible = visible && canvasEl._isLayerAllowed(layerKey);
+              if (layerKey === 'dust') volumetricDustSprites.forEach(function (sprite) { sprite.visible = detailVisible; });
+              if (layerKey === 'gas') starBirthSprites.forEach(function (sprite) { sprite.visible = detailVisible; });
             };
-            canvasEl._setDetailLayer('dust', layers.dust !== false);
-            canvasEl._setDetailLayer('gas', layers.gas !== false);
+            canvasEl._setLayerVisibility = function (layerKey, visible) {
+              var layerVisible = visible && canvasEl._isLayerAllowed(layerKey);
+              if (canvasEl._layers[layerKey]) canvasEl._layers[layerKey].visible = layerVisible;
+              canvasEl._setDetailLayer(layerKey, layerVisible);
+              return layerVisible;
+            };
+            Object.keys(canvasEl._layers).forEach(function (layerKey) { canvasEl._setLayerVisibility(layerKey, layers[layerKey] !== false); });
 
 
 
@@ -3667,7 +3800,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             // Tracks the age distribution the star field currently reflects, so a
             // star-count change does not silently snap the palette back to today.
-            var activeAgeDistribution = getAgeDistribution(cosmicAge);
+            var activeAgeDistribution = getMorphologyAgeDistribution(getAgeDistribution(cosmicAge));
 
             canvasEl._setStarCount = function (count) {
 
@@ -3716,9 +3849,9 @@ if (!window._galaxyHasLoadedOnce) {
               // threshold rises slightly and the strength eases back, letting bloom
               // pick out genuinely bright stars and the core instead of everything.
               // Tune these together with CORE_TIGHTNESS / CORE_GAIN.
-              var bloomStrength = resolvedQuality === 'cinematic' ? 1.32 : resolvedQuality === 'high' ? 1.24 : 1.12;
+              var bloomStrength = (resolvedQuality === 'cinematic' ? 1.32 : resolvedQuality === 'high' ? 1.24 : 1.12) * morphologyVisual.bloomStrength;
               var bloomRadius = resolvedQuality === 'cinematic' ? 0.46 : resolvedQuality === 'high' ? 0.36 : 0.26;
-              var bloomThreshold = resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9;
+              var bloomThreshold = Math.min(0.98, (resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9) + morphologyVisual.bloomThreshold);
               var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W * renderer.getPixelRatio(), H * renderer.getPixelRatio()), bloomStrength, bloomRadius, bloomThreshold);
 
               composer.addPass(bloomPass);
@@ -3728,7 +3861,7 @@ if (!window._galaxyHasLoadedOnce) {
             }
 
             var currentObserveMode = observeMode || 'visible';
-            var bloomModeStrength = 1.35, bloomModeThreshold = resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9;
+            var bloomModeStrength = 1.35 * morphologyVisual.bloomStrength, bloomModeThreshold = Math.min(0.98, (resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9) + morphologyVisual.bloomThreshold);
             var observeTransitionReady = false;
             function setObserveMode(mode) {
               var nextObserveMode = mode || 'visible';
@@ -3754,11 +3887,11 @@ if (!window._galaxyHasLoadedOnce) {
               // Tuned up alongside the softer dust grain: infrared sees THROUGH dust,
               // so it stays the most transparent of the filters.
               if (dustGroup.children[0] && dustGroup.children[0].material) dustGroup.children[0].material.opacity = currentObserveMode === 'infrared' ? 0.05 : currentObserveMode === 'visible' ? 0.17 : 0.09;
-              if (bulgeGlow && bulgeGlow.material) bulgeGlow.material.opacity = currentObserveMode === 'xray' ? 0.35 : currentObserveMode === 'gravity' ? 0.2 : 1;
+              if (bulgeGlow && bulgeGlow.material) bulgeGlow.material.opacity = (currentObserveMode === 'xray' ? 0.35 : currentObserveMode === 'gravity' ? 0.2 : 1) * morphologyVisual.coreGlow;
               if (bhGlow && bhGlow.material) bhGlow.material.opacity = currentObserveMode === 'xray' ? 0.95 : currentObserveMode === 'gravity' ? 0.45 : 0.7;
-              visualGlow.disk = currentObserveMode === 'infrared' ? 0.24 : currentObserveMode === 'radio' ? 0.08 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'gravity' ? 0.07 : 0.16;
-              visualGlow.arms = currentObserveMode === 'infrared' ? 0.32 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.07 : currentObserveMode === 'gravity' ? 0.08 : 0.18;
-              visualGlow.core = currentObserveMode === 'xray' ? 0.72 : currentObserveMode === 'infrared' ? 0.48 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'radio' ? 0.16 : 0.42;
+              visualGlow.disk = (currentObserveMode === 'infrared' ? 0.24 : currentObserveMode === 'radio' ? 0.08 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'gravity' ? 0.07 : 0.16) * morphologyVisual.diskGlow;
+              visualGlow.arms = (currentObserveMode === 'infrared' ? 0.32 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.07 : currentObserveMode === 'gravity' ? 0.08 : 0.18) * morphologyVisual.armGlow;
+              visualGlow.core = (currentObserveMode === 'xray' ? 0.72 : currentObserveMode === 'infrared' ? 0.48 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'radio' ? 0.16 : 0.42) * morphologyVisual.coreGlow;
               sparkleGroup.visible = currentObserveMode !== 'radio' && currentObserveMode !== 'gravity';
               chromaticHaloMode = currentObserveMode === 'infrared' ? 1.2 : currentObserveMode === 'visible' ? 1 : currentObserveMode === 'xray' ? 0.82 : currentObserveMode === 'radio' ? 0.2 : 0.12;
               haloScatteringMode = currentObserveMode === 'gravity' ? 1.35 : currentObserveMode === 'infrared' ? 1.2 : currentObserveMode === 'visible' ? 1 : currentObserveMode === 'radio' ? 0.62 : 0.42;
@@ -3810,8 +3943,8 @@ if (!window._galaxyHasLoadedOnce) {
               lensingArcs.forEach(function (a, idx) { if (a.material) a.material.opacity = Math.max(0, blackHoleDrama.lens - idx * 0.018); });
               coreJets.forEach(function (j, idx) { if (j.material) j.material.opacity = blackHoleDrama.jet * (idx ? 0.72 : 1); });
               accretionHotspots.forEach(function (h) { if (h.material) h.material.opacity = blackHoleDrama.hotspot * 0.34; });
-              bloomModeStrength = currentObserveMode === 'xray' ? 1.85 : currentObserveMode === 'infrared' ? 1.5 : currentObserveMode === 'radio' ? 1.05 : currentObserveMode === 'gravity' ? 1.24 : 1.35;
-              bloomModeThreshold = currentObserveMode === 'xray' ? 0.9 : currentObserveMode === 'infrared' ? 0.82 : currentObserveMode === 'radio' ? 0.87 : currentObserveMode === 'gravity' ? 0.88 : resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9;
+              bloomModeStrength = (currentObserveMode === 'xray' ? 1.85 : currentObserveMode === 'infrared' ? 1.5 : currentObserveMode === 'radio' ? 1.05 : currentObserveMode === 'gravity' ? 1.24 : 1.35) * morphologyVisual.bloomStrength;
+              bloomModeThreshold = Math.min(0.98, (currentObserveMode === 'xray' ? 0.9 : currentObserveMode === 'infrared' ? 0.82 : currentObserveMode === 'radio' ? 0.87 : currentObserveMode === 'gravity' ? 0.88 : resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9) + morphologyVisual.bloomThreshold);
               if (composer && canvasEl._bloomPass) { canvasEl._bloomPass.strength = bloomModeStrength; canvasEl._bloomPass.threshold = bloomModeThreshold; }
             }
             canvasEl._setObserveMode = setObserveMode;
@@ -3915,7 +4048,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             canvasEl._updateAge = function (age) {
 
-              var dist = getAgeDistribution(age);
+              var dist = getMorphologyAgeDistribution(getAgeDistribution(age));
 
               activeAgeDistribution = dist;
               ageEvolutionTarget = getGalaxyEvolutionForAge(age);
@@ -4454,7 +4587,7 @@ if (!window._galaxyHasLoadedOnce) {
                 coreFlare.material.opacity = Math.max(0, visualGlow.core + 0.08 * Math.sin(elapsed * 1.1));
                 coreFlare.material.rotation = elapsed * 0.08;
                 var coreScale = 1 + 0.035 * Math.sin(elapsed * 1.35);
-                coreFlare.scale.set(0.58 * coreScale, 0.24 * coreScale, 1);
+                coreFlare.scale.set(coreFlareBaseScaleX * coreScale, coreFlareBaseScaleY * coreScale, 1);
               }
               coreLightBars.forEach(function (bar, idx) {
                 var barPulse = 0.72 + 0.28 * Math.sin(elapsed * 0.95 + bar.userData.phase);
@@ -4860,7 +4993,7 @@ if (!window._galaxyHasLoadedOnce) {
               var outerDiskLift = Math.max(0, Math.min(1, (spherical.r - 0.96) / 1.34));
               var transientGlareCompression = Math.min(0.11, supernovae.length * 0.026 + cinematicMotion.shock * 0.055 + cinematicMotion.aperture * 0.025);
               var modeExposure = currentObserveMode === 'xray' ? 0.96 : currentObserveMode === 'infrared' ? 1.06 : currentObserveMode === 'radio' ? 1.02 : currentObserveMode === 'gravity' ? 1.04 : 1.12;
-              var targetExposure = modeExposure - coreProximity * 0.19 + outerDiskLift * 0.07 - transientGlareCompression;
+              var targetExposure = modeExposure + morphologyVisual.exposureBias - coreProximity * 0.19 + outerDiskLift * 0.07 - transientGlareCompression;
               var adaptationRate = prefersReducedMotion ? 1 : 0.04;
               renderer.toneMappingExposure += (targetExposure - renderer.toneMappingExposure) * adaptationRate;
               if (composer && canvasEl._bloomPass) { var adaptiveBloomStrength = bloomModeStrength - coreProximity * 0.24 + outerDiskLift * 0.07 - transientGlareCompression * 0.8; var adaptiveBloomThreshold = bloomModeThreshold + coreProximity * 0.075 + transientGlareCompression * 0.12; canvasEl._bloomPass.strength += (adaptiveBloomStrength - canvasEl._bloomPass.strength) * adaptationRate; canvasEl._bloomPass.threshold += (adaptiveBloomThreshold - canvasEl._bloomPass.threshold) * adaptationRate; }
@@ -5347,6 +5480,7 @@ if (!window._galaxyHasLoadedOnce) {
           // ── Toggle handler ──
 
           var toggleLayer = function (key) {
+            if (morphologyVisual.hiddenLayers[key]) return;
 
             var newLayers = Object.assign({}, layers);
 
@@ -5363,8 +5497,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var cv = galaxyCanvasActive.current;
 
-            if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
-            if (cv && cv._setDetailLayer) cv._setDetailLayer(key, newLayers[key]);
+            if (cv && cv._setLayerVisibility) cv._setLayerVisibility(key, newLayers[key]);
             var layerDefinition = LAYER_TOGGLES.filter(function (layer) { return layer.key === key; })[0];
             var layerLabel = layerDefinition ? layerDefinition.label : key;
             if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'layer:' + key, (newLayers[key] ? 'Showing ' : 'Hiding ') + layerLabel + ' layer.', { debounce: 250 });
@@ -5375,7 +5508,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           var LAYER_TOGGLES = [
 
-            { key: 'arms', icon: '\uD83C\uDF00', label: t('stem.galaxy.spiral_arms') },
+            { key: 'arms', icon: galaxyType === 'elliptical' ? '\u2B2D\uFE0F' : '\uD83C\uDF00', label: galaxyType === 'elliptical' ? __alloT('stem.galaxy.stellar_body', 'Stellar Body') : t('stem.galaxy.spiral_arms') },
 
             { key: 'bulge', icon: '\uD83D\uDFE1', label: t('stem.galaxy.central_bulge') },
 
@@ -5404,7 +5537,7 @@ if (!window._galaxyHasLoadedOnce) {
             upd('galaxyControlPanel', nextKey);
             window.requestAnimationFrame(function () { var nextTab = document.getElementById('galaxy-tab-' + nextKey); if (nextTab) nextTab.focus(); });
           };
-          var enabledLayerLabels = LAYER_TOGGLES.filter(function (layer) { return layers[layer.key] !== false; }).map(function (layer) { return layer.label; });
+          var enabledLayerLabels = LAYER_TOGGLES.filter(function (layer) { return !morphologyVisual.hiddenLayers[layer.key] && layers[layer.key] !== false; }).map(function (layer) { return layer.label; });
           var galaxySelectionSummary = selStar ? selStar.label + ' star' : selNeb ? selNeb.name : __alloT('stem.galaxy.summary_no_selection', 'No object selected');
           var galaxyMotionSummary = galaxyReducedMotion ? __alloT('stem.galaxy.summary_motion_reduced', 'Reduced motion; automatic movement disabled') : galaxyAutoRotate ? __alloT('stem.galaxy.summary_motion_rotating', 'Gentle automatic rotation active') : __alloT('stem.galaxy.summary_motion_paused', 'Automatic rotation paused');
 
@@ -5959,17 +6092,18 @@ if (!window._galaxyHasLoadedOnce) {
 
                 LAYER_TOGGLES.map(function (lt) {
 
-                  var isOn = layers[lt.key] !== false;
+                  var isAvailable = !morphologyVisual.hiddenLayers[lt.key];
+                  var isOn = isAvailable && layers[lt.key] !== false;
 
-                  return React.createElement("button", { type: "button", "data-galaxy-toggle": lt.key, "aria-label": (isOn ? __alloT('stem.galaxy.hide_layer', 'Hide') : __alloT('stem.galaxy.show_layer', 'Show')) + " " + lt.label, "aria-pressed": isOn ? "true" : "false",
+                  return React.createElement("button", { type: "button", "data-galaxy-toggle": lt.key, "aria-label": isAvailable ? (isOn ? __alloT('stem.galaxy.hide_layer', 'Hide') : __alloT('stem.galaxy.show_layer', 'Show')) + " " + lt.label : lt.label + " " + __alloT('stem.galaxy.layer_not_characteristic', 'is not characteristic of elliptical galaxies'), "aria-pressed": isOn ? "true" : "false", disabled: !isAvailable,
 
                     key: lt.key,
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all  " + (isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600')
+                    className: "flex items-center gap-1 min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (!isAvailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-75' : isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600')
 
-                  }, lt.icon + " " + lt.label);
+                  }, lt.icon + " " + lt.label + (isAvailable ? "" : " - " + __alloT('stem.galaxy.layer_minimal', 'minimal')));
 
                 })
 

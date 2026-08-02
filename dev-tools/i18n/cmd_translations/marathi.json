@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio उघडले.",
   "cmd.open_video_studio_hint": "वॉकथ्रू रेकॉर्ड करा, कॅप्शन जोडा आणि संपादित करा",
   "palette.ctx.videoStudio": "येथे — Video Studio",
-  "palette.close": "कमांड पॅलेट बंद करा"
+  "palette.close": "कमांड पॅलेट बंद करा",
+  "cmd.apply_lesson_template": "जतन केलेल्या टेम्पलेटपासून सुरू करा",
+  "cmd.apply_lesson_template_done": "यापासून सुरू केले: ",
+  "cmd.apply_lesson_template_hint": "तुमच्या जतन केलेल्या टेम्पलेटपैकी एका टेम्पलेटवरून नवीन योजना सुरू करते",
+  "cmd.apply_lesson_template_missing": "या नावाचे टेम्पलेट सापडले नाही: ",
+  "cmd.apply_lesson_template_which": "कोणते टेम्पलेट?",
+  "cmd.rebuild_lesson_step": "योजनेतील एक टप्पा पुन्हा तयार करा",
+  "cmd.rebuild_lesson_step_done": "टप्पा पुन्हा तयार करत आहे: ",
+  "cmd.rebuild_lesson_step_hint": "एकच संसाधन पुन्हा तयार करते — टप्पा क्रमांक सांगा",
+  "cmd.rebuild_lesson_step_missing": "योजनेत तो टप्पा सापडला नाही.",
+  "cmd.rebuild_lesson_step_none": "योजनेत अजून टप्पे नाहीत.",
+  "cmd.rebuild_lesson_step_which": "कोणता टप्पा?",
+  "cmd.run_lesson_blueprint": "धड्याची योजना तयार करा",
+  "cmd.run_lesson_blueprint_done": "योजना तयार होत आहे — कार्डवर प्रत्येक टप्पा पाहू शकता.",
+  "cmd.run_lesson_blueprint_hint": "सध्याच्या योजनेतील सर्व संसाधने तयार करते",
+  "cmd.cancelled": "रद्द करण्याची विनंती केली आहे. प्रदाता त्याला समर्थन देईल तेव्हा सध्याचे काम थांबेल."
 }

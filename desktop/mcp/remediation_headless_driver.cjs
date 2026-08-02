@@ -21,8 +21,9 @@
  * originalMessage — the shape pinned by tests/gemini_error_taxonomy_contract.test.js).
  * A direct-API 401 is a REAL key problem (canvasTransientAuth is never set).
  *
- * Requires: network (Gemini API + the pipeline's CDN libraries: pdf.js,
- * Tesseract, pdf-lib, axe). No AlloFlow server involved.
+ * Requires: network for the host-provided Gemini API only. Browser libraries are
+ * loaded from the hash-verified vendor bundle beside this driver; strict remote
+ * jobs block all other browser egress. No AlloFlow server involved.
  */
 'use strict';
 
@@ -31,6 +32,7 @@ const path = require('path');
 const os = require('os');       // self-test scratch dir
 const http = require('http');   // self-test loopback model (127.0.0.1, no listener beyond the run)
 const { zipFileMap } = require('./zip_writer.cjs'); // ePub/DAISY packaging, no CDN, works offline
+const crypto = require('crypto');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const MODULE_FILES = [
@@ -48,8 +50,137 @@ function resolveAssetsRoot() {
   return path.resolve(__dirname, '..', 'assets');
 }
 const ASSETS_ROOT = resolveAssetsRoot();
-const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 const HEADLESS_AUDITOR_COUNT = 5;
+
+// Browser dependencies are vendored so a remote job never sends document content to a
+// public asset CDN. The manifest is checked before any input is opened and every response
+// is served from memory over the loopback origin used by the pipeline page.
+const VENDOR_BOOT_PATH = '/__alloflow_mcp_vendor/';
+const VENDOR_BOOT_URL = 'http://127.0.0.1/__alloflow_mcp_boot__';
+let vendorBundleCache = null;
+
+function resolveVendorRoot() {
+  const candidates = [
+    path.join(__dirname, 'vendor'),
+    path.join(ASSETS_ROOT, 'vendor'),
+  ];
+  return candidates.find((root) => fs.existsSync(path.join(root, 'manifest.json'))) || candidates[0];
+}
+
+function vendorContentType(name) {
+  if (/\.wasm$/i.test(name)) return 'application/wasm';
+  if (/\.json$/i.test(name)) return 'application/json';
+  if (/\.css$/i.test(name)) return 'text/css';
+  return 'application/javascript; charset=utf-8';
+}
+
+function loadVendorBundle() {
+  if (vendorBundleCache) return vendorBundleCache;
+  const root = resolveVendorRoot();
+  const manifestPath = path.join(root, 'manifest.json');
+  let manifest;
+  try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch (error) {
+    throw new Error('AlloFlow MCP vendor manifest is missing or invalid: ' + manifestPath + ' (' + error.message + ')');
+  }
+  if (!manifest || manifest.schema !== 1 || !Array.isArray(manifest.files) || !manifest.files.length) {
+    throw new Error('AlloFlow MCP vendor manifest has an unsupported schema: ' + manifestPath);
+  }
+  const files = new Map();
+  for (const entry of manifest.files) {
+    if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..')
+      || !/^[A-Za-z0-9._/-]+$/.test(entry.path) || !Number.isSafeInteger(entry.bytes)
+      || !/^[a-f0-9]{64}$/u.test(entry.sha256)) {
+      throw new Error('AlloFlow MCP vendor manifest contains an unsafe entry: ' + JSON.stringify(entry));
+    }
+    const absolute = path.resolve(root, entry.path);
+    if (!absolute.startsWith(path.resolve(root) + path.sep) || files.has(entry.path)) {
+      throw new Error('AlloFlow MCP vendor manifest contains a duplicate or out-of-root entry: ' + entry.path);
+    }
+    let bytes;
+    try { bytes = fs.readFileSync(absolute); } catch (error) {
+      throw new Error('AlloFlow MCP vendor asset is missing: ' + entry.path + ' (' + error.message + ')');
+    }
+    const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+    if (bytes.length !== entry.bytes || sha256 !== entry.sha256) {
+      throw new Error('AlloFlow MCP vendor asset failed hash verification: ' + entry.path);
+    }
+    files.set(entry.path, { path: absolute, body: bytes, bytes: entry.bytes, sha256 });
+  }
+  vendorBundleCache = { root, files };
+  return vendorBundleCache;
+}
+
+function verifyVendorBundle() {
+  try {
+    const bundle = loadVendorBundle();
+    return { present: true, hashVerified: true, root: bundle.root, files: bundle.files.size };
+  } catch (error) {
+    return { present: false, hashVerified: false, root: null, files: 0, error: String((error && error.message) || error) };
+  }
+}
+
+function vendorAssetPath(name) {
+  const asset = loadVendorBundle().files.get(name);
+  if (!asset) throw new Error('AlloFlow MCP vendor asset is not in the manifest: ' + name);
+  return asset.path;
+}
+
+function vendorAssetUrl(name) {
+  if (!loadVendorBundle().files.has(name)) throw new Error('AlloFlow MCP vendor asset is not in the manifest: ' + name);
+  const encoded = name.split('/').map((part) => encodeURIComponent(part)).join('/');
+  return 'http://127.0.0.1' + VENDOR_BOOT_PATH + encoded;
+}
+
+async function installVendorRuntime(page, options) {
+  const o = options || {};
+  const bundle = loadVendorBundle();
+  const strict = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS === '1';
+  await page.route('**/*', async (route) => {
+    let parsed;
+    try { parsed = new URL(route.request().url()); } catch (_) { return route.abort(); }
+    if (parsed.href === VENDOR_BOOT_URL) {
+      return route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
+    }
+    if (parsed.hostname === '127.0.0.1' && parsed.pathname.startsWith(VENDOR_BOOT_PATH)) {
+      let name;
+      try { name = parsed.pathname.slice(VENDOR_BOOT_PATH.length).split('/').map((part) => decodeURIComponent(part)).join('/'); } catch (_) { return route.fulfill({ status: 400, body: 'bad vendor path' }); }
+      const asset = bundle.files.get(name);
+      if (!asset) return route.fulfill({ status: 404, body: 'vendor asset not found' });
+      return route.fulfill({ status: 200, contentType: vendorContentType(name), body: asset.body });
+    }
+    if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:' || parsed.hostname === '127.0.0.1') {
+      return route.continue();
+    }
+    return strict ? route.abort() : route.continue();
+  });
+  await page.goto(VENDOR_BOOT_URL);
+  const assetNames = [];
+  if (o.loadPdfjs || o.loadCore) assetNames.push('pdfjs.min.js');
+  if (o.loadCore) assetNames.push('pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js', 'tesseract.min.js');
+  if (o.loadAxe || o.loadCore) assetNames.push('axe.min.js');
+  for (const name of [...new Set(assetNames)]) await page.addScriptTag({ path: vendorAssetPath(name) });
+  const runtimeAssets = {
+    pdfjsWorker: vendorAssetUrl('pdf.worker.min.js'),
+    tesseractWorker: vendorAssetUrl('tesseract.worker.min.js'),
+    tesseractCore: vendorAssetUrl('tesseract-core.wasm.js'),
+    tesseractLang: 'http://127.0.0.1' + VENDOR_BOOT_PATH + 'tessdata/',
+  };
+  await page.evaluate((assets) => {
+    window.__alloflowRuntimeAssets = Object.assign({}, window.__alloflowRuntimeAssets || {}, assets);
+    if (window.Tesseract && typeof window.Tesseract.createWorker === 'function' && !window.Tesseract.__alloflowLocalPatched) {
+      const original = window.Tesseract.createWorker;
+      window.Tesseract.createWorker = (langs, oem, options, config) => original(
+        langs, oem, Object.assign({}, options || {}, {
+          workerPath: assets.tesseractWorker,
+          corePath: assets.tesseractCore,
+          langPath: assets.tesseractLang,
+        }), config,
+      );
+      window.Tesseract.__alloflowLocalPatched = true;
+    }
+  }, runtimeAssets);
+  return { bundle, strict, assets: runtimeAssets };
+}
 
 // veraPDF validator transport. The page + its 16MB JAR live in the repo (verapdf/), and
 // CheerpJ (the in-browser JVM) REQUIRES HTTP Range (206) responses to load a JAR — the
@@ -254,16 +385,7 @@ function createDriver(options) {
   // cannot show a tag tree, a text layer, /Lang, /Title, or an existing /Alt. The audit of the
   // SOURCE therefore gets rougher, and its "before" score becomes an estimate from appearance.
   // The audit of the OUTPUT does not change at all.
-  const PDFJS_CDNS = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
-    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
-  ];
-  const PDFJS_WORKERS = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
-    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
-  ];
+  const PDFJS_WORKER_ASSET = 'pdf.worker.min.js';
   const RENDER_TARGET_WIDTH = Number(process.env.ALLOFLOW_MCP_PAGE_WIDTH) || 1600;
   const RENDER_MAX_PAGES = Number(process.env.ALLOFLOW_MCP_MAX_PAGE_IMAGES) || 30;
 
@@ -274,12 +396,8 @@ function createDriver(options) {
     const context = await b.newContext();
     try {
       const page = await context.newPage();
-      await page.goto('about:blank');
-      let loaded = false;
-      for (const url of PDFJS_CDNS) {
-        try { await page.addScriptTag({ url }); loaded = await page.evaluate(() => !!(window.pdfjsLib && window.pdfjsLib.getDocument)); } catch (_) { loaded = false; }
-        if (loaded) break;
-      }
+      await installVendorRuntime(page, { loadPdfjs: true });
+      const loaded = await page.evaluate(() => !!(window.pdfjsLib && window.pdfjsLib.getDocument));
       if (!loaded) throw new Error('Could not load pdf.js from any CDN — page rendering needs it.');
       const out = await page.evaluate(async ({ b64: data, workers, targetWidth, maxPages }) => {
         for (const w of workers) { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = w; break; } catch (_) {} }
@@ -301,7 +419,7 @@ function createDriver(options) {
           canvas.width = 0; canvas.height = 0; // release the backing store now, not at GC
         }
         return { pages, totalPages: total };
-      }, { b64, workers: PDFJS_WORKERS, targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES });
+      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES });
 
       const bytes = out.pages.reduce((n, p) => n + Math.round(p.length * 0.75), 0);
       const truncated = out.totalPages > out.pages.length;
@@ -335,9 +453,7 @@ function createDriver(options) {
     // pipeline binds verification evidence to the exact HTML with SHA-256, so boot on a
     // browser-trustworthy loopback origin. Route fulfillment keeps this entirely in-process:
     // no listener, DNS, network request, cookie scope, or document data leaves the machine.
-    const bootUrl = 'http://127.0.0.1/__alloflow_mcp_boot__';
-    await page.route(bootUrl, (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' }));
-    await page.goto(bootUrl);
+    await installVendorRuntime(page, { loadCore: true });
 
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
       return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog });
@@ -518,6 +634,7 @@ function createDriver(options) {
   }
 
   async function remediate(opts) {
+    loadVendorBundle();
     const fileName = path.basename(opts.filePath);
     const b64 = readDocBase64(opts.filePath);
     const _isPdfInput = /\.pdf$/i.test(fileName);
@@ -703,7 +820,7 @@ function createDriver(options) {
             if (!(window.PDFLib && window.PDFLib.PDFDocument)) {
               await new Promise((res, rej) => {
                 const s = document.createElement('script');
-                s.src = pdfLibCdn; s.onload = res; s.onerror = () => rej(new Error('pdf-lib CDN load failed'));
+                s.src = pdfLibCdn; s.onload = res; s.onerror = () => rej(new Error('pdf-lib local asset load failed'));
                 document.head.appendChild(s);
               });
             }
@@ -769,7 +886,7 @@ function createDriver(options) {
         wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
         wantAutoContinue: !!opts.autoContinue,
         autoContinueRounds: Math.max(1, Math.min(5, Number(opts.autoContinueRounds) || 3)),
-        pdfLibCdn: PDFLIB_CDN,
+        pdfLibCdn: vendorAssetUrl('pdf-lib.min.js'),
         auditorCount: HEADLESS_AUDITOR_COUNT,
       })
     );
@@ -814,6 +931,86 @@ function createDriver(options) {
         verapdfServer = srv;
         resolve('http://127.0.0.1:' + srv.address().port + '/verapdf/verapdf_validator.html');
       });
+    });
+  }
+
+  // Offline PDF/UA-1 validation for the remote runner. The browser validator above is kept for
+  // local interactive use, but it needs CheerpJ/CDN resources. Production calls the pinned
+  // veraPDF CLI JAR directly through Java so no document bytes or executable dependencies leave
+  // the container. Only bounded counts/status are returned to the caller.
+  async function validatePdfUaCli(opts) {
+    const o = opts || {};
+    const filePath = path.resolve(String(o.filePath || ''));
+    const jarPath = path.resolve(process.env.ALLOFLOW_MCP_VERAPDF_CLI || path.join(ASSETS_ROOT, 'verapdf', 'verapdf-cli.jar'));
+    const stat = fs.statSync(filePath, { throwIfNoEntry: false });
+    if (!stat || !stat.isFile()) throw new Error('veraPDF input is not a regular file');
+    if (stat.size < 5 || stat.size > (Number(o.maxBytes) || 50 * 1024 * 1024)) throw new Error('veraPDF input is outside the bounded size range');
+    const fd = fs.openSync(filePath, 'r');
+    try {
+      const head = Buffer.alloc(5); fs.readSync(fd, head, 0, 5, 0);
+      if (head.toString('latin1') !== '%PDF-') throw new Error('veraPDF input is not a PDF');
+    } finally { fs.closeSync(fd); }
+    if (!fs.existsSync(jarPath)) throw new Error('veraPDF CLI JAR is not packaged: ' + jarPath);
+    const timeoutMs = Math.max(1000, Math.min(300000, Number(o.timeoutMs) || 120000));
+    const javaBin = process.env.ALLOFLOW_MCP_JAVA_BIN || 'java';
+    const args = ['-jar', jarPath, '--format', 'json', '--flavour', 'ua1', '--maxfailuresdisplayed', '25', '--loglevel', '1', filePath];
+    const signal = o.signal;
+    return new Promise((resolve, reject) => {
+      const child = require('child_process').spawn(javaBin, args, { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+      let stdout = '';
+      let timer = null;
+      let settled = false;
+      const cleanup = () => {
+        if (timer) clearTimeout(timer);
+        if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', onAbort);
+      };
+      const finish = (fn, value) => { if (settled) return; settled = true; cleanup(); fn(value); };
+      const onAbort = () => { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF validation cancelled')); };
+      if (signal && signal.aborted) return onAbort();
+      if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', onAbort, { once: true });
+      child.stdout.on('data', (chunk) => {
+        stdout += String(chunk);
+        if (stdout.length > 4 * 1024 * 1024) { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF output exceeded the bounded limit')); }
+      });
+      child.on('error', (error) => finish(reject, new Error('veraPDF CLI could not start: ' + error.message)));
+      child.on('close', (code) => {
+        if (settled) return;
+        let parsed;
+        try { parsed = JSON.parse(stdout); } catch (_) {
+          return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + ')'));
+        }
+        const report = parsed && parsed.report;
+        const job = report && Array.isArray(report.jobs) ? report.jobs[0] : null;
+        const validation = job && Array.isArray(job.validationResult) ? job.validationResult[0] : null;
+        const details = validation && validation.details;
+        if (!validation || !details || typeof validation.compliant !== 'boolean') {
+          return finish(reject, new Error('veraPDF CLI returned an incomplete validation result'));
+        }
+        const releases = report && report.buildInformation && Array.isArray(report.buildInformation.releaseDetails)
+          ? report.buildInformation.releaseDetails : [];
+        const core = releases.find((item) => item && item.id === 'core');
+        const count = (value) => Number.isSafeInteger(value) && value >= 0 && value <= 1000000 ? value : 0;
+        const safeText = (value, max) => typeof value === 'string' ? value.slice(0, max) : '';
+        const failedRuleSummaries = (Array.isArray(details.ruleSummaries) ? details.ruleSummaries : [])
+          .filter((item) => item && item.ruleStatus === 'FAILED')
+          .slice(0, 25)
+          .map((item) => ({
+            specification: safeText(item.specification, 64),
+            clause: safeText(item.clause, 32),
+            testNumber: count(item.testNumber),
+            description: safeText(item.description, 400),
+            failedChecks: count(item.failedChecks),
+          }));
+        finish(resolve, {
+          status: validation.compliant ? 'compliant' : 'noncompliant',
+          validator: 'veraPDF', profile: 'ua1', validatorVersion: core && typeof core.version === 'string' ? core.version : null,
+          failedRules: count(details.failedRules), failedChecks: count(details.failedChecks),
+          passedRules: count(details.passedRules), passedChecks: count(details.passedChecks),
+          failedRuleSummaries,
+        });
+      });
+      timer = setTimeout(() => { try { child.kill(); } catch (_) {} finish(reject, new Error('veraPDF validation timed out')); }, timeoutMs);
+      timer.unref?.();
     });
   }
 
@@ -1270,8 +1467,7 @@ function createDriver(options) {
     const context = await b.newContext();
     try {
       const page = await context.newPage();
-      await page.goto('about:blank');
-      await page.addScriptTag({ url: AXE_CDN_URL });
+      await installVendorRuntime(page, { loadAxe: true });
       for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
       await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
       await page.evaluate(() => {
@@ -1286,7 +1482,6 @@ function createDriver(options) {
       return await fn(page);
     } finally { try { await context.close(); } catch (_) {} }
   }
-  const AXE_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js';
 
   // Deterministic contrast repair. Runs the axe audit first so the targeted fixer has real
   // violations to work from, then re-audits so the caller sees what actually changed rather than
@@ -1344,6 +1539,22 @@ function createDriver(options) {
     return withHtmlPage(false, async (page) => page.evaluate(({ fixResult, auditResult, pdfUa, reportOpts }) => {
       return window.__mcpPipeline.generateAccessibilityReportHtml(fixResult, auditResult, pdfUa, reportOpts);
     }, { fixResult: o.fixResult || {}, auditResult: o.auditResult || {}, pdfUa: o.pdfUa || null, reportOpts: o.reportOpts || {} }), o);
+  }
+
+  // Resource packs stay owned by doc_pipeline_module.js. This adapter only moves the app-shaped
+  // inputs across the process boundary and returns the exact HTML produced by the app's exporter.
+  async function generateResourcePack(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(({ items, topic, isWorksheet, responses, config }) => {
+      const html = window.__mcpPipeline.generateFullPackHTML(items, topic, isWorksheet, responses, config);
+      return { html, resourcesRequested: items.length, worksheet: isWorksheet, modelFree: true };
+    }, {
+      items: o.items,
+      topic: o.topic || '',
+      isWorksheet: o.isWorksheet === true,
+      responses: o.responses || {},
+      config: o.config || null,
+    }), o);
   }
 
   // Image alt text. The one of the three that genuinely needs a model.
@@ -1453,7 +1664,10 @@ function createDriver(options) {
     const o = opts || {};
     return withHtmlPage(false, async (page) => page.evaluate(({ html, accepted }) => {
       const out = window.__mcpPipeline.applyFormBlanks(html, accepted);
-      return { html: typeof out === 'string' ? out : (out && out.html) || html };
+      return {
+        html: typeof out === 'string' ? out : (out && out.html) || html,
+        converted: out && typeof out.converted === 'number' ? out.converted : null,
+      };
     }, { html: o.html, accepted: o.accepted }), o);
   }
 
@@ -1528,15 +1742,15 @@ function createDriver(options) {
   }
 
   return {
-    audit, remediate, validatePdfUa, selfTest, renderPdfToPageImages, exportAccessibleOffice,
-    fixContrast, buildConformanceReport, describeImages, transcribeMedia, translateHtml,
+    audit, remediate, validatePdfUa, validatePdfUaCli, selfTest, renderPdfToPageImages, exportAccessibleOffice,
+    fixContrast, buildConformanceReport, generateResourcePack, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
     auditWithBothEngines, htmlDerivatives, exportAltFormat,
     cancelActiveRun, close,
   };
 }
 
-module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, resolveChromium, installChromium, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
+module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, resolveChromium, installChromium, verifyVendorBundle, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
 
 // ── Direct CLI (for manual testing without an MCP client) ──────────────────
 //   GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit <file.pdf>
@@ -1552,7 +1766,7 @@ if (require.main === module) {
     const driver = createDriver({});
     try {
       if (cmd === 'validate') {
-        const out = await driver.validatePdfUa({ filePath: path.resolve(file) });
+        const out = await driver.validatePdfUaCli({ filePath: path.resolve(file) });
         process.stdout.write(JSON.stringify(out, null, 2) + '\n');
       } else if (cmd === 'audit') {
         const out = await driver.audit({ filePath: path.resolve(file) });

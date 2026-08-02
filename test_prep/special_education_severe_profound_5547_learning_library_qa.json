@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0", "visibility": "public",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:25:06.370Z",
   "libraryId": "praxis-special-education-severe-profound-5547-learning-library",
   "packId": "praxis-special-education-severe-profound-5547",
   "standard": {
@@ -28,8 +28,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "ae5712cea4fad822c3ffd51127cf5914a716ae383c92e73dce867bb9a078777a",
-    "learningLibrarySha256": "f5e29caf7548082db7a1f543b81bf45404bf368fa35f59d26792db4a047b1870",
+    "sourceItemsSha256": "6038dde054c067ebea58b39aa1ec9a67e0201387eb591426c8411e8715351f9c",
+    "learningLibrarySha256": "80b527b0d3aeb98353c1a5cd6f8dcd31b2fa0a374f5c25775f248a108a66e30e",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

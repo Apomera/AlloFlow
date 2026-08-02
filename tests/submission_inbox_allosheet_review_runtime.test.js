@@ -316,6 +316,17 @@ describe('Submission Inbox AlloSheet source-review runtime', () => {
     expect(onOpenAlloSheet).not.toHaveBeenCalled();
   });
 
+  it('explains due-date coverage without implying missing work', async () => {
+    priorActFlag = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    await mountInbox({ entries: { 'PRIVATE DUE STORAGE KEY': gradebookEntry({ dueDate: { schemaVersion: 1, dueAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), timeZone: 'UTC', source: 'teacher-export' } }) } });
+    const { dialog } = await openReview();
+    const reviewText = dialog.textContent.replace(/\s+/g, ' ');
+    expect(reviewText).toContain('Due-date reporting:');
+    expect(reviewText).toContain('Validated due dates are present.');
+    expect(reviewText).toContain('Missing work is not calculated.');
+    expect(dialog.querySelector('#submission-inbox-allosheet-review-due-status')?.getAttribute('role')).toBe('status');
+  });
   it('confirms an immutable snapshot, contains focus, isolates/restores ancestors, and locks until receipt', async () => {
     priorActFlag = globalThis.IS_REACT_ACT_ENVIRONMENT;
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -433,7 +444,7 @@ describe('Submission Inbox AlloSheet source-review runtime', () => {
       assignment_code: 'A001',
       teacher_saved_submission_count: 1,
       unique_class_nickname_count: 1,
-      saved_record_status: 'teacher_saved_not_review_attested',
+      saved_record_status: 'review_state_suppressed',
     });
     const serializedArtifact = JSON.stringify(artifact);
     expect(serializedArtifact).not.toContain(privateSourceMapping);

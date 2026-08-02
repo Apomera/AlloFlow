@@ -92,11 +92,11 @@ describe('Typing Practice measurement integrity', () => {
   });
 
   it('prevents pasted practice from changing clinical or comparative achievements', () => {
-    expect(source).toContain('if (summary.measurementComparable && !state.baseline)');
-    expect(source).toContain('if (summary.measurementComparable && (!prev || wpm > prev.wpm');
-    expect(source).toContain('summary.isBaseline = summary.measurementComparable && !state.baseline');
-    expect(source).toContain('if (summary.measurementComparable && state.iepGoal');
-    expect(source).toContain('if (summary.measurementComparable && activeDrill.masteryWpm');
+    expect(source).toContain('if (summary.metricComparable && !state.baseline)');
+    expect(source).toContain('if (summary.metricComparable && (!prev || wpm > prev.wpm');
+    expect(source).toContain('summary.isBaseline = summary.metricComparable && !state.baseline');
+    expect(source).toContain('if (summary.metricComparable && state.iepGoal');
+    expect(source).toContain('if (summary.metricComparable && activeDrill.masteryWpm');
   });
 
   it('discloses measurement context in summaries, progress, reports, and CSV exports', () => {
@@ -105,6 +105,6 @@ describe('Typing Practice measurement integrity', () => {
     expect(source).toContain('retained in history and excluded from comparative performance metrics');
     expect(source).toContain('CURRENT PERFORMANCE (last 5 comparable sessions)');
     expect(source).toContain('Comparable sessions used for performance calculations: ');
-    expect(source).toContain("'input_methods', 'primary_input_method', 'measurement_comparable', 'measurement_note'");
+    expect(source).toContain("'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note'");
   });
 });

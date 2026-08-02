@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio 已開啟。",
   "cmd.open_video_studio_hint": "錄製、加上字幕並編輯操作導覽",
   "palette.ctx.videoStudio": "此處 — Video Studio",
-  "palette.close": "關閉指令面板"
+  "palette.close": "關閉指令面板",
+  "cmd.apply_lesson_template": "從已儲存的範本開始",
+  "cmd.apply_lesson_template_done": "已從以下範本開始：",
+  "cmd.apply_lesson_template_hint": "從你儲存的範本中選擇一個來開始新計畫",
+  "cmd.apply_lesson_template_missing": "找不到名為以下內容的範本：",
+  "cmd.apply_lesson_template_which": "哪個範本？",
+  "cmd.rebuild_lesson_step": "重新建立計畫中的一個步驟",
+  "cmd.rebuild_lesson_step_done": "正在重新建立步驟：",
+  "cmd.rebuild_lesson_step_hint": "重新產生一個資源——請說出步驟編號",
+  "cmd.rebuild_lesson_step_missing": "在計畫中找不到該步驟。",
+  "cmd.rebuild_lesson_step_none": "計畫中還沒有步驟。",
+  "cmd.rebuild_lesson_step_which": "哪個步驟？",
+  "cmd.run_lesson_blueprint": "產生課程計畫",
+  "cmd.run_lesson_blueprint_done": "正在產生計畫——你可以在卡片上查看每個步驟。",
+  "cmd.run_lesson_blueprint_hint": "產生目前計畫中的所有資源",
+  "cmd.cancelled": "已要求取消。目前的操作會在其提供者支援取消時停止。"
 }

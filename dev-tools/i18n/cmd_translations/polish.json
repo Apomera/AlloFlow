@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio otwarte.",
   "cmd.open_video_studio_hint": "Nagrywaj, dodawaj napisy i montuj samouczki",
   "palette.ctx.videoStudio": "Tutaj — Video Studio",
-  "palette.close": "Zamknij paletę poleceń"
+  "palette.close": "Zamknij paletę poleceń",
+  "cmd.apply_lesson_template": "Rozpocznij od zapisanego szablonu",
+  "cmd.apply_lesson_template_done": "Rozpoczęto od ",
+  "cmd.apply_lesson_template_hint": "Rozpoczyna nowy plan na podstawie jednego z zapisanych szablonów",
+  "cmd.apply_lesson_template_missing": "Nie znaleziono szablonu o nazwie ",
+  "cmd.apply_lesson_template_which": "Który szablon?",
+  "cmd.rebuild_lesson_step": "Przebuduj krok planu",
+  "cmd.rebuild_lesson_step_done": "Przebudowywanie kroku ",
+  "cmd.rebuild_lesson_step_hint": "Regeneruje pojedynczy zasób — podaj numer kroku",
+  "cmd.rebuild_lesson_step_missing": "Nie znaleziono tego kroku w planie.",
+  "cmd.rebuild_lesson_step_none": "plan nie ma jeszcze żadnych kroków.",
+  "cmd.rebuild_lesson_step_which": "Który krok?",
+  "cmd.run_lesson_blueprint": "Wygeneruj plan lekcji",
+  "cmd.run_lesson_blueprint_done": "Generowanie planu — możesz obserwować każdy krok na karcie.",
+  "cmd.run_lesson_blueprint_hint": "Generuje wszystkie zasoby w bieżącym planie",
+  "cmd.cancelled": "Poproszono o anulowanie. Bieżąca operacja zatrzyma się, gdy dostawca ją obsłuży."
 }

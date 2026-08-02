@@ -513,7 +513,20 @@
       }
     } else if (t === 'object.reorder') { // reading order (array position)
       var oi = idx(op.target);
-      if (oi >= 0) {
+      if (oi >= 0 && op.page != null) {
+        var reorderPage = Math.max(0, Math.min(Math.round(stFiniteNumber(op.page, 0)), pageCount - 1));
+        var pageIndexes = [];
+        for (var rpi = 0; rpi < objects.length; rpi++) { if (stObjectPage(objects[rpi]) === reorderPage) pageIndexes.push(rpi); }
+        var localIndex = pageIndexes.indexOf(oi);
+        if (localIndex >= 0) {
+          var pageItem = objects.splice(oi, 1)[0];
+          var remainingPageIndexes = [];
+          for (var rri = 0; rri < objects.length; rri++) { if (stObjectPage(objects[rri]) === reorderPage) remainingPageIndexes.push(rri); }
+          var localTarget = Math.max(0, Math.min(Math.round(stFiniteNumber(op.toIndex, remainingPageIndexes.length)), remainingPageIndexes.length));
+          var insertAt = localTarget >= remainingPageIndexes.length ? (remainingPageIndexes.length ? remainingPageIndexes[remainingPageIndexes.length - 1] + 1 : objects.length) : remainingPageIndexes[localTarget];
+          objects.splice(insertAt, 0, pageItem);
+        }
+      } else if (oi >= 0) {
         var item = objects.splice(oi, 1)[0];
         var to = Math.max(0, Math.min(Math.round(stFiniteNumber(op.toIndex, objects.length)), objects.length));
         objects.splice(to, 0, item);
@@ -1710,6 +1723,68 @@
     });
   }
 
+  function stFindTextMatches(objects, query) {
+    var q = stCleanText(query, 240).toLowerCase();
+    if (!q) return [];
+    return (Array.isArray(objects) ? objects : []).map(function (o) {
+      if (!o || o.type !== 'text' || !o.id) return null;
+      var text = stCleanText((Array.isArray(o.runs) ? o.runs : []).map(function (run) { return run && run.text; }).join(' '), 8000);
+      var lower = text.toLowerCase();
+      var first = lower.indexOf(q);
+      if (first < 0) return null;
+      var count = 0;
+      var cursor = first;
+      while (cursor >= 0 && count < 1000) {
+        count++;
+        cursor = lower.indexOf(q, cursor + Math.max(1, q.length));
+      }
+      var start = Math.max(0, first - 38);
+      var end = Math.min(text.length, start + 118);
+      return {
+        id: o.id,
+        label: stObjectLabelForAgent(o),
+        role: o.role || 'body',
+        count: count,
+        snippet: (start > 0 ? '... ' : '') + text.slice(start, end) + (end < text.length ? ' ...' : '')
+      };
+    }).filter(function (match) { return !!match; });
+  }
+
+  function stReplaceTextInObjects(objects, query, replacement, options) {
+    var needle = stCleanText(query, 240);
+    var value = typeof replacement === 'string' ? replacement : '';
+    if (!needle) return { patches: [], matchCount: 0, objectCount: 0, skippedLocked: 0 };
+    options = options || {};
+    var wanted = null;
+    if (Array.isArray(options.ids)) {
+      wanted = {};
+      options.ids.forEach(function (id) { if (id != null) wanted[String(id)] = true; });
+    }
+    var escaped = needle.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+    var matcher;
+    try { matcher = new RegExp(escaped, 'gi'); } catch (_) { return { patches: [], matchCount: 0, objectCount: 0, skippedLocked: 0 }; }
+    var patches = [];
+    var matchCount = 0;
+    var skippedLocked = 0;
+    (Array.isArray(objects) ? objects : []).forEach(function (o) {
+      if (!o || o.type !== 'text' || !o.id || (wanted && !wanted[String(o.id)])) return;
+      if (stIsLockedObject(o)) { skippedLocked++; return; }
+      var runs = stClone(o.runs || [{ text: '', style: {} }]);
+      var changed = false;
+      runs.forEach(function (run) {
+        if (!run || typeof run.text !== 'string') return;
+        var before = run.text;
+        var after = before.replace(matcher, function () {
+          matchCount++;
+          return value;
+        });
+        if (after !== before) { run.text = after; changed = true; }
+      });
+      if (changed) patches.push({ id: o.id, patch: { runs: runs } });
+    });
+    return { patches: patches, matchCount: matchCount, objectCount: patches.length, skippedLocked: skippedLocked };
+  }
+
   function stObjectNavigatorSearchText(o) {
     if (!o) return '';
     var runText = '';
@@ -1923,6 +1998,21 @@
     });
   }
 
+  function stMatchFramesAsGroup(objects, ids, mode) {
+    var items = stSelectionObjects(objects, ids).filter(function (o) { return o.frame && !stIsLockedObject(o); });
+    if (items.length < 2) return [];
+    var maxW = items.reduce(function (max, o) { return Math.max(max, Math.max(1, stFiniteNumber(o.frame.w, 1))); }, 1);
+    var maxH = items.reduce(function (max, o) { return Math.max(max, Math.max(1, stFiniteNumber(o.frame.h, 1))); }, 1);
+    var validMode = mode === 'width' || mode === 'height' || mode === 'size';
+    if (!validMode) return [];
+    return items.map(function (o) {
+      var f = stClone(o.frame);
+      if (mode === 'width' || mode === 'size') f.w = maxW;
+      if (mode === 'height' || mode === 'size') f.h = maxH;
+      return { id: o.id, frame: f };
+    });
+  }
+
   function stDistributeFramesAsGroup(objects, ids, axis) {
     var key = axis === 'y' ? 'y' : 'x';
     var sizeKey = key === 'x' ? 'w' : 'h';
@@ -1944,6 +2034,60 @@
       cursor += Math.max(1, stFiniteNumber(f[sizeKey], 1)) + gap;
       return { id: o.id, frame: f };
     });
+  }
+
+  function stArrangeFramesAsGroup(objects, ids, mode, options) {
+    var items = stSelectionObjects(objects, ids).filter(function (o) { return o.frame && !stIsLockedObject(o); });
+    if (items.length < 2) return [];
+    options = options || {};
+    var gap = Math.max(0, stFiniteNumber(options.gap, 16));
+    var bounds = stSelectionBounds(items, items.map(function (o) { return o.id; }));
+    if (!bounds) return [];
+    var ordered = items.slice().sort(function (a, b) {
+      var ay = stFiniteNumber(a.frame && a.frame.y, 0), by = stFiniteNumber(b.frame && b.frame.y, 0);
+      if (ay !== by) return ay - by;
+      return stFiniteNumber(a.frame && a.frame.x, 0) - stFiniteNumber(b.frame && b.frame.x, 0);
+    });
+    var placements = {};
+    var setPosition = function (o, x, y) {
+      var f = stClone(o.frame || { x: 0, y: 0, w: 1, h: 1 });
+      f.x = x; f.y = y;
+      placements[String(o.id)] = { id: o.id, frame: f };
+    };
+    if (mode === 'stack-vertical' || mode === 'stack-horizontal') {
+      var cursor = mode === 'stack-vertical' ? bounds.y : bounds.x;
+      ordered.forEach(function (o) {
+        var f = o.frame || {};
+        var w = Math.max(1, stFiniteNumber(f.w, 1)), h = Math.max(1, stFiniteNumber(f.h, 1));
+        if (mode === 'stack-vertical') {
+          setPosition(o, bounds.x, cursor);
+          cursor += h + gap;
+        } else {
+          setPosition(o, cursor, bounds.y);
+          cursor += w + gap;
+        }
+      });
+    } else {
+      var columns = mode === 'two-column' ? 2 : Math.min(3, Math.max(2, Math.ceil(Math.sqrt(ordered.length))));
+      var rows = Math.ceil(ordered.length / columns);
+      var columnWidths = [];
+      var rowHeights = [];
+      for (var c = 0; c < columns; c++) columnWidths[c] = 1;
+      for (var r = 0; r < rows; r++) rowHeights[r] = 1;
+      ordered.forEach(function (o, idx) {
+        var f = o.frame || {};
+        var col = idx % columns, row = Math.floor(idx / columns);
+        columnWidths[col] = Math.max(columnWidths[col], stFiniteNumber(f.w, 1));
+        rowHeights[row] = Math.max(rowHeights[row], stFiniteNumber(f.h, 1));
+      });
+      var columnX = [], rowY = [];
+      for (var cx = 0, x = bounds.x; cx < columns; cx++) { columnX[cx] = x; x += columnWidths[cx] + gap; }
+      for (var ry = 0, y = bounds.y; ry < rows; ry++) { rowY[ry] = y; y += rowHeights[ry] + gap; }
+      ordered.forEach(function (o, idx) {
+        setPosition(o, columnX[idx % columns], rowY[Math.floor(idx / columns)]);
+      });
+    }
+    return ordered.map(function (o) { return placements[String(o.id)]; }).filter(Boolean);
   }
 
   function stMoveFramesAsGroup(objects, ids, dx, dy, canvas) {
@@ -1993,6 +2137,18 @@
     var pad = stFiniteNumber(l.canvasPadding, 12);
     var available = Math.max(260, vw - (pad * 2) - 18);
     return Math.max(0.34, Math.min(base, available / Math.max(1, stFiniteNumber(c.w, 816))));
+  }
+
+  function stSelectionZoomScale(bounds, canvas, viewport, padding) {
+    if (!bounds || !canvas) return null;
+    var pad = Math.max(16, stFiniteNumber(padding, 48));
+    var vw = Math.max(160, stFiniteNumber(viewport && viewport.w, 640) - pad * 2);
+    var vh = Math.max(160, stFiniteNumber(viewport && viewport.h, 480) - pad * 2);
+    var bw = Math.max(1, stFiniteNumber(bounds.w, 1));
+    var bh = Math.max(1, stFiniteNumber(bounds.h, 1));
+    var scale = Math.min(vw / bw, vh / bh);
+    if (!isFinite(scale)) return null;
+    return Math.round(Math.max(0.25, Math.min(1.5, scale)) * 100) / 100;
   }
 
   function stAdjustCanvasZoom(current, action, fitScale) {
@@ -2059,6 +2215,79 @@
     return { frame: snapped, guides: [sx, sy].filter(Boolean).map(function (g) { return { axis: g.axis, value: g.value, label: g.label }; }) };
   }
 
+  // Preview a multi-selection drag with optional page/object snapping. Locked
+  // members stay in place; the caller can turn the returned frames into one
+  // grouped ledger gesture on pointer release.
+  function stDragFramesAsGroup(objects, ids, dx, dy, canvas, options) {
+    options = options || {};
+    var selection = stSelectionObjects(objects, ids).filter(function (o) { return o && o.frame && !stIsLockedObject(o); });
+    if (!selection.length) return { frames: [], bounds: null, guides: [] };
+    var deltaX = stFiniteNumber(dx, 0);
+    var deltaY = stFiniteNumber(dy, 0);
+    var movedObjects = selection.map(function (o) {
+      var copy = { id: o.id, frame: stClone(o.frame) };
+      copy.frame.x = stFiniteNumber(copy.frame.x, 0) + deltaX;
+      copy.frame.y = stFiniteNumber(copy.frame.y, 0) + deltaY;
+      return copy;
+    });
+    var movedBounds = stSelectionBounds(movedObjects, movedObjects.map(function (o) { return o.id; }));
+    var guides = [];
+    if (options.snap && movedBounds) {
+      var snapped = stSnapFrame(movedBounds, canvas, Array.isArray(options.snapObjects) ? options.snapObjects : [], { threshold: options.threshold });
+      var snapDx = snapped.frame.x - movedBounds.x;
+      var snapDy = snapped.frame.y - movedBounds.y;
+      if (snapDx || snapDy) {
+        movedObjects.forEach(function (o) {
+          o.frame.x += snapDx;
+          o.frame.y += snapDy;
+        });
+      }
+      guides = snapped.guides || [];
+    }
+    var frames = movedObjects.map(function (o) {
+      return { id: o.id, frame: canvas ? stClampFrame(o.frame, canvas) : o.frame };
+    });
+    return {
+      frames: frames,
+      bounds: stSelectionBounds(frames, frames.map(function (o) { return o.id; })),
+      guides: guides
+    };
+  }
+  // Scale a multi-selection from its top-left anchor. Locked members are
+  // intentionally excluded from the returned gesture, so they stay fixed while
+  // the editable members follow the shared selection bounds.
+  function stResizeFramesAsGroup(objects, ids, dw, dh, canvas, options) {
+    options = options || {};
+    var items = stSelectionObjects(objects, ids).filter(function (o) { return o && o.frame && !stIsLockedObject(o); });
+    var base = stSelectionBounds(objects, ids);
+    if (!items.length || !base) return { frames: [], bounds: null, scale: { x: 1, y: 1 } };
+    var minSize = Math.max(8, stFiniteNumber(options.minSize, 24));
+    var nextW = Math.max(minSize, base.w + stFiniteNumber(dw, 0));
+    var nextH = Math.max(minSize, base.h + stFiniteNumber(dh, 0));
+    if (options.keepRatio) {
+      var ratioX = nextW / Math.max(1, base.w);
+      var ratioY = nextH / Math.max(1, base.h);
+      var ratio = Math.max(0.1, Math.abs(ratioX - 1) >= Math.abs(ratioY - 1) ? ratioX : ratioY);
+      nextW = Math.max(minSize, base.w * ratio);
+      nextH = Math.max(minSize, base.h * ratio);
+    }
+    var scaleX = nextW / Math.max(1, base.w);
+    var scaleY = nextH / Math.max(1, base.h);
+    var frames = items.map(function (o) {
+      var source = o.frame || {};
+      var f = stClone(source);
+      f.x = base.x + (stFiniteNumber(source.x, base.x) - base.x) * scaleX;
+      f.y = base.y + (stFiniteNumber(source.y, base.y) - base.y) * scaleY;
+      f.w = Math.max(minSize, stFiniteNumber(source.w, minSize) * scaleX);
+      f.h = Math.max(minSize, stFiniteNumber(source.h, minSize) * scaleY);
+      return { id: o.id, frame: canvas ? stClampFrame(f, canvas) : f };
+    });
+    return {
+      frames: frames,
+      bounds: stSelectionBounds(frames, frames.map(function (o) { return o.id; })),
+      scale: { x: scaleX, y: scaleY }
+    };
+  }
   function stObjectForAgent(o) {
     if (!o || !o.id) return null;
     var out = { id: o.id, type: o.type, frame: stClone(o.frame || {}), z: stFiniteNumber(o.z, 1) };
@@ -3106,9 +3335,18 @@
       h: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.h, ST_CANVAS_PRESETS['letter-portrait'].h)),
       background: { fill: stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff') },
     };
+    // One .st-page per page. A single-page document emits exactly what it always
+    // did (one <main class="st-page">); multi-page wraps N <section>s in one
+    // <main>, because several <main> elements would be invalid and would give a
+    // screen reader several "main" landmarks.
+    var stPageTotal = stScenePageCount(doc);
+    var stPageBlocks = [];
+    for (var stHtmlPageCursor = 0; stHtmlPageCursor < stPageTotal; stHtmlPageCursor++) {
+    parts = [];
     for (var i = 0; i < doc.objects.length; i++) {
       var o = doc.objects[i];
       if (!o || typeof o !== 'object') continue;
+      if (stObjectPage(o) !== stHtmlPageCursor) continue; // rendered on its own page pass
       var f = stClampFrame(o.frame, canvas);
       var pos = 'position:absolute;left:' + f.x + 'px;top:' + f.y + 'px;width:' + f.w + 'px;height:' + f.h + 'px;z-index:' + Math.round(stFiniteNumber(o.z, 1)) + ';margin:0;';
       if (o.type === 'text') {
@@ -3133,7 +3371,148 @@
         parts.push('<div aria-hidden="true" style="' + pos + 'background:' + stSafeCssColor(o.fill, '#e2e8f0') + ';' + radius + '"></div>');
       }
     }
-    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n<main class="st-page">\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
+    stPageBlocks.push(parts.join('\n'));
+    }
+    var stBody = stPageTotal <= 1
+      ? '<main class="st-page">\n' + stPageBlocks[0] + '\n</main>'
+      : '<main>\n' + stPageBlocks.map(function (block, pi) {
+          var label = (doc && doc.canvas && doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (pi + 1) + ' of ' + stPageTotal;
+          return '<section class="st-page" aria-label="' + stEscapeHtml(label) + '">\n' + block + '\n</section>';
+        }).join('\n') + '\n</main>';
+    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n' + stBody + '\n</body>\n</html>';
+  }
+
+  // ── PPTX export ─────────────────────────────────────────────────────────────
+  // Split in two on purpose: stExportPptxSpec is PURE (testable without the
+  // library) and stRenderPptx is a thin driver over PptxGenJS. The spec is in
+  // INCHES because that is PptxGenJS's unit; pixels convert by /96, which is
+  // exact for the slide-16x9 preset (1280x720 -> 13.333x7.5in = LAYOUT_16x9).
+  var ST_PPTX_DPI = 96;
+  function stPptxInches(px) { return Math.round((stFiniteNumber(px, 0) / ST_PPTX_DPI) * 1000) / 1000; }
+
+  // PPTX has one slide size per presentation, so a document whose canvas is not
+  // 16:9 still exports — it just defines a custom layout of the same dimensions
+  // rather than being letterboxed into a shape it was not designed for.
+  function stPptxLayout(canvas) {
+    var w = stPptxInches(canvas && canvas.w);
+    var h = stPptxInches(canvas && canvas.h);
+    var isWide = Math.abs(w - 13.333) < 0.01 && Math.abs(h - 7.5) < 0.01;
+    return { name: isWide ? 'LAYOUT_16x9' : 'ALLOFLOW_CUSTOM', width: w, height: h, standard: isWide };
+  }
+
+  function stExportPptxSpec(doc, opts) {
+    var options = opts || {};
+    var canvas = {
+      w: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.w, ST_CANVAS_PRESETS['slide-16x9'].w)),
+      h: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.h, ST_CANVAS_PRESETS['slide-16x9'].h)),
+      background: { fill: stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff') },
+    };
+    var total = stScenePageCount(doc);
+    var objects = (doc && doc.objects) || [];
+    var slides = [];
+    for (var p = 0; p < total; p++) {
+      var shapes = [];
+      var notes = [];
+      var onPage = stObjectsOnPage(objects, p);
+      for (var i = 0; i < onPage.length; i++) {
+        var o = onPage[i];
+        if (!o || typeof o !== 'object') continue;
+        var f = stClampFrame(o.frame, canvas);
+        var box = { x: stPptxInches(f.x), y: stPptxInches(f.y), w: stPptxInches(f.w), h: stPptxInches(f.h) };
+        if (o.type === 'text') {
+          var run = (o.runs && o.runs[0]) || { text: '', style: {} };
+          var s = run.style || {};
+          var role = stSafeTextRole(o.role);
+          shapes.push({
+            kind: 'text',
+            text: String(run.text == null ? '' : run.text),
+            role: role,
+            // PptxGenJS wants hex WITHOUT the leading '#'.
+            options: Object.assign({}, box, {
+              fontSize: Math.max(8, Math.min(160, stFiniteNumber(s.size, 16))) * 0.75, // px -> pt
+              color: stSafeCssColor(s.color, '#111827').replace('#', ''),
+              bold: !!s.bold,
+              align: stSafeAlign(s.align),
+              valign: 'top',
+              fontFace: stPptxFontFace(s.font),
+              isTextBox: true,
+            }),
+          });
+          // The first heading on a slide becomes its title in the notes, which
+          // is what most screen readers announce when navigating a deck.
+          if (role === 'heading1' || role === 'heading2' || role === 'heading3') notes.push(String(run.text || ''));
+        } else if (o.type === 'image') {
+          var safeSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
+          if (!safeSrc) continue;
+          shapes.push({
+            kind: 'image',
+            data: safeSrc,
+            decorative: !!o.decorative,
+            options: Object.assign({}, box, {
+              data: safeSrc,
+              sizing: { type: o.fit === 'contain' ? 'contain' : 'cover', w: box.w, h: box.h },
+              // PowerPoint has no "decorative" flag that survives round-trips
+              // reliably, so a decorative image gets an empty description and a
+              // real one carries its alt text.
+              altText: o.decorative ? '' : String(o.alt || ''),
+            }),
+          });
+        } else if (o.type === 'shape') {
+          shapes.push({
+            kind: 'shape',
+            shape: stSafeShape(o.shape) === 'ellipse' ? 'ellipse' : 'rect',
+            options: Object.assign({}, box, { fill: { color: stSafeCssColor(o.fill, '#e2e8f0').replace('#', '') } }),
+          });
+        }
+      }
+      slides.push({
+        index: p,
+        background: { color: canvas.background.fill.replace('#', '') },
+        // Reading order IS shapes order — PowerPoint's selection pane order is
+        // insertion order, and that is what assistive tech follows.
+        shapes: shapes,
+        notes: notes.join(' — '),
+      });
+    }
+    return {
+      title: String((doc && doc.title) || 'Untitled'),
+      author: 'AlloFlow',
+      lang: String(options.lang || 'en'),
+      layout: stPptxLayout(canvas),
+      slideCount: slides.length,
+      slides: slides,
+    };
+  }
+
+  // Map a studio font KEY to a concrete face PowerPoint can resolve. The studio
+  // stores keys (not arbitrary CSS) precisely so this mapping stays closed.
+  function stPptxFontFace(key) {
+    var faces = { system: 'Calibri', serif: 'Georgia', friendly: 'Verdana', mono: 'Consolas' };
+    return faces[String(key || 'system')] || 'Calibri';
+  }
+
+  // Drive PptxGenJS from a spec. Kept dependency-injected (the library is passed
+  // in) so nothing here needs a browser global and the caller controls loading.
+  function stRenderPptx(spec, PptxGenJSCtor) {
+    if (!spec || !Array.isArray(spec.slides)) throw new Error('AlloStudio: invalid PPTX spec');
+    if (typeof PptxGenJSCtor !== 'function') throw new Error('The PowerPoint export library is not loaded.');
+    var deck = new PptxGenJSCtor();
+    if (spec.layout.standard) deck.layout = 'LAYOUT_16x9';
+    else { deck.defineLayout({ name: spec.layout.name, width: spec.layout.width, height: spec.layout.height }); deck.layout = spec.layout.name; }
+    deck.title = spec.title;
+    deck.author = spec.author;
+    if (deck.company !== undefined) deck.company = 'AlloFlow';
+    spec.slides.forEach(function (s) {
+      var slide = deck.addSlide();
+      slide.background = s.background;
+      s.shapes.forEach(function (sh) {
+        if (sh.kind === 'text') slide.addText(sh.text, sh.options);
+        else if (sh.kind === 'image') slide.addImage(sh.options);
+        else if (sh.kind === 'shape') slide.addShape(sh.shape === 'ellipse' ? deck.ShapeType.ellipse : deck.ShapeType.rect, sh.options);
+      });
+      if (s.notes) { try { slide.addNotes(s.notes); } catch (_) {} }
+    });
+    return deck;
   }
 
   // ── Keyboard shortcut reference (pure data; the editor renders + binds it) ──
@@ -3156,6 +3535,7 @@
       { id: 'resize', mod: false, keys: 'Shift + Arrows', label: 'Resize the selected object' },
       { id: 'remove', mod: false, keys: 'Delete', label: 'Remove the selected object' },
       { id: 'deselect', mod: false, keys: 'Esc', label: 'Deselect, or close a panel' },
+      { id: 'findText', mod: true, keys: 'F', label: 'Find text in the design' },
       { id: 'commandPalette', mod: true, keys: 'K', label: 'Open quick actions' },
       { id: 'help', mod: false, keys: '?', label: 'Show this shortcuts list' }
     ];
@@ -3178,6 +3558,8 @@
     var hasUnlockedSelection = selectionSummary ? selectionSummary.unlockedCount > 0 : hasSelection;
     var hasLockedSelection = selectionSummary ? selectionSummary.lockedCount > 0 : false;
     var canDistributeSelection = selectionSummary ? selectionSummary.canDistribute : selectionCount >= 3;
+    var canArrangeSelection = selectionSummary ? selectionSummary.unlockedCount >= 2 : selectionCount >= 2;
+    var canMatchSizeSelection = selectionSummary ? selectionSummary.unlockedCount >= 2 : selectionCount >= 2;
     var singleSelection = selectionCount === 1;
     var recommended = options.recommendedExport || (doc ? stRecommendedExportAction(doc) : null);
     var ready = doc ? stBuildReadyActions(doc).actions[0] : null;
@@ -3202,10 +3584,12 @@
     push({ id: 'view-reading', group: 'View', label: 'Show reading order', hint: 'Open the screen-reader order list.', keywords: 'navigator order accessibility pdf' });
     push({ id: 'view-layers', group: 'View', label: 'Show layers', hint: 'Open the visual stacking list.', keywords: 'navigator z stack layer' });
     push({ id: 'zoom-fit', group: 'View', label: 'Zoom to fit', hint: 'Fit the page to the available space.', keywords: 'zoom fit page' });
+    push({ id: 'zoom-selection', group: 'View', label: 'Zoom to selection', hint: hasSelection ? 'Enlarge the selected object or group and bring it into view.' : 'Select an object first.', keywords: 'zoom selection focus inspect view', enabled: hasSelection });
     push({ id: 'zoom-100', group: 'View', label: 'Zoom to 100%', hint: 'Show the canvas at actual size.', keywords: 'zoom actual size 100' });
     push({ id: 'select-all', group: 'Selection', label: 'Select all objects', hint: objects.length ? objects.length + ' object(s) on the page.' : 'No objects to select.', keywords: 'selection all objects', enabled: !!objects.length });
     push({ id: 'duplicate-selection', group: 'Selection', label: 'Duplicate selection', hint: hasSelection ? selectionCount + ' selected object(s).' : 'Select an object first.', keywords: 'copy clone selection', enabled: hasUnlockedSelection });
     push({ id: 'clear-selection', group: 'Selection', label: 'Clear selection', hint: hasSelection ? 'Deselect current objects.' : 'No selection to clear.', keywords: 'deselect escape selection', enabled: hasSelection });
+    push({ id: 'find-text', group: 'Search', label: 'Find or replace text', hint: 'Search text boxes, select matching blocks, and make an undoable replacement.', keywords: 'find replace search text content words next previous' });
     [
       ['align-left', 'Align left', 'left'],
       ['align-hcenter', 'Align center', 'center horizontal middle hcenter'],
@@ -3219,6 +3603,13 @@
     push({ id: 'page-width-selection', group: 'Layout', label: 'Fit selection to page width', hint: singleSelection ? 'Stretch the selected object to the printable width.' : 'Select one unlocked object first.', keywords: 'layout page width fit stretch printable', enabled: singleSelection && hasUnlockedSelection });
     push({ id: 'distribute-x', group: 'Layout', label: 'Distribute horizontally', hint: canDistributeSelection ? 'Space selected objects evenly left to right.' : 'Select at least three unlocked objects.', keywords: 'layout arrange distribute horizontal spacing even', enabled: canDistributeSelection });
     push({ id: 'distribute-y', group: 'Layout', label: 'Distribute vertically', hint: canDistributeSelection ? 'Space selected objects evenly top to bottom.' : 'Select at least three unlocked objects.', keywords: 'layout arrange distribute vertical spacing even', enabled: canDistributeSelection });
+    push({ id: 'arrange-stack-vertical', group: 'Layout', label: 'Stack selection vertically', hint: canArrangeSelection ? 'Line selected objects into a readable column.' : 'Select at least two unlocked objects.', keywords: 'layout arrange recipe stack vertical column worksheet', enabled: canArrangeSelection });
+    push({ id: 'arrange-stack-horizontal', group: 'Layout', label: 'Stack selection horizontally', hint: canArrangeSelection ? 'Line selected objects into an even row.' : 'Select at least two unlocked objects.', keywords: 'layout arrange recipe stack horizontal row worksheet', enabled: canArrangeSelection });
+    push({ id: 'arrange-two-column', group: 'Layout', label: 'Arrange in two columns', hint: canArrangeSelection ? 'Build a balanced two-column reading layout.' : 'Select at least two unlocked objects.', keywords: 'layout arrange recipe two column grid cards worksheet', enabled: canArrangeSelection });
+    push({ id: 'arrange-card-grid', group: 'Layout', label: 'Arrange as a card grid', hint: canArrangeSelection ? 'Place selected objects in a compact card grid.' : 'Select at least two unlocked objects.', keywords: 'layout arrange recipe card grid tiles worksheet', enabled: canArrangeSelection });
+    push({ id: 'match-width', group: 'Layout', label: 'Make selection same width', hint: canMatchSizeSelection ? 'Resize unlocked selected objects to the widest selected object.' : 'Select at least two unlocked objects.', keywords: 'layout size match width equal cards boxes', enabled: canMatchSizeSelection });
+    push({ id: 'match-height', group: 'Layout', label: 'Make selection same height', hint: canMatchSizeSelection ? 'Resize unlocked selected objects to the tallest selected object.' : 'Select at least two unlocked objects.', keywords: 'layout size match height equal cards boxes', enabled: canMatchSizeSelection });
+    push({ id: 'match-size', group: 'Layout', label: 'Make selection same size', hint: canMatchSizeSelection ? 'Resize unlocked selected objects to the largest selected width and height.' : 'Select at least two unlocked objects.', keywords: 'layout size match both equal cards boxes uniform', enabled: canMatchSizeSelection });
     push({ id: 'lock-selection', group: 'Selection', label: 'Lock selection', hint: hasUnlockedSelection ? 'Prevent accidental edits to selected object(s).' : 'Select an unlocked object first.', keywords: 'lock freeze protect selection object', enabled: hasUnlockedSelection });
     push({ id: 'unlock-selection', group: 'Selection', label: 'Unlock selection', hint: hasLockedSelection ? 'Allow edits to selected locked object(s).' : 'No locked selected objects.', keywords: 'unlock unfreeze edit selection object', enabled: hasLockedSelection });
     push({ id: 'reading-earlier', group: 'Order', label: 'Move earlier in reading order', hint: singleSelection ? 'Move the selected object one step earlier for screen readers.' : 'Select one object first.', keywords: 'reading order earlier accessibility screen reader up', enabled: singleSelection && selectedIndex > 0 });
@@ -3583,6 +3974,7 @@
     var _tick = React.useState(0); var setTick = _tick[1];
     var bump = function () { setTick(function (n) { return n + 1; }); };
     var _view = React.useState('templates'); var view = _view[0], setView = _view[1];
+    var _pageIndex = React.useState(0); var pageIndex = _pageIndex[0], setPageIndex = _pageIndex[1];
     var _sel = React.useState(null); var selectedId = _sel[0], setSelectedId = _sel[1];
     var _multiSel = React.useState([]); var selectedIds = _multiSel[0], setSelectedIds = _multiSel[1];
     var _role = React.useState(props.initialRole === 'student' ? 'student' : 'teacher'); var role = _role[0], setRole = _role[1];
@@ -3612,6 +4004,10 @@
     var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
     var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
     var _navigatorSearch = React.useState(''); var navigatorSearch = _navigatorSearch[0], setNavigatorSearch = _navigatorSearch[1];
+    var _findQuery = React.useState(''); var findQuery = _findQuery[0], setFindQuery = _findQuery[1];
+    var _findResultIndex = React.useState(0); var findResultIndex = _findResultIndex[0], setFindResultIndex = _findResultIndex[1];
+    var _replaceOpen = React.useState(false); var replaceOpen = _replaceOpen[0], setReplaceOpen = _replaceOpen[1];
+    var _replaceQuery = React.useState(''); var replaceQuery = _replaceQuery[0], setReplaceQuery = _replaceQuery[1];
     var _navigatorFilter = React.useState('all'); var navigatorFilter = _navigatorFilter[0], setNavigatorFilter = _navigatorFilter[1];
     var _orderAssistOpen = React.useState(false); var orderAssistOpen = _orderAssistOpen[0], setOrderAssistOpen = _orderAssistOpen[1];
     var _snapEnabled = React.useState(true); var snapEnabled = _snapEnabled[0], setSnapEnabled = _snapEnabled[1];
@@ -3625,6 +4021,8 @@
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
     var fileRef = React.useRef(null);
     var loadRef = React.useRef(null);
+    var findInputRef = React.useRef(null);
+    var canvasViewportRef = React.useRef(null);
     // Focus management (WCAG 2.4.3): move focus into the dialog on open, restore
     // it to the opener on close, and keep Tab inside the modal while it is up.
     var _shellRef = React.useRef(null);
@@ -3756,12 +4154,38 @@
     var statusTone = function (tone) { return stUiStatusTone(themeName, tone); };
 
     var doc = _docRef.current;
+    var studioPageCount = doc ? stScenePageCount(doc) : 1;
+    var activePageIndex = doc ? Math.max(0, Math.min(pageIndex, studioPageCount - 1)) : 0;
+    var pageObjects = doc ? stObjectsOnPage(doc.objects, activePageIndex) : [];
+    React.useEffect(function () {
+      if (pageIndex !== activePageIndex) setPageIndex(activePageIndex);
+    }, [pageIndex, activePageIndex]);
     var fitScale = doc ? stCanvasFitScale(doc.canvas, layout, viewport) : layout.canvasScale;
     var SCALE = canvasZoom === null ? fitScale : stAdjustCanvasZoom(canvasZoom, 'clamp', fitScale);
     var zoomLabel = Math.round(SCALE * 100) + '%';
     var changeCanvasZoom = function (action) {
       setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
       stAnnounce(TT('studio.a11y_zoom_changed', 'Canvas zoom changed'));
+    };
+    var zoomToSelection = function () {
+      var ids = selectionIds.length ? selectionIds : (selectedId ? [selectedId] : []);
+      var bounds = stSelectionBounds(pageObjects, ids);
+      if (!bounds) { changeCanvasZoom('fit'); return; }
+      var viewportNode = canvasViewportRef.current;
+      var dimensions = viewportNode ? { w: viewportNode.clientWidth, h: viewportNode.clientHeight } : { w: viewport.w * 0.62, h: viewport.h * 0.62 };
+      var nextScale = stSelectionZoomScale(bounds, doc.canvas, dimensions, layout.canvasPadding + 24);
+      if (!nextScale) return;
+      setCanvasZoom(nextScale);
+      setTimeout(function () {
+        try {
+          var node = canvasViewportRef.current;
+          if (node) {
+            node.scrollLeft = Math.max(0, ((bounds.x + bounds.w / 2) * nextScale) - (node.clientWidth / 2));
+            node.scrollTop = Math.max(0, ((bounds.y + bounds.h / 2) * nextScale) - (node.clientHeight / 2));
+          }
+        } catch (_) {}
+      }, 0);
+      stAnnounce(TT('studio.a11y_zoom_selection', 'Zoomed to selection'));
     };
 
     var dispatch = function (opBody, actor) {
@@ -3780,6 +4204,10 @@
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'grouped edit failed'), 'error'); }
       return [];
     };
+    var activePageObject = function (obj) {
+      var copy = stClone(obj);
+      return stSetObjectPage(copy, activePageIndex, studioPageCount);
+    };
     var clearSelection = function () { setSelectedId(null); setSelectedIds([]); };
     var selectOnly = function (id) { setSelectedId(id || null); setSelectedIds(id ? [id] : []); };
     var toggleSelection = function (id) {
@@ -3791,9 +4219,62 @@
       setSelectedIds(list);
       setSelectedId(list.length ? (at >= 0 ? list[list.length - 1] : id) : null);
     };
+    var setActivePage = function (index) {
+      var next = Math.max(0, Math.min(Math.round(stFiniteNumber(index, 0)), studioPageCount - 1));
+      if (next === activePageIndex) return;
+      clearSelection();
+      setSnapGuides([]);
+      setPageIndex(next);
+      stAnnounce((doc && doc.canvas && doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (next + 1) + ' of ' + studioPageCount);
+    };
+    var activateObjectPage = function (id) {
+      var target = doc && doc.objects ? doc.objects.filter(function (o) { return o && o.id === id; })[0] : null;
+      if (target) setPageIndex(stObjectPage(target));
+      return target;
+    };
+    var addPageAfter = function () {
+      if (!doc || studioPageCount >= ST_MAX_PAGES) { addToast(TT('studio.page_limit', 'Page limit reached.'), 'info'); return; }
+      var at = activePageIndex + 1;
+      dispatch({ type: 'page.add', at: at }, 'user');
+      clearSelection();
+      setPageIndex(at);
+      stAnnounce(TT('studio.page_added', 'Page added') + ' ' + (at + 1));
+    };
+    var duplicateActivePage = function () {
+      if (!doc || studioPageCount >= ST_MAX_PAGES) { addToast(TT('studio.page_limit', 'Page limit reached.'), 'info'); return; }
+      var at = activePageIndex + 1;
+      var bodies = [{ type: 'page.add', at: at }];
+      pageObjects.forEach(function (o) {
+        var copy = stClone(o);
+        delete copy.id;
+        stSetObjectPage(copy, at, studioPageCount + 1);
+        bodies.push({ type: 'object.add', object: copy });
+      });
+      dispatchGesture(bodies, 'user', 'Duplicate page');
+      clearSelection();
+      setPageIndex(at);
+      stAnnounce(TT('studio.page_duplicated', 'Page duplicated') + ' ' + (at + 1));
+    };
+    var removeActivePage = function () {
+      if (!doc || studioPageCount <= 1) return;
+      var removed = activePageIndex;
+      dispatch({ type: 'page.remove', at: removed }, 'user');
+      clearSelection();
+      setPageIndex(Math.max(0, Math.min(removed, studioPageCount - 2)));
+      stAnnounce(TT('studio.page_removed', 'Page removed'));
+    };
+    var reorderActivePage = function (direction) {
+      if (!doc) return;
+      var target = activePageIndex + direction;
+      if (target < 0 || target >= studioPageCount) return;
+      dispatch({ type: 'page.reorder', from: activePageIndex, to: target }, 'user');
+      clearSelection();
+      setPageIndex(target);
+      stAnnounce(direction < 0 ? TT('studio.page_moved_earlier', 'Page moved earlier') : TT('studio.page_moved_later', 'Page moved later'));
+    };
     var selectAllObjects = function () {
-      if (!doc || !doc.objects.length) return;
-      var ids = doc.objects.map(function (o) { return o.id; });
+      if (!doc || !pageObjects.length) return;
+      var ids = pageObjects.map(function (o) { return o.id; });
       setSelectedIds(ids);
       setSelectedId(ids[ids.length - 1]);
       stAnnounce(TT('studio.a11y_selected_all', 'Selected all objects'));
@@ -3802,20 +4283,20 @@
     // move as the navigator ↑/↓ buttons; Ctrl+[ / Ctrl+]). Single-selection only.
     var reorderSelected = function (dir) {
       if (!doc || !selectedId) return;
-      var idx = -1;
-      for (var i = 0; i < doc.objects.length; i++) { if (doc.objects[i].id === selectedId) { idx = i; break; } }
+      var idx = pageObjects.findIndex(function (o) { return o && o.id === selectedId; });
       if (idx < 0) return;
       var to = idx + (dir < 0 ? -1 : 1);
-      if (to < 0 || to > doc.objects.length - 1) return;
-      dispatch({ type: 'object.reorder', target: selectedId, toIndex: to }, 'user');
+      if (to < 0 || to > pageObjects.length - 1) return;
+      dispatch({ type: 'object.reorder', target: selectedId, toIndex: to, page: activePageIndex }, 'user');
       stAnnounce(dir < 0 ? TT('studio.a11y_moved_earlier', 'Moved earlier in reading order') : TT('studio.a11y_moved_later', 'Moved later in reading order'));
     };
-    var selected = doc && selectedId ? doc.objects.filter(function (o) { return o.id === selectedId; })[0] : null;
+    var selected = doc && selectedId ? pageObjects.filter(function (o) { return o.id === selectedId; })[0] : null;
     var selectionIds = (Array.isArray(selectedIds) ? selectedIds : []).filter(function (id) {
-      return doc && doc.objects.some(function (o) { return o && o.id === id; });
+      return pageObjects.some(function (o) { return o && o.id === id; });
     });
     if (!selectionIds.length && selected) selectionIds = [selected.id];
-    var selectedGroup = doc ? stSelectionObjects(doc.objects, selectionIds) : [];
+    var selectedGroup = doc ? stSelectionObjects(pageObjects, selectionIds) : [];
+    var selectionUnlockedCount = selectedGroup.filter(function (o) { return !stIsLockedObject(o); }).length;
     var agentEffectiveScope = agentScope === 'selection' && selectionIds.length ? 'selection' : 'document';
     var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
     var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
@@ -3827,15 +4308,15 @@
     var exportConfidence = doc ? stExportConfidence(doc) : { status: 'blocked', cards: [] };
     var recommendedExport = stRecommendedExportAction(doc);
     var a11yAutoFix = doc ? stBuildA11yAutoFixPlan(doc) : { ops: [], fixedTypes: [], reviewCount: 0 };
-    var readingSuggestion = doc ? stReadingOrderSuggestion(doc) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
+    var readingSuggestion = doc ? stReadingOrderSuggestion({ canvas: doc.canvas, objects: pageObjects, pageCount: studioPageCount }) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
     var applyReadingOrderSuggestion = function () {
       if (!readingSuggestion.changed) return;
       var reorderOps = [];
-      var working = { title: doc.title, canvas: doc.canvas, objects: stClone(doc.objects) };
+      var working = { title: doc.title, canvas: doc.canvas, objects: stClone(pageObjects), pageCount: studioPageCount };
       readingSuggestion.suggestedIds.forEach(function (id, idx) {
         var cur = working.objects.findIndex(function (o) { return o && o.id === id; });
         if (cur >= 0 && cur !== idx) {
-          var body = { type: 'object.reorder', target: id, toIndex: idx };
+          var body = { type: 'object.reorder', target: id, toIndex: idx, page: activePageIndex };
           reorderOps.push(body);
           working = stApplyOp(working, body);
         }
@@ -3855,6 +4336,7 @@
 
     var startFromTemplate = function (tpl, preset) {
       _docRef.current = tpl.make(Date.now(), preset);
+      setPageIndex(0);
       setView('edit'); clearSelection();
       stAnnounce(TT('studio.a11y_started', 'Started a new document from template') + ': ' + tpl.name);
     };
@@ -3863,10 +4345,10 @@
     var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
     var insertText = function (roleKind) {
       var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
-      selectFromOp(dispatch({ type: 'object.add', object: obj }, 'user'));
+      selectFromOp(dispatch({ type: 'object.add', object: activePageObject(obj) }, 'user'));
     };
     var insertShape = function (kind) {
-      selectFromOp(dispatch({ type: 'object.add', object: stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe') }, 'user'));
+      selectFromOp(dispatch({ type: 'object.add', object: activePageObject(stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe')) }, 'user'));
     };
     var onPickImage = function (ev) {
       var f = ev.target.files && ev.target.files[0];
@@ -3879,7 +4361,7 @@
         // Downscaled first so a camera photo doesn't bloat the save file.
         stImportImageDataUrl(e.target.result, 1600).then(function (src) {
           if (!src) { addToast(TT('studio.image_import_failed', 'That file could not be imported as an image.'), 'error'); return; }
-          selectFromOp(dispatch({ type: 'object.add', object: stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import'));
+          selectFromOp(dispatch({ type: 'object.add', object: activePageObject(stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload')) }, 'import'));
           addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
         });
       };
@@ -3887,10 +4369,10 @@
     };
     var insertResourceCue = function (cue, insertAs) {
       if (!doc || !cue) return;
-      var y = 72 + (doc.objects.length % 7) * 28;
+      var y = 72 + (pageObjects.length % 7) * 28;
       var mode = insertAs || 'smart-card';
       var objects = stObjectsFromResourceCue(cue, { canvas: doc.canvas, x: 56, y: y, w: Math.max(220, doc.canvas.w - 112), insertAs: mode });
-      var applied = dispatchGesture(objects.map(function (obj) { return { type: 'object.add', object: obj }; }), 'import', 'Insert resource');
+      var applied = dispatchGesture(objects.map(function (obj) { return { type: 'object.add', object: activePageObject(obj) }; }), 'import', 'Insert resource');
       var newIds = applied.map(function (op) { return op && op.object && op.object.id; }).filter(Boolean);
       if (newIds.length) { setSelectedIds(newIds); setSelectedId(newIds[newIds.length - 1]); }
       stAnnounce(TT('studio.resource_inserted_a11y', 'Resource inserted into Studio'));
@@ -3926,7 +4408,7 @@
     };
     var applyReadyAction = function (action) {
       if (!action) return;
-      if (action.targetId) selectOnly(action.targetId);
+      if (action.targetId) { activateObjectPage(action.targetId); selectOnly(action.targetId); }
       if (action.type === 'fix-small-text' && action.targetId) {
         var small = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
         if (small && small.type === 'text') {
@@ -4071,7 +4553,7 @@
         // "Suggest alt text") describe it honestly.
         var obj = stMakeImage(dataUrl, '', { x: 120, y: 120, w: 360, h: 270 }, 'ai-generated');
         obj.provenance = { origin: 'ai-generated', prompt: prompt };
-        selectFromOp(dispatch({ type: 'object.add', object: obj }, 'ai'));
+        selectFromOp(dispatch({ type: 'object.add', object: activePageObject(obj) }, 'ai'));
         setAiGenOpen(false); setAiGenPrompt('');
         stAnnounce(TT('studio.a11y_ai_generated', 'AI image added — remember to add alt text'));
         addToast(TT('studio.ai_gen_ok', '✨ Image generated (logged as AI in your process). Add alt text before exporting.'), 'success');
@@ -4153,6 +4635,7 @@
       // the ledger stays light but the batch is attributable + undoable as one.
       var dispatchAgent = function (op) {
         var body = stClone(op);
+        if (body.type === 'object.add' && body.object) body.object = activePageObject(body.object);
         body.agent = stamped ? { batch: batch } : { batch: batch, prompt: promptText };
         body.gesture = { id: 'ai-' + batch, label: 'AI edit' };
         var applied = dispatch(body, 'ai');
@@ -4330,6 +4813,7 @@
       if (!canAgentEdit || aiBusy) return;
       var blank = stTemplates().filter(function (tpl) { return tpl.key === 'blank'; })[0];
       _docRef.current = blank ? blank.make(Date.now(), composePreset) : stCreateDoc(composePreset, 'Untitled', Date.now());
+      setPageIndex(0);
       setView('edit'); clearSelection();
       setAgentOpen(true);
       setAgentScope('document');
@@ -4371,6 +4855,7 @@
       if (!saved) { addToast(TT('studio.autosave_gone', 'No autosaved work found.'), 'info'); bump(); return; }
       _docRef.current = saved.doc;
       if (!Array.isArray(_docRef.current._redo)) _docRef.current._redo = [];
+      setPageIndex(0);
       setView('edit'); clearSelection();
       stAnnounce(TT('studio.a11y_restored', 'Restored unsaved work'));
       addToast(TT('studio.autosave_restored', '💾 Restored your unsaved work, including its process history.'), 'success');
@@ -4431,6 +4916,29 @@
     };
 
     // ── selection + drag ──
+    var selectionCanResize = selectionIds.length > 1 && selectionUnlockedCount > 0;
+    var resizeSelectedGroup = function (dx, dy, keepRatio) {
+      if (!selectionCanResize) return;
+      var result = stResizeFramesAsGroup(doc.objects, selectionIds, dx, dy, doc.canvas, { minSize: 24, keepRatio: !!keepRatio });
+      if (!result.frames.length) return;
+      dispatchGesture(result.frames.map(function (entry) {
+        return { type: 'object.update', target: entry.id, patch: { frame: entry.frame } };
+      }), 'user', 'Resize objects');
+      stAnnounce(TT('studio.a11y_group_resized', 'Selected objects resized'));
+    };
+    var onGroupResizePointerDown = function (ev) {
+      if (!selectionCanResize) return;
+      ev.preventDefault(); ev.stopPropagation();
+      _drag.current = { id: '__group__', ids: selectionIds.slice(), mode: 'group-resize', startX: ev.clientX, startY: ev.clientY, keepRatio: !!ev.shiftKey };
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
+    };
+    var onGroupResizeKeyDown = function (ev) {
+      var moves = { ArrowLeft: [-4, 0], ArrowRight: [4, 0], ArrowUp: [0, -4], ArrowDown: [0, 4] };
+      if (!moves[ev.key] || !selectionCanResize) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var delta = moves[ev.key];
+      resizeSelectedGroup(delta[0], delta[1], ev.shiftKey);
+    };
     var onObjectPointerDown = function (o, mode) {
       return function (ev) {
         ev.preventDefault(); ev.stopPropagation();
@@ -4439,18 +4947,44 @@
           toggleSelection(o.id);
           return;
         }
-        selectOnly(o.id);
+        var preserveGroup = mode === 'move' && selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0;
+        if (preserveGroup) _skipFocusSelect.current = true;
+        if (!preserveGroup) selectOnly(o.id);
         if (stIsLockedObject(o)) {
           stAnnounce(TT('studio.a11y_locked_selected', 'Locked object selected'));
           return;
         }
-        _drag.current = { id: o.id, mode: mode, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame) };
+        var dragIds = preserveGroup
+          ? selectionIds.filter(function (id) {
+            return doc.objects.some(function (candidate) { return candidate && candidate.id === id && !stIsLockedObject(candidate); });
+          })
+          : [o.id];
+        var dragFrames = dragIds.map(function (id) {
+          var target = doc.objects.filter(function (candidate) { return candidate && candidate.id === id; })[0];
+          return target && target.frame ? { id: target.id, frame: stClone(target.frame) } : null;
+        }).filter(Boolean);
+        _drag.current = { id: o.id, ids: dragIds, mode: mode, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame), frames0: dragFrames };
         try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
       };
     };
     var onCanvasPointerMove = function (ev) {
       var d = _drag.current; if (!d) return;
       var dx = (ev.clientX - d.startX) / SCALE, dy = (ev.clientY - d.startY) / SCALE;
+      if (d.mode === 'group-resize') {
+        var resizePreview = stResizeFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { minSize: 24, keepRatio: d.keepRatio });
+        setSnapGuides([]);
+        var resizePrimary = resizePreview.frames.filter(function (entry) { return entry.id === selectedId; })[0] || resizePreview.frames[0];
+        setDragLive({ id: d.id, frames: resizePreview.frames, frame: resizePrimary ? resizePrimary.frame : null });
+        return;
+      }
+      if (d.mode === 'move' && d.ids && d.ids.length > 1) {
+        var others = ((_docRef.current && _docRef.current.objects) || []).filter(function (o) { return o && d.ids.indexOf(o.id) < 0; });
+        var groupPreview = stDragFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { snap: snapEnabled, snapObjects: others, threshold: 8 });
+        setSnapGuides(groupPreview.guides || []);
+        var primary = groupPreview.frames.filter(function (entry) { return entry.id === d.id; })[0] || groupPreview.frames[0];
+        setDragLive({ id: d.id, frames: groupPreview.frames, frame: primary ? primary.frame : null });
+        return;
+      }
       var f = stClone(d.frame0);
       if (d.mode === 'move') { f.x += dx; f.y += dy; } else { f.w += dx; f.h += dy; }
       var live = stClampFrame(f, _docRef.current.canvas);
@@ -4468,9 +5002,21 @@
       var d = _drag.current; if (!d) return;
       _drag.current = null;
       if (dragLive && dragLive.id === d.id) {
-        var f = dragLive.frame;
-        if (d.mode === 'move') dispatch({ type: 'object.move', target: d.id, x: f.x, y: f.y }, 'user');
-        else dispatch({ type: 'object.resize', target: d.id, w: f.w, h: f.h }, 'user');
+        if (d.mode === 'group-resize' && Array.isArray(dragLive.frames)) {
+          var resizeOps = dragLive.frames.map(function (entry) {
+            return { type: 'object.update', target: entry.id, patch: { frame: entry.frame } };
+          });
+          if (resizeOps.length) dispatchGesture(resizeOps, 'user', 'Resize objects');
+        } else if (d.mode === 'move' && d.ids && d.ids.length > 1 && Array.isArray(dragLive.frames)) {
+          var groupOps = dragLive.frames.map(function (entry) {
+            return { type: 'object.update', target: entry.id, patch: { frame: entry.frame } };
+          });
+          if (groupOps.length) dispatchGesture(groupOps, 'user', 'Move objects');
+        } else {
+          var f = dragLive.frame;
+          if (d.mode === 'move') dispatch({ type: 'object.move', target: d.id, x: f.x, y: f.y }, 'user');
+          else dispatch({ type: 'object.resize', target: d.id, w: f.w, h: f.h }, 'user');
+        }
       }
       setDragLive(null);
       setSnapGuides([]);
@@ -4487,12 +5033,16 @@
           ev.preventDefault(); ev.stopPropagation();
           if (stIsLockedObject(o)) { stAnnounce(TT('studio.a11y_locked_no_move', 'Locked object cannot be moved until it is unlocked')); return; }
           var d = moves[ev.key];
-          if (!ev.shiftKey && selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0) {
-            var groupOps = stMoveFramesAsGroup(doc.objects, selectionIds, d[0], d[1], doc.canvas).map(function (p) {
-              return { type: 'object.update', target: p.id, patch: { frame: p.frame } };
-            });
-            dispatchGesture(groupOps, 'user', 'Move objects');
-            stAnnounce(TT('studio.a11y_group_moved', 'Selected objects moved'));
+          if (selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0) {
+            if (ev.shiftKey) {
+              resizeSelectedGroup(d[0], d[1], false);
+            } else {
+              var groupOps = stMoveFramesAsGroup(doc.objects, selectionIds, d[0], d[1], doc.canvas).map(function (p) {
+                return { type: 'object.update', target: p.id, patch: { frame: p.frame } };
+              });
+              if (groupOps.length) dispatchGesture(groupOps, 'user', 'Move objects');
+              stAnnounce(TT('studio.a11y_group_moved', 'Selected objects moved'));
+            }
           } else if (ev.shiftKey) dispatch({ type: 'object.resize', target: o.id, w: f.w + d[0], h: f.h + d[1] }, 'user');
           else dispatch({ type: 'object.move', target: o.id, x: f.x + d[0], y: f.y + d[1] }, 'user');
         } else if (ev.key === 'Delete' || ev.key === 'Backspace') {
@@ -4534,7 +5084,7 @@
       delete copy.id;
       copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
       copy.z = stFiniteNumber(copy.z, 1) + 1;
-      var op = dispatch({ type: 'object.add', object: copy }, 'user');
+      var op = dispatch({ type: 'object.add', object: activePageObject(copy) }, 'user');
       if (op && op.object && op.object.id) selectOnly(op.object.id);
     };
     var removeSelectedObjects = function () {
@@ -4564,6 +5114,24 @@
       dispatchGesture(ops, 'user', 'Distribute objects');
       stAnnounce(TT('studio.a11y_group_distributed', 'Selected objects distributed'));
     };
+    var arrangeSelectedGroup = function (mode) {
+      if (selectedGroup.length < 2) return;
+      var ops = stArrangeFramesAsGroup(doc.objects, selectionIds, mode).map(function (p) {
+        return { type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } };
+      });
+      if (!ops.length) return;
+      dispatchGesture(ops, 'user', 'Arrange objects');
+      stAnnounce(TT('studio.a11y_group_arranged', 'Selected objects arranged'));
+    };
+    var matchSelectedGroup = function (mode) {
+      if (selectedGroup.length < 2) return;
+      var ops = stMatchFramesAsGroup(doc.objects, selectionIds, mode).map(function (p) {
+        return { type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } };
+      });
+      if (!ops.length) return;
+      dispatchGesture(ops, 'user', 'Match object sizes');
+      stAnnounce(TT('studio.a11y_group_resized', 'Selected object sizes matched'));
+    };
     var duplicateSelectedGroup = function () {
       if (selectedGroup.length < 2) return;
       var bodies = selectedGroup.filter(function (o) { return !stIsLockedObject(o); }).map(function (o, idx) {
@@ -4571,7 +5139,7 @@
         delete copy.id;
         copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
         copy.z = stFiniteNumber(copy.z, 1) + 1 + idx;
-        return { type: 'object.add', object: copy };
+        return { type: 'object.add', object: activePageObject(copy) };
       });
       if (!bodies.length) { stAnnounce(TT('studio.a11y_locked_no_duplicate', 'Locked objects cannot be duplicated until they are unlocked')); return; }
       var applied = dispatchGesture(bodies, 'user', 'Duplicate objects');
@@ -4601,7 +5169,7 @@
           setPreflightIssueFilter('fix');
           setPreflightGuideIndex(0);
           setPreflightOpen(true);
-          selectOnly(altFailures[0].id);
+          activateObjectPage(altFailures[0].id); selectOnly(altFailures[0].id);
           focusAltTextFor(altFailures[0].id);
           stAnnounce(TT('studio.export_show_fixes', 'Showing required accessibility fixes'));
           return;
@@ -4700,6 +5268,7 @@
           var errs = stValidateDoc(parsed);
           if (errs.length) { addToast(TT('studio.load_failed', 'Could not open: ') + errs[0], 'error'); return; }
           _docRef.current = stCanonicalizeDoc(parsed);
+          setPageIndex(0);
           setView('edit'); clearSelection(); bump();
           addToast(TT('studio.loaded', '📂 Opened — process history intact.'), 'success');
         } catch (_) { addToast(TT('studio.load_failed', 'Could not open: ') + 'not valid JSON', 'error'); }
@@ -4774,6 +5343,7 @@
       var errs = stValidateDoc(entry.doc);
       if (errs.length) { addToast(TT('studio.recent_invalid', 'That recent project could not be reopened.'), 'error'); return; }
       _docRef.current = stCanonicalizeDoc(entry.doc);
+      setPageIndex(0);
       setView('edit'); clearSelection(); bump();
       addToast(TT('studio.recent_opened', 'Recent project opened.'), 'success');
     };
@@ -4959,7 +5529,17 @@
     }
 
     // ── editor view ──
-    var liveFrameFor = function (o) { return (dragLive && dragLive.id === o.id) ? dragLive.frame : o.frame; };
+    var liveFrameFor = function (o) {
+      if (dragLive && Array.isArray(dragLive.frames)) {
+        for (var li = 0; li < dragLive.frames.length; li++) {
+          if (dragLive.frames[li] && dragLive.frames[li].id === o.id) return dragLive.frames[li].frame;
+        }
+      }
+      return (dragLive && dragLive.id === o.id) ? dragLive.frame : o.frame;
+    };
+    var liveSelectionBounds = selectionIds.length > 1
+      ? stSelectionBounds(pageObjects.map(function (o) { return { id: o.id, frame: liveFrameFor(o) }; }), selectionIds)
+      : null;
     var agentSelectedSet = {};
     (Array.isArray(agentSelectedOps) ? agentSelectedOps : []).forEach(function (idx) { agentSelectedSet[idx] = true; });
     var agentChangeItems = agentPlan && Array.isArray(agentPlan.ops)
@@ -4995,7 +5575,7 @@
       if (idx < 0) idx = stIssueIndexForObject(preflight, id);
       setPreflightIssueFilter(nextFilter);
       if (idx >= 0) setPreflightGuideIndex(idx);
-      if (id) selectOnly(id);
+      if (id) { activateObjectPage(id); selectOnly(id); }
       setPreflightOpen(true);
       stAnnounce(title || TT('studio.a11y_issue_selected', 'Accessibility issue selected'));
     };
@@ -5008,7 +5588,7 @@
       var f = interactivity ? liveFrameFor(o) : o.frame;
       var isSel = interactivity && (selectedId === o.id || selectionIds.indexOf(o.id) >= 0);
       var isAgentPending = interactivity && agentPendingIds.indexOf(o.id) >= 0;
-      var readingIndex = doc && Array.isArray(doc.objects) ? doc.objects.findIndex(function (item) { return item && item.id === o.id; }) + 1 : 0;
+      var readingIndex = pageObjects.findIndex(function (item) { return item && item.id === o.id; }) + 1;
       var issueSummary = issueByObject && issueByObject[o.id];
       var issueTone = (typeof issueToneFor === 'function') ? issueToneFor(issueSummary) : null;
       var frameState = o.type === 'image' ? stImageFrameState(o) : null;
@@ -5068,7 +5648,7 @@
           onClick: function (e) { e.stopPropagation(); openIssueForObject(o.id, issueSummary.title, issueSummary.severity); },
           style: { position: 'absolute', right: '4px', top: '4px', border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', cursor: 'pointer', zIndex: 65, lineHeight: 1.3, boxShadow: '0 1px 4px rgba(15,23,42,0.22)' }
         }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
-        isSel ? [
+        isSel && selectionIds.length <= 1 ? [
           hh('span', { key: 'h-tl', style: Object.assign({}, handleBase, { left: '-6px', top: '-6px' }) }),
           hh('span', { key: 'h-tr', style: Object.assign({}, handleBase, { right: '-6px', top: '-6px' }) }),
           hh('span', { key: 'h-bl', style: Object.assign({}, handleBase, { left: '-6px', bottom: '-6px' }) }),
@@ -5135,13 +5715,58 @@
         'aria-label': aria
       }, label);
     };
+    var findMatches = stFindTextMatches(doc.objects, findQuery);
+    var findTotalMatches = findMatches.reduce(function (sum, match) { return sum + match.count; }, 0);
+    var activeFindIndex = findMatches.length ? Math.min(Math.max(0, findResultIndex), findMatches.length - 1) : -1;
+    var focusFindInput = function () {
+      setView('edit');
+      setTimeout(function () {
+        try { if (findInputRef.current) { findInputRef.current.focus(); findInputRef.current.select(); } } catch (_) {}
+      }, 0);
+    };
+    var selectFindResult = function (index) {
+      if (!findMatches.length) { focusFindInput(); return; }
+      var nextIndex = Math.max(0, Math.min(index, findMatches.length - 1));
+      var match = findMatches[nextIndex];
+      setFindResultIndex(nextIndex);
+      setView('edit');
+      activateObjectPage(match.id); selectOnly(match.id);
+      stAnnounce(TT('studio.find_selected', 'Selected text match') + ': ' + match.label);
+    };
+    var stepFindResult = function (direction) {
+      if (!findMatches.length) { focusFindInput(); return; }
+      var nextIndex = activeFindIndex < 0
+        ? (direction > 0 ? 0 : findMatches.length - 1)
+        : (activeFindIndex + direction + findMatches.length) % findMatches.length;
+      selectFindResult(nextIndex);
+    };
+    var replaceText = function (ids) {
+      var result = stReplaceTextInObjects(doc.objects, findQuery, replaceQuery, ids ? { ids: ids } : {});
+      if (!result.patches.length) {
+        if (result.skippedLocked) addToast(TT('studio.replace_locked', 'Locked text was skipped. Unlock it before replacing.'), 'info');
+        else addToast(TT('studio.replace_none', 'No editable text matches were found.'), 'info');
+        return;
+      }
+      dispatchGesture(result.patches.map(function (item) { return { type: 'object.update', target: item.id, patch: item.patch }; }), 'user', 'Replace text');
+      setFindResultIndex(0);
+      stAnnounce(TT('studio.replace_done', 'Text replaced') + ': ' + result.matchCount);
+      addToast(TT('studio.replace_done', 'Text replaced') + ': ' + result.matchCount + ' ' + TT('studio.find_matches', result.matchCount === 1 ? 'match' : 'matches') + (result.skippedLocked ? ' - ' + result.skippedLocked + ' ' + TT('studio.replace_locked_skipped', 'locked block skipped') : ''), 'success');
+    };
+    var replaceCurrentText = function () {
+      if (activeFindIndex < 0 || !findMatches[activeFindIndex]) return;
+      var match = findMatches[activeFindIndex];
+      var target = doc.objects.filter(function (o) { return o && o.id === match.id; })[0];
+      if (target && stIsLockedObject(target)) { addToast(TT('studio.replace_locked', 'Locked text was skipped. Unlock it before replacing.'), 'info'); return; }
+      replaceText([match.id]);
+    };
+    var replaceAllText = function () { replaceText(null); };
     var navigatorQuery = stCleanText(navigatorSearch, 80);
-    var navigatorFilters = stObjectNavigatorFilterCounts(doc.objects, preflight);
-    var navigatorObjects = stFilterObjectNavigatorObjects(doc.objects, navigatorQuery, navigatorFilter, preflight);
+    var navigatorFilters = stObjectNavigatorFilterCounts(pageObjects, preflight);
+    var navigatorObjects = stFilterObjectNavigatorObjects(pageObjects, navigatorQuery, navigatorFilter, preflight);
     var navigatorMatchIds = {};
     navigatorObjects.forEach(function (o) { navigatorMatchIds[o.id] = true; });
     var orderList = navigatorObjects.map(function (o) {
-      var i = doc.objects.indexOf(o);
+      var i = pageObjects.indexOf(o);
       var text = objectSummary(o, 28);
       var issueSummary = issueByObject[o.id];
       var issueTone = issueToneFor(issueSummary);
@@ -5150,12 +5775,12 @@
         h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, minWidth: 0, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
         issueSummary ? h('button', { type: 'button', onClick: function () { openIssueForObject(o.id, issueSummary.title, issueSummary.severity); }, title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''), 'aria-label': issueSummary.label + ' accessibility item for ' + text, style: { border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', cursor: 'pointer', fontSize: '9px', fontWeight: 900, padding: '2px 5px', flex: '0 0 auto' } }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
-        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
-        h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
+        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1, page: activePageIndex }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
+        h('button', { disabled: i === pageObjects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1, page: activePageIndex }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === pageObjects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === pageObjects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
 
-    var layerList = stLayerItems(doc.objects).filter(function (item) { return !!navigatorMatchIds[item.id]; }).map(function (item) {
-      var o = doc.objects.filter(function (obj) { return obj && obj.id === item.id; })[0];
+    var layerList = stLayerItems(pageObjects).filter(function (item) { return !!navigatorMatchIds[item.id]; }).map(function (item) {
+      var o = pageObjects.filter(function (obj) { return obj && obj.id === item.id; })[0];
       var text = objectSummary(o, 30);
       var selectedLayer = selectionIds.indexOf(item.id) >= 0;
       var typeLabel = o && o.type === 'text' ? (o.role === 'body' ? TT('studio.body_text', 'Body text') : o.role || 'text') : o && o.type === 'image' ? stImageFrameState(o).label : (o && o.type || 'object');
@@ -5192,9 +5817,10 @@
     if (selectedGroup.length > 1) {
       var groupSummary = stSelectionSummary(doc.objects, selectionIds);
       var groupHint = groupSummary.allLocked ? TT('studio.group_all_locked', 'All selected objects are locked. Unlock them before aligning, duplicating, or deleting.')
-        : groupSummary.lockedCount ? TT('studio.group_locked_hint', 'Locked objects stay selected but are skipped by move, align, duplicate, and delete actions.')
+        : groupSummary.lockedCount ? TT('studio.group_locked_hint', 'Locked objects stay selected but are skipped by move, align, arrange, duplicate, and delete actions.')
           : TT('studio.group_hint', 'Use Shift/Ctrl-click on the canvas to add or remove objects from this group.');
       var disabledGroupTool = function (disabled, extra) { return Object.assign({}, S.tool, extra || null, disabled ? { opacity: 0.45, cursor: 'default' } : null); };
+      var canArrangeGroup = groupSummary.unlockedCount >= 2;
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.group_selection', 'Selection') + ' - ' + selectedGroup.length + ' objects'),
         h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.text, fontSize: '10.5px', lineHeight: 1.35 } },
@@ -5214,6 +5840,17 @@
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
           layoutButton('Horizontal', 'Distribute selected objects horizontally', function () { distributeSelectedGroup('x'); }, !groupSummary.canDistribute),
           layoutButton('Vertical', 'Distribute selected objects vertically', function () { distributeSelectedGroup('y'); }, !groupSummary.canDistribute)),
+        h('div', { style: S.label }, TT('studio.arrange_selection', 'Arrange selection')),
+        h('div', { role: 'group', 'aria-label': TT('studio.arrange_selection', 'Arrange selection'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
+          layoutButton('Vertical', 'Stack selected objects vertically', function () { arrangeSelectedGroup('stack-vertical'); }, !canArrangeGroup),
+          layoutButton('Horizontal', 'Stack selected objects horizontally', function () { arrangeSelectedGroup('stack-horizontal'); }, !canArrangeGroup),
+          layoutButton('2 columns', 'Arrange selected objects in two columns', function () { arrangeSelectedGroup('two-column'); }, !canArrangeGroup),
+          layoutButton('Card grid', 'Arrange selected objects as a card grid', function () { arrangeSelectedGroup('card-grid'); }, !canArrangeGroup)),
+        h('div', { style: S.label }, TT('studio.match_size', 'Match size')),
+        h('div', { role: 'group', 'aria-label': TT('studio.match_size', 'Match size'), style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
+          layoutButton('Width', 'Make selected objects the same width', function () { matchSelectedGroup('width'); }, !canArrangeGroup),
+          layoutButton('Height', 'Make selected objects the same height', function () { matchSelectedGroup('height'); }, !canArrangeGroup),
+          layoutButton('Both', 'Make selected objects the same width and height', function () { matchSelectedGroup('size'); }, !canArrangeGroup)),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
           h('button', { style: disabledGroupTool(!groupSummary.canDuplicate), disabled: !groupSummary.canDuplicate, onClick: duplicateSelectedGroup }, 'Duplicate'),
           h('button', { style: S.tool, onClick: clearSelection }, 'Clear'),
@@ -5432,6 +6069,7 @@
       else if (k === 'a') { ev.preventDefault(); selectAllObjects(); }
       // Ctrl+S saves in-app instead of firing the browser's Save-page dialog.
       else if (k === 's') { ev.preventDefault(); saveDoc(); }
+      else if (k === 'f') { ev.preventDefault(); focusFindInput(); }
       else if (k === ']') { ev.preventDefault(); reorderSelected(1); }
       else if (k === '[') { ev.preventDefault(); reorderSelected(-1); }
     };
@@ -5518,14 +6156,18 @@
       if (cmd.id === 'view-reading') { setView('edit'); setNavigatorMode('reading'); return; }
       if (cmd.id === 'view-layers') { setView('edit'); setNavigatorMode('layers'); return; }
       if (cmd.id === 'zoom-fit') { changeCanvasZoom('fit'); return; }
+      if (cmd.id === 'zoom-selection') { zoomToSelection(); return; }
       if (cmd.id === 'zoom-100') { changeCanvasZoom('actual'); return; }
       if (cmd.id === 'select-all') { selectAllObjects(); return; }
       if (cmd.id === 'duplicate-selection') { if (selectionIds.length > 1) duplicateSelectedGroup(); else duplicateSelected(); return; }
       if (cmd.id === 'clear-selection') { clearSelection(); return; }
+      if (cmd.id === 'find-text') { focusFindInput(); return; }
       if (cmd.id.indexOf('align-') === 0) { var alignMode = cmd.id.slice(6); if (selectionIds.length > 1) alignSelectedGroup(alignMode); else alignSelected(alignMode); return; }
       if (cmd.id === 'page-width-selection') { alignSelected('page-width'); return; }
       if (cmd.id === 'distribute-x') { distributeSelectedGroup('x'); return; }
       if (cmd.id === 'distribute-y') { distributeSelectedGroup('y'); return; }
+      if (cmd.id.indexOf('arrange-') === 0) { arrangeSelectedGroup(cmd.id.slice(8)); return; }
+      if (cmd.id.indexOf('match-') === 0) { matchSelectedGroup(cmd.id.slice(6)); return; }
       if (cmd.id === 'lock-selection') { lockSelectedObjects(true); return; }
       if (cmd.id === 'unlock-selection') { lockSelectedObjects(false); return; }
       if (cmd.id === 'reading-earlier') { reorderSelected(-1); return; }
@@ -5871,26 +6513,78 @@
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             colorField(TT('studio.background', 'Background'), (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', function (hex) { dispatch({ type: 'canvas.background', fill: hex }, 'user'); }),
-            h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
+            h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
           h('div', { style: S.canvasWrap },
-            h('div', { style: S.canvasToolbar, role: 'group', 'aria-label': TT('studio.zoom_controls', 'Canvas zoom controls') },
+            h('div', { style: S.canvasToolbar, role: 'group', 'aria-label': TT('studio.canvas_controls', 'Page and canvas controls') },
+              h('div', { style: Object.assign({}, S.canvasToolbar, { justifyContent: 'flex-start', flex: '1 1 270px', minWidth: 0 }), role: 'group', 'aria-label': TT('studio.page_navigation', 'Page navigation') },
+                h('button', { style: S.hBtn, disabled: activePageIndex === 0, onClick: function () { reorderActivePage(-1); }, title: TT('studio.page_move_earlier', 'Move page earlier'), 'aria-label': TT('studio.page_move_earlier', 'Move page earlier') }, 'Up'),
+                h('button', { style: S.hBtn, disabled: activePageIndex === studioPageCount - 1, onClick: function () { reorderActivePage(1); }, title: TT('studio.page_move_later', 'Move page later'), 'aria-label': TT('studio.page_move_later', 'Move page later') }, 'Down'),
+                h('select', { value: activePageIndex, style: Object.assign({}, S.input, { width: 'auto', minWidth: '92px', maxWidth: '132px' }), 'aria-label': TT('studio.page_select', 'Select page'), onChange: function (e) { setActivePage(parseInt(e.target.value, 10)); } },
+                  Array.from({ length: studioPageCount }, function (_, idx) { return h('option', { key: 'page-' + idx, value: idx }, (doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (idx + 1)); })),
+                h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '42px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: C.text } }, (activePageIndex + 1) + ' / ' + studioPageCount),
+                h('button', { style: S.hBtn, onClick: addPageAfter, title: TT('studio.page_add', 'Add a blank page'), 'aria-label': TT('studio.page_add', 'Add a blank page') }, 'Add'),
+                h('button', { style: S.hBtn, onClick: duplicateActivePage, title: TT('studio.page_duplicate', 'Duplicate this page'), 'aria-label': TT('studio.page_duplicate', 'Duplicate this page') }, 'Duplicate'),
+                h('button', { style: S.hBtn, disabled: studioPageCount <= 1, onClick: removeActivePage, title: TT('studio.page_remove', 'Remove this page and its objects'), 'aria-label': TT('studio.page_remove', 'Remove this page and its objects') }, 'Remove')),
+              h('span', { 'aria-hidden': true, style: { width: '1px', height: '24px', background: C.border, flex: '0 0 auto' } }),
               h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('out'); }, 'aria-label': TT('studio.zoom_out', 'Zoom out') }, '-'),
               h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '48px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: C.text } }, zoomLabel),
               h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('in'); }, 'aria-label': TT('studio.zoom_in', 'Zoom in') }, '+'),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit'); }, 'aria-pressed': canvasZoom === null }, TT('studio.zoom_fit', 'Fit')),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === 1 ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('actual'); }, 'aria-pressed': canvasZoom === 1 }, '100%'),
-              h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap'))),
-            h('div', { style: S.canvasViewport, onPointerDown: clearSelection },
+              h('button', { style: Object.assign({}, S.hBtn, !selectionIds.length ? { opacity: 0.45, cursor: 'default' } : null), disabled: !selectionIds.length, onClick: zoomToSelection, title: TT('studio.zoom_selection', 'Zoom to selection'), 'aria-label': TT('studio.zoom_selection', 'Zoom to selection') }, TT('studio.zoom_selection_short', 'Selection')),
+              h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap'))),
+            h('div', { ref: canvasViewportRef, style: S.canvasViewport, onPointerDown: clearSelection },
               h('div', { style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
                 onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
                 onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp },
+                liveSelectionBounds ? h('div', {
+                  key: 'selection-bounds',
+                  role: 'group',
+                  'aria-label': TT('studio.selection_bounds', 'Multiple selection bounds'),
+                  style: {
+                    position: 'absolute',
+                    left: Math.max(0, (liveSelectionBounds.x - 6) * SCALE) + 'px',
+                    top: Math.max(0, (liveSelectionBounds.y - 6) * SCALE) + 'px',
+                    width: Math.max(8, (liveSelectionBounds.w + 12) * SCALE) + 'px',
+                    height: Math.max(8, (liveSelectionBounds.h + 12) * SCALE) + 'px',
+                    boxSizing: 'border-box',
+                    border: '2px dashed ' + C.accent,
+                    borderRadius: '6px',
+                    pointerEvents: 'none',
+                    zIndex: 9998
+                  }
+                },
+                selectionCanResize ? h('div', {
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': TT('studio.resize_selection', 'Resize selection'),
+                  title: TT('studio.resize_selection_hint', 'Resize selection; hold Shift to keep proportions'),
+                  onPointerDown: onGroupResizePointerDown,
+                  onPointerMove: onCanvasPointerMove,
+                  onPointerUp: onCanvasPointerUp,
+                  onKeyDown: onGroupResizeKeyDown,
+                  style: {
+                    position: 'absolute',
+                    right: '-8px',
+                    bottom: '-8px',
+                    width: '16px',
+                    height: '16px',
+                    boxSizing: 'border-box',
+                    background: C.accent,
+                    border: '2px solid ' + C.panel,
+                    borderRadius: '4px',
+                    cursor: 'nwse-resize',
+                    pointerEvents: 'auto',
+                    zIndex: 10000
+                  }
+                }) : null) : null,
                 snapGuides.map(function (guide, idx) {
                   return h('div', { key: 'snap-' + idx, 'aria-hidden': true, style: guide.axis === 'x'
                     ? { position: 'absolute', left: guide.value * SCALE + 'px', top: 0, width: 0, height: '100%', borderLeft: '2px dashed ' + snapGuideColor, zIndex: 9999, pointerEvents: 'none' }
                     : { position: 'absolute', left: 0, top: guide.value * SCALE + 'px', width: '100%', height: 0, borderTop: '2px dashed ' + snapGuideColor, zIndex: 9999, pointerEvents: 'none' } });
                 }),
-                doc.objects.map(function (o) { return renderObject(o, SCALE, true, {}, h); })))),
+                pageObjects.map(function (o) { return renderObject(o, SCALE, true, {}, h); })))),
           // right: reading order + properties
           h('div', { style: S.rpanel },
             h('div', { style: S.label }, '🔊 ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
@@ -5905,10 +6599,36 @@
                 return h('button', { key: filter.key, type: 'button', disabled: disabled, 'aria-pressed': active, 'aria-label': filter.label + ', ' + filter.count + ' ' + TT('studio.objects', 'Objects'), style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '4px 6px', fontSize: '10px', minHeight: '26px' }, active ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null, disabled ? { opacity: 0.45, cursor: 'default' } : null), onClick: function () { setNavigatorFilter(filter.key); } }, filter.label + ' ' + filter.count);
               })),
             h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+              h('input', { ref: findInputRef, type: 'search', value: findQuery, placeholder: TT('studio.find_text_placeholder', 'Find text in design'), 'aria-label': TT('studio.find_text', 'Find text in design'), style: Object.assign({}, S.input, { flex: '1 1 auto' }),
+                onKeyDown: function (e) {
+                  e.stopPropagation();
+                  if (e.key === 'Enter') { e.preventDefault(); stepFindResult(e.shiftKey ? -1 : 1); }
+                  else if (e.key === 'Escape') { e.preventDefault(); setFindQuery(''); setFindResultIndex(0); }
+                },
+                onChange: function (e) { setFindQuery(e.target.value); setFindResultIndex(0); } }),
+              h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px', minWidth: '28px' }), onClick: function () { stepFindResult(-1); }, title: TT('studio.find_previous', 'Previous text match'), 'aria-label': TT('studio.find_previous', 'Previous text match') }, '<'),
+              h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px', minWidth: '28px' }), onClick: function () { stepFindResult(1); }, title: TT('studio.find_next', 'Next text match'), 'aria-label': TT('studio.find_next', 'Next text match') }, '>'),
+              h('button', { type: 'button', 'aria-expanded': replaceOpen, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }, replaceOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setReplaceOpen(!replaceOpen); }, title: TT('studio.replace_toggle', 'Show replace controls') }, TT('studio.replace', 'Replace'))),
+            findQuery ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } },
+              findMatches.length ? findTotalMatches + ' ' + TT('studio.find_matches', findTotalMatches === 1 ? 'match' : 'matches') + ' in ' + findMatches.length + ' ' + TT('studio.find_text_blocks', findMatches.length === 1 ? 'text block' : 'text blocks') + ' - ' + (activeFindIndex + 1) + '/' + findMatches.length : TT('studio.find_no_matches', 'No text matches.')) : null,
+            findMatches.length ? h('div', { role: 'listbox', 'aria-label': TT('studio.find_results', 'Text find results'), style: { display: 'grid', gap: '3px', maxHeight: '132px', overflow: 'auto', padding: '3px 0' } },
+              findMatches.slice(0, 12).map(function (match, idx) {
+                var active = idx === activeFindIndex;
+                return h('button', { key: match.id, type: 'button', role: 'option', 'aria-selected': active, onClick: function () { selectFindResult(idx); }, style: { width: '100%', textAlign: 'left', border: '1px solid ' + (active ? C.accent : C.border), background: active ? C.selectedBg : C.panelAlt, color: C.text, borderRadius: '6px', cursor: 'pointer', padding: '4px 6px', overflow: 'hidden' } },
+                  h('strong', { style: { display: 'block', fontSize: '10px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, (idx + 1) + '. ' + match.label),
+                  h('span', { style: { display: 'block', marginTop: '2px', fontSize: '9.5px', color: C.soft, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, match.snippet + (match.count > 1 ? ' (' + match.count + ')' : '')));
+              })) : null,
+            findMatches.length > 12 ? h('div', { style: { fontSize: '9.5px', color: C.soft } }, '+' + (findMatches.length - 12) + ' ' + TT('studio.find_more', 'more text blocks')) : null,
+            replaceOpen ? h('div', { style: { display: 'grid', gap: '4px', padding: '5px 0', borderTop: '1px solid ' + C.border, borderBottom: '1px solid ' + C.border } },
+              h('input', { type: 'text', value: replaceQuery, placeholder: TT('studio.replace_placeholder', 'Replace with'), 'aria-label': TT('studio.replace_with', 'Replace with'), style: S.input, onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); replaceCurrentText(); } }, onChange: function (e) { setReplaceQuery(e.target.value); } }),
+              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '1 1 130px', fontSize: '10px' }), onClick: replaceCurrentText, title: TT('studio.replace_current_hint', 'Replace the selected text block; this is undoable') }, TT('studio.replace_current', 'Replace selected')),
+                h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '1 1 100px', fontSize: '10px' }), onClick: replaceAllText, title: TT('studio.replace_all_hint', 'Replace all editable matches; this is undoable') }, TT('studio.replace_all', 'Replace all')))) : null,
+            h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
               h('input', { value: navigatorSearch, placeholder: TT('studio.navigator_search_placeholder', 'Search objects'), 'aria-label': TT('studio.navigator_search', 'Search objects'), style: Object.assign({}, S.input, { flex: '1 1 auto' }),
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setNavigatorSearch(e.target.value); } }),
               navigatorQuery ? h('button', { type: 'button', style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }), onClick: function () { setNavigatorSearch(''); } }, TT('studio.clear', 'Clear')) : null),
-            (navigatorQuery || navigatorFilter !== 'all') ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorObjects.length + ' / ' + doc.objects.length + ' ' + TT('studio.objects', 'Objects') + (navigatorFilter !== 'all' ? ' - ' + navigatorFilters.filter(function (f) { return f.key === navigatorFilter; }).map(function (f) { return f.label; })[0] : '')) : null,
+            (navigatorQuery || navigatorFilter !== 'all') ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorObjects.length + ' / ' + pageObjects.length + ' ' + TT('studio.objects', 'Objects') + (navigatorFilter !== 'all' ? ' - ' + navigatorFilters.filter(function (f) { return f.key === navigatorFilter; }).map(function (f) { return f.label; })[0] : '')) : null,
             readingOrderAssistant,
             h('div', { style: S.readingList }, visibleNavigatorList.length ? visibleNavigatorList : h('p', { style: { margin: 0, padding: '4px', fontSize: '11px', color: C.soft } }, TT('studio.navigator_empty', 'No objects match this search.'))),
             propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
@@ -6027,6 +6747,8 @@
   AlloStudio.stStyleKits = stStyleKits;
   AlloStudio.stStyleKitPatch = stStyleKitPatch;
   AlloStudio.stLayerItems = stLayerItems;
+  AlloStudio.stFindTextMatches = stFindTextMatches;
+  AlloStudio.stReplaceTextInObjects = stReplaceTextInObjects;
   AlloStudio.stObjectNavigatorSearchText = stObjectNavigatorSearchText;
   AlloStudio.stFilterObjectNavigatorObjects = stFilterObjectNavigatorObjects;
   AlloStudio.stObjectNavigatorFilterCounts = stObjectNavigatorFilterCounts;
@@ -6035,10 +6757,15 @@
   AlloStudio.stSelectionBounds = stSelectionBounds;
   AlloStudio.stSelectionSummary = stSelectionSummary;
   AlloStudio.stAlignFramesAsGroup = stAlignFramesAsGroup;
+  AlloStudio.stMatchFramesAsGroup = stMatchFramesAsGroup;
   AlloStudio.stDistributeFramesAsGroup = stDistributeFramesAsGroup;
+  AlloStudio.stArrangeFramesAsGroup = stArrangeFramesAsGroup;
   AlloStudio.stMoveFramesAsGroup = stMoveFramesAsGroup;
+  AlloStudio.stDragFramesAsGroup = stDragFramesAsGroup;
+  AlloStudio.stResizeFramesAsGroup = stResizeFramesAsGroup;
   AlloStudio.stStudioLayout = stStudioLayout;
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
+  AlloStudio.stSelectionZoomScale = stSelectionZoomScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
   AlloStudio.stShortcutList = stShortcutList;
   AlloStudio.stCommandPaletteItems = stCommandPaletteItems;
@@ -6075,6 +6802,10 @@
   AlloStudio.stReadRecentProjects = stReadRecentProjects;
   AlloStudio.stSaveRecentProject = stSaveRecentProject;
   AlloStudio.stSavePortfolioArtifact = stSavePortfolioArtifact;
+  AlloStudio.stExportPptxSpec = stExportPptxSpec;
+  AlloStudio.stRenderPptx = stRenderPptx;
+  AlloStudio.stPptxInches = stPptxInches;
+  AlloStudio.stPptxLayout = stPptxLayout;
   AlloStudio.stObjectPage = stObjectPage;
   AlloStudio.stScenePageCount = stScenePageCount;
   AlloStudio.stObjectsOnPage = stObjectsOnPage;

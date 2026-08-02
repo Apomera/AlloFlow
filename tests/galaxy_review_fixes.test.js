@@ -262,6 +262,41 @@ describe('galaxy visuals', () => {
     }
   });
 
+
+  it('uses morphology-appropriate elliptical labels and controls', () => {
+    const html = renderTool('galaxy', { galaxy: { galaxyType: 'elliptical', observeMode: 'visible', galaxyScienceOverlay: true } });
+    expect(html).toContain('Old starlight + smooth profile');
+    expect(html).toContain('Stellar Body');
+    expect(html).not.toContain('absorbs visible starlight');
+    expect(html).not.toContain('trace recent star formation');
+  });
+
+  it.each(GALAXY_PATHS)('%s gives ellipticals a restrained, gas-poor visual profile', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    expect(source).toContain('pointScale: 0.48');
+    expect(source).toContain('sparkleDensity: 0');
+    expect(source).toContain('uDiffractionScale: { value: morphologyVisual.diffractionScale }');
+    expect(source).toContain("* uDiffractionScale;'");
+    expect(source).toContain('uPointScale: { value: morphologyVisual.pointScale }');
+    expect(source).toContain('uStellarOpacity: { value: morphologyVisual.stellarOpacity }');
+    expect(source).toContain('morphologyVisual.microStarOpacity');
+    expect(source).toContain('morphologyVisual.bulgeOpacity');
+    expect(source).toContain('morphologyVisual.bloomStrength');
+    expect(source).toContain('morphologyVisual.exposureBias');
+    expect(source).toContain("atmosphereGroup.visible = galaxyType !== 'elliptical'");
+    expect(source).toContain("coreFlare.visible = galaxyType !== 'elliptical'");
+    expect(source).toContain("(galaxyType === 'elliptical' ? [] : [0, 1]).forEach");
+
+    const diffuse = source.slice(source.indexOf('var diskGrad ='), source.indexOf('var glowCount ='));
+    expect(diffuse).toContain("if (galaxyType !== 'elliptical')");
+    expect(diffuse).toContain('diskSheen = new THREE.Sprite(diskSheenMat)');
+    expect(diffuse).not.toContain("gType.arms || (galaxyType === 'elliptical' ? 2 : 3)");
+
+    const dust = source.slice(source.indexOf('// â”€â”€ Dust lanes'), source.indexOf('var gasGroup ='));
+    const gas = source.slice(source.indexOf("var gasGroup = new THREE.Group()"), source.indexOf('// â”€â”€ Layered dust volume'));
+    expect(source.slice(source.indexOf("var dustGroup = new THREE.Group()"), source.indexOf('var gasGroup ='))).toContain("if (galaxyType === 'elliptical') return");
+    expect(source.slice(source.indexOf("var gasGroup = new THREE.Group()"), source.indexOf('var atmosphereGroup ='))).toContain("if (galaxyType === 'elliptical') return");
+  });
   it.each(GALAXY_PATHS)('%s draws dust after the star field so lanes can darken it', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     const dust = source.slice(source.indexOf('var dustMat = new THREE.PointsMaterial'), source.indexOf('// ── Volumetric Emission Gas Clouds ──'));

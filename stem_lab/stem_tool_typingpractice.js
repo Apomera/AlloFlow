@@ -337,8 +337,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   var DEFAULT_STATE = {
     view: 'menu',              // 'menu' | 'drill' | 'summary' | 'progress' | 'settings' | 'passage-setup'
     currentDrill: null,        // drill id currently active (e.g. 'home-row')
+    interruptedDrill: null,     // private partial draft available for later resume
     sessions: [],              // array of completed session records
     personalBest: {},          // { drillId: { wpm, accuracy, date } }
+    keyboardLayout: 'qwerty-us', // selectable cue profile for the on-screen keyboard
     accommodations: {
       dyslexiaFont: false,
       largeKeys: false,
@@ -486,6 +488,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
   // students who want more have Custom Drill for arbitrary text.
   var MAX_PASSAGE_LIBRARY = 12;
+  var MAX_BACKUP_FILE_CHARS = 5000000;
+
+  // Validate backup collections before they are copied into React state. The
+  // validator is intentionally additive so older backups can omit newer keys,
+  // while malformed or oversized collections fail before replacement.
+  function typingPracticeValidateBackupState(backupState) {
+    if (!backupState || typeof backupState !== 'object' || Array.isArray(backupState)) {
+      throw new Error('Backup state must be an object.');
+    }
+    function objectCollection(key, max, label) {
+      var value = backupState[key];
+      if (value === undefined) return 0;
+      if (!Array.isArray(value)) throw new Error(label + ' must be an array.');
+      if (value.length > max) throw new Error(label + ' exceeds the supported limit of ' + max + ' entries.');
+      for (var i = 0; i < value.length; i++) {
+        if (!value[i] || typeof value[i] !== 'object' || Array.isArray(value[i])) {
+          throw new Error(label + ' contains an invalid entry.');
+        }
+      }
+      return value.length;
+    }
+    ['accommodations', 'personalBest', 'lifetime', 'passagePrefs', 'battle'].forEach(function(key) {
+      if (backupState[key] !== undefined && (!backupState[key] || typeof backupState[key] !== 'object' || Array.isArray(backupState[key]))) {
+        throw new Error(key + ' must be an object.');
+      }
+    });
+    if (backupState.keyboardLayout !== undefined && !Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, backupState.keyboardLayout)) {
+      throw new Error('Unknown keyboard layout.');
+    }
+    if (backupState.interruptedDrill !== undefined && backupState.interruptedDrill !== null) {
+      var draft = backupState.interruptedDrill;
+      if (!draft || typeof draft !== 'object' || Array.isArray(draft)) throw new Error('Interrupted drill draft must be an object or null.');
+      if (draft.drillId !== undefined && (typeof draft.drillId !== 'string' || !DRILLS[draft.drillId])) throw new Error('Interrupted drill draft uses an unknown drill.');
+      if (draft.typed !== undefined && typeof draft.typed !== 'string') throw new Error('Interrupted drill draft text is invalid.');
+      if (draft.target !== undefined && typeof draft.target !== 'string') throw new Error('Interrupted drill draft target is invalid.');
+      if ((draft.typed && draft.typed.length > 100000) || (draft.target && draft.target.length > 100000)) throw new Error('Interrupted drill draft is too large.');
+    }
+    return {
+      sessions: objectCollection('sessions', 200, 'Sessions'),
+      passages: objectCollection('aiPassageLibrary', MAX_PASSAGE_LIBRARY, 'Saved passages'),
+      customDrills: objectCollection('customDrillLibrary', MAX_CUSTOM_LIBRARY, 'Custom drills'),
+      visualImages: objectCollection('visualGallery', 3, 'Visual gallery')
+    };
+  }
+
 
   // ── Battle Mode (Solo Cascade) — Phase 1 ──
   // Curated word bank, ~80 entries, mixed lengths 4-9 chars, common
@@ -2352,11 +2399,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     RI: '#34d399', RM: '#fbbf24', RR: '#fb923c', RP: '#f87171'
   };
 
-  function findKeyMeta(char) {
+  // Keyboard cue profiles keep the motor-planning surface honest for learners
+  // who type on a non-US layout. The key map intentionally models the primary
+  // legends and finger zones; modifier behaviour remains native to the device.
+  function typingPracticeLayoutRows(textRows, fingerRows) {
+    return textRows.map(function(row, ri) {
+      return row.map(function(k, ci) {
+        return { k: k, f: fingerRows[ri][ci] || (ci < row.length / 2 ? 'LI' : 'RI') };
+      });
+    }).concat([[{ k: ' ', f: 'T', label: 'space', wide: 6 }]]);
+  }
+  var KEYBOARD_LAYOUTS = {
+    'qwerty-us': {
+      id: 'qwerty-us', label: 'US QWERTY', home: ['a','s','d','f','j','k','l',';'], rows: KB_LAYOUT
+    },
+    'qwertz-de': {
+      id: 'qwertz-de', label: 'German QWERTZ', home: ['a','s','d','f','j','k','l','ö'],
+      rows: typingPracticeLayoutRows(
+        [['^','1','2','3','4','5','6','7','8','9','0','ß','´'], ['q','w','e','r','t','z','u','i','o','p','ü','+'], ['a','s','d','f','g','h','j','k','l','ö','ä'], ['y','x','c','v','b','n','m',',','.','-']],
+        [['LP','LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP']]
+      )
+    },
+    'azerty-fr': {
+      id: 'azerty-fr', label: 'French AZERTY', home: ['q','s','d','f','j','k','l','m'],
+      rows: typingPracticeLayoutRows(
+        [['²','&','é','"',"'",'(','-','è','_','ç','à',')','='], ['a','z','e','r','t','y','u','i','o','p','^',String.fromCharCode(36)], ['q','s','d','f','g','h','j','k','l','m','ù','*'], ['w','x','c','v','b','n',',',';',';',':','!']],
+        [['LP','LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP'], ['LP','LR','LM','LI','LI','RI','RM','RR','RP','RP','RP']]
+      )
+    },
+    'dvorak': {
+      id: 'dvorak', label: 'Dvorak', home: ['a','o','e','u','h','t','n','s'],
+      rows: typingPracticeLayoutRows(
+        [["'",',','.','p','y','f','g','c','r','l','/','=',String.fromCharCode(92)], ['a','o','e','u','i','d','h','t','n','s','-'], [';','q','j','k','x','b','m','w','v','z']],
+        [['LP','LR','LM','LI','LI','RI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP'], ['LP','LP','LR','LM','LI','LI','RI','RI','RM','RR']]
+      )
+    },
+    'colemak': {
+      id: 'colemak', label: 'Colemak', home: ['a','r','s','t','h','n','e','i'],
+      rows: typingPracticeLayoutRows(
+        [[String.fromCharCode(96),'1','2','3','4','5','6','7','8','9','0','-','='], ['q','w','f','p','g','j','l','u','y',';','[',']'], ['a','r','s','t','d','h','n','e','i','o',"'"], ['z','x','c','v','b','k','m',',','.','/']],
+        [['LP','LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP','RP','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR','RP'], ['LP','LR','LM','LI','LI','RI','RI','RM','RR']]
+      )
+    }
+  };
+  var KEYBOARD_LAYOUT_OPTIONS = Object.keys(KEYBOARD_LAYOUTS).map(function(id) { return KEYBOARD_LAYOUTS[id]; });
+
+  function typingPracticeKeyboardLayout(layoutId) {
+    var id = String(layoutId || 'qwerty-us').toLowerCase();
+    return KEYBOARD_LAYOUTS[id] || KEYBOARD_LAYOUTS['qwerty-us'];
+  }
+
+  function findKeyMeta(char, layoutId) {
     var lower = (char || '').toLowerCase();
-    for (var r = 0; r < KB_LAYOUT.length; r++) {
-      for (var c = 0; c < KB_LAYOUT[r].length; c++) {
-        if (KB_LAYOUT[r][c].k === lower) return KB_LAYOUT[r][c];
+    var rows = typingPracticeKeyboardLayout(layoutId).rows;
+    for (var r = 0; r < rows.length; r++) {
+      for (var c = 0; c < rows[r].length; c++) {
+        if (rows[r][c].k === lower) return rows[r][c];
       }
     }
     return null;
@@ -4109,6 +4207,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-calendar-day-inactive { background: Canvas !important; border-color: CanvasText !important; }',
       '  .tp-root .tp-favorite-toggle { border: 1px solid ButtonText !important; }',
       '  .tp-root .tp-battle-target, .tp-root .tp-stack-col { border-color: CanvasText !important; }',
+      '  .tp-root { background: Canvas !important; background-image: none !important; color: CanvasText !important; }',
+      '  .tp-root button, .tp-root input, .tp-root select, .tp-root textarea { background: ButtonFace !important; color: ButtonText !important; border-color: ButtonText !important; box-shadow: none !important; }',
+      '  .tp-root button:hover:not(:disabled), .tp-root button:focus-visible, .tp-root input:focus-visible, .tp-root select:focus-visible, .tp-root textarea:focus-visible { background: Highlight !important; color: HighlightText !important; }',
+      '  .tp-root button:disabled, .tp-root [aria-disabled="true"] { color: GrayText !important; border-color: GrayText !important; }',
+      '  .tp-root [role="progressbar"] { background: Canvas !important; border: 1px solid CanvasText !important; }',
       '  .tp-root .tp-battle-target:focus-within { outline: 3px solid Highlight !important; }',
       '}',
 
@@ -4258,6 +4361,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // visual and assistive-technology users to understand what happened.
         var mistakeFeedbackTuple = useState(null);
         var mistakeFeedback = mistakeFeedbackTuple[0], setMistakeFeedback = mistakeFeedbackTuple[1];
+        // Keep a separate throttled live status so repeated wrong keys do not
+        // create a noisy announcement stream while the visible feedback remains
+        // available through aria-errormessage.
+        var mistakeLiveTuple = useState('');
+        var mistakeLiveText = mistakeLiveTuple[0], setMistakeLiveText = mistakeLiveTuple[1];
 
         var nowTickTuple = useState(0);  // forces re-render for live WPM clock
         var _nowTick = nowTickTuple[0], setNowTick = nowTickTuple[1];
@@ -4346,7 +4454,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Announcer for screen readers. Setting this string renders into an
         // aria-live region so assistive tech reads milestones aloud.
         var announceTuple = useState('');
-        var announceText = announceTuple[0], setAnnounceText = announceTuple[1];
+        var announceText = announceTuple[0], setAnnounceTextState = announceTuple[1];
+        var announceNonceTuple = useState(0);
+        var announceNonce = announceNonceTuple[0], setAnnounceNonce = announceNonceTuple[1];
+        // Remount the live node for every announcement, including repeated
+        // text, so assistive technology does not suppress an identical status.
+        var setAnnounceText = function(nextText) {
+          setAnnounceTextState(nextText);
+          setAnnounceNonce(function(previous) { return previous + 1; });
+        };
         // Avoid interrupting a learner for every rapid repeat of the same
         // mistake. A correct key or a different mistake resets this throttle.
         var mistakeAnnouncementRef = useRef({ signature: '', at: 0 });
@@ -4455,6 +4571,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         targetStr = typingPracticeNormalizeText(targetStr);
+        // A private interrupted draft stores the exact target so a custom or
+        // generated passage cannot silently change while a learner is away.
+        var interruptedDraft = state.interruptedDrill && typeof state.interruptedDrill === 'object' && !Array.isArray(state.interruptedDrill)
+          ? state.interruptedDrill : null;
+        var interruptedDraftMatches = function(draft, drillId, runId) {
+          return !!(draft && draft.drillId === drillId && Number(draft.drillRunId) === Number(runId) && typeof draft.target === 'string' && typeof draft.typed === 'string');
+        };
+        if (interruptedDraftMatches(interruptedDraft, activeDrill && activeDrill.id, state.drillRunId)) {
+          targetStr = typingPracticeNormalizeText(interruptedDraft.target);
+        }
         // Keep the translated interface language separate from the target
         // passage language. A saved Spanish passage must not make menus,
         // settings, or English instructions sound Spanish to a screen reader.
@@ -4468,21 +4594,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var typedLength = typedChars.length;
         var drillComplete = state.view === 'drill' && targetLength > 0 && typedLength >= targetLength;
 
+        // Keep unfinished work private and resumable. Checkpoints never enter
+        // sessions, personal bests, mastery, or comparative progress.
+        var saveInterruptedDrill = function(reason) {
+          if (state.view !== 'drill' || drillComplete || !activeDrill || !targetStr || typedLength < 1 || isWarmup) return false;
+          var pausedTotal = pausedMs + (pauseStartedAt ? Math.max(0, Date.now() - pauseStartedAt) : 0);
+          var methods = inputMethodCountsRef.current || {};
+          upd('interruptedDrill', {
+            drillId: activeDrill.id,
+            drillRunId: state.drillRunId || 0,
+            typed: typed,
+            target: targetStr,
+            errorCount: Math.max(0, Number(errorCount) || 0),
+            errorChars: Object.assign({}, errorChars),
+            startedAt: Number(startTime) || Date.now(),
+            pausedMs: Math.max(0, pausedTotal),
+            inputMethods: Object.assign({}, methods),
+            savedAt: new Date().toISOString(),
+            reason: reason || 'autosave'
+          });
+          return true;
+        };
+
         // ── Reset drill state when entering the drill view with a new drill ──
         useEffect(function() {
           if (state.view === 'drill') {
-            setTyped('');
-            setStartTime(null);
-            setErrorCount(0);
-            setErrorChars({});
+            var resumeDraft = interruptedDraftMatches(state.interruptedDrill, state.currentDrill, state.drillRunId) ? state.interruptedDrill : null;
+            var resumedTyped = resumeDraft ? typingPracticeNormalizeText(resumeDraft.typed) : '';
+            setTyped(resumedTyped);
+            setStartTime(resumeDraft && Number(resumeDraft.startedAt) > 0 ? Number(resumeDraft.startedAt) : null);
+            setErrorCount(resumeDraft ? Math.max(0, Number(resumeDraft.errorCount) || 0) : 0);
+            setErrorChars(resumeDraft && resumeDraft.errorChars && typeof resumeDraft.errorChars === 'object' ? Object.assign({}, resumeDraft.errorChars) : {});
             setLastWasWrong(false);
             setMistakeFeedback(null);
             setPaused(false);
-            setPausedMs(0);
+            var resumePausedMs = resumeDraft ? Math.max(0, Number(resumeDraft.pausedMs) || 0) : 0;
+            if (resumeDraft && resumeDraft.savedAt) {
+              var draftSavedAt = Date.parse(resumeDraft.savedAt);
+              if (Number.isFinite(draftSavedAt)) resumePausedMs += Math.max(0, Date.now() - draftSavedAt);
+            }
+            setPausedMs(resumePausedMs);
             setPauseStartedAt(null);
             setWordPulse({ start: -1, end: -1, key: 0 });
             setStreak(0);
-            setAnnounceText('');
+            if (resumeDraft) setAnnounceText('Saved typing draft restored. Continue when you are ready.');
+            else setAnnounceText('');
+            setMistakeLiveText('');
             mistakeAnnouncementRef.current = { signature: '', at: 0 };
             progressMilestoneRef.current = 0;
             previousSightReadRef.current = 0;
@@ -4493,14 +4650,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             keystrokeTimesRef.current = [];
             pendingInputKindRef.current = 'text-input';
             skipComposedInputRef.current = '';
-            inputMethodCountsRef.current = { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 };
+            inputMethodCountsRef.current = resumeDraft && resumeDraft.inputMethods && typeof resumeDraft.inputMethods === 'object'
+              ? Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 }, resumeDraft.inputMethods)
+              : { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 };
             // Clear any stale note draft from a prior summary
             setNoteDraft('');
             setNoteSaved(false);
             // Kick off sight-read countdown if accommodation is enabled.
             // Keystroke handler will reject input while sightReadLeft > 0.
             var sr = state.accommodations && state.accommodations.sightReadSeconds;
-            setSightReadLeft(sr ? sr : 0);
+            setSightReadLeft(resumeDraft ? 0 : (sr ? sr : 0));
             // Focus the capture surface so keystrokes flow in
             setTimeout(function() {
               if (captureRef.current && captureRef.current.focus) captureRef.current.focus();
@@ -4508,6 +4667,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
         // eslint-disable-next-line
         }, [state.view, state.currentDrill]);
+
+        // Debounced progress save covers reloads, tab closes, and device
+        // interruptions without writing persistent state on every keystroke.
+        useEffect(function() {
+          if (state.view !== 'drill' || drillComplete || isWarmup || typedLength < 1 || !startTime) return;
+          var timer = setTimeout(function() { saveInterruptedDrill('autosave'); }, 900);
+          return function() { clearTimeout(timer); };
+        // eslint-disable-next-line
+        }, [state.view, state.currentDrill, state.drillRunId, typedLength, paused, startTime, drillComplete]);
 
         // ── Live clock: tick rapidly during drill so WPM + pace beat stay smooth ──
         // Move focus to the newly rendered view so keyboard and screen-reader
@@ -4681,6 +4849,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (!drillComplete || !startTime) return;
           if (completionSavedRef.current) return;
           completionSavedRef.current = true;
+          // A completed session supersedes any partial draft for this drill.
+          upd('interruptedDrill', null);
           var endMs = Date.now();
           var inputContext = typingPracticeInputContext(inputMethodCountsRef.current);
 
@@ -4691,12 +4861,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var wmActiveMs = Math.max(endMs - startTime - wmPausedTotal, 1000);
             var wmMinutes = wmActiveMs / 60000;
             var wmWpm = Math.round((typedLength / 5) / wmMinutes);
+            var wmMetric = typingPracticeComputeMetric(typedLength, wmActiveMs, activeTargetLanguage, targetStr);
             var wmTotalKs = typedLength + errorCount;
             var wmAcc = wmTotalKs > 0 ? Math.round((typedLength / wmTotalKs) * 100) : 100;
             setLastSummary({
               drillId: activeDrill.id,
               drillName: activeDrill.name,
               wpm: wmWpm,
+              metricValue: wmMetric.value,
+              metricUnit: wmMetric.unit,
+              metricLabel: wmMetric.label,
+              wordCount: wmMetric.wordCount,
+              language: wmMetric.language,
               accuracy: wmAcc,
               durationSec: Math.round(wmActiveMs / 1000),
               errors: errorCount,
@@ -4706,12 +4882,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               inputMethods: inputContext.inputMethods,
               primaryInputMethod: inputContext.primaryInputMethod,
               inputEventCounts: inputContext.inputEventCounts,
+              inputMeasurementComparable: inputContext.measurementComparable,
+              metricComparable: inputContext.measurementComparable && wmMetric.unit === 'WPM',
               measurementComparable: inputContext.measurementComparable,
-              measurementNote: 'Input method detected for this warmup. Warmups are not saved or included in performance comparisons.',
+              measurementNote: 'Input method detected for this warmup. Warmups are not saved or included in performance comparisons.' + (wmMetric.unit === 'CPM' ? ' Character-rate metrics use CPM and are excluded from WPM comparisons.' : ''),
               accommodationsUsed: []
             });
-            setAnnounceText('Warmup complete. This session was not saved. ' + wmWpm +
-              ' words per minute at ' + wmAcc + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Warmup complete. This session was not saved. ' + wmMetric.value +
+              ' ' + wmMetric.label + ' at ' + wmAcc + ' percent accuracy. Session summary ready.');
             upd('view', 'summary');
             return;
           }
@@ -4724,6 +4902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var activeMs = Math.max(endMs - startTime - pausedTotal, 1000); // 1s minimum
           var minutes = activeMs / 60000;
           var wpm = Math.round((typedLength / 5) / minutes);
+          var sessionMetric = typingPracticeComputeMetric(typedLength, activeMs, activeTargetLanguage, targetStr);
           var totalKeystrokes = typedLength + errorCount;
           var accuracy = totalKeystrokes > 0 ? Math.round((typedLength / totalKeystrokes) * 100) : 100;
           // Compute 10-second-bucket pace (chars-per-10s) for intra-session
@@ -4741,6 +4920,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             drillId: activeDrill.id,
             drillName: activeDrill.name,
             wpm: wpm,
+            metricValue: sessionMetric.value,
+            metricUnit: sessionMetric.unit,
+            metricLabel: sessionMetric.label,
+            wordCount: sessionMetric.wordCount,
+            language: sessionMetric.language,
             accuracy: accuracy,
             durationSec: Math.round(activeMs / 1000),  // active time excludes paused breaks
             pausedSec: Math.round(pausedTotal / 1000),
@@ -4752,10 +4936,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             inputMethods: inputContext.inputMethods,
             primaryInputMethod: inputContext.primaryInputMethod,
             inputEventCounts: inputContext.inputEventCounts,
+            inputMeasurementComparable: inputContext.measurementComparable,
+            metricComparable: inputContext.measurementComparable && sessionMetric.unit === 'WPM',
             measurementComparable: inputContext.measurementComparable,
-            measurementNote: inputContext.measurementNote,
+            measurementNote: sessionMetric.unit === 'CPM'
+              ? inputContext.measurementNote + (inputContext.measurementNote ? ' ' : '') + 'Character-rate metrics use CPM and are excluded from WPM comparisons.'
+              : inputContext.measurementNote,
             accommodationsUsed: Object.keys(state.accommodations).filter(function(k) { return state.accommodations[k] === true || (state.accommodations[k] && state.accommodations[k] !== false); })
           };
+
+          var metricText = (summary.metricValue == null ? summary.wpm : summary.metricValue) + ' ' + (summary.metricLabel || (summary.metricUnit === 'CPM' ? 'characters per minute' : 'words per minute'));
 
           // Persist session, capped at MAX_SESSIONS most recent.
           // Also track cumulative lifetime totals that don't decay with capping
@@ -4781,7 +4971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var nextUpdates = { sessions: sessions, lifetime: lifetime, aggregateErrors: aggregateErrors };
 
           // Set baseline if first-ever session
-          if (summary.measurementComparable && !state.baseline) {
+          if (summary.metricComparable && !state.baseline) {
             nextUpdates.baseline = { wpm: wpm, accuracy: accuracy, date: summary.date, drillId: activeDrill.id };
           }
 
@@ -4789,20 +4979,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var pb = Object.assign({}, state.personalBest || {});
           var prev = pb[activeDrill.id];
           var isNewBest = false;
-          if (summary.measurementComparable && (!prev || wpm > prev.wpm || (wpm === prev.wpm && accuracy > prev.accuracy))) {
+          if (summary.metricComparable && (!prev || wpm > prev.wpm || (wpm === prev.wpm && accuracy > prev.accuracy))) {
             pb[activeDrill.id] = { wpm: wpm, accuracy: accuracy, date: summary.date };
             nextUpdates.personalBest = pb;
             isNewBest = !!prev;
           }
 
           summary.isNewBest = isNewBest;
-          summary.isBaseline = summary.measurementComparable && !state.baseline;
+          summary.isBaseline = summary.metricComparable && !state.baseline;
 
           // ── IEP goal met tracking ──
           // When both WPM and accuracy thresholds from the clinician-set IEP
           // goal are met, flag the session. Also tag whether this is the
           // FIRST time the student has ever met the goal — dignified milestone.
-          if (summary.measurementComparable && state.iepGoal && state.iepGoal.targetWpm && state.iepGoal.targetAccuracy) {
+          if (summary.metricComparable && state.iepGoal && state.iepGoal.targetWpm && state.iepGoal.targetAccuracy) {
             var metNow = wpm >= state.iepGoal.targetWpm && accuracy >= state.iepGoal.targetAccuracy;
             if (metNow) {
               summary.goalMet = true;
@@ -4821,7 +5011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // + there's a next tier to advance to. Passage (tier 7) is terminal
           // for mastery but doesn't gate anything.
           var maxAdvanceableTier = 6; // above symbols tier; passage is terminal
-          if (summary.measurementComparable && activeDrill.masteryWpm && activeDrill.masteryAcc &&
+          if (summary.metricComparable && activeDrill.masteryWpm && activeDrill.masteryAcc &&
               wpm >= activeDrill.masteryWpm && accuracy >= activeDrill.masteryAcc &&
               state.masteryLevel === activeDrill.tier && activeDrill.tier <= maxAdvanceableTier) {
             nextUpdates.masteryLevel = state.masteryLevel + 1;
@@ -4887,7 +5077,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             addToast(_mToast);
           }
           if (summary.measurementComparable === false) {
-            setAnnounceText('Assisted practice complete. Results were saved for practice history but excluded from baseline, personal best, mastery, and IEP goal comparisons. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Assisted practice complete. Results were saved for practice history but excluded from baseline, personal best, mastery, and IEP goal comparisons. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
+          } else if (summary.metricComparable === false) {
+            setAnnounceText('Character-rate practice complete. Results were saved with ' + metricText + ' and excluded from WPM baseline, personal-best, mastery, and IEP-goal comparisons. ' + accuracy + ' percent accuracy. Session summary ready.');
           } else if (masteryAdvanced) {
             var _drillName = DRILLS[activeDrill.id].name;
             var _masteryToast;
@@ -4898,15 +5090,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             else if (_tm === 'neutral')   _masteryToast = 'Mastery tier advanced: ' + _drillName + '.';
             else                          _masteryToast = '🌟 Mastery tier advanced! ' + _drillName + ' cleared.';
             addToast(_masteryToast);
-            setAnnounceText('Mastery tier advanced. ' + DRILLS[activeDrill.id].name + ' cleared. New tier: ' + nextUpdates.masteryLevel + ' of 7. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Mastery tier advanced. ' + DRILLS[activeDrill.id].name + ' cleared. New tier: ' + nextUpdates.masteryLevel + ' of 7. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
           } else if (isNewBest) {
-            setAnnounceText('New personal best on ' + activeDrill.name + '. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('New personal best on ' + activeDrill.name + '. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
           } else if (summary.isBaseline) {
-            setAnnounceText('Baseline session saved. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Baseline session saved. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
           } else if (summary.goalMet) {
-            setAnnounceText('Goal met on ' + activeDrill.name + '. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Goal met on ' + activeDrill.name + '. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
           } else {
-            setAnnounceText('Session complete on ' + activeDrill.name + '. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+            setAnnounceText('Session complete on ' + activeDrill.name + '. ' + metricText + ' at ' + accuracy + ' percent accuracy. Session summary ready.');
           }
         // eslint-disable-next-line
         }, [drillComplete]);
@@ -4985,10 +5177,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
 
           return askTypingPracticeConfirmation(
-            'Exit this drill? Your current typing will not be saved.',
+            isWarmup ? 'Exit this warmup? Nothing will be saved.' : 'Exit this drill? Your current typing will be saved as a private resume draft, but it will not count as a completed session.',
             {
-              title: 'Exit without saving?',
-              confirmText: 'Exit without saving',
+              title: isWarmup ? 'Exit warmup?' : 'Save and exit?',
+              confirmText: isWarmup ? 'Exit without saving' : 'Save and exit',
               cancelText: 'Keep practicing'
             }
           ).then(function(confirmed) {
@@ -5011,6 +5203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
 
             if (!isWarmup) {
+              saveInterruptedDrill('exit');
               var lt = state.lifetime || {};
               upd('lifetime', Object.assign({}, lt, {
                 abandonments: (lt.abandonments || 0) + 1
@@ -5019,14 +5212,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var tm = state.theme || 'default';
             var toast;
             if (isWarmup) toast = 'Warmup exited. Nothing was saved.';
-            else if (tm === 'steampunk') toast = 'The bench remains. Stop when the gearwork tires - no fault in it.';
-            else if (tm === 'cyberpunk') toast = '[DRILL ABORTED] :: no log :: self-regulation registered :: respect';
-            else if (tm === 'kawaii') toast = 'It is okay to stop when you need to. You can return when you are ready.';
-            else if (tm === 'oceanic') toast = 'Drifted off - no log. Resting is part of the dive.';
-            else if (tm === 'neutral') toast = 'Drill exited. Not saved.';
-            else toast = 'Drill exited - knowing when to stop is a skill too.';
+            else if (tm === 'steampunk') toast = 'The bench remains. Stop when the gearwork tires - your private draft is ready when you return.';
+            else if (tm === 'cyberpunk') toast = '[DRILL PAUSED] :: private resume draft saved :: self-regulation registered :: respect';
+            else if (tm === 'kawaii') toast = 'It is okay to stop when you need to. A private draft is waiting whenever you are ready.';
+            else if (tm === 'oceanic') toast = 'Drifted off - a private draft is waiting on shore. Resting is part of the dive.';
+            else if (tm === 'neutral') toast = 'Drill exited. Private resume draft saved; no session was counted.';
+            else toast = 'Drill exited - knowing when to stop is a skill too. Your private resume draft is ready when you return.';
             addToast(toast);
-            setAnnounceText('Drill exited without saving. Returning to Typing Practice home.');
+            var exitAnnouncement = isWarmup
+              ? 'Drill exited without saving. Returning to Typing Practice home.'
+              : 'Drill exited. A private resume draft was saved; no completed session was counted. Returning to Typing Practice home.';
+            setAnnounceText(exitAnnouncement);
             upd('view', 'menu');
             return true;
           });
@@ -5054,6 +5250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var lastStep = result.steps[result.steps.length - 1];
           if (lastStep && lastStep.correct) {
             mistakeAnnouncementRef.current = { signature: '', at: 0 };
+            setMistakeLiveText('');
           } else if (lastStep && result.feedback) {
             var mistakeAnnouncement = typingPracticeMistakeAnnouncement(
               mistakeAnnouncementRef.current,
@@ -5062,14 +5259,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               1400
             );
             mistakeAnnouncementRef.current = mistakeAnnouncement.next;
-            if (mistakeAnnouncement.shouldAnnounce) setAnnounceText(mistakeAnnouncement.message);
+            if (mistakeAnnouncement.shouldAnnounce) setMistakeLiveText(mistakeAnnouncement.message);
           }
           if (state.accommodations.audioCues && lastStep) { if (lastStep.correct) audioCorrect(state.audioTheme); else audioError(state.audioTheme); }
           if (result.lastCompletedRange) setWordPulse(function(prev) { return { start: result.lastCompletedRange.start, end: result.lastCompletedRange.end, key: prev.key + 1 }; });
           if (state.accommodations.speakWordsOnSpace && result.lastCompletedWord && ctx.callTTS) {
-            try { ctx.callTTS(result.lastCompletedWord, null, 1.1, { force: false }).catch(function() {}); } catch (e) {}
+            try { ctx.callTTS(result.lastCompletedWord, null, 1.1, { force: false, language: activeTargetLanguage }).catch(function() {}); } catch (e) {}
           }
-        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, pausedMs, pauseStartedAt, sightReadLeft, streak]);
+        }, [state.view, drillComplete, targetStr, activeTargetLanguage, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, pausedMs, pauseStartedAt, sightReadLeft]);
 
         var removeLastTypedCharacter = useCallback(function() {
           if (paused || sightReadLeft > 0) return;
@@ -5589,7 +5786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 return new Date(s.date).toLocaleDateString() === todayStr;
               });
               if (todaySessions.length === 0) return null;
-              var bestTodayWpm = todaySessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var bestTodayWpm = todaySessions.reduce(function(m, s) { return s.measurementComparable === false || s.metricComparable === false ? m : Math.max(m, s.wpm || 0); }, 0);
               var totalSec = todaySessions.reduce(function(m, s) { return m + (s.durationSec || 0); }, 0);
               var approxMin = Math.max(1, Math.round(totalSec / 60));
               var tm = state.theme || 'default';
@@ -5997,7 +6194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               });
               var progress = todaySessions.length;
               var target = dg.targetSessions || 1;
-              var bestTodayWpm = todaySessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var bestTodayWpm = todaySessions.reduce(function(m, s) { return s.measurementComparable === false || s.metricComparable === false ? m : Math.max(m, s.wpm || 0); }, 0);
               var met = progress >= target && (!dg.targetWpm || bestTodayWpm >= dg.targetWpm);
               return h('div', {
                 style: {
@@ -6044,7 +6241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('ul', { style: { margin: '0 0 14px', padding: '0 0 0 18px', fontSize: '13px', color: palette.textDim, lineHeight: '1.65' } },
                 h('li', null, h('strong', null, 'Home Row'), ' is the gentlest first drill: a, s, d, f; j, k, l, semicolon.'),
                 h('li', null, h('strong', null, 'Accommodations'), ' include dyslexia-friendly type, audio cues, high contrast, larger keys, and error-tolerant practice.'),
-                h('li', null, 'Pause or leave whenever you need. A session is saved only after you finish it.')
+                h('li', null, 'Pause or leave whenever you need. Completed sessions save when you finish; unfinished practice can be resumed privately later.')
               ),
               h('div', {
                 role: 'group',
@@ -6094,7 +6291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (thisWeek.length === 0) return null;
               var weekDays = {};
               thisWeek.forEach(function(s) { weekDays[new Date(s.date).toLocaleDateString()] = true; });
-              var weekBestWpm = thisWeek.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var weekBestWpm = thisWeek.reduce(function(m, s) { return s.measurementComparable === false || s.metricComparable === false ? m : Math.max(m, s.wpm || 0); }, 0);
               var weekAvgAcc = Math.round(
                 thisWeek.reduce(function(a, s) { return a + (s.accuracy || 0); }, 0) / thisWeek.length
               );
@@ -6310,6 +6507,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               );
             })(),
 
+            // Interrupted-practice card — preserves partial work without
+            // pretending it is a completed session. The learner chooses when
+            // to resume or discard it; nothing is auto-counted in progress.
+            (function() {
+              var draft = state.interruptedDrill;
+              if (!draft || !draft.drillId || !draft.typed || !DRILLS[draft.drillId]) return null;
+              var draftDrill = DRILLS[draft.drillId];
+              var draftTypedLength = typingPracticeGraphemes(draft.typed).length;
+              var draftTargetLength = typingPracticeGraphemes(draft.target || '').length;
+              if (draftTargetLength < 1 || draftTypedLength < 1 || draftTypedLength >= draftTargetLength) return null;
+              var draftPct = Math.min(99, Math.round((draftTypedLength / draftTargetLength) * 100));
+              var savedAt = draft.savedAt ? new Date(draft.savedAt).getTime() : 0;
+              var ageMins = savedAt ? Math.max(0, Math.round((Date.now() - savedAt) / 60000)) : 0;
+              var ageLabel = ageMins < 1 ? 'just now' : ageMins < 60 ? ageMins + ' min ago' : ageMins < 1440 ? Math.round(ageMins / 60) + ' hr ago' : Math.round(ageMins / 1440) + ' day' + (ageMins >= 2880 ? 's' : '') + ' ago';
+              var resumeDraft = function() {
+                updMulti({ view: 'drill', currentDrill: draft.drillId, drillRunId: draft.drillRunId || 0 });
+                setAnnounceText('Resuming saved ' + draftDrill.name + ' practice. ' + draftPct + ' percent complete.');
+              };
+              var discardDraft = async function() {
+                if (!(await askTypingPracticeConfirmation('Discard this private resume draft? Completed sessions are unchanged.', { title: 'Discard saved practice?', confirmText: 'Discard draft' }))) return;
+                upd('interruptedDrill', null);
+                setAnnounceText('Saved practice draft discarded. Completed sessions are unchanged.');
+              };
+              return h('div', {
+                role: 'region',
+                'aria-label': 'Resume saved practice',
+                style: { marginBottom: '16px', padding: '14px 16px', background: palette.surface, border: '1px solid ' + palette.accent, borderLeft: '3px solid ' + palette.accent, borderRadius: '10px', display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }
+              },
+                h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '50%', background: palette.accent + '22', border: '1.5px solid ' + palette.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0, lineHeight: 1 } }, draftDrill.icon),
+                h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+                  h('div', { style: { fontSize: '11px', color: palette.accent, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } }, 'Saved practice · ' + ageLabel),
+                  h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, draftDrill.name),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', fontVariantNumeric: 'tabular-nums' } }, draftPct + '% complete · ' + draftTypedLength + ' of ' + draftTargetLength + ' characters · not counted yet')
+                ),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                  h('button', { type: 'button', onClick: resumeDraft, style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '12px', padding: '8px 16px' }) }, '▶ Resume'),
+                  h('button', { type: 'button', onClick: discardDraft, style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 10px' }) }, 'Discard')
+                )
+              );
+            })(),
+
             // Quick-resume card — surfaces the last drill the student did so
             // they can re-enter with one click instead of hunting on the grid.
             (function() {
@@ -6369,7 +6607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } }, 'Last session · ' + ageLabel),
                   h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, resumeLabel),
                   h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', fontVariantNumeric: 'tabular-nums' } },
-                    last.wpm + ' WPM · ' + last.accuracy + '% acc')
+                    typingPracticeMetricDisplay(last).value + ' ' + typingPracticeMetricDisplay(last).unit + ' · ' + last.accuracy + '% acc')
                 ),
                 h('button', {
                   onClick: function() { startDrill(last.drillId); },
@@ -7086,7 +7324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var acc = state.accommodations || {};
           var readinessEstimate = estimateTypingPracticeDuration(state, drill, targetStr);
           var readinessBest = (state.personalBest || {})[drill.id] || null;
-          var readinessWords = targetStr ? targetStr.split(/\s+/).filter(function(w) { return w.length > 0; }).length : 0;
+          var readinessWords = targetStr ? typingPracticeWordCount(targetStr, activeTargetLanguage) : 0;
           var activeAccLabels = [];
           if (acc.dyslexiaFont)  activeAccLabels.push('dyslexia font');
           if (acc.largeKeys)     activeAccLabels.push('on-screen keyboard');
@@ -8566,7 +8804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var stuckKeyCount = stuckKeyExpected && stuckKeyExpected !== ' '
             ? (errorChars[stuckKeyExpected.toLowerCase()] || 0)
             : 0;
-          var stuckKeyMeta = stuckKeyExpected ? findKeyMeta(stuckKeyExpected) : null;
+          var stuckKeyMeta = stuckKeyExpected ? findKeyMeta(stuckKeyExpected, state.keyboardLayout) : null;
           var showStuckKeySupport = !state.accommodations.largeKeys &&
             !state.accommodations.showKeyboard &&
             stuckKeyCount >= 3 &&
@@ -8585,6 +8823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var activeMs = startTime ? Math.max(Date.now() - startTime - pausedActive, 0) : 0;
           var minutes = Math.max(activeMs / 60000, 1 / 60);
           var liveWpm = (startTime && typedLength > 0 && activeMs > 0) ? Math.round((typedLength / 5) / minutes) : 0;
+          var liveMetric = typingPracticeComputeMetric(typedLength, activeMs, activeTargetLanguage, targetStr);
           var liveAcc = (typedLength + errorCount) > 0 ? Math.round((typedLength / (typedLength + errorCount)) * 100) : 100;
           var liveSec = Math.round(activeMs / 1000);
 
@@ -8698,7 +8937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           // Next-target char for keyboard highlighting
           var nextChar = targetChars[typedLength] || '';
-          var nextKeyMeta = findKeyMeta(nextChar);
+          var nextKeyMeta = findKeyMeta(nextChar, state.keyboardLayout);
 
           // Pace-target beat dot: soft sinusoidal pulse at the target cadence
           var beatOpacity = 1;
@@ -8872,8 +9111,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               (function() {
                 if (state.accommodations.assessmentMode) return null;
                 if (!targetStr) return null;
-                var totalWords = targetStr.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-                if (totalWords < 3) return null;
+                var totalWords = typingPracticeWordCount(targetStr, activeTargetLanguage);
+                if (totalWords < 3 || !typingPracticeUsesWordBoundaries(activeTargetLanguage)) return null;
                 // Current word index = number of complete spaces typed + 1.
                 // Complete space = a space that has at least one non-space
                 // character before it in typed. (Avoids counting leading
@@ -8932,6 +9171,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   fontFamily: 'inherit'
                 }
               }, paused ? '▶ Resume' : '⏸ Pause') : null,
+              (function() {
+                // Keep autosave reassurance visible without using a live region;
+                // checkpoints can occur frequently and should not interrupt typing.
+                if (!interruptedDraftMatches(state.interruptedDrill, activeDrill && activeDrill.id, state.drillRunId) || typedLength < 1) return null;
+                return h('span', {
+                  'aria-label': 'Private resume draft saved locally',
+                  title: 'Private resume draft saved locally',
+                  style: {
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: '28px',
+                    padding: '3px 8px',
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '999px',
+                    color: palette.textMute,
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    letterSpacing: '0.02em',
+                    whiteSpace: 'nowrap'
+                  }
+                }, 'Draft saved');
+              })(),
+
               // Live metrics — HIDDEN in assessment mode so clock-watching
               // doesn't affect the baseline measurement. Still computed and
               // saved into the session record; just not shown until summary.
@@ -8955,7 +9217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   fontVariantNumeric: 'tabular-nums'
                 }
               },
-                h('span', { key: 'lwpm-' + liveWpm, className: 'tp-live-tick' }, liveWpm + ' WPM'),
+                h('span', { key: 'lmetric-' + liveMetric.value, className: 'tp-live-tick', 'aria-label': liveMetric.value + ' ' + liveMetric.label }, liveMetric.value + ' ' + liveMetric.unit),
                 h('span', { style: { color: palette.textMute } }, '·'),
                 // Live accuracy gets color-graded by threshold so drift toward
                 // trouble is immediately legible without adding UI. Applied
@@ -9012,7 +9274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (!targetStr) return null;
                   var remaining = targetLength - typedLength;
                   if (remaining < 100) return null;
-                  if (liveWpm < 5) return null; // too unstable / not enough data
+                  if (liveMetric.unit !== 'WPM' || liveWpm < 5) return null; // projection is only calibrated for WPM
                   // Chars per minute ≈ WPM × 5. Seconds to finish ≈ remaining / cpm × 60
                   var cpm = liveWpm * 5;
                   var etaSec = Math.round((remaining / cpm) * 60);
@@ -9041,6 +9303,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               role: 'region',
               'aria-labelledby': 'tp-reading-time-title',
               'aria-describedby': 'tp-reading-time-copy',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
               style: {
                 marginBottom: '12px',
                 padding: '12px 16px',
@@ -9095,6 +9359,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               return h('div', {
                 id: 'tp-drill-paused-status',
                 role: 'note',
+                'aria-live': 'polite',
+                'aria-atomic': 'true',
                 style: Object.assign({
                   marginBottom: '12px',
                   padding: '12px 16px',
@@ -9196,6 +9462,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('span', { 'aria-hidden': 'true', style: { color: palette.danger, fontWeight: 800, fontSize: '16px' } }, '!'),
               h('span', null, typingPracticeMistakeMessage(mistakeFeedback))
             ) : null,
+            mistakeLiveText ? h('div', {
+              id: 'tp-mistake-feedback-status',
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              className: 'sr-only'
+            }, mistakeLiveText) : null,
 
             // Optional nonvisual equivalents for the visual character stream.
             // aria-details exposes the full passage without forcing a long
@@ -9334,7 +9607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             })() : null,
 
             // On-screen keyboard (large-keys accommodation)
-            (state.accommodations.largeKeys || state.accommodations.showKeyboard) ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
+            (state.accommodations.largeKeys || state.accommodations.showKeyboard) ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard, state.keyboardLayout) : null
           );
         }
 
@@ -9492,6 +9765,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             headline = phrases.warmup;
           } else if (s.measurementComparable === false) {
             headline = 'Assisted practice saved.';
+          } else if (s.metricComparable === false) {
+            headline = 'Character-rate practice saved.';
           } else if (s.firstGoalMet) {
             headline = phrases.firstGoalMet;
           } else if (s.masteryAdvanced) {
@@ -9513,6 +9788,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var nextStepHint = null;
           if (!s.isWarmup && s.measurementComparable === false) {
             nextStepHint = 'This run still counts as practice. Its speed and accuracy are not used for baseline, personal-best, mastery, or IEP-goal decisions.';
+          } else if (!s.isWarmup && s.metricComparable === false) {
+            nextStepHint = 'This run is saved with a character-rate metric for context. CPM is not combined with WPM baseline, personal-best, mastery, or IEP-goal decisions.';
           } else if (s.masteryAdvanced && s.newMasteryLevel) {
             var nextDrillId = null;
             for (var ti = 0; ti < TIER_ORDER.length; ti++) {
@@ -9718,9 +9995,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               nextStepHint ? h('div', {
                 style: { fontSize: '13px', color: palette.textDim, marginBottom: s.measurementNote ? '10px' : '20px', lineHeight: '1.5' }
               }, nextStepHint) : null,
+              s.language && s.language !== 'en' ? h('div', {
+                role: 'note',
+                style: { margin: '0 0 10px', color: palette.textMute, fontSize: '12px', lineHeight: '1.4' }
+              }, 'Language: ' + s.language + ' · ' + (s.metricLabel || (s.metricUnit === 'CPM' ? 'characters per minute' : 'words per minute')) + '.') : null,
+
               s.measurementNote ? h('div', {
                 role: 'note',
-                style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + (s.measurementComparable === false ? palette.warn : palette.border), borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5', textAlign: 'left' }
+                style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + (s.measurementComparable === false ? palette.warn : (s.metricComparable === false ? palette.accent : palette.border)), borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5', textAlign: 'left' }
               },
                 h('strong', { style: { color: palette.text } }, 'Measurement context: '),
                 (s.inputMethods && s.inputMethods.length ? s.inputMethods.join(', ') + '. ' : '') + s.measurementNote
@@ -9741,7 +10023,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   zIndex: 1
                 }
               },
-                renderMetric('WPM', s.wpm, palette, state.theme),
+                renderMetric(s.metricUnit || 'WPM', s.metricValue == null ? s.wpm : s.metricValue, palette, state.theme),
                 renderMetric('Accuracy', s.accuracy + '%', palette, state.theme),
                 renderMetric('Time', formatDuration(s.durationSec), palette, state.theme),
                 renderMetric('Errors', s.errors, palette, state.theme)
@@ -9755,7 +10037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // numbers dipped (compassion card handles that path) or when
               // baseline doesn't exist yet.
               (function() {
-                if (s.isWarmup || s.measurementComparable === false) return null;
+                if (s.isWarmup || s.measurementComparable === false || s.metricComparable === false) return null;
                 if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
                 if (!state.baseline || !state.baseline.wpm) return null;
                 var wpmDelta = s.wpm - state.baseline.wpm;
@@ -9806,7 +10088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // dysgraphia / motor-planning difficulty WILL have rough sessions;
               // the tool's job is to let those exist without shame.
               (function() {
-                if (s.isWarmup || s.measurementComparable === false) return null;
+                if (s.isWarmup || s.measurementComparable === false || s.metricComparable === false) return null;
                 if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
                 var acc = s.accuracy || 0;
                 var baselineAcc = state.baseline ? (state.baseline.accuracy || 0) : 0;
@@ -10367,7 +10649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var topKey = errKeys[0];
                 var topCount = s.errorChars[topKey];
                 if (topCount < 2) return null; // 1-off misses aren't actionable signal
-                var meta = findKeyMeta(topKey);
+                var meta = findKeyMeta(topKey, state.keyboardLayout);
                 var fingerStr = meta ? ' — your ' + fingerLabel(meta.f) : '';
                 var keyDisplay = topKey === ' ' ? 'space' : topKey.toUpperCase();
                 return h('div', {
@@ -10820,6 +11102,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Focus-mode is a child toggle of the keyboard — only meaningful when
             // a keyboard is shown. Hide it otherwise to reduce clutter.
             (acc.largeKeys || acc.showKeyboard) ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard', 'Focus mode on keyboard'); }, palette) : null,
+            h('div', { style: { padding: '12px 0', borderBottom: '1px solid ' + palette.border } },
+              h('div', { id: 'tp-keyboard-layout-label', style: { fontSize: '12px', color: palette.textMute, marginBottom: '4px' } }, 'Keyboard layout profile'),
+              h('div', { id: 'tp-keyboard-layout-description', style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '8px' } }, 'Matches the on-screen key positions, finger cues, and progress heatmap to the layout you use. This setting stays available even when the visual keyboard is hidden.'),
+              h('div', { role: 'group', 'aria-labelledby': 'tp-keyboard-layout-label', 'aria-describedby': 'tp-keyboard-layout-description', style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                KEYBOARD_LAYOUT_OPTIONS.map(function(opt) {
+                  var active = (state.keyboardLayout || 'qwerty-us') === opt.id;
+                  return h('button', {
+                    key: 'keyboard-layout-' + opt.id,
+                    type: 'button',
+                    'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { upd('keyboardLayout', opt.id); setAnnounceText('Keyboard layout set to ' + opt.label + '.'); },
+                    style: { padding: '6px 10px', borderRadius: '999px', border: '1px solid ' + (active ? palette.accent : palette.border), background: active ? palette.accent : 'transparent', color: active ? (palette.onAccent || '#0f172a') : palette.textDim, fontSize: '11px', fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit' }
+                  }, opt.label);
+                })
+              )
+            ),
             renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast', 'High-contrast mode'); }, palette),
             renderToggleRow('Reduce motion', 'Stops decorative animation, moving particles, screen shake, and smooth scrolling inside Typing Lab. Festival Mode stays colorful but still. This works independently of the device setting.', acc.reducedMotion, function() { toggle('reducedMotion', 'Reduce motion'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues', 'Audio cues'); }, palette),
@@ -11499,7 +11797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, __alloT('stem.typingpractice.profile_import_export', 'Profile import / export')),
               h('p', {
                 style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' }
-              }, __alloT('stem.typingpractice.save_the_accommodations_iep_goal_audio', 'Save the accommodations + IEP goal + audio theme to JSON, or load a profile from another device. Does NOT copy session history — that stays per student.')),
+              }, __alloT('stem.typingpractice.save_the_accommodations_iep_goal_audio', 'Save the accommodations + IEP goal + audio theme + keyboard layout to JSON, or load a profile from another device. Does NOT copy session history — that stays per student.')),
 
               h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' } },
                 h('button', {
@@ -11512,6 +11810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       studentName: state.studentName || '',
                       accommodations: state.accommodations || {},
                       audioTheme: state.audioTheme || 'chime',
+                      keyboardLayout: state.keyboardLayout || 'qwerty-us',
                       iepGoal: state.iepGoal || null,
                       passagePrefs: state.passagePrefs || {}
                     };
@@ -11571,13 +11870,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                             if (['chime', 'soft', 'clack', 'beep', 'pop', 'mute'].indexOf(parsed.audioTheme) === -1) throw new Error('Unknown sound theme.');
                             updates.audioTheme = parsed.audioTheme;
                           }
+                          if (parsed.keyboardLayout !== undefined) {
+                            if (!Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, parsed.keyboardLayout)) throw new Error('Unknown keyboard layout.');
+                            updates.keyboardLayout = parsed.keyboardLayout;
+                          }
                           if (parsed.iepGoal !== undefined) updates.iepGoal = typingPracticeImportedIepGoal(parsed.iepGoal);
                           if (parsed.passagePrefs !== undefined) {
                             if (!parsed.passagePrefs || typeof parsed.passagePrefs !== 'object' || Array.isArray(parsed.passagePrefs)) throw new Error('Passage preferences must be an object.');
                             updates.passagePrefs = Object.assign({}, DEFAULT_STATE.passagePrefs, parsed.passagePrefs);
                           }
                           if (typeof parsed.studentName === 'string') updates.studentName = parsed.studentName.slice(0, 60);
-                          if (!(await askTypingPracticeConfirmation('Current accommodations, IEP goal, and audio theme will be replaced. Session history will not be affected.', {
+                          if (!(await askTypingPracticeConfirmation('Current accommodations, IEP goal, audio theme, and keyboard layout will be replaced. Session history will not be affected.', {
                             title: 'Apply imported profile?', confirmText: 'Apply profile'
                           }))) return;
                           updMulti(updates);
@@ -11615,7 +11918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', fontStyle: 'italic', lineHeight: '1.5' } },
-                  __alloT('stem.typingpractice.full_backup_includes_sessions_personal', 'Full backup includes sessions, personal best, mastery, error heatmap, and both libraries — the whole student record. Use this before clearing browser data or switching devices.')),
+                  __alloT('stem.typingpractice.full_backup_includes_sessions_personal', 'Full backup includes sessions, personal best, mastery, error heatmap, keyboard layout, both libraries, and any unfinished private resume draft — the whole student record. Use this before clearing browser data or switching devices.')),
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('button', {
                     type: 'button',
@@ -11665,15 +11968,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         var reader = new FileReader();
                         reader.onload = async function(ev) {
                           try {
-                            var parsed = JSON.parse(ev.target.result);
+                            var rawBackup = String(ev.target.result || '');
+                            if (rawBackup.length > MAX_BACKUP_FILE_CHARS) throw new Error('Backup file exceeds the 5 MB safety limit.');
+                            var parsed = JSON.parse(rawBackup);
                             if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._format !== 'alloflow-typing-practice-backup') {
                               addToast('⚠️ Not a Typing Practice backup file.');
                               setAnnounceText('Restore failed. Choose a Typing Practice backup JSON file.');
                               return;
                             }
                             if (!parsed.state || typeof parsed.state !== 'object' || Array.isArray(parsed.state)) { addToast('⚠️ Backup is empty or corrupted.'); setAnnounceText('Restore failed because the backup is empty or corrupted.'); return; }
-                            var n = (parsed.state.sessions || []).length;
-                            if (!(await askTypingPracticeConfirmation('This replaces the current student\'s data with the backup (' + n + ' sessions). You cannot undo this.', {
+                            if (parsed.state.keyboardLayout !== undefined && !Object.prototype.hasOwnProperty.call(KEYBOARD_LAYOUTS, parsed.state.keyboardLayout)) {
+                              addToast('⚠️ Backup uses an unknown keyboard layout.');
+                              setAnnounceText('Restore failed because the backup uses an unknown keyboard layout.');
+                              return;
+                            }
+                            var backupSummary = typingPracticeValidateBackupState(parsed.state);
+                            var n = backupSummary.sessions;
+                            var layoutLabel = parsed.state.keyboardLayout ? typingPracticeKeyboardLayout(parsed.state.keyboardLayout).label : 'default profile';
+                            var draftNotice = parsed.state.interruptedDrill ? ' It also contains a private unfinished resume draft.' : '';
+                            var restorePreview = 'This replaces the current student\'s data with the backup (' + n + ' sessions). It also contains ' + backupSummary.passages + ' saved passages, ' + backupSummary.customDrills + ' custom drills, and ' + backupSummary.visualImages + ' visual images. Keyboard layout: ' + layoutLabel + '.' + draftNotice + ' You cannot undo this.';
+                            if (!(await askTypingPracticeConfirmation(restorePreview, {
                               title: 'Restore full backup?', confirmText: 'Replace current data'
                             }))) return;
                             // Apply each key individually via updMulti so React state updates batch cleanly.
@@ -11741,7 +12055,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         function renderProgress() {
           var allSessions = state.sessions || [];
           var comparableSessions = typingPracticeComparableSessions(allSessions);
-          var assistedSessionCount = allSessions.length - comparableSessions.length;
+          var assistedSessionCount = allSessions.filter(function(s) { return s && s.measurementComparable === false; }).length;
+          var metricOnlySessionCount = allSessions.filter(function(s) { return s && s.measurementComparable !== false && s.metricComparable === false; }).length;
 
           // Apply filters: date range + drill type. Reversed ranges are an
           // explicit validation error rather than a misleading empty result.
@@ -11774,6 +12089,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var sessions = filteredSessions;
           var trend = filteredComparableSessions.slice(-12); // last 12 comparable matching sessions
           var trendMax = trend.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 10);
+          // Keep character-rate progress on its own CPM scale. It is intentionally
+          // separate from WPM so multilingual practice remains visible without
+          // implying that unlike units are directly comparable.
+          var cpmSessions = filteredSessions.filter(function(s) {
+            return s && s.measurementComparable !== false && typingPracticeMetricDisplay(s).unit === 'CPM';
+          });
+          var cpmTrend = cpmSessions.slice(-12);
+          var cpmTrendMax = cpmTrend.reduce(function(m, s) {
+            return Math.max(m, Number(typingPracticeMetricDisplay(s).value) || 0);
+          }, 10);
 
           // Progress hero mascot — quieter than the Achievements hero
           // (64px vs 80px) since this is a data-review surface, not a
@@ -11824,6 +12149,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               role: 'note',
               style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + palette.warn, borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5' }
             }, assistedSessionCount + ' pasted practice session' + (assistedSessionCount === 1 ? ' is' : 's are') + ' retained in history and excluded from comparative performance metrics.') : null,
+            metricOnlySessionCount > 0 ? h('div', {
+              role: 'note',
+              style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + palette.accent, borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5' }
+            }, metricOnlySessionCount + ' character-rate session' + (metricOnlySessionCount === 1 ? ' is' : 's are') + ' shown with CPM and excluded from WPM comparisons.') : null,
 
             // Skill tree: tier progression visual
             h('div', {
@@ -12392,7 +12721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 fontSize: '12px',
                 lineHeight: '1.5'
               }
-            }, 'No comparable sessions match these filters. Assisted practice remains available in the session history, but it is not plotted as performance evidence.') : null,
+            }, 'No WPM-comparable runs match these filters. Character-rate sessions use a separate CPM trend below when available; assisted practice remains available in the session history but is not plotted as performance evidence.') : null,
 
             // Trend sparkline (last 12 sessions)
             trend.length > 0 ? h('section', {
@@ -12587,6 +12916,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 })
               ),
 
+              // Accessible data view mirrors the visual trend chart so learners and clinicians can
+              // scan exact values without interpreting bar height or color.
+              h('details', {
+                id: 'tp-session-trend-table',
+                style: {
+                  marginTop: '10px',
+                  borderTop: '1px solid ' + palette.border,
+                  paddingTop: '8px'
+                }
+              },
+                h('summary', {
+                  style: {
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: palette.accent,
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }
+                }, 'View recent session data table'),
+                h('div', {
+                  role: 'region',
+                  'aria-label': 'Recent comparable session data',
+                  style: { overflowX: 'auto', paddingTop: '6px' }
+                },
+                  h('table', {
+                    style: {
+                      width: '100%',
+                      minWidth: '480px',
+                      borderCollapse: 'collapse',
+                      color: palette.text,
+                      fontSize: '11px',
+                      lineHeight: '1.45'
+                    }
+                  },
+                    h('caption', {
+                      className: 'sr-only'
+                    }, 'Last ' + trend.length + ' WPM-comparable typing sessions. Use the chart above to select a session for details.'),
+                    h('thead', null,
+                      h('tr', null,
+                        ['Date', 'Drill', 'Pace', 'Accuracy', 'Comparability'].map(function(label) {
+                          return h('th', {
+                            key: 'trend-head-' + label,
+                            scope: 'col',
+                            style: {
+                              padding: '6px 8px',
+                              textAlign: label === 'Drill' ? 'left' : 'right',
+                              color: palette.textMute,
+                              borderBottom: '2px solid ' + palette.border,
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap'
+                            }
+                          }, label);
+                        })
+                      )
+                    ),
+                    h('tbody', null,
+                      trend.map(function(s, i) {
+                        var metric = typingPracticeMetricDisplay(s);
+                        var metricLabel = metric.value + ' ' + metric.unit;
+                        var comparableLabel = s.metricComparable === false ? 'Not WPM comparable' : 'WPM comparable';
+                        return h('tr', { key: 'trend-row-' + i },
+                          h('th', {
+                            scope: 'row',
+                            style: {
+                              padding: '7px 8px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid ' + palette.border,
+                              fontWeight: 600,
+                              whiteSpace: 'nowrap'
+                            }
+                          }, new Date(s.date).toLocaleDateString()),
+                          h('td', {
+                            style: {
+                              padding: '7px 8px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid ' + palette.border,
+                              color: palette.textDim,
+                              maxWidth: '220px'
+                            }
+                          }, s.drillName || 'Typing session'),
+                          h('td', {
+                            style: {
+                              padding: '7px 8px',
+                              textAlign: 'right',
+                              borderBottom: '1px solid ' + palette.border,
+                              fontVariantNumeric: 'tabular-nums',
+                              whiteSpace: 'nowrap'
+                            }
+                          }, metricLabel),
+                          h('td', {
+                            style: {
+                              padding: '7px 8px',
+                              textAlign: 'right',
+                              borderBottom: '1px solid ' + palette.border,
+                              fontVariantNumeric: 'tabular-nums',
+                              whiteSpace: 'nowrap'
+                            }
+                          }, s.accuracy + '%'),
+                          h('td', {
+                            style: {
+                              padding: '7px 8px',
+                              textAlign: 'right',
+                              borderBottom: '1px solid ' + palette.border,
+                              color: s.metricComparable === false ? palette.accent : palette.success,
+                              fontWeight: 600,
+                              whiteSpace: 'nowrap'
+                            }
+                          }, comparableLabel)
+                        );
+                      })
+                    )
+                  )
+                )
+              ),
+
               // Session-detail panel when a bar is selected
               selectedDetailIdx !== null && trend[selectedDetailIdx] ? (function() {
                 var d = trend[selectedDetailIdx];
@@ -12635,7 +13081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   ),
                   h('dl', { 'aria-label': 'Session metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', margin: '0 0 8px' } },
                     [
-                      ['WPM', d.wpm],
+                      [typingPracticeMetricDisplay(d).unit, typingPracticeMetricDisplay(d).value],
                       ['Accuracy', d.accuracy + '%'],
                       ['Duration', formatDuration(d.durationSec)],
                       ['Errors', d.errors || 0]
@@ -12647,7 +13093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     })
                   ),
                   d.pausedSec ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
-                    'Paused breaks: ' + formatDuration(d.pausedSec) + ' (excluded from WPM)'
+                    'Paused breaks: ' + formatDuration(d.pausedSec) + ' (excluded from the pace metric)'
                   ) : null,
                   accs.length > 0 ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
                     '🏅 Accommodations: ' + accs.join(', ')
@@ -12657,6 +13103,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   ) : null,
                   d.measurementComparable === false ? h('div', { role: 'note', style: { color: palette.warn, fontSize: '11px', fontWeight: 600, marginBottom: '4px' } },
                     'Assisted practice - excluded from comparative performance metrics'
+                  ) : null,
+                  d.measurementComparable !== false && d.metricComparable === false ? h('div', { role: 'note', style: { color: palette.accent, fontSize: '11px', fontWeight: 600, marginBottom: '4px' } },
+                    'Character-rate result - CPM shown for context; excluded from WPM comparisons'
                   ) : null,
                   d.isNewBest ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, __alloT('stem.typingpractice.personal_best', '⭐ Personal best')) : null,
                   d.masteryAdvanced ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '🌟 Mastery tier advanced to ' + d.newMasteryLevel) : null,
@@ -12872,6 +13321,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               })() : null
             ) : null,
 
+            // Character-rate trend: a separate, explicitly labeled CPM view
+            // keeps non-word-boundary languages visible without mixing scales.
+            cpmTrend.length > 0 ? h('section', {
+              'aria-labelledby': 'tp-cpm-trend-title',
+              style: {
+                marginBottom: '24px',
+                padding: '16px',
+                background: palette.surface,
+                borderRadius: '12px',
+                border: '1px solid ' + palette.border
+              }
+            },
+              h('h3', {
+                id: 'tp-cpm-trend-title',
+                style: { margin: '0 0 6px', fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }
+              }, 'Character-rate progress · CPM'),
+              h('p', {
+                style: { margin: '0 0 12px', color: palette.textMute, fontSize: '11px', lineHeight: '1.5' }
+              }, 'These sessions measure characters per minute. They remain separate from WPM baselines and comparisons, but your practice progress still counts.'),
+              h('div', {
+                role: 'img',
+                'aria-label': 'Character-rate progress chart for the last ' + cpmTrend.length + ' CPM sessions',
+                style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '90px', padding: '6px 2px 10px', borderBottom: '1px solid ' + palette.border }
+              },
+                cpmTrend.map(function(s, i) {
+                  var metric = typingPracticeMetricDisplay(s);
+                  var barHeight = Math.max(4, Math.round(((Number(metric.value) || 0) / Math.max(cpmTrendMax, 1)) * 70));
+                  return h('span', {
+                    key: 'cpm-bar-' + i,
+                    'aria-hidden': 'true',
+                    title: new Date(s.date).toLocaleDateString() + ': ' + metric.value + ' CPM, ' + s.accuracy + '% accuracy',
+                    style: { flex: '1 0 18px', minWidth: '18px', maxWidth: '56px', height: barHeight + 'px', background: palette.accent, borderRadius: '4px 4px 0 0', opacity: 0.75 + (i / Math.max(cpmTrend.length - 1, 1)) * 0.25 }
+                  });
+                })
+              ),
+              h('details', {
+                id: 'tp-cpm-trend-table',
+                style: { marginTop: '10px', borderTop: '1px solid ' + palette.border, paddingTop: '8px' }
+              },
+                h('summary', {
+                  style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: palette.accent, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                }, 'View character-rate data table'),
+                h('div', {
+                  role: 'region',
+                  'aria-label': 'Character-rate session data',
+                  style: { overflowX: 'auto', paddingTop: '6px' }
+                },
+                  h('table', { style: { width: '100%', minWidth: '420px', borderCollapse: 'collapse', color: palette.text, fontSize: '11px', lineHeight: '1.45' } },
+                    h('caption', { className: 'sr-only' }, 'Last ' + cpmTrend.length + ' character-rate typing sessions. These values are CPM and are not WPM comparable.'),
+                    h('thead', null,
+                      h('tr', null,
+                        h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: palette.textMute, borderBottom: '2px solid ' + palette.border, whiteSpace: 'nowrap' } }, 'Date'),
+                        h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: palette.textMute, borderBottom: '2px solid ' + palette.border } }, 'Drill'),
+                        h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'right', color: palette.textMute, borderBottom: '2px solid ' + palette.border, whiteSpace: 'nowrap' } }, 'CPM'),
+                        h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'right', color: palette.textMute, borderBottom: '2px solid ' + palette.border, whiteSpace: 'nowrap' } }, 'Accuracy'),
+                        h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'right', color: palette.textMute, borderBottom: '2px solid ' + palette.border, whiteSpace: 'nowrap' } }, 'Status')
+                      )
+                    ),
+                    h('tbody', null,
+                      cpmTrend.map(function(s, i) {
+                        var metric = typingPracticeMetricDisplay(s);
+                        return h('tr', { key: 'cpm-row-' + i },
+                          h('th', { scope: 'row', style: { padding: '7px 8px', textAlign: 'left', borderBottom: '1px solid ' + palette.border, fontWeight: 600, whiteSpace: 'nowrap' } }, new Date(s.date).toLocaleDateString()),
+                          h('td', { style: { padding: '7px 8px', textAlign: 'left', borderBottom: '1px solid ' + palette.border, color: palette.textDim } }, s.drillName || 'Typing session'),
+                          h('td', { style: { padding: '7px 8px', textAlign: 'right', borderBottom: '1px solid ' + palette.border, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, metric.value + ' CPM'),
+                          h('td', { style: { padding: '7px 8px', textAlign: 'right', borderBottom: '1px solid ' + palette.border, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, s.accuracy + '%'),
+                          h('td', { style: { padding: '7px 8px', textAlign: 'right', borderBottom: '1px solid ' + palette.border, color: palette.accent, fontWeight: 600, whiteSpace: 'nowrap' } }, 'Not WPM comparable')
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            ) : null,
+
             // Per-key error heatmap + finger-group breakdown + coaching
             (function() {
               var agg = state.aggregateErrors || {};
@@ -12908,7 +13432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (tm === 'neutral')   return 'Darker = higher error rate. Targeted practice yields compounding gains.';
                     return 'Darker red = more errors on that key. This isn\'t shame data — it\'s the map that shows where practice pays off.';
                   })()),
-                renderErrorHeatmap(agg, maxErr, palette),
+                renderErrorHeatmap(agg, maxErr, palette, state.keyboardLayout),
 
                 // Finger-group stacked bar: shows which finger owns the errors
                 analysis.totalErrors > 0 ? h('div', {
@@ -13152,6 +13676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (s.isNewBest) badges.push('⭐ PB');
                   if (s.masteryAdvanced) badges.push('🌟 tier ↑');
                   if (s.measurementComparable === false) badges.push('assisted - not comparable');
+                  else if (s.metricComparable === false) badges.push('CPM - not WPM comparable');
                   return h('div', {
                     key: 'hist-' + s.date,
                     role: 'listitem',
@@ -13182,7 +13707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       }
                     },
                       h('div', null,
-                        h('span', { style: { fontWeight: 700, color: palette.text } }, s.wpm + ' WPM'),
+                        h('span', { style: { fontWeight: 700, color: palette.text } }, typingPracticeMetricDisplay(s).value + ' ' + typingPracticeMetricDisplay(s).unit),
                         ' · ', s.accuracy + '%'
                       ),
                       h('div', { style: { fontSize: '10px', color: palette.textMute } },
@@ -13850,7 +14375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               { keys: ['Any letter/number/symbol'], desc: __alloT('stem.typingpractice.types_the_next_character', 'Types the next character') },
               { keys: ['Backspace'],               desc: __alloT('stem.typingpractice.undo_last_character', 'Undo last character') },
               { keys: ['F2'],                      desc: 'Repeat the next target key and character position' },
-              { keys: ['Esc'],                     desc: __alloT('stem.typingpractice.abandon_drill_progress_won_t_save', 'Review exit without saving current drill progress') }
+              { keys: ['Esc'],                     desc: __alloT('stem.typingpractice.save_private_resume_draft_and_return', 'Save a private resume draft and return to the menu') }
             ]},
             { heading: __alloT('stem.typingpractice.on_any_screen_with_a_form', 'On any screen with a form'), items: [
               { keys: ['Tab'],   desc: __alloT('stem.typingpractice.move_to_next_field_button', 'Move to next field / button') },
@@ -14805,6 +15330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Per-column pressure gauge
               h('div', {
                 role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': BATTLE_STACK_LIMIT, 'aria-valuenow': s.length,
+                'aria-valuetext': s.length + ' of ' + BATTLE_STACK_LIMIT + ' rows in stack',
                 'aria-label': opts.label + ' stack: ' + s.length + ' of ' + BATTLE_STACK_LIMIT + ' rows',
                 style: { width: '100%', height: 4, background: palette.surface, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }
               },
@@ -15450,6 +15976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
         },
           h('div', {
+            key: 'tp-announcement-' + announceNonce,
             role: 'status',
             'aria-live': 'polite',
             'aria-atomic': 'true',
@@ -15700,6 +16227,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }
     } catch (e) {}
     return Array.from(text);
+  }
+
+  function typingPracticeMetricProfile(language) {
+    var base = String(language || 'en').toLowerCase().split('-')[0];
+    // These scripts do not use whitespace as a reliable word boundary.
+    if (['zh','ja','ko','th','lo','km','my'].indexOf(base) !== -1) {
+      return { unit: 'CPM', label: 'characters per minute', usesWords: false };
+    }
+    return { unit: 'WPM', label: 'words per minute', usesWords: true };
+  }
+
+  function typingPracticeWordCount(value, language) {
+    var text = typingPracticeNormalizeText(value).trim();
+    if (!text) return 0;
+    try {
+      if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        var segmenter = new Intl.Segmenter(language || undefined, { granularity: 'word' });
+        var count = 0;
+        Array.from(segmenter.segment(text)).forEach(function(part) { if (part.isWordLike) count += 1; });
+        if (count > 0) return count;
+      }
+    } catch (e) {}
+    return text.split(/\s+/).filter(function(word) { return word.length > 0; }).length;
+  }
+
+  function typingPracticeUsesWordBoundaries(language) {
+    return typingPracticeMetricProfile(language).usesWords;
+  }
+
+  function typingPracticeMetricDisplay(session) {
+    session = session || {};
+    var unit = session.metricUnit || 'WPM';
+    var value = session.metricValue == null ? (Number(session.wpm) || 0) : session.metricValue;
+    return { value: value, unit: unit, label: session.metricLabel || (unit === 'CPM' ? 'characters per minute' : 'words per minute') };
+  }
+  function typingPracticeComputeMetric(charCount, durationMs, language, text) {
+    var chars = Math.max(0, Number(charCount) || 0);
+    var minutes = Math.max(Number(durationMs) || 0, 1000) / 60000;
+    var profile = typingPracticeMetricProfile(language);
+    var value = profile.usesWords ? Math.round((chars / 5) / minutes) : Math.round(chars / minutes);
+    return {
+      value: value,
+      unit: profile.unit,
+      label: profile.label,
+      wordCount: typingPracticeWordCount(text, language),
+      language: typingPracticeNormalizeLanguageTag(language, 'en')
+    };
   }
 
   function typingPracticeApplyTextInput(target, typed, input, options) {
@@ -16006,11 +16580,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Rendered below the drill target when large-keys accommodation is on.
   // Teaches motor planning through consistent finger-key color mapping.
   // ─────────────────────────────────────────────────────────
-  function renderOnScreenKeyboard(nextKeyMeta, palette, focusMode) {
+  function renderOnScreenKeyboard(nextKeyMeta, palette, focusMode, keyboardLayoutId) {
     var React = window.React;
     var h = React.createElement;
     var highlightKey = nextKeyMeta ? nextKeyMeta.k : null;
     var highlightFinger = nextKeyMeta ? nextKeyMeta.f : null;
+    var layout = typingPracticeKeyboardLayout(keyboardLayoutId);
+    var layoutRows = layout.rows;
 
     return h('div', {
       className: 'tp-visual-keyboard',
@@ -16036,24 +16612,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // per-finger colors reference but never spelled out. The 8 resting keys
       // (ASDF | JKL;) colored by finger, with the finger name below.
       h('div', { style: { marginBottom: '12px', textAlign: 'center' } },
-        h('div', { style: { fontSize: '9px', color: palette.textMute, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Home row — rest your fingers here'),
+        h('div', { style: { fontSize: '9px', color: palette.textMute, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Home row · ' + layout.label + ' — rest your fingers here'),
         h('div', { style: { display: 'inline-flex', gap: '3px', alignItems: 'flex-end' } },
-          [
-            { k: 'A', f: 'LP' }, { k: 'S', f: 'LR' }, { k: 'D', f: 'LM' }, { k: 'F', f: 'LI', home: true },
-            { gap: true },
-            { k: 'J', f: 'RI', home: true }, { k: 'K', f: 'RM' }, { k: 'L', f: 'RR' }, { k: ';', f: 'RP' }
-          ].map(function(item, i) {
-            if (item.gap) return h('div', { key: 'g' + i, style: { width: '12px' } });
-            var fl = fingerLabel(item.f), shortFl = fl.indexOf(' ') >= 0 ? fl.slice(fl.indexOf(' ') + 1) : fl;
+          layout.home.map(function(homeKey, i) {
+            if (i === 4) return h('div', { key: 'g4', style: { width: '12px' } });
+            var homeMeta = findKeyMeta(homeKey, layout.id) || { f: i < 4 ? 'LI' : 'RI' };
+            var homeAnchor = i === 3 || i === 4;
+            var fl = fingerLabel(homeMeta.f), shortFl = fl.indexOf(' ') >= 0 ? fl.slice(fl.indexOf(' ') + 1) : fl;
             return h('div', { key: i, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' } },
-              h('div', { style: { width: '22px', height: '22px', borderRadius: '4px', background: FINGER_COLOR[item.f], color: '#0f172a', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: item.home ? 'inset 0 -2px 0 rgba(15,23,42,0.5)' : 'none' } }, item.k),
+              h('div', { style: { width: '22px', height: '22px', borderRadius: '4px', background: FINGER_COLOR[homeMeta.f], color: '#0f172a', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: homeAnchor ? 'inset 0 -2px 0 rgba(15,23,42,0.5)' : 'none' } }, homeKey.toUpperCase()),
               h('div', { style: { fontSize: '7px', color: palette.textMute } }, shortFl)
             );
           })
         )
       ),
 
-      KB_LAYOUT.map(function(row, rowIdx) {
+      layoutRows.map(function(row, rowIdx) {
         return h('div', {
           key: 'row-' + rowIdx,
           style: {
@@ -16236,11 +16810,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Render a mini-keyboard heatmap showing per-key error counts. Intensity of
   // red increases with error count (relative to the student's max). Keys with
   // zero errors stay in the base palette.bg so there's clear signal contrast.
-  function renderErrorHeatmap(errorMap, maxErr, palette) {
+  function renderErrorHeatmap(errorMap, maxErr, palette, keyboardLayoutId) {
     var React = window.React;
     var h = React.createElement;
     return h('div', { 'aria-label': 'Error heatmap', style: { display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' } },
-      KB_LAYOUT.map(function(row, rowIdx) {
+      typingPracticeKeyboardLayout(keyboardLayoutId).rows.map(function(row, rowIdx) {
         return h('div', {
           key: 'heat-row-' + rowIdx,
           style: {
@@ -16303,6 +16877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       stats.characters += Math.max(0, Number(day && day.totalChars) || 0);
       stats.comparableSessions += Math.max(0, Number(day && day.comparable) || 0);
       stats.assistedSessions += Math.max(0, Number(day && day.assisted) || 0);
+      stats.metricOnlySessions += Math.max(0, Number(day && day.metricOnly) || 0);
       stats.bestComparableWpm = Math.max(
         stats.bestComparableWpm,
         Math.max(0, Number(day && day.best) || 0)
@@ -16314,6 +16889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       characters: 0,
       comparableSessions: 0,
       assistedSessions: 0,
+      metricOnlySessions: 0,
       bestComparableWpm: 0
     });
   }
@@ -16339,13 +16915,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           best: 0,
           totalChars: 0,
           comparable: 0,
-          assisted: 0
+          assisted: 0,
+          metricOnly: 0
         };
       }
       bucket[key].count += 1;
       bucket[key].totalChars += Math.max(0, Number(s.charCount) || 0);
       if (s.measurementComparable === false) {
         bucket[key].assisted += 1;
+      } else if (s.metricComparable === false) {
+        bucket[key].metricOnly += 1;
       } else {
         bucket[key].comparable += 1;
         bucket[key].best = Math.max(bucket[key].best, Math.max(0, Number(s.wpm) || 0));
@@ -16365,7 +16944,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         best: saved.best || 0,
         totalChars: saved.totalChars || 0,
         comparable: saved.comparable || 0,
-        assisted: saved.assisted || 0
+        assisted: saved.assisted || 0,
+        metricOnly: saved.metricOnly || 0
       });
     }
 
@@ -16381,6 +16961,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       summary += ' ' + stats.assistedSessions + ' assisted session' +
         (stats.assistedSessions === 1 ? ' is' : 's are') +
         ' included in participation totals and excluded from best speed.';
+    }
+    if (stats.metricOnlySessions > 0) {
+      summary += ' ' + stats.metricOnlySessions + ' character-rate session' +
+        (stats.metricOnlySessions === 1 ? ' is' : 's are') +
+        ' included in participation totals and excluded from best WPM.';
     }
 
     var intensity = function(count) {
@@ -16414,6 +16999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var tooltip = dateLabel + ' · ' + day.count + ' session' + (day.count === 1 ? '' : 's');
           if (day.best > 0) tooltip += ' · best comparable speed ' + day.best + ' WPM';
           if (day.assisted > 0) tooltip += ' · ' + day.assisted + ' assisted';
+          if (day.metricOnly > 0) tooltip += ' · ' + day.metricOnly + ' CPM-only';
           return h('div', {
             key: 'cal-' + idx,
             className: day.count > 0 ? 'tp-calendar-day-active' : 'tp-calendar-day-inactive',
@@ -16478,6 +17064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('th', { scope: 'col' }, 'Date'),
                 h('th', { scope: 'col' }, 'Sessions'),
                 h('th', { scope: 'col' }, 'Assisted'),
+                h('th', { scope: 'col' }, 'CPM-only'),
                 h('th', { scope: 'col' }, 'Best comparable WPM'),
                 h('th', { scope: 'col' }, 'Characters')
               )
@@ -16488,6 +17075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   h('th', { scope: 'row' }, day.date.toLocaleDateString()),
                   h('td', null, day.count),
                   h('td', null, day.assisted),
+                  h('td', null, day.metricOnly),
                   h('td', null, day.best > 0 ? day.best : 'Not available'),
                   h('td', null, day.totalChars.toLocaleString())
                 );
@@ -16732,7 +17320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
   function typingPracticeComparableSessions(sessions) {
     return (sessions || []).filter(function(session) {
-      return session && session.measurementComparable !== false;
+      return session && session.measurementComparable !== false && session.metricComparable !== false && session.metricUnit !== 'CPM';
     });
   }
 
@@ -16888,19 +17476,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
+    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'metric_value', 'metric_unit', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
     var rows = sessions.map(function(s) {
       // Serialize per-char errors as "a:2|d:1|k:3" for compact CSV consumption
       var errorChars = s.errorChars ? Object.keys(s.errorChars).map(function(k) {
         return k + ':' + s.errorChars[k];
       }).join('|') : '';
       return [
-        s.date, s.drillId, s.drillName, s.wpm, s.accuracy,
+        s.date, s.drillId, s.drillName, s.wpm, (s.metricValue == null ? s.wpm : s.metricValue), s.metricUnit || 'WPM', s.accuracy,
         s.durationSec, (s.pausedSec || 0), s.errors, s.charCount,
         (s.accommodationsUsed || []).join('|'),
         (s.inputMethods || []).join('|'),
         s.primaryInputMethod || '',
         s.measurementComparable === false ? 'no' : 'yes',
+        s.metricComparable === false ? 'no' : 'yes',
         s.measurementNote || '',
         s.tag || '',
         s.isNewBest ? 'yes' : '', s.isBaseline ? 'yes' : '',
@@ -17276,8 +17865,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var sessions = typingPracticeComparableSessions(allSessions);
     var name = state.studentName ? state.studentName.split(' ')[0] : 'Your student';
 
+    var assistedOnlyCount = allSessions.filter(function(s) { return s && s.measurementComparable === false; }).length;
+    var metricOnlyCount = allSessions.filter(function(s) { return s && s.measurementComparable !== false && s.metricComparable === false; }).length;
     if (allSessions.length > 0 && sessions.length === 0) {
-      return name + ' has completed ' + allSessions.length + ' assisted practice session' + (allSessions.length === 1 ? '' : 's') + '. Those runs remain in practice history, but no comparable keyboard-performance session is available yet.';
+      var excludedParts = [];
+      if (assistedOnlyCount > 0) excludedParts.push(assistedOnlyCount + ' assisted practice session' + (assistedOnlyCount === 1 ? '' : 's'));
+      if (metricOnlyCount > 0) excludedParts.push(metricOnlyCount + ' character-rate session' + (metricOnlyCount === 1 ? '' : 's'));
+      return name + ' has completed ' + allSessions.length + ' practice session' + (allSessions.length === 1 ? '' : 's') + ' (' + excludedParts.join(' and ') + '). These runs remain in practice history, but no comparable keyboard-performance session is available yet.';
     }
 
     // Empty-state — theme-voiced so parents get the same personality
@@ -17455,9 +18049,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }
     }
 
-    var assistedCount = allSessions.length - sessions.length;
+    var assistedCount = allSessions.filter(function(s) { return s && s.measurementComparable === false; }).length;
+    var metricOnlyCount = allSessions.filter(function(s) { return s && s.measurementComparable !== false && s.metricComparable === false; }).length;
     if (assistedCount > 0) {
       parts.push(assistedCount + ' pasted practice session' + (assistedCount === 1 ? ' remains' : 's remain') + ' in the practice history and ' + (assistedCount === 1 ? 'is' : 'are') + ' excluded from performance comparisons.');
+    }
+    if (metricOnlyCount > 0) {
+      parts.push(metricOnlyCount + ' character-rate session' + (metricOnlyCount === 1 ? ' remains' : 's remain') + ' in the practice history with CPM shown separately from WPM comparisons.');
     }
 
     return parts.join(' ');
@@ -17467,7 +18065,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var allSessions = state.sessions || [];
     var sessions = opts ? applySessionFilters(allSessions, opts) : allSessions;
     var comparableSessions = typingPracticeComparableSessions(sessions);
-    var excludedAssisted = sessions.length - comparableSessions.length;
+    var excludedAssisted = sessions.filter(function(s) { return s && s.measurementComparable === false; }).length;
+    var metricOnlySessions = sessions.filter(function(s) { return s && s.measurementComparable !== false && s.metricComparable === false; }).length;
     var pb = state.personalBest || {};
     var badges = state.accommodationBadges || [];
     var accommodations = state.accommodations || {};
@@ -17489,6 +18088,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     }
     if (excludedAssisted > 0) {
       lines.push('Measurement note: ' + excludedAssisted + ' pasted practice session' + (excludedAssisted === 1 ? ' was' : 's were') + ' retained in history and excluded from comparative performance metrics.');
+    }
+    if (metricOnlySessions > 0) {
+      lines.push('Metric note: ' + metricOnlySessions + ' character-rate session' + (metricOnlySessions === 1 ? ' was' : 's were') + ' retained in history with CPM shown separately from WPM comparisons.');
+    }
+    if (excludedAssisted > 0 || metricOnlySessions > 0) {
       lines.push('Comparable sessions used for performance calculations: ' + comparableSessions.length);
     }
     lines.push('');

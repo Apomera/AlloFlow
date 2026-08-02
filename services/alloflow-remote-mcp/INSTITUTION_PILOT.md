@@ -111,18 +111,19 @@ composites, and free-form document text are rejected. The resolved options are
 immutable for an upload. Replaying the same options returns the same job, while
 changing any resolved option returns `job_options_conflict` with status 409.
 
-Both profiles produce a tagged PDF with `validateUa=false`.
+Both profiles produce a tagged PDF with the browser-side validator disabled. The runner invokes its local veraPDF CLI separately after the PDF is written.
 `get_remediation_report` retrieves the owner-bound private report, verifies its
 R2 size, type, and SHA-256, and returns only an allowlisted schema. Unknown
 fields and document-derived fields are stripped. The sanitizer also requires
 the report's artifact size and SHA-256 to equal the separately R2-verified
 tagged PDF metadata.
 
-Independent PDF/UA validation is not packaged and its status remains
-`not_run`. The repository has not established the validator JAR's
-redistributable license/provenance for the remote image, and validation needs a
-separately bounded timeout instead of consuming the remediation container's
-run budget. Neither profile implies PDF/UA or WCAG conformance.
+The runner invokes the pinned veraPDF 1.30.2 CLI locally with the ua1 profile
+after producing the tagged PDF. The public report contains only bounded status,
+version, and rule/check counts. Missing Java/JAR or a timeout is reported as
+unavailable; neither a pass nor a noncompliant result is a legal PDF/UA or
+WCAG conformance certificate. The institution still needs to review this
+evidence and define its acceptance policy.
 
 ## Workload admission
 
@@ -276,10 +277,13 @@ to `gemini.internal` are intercepted; the Worker strips the placeholder key,
 checks the job is still running and the model path is exact, then injects the
 institution's Gemini key in `x-goog-api-key`.
 
-The runner currently needs pinned packages from `cdn.jsdelivr.net`,
-`cdnjs.cloudflare.com`, and `unpkg.com` while Chromium executes the canonical
-pipeline. This is a controlled-pilot exception. Vendor and hash-lock those
-assets before using real teacher or student documents.
+The runner stages the pinned browser dependencies under
+`desktop/mcp/vendor/` and verifies every byte against `manifest.json` before
+opening a document. Production containers set `ALLOFLOW_MCP_OFFLINE_ASSETS=1`;
+the browser route aborts unexpected public requests, and the container allowlist
+does not include asset CDNs. The bundle includes the English Tesseract model;
+other OCR languages remain an explicit follow-up rather than a silent network
+fallback.
 
 The runner never forwards free-form browser/driver telemetry to stderr because
 it can contain document text, filenames, model errors, or credential-shaped
@@ -423,13 +427,12 @@ complete.
 
 Passing these gates and setting the synthetic acceptance version still does not
 authorize real documents; the institution privacy/data-processing review and
-runner asset vendoring remain separate release gates.
+the remaining OCR-language coverage, validator operational-acceptance, and institutional privacy/review gates are separate.
 
 ## Recommended next remote coverage
 
-The next remote capability should be independently licensed, offline PDF/UA
-validation with a separate bounded timeout and honest pass/fail/unknown
-semantics. After that, add accessible HTML, an explicit artifact table, and
-selected alternative formats. Keep batch remediation and PII-heavy tools
-deferred until quotas, retention, privacy review, and operational ownership are
-ready for their larger blast radius.
+PDF/UA evidence is now available from the packaged CLI. The next remote
+capability should be accessible HTML, an explicit artifact table, and selected
+alternative formats. Keep batch remediation and PII-heavy tools deferred until
+quotas, retention, privacy review, and operational ownership are ready for their
+larger blast radius.

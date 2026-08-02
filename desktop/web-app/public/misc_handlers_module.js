@@ -701,7 +701,7 @@ const handleLoadProject = (e, deps) => {
             // teacher on the wrong tool / an out-of-range step); (2) clamp the step into range;
             // (3) gate on the saved schema version so a newer file doesn't restore garbage.
             const _gtp = rawData.guidedTourProgress;
-            if (_gtp && typeof _gtp.guidedStep === 'number') {
+            if (_gtp && (typeof _gtp.guidedStep === 'number' || typeof _gtp.stepId === 'string')) {
                 if (_gtp.version == null || _gtp.version === 1) {
                     const _validIds = Array.isArray(deps.guidedStepIds) ? deps.guidedStepIds : [];
                     const _validSet = new Set(_validIds);
@@ -709,7 +709,11 @@ const handleLoadProject = (e, deps) => {
                     const _sel = Array.isArray(_gtp.selectedIds) ? _cleanIds(_gtp.selectedIds) : null;
                     if (deps.setGuidedSelectedIds) deps.setGuidedSelectedIds(_sel);
                     const _activeIds = _sel ? _validIds.filter(id => id === 'source-input' || _sel.includes(id)) : _validIds;
-                    const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeIds.length - 1)));
+                    // Prefer the stable tool ID so a reordered or customized path still resumes
+                    // the intended panel. Older project files retain their numeric-index fallback.
+                    const _stepById = typeof _gtp.stepId === 'string' ? _activeIds.indexOf(_gtp.stepId) : -1;
+                    const _rawStep = _stepById >= 0 ? _stepById : (Number.isInteger(_gtp.guidedStep) ? _gtp.guidedStep : 0);
+                    const _step = Math.max(0, Math.min(_rawStep, Math.max(0, _activeIds.length - 1)));
                     if (deps.setGuidedStep) deps.setGuidedStep(_step);
                     if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(_cleanIds(_gtp.completedSteps));
                     if (deps.setGuidedSkippedIds) deps.setGuidedSkippedIds(_cleanIds(_gtp.skippedSteps));
@@ -719,6 +723,8 @@ const handleLoadProject = (e, deps) => {
                         const _rawEvidence = _gtp.deliveryEvidence && typeof _gtp.deliveryEvidence === 'object' ? _gtp.deliveryEvidence : {};
                         deps.setGuidedDeliveryEvidence(_evidenceKeys.reduce((result, key) => { if (_rawEvidence[key] === true) result[key] = true; return result; }, {}));
                     }
+                    // The host callback normalizes this untrusted project value before state entry.
+                    if (deps.setGuidedPlanBrief) deps.setGuidedPlanBrief(_gtp.planBrief);
                     if (deps.setGuidedMode) deps.setGuidedMode(true);
                     if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
                 } else if (addToast) {

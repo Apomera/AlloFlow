@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio ತೆರೆಯಲಾಗಿದೆ.",
   "cmd.open_video_studio_hint": "ವಾಕ್‌ಥ್ರೂಗಳನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ, ಶೀರ್ಷಿಕೆ ಸೇರಿಸಿ ಮತ್ತು ಸಂಪಾದಿಸಿ",
   "palette.ctx.videoStudio": "ಇಲ್ಲಿ — Video Studio",
-  "palette.close": "ಆದೇಶ ಪ್ಯಾಲೆಟ್ ಮುಚ್ಚಿರಿ"
+  "palette.close": "ಆದೇಶ ಪ್ಯಾಲೆಟ್ ಮುಚ್ಚಿರಿ",
+  "cmd.apply_lesson_template": "ಉಳಿಸಿದ ಟೆಂಪ್ಲೇಟ್‌ನಿಂದ ಪ್ರಾರಂಭಿಸಿ",
+  "cmd.apply_lesson_template_done": "ಇದರಿಂದ ಪ್ರಾರಂಭಿಸಲಾಗಿದೆ: ",
+  "cmd.apply_lesson_template_hint": "ನೀವು ಉಳಿಸಿದ ಟೆಂಪ್ಲೇಟ್‌ಗಳಲ್ಲಿ ಒಂದರಿಂದ ಹೊಸ ಯೋಜನೆಯನ್ನು ಪ್ರಾರಂಭಿಸುತ್ತದೆ",
+  "cmd.apply_lesson_template_missing": "ಈ ಹೆಸರಿನ ಟೆಂಪ್ಲೇಟ್ ಕಂಡುಬರಲಿಲ್ಲ: ",
+  "cmd.apply_lesson_template_which": "ಯಾವ ಟೆಂಪ್ಲೇಟ್?",
+  "cmd.rebuild_lesson_step": "ಯೋಜನೆಯ ಒಂದು ಹಂತವನ್ನು ಮರುನಿರ್ಮಿಸಿ",
+  "cmd.rebuild_lesson_step_done": "ಹಂತವನ್ನು ಮರುನಿರ್ಮಿಸಲಾಗುತ್ತಿದೆ: ",
+  "cmd.rebuild_lesson_step_hint": "ಒಂದು ಸಂಪನ್ಮೂಲವನ್ನು ಮರುಸೃಷ್ಟಿಸುತ್ತದೆ — ಹಂತದ ಸಂಖ್ಯೆಯನ್ನು ಹೇಳಿ",
+  "cmd.rebuild_lesson_step_missing": "ಯೋಜನೆಯಲ್ಲಿ ಆ ಹಂತ ಕಂಡುಬರಲಿಲ್ಲ.",
+  "cmd.rebuild_lesson_step_none": "ಯೋಜನೆಯಲ್ಲಿ ಇನ್ನೂ ಯಾವುದೇ ಹಂತಗಳಿಲ್ಲ.",
+  "cmd.rebuild_lesson_step_which": "ಯಾವ ಹಂತ?",
+  "cmd.run_lesson_blueprint": "ಪಾಠ ಯೋಜನೆಯನ್ನು ರಚಿಸಿ",
+  "cmd.run_lesson_blueprint_done": "ಯೋಜನೆ ರಚಿಸಲಾಗುತ್ತಿದೆ — ಕಾರ್ಡ್‌ನಲ್ಲಿ ಪ್ರತಿಯೊಂದು ಹಂತವನ್ನು ನೋಡಬಹುದು.",
+  "cmd.run_lesson_blueprint_hint": "ಪ್ರಸ್ತುತ ಯೋಜನೆಯಲ್ಲಿರುವ ಎಲ್ಲಾ ಸಂಪನ್ಮೂಲಗಳನ್ನು ರಚಿಸುತ್ತದೆ",
+  "cmd.cancelled": "ರದ್ದುಗೊಳಿಸಲು ವಿನಂತಿಸಲಾಗಿದೆ. ಪೂರೈಕೆದಾರರು ಇದನ್ನು ಬೆಂಬಲಿಸಿದಾಗ ಪ್ರಸ್ತುತ ಕಾರ್ಯಾಚರಣೆ ನಿಲ್ಲುತ್ತದೆ."
 }

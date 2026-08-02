@@ -1,0 +1,95 @@
+const keys = [
+  'phase_access', 'phase_access_description', 'phase_assess', 'phase_assess_description',
+  'phase_assign', 'phase_assign_description', 'phase_deliver', 'phase_deliver_description',
+  'phase_finish', 'phase_finish_description', 'phase_organize', 'phase_organize_description',
+  'phase_participate', 'phase_participate_description', 'phase_plan', 'phase_plan_description',
+  'phase_understand', 'phase_understand_description', 'phase_context', 'phase_progress', 'phase_of',
+];
+const make = (values) => Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+
+module.exports = {
+  acholi: make([
+    'Yub yot me donyo', 'Yub yo mapol me winyo ki niang jami ma tye iye.', 'Pimo pwony', 'Kob jami ma nyuto adwogi ki moko rwom mar rwate.',
+    'Moko tic', 'Coo cik, gin ma imito, ki kit me moko mabeco pi latin kwan.', 'Nen ki miyo', 'Yer yo ma ber me gam, poko, onyo kare me wot ki lwak.',
+    'Neno ki tyeko', 'Nen kwan doki ki gwoko rik pa tyeko.', 'Yub yore', 'Ket jami i yo ma twero pwonyo.',
+    'Yub dano me tic', 'Med yo me lube, lok, yenyo, ki yubo jami.', 'Yub', 'Yer gin ma i cak ki adwogi ma imito.',
+    'Niang', 'Yen peko, tam, ki gin ma pwony mito mukwongo.', 'Kare ma gin telo', 'Mede pa kare ma gin telo', 'Kare {current} i kin {total}',
+  ]),
+  chin_falam: make([
+    'Zaatnak a si', 'Thuannak le a theihnak dang hman in awmteri a theihnak.', 'Zirnak zoh', 'Hmanruah i khawm in a tlingnak zoh.',
+    'Tawl', 'Zirlaite caah thu, tum, le hlawtnak tehfung cawih.', 'Mataw le peh', 'Pianthlak, pekkhawm, asilole live session caah a felmi lam hril.',
+    'Zoh le dih', 'Zirnak zoh in dihnihna hopa hman.', 'Bawltu', 'Hmanruah cu zirhnak dingin rem mi zawn ah pehtlang.',
+    'Khawsaunak ser', 'Cawlcanghnak, relruahnak, zawnfingnak le sernak lam dang dang thun.', 'Bawl', 'Mikhatnak le cuimi a thlawnmi ngahnak hril.',
+    'Theih', 'Khuknak, ruahnak le zirhnak caah a thupi mi zawn.', 'Hruaitu zawn', 'Hruaitu zawn kalnak', 'Zawn {current}, zawn {total} lakah',
+  ]),
+  chin_hakha: make([
+    'Donyo theih nak nei ter', 'Thu a theihnak le a theihthiamnak dingah lam tampi ser.', 'Zirnak zoh', 'Hmanruah lak in a tlingnak zoh.',
+    'Tawl', 'Zirlaite caah thupek, tum le hmanruah hna cawih.', 'Mataw le pek', 'Export, share, asilole live session lam a tlingmi hril.',
+    'Zoh le dih', 'Zirnak zoh in dihnihna khawl.', 'Bawltu', 'Hmanruah cu zirhnak dingin rem mi khen ah pehtlang.',
+    'Khawsaunak ser', 'Cawlcanghnak, relruahnak, zawnfingnak le sernak dingah lam dang thun.', 'Bawl', 'Mikhatnak le a duhmi a ngahnak hril.',
+    'Theih', 'Khuknak, ruahnak le zirhnak caah a thupi mi zawn.', 'Hruaitu zawn', 'Hruaitu zawn kalnak', 'Zawn {current}, zawn {total} lakah',
+  ]),
+  karen: make([
+    'Tee bluh hti', 'Naw ku htee meh kaw hku, htee hta hti meh ku kaw meh hku hti.', 'Saw k’thaw', 'K’thaw la k’thaw htee, kaw htee hti htee hta ta bluh.',
+    'Tee hsoh', 'Naw k’thaw meh htee, hku, la htee hsoh hti meh ku p’ghaw.', 'Htee la p’ghaw', 'P’ghaw hti, p’ghaw hsoh, la live hti meh hku hti htee.',
+    'Htee la bluh', 'K’thaw htee la bluh meh ku htee hsoh.', 'Hsoh hti', 'Htee hku hti meh ku hsoh hta hti htee.',
+    'Htee p’ghaw', 'K’thaw, hsoh, htee la hku hti p’ghaw htee.', 'Hsoh', 'Htee hku la hsoh hti htee hku.',
+    'Htee hti', 'Htee hku hti htee hta hsoh, htee la hku hti htee.', 'Htee p’ghaw k’thaw', 'Htee p’ghaw k’thaw kalnak', 'Htee {current} hta {total}',
+  ]),
+  maay_maay: make([
+    'La heli karo', 'Samee dhowr waddo oo lagu arko laguna fahmo waxa ku jira.', 'Hubi barashada', 'Ururi caddeyn oo xaqiiji iswaafajinta.',
+    'U qoondee', 'Qor tilmaamo, yoolal iyo shuruudaha guusha ee ardayda.', 'Hordhac iyo gudbin', 'Dooro waddada saxda ah ee dhoofinta, wadaagga ama cashar toos ah.',
+    'Dib u eeg oo dhammee', 'Dib u eeg casharka oo kaydi soo koobidda dhammaystirka.', 'Abaabul', 'Ku xiro khayraadka taxane la bari karo.',
+    'Dhis ka-qaybgal', 'Ku dar waddooyin lagu tababarto, lagu doodo, lagu sahamiyo laguna abuuro.', 'Qorshee', 'Dooro isha iyo natiijada la doonayo.',
+    'Faham', 'Raadi caqabado, fikrado iyo mudnaanta waxbaridda.', 'Marxalad la hagayo', 'Horumarka marxaladda la hagayo', 'Marxalad {current} oo ka mid ah {total}',
+  ]),
+  marshallese: make([
+    'Kōṃṃan bwe en tōbrak', 'Kōṃṃan wāween ko relap ñan an armej lale im meleleik men ko rej walok.', 'Lale katak', 'Kobaik men ko rej kamool im lale ñe rej jimwe ippān jikin katak.',
+    'Kōṃṃan jerbal', 'Jeje kōmelele, melele in jikin jerbal, im wāween an juon ri katak tōbrak.', 'Lale im lewaj', 'Kōṃṃan jikin eo eṃṃan ñan export, share, ak jikuul ilo ien eo.',
+    'Lale im kadeloñ', 'Lale katak eo im kōjparok kōmelele in kadeloñ.', 'Kobaik', 'Kobaik men ko ilo juon ial eo emaroñ katak.',
+    'Kōṃṃan an armej bōk kwōjarjar', 'Kobaik wāween ñan jerbal, bwebwenato, lale, im kōṃṃan men.', 'Bōk tokjān', 'Kōjparok men eo im jikin eo kwōj kōtmene.',
+    'Melele', 'Lale jorrāān, melele, im men ko rej aurok ñan katak.', 'Jikin eo ej kōmman', 'Kōmman ilo jikin eo ej kōmman', 'Jikin {current} ilo {total}',
+  ]),
+  lao: make([
+    'ເຮັດໃຫ້ເຂົ້າເຖິງໄດ້', 'ສ້າງຫຼາຍວິທີເພື່ອຮັບຮູ້ແລະເຂົ້າໃຈເນື້ອຫາ.', 'ກວດການຮຽນຮູ້', 'ເກັບຫຼັກຖານແລະກວດສອບຄວາມສອດຄ່ອງ.',
+    'ມອບໝາຍ', 'ຂຽນຄຳແນະນຳ, ເປົ້າໝາຍ ແລະເກນຄວາມສຳເລັດສຳລັບນັກຮຽນ.', 'ເບິ່ງຕົວຢ່າງແລະສົ່ງມອບ', 'ເລືອກວິທີສົ່ງອອກ, ແບ່ງປັນ ຫຼື ຮຽນສົດທີ່ເໝາະສົມ.',
+    'ທົບທວນແລະສຳເລັດ', 'ທົບທວນບົດຮຽນແລະບັນທຶກບົດສະຫຼຸບການສຳເລັດ.', 'ຈັດລະບຽບ', 'ເຊື່ອມຊັບພະຍາກອນເປັນລຳດັບທີ່ສາມາດສອນໄດ້.',
+    'ສ້າງການມີສ່ວນຮ່ວມ', 'ເພີ່ມວິທີຝຶກ, ສົນທະນາ, ສຳຫຼວດ ແລະ ສ້າງສັນ.', 'ວາງແຜນ', 'ເລືອກແຫຼ່ງຂໍ້ມູນແລະຜົນໄດ້ຮັບທີ່ຕ້ອງການ.',
+    'ເຂົ້າໃຈ', 'ຊອກຫາອຸປະສັກ, ແນວຄິດ ແລະ ບູລິມະສິດການສອນ.', 'ຂັ້ນຕອນທີ່ມີຄຳແນະນຳ', 'ຄວາມຄືບໜ້າຂັ້ນຕອນທີ່ມີຄຳແນະນຳ', 'ຂັ້ນຕອນ {current} ຈາກ {total}',
+  ]),
+  kirundi: make([
+    'Gira bigerweko', 'Tegura uburyo bwinshi bwo kubona no gutahura ibiri mu nyandiko.', 'Suzuma ivyigwa', 'Koranya ibimenyamenya uheze wemeze ko bihuye.',
+    'Gena', 'Andika amabwirizwa, intumbero n’ingingo z’intsinzi ku banyeshure.', 'Raba imbere kandi utange', 'Hitamwo inzira ibereye yo gusohora, gusangira canke kwigira hamwe kuri murongo.',
+    'Suzuma uheze urangize', 'Suzuma isomo ubike incamake yo kurangiza.', 'Tunganya', 'Huza ibikoresho mu rutonde rushobora kwigishwa.',
+    'Wubake uruhara', 'Ongeramwo uburyo bwo kwimenyereza, kuganira, kurondera no kurema.', 'Tegura', 'Hitamwo isoko n’igisubizo wipfuza.',
+    'Tahura', 'Rondera intambamyi, ivyiyumviro n’ibintu vy’ingenzi mu kwigisha.', 'Igihe kirongowe', 'Iterambere ry’igihe kirongowe', 'Igihe {current} kuri {total}',
+  ]),
+  yoruba: make([
+    'Jẹ́ kí ó rọrùn láti lò', 'Ṣẹ̀dá àwọn ọ̀nà púpọ̀ láti rí àti láti lóye àkóónú.', 'Ṣàyẹ̀wò ẹ̀kọ́', 'Kó ẹ̀rí jọ kí o sì jẹ́rìí pé ó bá ara mu.',
+    'Pín iṣẹ́', 'Kọ́ àwọn ìtọ́ni, àfojúsùn àti ààmì àṣeyọrí fún àwọn akẹ́kọ̀ọ́.', 'Àkọ́kọ́-wò àti fífi ránṣẹ́', 'Yan ọ̀nà tó yẹ fún títajà síta, pínpín tàbí ìpàdé tààrà.',
+    'Ṣàyẹ̀wò kí o sì parí', 'Ṣàyẹ̀wò ẹ̀kọ́ kí o sì pamọ́ àkótán ìparí.', 'Ṣètò', 'So àwọn ohun èlò pọ̀ sí ọ̀nà tí a lè fi kọ́ni.',
+    'Kọ́ ìkópa', 'Fi ọ̀nà sílẹ̀ fún ìdánwò, ìjíròrò, ìwádìí àti ìṣẹ̀dá.', 'Pèsè ètò', 'Yan orísun àti àbájáde tí a fẹ́.',
+    'Lóye', 'Wá àwọn ìdènà, èrò àti ohun tó ṣe pàtàkì nínú kíkọ́ni.', 'Ìpele tí a ń darí', 'Ìlọsíwájú ìpele tí a ń darí', 'Ìpele {current} nínú {total}',
+  ]),
+  tagalog: make([
+    'Gawing accessible', 'Gumawa ng maraming paraan para madama at maunawaan ang nilalaman.', 'Suriin ang pagkatuto', 'Mangolekta ng ebidensya at tiyakin ang pagkakatugma.',
+    'Magtalaga', 'Sumulat ng mga panuto, layunin, at pamantayan ng tagumpay para sa mga mag-aaral.', 'I-preview at ihatid', 'Piliin ang tamang paraan ng pag-export, pagbabahagi, o live session.',
+    'Suriin at tapusin', 'Suriin ang aralin at i-save ang buod ng pagkumpleto.', 'Ayusin', 'Pag-ugnayin ang mga resource sa pagkakasunod na maaaring ituro.',
+    'Bumuo ng pakikilahok', 'Magdagdag ng paraan para magsanay, magtalakay, magsaliksik, at lumikha.', 'Magplano', 'Piliin ang source at inaasahang resulta.',
+    'Unawain', 'Hanapin ang mga hadlang, konsepto, at prayoridad sa pagtuturo.', 'May gabay na yugto', 'Pag-usad ng may gabay na yugto', 'Yugto {current} sa {total}',
+  ]),
+  khmer: make([
+    'ធ្វើឱ្យអាចចូលប្រើបាន', 'បង្កើតវិធីជាច្រើនដើម្បីយល់ឃើញ និងយល់អំពីមាតិកា។', 'ពិនិត្យការរៀន', 'ប្រមូលភស្តុតាង និងផ្ទៀងផ្ទាត់ភាពស្របគ្នា។',
+    'ចាត់តាំង', 'សរសេរការណែនាំ គោលដៅ និងលក្ខខណ្ឌជោគជ័យសម្រាប់សិស្ស។', 'មើលជាមុន និងចែកចាយ', 'ជ្រើសរើសផ្លូវនាំចេញ ចែករំលែក ឬសម័យផ្ទាល់ដែលសមស្រប។',
+    'ពិនិត្យ និងបញ្ចប់', 'ពិនិត្យមេរៀន ហើយរក្សាទុកសេចក្តីសង្ខេបការបញ្ចប់។', 'រៀបចំ', 'ភ្ជាប់ធនធានជាលំដាប់ដែលអាចបង្រៀនបាន។',
+    'បង្កើតការចូលរួម', 'បន្ថែមវិធីអនុវត្ត ពិភាក្សា ស្វែងរក និងបង្កើត។', 'រៀបផែនការ', 'ជ្រើសប្រភព និងលទ្ធផលដែលចង់បាន។',
+    'យល់ដឹង', 'ស្វែងរកឧបសគ្គ គំនិត និងអាទិភាពនៃការបង្រៀន។', 'ដំណាក់កាលមានការណែនាំ', 'វឌ្ឍនភាពដំណាក់កាលមានការណែនាំ', 'ដំណាក់កាល {current} ក្នុងចំណោម {total}',
+  ]),
+  portuguese_angola: make([
+    'Tornar acessível', 'Criar várias formas de perceber e compreender o conteúdo.', 'Verificar a aprendizagem', 'Reunir evidências e verificar o alinhamento.',
+    'Atribuir', 'Escrever instruções, objectivos e critérios de sucesso para os alunos.', 'Pré-visualizar e entregar', 'Escolher o percurso certo de exportação, partilha ou sessão ao vivo.',
+    'Rever e terminar', 'Rever a lição e guardar o resumo da conclusão.', 'Organizar', 'Ligar os recursos numa sequência ensinável.',
+    'Criar participação', 'Adicionar formas de praticar, discutir, explorar e criar.', 'Planear', 'Escolher a fonte e o resultado pretendido.',
+    'Compreender', 'Encontrar barreiras, conceitos e prioridades de ensino.', 'Fase guiada', 'Progresso da fase guiada', 'Fase {current} de {total}',
+  ]),
+};

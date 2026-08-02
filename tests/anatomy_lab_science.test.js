@@ -1713,4 +1713,299 @@ describe('Anatomy Systems in Motion', () => {
     expect(source).toContain('.anatomy-motion-node[data-disruption-point="true"]');
     expect(source).toContain('.anatomy-motion-impact{display:grid');
   });
+  it('connects cardiac delivery to filtration, reabsorption, and urine concentration', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
+      _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 1, _showSystemsMotion: true,
+      _systemsMotionScenario: 'fluid', _systemsMotionStep: 2, _systemsMotionDeepDive: true
+    });
+    expect(html).toContain('data-systems-motion="fluid-balance"');
+    expect(html).toContain('data-systems-motion-scenario="fluid"');
+    expect(html).toContain('aria-label="Fluid balance regulation pathway"');
+    expect(html).toContain('data-systems-motion-choice="fluid"');
+    expect(html).toContain('data-systems-motion-node="renal-perfusion"');
+    expect(html).toContain('data-systems-motion-node="renal-filtration"');
+    expect(html).toContain('data-systems-motion-node="renal-reabsorption"');
+    expect(html).toContain('data-systems-motion-node="renal-concentration"');
+    expect(html).toContain('Selective transport returns sodium, glucose, amino acids, bicarbonate, and water');
+    expect(html).toContain('The proximal tubule performs bulk reabsorption');
+    expect(html).toContain('data-systems-motion-advanced="renal-reabsorption"');
+  });
+
+  it('links glomerular barrier disruption to the kidney Clinical Lens', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
+      _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 0, _regionalAtlasClinical: true,
+      _showSystemsMotion: true, _systemsMotionScenario: 'fluid', _systemsMotionStep: 1,
+      _systemsMotionPerturbation: true, _systemsMotionCompleted: { 'renal-perfusion': true }
+    });
+    expect(html).toContain('data-systems-motion-perturbation="glomerular-barrier-injury"');
+    expect(html).toContain('data-systems-motion-impact="glomerular-barrier-injury"');
+    expect(html).toContain('Glomerular barrier injury impact chain');
+    expect(html).toContain('Protein enters Bowman space and the tubular filtrate.');
+    expect(html).toContain('data-anatomy-clinical="glomerular_barrier_injury"');
+    expect(html).toContain('data-anatomy-clinical-overlay="glomerular_barrier_injury"');
+    expect(html).toContain('data-systems-motion-choice="fluid" data-systems-motion-choice-progress="1/4"');
+  });
+  it('unlocks Systems Synthesis only after all checkpoints are solved', () => {
+    const incomplete = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionCompleted: { 'muscle-force': true }, _showSystemsSynthesis: true
+    });
+    expect(incomplete).not.toContain('data-systems-synthesis="exercise-response"');
+    expect(incomplete).not.toContain('View synthesis');
+
+    const complete = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionCompleted: { 'muscle-force': true, 'joint-motion': true, 'cardiac-delivery': true, 'gas-exchange': true },
+      _showSystemsSynthesis: true
+    });
+    expect(complete).toContain('data-systems-synthesis="exercise-response"');
+    expect(complete).toContain('Systems Synthesis');
+    expect(complete).toContain('data-synthesis-step="muscle-force"');
+    expect(complete).toContain('Typical physiology');
+    expect(complete).toContain('Pulmonary edema');
+    expect(complete).toContain('Integrated takeaway:');
+    expect(complete).toContain('aria-label="Review Generate force: Sarcomeres shorten and tendon tension rises."');
+    expect(complete).toContain('Hide synthesis');
+  });
+
+  it('summarizes every scenario with its own causal takeaway and disruption comparison', () => {
+    const cases = [
+      { scenario: 'meal', system: 'organs', view: 'anterior', structure: 'liver', expected: 'Absorption is not the end of digestion' },
+      { scenario: 'wound', system: 'integumentary', view: 'anterior', structure: 'epidermis', expected: 'A wound is a systems problem' },
+      { scenario: 'fluid', system: 'organs', view: 'posterior', structure: 'kidneys', expected: 'Kidneys regulate the internal environment' }
+    ];
+    cases.forEach((scenario) => {
+      const steps = scenario.scenario === 'meal'
+        ? { 'meal-absorption': true, 'meal-portal': true, 'meal-processing': true, 'meal-delivery': true }
+        : scenario.scenario === 'wound'
+          ? { 'wound-perfusion': true, 'wound-hemostasis': true, 'wound-inflammation': true, 'wound-rebuilding': true }
+          : { 'renal-perfusion': true, 'renal-filtration': true, 'renal-reabsorption': true, 'renal-concentration': true };
+      const html = renderAnatomy({
+        system: scenario.system, view: scenario.view, complexity: 3, selectedStructure: scenario.structure,
+        _regionalAtlasOpen: scenario.structure, _showSystemsMotion: true, _systemsMotionScenario: scenario.scenario,
+        _systemsMotionCompleted: steps, _showSystemsSynthesis: true
+      });
+      expect(html).toContain('data-systems-synthesis');
+      expect(html).toContain('Typical physiology');
+      expect(html).toContain('Integrated takeaway:');
+      expect(html).toContain(scenario.expected);
+    });
+  });
+
+  it('offers a persisted comfortable-reading mode for dense anatomy explanations', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const standard = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3 });
+    const comfort = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3, _readingMode: true });
+    expect(source).toContain('function toggleReadingMode()');
+    expect(source).toContain('[data-reading-mode=true]');
+    expect(standard).toContain('data-reading-mode=');
+    expect(standard).toContain('Enable comfortable reading mode');
+    expect(comfort).toContain('Comfort text on');
+    expect(comfort).toContain('Disable comfortable reading mode');
+  });
+
+  it('provides a current-layer isolation shortcut without removing layer toggles', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const html = renderAnatomy({ system: 'circulatory', view: 'anterior', complexity: 3 });
+    expect(source).toContain('var isolateLayer = function(lid)');
+    expect(source).toContain('data-anatomy-layer-isolate');
+    expect(html).toContain('data-anatomy-layer-isolate');
+    expect(html).toContain('Show only Circulatory layer');
+    expect(html).toContain('Hide Circulatory layer');
+  });
+
+  it('makes the 3D anatomy overview keyboard-operable for rotation, zoom, and marker cycling', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const html = renderAnatomy({ system: 'organs', view: 'anterior', complexity: 3, _bodyView3d: true });
+    expect(source).toContain('canvas._anatomy3dKeyControl');
+    expect(source).toContain('markerItems');
+    expect(source).toContain('camera.position.z');
+    expect(html).toContain('data-anatomy-view');
+    expect(html).toContain('ArrowUp ArrowDown ArrowLeft ArrowRight + - [ ] R Home 0');
+    expect(html).toContain('square brackets to cycle labeled markers');
+  });
+
+
+  it('turns an incorrect Systems in Motion answer into a targeted mechanism hint', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionStep: 0, _systemsMotionAnswer: 0
+    });
+    expect(html).toContain('data-systems-motion-answer=');
+    expect(html).toContain('data-misconception=');
+    expect(html).toContain('Selected option: Calcium expands the tendon');
+    expect(html).toContain('Re-read the causal chain');
+    expect(html).toContain('Show mechanism');
+    expect(html).toContain('role=');
+  });
+
+  it('keeps a pinned comparison target visible outside the detail panel', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'skull',
+      _compareStructure: 'ribs'
+    });
+    expect(html).toContain('data-anatomy-compare-tray=');
+    expect(html).toContain('Pinned comparison target');
+    expect(html).toContain('Comparison target');
+    expect(html).toContain('Open comparison target Ribs');
+    expect(html).toContain('Clear comparison target Ribs');
+  });
+
+
+  it('turns confidence ratings into a one-click review queue', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3,
+      _structureConfidence: { skull: 'practice', ribs: 'learning', clavicle: 'practice', sternum: 'practice' }
+    });
+    expect(html).toContain('data-anatomy-review-queue');
+    expect(html).toContain('Review queue');
+    expect(html).toContain('data-review-queue-id="skull"');
+
+
+    expect(html).toContain('data-review-queue-id="clavicle"');
+    expect(html).toContain('+1 more');
+  });
+
+  it('does not show an empty review queue', () => {
+    const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3 });
+    expect(html).not.toContain('data-anatomy-review-queue');
+  });
+
+  it('builds an accessible structure-centered relationship map', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const html = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'skull'
+    });
+    expect(source).toContain('function openRelationshipConnection(connection)');
+    expect(source).toContain('nextConnectionsViewed[connection.id] = true');
+    expect(html).toContain('data-anatomy-relationship-map="skull"');
+    expect(html).toContain('role="figure"');
+    expect(html).toContain('aria-labelledby="anatomy-relationship-map-skull"');
+    expect(html).toContain('data-relationship-connection="conn_3"');
+    expect(html).toContain('data-relationship-connection="conn_10"');
+    expect(html).toContain('Lever System for Movement');
+    expect(html).toContain('Open Muscular system diagram from Lever System for Movement');
+    expect(html).toContain('System-context links can involve this structure directly or through the larger skeletal system.');
+  });
+
+  it('does not render a relationship map without a selected structure', () => {
+    const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3 });
+    expect(html).not.toContain('data-anatomy-relationship-map');
+  });
+
+  it('renders an adaptive whole-body mastery map with an exact priority', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', view: 'anterior', complexity: 3, _showMasteryMap: true,
+      _structuresViewed: { skull: true, ribs: true, biceps: true, quads: true },
+      _structureConfidence: { skull: 'mastered', ribs: 'practice', biceps: 'learning', quads: 'practice' }
+    });
+    expect(html).toContain('data-anatomy-mastery-map="true"');
+    expect(html).toContain('Whole-body mastery map');
+    expect(html).toContain('data-mastery-priority="muscular"');
+    expect(html).toContain('Muscular — 2 structures ready for review');
+    expect(html).toContain('data-mastery-system="skeletal"');
+    expect(html).toContain('data-mastery-system="muscular"');
+    expect(html).toContain('data-mastery-status="review"');
+    expect(html).toContain('aria-label="Muscular: 0 got it, 2 to review, 2 viewed of');
+    expect(html).toContain('role="group"');
+    expect(html).toContain('3 to review');
+    expect(html).toContain('Study this system');
+  });
+
+  it('keeps the whole-body mastery map behind an accessible disclosure', () => {
+    const html = renderAnatomy({ system: 'skeletal', view: 'anterior', complexity: 3 });
+    expect(html).toContain('aria-controls="anatomy-mastery-map"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('Mastery map');
+    expect(html).not.toContain('data-anatomy-mastery-map="true"');
+  });
+
+  it('personalizes the Scale Journey from alveoli to the lung cell atlas', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const html = renderAnatomy({
+      system: 'respiratory', view: 'anterior', complexity: 3, selectedStructure: 'alveoli'
+    });
+    expect(source).toContain('_scaleJourneySystem: sysKey');
+    expect(source).toContain('_scaleJourneyStructure: sel ? sel.id : null');
+    expect(html).toContain('data-anatomy-scale-journey="alveoli"');
+    expect(html).toContain('data-scale-stage="body"');
+    expect(html).toContain('data-scale-stage="structure"');
+    expect(html).toContain('data-scale-stage="tissue"');
+    expect(html).toContain('data-scale-stage="cell"');
+    expect(html).toContain('data-scale-specialist="anatomyLens"');
+    expect(html).toContain('Alveolus and gas-exchange deep dive');
+    expect(html).toContain('data-scale-cell-context="lung"');
+    expect(html).toContain('Open cell level: Lung Cell Atlas');
+    expect(html).toContain('Current route: Respiratory → Alveoli → Alveolus and gas-exchange deep dive → Lung Cell Atlas.');
+  });
+
+  it('hands brain structures to the dedicated brain and cell atlases', () => {
+    const html = renderAnatomy({
+      system: 'nervous', view: 'anterior', complexity: 3, selectedStructure: 'brain'
+    });
+    expect(html).toContain('data-anatomy-scale-journey="brain"');
+    expect(html).toContain('data-scale-specialist="brainAtlas"');
+    expect(html).toContain('Open tissue or specialist level: Brain Atlas');
+    expect(html).toContain('data-scale-cell-context="brain"');
+    expect(html).toContain('Open cell level: Brain Cell Atlas');
+    expect(html).toContain('Current route: Nervous → Brain → Brain Atlas → Brain Cell Atlas.');
+  });
+  it('adds a branching intervention lab to disrupted physiology', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionPerturbation: true
+    });
+
+    expect(html).toContain('data-systems-intervention="exercise"');
+    expect(html).toContain('Branch decision');
+    expect(html).toContain('Respond to the oxygen-delivery bottleneck');
+    expect(html).toContain('data-intervention-choice="exercise-support-exchange"');
+    expect(html).toContain('data-intervention-choice="exercise-increase-load"');
+    expect(html).toContain('Instructional physiology scenario');
+    expect(html).not.toContain('data-intervention-result=');
+  });
+
+  it('renders a correct intervention as a causal response pathway', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionPerturbation: true,
+      _systemsMotionInterventions: { exercise: 'exercise-support-exchange' }
+    });
+
+    expect(html).toContain('data-intervention-path="exercise-support-exchange"');
+    expect(html).toContain('data-intervention-result="correct"');
+    expect(html).toContain('Mechanism matched');
+    expect(html).toContain('Lower demand and improved alveolar-capillary transfer');
+    expect(html).toContain('More usable oxygen can reach working muscle');
+    expect(html).toContain('1/4 response decisions solved');
+  });
+
+  it('guides a wrong branch back to the disrupted mechanism and rejects forged choices', () => {
+    const base = {
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise',
+      _systemsMotionPerturbation: true
+    };
+    const wrong = renderAnatomy({
+      ...base,
+      _systemsMotionInterventions: { exercise: 'exercise-increase-load' }
+    });
+    const forged = renderAnatomy({
+      ...base,
+      _systemsMotionInterventions: { exercise: 'forged', forged: 'exercise-support-exchange' }
+    });
+
+    expect(wrong).toContain('data-intervention-result="reconsider"');
+    expect(wrong).toContain('Reconsider the bottleneck');
+    expect(wrong).toContain('Review disruption point');
+    expect(forged).not.toContain('data-intervention-result=');
+    expect(fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8')).toContain('safeEnumMap(d._systemsMotionInterventions, systemsMotionScenarioIds, systemsMotionInterventionOptionIds)');
+  });
 });

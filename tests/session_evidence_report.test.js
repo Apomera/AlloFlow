@@ -4,13 +4,14 @@ import { resolve } from 'node:path';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
+const mailbox = readFileSync(resolve(process.cwd(), 'apps_script/session_mailbox/Code.gs'), 'utf8');
 
 const helperStart = app.indexOf('const normalizeRosterSessionCodename');
 const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 if (helperStart < 0 || helperEnd < 0) throw new Error('Roster session helper markers are missing');
 const helpers = new Function(
   app.slice(helperStart, helperEnd)
-    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, countValidRosterQuizResponses, buildRosterSessionInsightBrief, buildRosterSessionSummary };'
+    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, countValidRosterQuizResponses, normalizeQuizReceiptQuestionIndexes, buildRosterSessionInsightBrief, buildRosterSessionSummary };'
 )();
 
 const csvHelperStart = teacher.indexOf('const rosterSessionCsvCell');
@@ -412,5 +413,100 @@ describe('session evidence report contract', () => {
     expect(teacher).toContain('session.insightBrief.evidenceCohorts.map');
     expect(teacher).toContain('downloadRosterSessionEvidenceCsv(session)');
     expect(teacher).toContain('window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv');
+  });
+});
+
+
+describe('live-session reliability refinements', () => {
+  it('counts targeted resource assignments separately from opened acknowledgements', () => {
+    const delivery = helpers.summarizeLiveSessionResourceDelivery({
+      roster: {
+        opened: { resourceId: 'r1', resourceAt: 100, viewingResourceId: 'r1', viewingAt: 101, viewingResourceAt: 100 },
+        pending: { resourceId: 'r1', resourceAt: 100, viewingResourceId: 'r1', viewingAt: 200, viewingResourceAt: 99 },
+        groupOpened: { groupId: 'g1', viewingResourceId: 'r2', viewingAt: 201, viewingResourceAt: 200 },
+        classPaced: { viewingResourceId: 'class-resource', viewingAt: 300 },
+      },
+      groups: { g1: { resourceId: 'r2', resourceAt: 200 } },
+      currentResourceId: 'class-resource',
+      sessionMode: 'sync',
+    });
+    expect(delivery).toMatchObject({ assigned: 3, opened: 2, pending: 1 });
+
+    expect(helpers.resolveLiveStudentResourceTarget({
+      entry: { resourceId: 'individual', resourceAt: 300, groupId: 'g1' },
+      groups: { g1: { resourceId: 'group', resourceAt: 200 } },
+      currentResourceId: 'class',
+      sessionMode: 'sync',
+    })).toEqual({ resourceId: 'individual', resourceAt: 300 });
+    expect(helpers.resolveLiveStudentResourceTarget({
+      entry: { groupId: 'g1' },
+      groups: { g1: { resourceId: 'group', resourceAt: 200 } },
+      currentResourceId: 'class',
+      sessionMode: 'sync',
+    })).toEqual({ resourceId: 'group', resourceAt: 200 });
+    expect(helpers.resolveLiveStudentResourceTarget({
+      entry: {}, groups: {}, currentResourceId: 'class', sessionMode: 'sync',
+    })).toEqual({ resourceId: 'class', resourceAt: null });
+    expect(app).toContain("const targetAt = target ? Number(target.resourceAt) : NaN;");
+    expect(app).toContain("Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt')");
+    expect(delivery.pendingUids).toEqual(['pending']);
+    const recovery = helpers.summarizeLiveSessionResourceDelivery({
+      roster: {
+        loading: { resourceId: 'support', resourceAt: 400, viewingResourceId: 'old', viewingResourceAt: 400, viewingResourceStatus: 'loading' },
+        failed: { resourceId: 'support', resourceAt: 400, viewingResourceId: 'old', viewingResourceAt: 400, viewingResourceStatus: 'failed' },
+        ready: { resourceId: 'support', resourceAt: 400, viewingResourceId: 'support', viewingResourceAt: 400, viewingResourceStatus: 'ready' },
+      },
+      groups: {}, currentResourceId: null, sessionMode: 'async',
+    });
+    expect(recovery).toMatchObject({ assigned: 3, opened: 1, pending: 2, loading: 1, failed: 1 });
+    expect(recovery.loadingUids).toEqual(['loading']);
+    expect(recovery.failedUids).toEqual(['failed']);
+  });
+
+  it('retains only deduplicated, privacy-safe per-question quiz counts', () => {
+    let evidence = {};
+    evidence = helpers.mergeLiveQuizEvidenceResponse(evidence, 'quiz-a', 'privateUid', 0, { itemType: 'mcq', answer: 'PRIVATE' });
+    evidence = helpers.mergeLiveQuizEvidenceResponse(evidence, 'quiz-a', 'privateUid', 0, { itemType: 'mcq', answer: 'PRIVATE-UPDATED' });
+    evidence = helpers.mergeLiveQuizEvidenceResponse(evidence, 'quiz-a', 'privateUid', 1, { itemType: 'short-answer', answer: 'PRIVATE-SECOND' });
+    evidence = helpers.mergeLiveQuizEvidenceResponse(evidence, 'quiz-a', 'privateUid', 2, { itemType: 'reflection', answer: 'PRIVATE-REFLECTION' });
+    evidence = helpers.mergeLiveQuizEvidenceResponse(evidence, 'quiz-b', 'privateUid', 0, { itemType: 'mcq', answer: 'PRIVATE-THIRD' });
+    expect(helpers.buildLiveQuizResponseCounts(evidence)).toEqual({ privateUid: 3 });
+    expect(JSON.stringify(evidence)).not.toContain('PRIVATE');
+    const summary = helpers.buildRosterSessionSummary({
+      sessionCode: 'session-quiz',
+      sessionData: {
+        createdAt: '2026-08-01T10:00:00.000Z',
+        roster: { privateUid: { name: 'Brave Otter', groupId: 'g1' } },
+        quizState: { allResponses: {} },
+      },
+      rosterKey: { students: { 'Brave Otter': 'g1' } },
+      mode: 'firebase',
+      quizResponseCountsByUid: { privateUid: 3 },
+    });
+    expect(summary.participants['Brave Otter'].responseCount).toBe(3);
+    expect(JSON.stringify(summary)).not.toContain('privateUid');
+  });
+
+  it('bounds fallback quiz receipt history and binds it to one activity', () => {
+    expect(helpers.normalizeQuizReceiptQuestionIndexes([0, 1, 1, 2], 2)).toEqual([0, 1, 2]);
+    const bounded = helpers.normalizeQuizReceiptQuestionIndexes(Array.from({ length: 130 }, (_, index) => index), 129);
+    expect(bounded).toHaveLength(128);
+    expect(bounded[0]).toBe(2);
+    expect(bounded.at(-1)).toBe(129);
+    expect(app).toContain('previousReceipt.activityId === activityId');
+    expect(app).toContain('questionIndexes,');
+    expect(app).toContain("Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt')");
+    expect(mailbox).toContain('questionIndexes.length > 128');
+    expect(mailbox).toContain('viewingResourceAt: 1');
+  });
+
+  it('requires an explicit end choice while targeted resources remain unconfirmed', () => {
+    expect(app).toContain('useFocusTrap(endSessionPreviewRef, Boolean(endSessionPreview)');
+    expect(app).toContain('completeLiveSessionEnd = async (saveSummary, allowUnconfirmed = false)');
+    const completionStart = app.indexOf('const completeLiveSessionEnd = async');
+    const completionSource = app.slice(completionStart);
+    expect(completionSource).toContain('deliveryGuard: true');
+    expect(completionSource.indexOf('await endMailboxLiveSession')).toBeLessThan(completionSource.indexOf('saveRosterSessionSummary'));
+    expect(completionSource).toContain('Save summary & end anyway');
   });
 });

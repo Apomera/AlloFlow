@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const SOLAR_SYSTEM_PATHS = [
@@ -20,13 +20,13 @@ describe('Solar System data-table semantics', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(count(source, /(?:h\("caption"|React\.createElement\('caption')/g)).toBe(3);
+      expect(count(source, /(?:h\("caption"|React\.createElement\('caption')/g)).toBe(5);
       expect(source).toContain("verification_table_t_a_should_1_00_for");
       expect(source).toContain("v_budget_earth_all_planets_hohmann");
       expect(source).toContain("quick_table_of_planet_properties_diame");
 
-      expect(count(source, /scope: ["']col["']/g)).toBe(13);
-      expect(count(source, /scope: ["']row["']/g)).toBe(3);
+      expect(count(source, /scope: ["']col["']/g)).toBe(21);
+      expect(count(source, /scope: ["']row["']/g)).toBe(5);
       expect(source).not.toContain('h("td", { style: tCellStyle }, b.emoji + " " + b.name)');
       expect(source).not.toContain('h("td", { style: bCellStyle }, p.emoji + " " + p.name)');
       expect(source).not.toContain("React.createElement('td', { className: 'p-1 font-bold '");

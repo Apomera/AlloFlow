@@ -163,10 +163,10 @@ describe('Test Prep content-revision progress boundaries', () => {
     expect(review.itemReasons['beta-2']).toBe('Not attempted yet');
   });
 
-  it('exports schema 3 and imports schemas 1, 2, and 3 without stamping legacy attempts current', () => {
+  it('exports schema 4 and imports older schemas without stamping legacy attempts current', () => {
     const currentProgress = { attempts: [attempt({ completedAt: 1 })] };
     const payload = Hub.exportProgress(currentProgress, {}, 9999);
-    expect(payload).toMatchObject({ schemaVersion: 3, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
+    expect(payload).toMatchObject({ schemaVersion: 4, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
     expect(Hub.importProgress(JSON.stringify(payload)).progress.attempts[0]).toMatchObject(CURRENT_IDENTITY);
 
     for (const schemaVersion of [1, 2]) {
@@ -179,7 +179,7 @@ describe('Test Prep content-revision progress boundaries', () => {
       expect(restored.progress.attempts[0]).toMatchObject({ packVersion: '', packContentFingerprint: '' });
       expect(Hub.contentIdentityStatus(restored.progress.attempts[0], CURRENT_IDENTITY)).toBe('legacy-unbound');
     }
-    expect(() => Hub.importProgress('{"schemaVersion":4,"kind":"alloflow-test-prep-progress"}')).toThrow(/Unsupported AlloFlow/);
+    expect(() => Hub.importProgress('{"schemaVersion":5,"kind":"alloflow-test-prep-progress"}')).toThrow(/Unsupported AlloFlow/);
   });
 
   it('strips present identity fields from legacy imports while schema 3 preserves them', () => {

@@ -195,7 +195,12 @@ describe('Code.gs v7 role-aware session document store (real source)', () => {
                 teams: { [one.uid]: 'red', [two.uid]: 'blue' },
             },
             bridgeReactions: { [one.uid]: { emoji: 'ok' }, [two.uid]: { emoji: 'help' } },
-            democracy: { votes: { [one.uid]: 'A', [two.uid]: 'B' } },
+            democracy: {
+                isActive: true,
+                phase: 'voting',
+                activeOptions: ['A', 'B'],
+                votes: { [one.uid]: 'A', [two.uid]: 'B' },
+            },
         } });
         const view = sb.call({ a: 'dget', ...one, c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
         expect(Object.keys(view.roster)).toEqual([one.uid]);
@@ -206,9 +211,35 @@ describe('Code.gs v7 role-aware session document store (real source)', () => {
         expect(Object.keys(view.quizState.teams)).toEqual([one.uid]);
         expect(Object.keys(view.bridgeReactions)).toEqual([one.uid]);
         expect(Object.keys(view.democracy.votes)).toEqual([one.uid]);
+        const changedVote = sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['democracy.votes.' + one.uid]: 'B',
+        } });
+        expect(changedVote.ok).toBe(true);
+        expect(changedVote.d.democracy.votes).toEqual({ [one.uid]: 'B' });
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['democracy.votes.' + one.uid]: 'Injected choice',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['democracy.votes.' + two.uid]: 'A',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['democracy.votes.' + one.uid + '.text']: 'A',
+        } }).e).toBe('denied');
+        expect(sb.teacherCall({ a: 'dpatch', c: sb.code, p: 's', u: {
+            'democracy.phase': 'idle',
+        } }).ok).toBe(true);
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['democracy.votes.' + one.uid]: 'A',
+        } }).e).toBe('denied');
         expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
             ['roster.' + one.uid + '.name']: 'Updated',
         } }).ok).toBe(true);
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['roster.' + one.uid + '.viewingResourceStatus']: 'loading',
+        } }).ok).toBe(true);
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['roster.' + one.uid + '.viewingResourceStatus']: 'private error text',
+        } }).e).toBe('denied');
         const receipt = {
             activityId: 'visual-quiz-2',
             questionIndex: 3,

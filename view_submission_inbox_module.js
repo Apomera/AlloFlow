@@ -115,6 +115,7 @@ var SI_ALLOSHEET_MIN_SCORE_GROUP = 5;
 var SI_ALLOSHEET_MAX_ASSIGNMENTS = 50;
 var SI_ALLOSHEET_MAX_SOURCE_ENTRIES = 2e3;
 var SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY = 200;
+var SI_ALLOSHEET_DUE_DATE_SCHEMA_VERSION = 1;
 function siAlloSheetPlainObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   var prototype = Object.getPrototypeOf(value);
@@ -147,6 +148,40 @@ function siAlloSheetTime(value) {
   var parsed = Date.parse(text);
   return Number.isFinite(parsed) ? parsed : null;
 }
+function siAlloSheetDueAt(value) {
+  if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : null;
+  var text = String(value == null ? "" : value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(text)) return null;
+  var parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function siAlloSheetDueTimeZone(value) {
+  var text = String(value == null ? "" : value).trim();
+  if (!text || text.length > 80 || /[\u0000-\u001f\u007f]/.test(text)) return "";
+  if (text !== "UTC" && !/^[A-Za-z][A-Za-z0-9._+-]*(?:\/[A-Za-z0-9._+-]+)+$/.test(text)) return "";
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone: text }).resolvedOptions().timeZone ? text : "";
+  } catch (e) {
+    return "";
+  }
+}
+function siAlloSheetDueDate(value) {
+  if (!siAlloSheetPlainObject(value)) return null;
+  var dueAt = siAlloSheetDueAt(value.dueAt);
+  if (dueAt === null) return null;
+  var timeZone = siAlloSheetDueTimeZone(value.timeZone || value.dueTimeZone);
+  var source = String(value.source == null ? "" : value.source).trim().toLowerCase();
+  return {
+    schemaVersion: SI_ALLOSHEET_DUE_DATE_SCHEMA_VERSION,
+    dueAt: new Date(dueAt).toISOString(),
+    ...timeZone ? { timeZone } : {},
+    source: source === "teacher-export" || source === "teacher-review" ? source : "legacy"
+  };
+}
+function siAlloSheetLateStatus(submittedTime, dueAtTime) {
+  if (!Number.isFinite(submittedTime) || !Number.isFinite(dueAtTime)) return "unknown_due_date";
+  return submittedTime > dueAtTime ? "late" : "on_time";
+}
 function siAlloSheetScore(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   return value >= 0 && value <= 100 ? value : null;
@@ -158,6 +193,35 @@ function siAlloSheetStatus(value) {
     return status;
   }
   return "other";
+}
+function siStableIdentityValue(value) {
+  var text = String(value == null ? "" : value).trim();
+  if (!text || text.length > 160 || /[\u0000-\u001f\u007f]/.test(text)) return "";
+  return text;
+}
+function siSavedReviewState(value) {
+  var state = String(value == null ? "" : value).trim().toLowerCase();
+  return state === "reviewed" ? "reviewed" : "not_reviewed";
+}
+function siGradeOrigin(value) {
+  var origin = String(value == null ? "" : value).trim().toLowerCase();
+  return origin === "ai" || origin === "teacher-anchor" || origin === "teacher-edit" ? origin : "legacy";
+}
+function siGradeReviewSignature(rowGrades) {
+  var source = siAlloSheetPlainObject(rowGrades) ? rowGrades : {};
+  return Object.keys(source).sort().map(function(key) {
+    var result = siAlloSheetPlainObject(source[key]) ? source[key] : {};
+    return JSON.stringify([key, siAlloSheetScore(result.score), siAlloSheetStatus(result.status), String(result.feedback || ""), siGradeOrigin(result.origin)]);
+  }).join("|");
+}
+function siLocalRecordId(prefix) {
+  var value = "";
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") value = crypto.randomUUID();
+  } catch (e) {
+  }
+  if (!value) value = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 14);
+  return prefix + "-" + value;
 }
 function siPrepareAlloSheetSavedSource(input) {
   if (input && input.kind === "submission-inbox-allosheet-source-v1" && Array.isArray(input.entries)) {
@@ -194,8 +258,12 @@ function siPrepareAlloSheetSavedSource(input) {
         assignmentLabel,
         learnerToken,
         submittedTime: typeof entry.submittedTime === "number" && Number.isFinite(entry.submittedTime) ? entry.submittedTime : null,
+        dueAtTime: siAlloSheetDueAt(entry.dueAtTime || entry.dueDate && entry.dueDate.dueAt),
         gradedTime: typeof entry.gradedTime === "number" && Number.isFinite(entry.gradedTime) ? entry.gradedTime : null,
         hasSavedRubric: entry.hasSavedRubric === true,
+        stableAssignmentIdentity: entry.stableAssignmentIdentity === true,
+        stableLearnerIdentity: entry.stableLearnerIdentity === true,
+        reviewState: siSavedReviewState(entry.reviewState),
         gradeResults: results
       };
     }).filter(Boolean);
@@ -224,9 +292,15 @@ function siPrepareAlloSheetSavedSource(input) {
     var documentTitle = siAlloSheetTitle(entry.docTitle);
     var classTitle = siAlloSheetTitle(entry.className);
     var assignmentLabel = siAlloSheetTitle(classTitle ? documentTitle + " - " + classTitle : documentTitle);
-    var privateAssignmentKey = classTitle.toLocaleLowerCase() + "\0" + documentTitle.toLocaleLowerCase();
+    var identity = siAlloSheetPlainObject(entry.identity) ? entry.identity : {};
+    var stableClassId = siStableIdentityValue(identity.classId || entry.classId);
+    var stableAssignmentId = siStableIdentityValue(identity.assignmentId || entry.assignmentId);
+    var stableLearnerId = siStableIdentityValue(identity.learnerId || entry.learnerId);
+    var hasStableAssignment = !!(stableClassId && stableAssignmentId);
+    var hasStableLearner = !!(stableClassId && stableLearnerId);
+    var privateAssignmentKey = hasStableAssignment ? "stable\0" + stableClassId + "\0" + stableAssignmentId : "legacy\0" + classTitle.toLocaleLowerCase() + "\0" + documentTitle.toLocaleLowerCase();
     var nickname = String(entry.nickname == null ? "" : entry.nickname).trim().toLocaleLowerCase();
-    var nicknameKey = classTitle.toLocaleLowerCase() + "\0" + nickname;
+    var nicknameKey = hasStableLearner ? "stable\0" + stableClassId + "\0" + stableLearnerId : "legacy\0" + classTitle.toLocaleLowerCase() + "\0" + nickname;
     if (!assignmentLabel || !nickname) {
       excluded += 1;
       return null;
@@ -256,8 +330,12 @@ function siPrepareAlloSheetSavedSource(input) {
       assignmentLabel,
       learnerToken: learnerTokens.get(nicknameKey),
       submittedTime: siAlloSheetTime(entry.submittedAt),
+      dueAtTime: siAlloSheetDueAt(entry.dueAt || entry.dueDate && entry.dueDate.dueAt),
       gradedTime: siAlloSheetTime(entry.gradedAt),
       hasSavedRubric: typeof entry.rubric === "string" && entry.rubric.trim() !== "",
+      stableAssignmentIdentity: hasStableAssignment,
+      stableLearnerIdentity: hasStableLearner,
+      reviewState: siSavedReviewState(entry.review && entry.review.state),
       gradeResults
     };
   }).filter(Boolean);
@@ -388,6 +466,27 @@ function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
   });
   var tables = [];
   var suppressedScoreSummaries = 0;
+  var suppressedReviewSummaries = 0;
+  var suppressedDueDateSummaries = 0;
+  var stableAssignmentEntryCount = datedEntries.filter(function(entry) {
+    return entry.stableAssignmentIdentity;
+  }).length;
+  var stableLearnerEntryCount = datedEntries.filter(function(entry) {
+    return entry.stableLearnerIdentity;
+  }).length;
+  var humanReviewedEntryCount = datedEntries.filter(function(entry) {
+    return entry.reviewState === "reviewed";
+  }).length;
+  var dueDateEntryCount = datedEntries.filter(function(entry) {
+    return Number.isFinite(entry.dueAtTime);
+  }).length;
+  var lateEntryCount = datedEntries.filter(function(entry) {
+    return siAlloSheetLateStatus(entry.submittedTime, entry.dueAtTime) === "late";
+  }).length;
+  var onTimeEntryCount = datedEntries.filter(function(entry) {
+    return siAlloSheetLateStatus(entry.submittedTime, entry.dueAtTime) === "on_time";
+  }).length;
+  var unknownDueDateEntryCount = Math.max(0, datedEntries.length - lateEntryCount - onTimeEntryCount);
   if (datasets.submissionSummary !== false) {
     var submissionRows = selectedSorted.map(function(item, index) {
       var entries = grouped.get(item.key) || [];
@@ -409,18 +508,56 @@ function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
       var withRubric = entries.filter(function(entry) {
         return entry.hasSavedRubric;
       }).length;
+      var stableAssignmentCount = entries.filter(function(entry) {
+        return entry.stableAssignmentIdentity;
+      }).length;
+      var stableLearnerCount = entries.filter(function(entry) {
+        return entry.stableLearnerIdentity;
+      }).length;
+      var reviewedCount = entries.filter(function(entry) {
+        return entry.reviewState === "reviewed";
+      }).length;
+      var pendingReviewCount = Math.max(0, entries.length - reviewedCount);
+      var reviewCells = [reviewedCount, pendingReviewCount];
+      var dueCounts = { on_time: 0, late: 0, unknown_due_date: 0 };
+      entries.forEach(function(entry) {
+        dueCounts[siAlloSheetLateStatus(entry.submittedTime, entry.dueAtTime)] += 1;
+      });
+      var dueDateAvailable = entries.some(function(entry) {
+        return Number.isFinite(entry.dueAtTime);
+      });
+      var dueDateCells = [dueCounts.on_time, dueCounts.late, dueCounts.unknown_due_date];
+      var dueDateReportable = dueDateAvailable && entries.length >= SI_ALLOSHEET_MIN_SCORE_GROUP && !dueDateCells.some(function(count) {
+        return count > 0 && count < SI_ALLOSHEET_MIN_SCORE_GROUP;
+      });
+      if (dueDateAvailable && entries.length > 0 && !dueDateReportable) suppressedDueDateSummaries += 1;
+      var reviewReportable = entries.length >= SI_ALLOSHEET_MIN_SCORE_GROUP && !reviewCells.some(function(count) {
+        return count > 0 && count < SI_ALLOSHEET_MIN_SCORE_GROUP;
+      });
+      if (entries.length > 0 && !reviewReportable) suppressedReviewSummaries += 1;
       return {
         id: "saved-assignment-" + String(index + 1),
         values: {
           assignment_code: assignmentCodes.get(item.key),
           teacher_saved_submission_count: entries.length,
           unique_class_nickname_count: learners.size,
+          stable_assignment_identity_submission_count: stableAssignmentCount,
+          legacy_assignment_identity_submission_count: Math.max(0, entries.length - stableAssignmentCount),
+          stable_learner_identity_submission_count: stableLearnerCount,
+          unresolved_or_legacy_learner_submission_count: Math.max(0, entries.length - stableLearnerCount),
+          human_reviewed_submission_count: reviewReportable ? reviewedCount : null,
+          pending_review_submission_count: reviewReportable ? pendingReviewCount : null,
+          review_sample_status: entries.length === 0 ? "no_saved_records" : reviewReportable ? "available" : "suppressed_small_groups",
+          due_date_status: entries.length === 0 ? "no_saved_records" : !dueDateAvailable ? "not_provided" : dueDateReportable ? "available" : "suppressed_small_groups",
+          on_time_submission_count: dueDateReportable ? dueCounts.on_time : null,
+          late_submission_count: dueDateReportable ? dueCounts.late : null,
+          unknown_due_date_submission_count: dueDateReportable ? dueCounts.unknown_due_date : null,
           submissions_with_saved_rubric: withRubric,
           submissions_without_saved_rubric: Math.max(0, entries.length - withRubric),
           first_submitted_date: submittedTimes.length ? adapter.toIsoDate(submittedTimes[0]) : "",
           last_submitted_date: submittedTimes.length ? adapter.toIsoDate(submittedTimes[submittedTimes.length - 1]) : "",
           last_saved_date: gradedTimes.length ? adapter.toIsoDate(gradedTimes[gradedTimes.length - 1]) : "",
-          saved_record_status: "teacher_saved_not_review_attested"
+          saved_record_status: !reviewReportable ? "review_state_suppressed" : reviewedCount === entries.length && entries.length > 0 ? "all_human_review_attested" : reviewedCount > 0 ? "mixed_review_state" : "not_review_attested"
         }
       };
     });
@@ -430,7 +567,18 @@ function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
       columns: [
         siAlloSheetColumn(adapter, "assignment_code", "Assignment code", "category"),
         siAlloSheetColumn(adapter, "teacher_saved_submission_count", "Teacher-saved submissions", "number"),
-        siAlloSheetColumn(adapter, "unique_class_nickname_count", "Unique saved class nicknames", "number"),
+        siAlloSheetColumn(adapter, "unique_class_nickname_count", "Unique saved learner groups", "number"),
+        siAlloSheetColumn(adapter, "stable_assignment_identity_submission_count", "Submissions with stable assignment identity", "number"),
+        siAlloSheetColumn(adapter, "legacy_assignment_identity_submission_count", "Submissions using legacy assignment grouping", "number"),
+        siAlloSheetColumn(adapter, "stable_learner_identity_submission_count", "Submissions with stable learner identity", "number"),
+        siAlloSheetColumn(adapter, "unresolved_or_legacy_learner_submission_count", "Submissions with unresolved or legacy learner identity", "number"),
+        siAlloSheetColumn(adapter, "human_reviewed_submission_count", "Human-reviewed submissions", "number"),
+        siAlloSheetColumn(adapter, "pending_review_submission_count", "Submissions pending human review", "number"),
+        siAlloSheetColumn(adapter, "review_sample_status", "Review sample status", "category"),
+        siAlloSheetColumn(adapter, "due_date_status", "Due-date status", "category"),
+        siAlloSheetColumn(adapter, "on_time_submission_count", "On-time submissions", "number"),
+        siAlloSheetColumn(adapter, "late_submission_count", "Late submissions", "number"),
+        siAlloSheetColumn(adapter, "unknown_due_date_submission_count", "Submissions with unknown due date", "number"),
         siAlloSheetColumn(adapter, "submissions_with_saved_rubric", "Submissions with a saved rubric", "number"),
         siAlloSheetColumn(adapter, "submissions_without_saved_rubric", "Submissions without a saved rubric", "number"),
         siAlloSheetColumn(adapter, "first_submitted_date", "First submitted date", "date"),
@@ -549,7 +697,7 @@ function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
     source: {
       tool: "submission-inbox",
       label: "Submission Inbox saved gradebook",
-      version: "1"
+      version: "2"
     },
     title: "Submission Inbox saved-grade summaries",
     createdAt: review.createdAt,
@@ -582,15 +730,34 @@ function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
       minimumReportableScoreCount: SI_ALLOSHEET_MIN_SCORE_GROUP,
       suppressedScoreSummaryCount: suppressedScoreSummaries,
       scoreSuppressionRule: "all-derived-score-statistics-if-any-nonzero-band-or-status-is-below-five",
-      dueDateSupport: false,
-      humanReviewAttestation: false,
+      dueDateSupport: dueDateEntryCount > 0,
+      humanReviewAttestation: includedEntries > 0 && humanReviewedEntryCount === includedEntries,
+      reviewSemantics: {
+        humanReviewAttestationSupport: true,
+        humanReviewedSavedEntryCount: humanReviewedEntryCount,
+        suppressedReviewSummaryCount: suppressedReviewSummaries,
+        suppressionRule: "all-review-state-counts-if-total-or-any-nonzero-review-state-is-below-five"
+      },
+      dueDateSemantics: {
+        schemaVersion: SI_ALLOSHEET_DUE_DATE_SCHEMA_VERSION,
+        validDueDateEntryCount: dueDateEntryCount,
+        lateSubmissionCount: lateEntryCount,
+        onTimeSubmissionCount: onTimeEntryCount,
+        unknownDueDateEntryCount,
+        suppressedDueDateSummaryCount: suppressedDueDateSummaries,
+        lateRule: "late only when submitted timestamp is strictly after the validated due instant",
+        missingWorkSupport: false,
+        suppressionRule: "all-on-time-late-unknown-due-date-counts-if-any-nonzero-bucket-is-below-five"
+      },
       savedRecordsMayContainAIAssistedScores: true,
       resubmissionPolicy: review.attemptPolicy,
       identitySemantics: {
-        stableLearnerIdentitySupport: false,
-        learnerGrouping: "normalized-class-name-plus-nickname",
-        stableAssignmentIdentitySupport: false,
-        assignmentGrouping: "normalized-class-name-plus-document-title"
+        stableLearnerIdentitySupport: stableLearnerEntryCount > 0,
+        stableLearnerIdentityEntryCount: stableLearnerEntryCount,
+        learnerGrouping: stableLearnerEntryCount === includedEntries && includedEntries > 0 ? "stable-class-and-learner-id" : stableLearnerEntryCount > 0 ? "mixed-stable-and-legacy-fallback" : "normalized-class-name-plus-nickname",
+        stableAssignmentIdentitySupport: stableAssignmentEntryCount > 0,
+        stableAssignmentIdentityEntryCount: stableAssignmentEntryCount,
+        assignmentGrouping: stableAssignmentEntryCount === includedEntries && includedEntries > 0 ? "stable-class-and-assignment-id" : stableAssignmentEntryCount > 0 ? "mixed-stable-and-legacy-fallback" : "normalized-class-name-plus-document-title"
       },
       excludedFields: [
         "student-and-class-identifiers",
@@ -709,6 +876,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   const [expandedRow, setExpandedRow] = useState(null);
   const [rubrics, setRubrics] = useState({});
   const [grades, setGrades] = useState({});
+  const [reviewedRows, setReviewedRows] = useState({});
+  const [confirmedLearnerMatches, setConfirmedLearnerMatches] = useState({});
   const [gradingRow, setGradingRow] = useState(null);
   const [anchors, setAnchors] = useState([]);
   const [anchorsPanelOpen, setAnchorsPanelOpen] = useState(false);
@@ -1029,6 +1198,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       setClassKeyMeta({
         className: data.className || "",
         classId: data.classId,
+        keyId: data.keyId,
         createdAt: data.createdAt
       });
       addToast && addToast(tr("Class key loaded."), "success");
@@ -1144,7 +1314,10 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   const rosterMatch = React.useMemo(() => {
     const normalizedRoster = {};
     rosterStudentNames.forEach((n) => {
-      normalizedRoster[_normalizeNickname(n)] = n;
+      const normalized = _normalizeNickname(n);
+      if (!normalized) return;
+      if (Object.prototype.hasOwnProperty.call(normalizedRoster, normalized) && normalizedRoster[normalized] !== n) normalizedRoster[normalized] = null;
+      else normalizedRoster[normalized] = n;
     });
     return (nickname) => {
       if (!nickname || nickname === "?") return { kind: "unknown" };
@@ -1157,6 +1330,26 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       return { kind: "unknown" };
     };
   }, [rosterKey]);
+  const savedIdentityForRow = (idx, row) => {
+    const payload = row && row.payload && typeof row.payload === "object" ? row.payload : {};
+    const match = rosterMatch(payload.nickname || row?.nickname);
+    const confirmedName = confirmedLearnerMatches[idx];
+    const resolvedName = match.kind === "exact" ? match.name : match.kind === "fuzzy" && confirmedName === match.name ? match.name : "";
+    const learnerIds = rosterKey && rosterKey.learnerIds && typeof rosterKey.learnerIds === "object" ? rosterKey.learnerIds : {};
+    const keyClassId = siStableIdentityValue(classKeyMeta?.classId);
+    const rosterClassId = siStableIdentityValue(rosterKey?.classId);
+    const payloadClassId = siStableIdentityValue(payload.classId);
+    const classId = keyClassId || payloadClassId || rosterClassId;
+    const classMatchesRoster = !rosterClassId || !classId || rosterClassId === classId;
+    const assignmentId = siStableIdentityValue(payload.assignmentId);
+    const learnerId = resolvedName && classMatchesRoster ? siStableIdentityValue(learnerIds[resolvedName]) : "";
+    return {
+      ...classId ? { classId } : {},
+      ...assignmentId ? { assignmentId } : {},
+      ...learnerId ? { learnerId } : {},
+      resolution: learnerId ? match.kind === "exact" ? "exact" : "confirmed-normalized" : "unresolved"
+    };
+  };
   const rosterStatus = (nickname) => {
     const m = rosterMatch(nickname);
     return m.kind === "exact" || m.kind === "fuzzy" ? "known" : "unknown";
@@ -1251,6 +1444,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       return { ok: 0, fail: 0, skipped: true };
     }
     setGradingRow(idx);
+    setReviewedRows((previous) => {
+      if (!previous[idx]) return previous;
+      const next = { ...previous };
+      delete next[idx];
+      return next;
+    });
     setGrades((prev) => {
       const rowGrades = { ...prev[idx] || {} };
       anchors.forEach((a) => {
@@ -1258,7 +1457,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
           rowGrades[a.fromResponseKey] = {
             score: a.teacherScore,
             status: "correct",
-            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || tr("(no note)"))
+            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || tr("(no note)")),
+            origin: "teacher-anchor"
           };
         }
       });
@@ -1277,14 +1477,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
         });
         setGrades((prev) => ({
           ...prev,
-          [idx]: { ...prev[idx] || {}, [key]: result }
+          [idx]: { ...prev[idx] || {}, [key]: { ...result, origin: "ai" } }
         }));
         if (result.status !== "error") ok++;
         else fail++;
       } catch (err) {
         setGrades((prev) => ({
           ...prev,
-          [idx]: { ...prev[idx] || {}, [key]: { status: "error", feedback: err.message || tr("Grader failed"), score: 0 } }
+          [idx]: { ...prev[idx] || {}, [key]: { status: "error", feedback: err.message || tr("Grader failed"), score: 0, origin: "ai" } }
         }));
         fail++;
       }
@@ -1359,6 +1559,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     const a = anchors.find((a2) => a2.fromSubmissionIdx === submissionIdx && a2.fromResponseKey === responseKey);
     return a ? a.teacherScore : null;
   };
+  const isRowReviewCurrent = (idx) => {
+    const snapshot = reviewedRows[idx];
+    return !!(snapshot && snapshot.signature === siGradeReviewSignature(grades[idx] || {}));
+  };
+  const markRowReviewed = (idx) => {
+    const rowGrades = grades[idx] || {};
+    if (Object.keys(rowGrades).length === 0) return;
+    const reviewedAt = (/* @__PURE__ */ new Date()).toISOString();
+    setReviewedRows((previous) => ({ ...previous, [idx]: { reviewedAt, signature: siGradeReviewSignature(rowGrades) } }));
+    addToast && addToast(tr("Marked these saved results as human reviewed."), "success");
+  };
   const _writeRowToGradebook = (idx) => {
     const row = queue[idx];
     if (!row || row.status !== "decrypted" || !row.payload) return { ok: false, reason: tr("not decrypted") };
@@ -1367,17 +1578,36 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     const existing = JSON.parse(localStorage.getItem("alloflow_offline_grades") || "{}");
     const nickname = row.payload.nickname || "unknown";
     const docTitle = row.payload.docTitle || "untitled";
-    const className = classKeyMeta && classKeyMeta.className || "";
+    const className = classKeyMeta && classKeyMeta.className || rosterKey && rosterKey.className || "";
     const submissionKey = nickname + "|" + docTitle + "|" + (row.payload.timestamp || "");
+    const priorRecord = siAlloSheetPlainObject(existing[submissionKey]) ? existing[submissionKey] : {};
+    const reviewSnapshot = reviewedRows[idx];
+    const reviewCurrent = isRowReviewCurrent(idx);
+    const savedGrades = {};
+    Object.keys(rowGrades).forEach((key) => {
+      const grade = siAlloSheetPlainObject(rowGrades[key]) ? rowGrades[key] : {};
+      savedGrades[key] = { ...grade, origin: siGradeOrigin(grade.origin), reviewState: reviewCurrent ? "reviewed" : "pending" };
+    });
     existing[submissionKey] = {
+      schemaVersion: 2,
+      recordId: siStableIdentityValue(priorRecord.recordId) || siLocalRecordId("GBR"),
       nickname,
       docTitle,
       className,
       submittedAt: row.payload.timestamp,
       gradedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      ...siAlloSheetDueDate(row.payload.dueDate) ? { dueDate: siAlloSheetDueDate(row.payload.dueDate) } : {},
       source: "offline-html",
+      identity: savedIdentityForRow(idx, row),
       responses: row.payload.responses,
-      grades: rowGrades,
+      grades: savedGrades,
+      review: {
+        state: reviewCurrent ? "reviewed" : "pending",
+        scoreRevision: 1,
+        reviewedRevision: reviewCurrent ? 1 : null,
+        reviewedAt: reviewCurrent && reviewSnapshot ? reviewSnapshot.reviewedAt : null,
+        attestedBy: reviewCurrent ? "local-educator" : null
+      },
       rubric: (rubrics[idx] && rubrics[idx].rubric || globalRubric.rubric || "").trim()
     };
     localStorage.setItem("alloflow_offline_grades", JSON.stringify(existing));
@@ -1441,18 +1671,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       const v = (s == null ? "" : String(s)).replace(/\r?\n/g, " ").trim();
       return /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
     };
-    const headers = ["Nickname", "Class", "Document", "SubmittedAt", "GradedAt", "Source", "ResponseKey", "StudentResponse", "Score", "Status", "AIFeedback", "Rubric"];
+    const headers = ["Nickname", "Class", "Document", "SubmittedAt", "GradedAt", "Source", "ResponseKey", "StudentResponse", "Score", "Status", "AIFeedback", "ReviewState", "Rubric"];
     const rows = [headers.join(",")];
     for (const entry of gradebookEntries) {
       const respKeys = Object.keys(entry.grades || {});
       if (respKeys.length === 0) {
-        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, "", "", "", "", "", entry.rubric].map(esc).join(","));
+        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, "", "", "", "", "", entry.review?.state || "legacy-unreviewed", entry.rubric].map(esc).join(","));
         continue;
       }
       for (const k of respKeys) {
         const g = entry.grades[k] || {};
         const respText = entry.responses && entry.responses[k] || "";
-        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, k, respText, g.score, g.status, g.feedback, entry.rubric].map(esc).join(","));
+        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, k, respText, g.score, g.status, g.feedback, entry.review?.state || "legacy-unreviewed", entry.rubric].map(esc).join(","));
       }
     }
     const csv = rows.join("\n");
@@ -1674,7 +1904,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
         key: "submissionSummary",
         table: "saved_submission_summary",
         label: "Saved submission summary",
-        description: "Saved-record counts, unique class nicknames, rubric-presence counts, and assignment-group date bounds."
+        description: "Saved-record counts, identity coverage, privacy-suppressed review coverage, rubric-presence counts, due-date coverage, and assignment-group date bounds."
       },
       {
         key: "scoreSummary",
@@ -1944,6 +2174,25 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             );
           }))
         ),
+        artifact && artifact.provenance && artifact.provenance.dueDateSemantics && e(
+          "p",
+          {
+            role: "status",
+            "aria-live": "polite",
+            id: "submission-inbox-allosheet-review-due-status",
+            style: {
+              margin: 0,
+              padding: 12,
+              border: "2px solid #93c5fd",
+              borderRadius: 10,
+              background: "#eff6ff",
+              color: "#1e3a8a",
+              lineHeight: 1.5
+            }
+          },
+          e("strong", null, tr("Due-date reporting: ")),
+          artifact.provenance.dueDateSupport === true ? artifact.provenance.dueDateSemantics.suppressedDueDateSummaryCount > 0 ? tr("Validated due dates are present. On-time/late/unknown counts are suppressed for small groups. Missing work is not calculated.") : tr("Validated due dates are present. Late means the submission timestamp is after the due instant. Missing work is not calculated.") : tr("No validated due dates were supplied. Late status and missing work are not calculated.")
+        ),
         e(
           "p",
           {
@@ -1959,7 +2208,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             }
           },
           e("strong", null, tr("Privacy boundary: ")),
-          tr("The transfer uses aggregate assignment codes. Learner, class, and assignment names; response text and keys; AI feedback; rubric prose; files; storage keys; and work-evidence details are always excluded. Derived score statistics are blank when the total is below five or any nonzero score band or status group is below five.")
+          tr("The transfer uses aggregate assignment codes. Learner, class, and assignment names; response text and keys; AI feedback; rubric prose; files; storage keys; and work-evidence details are always excluded. Derived score statistics and on-time/late counts are blank when the applicable total is below five or any nonzero bucket would expose a small group. Missing work is never inferred.")
         ),
         e(
           "section",
@@ -2079,7 +2328,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
           e(
             "p",
             { style: { margin: "5px 0 0", fontSize: "0.8rem" } },
-            tr("A teacher-saved record may contain AI-assisted scores; saving is not a human-review attestation. Submission Inbox does not currently store stable learner or assignment IDs, due dates, missing or late status, or structured rubric criteria. Grouping therefore uses normalized class name plus nickname and normalized class name plus document title; reused nicknames may merge, changed nicknames may split records, and repeated same-title documents in one class may share an assignment/class group. This transfer makes no human-verified, missing, late, or criterion-level claims.")
+            tr("New Submission Inbox records can store stable class, assignment, and confirmed roster-learner identity plus an explicit human-review attestation. Legacy or unresolved records still fall back to normalized class name plus nickname and normalized class name plus document title, and the preview reports that coverage. Saving alone never establishes human review. Review-state and late-status counts are privacy-suppressed for small groups. Late means the saved submission timestamp is strictly after a validated assignment due instant; missing work still is not calculated because this transfer has no roster denominator.")
           )
         ),
         e(
@@ -2929,7 +3178,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       "td",
                       { style: { padding: "10px 12px" } },
                       /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e293b" } }, row.nickname),
-                      row.nickname !== "?" && rosterBadge(rosterMatch(row.nickname))
+                      row.nickname !== "?" && rosterBadge(rosterMatch(row.nickname)),
+                      row.nickname !== "?" && (() => {
+                        const match = rosterMatch(row.nickname);
+                        if (match.kind !== "fuzzy") return null;
+                        const confirmed = confirmedLearnerMatches[idx] === match.name;
+                        return /* @__PURE__ */ React.createElement("button", {
+                          type: "button",
+                          "aria-pressed": confirmed,
+                          onClick: () => setConfirmedLearnerMatches((previous) => ({ ...previous, [idx]: confirmed ? "" : match.name })),
+                          style: { display: "block", marginTop: 4, padding: "4px 8px", minHeight: 32, borderRadius: 6, border: "1px solid #d97706", background: confirmed ? "#dcfce7" : "#fffbeb", color: confirmed ? "#166534" : "#92400e", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer" }
+                        }, confirmed ? tr("Identity confirmed") : tr("Confirm normalized roster match"));
+                      })()
                     ),
                     /* @__PURE__ */ React.createElement(
                       "td",
@@ -3146,6 +3406,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                             }, gradingRow === idx ? "Grading\u2026" : tr("\u{1F3AF} Grade responses")),
                             Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
                               type: "button",
+                              "aria-pressed": isRowReviewCurrent(idx),
+                              onClick: () => markRowReviewed(idx),
+                              style: { padding: "8px 16px", background: isRowReviewCurrent(idx) ? "#065f46" : "#fff7ed", color: isRowReviewCurrent(idx) ? "white" : "#9a3412", border: "1px solid #fdba74", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                            }, isRowReviewCurrent(idx) ? tr("\u2713 Human reviewed") : tr("Mark human reviewed")),
+                            Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
+                              type: "button",
                               onClick: () => saveRowToGradebook(idx),
                               style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                             }, tr("\u{1F4BE} Save to gradebook")),
@@ -3320,6 +3586,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     _meta: {
       allosheetMinimumScoreGroup: SI_ALLOSHEET_MIN_SCORE_GROUP,
       allosheetMaximumAssignments: SI_ALLOSHEET_MAX_ASSIGNMENTS,
+      gradeReviewSignature: siGradeReviewSignature,
+      normalizeSavedReviewState: siSavedReviewState,
+      normalizeDueDate: siAlloSheetDueDate,
+      parseDueAt: siAlloSheetDueAt,
+      deriveLateStatus: siAlloSheetLateStatus,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
       buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope

@@ -50,4 +50,32 @@ describe('Community Builder badge dialog accessibility', () => {
     expect(text).toContain("ta.setAttribute('readonly', '');");
     expect(text).toContain('ta.tabIndex = -1;');
   });
+
+  it('provides named roving tabs linked to the active panel', () => {
+    const text = source();
+    expect(text).toContain("role: 'tablist', 'aria-label': 'Community Building tabs'");
+    expect(text).toContain("'data-community-tab': t.id");
+    expect(text).toContain("'tabIndex': isActive ? 0 : -1");
+    expect(text).toContain("onKeyDown: function(e)");
+    expect(text).toContain("'aria-controls': 'community-tab-panel'");
+    expect(text).toContain("id: 'community-tab-panel', role: 'tabpanel'");
+  });
+
+  it('announces AI responses and exposes progress state', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach'");
+    expect(text).toContain("'aria-label': 'Community AI response'");
+    expect(text).toContain("'aria-atomic': 'true'");
+    expect(text).toContain("announceToSR('Community AI response ready')");
+    expect(text).toContain("role: 'status'");
+    expect(text).toContain("'aria-expanded': isExpanded");
+  });
+
+  it('keeps auxiliary controls descriptive and outside the tablist', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled");
+    expect(text).toContain("'aria-label': 'Show community badges', 'aria-expanded': showBadgesPanel");
+    expect(text).not.toContain("'aria-label': 'Explore topic'");
+    expect(text).not.toContain("'aria-label': 'Select answer'");
+  });
 });

@@ -1,7 +1,8 @@
 {
-  "packId": "praxis-reading-specialist-5302", "version": "1.0.0", "visibility": "public",
+  "packId": "praxis-reading-specialist-5302",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:35.849Z",
   "libraryId": "praxis-reading-specialist-5302-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Reading Specialist 5302 learning-library source and editorial review v1",
@@ -202,8 +203,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
-    "learningLibrarySha256": "aeaed38a8404e7c9d45544a81b0a2e9a0552e91e740af4dbfcd45926917276db",
+    "sourceItemsSha256": "c63d524157848d12ae871e2d4daa8f9b563fc3bce76c2e702a99a5bf1ab7b812",
+    "learningLibrarySha256": "acc650af0f90209323cc4979075cafe6ca6c1a80048fb960496d6a335b7e98b8",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

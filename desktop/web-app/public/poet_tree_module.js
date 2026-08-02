@@ -63,6 +63,174 @@
   // ── Constants ─────────────────────────────────────────────────────────
   var STORAGE_POEMS = 'alloPoetTreePoems';
   var STORAGE_PREFS = 'alloPoetTreePrefs';
+  var STORAGE_DRAFT = 'alloPoetTreeDraftV2';
+  var STORAGE_VERSIONS = 'alloPoetTreeVersionsV1';
+  var STORAGE_WORKSPACES = 'alloPoetTreeWorkspacesV1';
+  var STORAGE_ACTIVE_WORKSPACE = 'alloPoetTreeActiveWorkspaceV1';
+
+  function normalizeWorkspaces(value) {
+    if (!Array.isArray(value)) return [];
+    return value.filter(function (item) {
+      return item && typeof item.id === 'string' && item.id && typeof item.text === 'string';
+    }).map(function (item) {
+      return {
+        id: item.id,
+        name: String(item.name || item.title || 'Untitled workspace').slice(0, 120),
+        title: String(item.title || '').slice(0, 240),
+        text: item.text,
+        formId: String(item.formId || 'free'),
+        targetWord: String(item.targetWord || '').slice(0, 80),
+        updatedAt: item.updatedAt || item.savedAt || new Date().toISOString()
+      };
+    }).slice(0, 24);
+  }  var CURRENT_DRAFT_COMPARE_ID = '__current_draft__';
+  function loadJson(key, fallback) {
+    try {
+      var value = JSON.parse(localStorage.getItem(key) || 'null');
+      return value == null ? fallback : value;
+    } catch (e) { return fallback; }
+  }
+
+  function storeJson(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
+  }
+
+  function loadActiveWorkspaceId() {
+    try {
+      var raw = localStorage.getItem(STORAGE_ACTIVE_WORKSPACE) || '';
+      if (!raw) return '';
+      try { var parsed = JSON.parse(raw); return typeof parsed === 'string' ? parsed : raw; } catch (e) { return raw; }
+    } catch (e) { return ''; }
+  }
+
+  function storeActiveWorkspaceId(value) {
+    try { localStorage.setItem(STORAGE_ACTIVE_WORKSPACE, String(value || '')); return true; } catch (e) { return false; }
+  }
+
+  // A local-only revision token used to reject stale async AI responses.
+  function poemFingerprint(title, text, formId, targetWord) {
+    var input = String(title || '') + '\u0000' + String(text || '') + '\u0000' + String(formId || '') + '\u0000' + String(targetWord || '');
+    var hash = 2166136261;
+    for (var i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16);
+  }
+
+  function buildLineDiff(leftLines, rightLines) {
+    var left = Array.isArray(leftLines) ? leftLines : [];
+    var right = Array.isArray(rightLines) ? rightLines : [];
+    var matrix = [];
+    var i;
+    var j;
+    for (i = 0; i <= left.length; i++) {
+      matrix[i] = [];
+      for (j = 0; j <= right.length; j++) matrix[i][j] = 0;
+    }
+    for (i = left.length - 1; i >= 0; i--) {
+      for (j = right.length - 1; j >= 0; j--) {
+        matrix[i][j] = left[i] === right[j] ? matrix[i + 1][j + 1] + 1 : Math.max(matrix[i + 1][j], matrix[i][j + 1]);
+      }
+    }
+    var raw = [];
+    i = 0;
+    j = 0;
+    while (i < left.length && j < right.length) {
+      if (left[i] === right[j]) {
+        raw.push({ type: 'same', left: left[i], right: right[j], leftIndex: i, rightIndex: j });
+        i++;
+        j++;
+      } else if (matrix[i + 1][j] >= matrix[i][j + 1]) {
+        raw.push({ type: 'removed', left: left[i], right: '', leftIndex: i, rightIndex: -1 });
+        i++;
+      } else {
+        raw.push({ type: 'added', left: '', right: right[j], leftIndex: -1, rightIndex: j });
+        j++;
+      }
+    }
+    while (i < left.length) {
+      raw.push({ type: 'removed', left: left[i], right: '', leftIndex: i, rightIndex: -1 });
+      i++;
+    }
+    while (j < right.length) {
+      raw.push({ type: 'added', left: '', right: right[j], leftIndex: -1, rightIndex: j });
+      j++;
+    }
+    var rows = [];
+    for (var rowIndex = 0; rowIndex < raw.length; rowIndex++) {
+      var current = raw[rowIndex];
+      var next = raw[rowIndex + 1];
+      if (current.type === 'removed' && next && next.type === 'added') {
+        rows.push({ type: 'changed', left: current.left, right: next.right, leftIndex: current.leftIndex, rightIndex: next.rightIndex });
+        rowIndex++;
+      } else {
+        rows.push(current);
+      }
+    }
+    return rows;
+  }
+  function parseAiJson(raw) {
+    var text = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+    var firstObject = text.indexOf('{');
+    var firstArray = text.indexOf('[');
+    var first = firstObject >= 0 && (firstArray < 0 || firstObject < firstArray) ? firstObject : firstArray;
+    if (first >= 0) {
+      var close = text[first] === '[' ? text.lastIndexOf(']') : text.lastIndexOf('}');
+      if (close > first) text = text.slice(first, close + 1);
+    }
+    return JSON.parse(text);
+  }
+
+  function safeExternalUrl(value) {
+    try {
+      var url = new URL(String(value || ''));
+      return (url.protocol === 'https:' || url.protocol === 'http:') ? url.href : '';
+    } catch (e) { return ''; }
+  }
+
+  function formStructureSummary(form, lines, acrosticTarget) {
+    if (!form || form.id === 'free') return null;
+    var actual = (lines || []).filter(function (line) { return String(line || '').trim(); });
+    var expected = form.lineCount || null;
+    var countOk = !expected || actual.length === expected;
+    var detail = expected ? actual.length + ' / ' + expected + ' lines' : actual.length + ' lines';
+    var ok = countOk;
+    if (form.id === 'acrostic') {
+      var target = String(acrosticTarget || '').toUpperCase().replace(/[^A-Z]/g, '');
+      var actualWord = actual.map(function (line) { return String(line).trim().charAt(0).toUpperCase(); }).join('');
+      if (target) {
+        ok = countOk && actualWord === target;
+        detail += ' - acrostic ' + actualWord + ' / ' + target;
+      } else {
+        ok = false;
+        detail += ' - add a target word';
+      }
+    } else if (form.id === 'diamante') {
+      var diamanteCounts = [1, 2, 3, 4, 3, 2, 1];
+      var diamanteWordsOk = actual.length === 7 && actual.every(function (line, index) { return String(line).trim().split(/\s+/).filter(Boolean).length === diamanteCounts[index]; });
+      ok = countOk && diamanteWordsOk;
+      detail += ' - 1-2-3-4-3-2-1 word pattern';
+    } else if (form.id === 'couplet') {
+      detail += ' - both line endings should rhyme';
+    } else if (form.id === 'ballad') {
+      ok = actual.length >= 4 && actual.length % 4 === 0;
+      detail += ' - quatrains; lines 2 and 4 should rhyme';
+    } else if (form.id === 'concrete') {
+      detail += ' - shape is checked by your eye';
+    } else if (form.id === 'villanelle') {
+      ok = countOk && actual.length === 19;
+      detail += ' - 19 lines, with two refrains';
+    } else if (form.id === 'pantoum') {
+      var repeated = actual.length >= 4;
+      for (var i = 0; repeated && i + 2 < actual.length; i += 2) {
+        repeated = String(actual[i] || '').trim().toLowerCase() === String(actual[i + 2] || '').trim().toLowerCase();
+      }
+      ok = countOk && repeated;
+      detail += ' - repeating lines should echo into the next stanza';
+    }
+    return { ok: ok, detail: detail };
+  }
 
   // ── Self-contained UI localization (same pattern as Lingua / LitLab) ───────
   // PoetTree's chrome is localized into the STUDENT's interface language
@@ -677,13 +845,13 @@
     var _llTranslating = useState(false); var llTranslating = _llTranslating[0]; var setLlTranslating = _llTranslating[1];
     LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current; // publish snapshot for module-scope tr()
     function llTranslateBatch(list) {
-      if (typeof onCallGemini !== 'function' || !list.length) return;
+      if (typeof onCallGemini !== 'function' || !list.length || !cloudFeaturesEnabledRef.current) return;
       var reqId = ++llReqRef.current, lang = uiLang;
       setLlTranslating(true);
       var att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
       list.forEach(function (k) { att[k] = true; });
       Promise.resolve().then(function () { return onCallGemini(llPrompt(lang, list)); }).then(function (raw) {
-        if (reqId !== llReqRef.current) return;
+        if (reqId !== llReqRef.current || !cloudFeaturesEnabledRef.current) return;
         setLlTranslating(false);
         var pack = null; try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) {}
         if (pack) {
@@ -695,7 +863,7 @@
       }).catch(function () { if (reqId === llReqRef.current) setLlTranslating(false); });
     }
     useEffect(function () {
-      if (uiLang === 'English' || typeof onCallGemini !== 'function') return;
+      if (uiLang === 'English' || typeof onCallGemini !== 'function' || !cloudFeaturesEnabled) return;
       var cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
       var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
       if (!missing.length) return;
@@ -713,7 +881,15 @@
     var _form = useState(null); var form = _form[0]; var setForm = _form[1];
     var _poemTitle = useState(''); var poemTitle = _poemTitle[0]; var setPoemTitle = _poemTitle[1];
     var _poemText = useState(''); var poemText = _poemText[0]; var setPoemText = _poemText[1];
-    var _foundSource = useState(''); var foundSource = _foundSource[0]; var setFoundSource = _foundSource[1];
+    var _acrosticTarget = useState(''); var acrosticTarget = _acrosticTarget[0]; var setAcrosticTarget = _acrosticTarget[1];
+    var _draftCandidate = useState(function () { var d = loadJson(STORAGE_DRAFT, null); return d && typeof d.text === 'string' && d.text.trim() ? d : null; });
+    var draftCandidate = _draftCandidate[0]; var setDraftCandidate = _draftCandidate[1];
+    var _draftSavedAt = useState(''); var draftSavedAt = _draftSavedAt[0]; var setDraftSavedAt = _draftSavedAt[1];
+    var _draftStatus = useState(''); var draftStatus = _draftStatus[0]; var setDraftStatus = _draftStatus[1];
+    var _workspaces = useState(function () { return normalizeWorkspaces(loadJson(STORAGE_WORKSPACES, [])); }); var workspaces = _workspaces[0]; var setWorkspaces = _workspaces[1];
+    var _activeWorkspaceId = useState(function () { return loadActiveWorkspaceId(); }); var activeWorkspaceId = _activeWorkspaceId[0]; var setActiveWorkspaceId = _activeWorkspaceId[1];
+    var _workspaceStatus = useState(''); var workspaceStatus = _workspaceStatus[0]; var setWorkspaceStatus = _workspaceStatus[1];
+    var workspaceBootRef = useRef(false);    var _foundSource = useState(''); var foundSource = _foundSource[0]; var setFoundSource = _foundSource[1];
     // Erasure Workshop state — source text + which token indices the student is keeping.
     // Tokens are split by whitespace; punctuation stays attached to the word it follows.
     // We track an object map `{ [tokenIdx]: true }` instead of a Set so React shallow
@@ -749,19 +925,42 @@
     var _imagePoemLoading = useState(false); var imagePoemLoading = _imagePoemLoading[0]; var setImagePoemLoading = _imagePoemLoading[1];
 
     // Saved poems
-    var _saved = useState(function () { try { return JSON.parse(localStorage.getItem(STORAGE_POEMS) || '[]'); } catch (e) { return []; } });
+    var _saved = useState(function () { var list = loadJson(STORAGE_POEMS, []); return Array.isArray(list) ? list : []; });
     var saved = _saved[0]; var setSaved = _saved[1];
+    var _revisionHistory = useState(function () { var list = loadJson(STORAGE_VERSIONS, []); return Array.isArray(list) ? list : []; });
+    var revisionHistory = _revisionHistory[0]; var setRevisionHistory = _revisionHistory[1];
+    var _compareRevisionIds = useState([]); var compareRevisionIds = _compareRevisionIds[0]; var setCompareRevisionIds = _compareRevisionIds[1];
     var _pendingDelete = useState(null); var pendingDelete = _pendingDelete[0]; var setPendingDelete = _pendingDelete[1];
     var deleteDialogRef = useRef(null);
     var deleteReturnFocusRef = useRef(null);
+    var modalRef = useRef(null);
+    var modalReturnFocusRef = useRef(null);
+    var modalCloseRef = useRef(onClose);
+    modalCloseRef.current = onClose;
+    var modalNestedRef = useRef(false);
+    var readAloudDialogRef = useRef(null);
+    var revisionImportRef = useRef(null);
+    var libraryImportRef = useRef(null);
+    var localBackupImportRef = useRef(null);
+    var aiRequestSeqRef = useRef({});
+    var aiAbortControllersRef = useRef({});
+    var currentPoemFingerprintRef = useRef('');
+    currentPoemFingerprintRef.current = poemFingerprint(poemTitle, poemText, form ? form.id : 'free', acrosticTarget);
+    var contentRevisionInitRef = useRef(false);
 
     // Reading-friendly text mode (carry-over pattern from LitLab)
     var _largeText = useState(function () { try { var p = JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); return !!p.largeText; } catch (e) { return false; } });
     var largeText = _largeText[0]; var setLargeText = _largeText[1];
+    var _privacyOpen = useState(false); var privacyOpen = _privacyOpen[0]; var setPrivacyOpen = _privacyOpen[1];
+    var _cloudFeaturesEnabled = useState(function () { var prefs = loadJson(STORAGE_PREFS, {}); return prefs.cloudFeaturesEnabled !== false; });
+    var cloudFeaturesEnabled = _cloudFeaturesEnabled[0]; var setCloudFeaturesEnabled = _cloudFeaturesEnabled[1];
+    var cloudFeaturesEnabledRef = useRef(true);
+    cloudFeaturesEnabledRef.current = cloudFeaturesEnabled;
 
     var ttsCancelRef = useRef(false);
     // Captures the element that was focused when read-aloud opens, so focus can return there on close (WCAG 2.4.3)
     var readAloudReturnFocusRef = useRef(null);
+    var readAloudTimerRef = useRef(null);
 
     // Writing helpers (Daily Prompt / Rhymes / Stronger Verbs)
     var _helpersOpen = useState(false); var helpersOpen = _helpersOpen[0]; var setHelpersOpen = _helpersOpen[1];
@@ -785,14 +984,22 @@
     var _rewriteResult = useState(null); var rewriteResult = _rewriteResult[0]; var setRewriteResult = _rewriteResult[1];
     var _rewriteLoading = useState(false); var rewriteLoading = _rewriteLoading[0]; var setRewriteLoading = _rewriteLoading[1];
     var _rewriteTargetId = useState(''); var rewriteTargetId = _rewriteTargetId[0]; var setRewriteTargetId = _rewriteTargetId[1];
+    var _rewriteUndo = useState(null); var rewriteUndo = _rewriteUndo[0]; var setRewriteUndo = _rewriteUndo[1];
     // Chapbook filter (which form to include; blank = all)
     var _chapbookFilter = useState(''); var chapbookFilter = _chapbookFilter[0]; var setChapbookFilter = _chapbookFilter[1];
+    // Transient portfolio curation — selection stays local to this open Library session.
+    var _chapbookCurating = useState(false); var chapbookCurating = _chapbookCurating[0]; var setChapbookCurating = _chapbookCurating[1];
+    var _chapbookSelectedIds = useState([]); var chapbookSelectedIds = _chapbookSelectedIds[0]; var setChapbookSelectedIds = _chapbookSelectedIds[1];
+    var _libraryQuery = useState(''); var libraryQuery = _libraryQuery[0]; var setLibraryQuery = _libraryQuery[1];
+    var _librarySort = useState('newest'); var librarySort = _librarySort[0]; var setLibrarySort = _librarySort[1];
     // Theme tracker — patterns across the student's saved poems
     var _themeReport = useState(null); var themeReport = _themeReport[0]; var setThemeReport = _themeReport[1];
     var _themeLoading = useState(false); var themeLoading = _themeLoading[0]; var setThemeLoading = _themeLoading[1];
     // Mentor Match — pairs the student's poem with a public-domain master poem for study
     var _mentorMatch = useState(null); var mentorMatch = _mentorMatch[0]; var setMentorMatch = _mentorMatch[1];
     var _mentorLoading = useState(false); var mentorLoading = _mentorLoading[0]; var setMentorLoading = _mentorLoading[1];
+    var _mentorSearchConsent = useState(false); var mentorSearchConsent = _mentorSearchConsent[0]; var setMentorSearchConsent = _mentorSearchConsent[1];
+    var _mentorConsentNeeded = useState(false); var mentorConsentNeeded = _mentorConsentNeeded[0]; var setMentorConsentNeeded = _mentorConsentNeeded[1];
     // Sound Device Coach — alliteration, assonance, consonance, internal rhyme detection
     var _soundDeviceResult = useState(null); var soundDeviceResult = _soundDeviceResult[0]; var setSoundDeviceResult = _soundDeviceResult[1];
     var _soundDeviceLoading = useState(false); var soundDeviceLoading = _soundDeviceLoading[0]; var setSoundDeviceLoading = _soundDeviceLoading[1];
@@ -855,30 +1062,553 @@
       try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(next)); } catch (e) {}
     }, []);
 
+    var recordRevision = useCallback(function (label, snapshot) {
+      if (!snapshot || !String(snapshot.text || '').trim()) return false;
+      var text = String(snapshot.text || '');
+      var title = String(snapshot.title || 'Untitled');
+      var formId = snapshot.formId || 'free';
+      var targetWord = String(snapshot.targetWord || '');
+      var revisionId = snapshot.revisionId || poemFingerprint(title, text, formId, targetWord);
+      if (revisionHistory.some(function (item) { return (item.revisionId === revisionId && item.text === text) || (item.text === text && (item.formId || 'free') === formId && (item.targetWord || '') === targetWord); })) return false;
+      var entry = {
+        id: 'rev-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        label: label || 'Saved version',
+        title: title,
+        text: text,
+        formId: formId,
+        targetWord: targetWord,
+        revisionId: revisionId,
+        savedAt: snapshot.savedAt || new Date().toISOString()
+      };
+      var updated = [entry].concat(revisionHistory).slice(0, 100);
+      setRevisionHistory(updated);
+      storeJson(STORAGE_VERSIONS, updated);
+      return true;
+    }, [revisionHistory]);
+
+    var saveRevisionCheckpoint = useCallback(function () {
+      if (!poemText.trim()) {
+        addToast && addToast('Write something before saving a checkpoint.', 'info');
+        return;
+      }
+      var added = recordRevision('Checkpoint', {
+        title: poemTitle.trim() || 'Untitled',
+        text: poemText,
+        formId: form ? form.id : 'free',
+        targetWord: acrosticTarget,
+        revisionId: poemFingerprint(poemTitle, poemText, form ? form.id : 'free', acrosticTarget),
+        savedAt: new Date().toISOString()
+      });
+      var message = added ? 'Local checkpoint saved.' : 'This exact draft is already in revision history.';
+      announcePT(message);
+      addToast && addToast(message, added ? 'success' : 'info');
+    }, [poemText, poemTitle, form, acrosticTarget, recordRevision, addToast]);
+    function requireCloudFeature(label) {
+      if (cloudFeaturesEnabledRef.current) return true;
+      var message = (label || 'This cloud feature') + ' is disabled in Privacy controls.';
+      addToast && addToast(message, 'info');
+      announcePT(message);
+      return false;
+    }
+
+    var updateCloudPreference = useCallback(function (next) {
+      var value = !!next;
+      setCloudFeaturesEnabled(value)
+      if (!value) { llReqRef.current += 1; setLlTranslating(false); }
+      var prefs = loadJson(STORAGE_PREFS, {});
+      prefs.cloudFeaturesEnabled = value;
+      savePrefs(prefs);
+      var message = value ? 'Cloud AI and image features enabled.' : 'Cloud AI and image features disabled.';
+      announcePT(message);
+      addToast && addToast(message, 'info');
+    }, [savePrefs, addToast]);
+
     var savePoem = useCallback(function () {
       if (!poemText.trim()) { addToast && addToast(tr('Write something first!'), 'info'); return; }
+      var currentFormId = form ? form.id : 'free';
+      var currentRevisionId = poemFingerprint(poemTitle, poemText, currentFormId, acrosticTarget);
+      var alreadySaved = saved.some(function (item) {
+        return item.revisionId === currentRevisionId || (item.text === poemText && (item.formId || 'free') === currentFormId && (item.targetWord || '') === (acrosticTarget || ''));
+      });
+      if (alreadySaved) {
+        addToast && addToast('This version is already in your Library.', 'info');
+        announcePT('This poem version is already saved.');
+        return;
+      }
       var entry = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         title: poemTitle.trim() || 'Untitled',
         text: poemText,
-        formId: form ? form.id : 'free',
+        formId: currentFormId,
+        targetWord: acrosticTarget,
+        revisionId: currentRevisionId,
         savedAt: new Date().toISOString()
       };
       var updated = [entry].concat(saved).slice(0, 50);
+      recordRevision('Saved version', entry);
       setSaved(updated);
       try { localStorage.setItem(STORAGE_POEMS, JSON.stringify(updated)); } catch (e) {}
+      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      setDraftCandidate(null);
+      setDraftStatus('');
       addToast && addToast(tr('Poem saved.'), 'success');
       announcePT(tr('Poem saved as "') + entry.title + '."');
-    }, [poemText, poemTitle, form, saved, addToast]);
+    }, [poemText, poemTitle, form, acrosticTarget, saved, addToast, recordRevision]);
 
+    var exportLibrary = useCallback(function () {
+      if (!saved.length) return;
+      try {
+        var payload = { version: 1, exportedAt: new Date().toISOString(), poems: saved };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var urlApi = window.URL || window.webkitURL;
+        if (!urlApi || typeof urlApi.createObjectURL !== 'function') throw new Error('Download API unavailable');
+        var url = urlApi.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'poettree-library.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(url); }, 0);
+        announcePT('Library exported.');
+        addToast && addToast('Library backup downloaded.', 'success');
+      } catch (err) {
+        warnLog('Library export failed:', err && err.message);
+        addToast && addToast('Could not export the Library.', 'error');
+      }
+    }, [saved, addToast]);
+
+    var exportAllLocalData = useCallback(function () {
+      try {
+        var storedDraft = draftCandidate || loadJson(STORAGE_DRAFT, null);
+        var liveDraft = poemText.trim() ? { title: poemTitle.trim(), text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget, savedAt: new Date().toISOString() } : null;
+        var recoveredDraft = storedDraft && liveDraft && (storedDraft.title !== liveDraft.title || storedDraft.text !== liveDraft.text || (storedDraft.formId || 'free') !== liveDraft.formId || (storedDraft.targetWord || '') !== liveDraft.targetWord) ? storedDraft : null;
+        var payload = {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          poems: saved,
+          draft: liveDraft || storedDraft,
+          recoveredDraft: recoveredDraft,
+
+          revisions: revisionHistory,
+          workspaces: workspaces,
+          activeWorkspaceId: activeWorkspaceId || ''
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var urlApi = window.URL || window.webkitURL;
+        if (!urlApi || typeof urlApi.createObjectURL !== 'function') throw new Error('Download API unavailable');
+        var url = urlApi.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'poettree-local-backup.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(url); }, 0);
+        announcePT('Local writing data exported.');
+        addToast && addToast('Complete local backup downloaded.', 'success');
+      } catch (err) {
+        warnLog('Local data export failed:', err && err.message);
+        addToast && addToast('Could not export local writing data.', 'error');
+      }
+    }, [saved, draftCandidate, poemTitle, poemText, form, acrosticTarget, revisionHistory, workspaces, activeWorkspaceId, addToast]);
+
+    var importAllLocalData = useCallback(function (event) {
+      var input = event && event.target;
+      var file = input && input.files && input.files[0];
+      if (!file) return;
+      if (input) input.value = '';
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var payload = JSON.parse(String(reader.result || ''));
+          if (!payload || payload.version !== 1 || !Array.isArray(payload.poems) || !Array.isArray(payload.revisions) || !Array.isArray(payload.workspaces)) throw new Error('Unsupported Poet Tree backup');
+          if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Replace all local Poet Tree writing data with this backup?')) return;
+          var importedAt = new Date().toISOString();
+          var normalizeDraft = function (item) {
+            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+            var draftFormId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+            return { title: String(item.title || '').slice(0, 240), text: item.text, formId: draftFormId, targetWord: String(item.targetWord || '').slice(0, 80), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+          };
+          var importedPoems = payload.poems.map(function (item, index) {
+            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+            var title = String(item.title || 'Untitled').slice(0, 240);
+            var text = item.text;
+            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+            var targetWord = String(item.targetWord || '').slice(0, 80);
+            return { id: String(item.id || ('restored-poem-' + index)).slice(0, 120), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+          }).filter(Boolean).slice(0, 50);
+          var importedRevisions = payload.revisions.map(function (item, index) {
+            if (!item || typeof item.text !== 'string' || !item.text.trim()) return null;
+            var title = String(item.title || 'Untitled').slice(0, 240);
+            var text = item.text;
+            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+            var targetWord = String(item.targetWord || '').slice(0, 80);
+            return { id: String(item.id || ('restored-revision-' + index)).slice(0, 120), label: String(item.label || 'Restored version').slice(0, 80), title: title, text: text, formId: formId, targetWord: targetWord, revisionId: poemFingerprint(title, text, formId, targetWord), savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : importedAt };
+          }).filter(Boolean).slice(0, 100);
+          var importedWorkspaces = normalizeWorkspaces(payload.workspaces).map(function (workspace) {
+            if (!FORMS.some(function (ff) { return ff.id === workspace.formId; })) workspace.formId = 'free';
+            return workspace;
+          });
+          var requestedActiveId = typeof payload.activeWorkspaceId === 'string' ? payload.activeWorkspaceId : '';
+          var activeWorkspace = importedWorkspaces.find(function (workspace) { return workspace.id === requestedActiveId; });
+          var activeId = activeWorkspace ? activeWorkspace.id : '';
+          var importedDraft = normalizeDraft(payload.draft);
+          var recoveredDraft = normalizeDraft(payload.recoveredDraft);
+          var current = activeWorkspace || importedDraft;
+          var draftToStore = recoveredDraft || (!activeId ? importedDraft : null);
+          abortAllAiRequests();
+          Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
+          setSaved(importedPoems);
+          setRevisionHistory(importedRevisions);
+          setCompareRevisionIds([]);
+          setWorkspaces(importedWorkspaces);
+          setActiveWorkspaceId(activeId);
+          setPoemTitle(current ? current.title || '' : '');
+          setPoemText(current ? current.text || '' : '');
+          setAcrosticTarget(current ? current.targetWord || '' : '');
+          setForm(current ? (FORMS.find(function (ff) { return ff.id === current.formId; }) || null) : null);
+          setDraftCandidate(draftToStore);
+          setDraftSavedAt(draftToStore ? draftToStore.savedAt || '' : '');
+          setDraftStatus(draftToStore ? 'A pending draft was restored from the backup.' : '');
+          setWorkspaceStatus(activeWorkspace ? 'Restored ' + activeWorkspace.name + '.' : 'Backup restored.');
+          if (activeId) storeActiveWorkspaceId(activeId); else { try { localStorage.removeItem(STORAGE_ACTIVE_WORKSPACE); } catch (e) {} }
+          storeJson(STORAGE_POEMS, importedPoems);
+          storeJson(STORAGE_VERSIONS, importedRevisions);
+          storeJson(STORAGE_WORKSPACES, importedWorkspaces);
+          if (draftToStore) storeJson(STORAGE_DRAFT, draftToStore); else { try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {} }
+          setAiFeedback(null); setMeterAnalysis(null); setCmuResult(null); setIllustration(null); setImagePoemUrl(null);
+          setRhymeResults(null); setVerbSuggestions(null); setSensesResult(null); setSparkWords(null); setTitleSuggestions(null);
+          setRewriteResult(null); setRewriteTargetId(''); setRewriteUndo(null); setThemeReport(null); setMentorMatch(null);
+          setMentorSearchConsent(false); setMentorConsentNeeded(false); setSoundDeviceResult(null); setMetaphors(null);
+          setMetaphorImages({}); setMetaphorImgLoading({}); setMetaphorEditText({}); setStanzaImages([]);
+          setSelfAssessment({}); setSelfAssessmentSubmitted(false); setRevisionPlan(null); setActiveTab('write');
+          setAiLoading(false); setMeterLoading(false); setCmuLoading(false); setIllusLoading(false); setImagePoemLoading(false);
+          setRhymeLoading(false); setVerbLoading(false); setSensesLoading(false); setSparkLoading(false); setTitleLoading(false);
+          setRewriteLoading(false); setThemeLoading(false); setMentorLoading(false); setSoundDeviceLoading(false);
+          setMetaphorLoading(false); setStanzaBoardLoading(false); setRevisionPlanLoading(false); setLlTranslating(false);
+          announcePT('Local writing data restored from backup.');
+          addToast && addToast('Local backup restored. Cloud and privacy preferences were unchanged.', 'success');
+        } catch (err) {
+          warnLog('Local data restore failed:', err && err.message);
+          addToast && addToast('Could not restore that backup. Existing writing data was kept.', 'error');
+        }
+      };
+      reader.onerror = function () { addToast && addToast('Could not read that backup. Existing writing data was kept.', 'error'); };
+      reader.readAsText(file);
+    }, [addToast]);
+
+    var importLibrary = useCallback(function (event) {
+      var input = event && event.target;
+      var file = input && input.files && input.files[0];
+      if (!file) return;
+      if (input) input.value = '';
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var payload = JSON.parse(String(reader.result || ''));
+          var incoming = Array.isArray(payload) ? payload : (payload && Array.isArray(payload.poems) ? payload.poems : []);
+          var skipped = 0;
+          var normalized = incoming.map(function (item, index) {
+            if (!item || typeof item.text !== 'string' || !item.text.trim()) { skipped++; return null; }
+            var title = String(item.title || 'Untitled').slice(0, 240);
+            var text = item.text;
+            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+            var targetWord = String(item.targetWord || '').slice(0, 80);
+            return {
+              id: 'imported-poem-' + Date.now().toString(36) + '-' + index + '-' + Math.random().toString(36).slice(2, 6),
+              title: title,
+              text: text,
+              formId: formId,
+              targetWord: targetWord,
+              revisionId: poemFingerprint(title, text, formId, targetWord),
+              savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : new Date().toISOString()
+            };
+          }).filter(Boolean);
+          if (!normalized.length) throw new Error('No valid poems found');
+          var seen = {};
+          var merged = normalized.concat(saved).filter(function (item) {
+            var key = String(item.text || '') + '\u0000' + String(item.formId || 'free') + '\u0000' + String(item.targetWord || '');
+            if (seen[key]) return false;
+            seen[key] = true;
+            return true;
+          }).slice(0, 50);
+          var added = merged.slice(0, 50).filter(function (item) { return normalized.indexOf(item) >= 0; }).length;
+          setSaved(merged);
+          storeJson(STORAGE_POEMS, merged);
+          announcePT('Imported ' + added + ' poem' + (added === 1 ? '' : 's') + '.');
+          addToast && addToast('Library imported.' + (skipped ? ' Skipped ' + skipped + ' invalid entr' + (skipped === 1 ? 'y.' : 'ies.') : ''), 'success');
+        } catch (err) {
+          warnLog('Library import failed:', err && err.message);
+          addToast && addToast('Could not import the Library. Existing poems were kept.', 'error');
+        }
+      };
+      reader.onerror = function () {
+        addToast && addToast('Could not read that Library file. Existing poems were kept.', 'error');
+      };
+      reader.readAsText(file);
+    }, [saved, addToast]);
+
+    var saveCurrentWorkspace = useCallback(function () {
+      if (!poemText.trim()) {
+        addToast && addToast('Write something before saving a workspace.', 'info');
+        return;
+      }
+      var existing = workspaces.find(function (workspace) { return workspace.id === activeWorkspaceId; });
+      var workspaceId = activeWorkspaceId || 'workspace-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      var entry = {
+        id: workspaceId,
+        name: existing ? existing.name : (poemTitle.trim() || 'Untitled workspace'),
+        title: poemTitle.trim(),
+        text: poemText,
+        formId: form ? form.id : 'free',
+        targetWord: acrosticTarget,
+        updatedAt: new Date().toISOString()
+      };
+      setWorkspaces(function (current) {
+        var found = current.some(function (workspace) { return workspace.id === workspaceId; });
+        var updated = found
+          ? current.map(function (workspace) { return workspace.id === workspaceId ? Object.assign({}, workspace, entry) : workspace; })
+          : [entry].concat(current).slice(0, 24);
+        storeJson(STORAGE_WORKSPACES, updated);
+        return updated;
+      });
+      setActiveWorkspaceId(workspaceId);
+      storeActiveWorkspaceId(workspaceId);
+      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      setDraftCandidate(null);
+      setDraftStatus('');
+      setWorkspaceStatus((existing ? 'Updated ' : 'Saved ') + entry.name + '.');
+      announcePT((existing ? 'Updated workspace: ' : 'Saved workspace: ') + entry.name + '.');
+      addToast && addToast((existing ? 'Workspace updated.' : 'Workspace saved.'), 'success');
+    }, [workspaces, activeWorkspaceId, poemTitle, poemText, form, acrosticTarget, addToast]);
+
+    var startNewWorkspace = useCallback(function () {
+      if (poemText.trim() && typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Start a new workspace? Your current draft will remain only if you saved this workspace.')) return;
+      setActiveWorkspaceId('');
+      storeActiveWorkspaceId('');
+      setPoemTitle('');
+      setPoemText('');
+      setAcrosticTarget('');
+      setForm(null);
+      setDraftCandidate(null);
+      setDraftStatus('');
+      setWorkspaceStatus('New unnamed workspace ready.');
+      setActiveTab('write');
+      announcePT('New workspace ready.');
+    }, [poemText]);
+
+    var switchWorkspace = useCallback(function (workspaceId) {
+      if (!workspaceId || workspaceId === activeWorkspaceId) return;
+      var target = workspaces.find(function (workspace) { return workspace.id === workspaceId; });
+      if (!target) return;
+      if (activeWorkspaceId) {
+        var snapshot = {
+          title: poemTitle.trim(),
+          text: poemText,
+          formId: form ? form.id : 'free',
+          targetWord: acrosticTarget,
+          updatedAt: new Date().toISOString()
+        };
+        setWorkspaces(function (current) {
+          var updated = current.map(function (workspace) { return workspace.id === activeWorkspaceId ? Object.assign({}, workspace, snapshot) : workspace; });
+          storeJson(STORAGE_WORKSPACES, updated);
+          return updated;
+        });
+      }
+      setActiveWorkspaceId(workspaceId);
+      storeActiveWorkspaceId(workspaceId);
+      setPoemTitle(target.title || '');
+      setPoemText(target.text || '');
+      setAcrosticTarget(target.targetWord || '');
+      var targetForm = FORMS.find(function (ff) { return ff.id === target.formId; });
+      setForm(targetForm || null);
+      setDraftCandidate(null);
+      setDraftStatus('');
+      setWorkspaceStatus('Opened ' + target.name + '.');
+      setActiveTab('write');
+      announcePT('Opened workspace: ' + target.name + '.');
+    }, [workspaces, activeWorkspaceId, poemTitle, poemText, form, acrosticTarget]);
+
+    var deleteActiveWorkspace = useCallback(function () {
+      if (!activeWorkspaceId) return;
+      var target = workspaces.find(function (workspace) { return workspace.id === activeWorkspaceId; });
+      if (!target) return;
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Delete workspace "' + target.name + '" from this device?')) return;
+      var updated = workspaces.filter(function (workspace) { return workspace.id !== activeWorkspaceId; });
+      setWorkspaces(updated);
+      storeJson(STORAGE_WORKSPACES, updated);
+      setActiveWorkspaceId('');
+      storeActiveWorkspaceId('');
+      setPoemTitle('');
+      setPoemText('');
+      setAcrosticTarget('');
+      setForm(null);
+      setWorkspaceStatus('Workspace deleted.');
+      announcePT('Deleted workspace: ' + target.name + '.');
+    }, [workspaces, activeWorkspaceId]);
+
+    useEffect(function () {
+      if (workspaceBootRef.current) return;
+      workspaceBootRef.current = true;
+      if (!activeWorkspaceId) return;
+      var target = workspaces.find(function (workspace) { return workspace.id === activeWorkspaceId; });
+      if (!target) {
+        setActiveWorkspaceId('');
+        storeActiveWorkspaceId('');
+        return;
+      }
+      setPoemTitle(target.title || '');
+      setPoemText(target.text || '');
+      setAcrosticTarget(target.targetWord || '');
+      var targetForm = FORMS.find(function (ff) { return ff.id === target.formId; });
+      setForm(targetForm || null);
+      setDraftCandidate(null);
+      setActiveTab('write');
+      setWorkspaceStatus('Restored ' + target.name + '.');
+    }, []);
     var loadPoem = useCallback(function (entry) {
+      if (activeWorkspaceId) {
+        setActiveWorkspaceId('');
+        storeActiveWorkspaceId('');
+        setWorkspaceStatus('Loaded as a separate draft so the workspace stays unchanged.');
+      }
       setPoemTitle(entry.title || '');
       setPoemText(entry.text || '');
+      setAcrosticTarget(entry.targetWord || '');
       var f = FORMS.find(function (ff) { return ff.id === entry.formId; });
-      if (f) setForm(f);
+      setForm(f || null);
       setActiveTab('write');
       announcePT(tr('Loaded poem: ') + (entry.title || 'Untitled') + '.');
+    }, [activeWorkspaceId]);
+
+
+    // Save either the active workspace or the legacy unnamed draft after a short pause.
+    // Named workspaces never overwrite the single-draft recovery slot.
+    useEffect(function () {
+      if (!activeWorkspaceId && !poemText.trim()) return;
+      var snapshot = { title: poemTitle, text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget, updatedAt: new Date().toISOString(), savedAt: new Date().toISOString() };
+      var timer = setTimeout(function () {
+        if (activeWorkspaceId) {
+          setWorkspaces(function (current) {
+            var found = false;
+            var updated = current.map(function (workspace) {
+              if (workspace.id !== activeWorkspaceId) return workspace;
+              found = true;
+              return Object.assign({}, workspace, {
+                title: snapshot.title,
+                text: snapshot.text,
+                formId: snapshot.formId,
+                targetWord: snapshot.targetWord,
+                updatedAt: snapshot.updatedAt
+              });
+            });
+            if (found) storeJson(STORAGE_WORKSPACES, updated);
+            return updated;
+          });
+          setWorkspaceStatus('Workspace saved on this device.');
+        } else if (storeJson(STORAGE_DRAFT, snapshot)) {
+          setDraftSavedAt(snapshot.savedAt);
+          setDraftStatus('Draft saved on this device.');
+        }
+      }, 700);
+      return function () { clearTimeout(timer); };
+    }, [poemTitle, poemText, form, acrosticTarget, activeWorkspaceId]);
+
+    var restoreDraft = useCallback(function () {
+      if (!draftCandidate) return;
+      setPoemTitle(draftCandidate.title || '');
+      setPoemText(draftCandidate.text || '');
+      setAcrosticTarget(draftCandidate.targetWord || '');
+      var f = FORMS.find(function (ff) { return ff.id === draftCandidate.formId; });
+      if (f) setForm(f);
+      setDraftCandidate(null);
+      setActiveTab('write');
+      announcePT('Recovered your local draft.');
+    }, [draftCandidate]);
+
+    var discardDraft = useCallback(function () {
+      try { localStorage.removeItem(STORAGE_DRAFT); } catch (e) {}
+      setDraftCandidate(null);
+      setDraftStatus('');
+      announcePT('Local draft discarded.');
     }, []);
+
+    var eraseAllLocalData = useCallback(function () {
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Erase all local Poet Tree poems, drafts, revisions, and workspaces from this device?')) return;
+      abortAllAiRequests();
+      Object.keys(aiRequestSeqRef.current).forEach(function (key) { aiRequestSeqRef.current[key] += 1; });
+      llReqRef.current += 1;
+      [STORAGE_POEMS, STORAGE_DRAFT, STORAGE_VERSIONS, STORAGE_WORKSPACES, STORAGE_ACTIVE_WORKSPACE].forEach(function (key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      });
+      setSaved([]);
+      setRevisionHistory([]);
+      setCompareRevisionIds([]);
+      setWorkspaces([]);
+      setActiveWorkspaceId('');
+      setPoemTitle('');
+      setPoemText('');
+      setAcrosticTarget('');
+      setForm(null);
+      setDraftCandidate(null);
+      setDraftSavedAt('');
+      setDraftStatus('');
+      setWorkspaceStatus('');
+      setFoundSource('');
+      setErasureSource('');
+      setErasureKept({});
+      setAiFeedback(null);
+      setMeterAnalysis(null);
+      setCmuResult(null);
+      setIllustration(null);
+      setImagePoemUrl(null);
+      setRhymeResults(null);
+      setVerbSuggestions(null);
+      setSensesResult(null);
+      setSparkWords(null);
+      setTitleSuggestions(null);
+      setRewriteResult(null);
+      setRewriteTargetId('');
+      setRewriteUndo(null);
+      setThemeReport(null);
+      setMentorMatch(null);
+      setMentorSearchConsent(false);
+      setMentorConsentNeeded(false);
+      setSoundDeviceResult(null);
+      setMetaphors(null);
+      setMetaphorImages({});
+      setMetaphorImgLoading({});
+      setMetaphorEditText({});
+      setStanzaImages([]);
+      setSelfAssessment({});
+      setSelfAssessmentSubmitted(false);
+      setRevisionPlan(null);
+      setChapbookSelectedIds([]);
+      setChapbookCurating(false);
+      setAiLoading(false);
+      setMeterLoading(false);
+      setCmuLoading(false);
+      setIllusLoading(false);
+      setImagePoemLoading(false);
+      setRhymeLoading(false);
+      setVerbLoading(false);
+      setSensesLoading(false);
+      setSparkLoading(false);
+      setTitleLoading(false);
+      setRewriteLoading(false);
+      setThemeLoading(false);
+      setMentorLoading(false);
+      setSoundDeviceLoading(false);
+      setMetaphorLoading(false);
+      setStanzaBoardLoading(false);
+      setRevisionPlanLoading(false);
+      setLlTranslating(false);
+      setActiveTab('form');
+      announcePT('All local Poet Tree content was erased from this device.');
+      addToast && addToast('All local Poet Tree content was erased from this device.', 'success');
+    }, [addToast]);
+
 
     // ── Resource-history hooks (mirror StoryForge's saveAsConfig / saveAsSubmission) ──
     // saveAsAssignment: teacher captures the form choice + prompt + title hint into a
@@ -929,6 +1659,7 @@
         poemTitle: poemTitle.trim() || 'Untitled',
         poemText: poemText,
         formId: form ? form.id : 'free',
+        targetWord: acrosticTarget,
         form: form ? form.name : 'Free Verse',
         lineCount: lines.filter(function (l) { return l.trim().length > 0; }).length,
         wordCount: poemText.split(/\s+/).filter(Boolean).length,
@@ -978,7 +1709,7 @@
       } catch (e) {}
       announcePT('Saved new student-controlled PoetTree poem to AlloHaven Portfolio.');
       addToast && addToast('Saved new student-controlled PoetTree poem to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', 'success');
-    }, [onSaveSubmission, poemText, poemTitle, form, aiFeedback, meterAnalysis, studentNickname, gradeLevel, addToast]);
+    }, [onSaveSubmission, poemText, poemTitle, form, acrosticTarget, aiFeedback, meterAnalysis, studentNickname, gradeLevel, addToast]);
 
     var deletePoem = useCallback(function (id) {
       var updated = saved.filter(function (p) { return p.id !== id; });
@@ -1020,6 +1751,78 @@
       }
     }, [pendingDelete]);
 
+    function beginAiRequest(key) {
+      var previous = aiAbortControllersRef.current[key];
+      if (previous && typeof previous.abort === 'function') previous.abort();
+      var next = (aiRequestSeqRef.current[key] || 0) + 1;
+      aiRequestSeqRef.current[key] = next;
+      var controller = typeof AbortController === 'function' ? new AbortController() : null;
+      if (controller) aiAbortControllersRef.current[key] = controller;
+      return { id: next, fingerprint: poemFingerprint(poemTitle, poemText, form ? form.id : 'free', acrosticTarget), controller: controller };
+    }
+
+    function aiRequestSignal(request) {
+      return request && request.controller ? request.controller.signal : null;
+    }
+
+    function abortAllAiRequests() {
+      Object.keys(aiAbortControllersRef.current).forEach(function (key) {
+        var controller = aiAbortControllersRef.current[key];
+        if (controller && typeof controller.abort === 'function') controller.abort();
+        delete aiAbortControllersRef.current[key];
+      });
+    }
+
+    function aiRequestIsCurrent(key, request) {
+      return !!request && aiRequestSeqRef.current[key] === request.id && request.fingerprint === currentPoemFingerprintRef.current;
+    }
+
+    function aiRequestIsLatest(key, request) {
+      return !!request && aiRequestSeqRef.current[key] === request.id;
+    }
+
+    useEffect(function () {
+      if (!contentRevisionInitRef.current) { contentRevisionInitRef.current = true; return; }
+      abortAllAiRequests();
+    }, [poemTitle, poemText, form, acrosticTarget]);
+
+    useEffect(function () {
+      return function () { abortAllAiRequests(); };
+    }, []);
+
+    modalNestedRef.current = !!pendingDelete || readAloudActive || readCountdown > 0;
+    useEffect(function () {
+      var root = modalRef.current;
+      if (!root) return;
+      var previous = document.activeElement;
+      modalReturnFocusRef.current = previous;
+      var focusables = function () { return root.querySelectorAll('button:not([disabled]), input:not([disabled]):not([aria-hidden="true"]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'); };
+      var focusTimer = setTimeout(function () { var first = focusables()[0]; if (first && first.focus) first.focus(); }, 0);
+      var onKeyDown = function (ev) {
+        if (modalNestedRef.current) return;
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (modalCloseRef.current) modalCloseRef.current();
+          return;
+        }
+        if (ev.key !== 'Tab') return;
+        var controls = focusables();
+        if (!controls.length) return;
+        var first = controls[0], last = controls[controls.length - 1];
+        if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+      };
+      document.addEventListener('keydown', onKeyDown, true);
+      return function () {
+        clearTimeout(focusTimer);
+        document.removeEventListener('keydown', onKeyDown, true);
+        var target = modalReturnFocusRef.current;
+        modalReturnFocusRef.current = null;
+        if (target && target.isConnected && target.focus) setTimeout(function () { try { target.focus(); } catch (e) {} }, 0);
+      };
+    }, []);
+
     function handleDeleteDialogKeyDown(ev) {
       if (ev.key === 'Escape') {
         ev.preventDefault();
@@ -1038,6 +1841,8 @@
     // ── AI feedback ──
     var getAiFeedback = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('AI feedback')) return;
+      var request = beginAiRequest('feedback');
       setAiLoading(true);
       setAiFeedback(null);
       try {
@@ -1058,18 +1863,20 @@
           + gradeGuide + '\n\n'
           + 'Return JSON: {"strongestLine":"<one line from the poem the student wrote>","strongestWhy":"<one sentence on why it works>","imagery":"<one sentence on the imagery: praise or strengthen>","formNotes":"<one sentence on adherence to ' + (form ? form.name : 'their chosen form') + '>","suggestion":"<one specific, kind, concrete revision idea — a word swap, a line cut, an image to add>","encouragement":"<one short closing sentence>"}\n\n'
           + 'Be specific and kind. Never invent lines that are not in the poem. Match vocabulary to ' + gradeLevel + '.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('feedback', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid feedback response');
         setAiFeedback(parsed);
         if (handleScoreUpdate) handleScoreUpdate(15, 'PoetTree feedback', 'poettree-feedback-' + entry_safe(poemTitle));
         announcePT(tr('Feedback received.'));
       } catch (err) {
+        if (!aiRequestIsCurrent('feedback', request)) return;
         warnLog('AI feedback failed:', err && err.message);
         setAiFeedback({ error: tr('Could not generate feedback. Try again in a moment.') });
         addToast && addToast(tr('Feedback unavailable.'), 'error');
       } finally {
-        setAiLoading(false);
+        if (aiRequestIsLatest('feedback', request)) setAiLoading(false);
       }
     }, [onCallGemini, poemText, poemTitle, form, gradeLevel, handleScoreUpdate, addToast]);
 
@@ -1079,39 +1886,47 @@
 
     var generateDailyPrompt = useCallback(async function () {
       if (!onCallGemini) return;
+      if (!requireCloudFeature('Daily prompt')) return;
+      var request = beginAiRequest('dailyPrompt');
       setDailyPromptLoading(true);
       try {
         var formHint = form ? ' They are writing in the form: ' + form.name + '.' : '';
         var prompt = 'You are a creative-writing teacher for a ' + gradeLevel + ' student.' + formHint + ' Generate ONE inspiring poem prompt — concrete, image-rich, emotionally accessible, age-appropriate. Avoid abstractions. Avoid trauma topics unless gently. 1-2 sentences. Return only the prompt itself, no quotes, no preamble.';
-        var result = await onCallGemini(prompt, false);
+        var result = await onCallGemini(prompt, false, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('dailyPrompt', request)) return;
         var clean = String(result || '').trim().replace(/^["“]|["”]$/g, '').replace(/^prompt:\s*/i, '');
         setDailyPrompt(clean);
         announcePT(tr('New writing prompt: ') + clean);
       } catch (err) {
+        if (!aiRequestIsCurrent('dailyPrompt', request)) return;
         warnLog('Daily prompt failed:', err && err.message);
         addToast && addToast('Couldn\'t fetch a prompt right now.', 'error');
       } finally {
-        setDailyPromptLoading(false);
+        if (aiRequestIsLatest('dailyPrompt', request)) setDailyPromptLoading(false);
       }
     }, [onCallGemini, form, gradeLevel, addToast]);
 
     var fetchRhymes = useCallback(async function () {
       if (!onCallGemini || !rhymeQuery.trim()) return;
+      if (!requireCloudFeature('Rhyme helper')) return;
+      var request = beginAiRequest('rhymes');
       setRhymeLoading(true);
       setRhymeResults(null);
       try {
         var word = rhymeQuery.trim().toLowerCase().replace(/[^a-z'-]/g, '');
         var prompt = 'Return JSON: {"perfect":["..."],"slant":["..."]} — 6-8 perfect rhymes (same vowel and ending consonants) and 4-6 slant rhymes (similar but not exact) for the word "' + word + '". Skip vulgarity, slurs, and offensive words. Order each list from most useful to less useful for poetry. If no rhymes are possible (rare words), return both arrays empty.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        setRhymeResults({ word: word, perfect: parsed.perfect || [], slant: parsed.slant || [] });
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('rhymes', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid rhyme response');
+        setRhymeResults({ word: word, perfect: Array.isArray(parsed.perfect) ? parsed.perfect.slice(0, 12) : [], slant: Array.isArray(parsed.slant) ? parsed.slant.slice(0, 12) : [] });
         announcePT((parsed.perfect || []).length + ' perfect rhymes and ' + (parsed.slant || []).length + ' slant rhymes for ' + word + '.');
       } catch (err) {
+        if (!aiRequestIsCurrent('rhymes', request)) return;
         warnLog('Rhymes failed:', err && err.message);
         setRhymeResults({ error: 'Couldn\'t fetch rhymes. Try a more common word.' });
       } finally {
-        setRhymeLoading(false);
+        if (aiRequestIsLatest('rhymes', request)) setRhymeLoading(false);
       }
     }, [onCallGemini, rhymeQuery]);
 
@@ -1127,6 +1942,8 @@
 
     var findStrongerVerbs = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Stronger verbs')) return;
+      var request = beginAiRequest('verbs');
       setVerbLoading(true);
       setVerbSuggestions(null);
       try {
@@ -1134,22 +1951,26 @@
           + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
           + 'Return JSON: {"suggestions":[{"line":"<exact original line from the poem>","weakVerb":"<verb>","alternatives":["<verb1>","<verb2>","<verb3>"]}]}\n\n'
           + 'Only suggest where the line genuinely benefits — sometimes "is" is the right word. If no weak verbs are found, return {"suggestions":[]}.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        setVerbSuggestions(parsed.suggestions || []);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('verbs', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid verb response');
+        setVerbSuggestions(Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 5) : []);
         var n = (parsed.suggestions || []).length;
         announcePT(n === 0 ? tr('No weak verbs detected — your verbs are working hard.') : n + ' verb suggestion' + (n === 1 ? '' : 's') + '.');
       } catch (err) {
+        if (!aiRequestIsCurrent('verbs', request)) return;
         warnLog('Verb booster failed:', err && err.message);
         setVerbSuggestions({ error: 'Couldn\'t analyze verbs right now.' });
       } finally {
-        setVerbLoading(false);
+        if (aiRequestIsLatest('verbs', request)) setVerbLoading(false);
       }
     }, [onCallGemini, poemText]);
 
     var checkSenses = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Senses check')) return;
+      var request = beginAiRequest('senses');
       setSensesLoading(true);
       setSensesResult(null);
       try {
@@ -1157,16 +1978,18 @@
           + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
           + 'Return JSON: {"counts":{"sight":N,"sound":N,"smell":N,"taste":N,"touch":N,"motion":N,"emotion":N},"strongest":"<which sense is most vivid in this poem, one word>","missing":"<which one missing or weak sense would most strengthen the poem>","suggestion":"<one specific concrete suggestion to add a missing sense — name a body part, a texture, a smell, etc., that fits the poem\'s subject>"}\n\n'
           + 'Be honest — abstractions don\'t count. "Sad" is emotion, not sight. "Cold hands" is touch. "The smell of rain" is smell. Don\'t invent senses the poem doesn\'t actually use.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('senses', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid senses response');
         setSensesResult(parsed);
         announcePT(tr('Senses check complete. ') + (parsed.suggestion || ''));
       } catch (err) {
+        if (!aiRequestIsCurrent('senses', request)) return;
         warnLog('Senses check failed:', err && err.message);
         setSensesResult({ error: 'Couldn\'t analyze senses right now.' });
       } finally {
-        setSensesLoading(false);
+        if (aiRequestIsLatest('senses', request)) setSensesLoading(false);
       }
     }, [onCallGemini, poemText]);
 
@@ -1175,6 +1998,8 @@
     // student's own poem rather than abstract definitions, so the craft move sticks.
     var analyzeSoundDevices = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Sound device coach')) return;
+      var request = beginAiRequest('soundDevices');
       setSoundDeviceLoading(true);
       setSoundDeviceResult(null);
       try {
@@ -1196,9 +2021,10 @@
           + '  "suggestion":"<concrete suggestion naming a line + sound to try>"\n'
           + '}\n\n'
           + 'Be honest — invented examples crash the lesson. Only quote excerpts that are actually in the poem.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('soundDevices', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid sound-device response');
         // Cap each list at 3 to stay tidy
         ['alliteration', 'assonance', 'consonance', 'internalRhyme'].forEach(function (k) {
           if (Array.isArray(parsed[k])) parsed[k] = parsed[k].slice(0, 3);
@@ -1206,10 +2032,11 @@
         setSoundDeviceResult(parsed);
         announcePT(tr('Sound device coach ready. Try strengthening: ') + (parsed.weakest || 'a sound') + '.');
       } catch (err) {
+        if (!aiRequestIsCurrent('soundDevices', request)) return;
         warnLog('Sound device coach failed:', err && err.message);
         setSoundDeviceResult({ error: 'Couldn\'t analyze sound devices right now.' });
       } finally {
-        setSoundDeviceLoading(false);
+        if (aiRequestIsLatest('soundDevices', request)) setSoundDeviceLoading(false);
       }
     }, [onCallGemini, poemText, gradeLevel]);
 
@@ -1221,6 +2048,8 @@
     // coin in the sky), so students see the IMAGE their words actually paint.
     var detectMetaphors = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Metaphor scanner')) return;
+      var request = beginAiRequest('metaphors');
       setMetaphorLoading(true);
       setMetaphors(null);
       try {
@@ -1232,79 +2061,83 @@
           + '  { "type": "metaphor"|"simile", "excerpt": "<exact poem text>", "tenor": "<the real subject, 1-3 words>", "vehicle": "<the comparison image, 1-5 words>" }\n'
           + '] }\n\n'
           + 'If no metaphors or similes exist, return {"items":[]}. Don\'t invent comparisons that aren\'t actually in the poem.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('metaphors', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid metaphor response');
         var items = Array.isArray(parsed.items) ? parsed.items.slice(0, 5) : [];
         // Stamp a stable client-side id on each so images keyed by it don't collide across re-detects.
         var stamped = items.map(function (m, i) { return Object.assign({}, m, { id: 'mph_' + Date.now() + '_' + i }); });
         setMetaphors(stamped);
         announcePT(stamped.length === 0 ? tr('No metaphors or similes found in this draft.') : (stamped.length + ' figurative phrase' + (stamped.length === 1 ? '' : 's') + ' found.'));
       } catch (err) {
+        if (!aiRequestIsCurrent('metaphors', request)) return;
         warnLog('Metaphor detection failed:', err && err.message);
         setMetaphors({ error: 'Couldn\'t scan for metaphors right now. Try again in a moment.' });
       } finally {
-        setMetaphorLoading(false);
+        if (aiRequestIsLatest('metaphors', request)) setMetaphorLoading(false);
       }
     }, [onCallGemini, poemText]);
 
     var visualizeMetaphor = useCallback(async function (m) {
       if (!onCallImagen || !m || !m.id) return;
+      if (!requireCloudFeature('Metaphor images')) return;
+      var requestKey = 'metaphorImage:' + m.id;
+      var request = beginAiRequest(requestKey);
       setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = true; return n; });
       try {
-        // Render the VEHICLE literally — that's the whole point. The tenor is too
-        // abstract to draw ("courage", "loneliness"); the vehicle is the picture.
         var prompt = (m.vehicle || m.excerpt || 'an evocative image') + '. ' +
           (m.type === 'simile' ? 'A literal scene of: ' : 'A literal rendering of: ') +
           (m.vehicle || m.excerpt) +
           '. Style: dreamy watercolor and ink, single subject, soft natural light. STRICTLY NO TEXT in the image, no captions, no signatures.';
-        var url = await onCallImagen(prompt, 512, 0.85);
+        var url = await onCallImagen(prompt, 512, 0.85, aiRequestSignal(request));
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         if (url) {
           setMetaphorImages(function (prev) { var n = Object.assign({}, prev); n[m.id] = url; return n; });
           announcePT('Visualized: ' + (m.vehicle || m.excerpt) + '.');
         }
       } catch (err) {
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         warnLog('Metaphor image gen failed:', err && err.message);
-        addToast && addToast(tr('Image gen failed — try again.'), 'error');
+        addToast && addToast(tr('Image gen failed - try again.'), 'error');
       } finally {
-        setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
+        if (aiRequestIsLatest(requestKey, request)) setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
       }
     }, [onCallImagen, addToast]);
-
     var refineMetaphorImage = useCallback(async function (m) {
       if (!onCallGeminiImageEdit || !m || !m.id) return;
+      if (!requireCloudFeature('Image editing')) return;
       var existing = metaphorImages[m.id];
       var instruction = (metaphorEditText[m.id] || '').trim();
       if (!existing) { addToast && addToast(tr('Generate an image first, then edit it.'), 'info'); return; }
       if (!instruction) { addToast && addToast('Type a tweak (e.g. "make it sunset", "add stars").', 'info'); return; }
+      var requestKey = 'metaphorEdit:' + m.id;
+      var request = beginAiRequest(requestKey);
       setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = true; return n; });
       try {
-        var rawBase64 = String(existing).split(',')[1] || existing; // tolerate either data-URL or raw base64
+        var rawBase64 = String(existing).split(',')[1] || existing;
         var refined = await onCallGeminiImageEdit(
           instruction + '. Keep the subject of the original (' + (m.vehicle || m.excerpt) + '). STRICTLY NO TEXT.',
           rawBase64,
           512,
-          0.8
+          0.8,
+          null,
+          { signal: aiRequestSignal(request) }
         );
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         if (refined) {
           setMetaphorImages(function (prev) { var n = Object.assign({}, prev); n[m.id] = refined; return n; });
           setMetaphorEditText(function (prev) { var n = Object.assign({}, prev); n[m.id] = ''; return n; });
           announcePT(tr('Image refined.'));
         }
       } catch (err) {
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         warnLog('Metaphor image edit failed:', err && err.message);
-        addToast && addToast(tr('Image edit failed — try again.'), 'error');
+        addToast && addToast(tr('Image edit failed - try again.'), 'error');
       } finally {
-        setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
+        if (aiRequestIsLatest(requestKey, request)) setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
       }
     }, [onCallGeminiImageEdit, metaphorImages, metaphorEditText, addToast]);
-
-    // ── Mood Board: one image per stanza, narrative-arc style ──
-    // Splits the poem on blank-line separators (standard stanza convention) and
-    // generates an Imagen render for each stanza using the stanza text as the
-    // prompt — same "your words go straight to the model" philosophy as Image Poem,
-    // but applied per-stanza so the student can see how the poem's mood shifts
-    // across its arc.
     function _splitIntoStanzas(text) {
       if (!text) return [];
       // Split on runs of two or more newlines (blank-line separators); also accept
@@ -1315,38 +2148,34 @@
 
     var generateMoodBoard = useCallback(async function () {
       if (!onCallImagen || !poemText.trim()) return;
+      if (!requireCloudFeature('Mood board')) return;
       var stanzas = _splitIntoStanzas(poemText);
       if (stanzas.length === 0) return;
-      // If only one stanza, encourage the student to add stanza breaks first
-      // (otherwise mood-board === image-poem and there's no narrative arc).
       if (stanzas.length === 1) {
         addToast && addToast(tr('Mood Board needs at least 2 stanzas (separate them with a blank line).'), 'info');
         return;
       }
+      var requestKey = 'moodBoard';
+      var request = beginAiRequest(requestKey);
       setStanzaBoardLoading(true);
-      // Seed loading state for each stanza upfront so the UI shows skeleton cards
       var seeded = stanzas.map(function (text, idx) {
         return { idx: idx, text: text, url: null, loading: true };
       });
       setStanzaImages(seeded);
-      // Generate images sequentially (parallel would saturate the API/quota and
-      // also lets earlier stanzas render while later ones are still cooking).
-      // Each iteration is wrapped in an async IIFE that captures `i` and the
-      // stanza text by value — otherwise the setStanzaImages updater closures
-      // close over the loop's `var i`, and React 18 may run the updater after
-      // i++ has advanced, writing to the wrong stanza slot.
       try {
         for (var idx = 0; idx < stanzas.length; idx++) {
           await (async function (i, stanzaText) {
             try {
               var prompt = stanzaText + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
-              var url = await onCallImagen(prompt, 512, 0.85);
+              var url = await onCallImagen(prompt, 512, 0.85, aiRequestSignal(request));
+              if (!aiRequestIsCurrent(requestKey, request)) return;
               setStanzaImages(function (prev) {
                 var n = prev.slice();
                 if (n[i]) n[i] = Object.assign({}, n[i], { url: url || null, loading: false });
                 return n;
               });
             } catch (e) {
+              if (!aiRequestIsCurrent(requestKey, request)) return;
               warnLog('Stanza ' + (i + 1) + ' image failed:', e && e.message);
               setStanzaImages(function (prev) {
                 var n = prev.slice();
@@ -1355,17 +2184,20 @@
               });
             }
           })(idx, stanzas[idx]);
+          if (!aiRequestIsCurrent(requestKey, request)) break;
         }
-        announcePT(tr('Mood board ready: ') + stanzas.length + ' stanza images.');
+        if (aiRequestIsCurrent(requestKey, request)) announcePT(tr('Mood board ready: ') + stanzas.length + ' stanza images.');
       } finally {
-        setStanzaBoardLoading(false);
+        if (aiRequestIsLatest(requestKey, request)) setStanzaBoardLoading(false);
       }
     }, [onCallImagen, poemText, addToast]);
-
     var rerollStanzaImage = useCallback(async function (idx) {
       if (!onCallImagen) return;
+      if (!requireCloudFeature('Mood board images')) return;
       var entry = stanzaImages[idx];
       if (!entry) return;
+      var requestKey = 'stanzaImage:' + idx;
+      var request = beginAiRequest(requestKey);
       setStanzaImages(function (prev) {
         var n = prev.slice();
         if (n[idx]) n[idx] = Object.assign({}, n[idx], { loading: true });
@@ -1373,7 +2205,8 @@
       });
       try {
         var prompt = entry.text + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT.';
-        var url = await onCallImagen(prompt, 512, 0.85);
+        var url = await onCallImagen(prompt, 512, 0.85, aiRequestSignal(request));
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         setStanzaImages(function (prev) {
           var n = prev.slice();
           if (n[idx]) n[idx] = Object.assign({}, n[idx], { url: url || null, loading: false });
@@ -1381,6 +2214,7 @@
         });
         announcePT('Stanza ' + (idx + 1) + ' re-rolled.');
       } catch (err) {
+        if (!aiRequestIsCurrent(requestKey, request)) return;
         warnLog('Stanza re-roll failed:', err && err.message);
         setStanzaImages(function (prev) {
           var n = prev.slice();
@@ -1388,10 +2222,16 @@
           return n;
         });
         addToast && addToast('Re-roll failed.', 'error');
+      } finally {
+        if (aiRequestIsLatest(requestKey, request)) {
+          setStanzaImages(function (prev) {
+            var n = prev.slice();
+            if (n[idx] && n[idx].loading) n[idx] = Object.assign({}, n[idx], { loading: false });
+            return n;
+          });
+        }
       }
     }, [onCallImagen, stanzaImages, addToast]);
-
-    // ── helpersAvailableForPlan: ≥2 helper outputs unlocks the Revision Plan button ──
     function helpersAvailableForPlan() {
       var n = 0;
       if (sensesResult && !sensesResult.error) n++;
@@ -1413,6 +2253,8 @@
     // in isolation.
     var synthesizeRevisionPlan = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Revision plan')) return;
+      var request = beginAiRequest('revisionPlan');
       setRevisionPlanLoading(true);
       try {
         var helperContext = [];
@@ -1474,43 +2316,51 @@
           + '  ],\n'
           + '  "encouragement": "<one short specific compliment on something the poem is already doing well>"\n'
           + '}';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('revisionPlan', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid revision-plan response');
         // Defensive cap at 3 tasks even if Gemini returns more
         if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
         setRevisionPlan(parsed);
         announcePT('Revision plan ready with ' + ((parsed.tasks || []).length) + ' prioritized tasks.');
       } catch (err) {
+        if (!aiRequestIsCurrent('revisionPlan', request)) return;
         warnLog('Revision plan synthesis failed:', err && err.message);
         setRevisionPlan({ error: 'Couldn\'t build a revision plan right now. Try again in a moment.' });
       } finally {
-        setRevisionPlanLoading(false);
+        if (aiRequestIsLatest('revisionPlan', request)) setRevisionPlanLoading(false);
       }
     }, [onCallGemini, poemText, gradeLevel, sensesResult, soundDeviceResult, mentorMatch, verbSuggestions, themeReport, aiFeedback, selfAssessment, selfAssessmentSubmitted]);
 
     var generateSparks = useCallback(async function () {
       if (!onCallGemini) return;
+      if (!requireCloudFeature('Spark words')) return;
+      var request = beginAiRequest('sparks');
       setSparkLoading(true);
       try {
         var prompt = 'Generate 5 vivid, concrete nouns or short noun-phrases (1-3 words each) for a ' + gradeLevel + ' student to use as poetic seeds. Mix the senses (sound / smell / texture / sight / motion). Avoid abstractions like "love" or "joy." Examples of good ones: "copper bowl", "pine smoke", "static crackle", "lemon rind", "crow shadow."\n\n'
           + 'Return JSON: {"words":["...","...","...","...","..."]}';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        setSparkWords(parsed.words || []);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('sparks', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid spark response');
+        setSparkWords(Array.isArray(parsed.words) ? parsed.words.slice(0, 5) : []);
         announcePT('5 spark words ready: ' + (parsed.words || []).join(', '));
       } catch (err) {
+        if (!aiRequestIsCurrent('sparks', request)) return;
         warnLog('Spark words failed:', err && err.message);
         addToast && addToast('Couldn\'t fetch spark words.', 'error');
       } finally {
-        setSparkLoading(false);
+        if (aiRequestIsLatest('sparks', request)) setSparkLoading(false);
       }
     }, [onCallGemini, gradeLevel, addToast]);
 
     // ── Title Generator: suggest 5 titles for the current poem ──
     var generateTitles = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Title suggestions')) return;
+      var request = beginAiRequest('titles');
       setTitleLoading(true);
       setTitleSuggestions(null);
       try {
@@ -1518,16 +2368,18 @@
         var prompt = 'Suggest 5 distinct titles for this poem.' + formHint + ' Mix styles: one literal/descriptive, one image-driven, one one-word, one two-to-three word, one a phrase from the poem itself. Avoid clichés. Match a ' + gradeLevel + ' student\'s register.\n\n'
           + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
           + 'Return JSON: {"titles":["...","...","...","...","..."]}';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        setTitleSuggestions(parsed.titles || []);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('titles', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid title response');
+        setTitleSuggestions(Array.isArray(parsed.titles) ? parsed.titles.slice(0, 5) : []);
         announcePT((parsed.titles || []).length + ' title suggestions ready.');
       } catch (err) {
+        if (!aiRequestIsCurrent('titles', request)) return;
         warnLog('Title gen failed:', err && err.message);
         addToast && addToast('Couldn\'t generate titles.', 'error');
       } finally {
-        setTitleLoading(false);
+        if (aiRequestIsLatest('titles', request)) setTitleLoading(false);
       }
     }, [onCallGemini, poemText, form, gradeLevel, addToast]);
 
@@ -1535,8 +2387,10 @@
     // Pedagogical idea: students see how form constraints reshape the same source idea.
     var rewriteAsForm = useCallback(async function (targetFormId) {
       if (!onCallGemini || !poemText.trim() || !targetFormId) return;
+      if (!requireCloudFeature('Cross-form rewrite')) return;
       var targetForm = FORMS.find(function (f) { return f.id === targetFormId; });
       if (!targetForm) return;
+      var request = beginAiRequest('rewrite');
       setRewriteLoading(true);
       setRewriteResult(null);
       try {
@@ -1547,40 +2401,178 @@
           + '\nOriginal poem' + (form ? ' (currently in ' + form.name + ' form)' : '') + ':\n"""\n' + poemText + '\n"""\n\n'
           + 'Return JSON: {"poem":"<the rewritten poem text, line breaks preserved>","note":"<one sentence on what shifted: which images survived, what the form forced you to add or cut>"}\n\n'
           + 'Be honest if the form simply doesn\'t fit the source — if you have to mangle the original, say so in the note.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        setRewriteResult({ targetForm: targetForm, poem: parsed.poem || '', note: parsed.note || '' });
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('rewrite', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed.poem !== 'string' || !parsed.poem.trim()) throw new Error('Invalid rewrite response');
+        setRewriteResult({ targetForm: targetForm, poem: parsed.poem, note: typeof parsed.note === 'string' ? parsed.note : '' });
         announcePT('Rewritten as ' + targetForm.name + '. ' + (parsed.note || ''));
       } catch (err) {
+        if (!aiRequestIsCurrent('rewrite', request)) return;
         warnLog('Rewrite failed:', err && err.message);
         setRewriteResult({ error: 'Couldn\'t rewrite right now.' });
       } finally {
-        setRewriteLoading(false);
+        if (aiRequestIsLatest('rewrite', request)) setRewriteLoading(false);
       }
     }, [onCallGemini, poemText, form]);
 
     var applyRewrite = useCallback(function () {
       if (!rewriteResult || !rewriteResult.poem) return;
+      recordRevision('Before rewrite', { title: poemTitle, text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget });
+      setRewriteUndo({ title: poemTitle, text: poemText, form: form, targetWord: acrosticTarget });
       setPoemText(rewriteResult.poem);
       if (rewriteResult.targetForm) setForm(rewriteResult.targetForm);
       setRewriteResult(null);
       setRewriteTargetId('');
-      addToast && addToast('Replaced with the rewrite. Your old version is gone — Library save first if you want both.', 'info');
+      addToast && addToast('Rewrite applied. Your original is available with Undo rewrite.', 'info');
       announcePT(tr('Replaced with ') + (rewriteResult.targetForm ? rewriteResult.targetForm.name : 'rewrite') + '.');
-    }, [rewriteResult, addToast]);
+    }, [rewriteResult, poemTitle, poemText, form, acrosticTarget, addToast, recordRevision]);
+
+    var undoRewrite = useCallback(function () {
+      if (!rewriteUndo) return;
+      recordRevision('Before undo', { title: poemTitle, text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget });
+      setPoemTitle(rewriteUndo.title || '');
+      setPoemText(rewriteUndo.text || '');
+      setAcrosticTarget(rewriteUndo.targetWord || '');
+      if (rewriteUndo.form) setForm(rewriteUndo.form);
+      setRewriteUndo(null);
+      announcePT('Restored the poem from before the rewrite.');
+    }, [rewriteUndo, poemTitle, poemText, form, acrosticTarget, recordRevision]);
 
     // ── CMU-dict verification (Pyodide-on-demand) ──
     // Authoritative syllable / rhyme / stress / structural form check that
     // catches what the JS heuristic misses (rhythm = 2 syllables not 1;
     // though/cough don't rhyme; love/dove do; villanelle refrain positions).
-    // Background-loads the ~10MB Pyodide runtime + pronouncing package the
-    // first time the user opens PoetTree so the button click is fast.
-    useEffect(function () {
-      var py = window.AlloModules && window.AlloModules.PyodideRuntime;
-      if (py && typeof py.warmupPoetry === 'function') {
-        try { py.warmupPoetry(); } catch (e) { /* non-blocking */ }
+    // Pyodide is loaded only when the student asks for authoritative checking;
+    // opening the workshop stays light and does not download a large runtime.
+    var restoreRevision = useCallback(function (revision) {
+      if (!revision || !String(revision.text || '').trim()) return;
+      recordRevision('Before restore', { title: poemTitle, text: poemText, formId: form ? form.id : 'free', targetWord: acrosticTarget });
+      setPoemTitle(revision.title || '');
+      setPoemText(revision.text || '');
+      setAcrosticTarget(revision.targetWord || '');
+      var restoredForm = FORMS.find(function (ff) { return ff.id === revision.formId; });
+      setForm(restoredForm || null);
+      setActiveTab('write');
+      announcePT('Restored ' + (revision.label || 'an earlier version') + '.');
+      addToast && addToast('Earlier version restored.', 'success');
+    }, [recordRevision, poemTitle, poemText, form, acrosticTarget, addToast]);
+
+    var exportRevisionHistory = useCallback(function () {
+      if (!revisionHistory.length) return;
+      try {
+        var payload = { version: 1, exportedAt: new Date().toISOString(), revisions: revisionHistory };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var urlApi = window.URL || window.webkitURL;
+        if (!urlApi || typeof urlApi.createObjectURL !== 'function') throw new Error('Download API unavailable');
+        var url = urlApi.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'poettree-revision-history.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(url); }, 0);
+        announcePT('Revision history exported.');
+        addToast && addToast('Revision history downloaded.', 'success');
+      } catch (err) {
+        warnLog('Revision history export failed:', err && err.message);
+        addToast && addToast('Could not export revision history.', 'error');
       }
+    }, [revisionHistory, addToast]);
+
+    var clearRevisionHistory = useCallback(function () {
+      if (!revisionHistory.length) return;
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Clear all local PoetTree revision history?')) return;
+      setRevisionHistory([]);
+      storeJson(STORAGE_VERSIONS, []);
+      announcePT('Revision history cleared.');
+      addToast && addToast('Revision history cleared from this device.', 'info');
+    }, [revisionHistory, addToast]);
+
+    var importRevisionHistory = useCallback(function (event) {
+      var input = event && event.target;
+      var file = input && input.files && input.files[0];
+      if (!file) return;
+      if (input) input.value = '';
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var payload = JSON.parse(String(reader.result || ''));
+          var incoming = Array.isArray(payload) ? payload : (payload && Array.isArray(payload.revisions) ? payload.revisions : []);
+          var skipped = 0;
+          var imported = incoming.map(function (item, index) {
+            if (!item || typeof item.text !== 'string' || !item.text.trim()) { skipped++; return null; }
+            var title = String(item.title || 'Untitled').slice(0, 240);
+            var text = item.text;
+            var formId = FORMS.some(function (ff) { return ff.id === item.formId; }) ? item.formId : 'free';
+            var targetWord = String(item.targetWord || '').slice(0, 80);
+            return {
+              id: 'imported-' + Date.now().toString(36) + '-' + index + '-' + Math.random().toString(36).slice(2, 6),
+              label: String(item.label || 'Imported version').slice(0, 80),
+              title: title,
+              text: text,
+              formId: formId,
+              targetWord: targetWord,
+              revisionId: poemFingerprint(title, text, formId, targetWord),
+              savedAt: typeof item.savedAt === 'string' && item.savedAt ? item.savedAt : new Date().toISOString()
+            };
+          }).filter(Boolean);
+          if (!imported.length) throw new Error('No valid revisions found');
+          var seen = {};
+          var merged = imported.concat(revisionHistory).filter(function (item) {
+            var key = String(item.text || '') + '\u0000' + String(item.formId || 'free') + '\u0000' + String(item.targetWord || '');
+            if (seen[key]) return false;
+            seen[key] = true;
+            return true;
+          });
+          var cappedMerged = merged.slice(0, 100);
+          var added = cappedMerged.filter(function (item) { return imported.indexOf(item) >= 0; }).length;
+          merged = cappedMerged;
+          setRevisionHistory(merged);
+          storeJson(STORAGE_VERSIONS, merged);
+          announcePT('Imported ' + Math.max(0, added) + ' revision' + (added === 1 ? '' : 's') + '.');
+          addToast && addToast('Revision history imported.' + (skipped ? ' Skipped ' + skipped + ' invalid entr' + (skipped === 1 ? 'y.' : 'ies.') : ''), 'success');
+        } catch (err) {
+          warnLog('Revision history import failed:', err && err.message);
+          addToast && addToast('Could not import revision history. Existing versions were kept.', 'error');
+        }
+      };
+      reader.onerror = function () {
+        addToast && addToast('Could not read that revision-history file. Existing versions were kept.', 'error');
+      };
+      reader.readAsText(file);
+    }, [revisionHistory, addToast]);
+
+    var toggleRevisionCompare = useCallback(function (revisionId) {
+      if (!revisionId) return;
+      setCompareRevisionIds(function (current) {
+        if (current.indexOf(revisionId) >= 0) return current.filter(function (id) { return id !== revisionId; });
+        if (current.length >= 2) return [current[1], revisionId];
+        return current.concat(revisionId);
+      });
+    }, []);
+    var enterChapbookCuration = useCallback(function () {
+      setChapbookSelectedIds(saved.map(function (poem) { return poem.id; }));
+      setChapbookCurating(true);
+    }, [saved]);
+    var exitChapbookCuration = useCallback(function () {
+      setChapbookCurating(false);
+      setChapbookSelectedIds([]);
+    }, []);
+    var toggleChapbookPoem = useCallback(function (poemId) {
+      if (!poemId) return;
+      setChapbookSelectedIds(function (current) {
+        return current.indexOf(poemId) >= 0
+          ? current.filter(function (id) { return id !== poemId; })
+          : current.concat(poemId);
+      });
+    }, []);
+    var selectAllChapbookPoems = useCallback(function () {
+      setChapbookSelectedIds(saved.map(function (poem) { return poem.id; }));
+    }, [saved]);
+    var clearChapbookSelection = useCallback(function () {
+      setChapbookSelectedIds([]);
     }, []);
     var verifyWithCMU = useCallback(async function () {
       var py = window.AlloModules && window.AlloModules.PyodideRuntime;
@@ -1589,29 +2581,36 @@
         return;
       }
       if (!form || !poemText.trim()) return;
+      var request = beginAiRequest('cmu');
       setCmuLoading(true);
       setCmuResult(null);
       try {
+        if (typeof py.warmupPoetry === 'function') await py.warmupPoetry();
         var result = await py.runPoetryCheck({
           form: form,
           poemText: poemText,
-          targetWord: (form.id === 'acrostic' && typeof poemTitle === 'string' && poemTitle.trim()) ? poemTitle.trim() : null,
+          signal: aiRequestSignal(request),
+          targetWord: (form.id === 'acrostic' && acrosticTarget.trim()) ? acrosticTarget.trim() : null,
         });
+        if (!aiRequestIsCurrent('cmu', request)) return;
         setCmuResult(result || { error: 'Verifier returned no result.', findings: [] });
         if (result && Array.isArray(result.findings)) {
           announcePT('CMU verification: ' + result.findings.length + ' findings.');
         }
       } catch (err) {
+        if (!aiRequestIsCurrent('cmu', request)) return;
         warnLog('CMU verification failed:', err && err.message);
         setCmuResult({ error: String(err && err.message || err), findings: [] });
       } finally {
-        setCmuLoading(false);
+        if (aiRequestIsLatest('cmu', request)) setCmuLoading(false);
       }
-    }, [form, poemText, poemTitle, addToast]);
+    }, [form, poemText, acrosticTarget, addToast]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Meter analysis')) return;
+      var request = beginAiRequest('meter');
       setMeterLoading(true);
       setMeterAnalysis(null);
       try {
@@ -1624,16 +2623,18 @@
           + 'Lines:\n' + lines.map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n') + '\n\n'
           + 'Return JSON: {"lines":[{"text":"<line text>","syllableCount":N,"stressPattern":"u/u/...","meterName":"iambic","footCount":N}]}\n\n'
           + 'Be honest — if a line\'s meter is unclear or mixed, say so. Use stress patterns the student can verify by reading aloud.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('meter', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid meter response');
         setMeterAnalysis(parsed);
         announcePT('Meter analysis complete for ' + (parsed.lines ? parsed.lines.length : 0) + ' lines.');
       } catch (err) {
+        if (!aiRequestIsCurrent('meter', request)) return;
         warnLog('Meter analysis failed:', err && err.message);
         setMeterAnalysis({ error: tr('Could not analyze meter.') });
       } finally {
-        setMeterLoading(false);
+        if (aiRequestIsLatest('meter', request)) setMeterLoading(false);
       }
     }, [onCallGemini, poemText]);
 
@@ -1683,16 +2684,20 @@
     // ── Illustration ──
     var generateIllustration = useCallback(async function () {
       if (!onCallImagen || !poemText.trim()) return;
+      if (!requireCloudFeature('Illustration')) return;
+      var request = beginAiRequest('illustration');
       setIllusLoading(true);
       try {
         var prompt = 'Illustration for a poem titled "' + (poemTitle || 'Untitled') + '". Poem text: ' + poemText.slice(0, 400) + '. Style: dreamy, evocative, watercolor and ink. Single image. STRICTLY NO TEXT in the image.';
-        var url = await onCallImagen(prompt, 600, 0.85);
+        var url = await onCallImagen(prompt, 600, 0.85, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('illustration', request)) return;
         if (url) { setIllustration(url); announcePT(tr('Illustration generated.')); }
       } catch (err) {
+        if (!aiRequestIsCurrent('illustration', request)) return;
         warnLog('Illustration failed:', err && err.message);
         addToast && addToast(tr('Illustration failed.'), 'error');
       } finally {
-        setIllusLoading(false);
+        if (aiRequestIsLatest('illustration', request)) setIllusLoading(false);
       }
     }, [onCallImagen, poemText, poemTitle, addToast]);
 
@@ -1702,28 +2707,33 @@
     // concrete sensory language renders cleanly while vague abstractions become mud.
     var generateImagePoem = useCallback(async function () {
       if (!onCallImagen || !poemText.trim()) return;
+      if (!requireCloudFeature('Image poem')) return;
+      var request = beginAiRequest('imagePoem');
       setImagePoemLoading(true);
       try {
         // Send the poem AS the prompt with the lightest possible framing — only enough to
         // discourage on-image text. No style override; the poem's own register is the brief.
         var prompt = poemText.trim() + '\n\nRender a single illustrative image of the scene described in the poem above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
-        var url = await onCallImagen(prompt, 600, 0.85);
+        var url = await onCallImagen(prompt, 600, 0.85, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('imagePoem', request)) return;
         if (url) {
           setImagePoemUrl(url);
           announcePT('Image poem rendered.');
           if (typeof addToast === 'function') addToast(tr('Image poem rendered!'), 'success');
         }
       } catch (err) {
+        if (!aiRequestIsCurrent('imagePoem', request)) return;
         warnLog('Image poem failed:', err && err.message);
         addToast && addToast(tr('Image poem failed — try again.'), 'error');
       } finally {
-        setImagePoemLoading(false);
+        if (aiRequestIsLatest('imagePoem', request)) setImagePoemLoading(false);
       }
     }, [onCallImagen, poemText, addToast]);
 
     // ── Read-aloud mode (silent recital — student performs live, no TTS) ──
     var startReadAloud = useCallback(function () {
       if (!poemText.trim()) return;
+      if (readAloudTimerRef.current) clearTimeout(readAloudTimerRef.current);
       // Capture the trigger element so we can restore focus when the dialog closes (WCAG 2.4.3)
       try { readAloudReturnFocusRef.current = document.activeElement; } catch (e) {}
       setReadIdx(0);
@@ -1735,14 +2745,14 @@
         if (c > 0) {
           setReadCountdown(c);
           announcePT(c + '…');
-          setTimeout(tick, 900);
+          readAloudTimerRef.current = setTimeout(tick, 900);
         } else {
           setReadCountdown(0);
           setReadAloudActive(true);
           announcePT(tr('Begin reading.'));
         }
       };
-      setTimeout(tick, 900);
+      readAloudTimerRef.current = setTimeout(tick, 900);
     }, [poemText]);
 
     // Restore focus to the trigger element when the read-aloud overlay unmounts.
@@ -1757,11 +2767,41 @@
     }, [readAloudActive, readCountdown]);
 
     var stopReadAloud = useCallback(function () {
+      if (readAloudTimerRef.current) {
+        clearTimeout(readAloudTimerRef.current);
+        readAloudTimerRef.current = null;
+      }
       setReadAloudActive(false);
       setReadCountdown(0);
       setReadIdx(0);
       announcePT(tr('Read-aloud ended.'));
     }, []);
+
+    useEffect(function () {
+      return function () {
+        if (readAloudTimerRef.current) clearTimeout(readAloudTimerRef.current);
+      };
+    }, []);
+
+    // Keep the recital overlay keyboard-contained while it is open.
+    useEffect(function () {
+      if (!readAloudActive && readCountdown === 0) return;
+      var root = readAloudDialogRef.current;
+      if (!root) return;
+      var focusables = function () { return root.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])'); };
+      var timer = setTimeout(function () { var first = focusables()[0]; if (first && first.focus) first.focus(); else root.focus(); }, 0);
+      var onKeyDown = function (ev) {
+        if (ev.key === 'Escape') { ev.preventDefault(); stopReadAloud(); return; }
+        if (ev.key !== 'Tab') return;
+        var controls = focusables();
+        if (!controls.length) return;
+        var first = controls[0], last = controls[controls.length - 1];
+        if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+      };
+      document.addEventListener('keydown', onKeyDown, true);
+      return function () { clearTimeout(timer); document.removeEventListener('keydown', onKeyDown, true); };
+    }, [readAloudActive, readCountdown, stopReadAloud]);
 
     var advanceReadAloud = useCallback(function () {
       var allLines = poemText.split('\n');
@@ -1874,14 +2914,17 @@
     // Same accessible-HTML5 pattern as the broadside but multi-page with cover + table of contents.
     var printChapbook = useCallback(function (filterFormId) {
       var pool = filterFormId ? saved.filter(function (p) { return p.formId === filterFormId; }) : saved;
-      if (!pool.length) { addToast && addToast(tr('No poems to print yet.'), 'info'); return; }
+      if (chapbookCurating) {
+        pool = pool.filter(function (p) { return chapbookSelectedIds.indexOf(p.id) >= 0; });
+      }
+      if (!pool.length) { addToast && addToast(chapbookCurating ? 'Select at least one poem for this chapbook.' : tr('No poems to print yet.'), 'info'); return; }
       var w = window.open('', '_blank', 'width=720,height=900');
       if (!w) { addToast && addToast(tr('Pop-up blocked. Allow pop-ups to print.'), 'error'); return; }
       var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var safeAuthor = esc(studentNickname || 'A poet');
       var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
       var filterLabel = filterFormId ? (FORMS.find(function (f) { return f.id === filterFormId; }) || { name: filterFormId }).name : '';
-      var coverTitle = filterFormId ? esc(filterLabel + ' Collection') : tr('Selected Poems');
+      var coverTitle = chapbookCurating ? 'My Selected Poems' : (filterFormId ? esc(filterLabel + ' Collection') : tr('Selected Poems'));
 
       // Cover (header landmark) — large title, author, date, count.
       var coverHtml = '<header class="page cover" role="banner">'
@@ -1983,13 +3026,15 @@
         + '</body></html>';
       try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Chapbook ready: ' + pool.length + ' poems, in a new window.'); }
       catch (er) { addToast && addToast(tr('Chapbook failed.'), 'error'); }
-    }, [saved, studentNickname, addToast]);
+    }, [saved, studentNickname, addToast, chapbookCurating, chapbookSelectedIds]);
 
     // ── Theme Tracker: analyze recurring patterns across the student's saved poems ──
     // Pedagogical aim is craft observation, not psychological interpretation. The prompt
     // explicitly forbids diagnosis or pathologizing language.
     var runThemeTracker = useCallback(async function () {
       if (!onCallGemini || saved.length < 3) return;
+      if (!requireCloudFeature('Theme tracker')) return;
+      var request = beginAiRequest('themeTracker');
       setThemeLoading(true);
       setThemeReport(null);
       try {
@@ -2001,16 +3046,18 @@
           + 'Poems (most recent first):\n\n' + poemsBlock + '\n\n'
           + 'Return JSON: {"recurringImages":["specific concrete images or objects appearing in 2+ poems"],"recurringSounds":["sound or word-music patterns: alliteration tendency, line lengths, rhyme habits"],"favoredForms":"which forms they\'re drawn to, in one sentence","voiceStrength":"one sentence on what\'s distinctive about their voice","growthEdge":"ONE specific craft move to try next, framed as an invitation not an assignment","celebration":"ONE specific thing they\'re already doing well, with a quoted phrase from one of the poems if possible"}\n\n'
           + 'Be warm, observant, and concrete. Match vocabulary to a ' + gradeLevel + ' student.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('themeTracker', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid theme response');
         setThemeReport(parsed);
         announcePT('Pattern report ready. Distinctive voice: ' + (parsed.voiceStrength || ''));
       } catch (err) {
+        if (!aiRequestIsCurrent('themeTracker', request)) return;
         warnLog('Theme tracker failed:', err && err.message);
         setThemeReport({ error: 'Couldn\'t analyze patterns right now. Try again in a moment.' });
       } finally {
-        setThemeLoading(false);
+        if (aiRequestIsLatest('themeTracker', request)) setThemeLoading(false);
       }
     }, [onCallGemini, saved, gradeLevel]);
 
@@ -2025,6 +3072,13 @@
     // the uncertain flag asks Gemini to skip the text rather than invent it.
     var findMentorPoem = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
+      if (!requireCloudFeature('Mentor match')) return;
+      if (typeof window !== 'undefined' && window.WebSearchProvider && !mentorSearchConsent) {
+        setMentorConsentNeeded(true);
+        addToast && addToast('Please approve the public web keyword search first.', 'info');
+        return;
+      }
+      var request = beginAiRequest('mentor');
       setMentorLoading(true);
       setMentorMatch(null);
       try {
@@ -2032,11 +3086,13 @@
         var keywords = '';
         try {
           var queryPrompt = 'Extract 3-5 keywords from this poem that would help find a similar PUBLIC-DOMAIN master poem online. Focus on concrete images, themes, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}\n\nPoem:\n"""\n' + poemText + '\n"""';
-          var queryResult = await onCallGemini(queryPrompt, true);
+          var queryResult = await onCallGemini(queryPrompt, true, false, null, null, aiRequestSignal(request));
           var queryClean = String(queryResult).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-          var queryParsed = JSON.parse(queryClean);
+          var queryParsed = parseAiJson(queryResult);
           keywords = (queryParsed.keywords || []).slice(0, 5).join(' ');
         } catch (e) { warnLog('Keyword extract failed:', e && e.message); }
+
+        if (!aiRequestIsCurrent('mentor', request)) return;
 
         // Stage 2 — actual web search for real PD poetry (Serper → SearXNG → DDG)
         var searchContext = '';
@@ -2072,20 +3128,28 @@
           + '- If you are NOT confident in the exact text or attribution, set "uncertain":true and LEAVE THE TEXT FIELD BLANK — describe the poem in prose. Never fabricate a quote.\n\n'
           + 'Return JSON: {"mentor":{"title":"<title>","author":"<author>","year":<number or null>,"text":"<poem text or short excerpt, line breaks as \\\\n; BLANK if uncertain>","sourceUrl":"<URL from search results, or null>","uncertain":false},"sharedTheme":"<one sentence on what the two poems share — image, feeling, form>","craftToBorrow":"<one specific craft move from the master worth trying>","studentEcho":"<where the student is already doing something similar, with a quoted phrase from their own poem>"}\n\n'
           + 'Match register to a ' + gradeLevel + ' student. Be specific, be honest, never invent.';
-        var result = await onCallGemini(prompt, true);
-        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
-        var parsed = JSON.parse(clean);
-        // Stamp grounding info onto the result so the UI can disclose how the recommendation was built.
-        parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
+        var result = await onCallGemini(prompt, true, false, null, null, aiRequestSignal(request));
+        if (!aiRequestIsCurrent('mentor', request)) return;
+        var parsed = parseAiJson(result);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid mentor response');
+        var sourceUrlVerified = false;
+        if (parsed.mentor && parsed.mentor.sourceUrl) {
+          var candidateUrl = safeExternalUrl(parsed.mentor.sourceUrl);
+          sourceUrlVerified = !!candidateUrl && searchResults.some(function (r) { return safeExternalUrl(r.url || r.link || '') === candidateUrl; });
+          parsed.mentor.sourceUrl = sourceUrlVerified ? candidateUrl : null;
+        }
+        // Only expose a source link when it exactly matches a returned candidate.
+        parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords, sourceUrlVerified: sourceUrlVerified };
         setMentorMatch(parsed);
         announcePT('Mentor poem found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' (verified via web search)' : '') + '.');
       } catch (err) {
+        if (!aiRequestIsCurrent('mentor', request)) return;
         warnLog('Mentor match failed:', err && err.message);
         setMentorMatch({ error: 'Couldn\'t find a mentor poem right now. Try again in a moment.' });
       } finally {
-        setMentorLoading(false);
+        if (aiRequestIsLatest('mentor', request)) setMentorLoading(false);
       }
-    }, [onCallGemini, poemText, form, gradeLevel]);
+    }, [onCallGemini, poemText, form, gradeLevel, mentorSearchConsent, addToast]);
 
     // ── Found poetry helper: pick word ──
     var addFoundWord = useCallback(function (word) {
@@ -2097,7 +3161,12 @@
     // ── Render ──
     var lines = poemText.split('\n');
     var nonEmptyLines = lines.filter(function (l) { return l.trim().length > 0; });
-    var rhymeGroups = detectRhymeScheme(lines);
+    var rhymeGroups = detectRhymeScheme(nonEmptyLines);
+    var structureSummary = formStructureSummary(form, nonEmptyLines, acrosticTarget);
+    var draftWordCount = poemText.trim() ? poemText.trim().split(/\s+/).filter(Boolean).length : 0;
+    var draftLineCount = nonEmptyLines.length;
+    var draftStanzaCount = poemText.trim() ? poemText.trim().split(/\n\s*\n/).filter(Boolean).length : 0;
+    var draftReadingMinutes = draftWordCount ? Math.max(1, Math.ceil(draftWordCount / 180)) : 0;
 
     var TABS = [
       { id: 'form',     icon: '📐', label: 'Form' },
@@ -2116,17 +3185,120 @@
       borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column',
       boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
     };
+    var currentDraftCompare = poemText.trim() ? {
+      id: CURRENT_DRAFT_COMPARE_ID,
+      label: 'Current draft',
+      title: poemTitle || 'Untitled',
+      text: poemText,
+      formId: form ? form.id : 'free',
+      targetWord: acrosticTarget,
+      savedAt: ''
+    } : null;
+    var compareRevisions = compareRevisionIds.map(function (id) {
+      if (id === CURRENT_DRAFT_COMPARE_ID) return currentDraftCompare;
+      return revisionHistory.find(function (revision) { return revision.id === id; });
+    }).filter(Boolean);
+    var revisionComparePanel = compareRevisions.length === 2 && (function () {
+      var left = compareRevisions[0];
+      var right = compareRevisions[1];
+      var leftLines = String(left.text || '').split('\n');
+      var rightLines = String(right.text || '').split('\n');
+      var maxLines = Math.max(leftLines.length, rightLines.length);
+      var diffRows = buildLineDiff(leftLines, rightLines);
+      var countWords = function (value) { var text = String(value || '').trim(); return text ? text.split(/\s+/).filter(Boolean).length : 0; };
+      var leftWordCount = countWords(left.text);
+      var rightWordCount = countWords(right.text);
+      var wordDelta = rightWordCount - leftWordCount;
+      var changedLines = diffRows.filter(function (row) { return row.type !== 'same'; }).length;
+      var rows = diffRows.slice(0, 80).map(function (diff, diffIndex) {
+        var same = diff.type === 'same';
+        var added = diff.type === 'added';
+        var removed = diff.type === 'removed';
+        var leftColor = same ? '#334155' : (added ? '#94a3b8' : '#9a3412');
+        var rightColor = same ? '#334155' : (removed ? '#94a3b8' : '#166534');
+        var rowBackground = same ? '#fff' : (diff.type === 'changed' ? '#fff7ed' : (added ? '#f0fdf4' : '#fff1f2'));
+        var leftNumber = diff.leftIndex >= 0 ? (diff.leftIndex + 1) + '.' : '—';
+        var rightNumber = diff.rightIndex >= 0 ? (diff.rightIndex + 1) + '.' : '—';
+        return e('div', { key: diffIndex, 'data-pt-diff-type': diff.type, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', borderTop: '1px solid #e2e8f0', background: rowBackground } },
+          e('div', { style: { padding: '5px 6px', minWidth: 0 } }, e('span', { style: { color: '#94a3b8', marginRight: '5px', fontSize: '9px' } }, leftNumber), e('span', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: leftColor } }, diff.left === '' ? ' ' : diff.left)),
+          e('div', { style: { padding: '5px 6px', minWidth: 0 } }, e('span', { style: { color: '#94a3b8', marginRight: '5px', fontSize: '9px' } }, rightNumber), e('span', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: rightColor } }, diff.right === '' ? ' ' : diff.right))
+        );
+      });
+      return e('div', { role: 'region', 'aria-label': 'Revision comparison', style: { background: '#fff', border: '1px solid #99f6e4', borderRadius: '9px', padding: '10px', marginBottom: '8px' } },
+        e('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', alignItems: 'baseline' } },
+          e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'Revision comparison'),
+          e('span', { style: { fontSize: '10px', color: '#475569' } }, 'Changed lines: ' + changedLines + ' of ' + maxLines + ' · Words: ' + leftWordCount + ' → ' + rightWordCount + ' (' + (wordDelta >= 0 ? '+' : '') + wordDelta + ')')
+        ),
+        e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', padding: '6px 6px 5px', fontSize: '10px', fontWeight: 800, color: '#475569' } },
+          e('div', null, left.label || 'Version A', ' - ', left.title || 'Untitled'),
+          e('div', null, right.label || 'Version B', ' - ', right.title || 'Untitled')
+        ),
+        e('div', { style: { maxHeight: '260px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '6px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '10px' } }, rows),
+        maxLines > 80 && e('p', { style: { fontSize: '10px', color: '#64748b', margin: '6px 0 0' } }, 'Showing the first 80 lines. Restore a version to read the complete poem.')
+      );
+    })();
+    var revisionHistoryPanel = (revisionHistory.length > 0 || !!poemText.trim()) && e('div', { role: 'region', 'aria-label': 'Revision history', style: { background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '12px' } },
+      e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' } },
+        e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#334155', margin: 0 } }, 'Revision history'),
+        e('span', { style: { fontSize: '10px', color: '#64748b' } }, revisionHistory.length + ' local version' + (revisionHistory.length === 1 ? '' : 's'))
+      ),
+      e('p', { style: { fontSize: '11px', color: '#475569', margin: '4px 0 8px', lineHeight: 1.45 } }, revisionHistory.length > 0 ? 'Earlier versions stay on this device. Restore one to keep exploring without losing the current draft.' : 'Save a local checkpoint to preserve this draft before you make a bigger change.'),
+      e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
+        poemText.trim() && e('button', { onClick: saveRevisionCheckpoint, 'aria-label': 'Save a local revision checkpoint', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Save checkpoint'),
+        e('button', { onClick: function () { if (revisionImportRef.current) revisionImportRef.current.click(); }, 'aria-label': 'Import revision history from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import JSON'),
+        e('button', { onClick: exportRevisionHistory, 'aria-label': 'Download revision history as JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Export JSON'),
+        e('button', { onClick: clearRevisionHistory, 'aria-label': 'Clear local revision history', style: { padding: '5px 9px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Clear history'),
+        e('input', { ref: revisionImportRef, type: 'file', accept: 'application/json,.json', onChange: importRevisionHistory, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree revision history JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } })
+      ),
+      currentDraftCompare && e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 8px', marginBottom: '8px', background: '#ecfeff', border: '1px solid #99f6e4', borderRadius: '7px', flexWrap: 'wrap' } },
+        e('div', { style: { flex: 1, minWidth: '180px' } },
+          e('strong', { style: { display: 'block', fontSize: '11px', color: TEAL_DARK } }, 'Current draft'),
+          e('span', { style: { display: 'block', fontSize: '10px', color: '#475569' } }, (currentDraftCompare.title || 'Untitled') + ' - ' + (form ? form.name : 'Free Verse') + ' - live')
+        ),
+        e('button', { onClick: function () { toggleRevisionCompare(CURRENT_DRAFT_COMPARE_ID); }, 'aria-pressed': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'true' : 'false', 'aria-label': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Remove current draft from comparison' : 'Compare current draft', style: { padding: '5px 9px', background: compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL_LIGHT : '#fff', color: TEAL_DARK, border: '1px solid ' + (compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL : '#99f6e4'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Selected' : 'Compare')
+      ),
+      compareRevisionIds.length === 1 && e('p', { style: { fontSize: '10px', color: '#475569', margin: '0 0 8px' } }, 'Select one more version to compare side by side.'),
+      revisionComparePanel,
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+        revisionHistory.slice(0, 8).map(function (revision) {
+          var revisionForm = FORMS.find(function (ff) { return ff.id === revision.formId; });
+          var isCompared = compareRevisionIds.indexOf(revision.id) >= 0;
+          return e('div', { key: revision.id, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 8px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '7px', flexWrap: 'wrap' } },
+            e('div', { style: { flex: 1, minWidth: '180px' } },
+              e('strong', { style: { display: 'block', fontSize: '11px', color: '#334155' } }, revision.label || 'Saved version'),
+              e('span', { style: { display: 'block', fontSize: '10px', color: '#64748b' } }, (revision.title || 'Untitled') + ' - ' + (revisionForm ? revisionForm.name : 'Free Verse') + ' - ' + (revision.savedAt ? new Date(revision.savedAt).toLocaleString() : 'local'))
+            ),
+            e('button', { onClick: function () { restoreRevision(revision); }, 'aria-label': 'Restore ' + (revision.label || 'revision') + ' of ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Restore'),
+            e('button', { onClick: function () { toggleRevisionCompare(revision.id); }, 'aria-pressed': isCompared ? 'true' : 'false', 'aria-label': (isCompared ? 'Remove ' : 'Compare ') + (revision.label || 'revision') + ' ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: isCompared ? TEAL_LIGHT : '#fff', color: isCompared ? TEAL_DARK : '#475569', border: '1px solid ' + (isCompared ? TEAL : '#cbd5e1'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, isCompared ? 'Selected' : 'Compare')
+          );
+        })
+      )
+    );
 
+    var libraryBackupPanel = e('div', { role: 'region', 'aria-label': 'Library backup and restore', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', padding: '9px 10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '9px' } },
+      e('div', { style: { flex: 1, minWidth: '170px' } },
+        e('strong', { style: { display: 'block', fontSize: '11px', color: '#334155' } }, 'Library backup'),
+        e('span', { style: { display: 'block', fontSize: '10px', color: '#64748b' } }, 'Keep a local JSON copy of your saved poems.')
+      ),
+      e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+        e('button', { onClick: function () { if (libraryImportRef.current) libraryImportRef.current.click(); }, 'aria-label': 'Import saved Library from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import library'),
+        e('button', { onClick: exportLibrary, disabled: !saved.length, 'aria-label': 'Download saved Library as JSON', style: { padding: '5px 9px', background: saved.length ? '#fff' : '#e2e8f0', color: saved.length ? TEAL_DARK : '#94a3b8', border: '1px solid ' + (saved.length ? '#99f6e4' : '#cbd5e1'), borderRadius: '6px', cursor: saved.length ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Export library'),
+        e('input', { ref: libraryImportRef, type: 'file', accept: 'application/json,.json', onChange: importLibrary, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree Library JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } })
+      )
+    );
     return e('div', { className: 'fixed inset-0 pt-tool', style: modalStyle, onClick: function (ev) { if (ev.target === ev.currentTarget && onClose) onClose(); } },
-      e('div', { style: panelStyle, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'PoetTree poetry workshop' },
+      e('div', { ref: modalRef, style: panelStyle, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'pt-poettree-title' },
         // Header
         e('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', borderBottom: '1px solid #e5e7eb', background: 'linear-gradient(135deg, #f0fdfa, #ecfeff)' } },
           e('span', { style: { fontSize: '32px' }, 'aria-hidden': 'true' }, '🌳'),
           e('div', { style: { flex: 1 } },
-            e('h2', { style: { fontSize: '18px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'PoetTree'),
+            e('h2', { id: 'pt-poettree-title', style: { fontSize: '18px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'PoetTree'),
             e('p', { style: { fontSize: '11px', color: '#475569', margin: 0 } }, tr('Form, write, hear, share — your poems with structure and AI feedback.'))
           ),
-          onClose && e('button', { onClick: onClose, 'aria-label': tr('Close PoetTree'),
+          e('button', { onClick: function () { setPrivacyOpen(function (open) { return !open; }); }, 'aria-expanded': privacyOpen ? 'true' : 'false', 'aria-controls': 'pt-privacy-panel', 'aria-label': 'Open privacy and data controls',
+            style: { padding: '6px 10px', background: privacyOpen ? TEAL : '#fff', color: privacyOpen ? '#fff' : TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }
+          }, 'Privacy'),
+          onClose && e('button', { onClick: onClose, autoFocus: true, 'data-alloflow-close-on-escape': 'true', 'aria-label': tr('Close PoetTree'),
             style: { padding: '6px 14px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }
           }, '✕ Close')
         ),
@@ -2167,6 +3339,32 @@
               style: { padding: '8px 14px', borderRadius: '10px', border: 'none', background: active ? TEAL : 'transparent', color: active ? '#fff' : '#374151', fontWeight: 700, fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }
             }, t.icon + ' ' + tr(t.label));
           })
+        ),
+
+        privacyOpen && e('div', { id: 'pt-privacy-panel', role: 'region', 'aria-label': 'Privacy and data controls', style: { margin: '10px 18px 0', padding: '12px 14px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' } },
+          e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+            e('h3', { style: { margin: 0, fontSize: '14px', color: TEAL_DARK } }, 'Privacy and data controls'),
+            e('button', { onClick: function () { setPrivacyOpen(false); }, 'aria-label': 'Close privacy and data controls', style: { border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, 'Close')
+          ),
+          e('p', { style: { margin: '6px 0 8px', fontSize: '11px', color: '#475569', lineHeight: 1.5 } }, 'Poet Tree keeps drafts, Library poems, and revision history on this device. Cloud helpers send the text needed for the selected feature to the configured provider.'),
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px', color: '#334155' } },
+            e('div', null, 'Local only: drafts, workspaces, Library saves, revision history, and form checks.'),
+            e('div', null, 'Cloud when enabled: AI feedback, writing helpers, mentor search, and image tools.'),
+            e('div', null, 'Mentor Match asks separately before sending public-web keywords.'),
+            e('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '3px', padding: '6px 8px', borderRadius: '6px', background: cloudFeaturesEnabled ? '#ecfdf5' : '#fff7ed', color: cloudFeaturesEnabled ? '#166534' : '#9a3412', fontWeight: 700 } }, cloudFeaturesEnabled ? 'Cloud helpers are enabled.' : 'Cloud helpers are off. Your writing stays local unless you turn them back on.'),
+            e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', marginTop: '4px', fontWeight: 700, color: '#1e293b', cursor: 'pointer' } },
+              e('input', { type: 'checkbox', checked: !cloudFeaturesEnabled, onChange: function (ev) { updateCloudPreference(!ev.target.checked); }, 'aria-label': 'Disable cloud AI and image features' }),
+              'Disable cloud AI and image features'
+            )
+          ),
+          e('div', { style: { display: 'flex', gap: '7px', marginTop: '9px', flexWrap: 'wrap' } },
+            e('button', { onClick: discardDraft, disabled: !draftCandidate && !draftStatus, style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: draftCandidate || draftStatus ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Clear local draft'),
+            e('button', { onClick: function () { if (localBackupImportRef.current) localBackupImportRef.current.click(); }, 'aria-label': 'Restore all local Poet Tree data from JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#fff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Restore local backup'),
+            e('button', { onClick: exportAllLocalData, 'aria-label': 'Download all local Poet Tree data as JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#ecfeff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Export all local data'),
+            e('input', { ref: localBackupImportRef, type: 'file', accept: 'application/json,.json', onChange: importAllLocalData, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree local backup JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } }),
+            e('button', { onClick: eraseAllLocalData, 'aria-label': 'Erase all local Poet Tree data', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Erase all local data'),
+            e('span', { style: { alignSelf: 'center', fontSize: '10px', color: '#64748b' } }, 'Erasing writing data preserves your cloud privacy preference. You can re-enable cloud tools at any time.')
+          )
         ),
 
         // Tab content
@@ -2272,6 +3470,40 @@
 
           // ── WRITE TAB ──
           activeTab === 'write' && e('div', { role: 'tabpanel', id: 'pt-panel-write', 'aria-labelledby': 'pt-tab-write', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
+            draftCandidate && e('div', { role: 'status', style: { background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: '10px', padding: '10px 12px', color: '#1e3a8a', fontSize: '11px' } },
+              e('strong', null, 'A local draft is available'),
+              e('span', null, ' from ' + (draftCandidate.savedAt ? new Date(draftCandidate.savedAt).toLocaleString() : 'your last session') + '.'),
+              e('div', { style: { display: 'flex', gap: '6px', marginTop: '7px', flexWrap: 'wrap' } },
+                e('button', { onClick: restoreDraft, style: { padding: '5px 10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Restore draft'),
+                e('button', { onClick: discardDraft, style: { padding: '5px 10px', background: '#fff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Discard')
+              )
+            ),
+            draftStatus && e('div', { role: 'status', 'aria-live': 'polite', style: { color: '#475569', fontSize: '10px' } }, draftStatus + (draftSavedAt ? ' ' + new Date(draftSavedAt).toLocaleTimeString() : '')),
+            (workspaces.length > 0 || poemText.trim()) && e('div', { role: 'region', 'aria-label': 'Draft workspaces', style: { background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '10px 12px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+                e('div', { style: { flex: 1, minWidth: '180px' } },
+                  e('strong', { style: { display: 'block', fontSize: '11px', color: TEAL_DARK } }, 'Draft workspaces'),
+                  e('span', { style: { display: 'block', fontSize: '10px', color: '#475569' } }, activeWorkspaceId ? 'This draft autosaves to its named workspace.' : 'Save this draft as a named workspace before starting another.')
+                ),
+                workspaces.length > 0 && e('select', { id: 'pt-workspace-select', value: activeWorkspaceId, onChange: function (ev) { switchWorkspace(ev.target.value); }, 'aria-label': 'Switch draft workspace', style: { minWidth: '170px', padding: '6px 8px', border: '1px solid #5eead4', borderRadius: '6px', background: '#fff', fontSize: '11px' } },
+                  e('option', { value: '' }, 'Current unnamed draft'),
+                  workspaces.map(function (workspace) {
+                    return e('option', { key: workspace.id, value: workspace.id }, workspace.name + ' · ' + new Date(workspace.updatedAt).toLocaleDateString());
+                  })
+                )
+              ),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' } },
+                e('button', { onClick: saveCurrentWorkspace, 'aria-label': activeWorkspaceId ? 'Update current workspace' : 'Save current draft as a workspace', style: { padding: '5px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, activeWorkspaceId ? 'Update workspace' : 'Save as workspace'),
+                e('button', { onClick: startNewWorkspace, 'aria-label': 'Start a new draft workspace', style: { padding: '5px 10px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'New workspace'),
+                activeWorkspaceId && e('button', { onClick: deleteActiveWorkspace, 'aria-label': 'Delete current draft workspace', style: { padding: '5px 10px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Delete workspace'),
+                workspaceStatus && e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: '#475569' } }, workspaceStatus)
+              )
+            ),
+            rewriteUndo && e('div', { role: 'status', style: { background: '#fefce8', border: '1px solid #fde68a', borderRadius: '8px', padding: '7px 10px', color: '#78350f', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+              e('span', null, 'Your pre-rewrite version is still available.'),
+              e('button', { onClick: undoRewrite, style: { padding: '4px 9px', background: '#fff', color: '#78350f', border: '1px solid #f59e0b', borderRadius: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Undo rewrite')
+            ),
+
             // Form badge + reading-mode toggle
             e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
               form
@@ -2279,7 +3511,7 @@
                     e('span', { 'aria-hidden': 'true' }, form.icon), form.name,
                     e('button', { onClick: function () { setForm(null); }, 'aria-label': tr('Switch form'), style: { background: 'transparent', border: 'none', color: TEAL_DARK, cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' } }, 'switch'))
                 : e('span', { style: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' } }, tr('No form chosen — free verse')),
-              e('button', { onClick: function () { var next = !largeText; setLargeText(next); savePrefs({ largeText: next }); announcePT(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.')); },
+              e('button', { onClick: function () { var next = !largeText; setLargeText(next); var prefs = loadJson(STORAGE_PREFS, {}); prefs.largeText = next; savePrefs(prefs); announcePT(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.')); },
                 'aria-pressed': largeText ? 'true' : 'false',
                 'aria-label': largeText ? tr('Turn off reading-friendly text') : tr('Turn on reading-friendly text'),
                 style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? TEAL : '#d1d5db'), background: largeText ? TEAL_LIGHT : '#fff', color: largeText ? TEAL_DARK : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
@@ -2486,6 +3718,12 @@
               })()
             ),
 
+            form && form.id === 'acrostic' && e('div', { style: { background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '10px 12px' } },
+              e('label', { htmlFor: 'pt-acrostic-target', style: { display: 'block', fontSize: '11px', fontWeight: 800, color: TEAL_DARK, marginBottom: '4px' } }, 'Acrostic target word or phrase'),
+              e('input', { id: 'pt-acrostic-target', value: acrosticTarget, onChange: function (ev) { setAcrosticTarget(ev.target.value); }, placeholder: 'e.g. HOPE', 'aria-describedby': 'pt-acrostic-help', style: { width: '100%', padding: '7px 9px', borderRadius: '7px', border: '1px solid #5eead4', fontSize: '13px', boxSizing: 'border-box' } }),
+              e('p', { id: 'pt-acrostic-help', style: { margin: '5px 0 0', color: '#475569', fontSize: '10px' } }, 'The first letter of each non-blank line should spell this target.')
+            ),
+
             // Editor
             e('label', { htmlFor: 'pt-editor', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, tr('Your poem')),
             e('textarea', { id: 'pt-editor', value: poemText, onChange: function (ev) { setPoemText(ev.target.value); },
@@ -2494,25 +3732,39 @@
               style: { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid ' + TEAL, fontSize: largeText ? '17px' : '15px', fontFamily: largeText ? 'system-ui, -apple-system, sans-serif' : 'Georgia, serif', lineHeight: largeText ? 1.85 : 1.7, letterSpacing: largeText ? '0.02em' : 'normal', resize: 'vertical', minHeight: '180px', boxSizing: 'border-box' }
             }),
 
+            e('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Draft statistics', style: { display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap', padding: '8px 10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', fontSize: '10px' } },
+              e('strong', { style: { color: TEAL_DARK, fontSize: '10px' } }, 'Draft at a glance'),
+              e('span', { 'data-pt-draft-stat': 'words' }, draftWordCount + ' words'),
+              e('span', { 'data-pt-draft-stat': 'lines' }, draftLineCount + ' lines'),
+              e('span', { 'data-pt-draft-stat': 'stanzas' }, draftStanzaCount + ' stanzas'),
+              e('span', { 'data-pt-draft-stat': 'characters' }, poemText.length + ' characters'),
+              e('span', { 'data-pt-draft-stat': 'reading-time' }, draftReadingMinutes ? 'about ' + draftReadingMinutes + ' min read' : 'no reading time yet')
+            ),
+
             // Live structure check
             e('div', { style: { background: '#f8fafc', borderRadius: '10px', padding: '10px 12px', border: '1px solid #e2e8f0' } },
               e('h4', { style: { fontSize: '11px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Live structure check')),
               // Per-line table
               lines.length > 0 && e('div', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#374151', maxHeight: '200px', overflowY: 'auto' } },
-                lines.map(function (line, li) {
-                  if (!line.trim()) return e('div', { key: li, style: { color: '#475569', padding: '2px 0' } }, '— stanza break —');
-                  var sylCount = countLineSyllables(line);
-                  var expected = form && form.syllablesPerLine && form.syllablesPerLine[li];
-                  var sylStatus = expected ? (sylCount === expected ? '✓' : '✗ ' + sylCount + '/' + expected) : sylCount + ' syl';
-                  var rg = rhymeGroups[li];
+                (function () {
+                  var poemLineIndex = 0;
+                  return lines.map(function (line, li) {
+                    if (!line.trim()) return e('div', { key: li, style: { color: '#475569', padding: '2px 0' } }, '— stanza break —');
+                    var sylCount = countLineSyllables(line);
+                    var expected = form && form.syllablesPerLine && form.syllablesPerLine[poemLineIndex];
+                    var sylStatus = expected ? (sylCount === expected ? '✓' : '✗ ' + sylCount + '/' + expected) : sylCount + ' syl';
+                    var rg = rhymeGroups[poemLineIndex];
+                    poemLineIndex += 1;
                   return e('div', { key: li, style: { padding: '3px 0', display: 'flex', gap: '8px', alignItems: 'center' } },
                     e('span', { style: { color: '#475569', minWidth: '20px' } }, (li + 1) + '.'),
                     e('span', { style: { flex: 1, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, line),
                     rg && e('span', { style: { color: TEAL, fontWeight: 700, minWidth: '14px' }, 'aria-label': 'rhymes as group ' + rg }, rg),
                     e('span', { style: { color: expected && sylCount !== expected ? AMBER : '#475569', fontWeight: 700, minWidth: '60px', textAlign: 'right' } }, sylStatus)
                   );
-                })
+                });
+              })()
               ),
+              structureSummary && e('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '8px', padding: '8px 10px', borderRadius: '8px', background: structureSummary.ok ? '#f0fdf4' : '#fffbeb', color: structureSummary.ok ? '#166534' : '#92400e', border: '1px solid ' + (structureSummary.ok ? '#86efac' : '#fde68a'), fontSize: '11px', fontWeight: 700 } }, (structureSummary.ok ? '✓ ' : 'Check: ') + structureSummary.detail),
               // Form-level summary
               form && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #cbd5e1', fontSize: '11px', color: '#475569' } },
                 form.lineCount && e('span', null, 'Lines: ' + nonEmptyLines.length + (form.lineCount ? ' / ' + form.lineCount : '') + ' · '),
@@ -2522,7 +3774,7 @@
 
             // Actions
             e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              e('button', { onClick: savePoem, disabled: !poemText.trim(),
+              e('button', { onClick: savePoem, disabled: !poemText.trim(), 'aria-label': 'Save this poem to Library',
                 style: { padding: '8px 14px', background: poemText.trim() ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save'),
               onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, disabled: !poemText.trim(),
@@ -3123,6 +4375,11 @@
                   style: { padding: '7px 14px', background: mentorLoading ? '#cbd5e1' : '#a21caf', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: mentorLoading ? 'wait' : 'pointer' }
                 }, mentorLoading ? '⏳ Searching…' : (mentorMatch ? '🔄 Find another' : '🎓 Find a mentor'))
               ),
+              (typeof window !== 'undefined' && window.WebSearchProvider) && e('label', { style: { display: 'flex', gap: '7px', alignItems: 'flex-start', marginTop: '8px', padding: '8px 10px', background: '#fff', borderRadius: '7px', color: '#581c87', fontSize: '10px', lineHeight: 1.4, cursor: 'pointer' } },
+                e('input', { type: 'checkbox', checked: mentorSearchConsent, onChange: function (ev) { setMentorSearchConsent(ev.target.checked); setMentorConsentNeeded(false); }, style: { marginTop: '2px' } }),
+                e('span', null, 'Allow a short keyword summary of this poem to be sent to public web search for a source-grounded mentor recommendation.')
+              ),
+              mentorConsentNeeded && e('p', { role: 'alert', style: { fontSize: '10px', color: '#b91c1c', margin: '6px 0 0', fontWeight: 700 } }, 'Check the consent box before searching the public web.'),
               mentorMatch && mentorMatch.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, mentorMatch.error),
               mentorMatch && !mentorMatch.error && e('div', { role: 'region', 'aria-label': 'Mentor poem and analysis', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' } },
                 // Mentor poem card
@@ -3246,6 +4503,7 @@
                   : e('button', { onClick: stopPoem, 'aria-label': tr('Stop playback'),
                       style: { padding: '10px 20px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
                     }, '⏹ Stop'),
+                form && form.id === 'image-poem' && onCallImagen && e('p', { role: 'note', style: { margin: 0, padding: '8px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '8px', color: '#5b21b6', fontSize: '10px', lineHeight: 1.45 } }, 'Privacy note: the poem text is sent to the configured image model as the image prompt.'),
                 // Image Poem: primary "Imagine It" button shown only when this form is active.
                 onCallImagen && form && form.id === 'image-poem' && e('button', { onClick: generateImagePoem, disabled: imagePoemLoading || !poemText.trim(),
                   'aria-busy': imagePoemLoading ? 'true' : 'false',
@@ -3289,7 +4547,7 @@
             var line = readAloudActive ? (allLines[readIdx] || '') : '';
             var totalLines = allLines.filter(function (l) { return l.trim(); }).length;
             var currentNonBlankIdx = allLines.slice(0, readIdx + 1).filter(function (l) { return l.trim(); }).length;
-            return e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Read-aloud recital mode'),
+            return e('div', { ref: readAloudDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Read-aloud recital mode'),
               onClick: function () { if (readAloudActive) advanceReadAloud(); },
               onKeyDown: function (ev) {
                 if (!readAloudActive) return;
@@ -3334,20 +4592,57 @@
           activeTab === 'share' && e('div', { role: 'tabpanel', id: 'pt-panel-share', 'aria-labelledby': 'pt-tab-share', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📚 Library'),
             saved.length === 0
-              ? e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, tr('No poems saved yet. Save one from the Write tab to see it here.'))
+              ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+                  revisionHistoryPanel,
+                  libraryBackupPanel,
+                  e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, tr('No poems saved yet. Save one from the Write tab to see it here.'))
+                )
               : (function () {
                   // Compute which forms are represented in saved poems for the filter dropdown
                   var formsInLibrary = {};
                   saved.forEach(function (p) { formsInLibrary[p.formId || 'free'] = (formsInLibrary[p.formId || 'free'] || 0) + 1; });
                   var formIdsRepresented = Object.keys(formsInLibrary);
                   var filterCount = chapbookFilter ? (formsInLibrary[chapbookFilter] || 0) : saved.length;
+                  var chapbookSelectedCount = saved.filter(function (p) { return chapbookSelectedIds.indexOf(p.id) >= 0; }).length;
+                  var chapbookPrintCount = chapbookCurating ? chapbookSelectedCount : filterCount;                  var normalizedLibraryQuery = String(libraryQuery || '').trim().toLowerCase();
+                  var visibleSaved = saved.filter(function (p) {
+                    if (!normalizedLibraryQuery) return true;
+                    var savedForm = FORMS.find(function (ff) { return ff.id === p.formId; });
+                    var haystack = [p.title, p.text, savedForm ? savedForm.name : 'Free verse', p.targetWord].join(' ').toLowerCase();
+                    return haystack.indexOf(normalizedLibraryQuery) >= 0;
+                  }).slice();
+                  visibleSaved.sort(function (a, b) {
+                    if (librarySort === 'title') return String(a.title || '').localeCompare(String(b.title || ''));
+                    if (librarySort === 'oldest') return (Date.parse(a.savedAt || '') || 0) - (Date.parse(b.savedAt || '') || 0);
+                    if (librarySort === 'form') {
+                      var aForm = FORMS.find(function (ff) { return ff.id === a.formId; });
+                      var bForm = FORMS.find(function (ff) { return ff.id === b.formId; });
+                      return String(aForm ? aForm.name : 'Free verse').localeCompare(String(bForm ? bForm.name : 'Free verse'));
+                    }
+                    return (Date.parse(b.savedAt || '') || 0) - (Date.parse(a.savedAt || '') || 0);
+                  });
                   return e('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                    revisionHistoryPanel,
+                    libraryBackupPanel,
+                    e('div', { role: 'search', 'aria-label': 'Search and sort saved poems', style: { display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap', padding: '9px 10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '9px' } },
+                      e('label', { htmlFor: 'pt-library-search', style: { fontSize: '11px', fontWeight: 800, color: '#334155' } }, 'Search'),
+                      e('input', { id: 'pt-library-search', value: libraryQuery, onChange: function (ev) { setLibraryQuery(ev.target.value); }, placeholder: 'Title, words, or form', 'aria-label': 'Search saved poems by title, words, or form', style: { flex: 1, minWidth: '150px', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '11px' } }),
+                      e('select', { id: 'pt-library-sort', value: librarySort, onChange: function (ev) { setLibrarySort(ev.target.value); }, 'aria-label': 'Sort saved poems', style: { padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', fontSize: '11px' } },
+                        e('option', { value: 'newest' }, 'Newest'),
+                        e('option', { value: 'oldest' }, 'Oldest'),
+                        e('option', { value: 'title' }, 'Title A-Z'),
+                        e('option', { value: 'form' }, 'Form')
+                      ),
+                      e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: '#64748b', whiteSpace: 'nowrap' } }, visibleSaved.length + ' of ' + saved.length + ' poems')
+                    ),
                     // Print Chapbook panel
                     e('div', { style: { background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '10px', padding: '12px' } },
-                      e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
                         e('div', { style: { flex: 1, minWidth: '180px' } },
                           e('h4', { style: { fontSize: '13px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📖 Print as a chapbook'),
-                          e('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '2px 0 0' } }, 'Cover, table of contents, and one page per poem. Print to paper or save as PDF.')
+                          e('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '2px 0 0' } }, chapbookCurating
+                            ? 'Choose the poems you want in this portfolio.'
+                            : 'Cover, table of contents, and one page per poem. Print to paper or save as PDF.')
                         ),
                         formIdsRepresented.length > 1 && e('select', { value: chapbookFilter,
                           onChange: function (ev) { setChapbookFilter(ev.target.value); },
@@ -3360,11 +4655,23 @@
                             return e('option', { key: fid, value: fid }, (f ? f.icon + ' ' + f.name : 'Free verse') + ' (' + formsInLibrary[fid] + ')');
                           })
                         ),
-                        e('button', { onClick: function () { printChapbook(chapbookFilter); },
-                          'aria-label': tr('Print chapbook of ') + filterCount + ' poems',
-                          disabled: filterCount === 0,
-                          style: { padding: '8px 14px', background: filterCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: filterCount > 0 ? 'pointer' : 'not-allowed' }
-                        }, '🖨️ Print ' + filterCount + ' poem' + (filterCount === 1 ? '' : 's'))
+                        e('button', {
+                          onClick: chapbookCurating ? exitChapbookCuration : enterChapbookCuration,
+                          'aria-pressed': chapbookCurating ? 'true' : 'false',
+                          'aria-label': chapbookCurating ? 'Finish chapbook curation' : 'Choose poems for a custom chapbook',
+                          style: { padding: '8px 11px', background: chapbookCurating ? '#fff' : '#fff', color: TEAL_DARK, border: '1px solid #0d9488', borderRadius: '8px', fontWeight: 700, fontSize: '11px', cursor: 'pointer' }
+                        }, chapbookCurating ? '✓ Done curating' : '✚ Curate selection'),
+                        e('button', { onClick: function () { printChapbook(chapbookCurating ? '' : chapbookFilter); },
+                          'aria-label': (chapbookCurating ? 'Print selected chapbook of ' : 'Print chapbook of ') + chapbookPrintCount + ' poems',
+                          disabled: chapbookPrintCount === 0,
+                          style: { padding: '8px 14px', background: chapbookPrintCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: chapbookPrintCount > 0 ? 'pointer' : 'not-allowed' }
+                        }, '🖨️ Print ' + chapbookPrintCount + ' poem' + (chapbookPrintCount === 1 ? '' : 's'))
+                      ),
+                      chapbookCurating && e('div', { role: 'group', 'aria-label': 'Chapbook selection controls', style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '9px', paddingTop: '8px', borderTop: '1px solid #99f6e4' } },
+                        e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: TEAL_DARK, fontWeight: 800, marginRight: '2px' } }, chapbookSelectedCount + ' of ' + saved.length + ' selected'),
+                        e('button', { onClick: selectAllChapbookPoems, 'aria-label': 'Select all saved poems for chapbook', style: { padding: '5px 8px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Select all'),
+                        e('button', { onClick: clearChapbookSelection, 'aria-label': 'Clear chapbook selection', style: { padding: '5px 8px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Clear selection'),
+                        e('span', { style: { fontSize: '10px', color: '#475569' } }, 'Check or uncheck poems below to shape the collection.')
                       )
                     ),
                     // Theme Tracker panel — patterns across saved poems (3+ required for meaningful analysis)
@@ -3441,14 +4748,18 @@
                           )
                         )
                       ),
-                      saved.map(function (p) {
+                      visibleSaved.length === 0 && e('p', { style: { color: '#64748b', fontSize: '12px', fontStyle: 'italic', margin: '4px 0' } }, 'No saved poems match this search.'),
+                      visibleSaved.map(function (p) {
                     var f = FORMS.find(function (ff) { return ff.id === p.formId; });
-                    return e('div', { key: p.id, style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
+                    return e('div', { key: p.id, 'data-pt-library-card': p.id, style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
                       e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' } },
-                        e('div', null,
-                          e('h4', { style: { fontSize: '14px', fontWeight: 800, color: '#1e293b', margin: 0 } }, p.title),
+                        e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '7px' } },
+                          chapbookCurating && e('input', { type: 'checkbox', checked: chapbookSelectedIds.indexOf(p.id) >= 0, onChange: function () { toggleChapbookPoem(p.id); }, 'aria-label': 'Include ' + p.title + ' in chapbook', style: { marginTop: '3px' } }),
+                          e('div', null,
+                            e('h4', { style: { fontSize: '14px', fontWeight: 800, color: '#1e293b', margin: 0 } }, p.title),
                           e('p', { style: { fontSize: '10px', color: '#475569', margin: '2px 0 0' } },
                             (f ? f.icon + ' ' + f.name : 'Free verse') + ' · ' + new Date(p.savedAt).toLocaleDateString())
+                          ),
                         ),
                         e('div', { style: { display: 'flex', gap: '6px' } },
                           e('button', { onClick: function () { loadPoem(p); }, 'aria-label': 'Load ' + p.title, style: { padding: '4px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Open'),

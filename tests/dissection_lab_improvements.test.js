@@ -8,6 +8,11 @@ const DISSECTION_PATHS = [
   'desktop/web-app/public/stem_lab/stem_tool_dissection.js',
 ];
 
+const STEM_SHARED_PATHS = [
+  'stem_lab/stem_lab_module.js',
+  'desktop/web-app/public/stem_lab/stem_lab_module.js',
+];
+
 describe('dissection improvement contracts', { timeout: 20000 }, () => {
   it('keeps progress specimen-specific and persists learner evidence', () => {
     for (const filePath of DISSECTION_PATHS) {
@@ -690,6 +695,259 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
     expect(html).toContain('Input: pen');
     expect(html).toContain('the equivalent technique action button remains available');
   });
+  it('supports direct pin press-drag-release placement with live stability evidence', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function pinDragAssessment(canvas, point, at)');
+      expect(source).toContain('function beginPinDrag(e)');
+      expect(source).toContain('function appendPinDrag(e)');
+      expect(source).toContain('function finishPinDrag(e, cancelled)');
+      expect(source).toContain("key = !drag.startValid ? 'position'");
+      expect(source).toContain("label = { position: 'MOVE TO ENDPOINT'");
+      expect(source).toContain("grasp: 'GRASP \u00B7 DRAG'");
+      expect(source).toContain("stable: 'STABLE ANCHOR'");
+      expect(source).toContain('safeTravel: safeTravel');
+      expect(source).toContain('insertionPercent: insertionPercent');
+      expect(source).toContain('alignment: Math.round(Math.max(0, alignment) * 100)');
+      expect(source).toContain('ctx.ellipse(tipX, tipY, directPinAssessment.safeTravel * W');
+      expect(source).toContain('if (canvas._pinDrag && canvas._pinDrag.active) { appendPinDrag(e); return; }');
+      expect(source).toContain("if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'pin') { beginPinDrag(e); return; }");
+      expect(source).toContain('if (finishPinDrag(e, false)) return;');
+      expect(source).toContain('if (finishPinDrag(e, true)) return;');
+      expect(source).toContain('pinDragMetrics: pinDragMetrics');
+      expect(source).toContain("report += 'Direct pin placement: '");
+      expect(source).toContain('Recorded direct pin placement evidence');
+      expect(source).toContain('Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback.');
+      expect(source).toContain('the equivalent technique action button remains available');
+      expect(source).not.toContain("activeInstrument === 'pin') { performProcedureAction('pin', { point: { x: mx, y: my } });");
+    }
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'pin',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            pins: [{ x: 0.3, y: 0.5 }],
+            pinDragMetrics: {
+              insertionPercent: 64,
+              alignment: 92,
+              control: 88,
+              angle: 65,
+              inputType: 'pen',
+            },
+          },
+        },
+      },
+    });
+    expect(html).toContain('Recorded direct pin placement evidence');
+    expect(html).toContain('Direct pin evidence');
+    expect(html).toContain('64% inserted');
+    expect(html).toContain('Alignment 92%');
+    expect(html).toContain('Control 88%');
+    expect(html).toContain('Angle 65 degrees');
+    expect(html).toContain('Input: pen');
+    expect(html).toContain('Press an indicated endpoint, drag inward along the shaft');
+  });  it('supports direct probe press-drag-release palpation with live contact evidence', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function probeDragAssessment(canvas, point, at)');
+      expect(source).toContain('function beginProbeDrag(e)');
+      expect(source).toContain('function appendProbeDrag(e)');
+      expect(source).toContain('function finishProbeDrag(e, cancelled)');
+      expect(source).toContain("labels = { position: 'MOVE TO STRUCTURE'");
+      expect(source).toContain("grasp: 'GRASP · TRACE'");
+      expect(source).toContain("controlled: 'CONTROLLED PALPATION'");
+      expect(source).toContain('contactPercent: contactPercent');
+      expect(source).toContain('resistanceValue: resistanceValue');
+      expect(source).toContain('deformation: deformation');
+      expect(source).toContain('if (canvas._probeDrag && canvas._probeDrag.active) { appendProbeDrag(e); return; }');
+      expect(source).toContain("activeInstrument === 'probe' && beginProbeDrag(e)");
+      expect(source).toContain('if (finishProbeDrag(e, false)) return;');
+      expect(source).toContain('if (finishProbeDrag(e, true)) return;');
+      expect(source).toContain('probeDragMetrics: probeDragMetrics');
+      expect(source).toContain("report += 'Direct probe palpation: '");
+      expect(source).toContain('Recorded direct probe palpation evidence');
+      expect(source).toContain('Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback.');
+      expect(source).toContain('the probe action button instead of tracing a structure');
+    }
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'probe',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            pins: [{ x: 0.3, y: 0.5 }, { x: 0.72, y: 0.5 }],
+            probed: true,
+            probedOrganId: 'heart',
+            probeDragMetrics: {
+              contactPercent: 86,
+              alignment: 93,
+              control: 89,
+              resistance: 54,
+              deformation: 9,
+              inputType: 'pen',
+            },
+          },
+        },
+      },
+    });
+    expect(html).toContain('Recorded direct probe palpation evidence');
+    expect(html).toContain('Direct probe evidence');
+    expect(html).toContain('86% contact');
+    expect(html).toContain('Alignment 93%');
+    expect(html).toContain('Control 89%');
+    expect(html).toContain('Resistance 54/100');
+    expect(html).toContain('Deformation 9');
+    expect(html).toContain('Input: pen');
+    expect(html).toContain('Press a visible structure, trace a short path while monitoring pressure');
+  });  it('supports direct dropper press-drag-release hydration with flow and pooling evidence', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function dropperDragAssessment(canvas, point, at)');
+      expect(source).toContain('function beginDropperDrag(e)');
+      expect(source).toContain('function appendDropperDrag(e)');
+      expect(source).toContain('function finishDropperDrag(e, cancelled)');
+      expect(source).toContain("labels = { position: 'MOVE TO SPECIMEN'");
+      expect(source).toContain("grasp: 'GRASP · DRAG'");
+      expect(source).toContain("controlled: 'CONTROLLED FILM'");
+      expect(source).toContain('contactPercent: contactPercent');
+      expect(source).toContain('flowAlignment: flowAlignment');
+      expect(source).toContain('poolingRisk: poolingRisk');
+      expect(source).toContain('if (canvas._dropperDrag && canvas._dropperDrag.active) { appendDropperDrag(e); return; }');
+      expect(source).toContain("activeInstrument === 'dropper' && beginDropperDrag(e)");
+      expect(source).toContain('if (finishDropperDrag(e, false)) return;');
+      expect(source).toContain('if (finishDropperDrag(e, true)) return;');
+      expect(source).toContain('dropperDragMetrics: dropperDragMetrics');
+      expect(source).toContain('interactionMetrics: patch.forcepsDragMetrics');
+      expect(source).toContain("report += 'Direct dropper hydration: '");
+      expect(source).toContain('Recorded direct dropper hydration evidence');
+      expect(source).toContain('Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback.');
+      expect(source).toContain('the equivalent technique action button remains available');
+      expect(source).toContain('drawDropperSpreadPreview(canvas._toolPointer, canvas);');
+      expect(source).toContain('Legacy signature: function drawDropperSpreadPreview(pointer)');
+    }
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'dropper',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            surfaceCleared: true,
+            dropperPoint: { x: 0.5, y: 0.5 },
+            dropperDragMetrics: {
+              dose: 1,
+              moisture: 58,
+              contactPercent: 92,
+              flowAlignment: 88,
+              control: 91,
+              poolingRisk: 18,
+              inputType: 'pen',
+            },
+          },
+        },
+      },
+    });
+    expect(html).toContain('Recorded direct dropper hydration evidence');
+    expect(html).toContain('Direct dropper evidence');
+    expect(html).toContain('92% contact');
+    expect(html).toContain('Flow alignment 88%');
+    expect(html).toContain('Control 91%');
+    expect(html).toContain('Moisture 58%');
+    expect(html).toContain('Pooling risk 18/100');
+    expect(html).toContain('Input: pen');
+    expect(html).toContain('Press the specimen surface, drag a short flow-aligned path');
+  });
+  it('supports direct wick press-drag-release recovery with pool-edge evidence', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function wickDragAssessment(canvas, point, at)');
+      expect(source).toContain('function beginWickDrag(e)');
+      expect(source).toContain('function appendWickDrag(e)');
+      expect(source).toContain('function finishWickDrag(e, cancelled)');
+      expect(source).toContain("labels = { position: 'MOVE TO POOL EDGE'");
+      expect(source).toContain("grasp: 'GRASP · DRAG'");
+      expect(source).toContain("controlled: 'CONTROLLED RECOVERY'");
+      expect(source).toContain('edgeAlignment: edgeAlignment');
+      expect(source).toContain('recoveryPercent: recoveryPercent');
+      expect(source).toContain('if (canvas._wickDrag && canvas._wickDrag.active) { appendWickDrag(e); return; }');
+      expect(source).toContain("activeInstrument === 'wick' && beginWickDrag(e)");
+      expect(source).toContain('if (finishWickDrag(e, false)) return;');
+      expect(source).toContain('if (finishWickDrag(e, true)) return;');
+      expect(source).toContain('wickDragMetrics: wickDragMetrics');
+      expect(source).toContain("report += 'Direct wick recovery: '");
+      expect(source).toContain('Recorded direct wick recovery evidence');
+      expect(source).toContain('Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback.');
+      expect(source).toContain('drawWickRecoveryPreview(canvas._toolPointer, canvas);');
+      expect(source).toContain('the equivalent technique action button remains available');
+    }
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'wick',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            surfaceCleared: true,
+            dropperPoint: { x: 0.5, y: 0.5 },
+            fieldWicked: true,
+            wickPoint: { x: 0.56, y: 0.5 },
+            wickDragMetrics: {
+              recoveryPercent: 74,
+              edgeAlignment: 91,
+              contactPercent: 94,
+              control: 88,
+              poolingBefore: 3,
+              inputType: 'pen',
+            },
+          },
+        },
+      },
+    });
+    expect(html).toContain('Recorded direct wick recovery evidence');
+    expect(html).toContain('Direct wick evidence');
+    expect(html).toContain('74% recovery');
+    expect(html).toContain('Edge alignment 91%');
+    expect(html).toContain('Contact 94%');
+    expect(html).toContain('Control 88%');
+    expect(html).toContain('Pooling before 3 drops');
+    expect(html).toContain('Input: pen');
+    expect(html).toContain('Press the saline pool edge, drag outward across a short recovery path');
+  });
   it('uses an anatomy-aware fetal pig silhouette instead of mascot-like features', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -929,6 +1187,19 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Active tool: Scalpel');
     expect(html).toContain('Selected · Ready');
     expect(html).toContain('class="diss-stage__handoff"');
+    expect(html).toContain('Live specimen response monitor');
+    expect(html).toContain('diss-stage__telemetry');
+    expect(html).toContain('Exposure');
+    expect(html).toContain('Last response · RECORDED');
+    expect(html).toContain('Inspect last response · why did the field change?');
+    expect(html).toContain('Replay last response');
+    expect(html).toContain('diss-procedure__timeline-entry');
+    expect(html).toContain('aria-label="Review Inspected: RECORDED"');
+    expect(html).toContain('data-selected="true"');
+    expect(html).toContain('Pre-contact check');
+    expect(html).toContain('Run field check');
+    expect(html).toContain('Align view');
+    expect(html).toContain('Prepare next');
     expect(html).toContain('Next · Begin the shallow ventral midline opening');
     expect(html).toContain('Step 2/6');
     expect(html).toContain('diss-fullscreen-dock__handoff');
@@ -941,6 +1212,7 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Technique score');
     expect(html).toContain('Instrument angle');
     expect(html).toContain('Precision access');
+    expect(html).toContain('RECORDED');
     expect(html).toContain('Scenario lab');
     expect(html).toContain('Debrief');
     expect(html).toContain('Next improvement');
@@ -952,6 +1224,13 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Show technique');
     expect(html).toContain('Replay attempt');
     expect(html).toContain('Save attempt');
+    expect(html).toContain('Technique path comparison legend');
+    expect(html).toContain('diss-attempt-comparison__scrub');
+    expect(html).toContain('Scrub comparison replay');
+    expect(html).toContain('Play compare replay');
+    expect(html).toContain('Show full paths');
+    expect(html).toContain('Current attempt · solid cyan path');
+    expect(html).toContain('Saved baseline · dashed magenta path');
     expect(html).toContain('Start new attempt');
     expect(html).toContain('Compare attempts');
     expect(html).toContain('Adaptive coaching on');
@@ -1487,13 +1766,38 @@ describe('dissection improved UI render', () => {
   it('implements the ARIA radio keyboard pattern for procedural instruments', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function prepareNextProcedureStep()');
+      expect(source).toContain("'next-step planner'");
       expect(source).toContain('function selectProcedureInstrument(toolId, inputMethod)');
       expect(source).toContain('function onInstrumentKeyDown(e, toolId)');
       expect(source).toContain("var navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']");
       expect(source).toContain("id: 'diss-instrument-' + tool.id");
+      expect(source).toContain("inputHint: 'Press · drag'");
+      expect(source).toContain("inputHint: 'Stroke'");
+      expect(source).toContain('Interaction: ');
       expect(source).toContain('tabIndex: activeInstrument === tool.id ? 0 : -1');
       expect(source).toContain("selectProcedureInstrument(keyboardTool.id, 'keyboard shortcut ' + e.key)");
       expect(source).toContain("announceToSR(selectionMessage + ' ' + toolState.instruction)");
+      expect(source).toContain('var actionOutcome = procedureOutcomeFeedbackData(action, patch, tissueBefore, next.tissueState, tone)');
+      expect(source).toContain('outcomeDetail: actionOutcome.detail');
+      expect(source).toContain('diss-procedure__timeline-outcome');
+      expect(source).toContain('var latestActionDeltaMetrics =');
+      expect(source).toContain('Latest tissue response metric changes');
+      expect(source).toContain('var fieldReadinessChecks =');
+      expect(source).toContain('function runFieldReadinessCheck()');
+      expect(source).toContain('function resolveFieldReadinessIssue()');
+      expect(source).toContain('function showProcedureLastResponse()');
+      expect(source).toContain('function selectProcedureTimelineEntry(entry)');
+      expect(source).toContain('selectedProcedureActionAt');
+      expect(source).toContain('diss-procedure__timeline-entry');
+      expect(source).toContain('snapshot.actionLog =');
+      expect(source).toContain('function drawComparisonMarker(point, label, color, diamond)');
+      expect(source).toContain('function toggleTechniqueCompareReplay()');
+      expect(source).toContain('compareReplayProgress');
+      expect(source).toContain('data-diss-compare-progress');
+      expect(source).toContain('function comparisonMarkerProgress(entry, markerIndex, total, path)');
+      expect(source).toContain('Technique path comparison legend');
+      expect(source).toContain('Replay last response');
     }
 
     const html = renderTool('dissection', {
@@ -1509,6 +1813,8 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('id="diss-instrument-scalpel"');
     expect(html).toContain('id="diss-instrument-scalpel" class="diss-instrument" aria-checked="true" tabindex="0"');
     expect(html).toContain('id="diss-instrument-probe" class="diss-instrument" aria-checked="false" tabindex="-1"');
+    expect(html).toContain('Press · drag');
+    expect(html).toContain('Stroke');
   });
 
   it('adds an explicit specimen-specific living-function model with responsive playback', () => {
@@ -1654,6 +1960,8 @@ describe('dissection improved UI render', () => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('.diss-instrument__state { font-size: .65rem;');
       expect(source).toContain('letter-spacing: .035em; opacity: 1;');
+      expect(source).toContain('.diss-instrument[data-next="true"]:not([aria-checked="true"])');
+      expect(source).toContain('.diss-instrument:disabled { opacity: 1;');
       expect(source).not.toContain('.diss-instrument__state { font-size: .54rem;');
     }
 
@@ -1818,6 +2126,33 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Illumination: Glare limited at 96%');
   });
 
+  it('keeps the fullscreen dock visible and escapable in CSS fallback mode', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('data-allo-fullscreen-active="true"');
+      expect(source).toContain('"data-diss-fullscreen-exit": true');
+      expect(source).toContain('title: "Exit fullscreen (Escape)"');
+      expect(source).toContain('"aria-keyshortcuts": "Escape"');
+      expect(source).toContain('max-height: min(34vh, 18rem)');
+      expect(source).toContain('grid-template-rows: minmax(0, 36vh) minmax(0, 1fr)');
+      expect(source).toContain('"aria-live": "polite"');
+      expect(source).toContain('"data-tool-status": "true"');
+      expect(source).toContain('diss-stage__live[data-tool-status="true"][data-tone="ready"]');
+      expect(source).toContain("document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
+      expect(source).toContain("var liveStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
+      expect(source).toContain("var resistanceStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
+      expect(source).toContain("var strokeSafetyStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
+      expect(source).toContain("'Tool ' + activeInstrumentDefinition.label + ' · ' + currentToolReadiness.label");
+      expect(source).toContain("window.__alloStemFS(stage); setProcedureFeedback('Exited fullscreen specimen mode.");
+    }
+    for (const filePath of STEM_SHARED_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('var _stemFsNotify = function(el, active)');
+      expect(source).toContain("_stemFsNotify(el, true);");
+      expect(source).toContain("_stemFsNotify(el, false);");
+      expect(source).toContain("data-allo-fullscreen-active");
+    }
+  });
   it('integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');

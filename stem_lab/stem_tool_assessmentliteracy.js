@@ -8835,7 +8835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || battery.length < 2,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-cyan-600 text-white hover:bg-cyan-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
             }, loading ? 'Thinking…' : '\u2728 Critique my battery'),
             h('span', { className: 'text-xs text-slate-300' }, battery.length + ' / ' + CHC_BROAD.length + ' broad abilities selected')
           ),
@@ -9904,7 +9904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     role: 'radio',
                     'aria-checked': selected,
                     onClick: function() { setAns(i, v); },
-                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-purple-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
                   }, v + ' — ' + labels[v - 1]);
                 })
               )
@@ -9914,7 +9914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: submit,
-            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-700'
           }, 'Calculate profile')
         )
       );
@@ -10004,7 +10004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           h('button', { onClick: function() { upd({ sub: 'inventory', big5Answers: {}, big5Result: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake inventory'),
-          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500' }, 'See MBTI critique →'),
+          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-700' }, 'See MBTI critique →'),
           h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-purple-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
@@ -10224,7 +10224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('button', {
             onClick: function() { upd({ sub: 'inventory' }); },
-            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-700'
           }, 'Take self-rated inventory first →')
         );
       }
@@ -10272,7 +10272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     role: 'radio',
                     'aria-checked': selected,
                     onClick: function() { pSetAns(i, v); },
-                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-purple-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
                   }, v + ' — ' + labels[v - 1]);
                 })
               )
@@ -10282,7 +10282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: pSubmit,
-            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-purple-600 text-white hover:bg-purple-700'
           }, 'Compare peer vs. self →')
         )
       );
@@ -10359,7 +10359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         h('div', { className: 'flex gap-2' },
           h('button', { onClick: function() { upd({ sub: 'peer', peerAnswers: {}, peerResult: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Add another peer rater'),
-          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-500 no-print' }, '\uD83D\uDDA8 Print / Save as PDF')
+          h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 no-print' }, '\uD83D\uDDA8 Print / Save as PDF')
         )
       );
     }
@@ -10551,7 +10551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     role: 'radio',
                     'aria-checked': selected,
                     onClick: function() { setAns(i, v); },
-                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
                   }, v + ' — ' + labels[v - 1]);
                 })
               )
@@ -10742,7 +10742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: explore,
             disabled: loading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-600 text-white hover:bg-emerald-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800')
           }, loading ? 'Thinking…' : '\u2728 Explore occupations'),
           result && h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/60' }, result)
         ),
@@ -10851,7 +10851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     'aria-checked': selected,
                     title: labels[v - 1],
                     onClick: function() { sSetAns(i, v); },
-                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+                    className: 'px-2 py-1 rounded text-xs font-bold transition ' + (selected ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
                   }, v);
                 })
               ),
@@ -11009,7 +11009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   key: k,
                   onClick: function() { setF({ riasec: active ? null : k }); },
                   'aria-pressed': active,
-                  className: 'px-3 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'),
+                  className: 'px-3 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'),
                   title: (RIASEC_TYPES[k] && RIASEC_TYPES[k].name) || k
                 }, k + ' \u2014 ' + ((RIASEC_TYPES[k] && RIASEC_TYPES[k].name) || k));
               })
@@ -11025,7 +11025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   key: k,
                   onClick: function() { setF({ education: active ? null : k }); },
                   'aria-pressed': active,
-                  className: 'px-2 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'),
+                  className: 'px-2 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'),
                   title: EDUCATION_TIERS[k].label
                 }, EDUCATION_TIERS[k].label.split(' ').slice(0, 2).join(' '));
               })
@@ -11086,7 +11086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                     setF({ constraints: next });
                   },
                   'aria-pressed': active,
-                  className: 'px-2 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-cyan-600 text-white border-2 border-cyan-300' : 'bg-slate-700 text-slate-200 border-2 border-transparent hover:bg-slate-600'),
+                  className: 'px-2 py-1 rounded text-xs font-bold transition ' + (active ? 'bg-cyan-700 text-white border-2 border-cyan-800' : 'bg-slate-700 text-slate-200 border-2 border-transparent hover:bg-slate-600'),
                   title: tag.desc + ' (' + tag.careers.length + ' careers tagged)'
                 }, tag.label + ' (' + tag.careers.length + ')');
               })
@@ -11151,7 +11151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                       }
                       upd({ compareIds: picks });
                     },
-                    className: 'px-2 py-1 rounded text-xs font-bold transition flex-shrink-0 ' + (inCompare ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
+                    className: 'px-2 py-1 rounded text-xs font-bold transition flex-shrink-0 ' + (inCompare ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'),
                     title: inCompare ? 'Remove from compare' : 'Add to compare'
                   }, inCompare ? '\u2713 In compare' : '\u2696 Compare')
                 )
@@ -11191,7 +11191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
           h('button', { onClick: function() { upd({ sub: null }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Career menu'),
-          h('button', { onClick: function() { upd({ sub: 'network', networkRootId: detailCareer.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDD78 See in network')
+          h('button', { onClick: function() { upd({ sub: 'network', networkRootId: detailCareer.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800' }, '\uD83D\uDD78 See in network')
         ),
 
         // HERO
@@ -11370,7 +11370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               }
               upd({ compareIds: picks });
             },
-            className: 'flex-1 py-2 rounded-lg text-xs font-bold ' + (dInCompare ? 'transition-colors bg-amber-600 text-white hover:bg-amber-500' : 'transition-colors bg-slate-700 text-white hover:bg-slate-600')
+            className: 'flex-1 py-2 rounded-lg text-xs font-bold ' + (dInCompare ? 'transition-colors bg-amber-700 text-white hover:bg-amber-800' : 'transition-colors bg-slate-700 text-white hover:bg-slate-600')
           }, dInCompare ? '\u2713 In compare' : '\u2696 Add to compare'),
           (s.compareIds && s.compareIds.length > 1) && h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-800' }, 'View comparison (' + s.compareIds.length + ') \u2192'),
           h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print profile')
@@ -11442,7 +11442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           backBtn('career', null, 'Career menu'),
           h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\u2190 Explorer'),
-          h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-600' }, '\uD83D\uDC41 See root detail')
+          h('button', { onClick: function() { upd({ sub: 'detail', careerId: root.id }); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800' }, '\uD83D\uDC41 See root detail')
         ),
         h('h2', { className: 'text-2xl font-black text-emerald-200' }, '\uD83D\uDD78 Career Network'),
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' },
@@ -11736,7 +11736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               return h('button', {
                 key: i,
                 onClick: function() { upd({ sub: 'skills', skillFilter: sk }); },
-                className: 'px-2 py-1 rounded-full text-xs bg-emerald-700 text-white font-bold hover:bg-emerald-600 transition'
+                className: 'px-2 py-1 rounded-full text-xs bg-emerald-700 text-white font-bold hover:bg-emerald-800 transition'
               }, sk + ' (' + allSkills[sk].length + ')');
             })
           )
@@ -12237,7 +12237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: runCoach,
             disabled: loading,
-            className: 'flex-1 py-3 rounded-xl text-sm font-black ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-2 focus:ring-emerald-400 focus:outline-none')
+            className: 'flex-1 py-3 rounded-xl text-sm font-black ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-400 focus:outline-none')
           }, loading ? '\ud83e\udd14 Coach is thinking\u2026' : '\u2728 Coach me'),
           response && h('button', {
             onClick: function() { upd({ coachResponse: '' }); },
@@ -12624,7 +12624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ clSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (clSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (clSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -12775,7 +12775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ mnSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mnSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mnSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -12882,7 +12882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ saxSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (saxSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (saxSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -12988,7 +12988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ rsSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (rsSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (rsSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13094,7 +13094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ fwSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (fwSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (fwSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13201,7 +13201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ eiSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (eiSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (eiSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13310,7 +13310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ pbSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (pbSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (pbSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13414,7 +13414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ aiSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (aiSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (aiSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13543,7 +13543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ psSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (psSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (psSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13680,7 +13680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ ctSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ctSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ctSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13814,7 +13814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ wcSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (wcSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (wcSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -13936,7 +13936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ mtSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mtSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mtSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14040,7 +14040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ pfSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (pfSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (pfSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14163,7 +14163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ gpSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (gpSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (gpSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14342,7 +14342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: k,
               onClick: function() { upd({ ceField: k }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ceField === k ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ceField === k ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, CE_BY_FIELD[k].label);
           })
         ),
@@ -14396,7 +14396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ boSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (boSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (boSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14501,7 +14501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ tmSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (tmSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (tmSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14619,7 +14619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ tiSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (tiSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (tiSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14706,7 +14706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ cuSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (cuSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (cuSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14826,7 +14826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ ccSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ccSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ccSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -14960,7 +14960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ mhfaSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mhfaSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (mhfaSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -15088,7 +15088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ statSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (statSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (statSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -15375,7 +15375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: k,
               onClick: function() { upd({ ftCategory: k }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ftCategory === k ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ftCategory === k ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, FREE_TOOLS[k].label);
           })
         ),
@@ -15421,7 +15421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ saSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (saSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (saSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -15542,7 +15542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ f90Section: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (f90Section === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (f90Section === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -15646,7 +15646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ liSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (liSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (liSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -15770,7 +15770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ wpSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (wpSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (wpSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -16085,7 +16085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: t.key,
               onClick: function() { upd({ ivSection: t.key }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ivSection === t.key ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (ivSection === t.key ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, t.label);
           })
         ),
@@ -16195,7 +16195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: k,
               onClick: function() { upd({ biasSection: k }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (biasSection === k ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (biasSection === k ? 'bg-cyan-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, b.icon + ' ' + b.label);
           })
         ),
@@ -16402,7 +16402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: k,
               onClick: function() { upd({ negSection: k }); },
-              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1.5 rounded text-xs font-bold transition ' + (active ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, d.icon + ' ' + d.label);
           })
         ),
@@ -17218,7 +17218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: loadPractice,
             disabled: practiceLoading,
-            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
+            className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (practiceLoading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-700 text-white hover:bg-amber-800')
           }, practiceLoading ? 'Generating…' : (practice.length ? '\uD83D\uDD04 Regenerate' : '\u2728 Generate practice items')),
           practiceFeedback && h('div', { className: 'mt-3 p-3 rounded bg-rose-900/30 text-xs text-rose-200' }, practiceFeedback),
           practice.length > 0 && h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed mt-3 p-3 rounded bg-slate-900/70 max-h-96 overflow-y-auto' }, practice[0])
@@ -17418,7 +17418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: genQuestion,
               disabled: qLoading || !compId,
-              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
+              className: 'px-5 py-2 rounded-xl font-bold text-sm no-print ' + (qLoading || !compId ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-700 text-white hover:bg-amber-800')
             }, qLoading ? 'Thinking…' : '\u2728 Generate interview question')
           ),
           q && h('div', { className: 'mt-4 p-3 rounded bg-slate-900/70' },
@@ -17440,7 +17440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('button', {
                 onClick: critiqueAnswer,
                 disabled: cLoading || ans.length < 50,
-                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-600 text-white hover:bg-amber-500')
+                className: 'px-4 py-2 rounded-lg font-bold no-print ' + (cLoading || ans.length < 50 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-amber-700 text-white hover:bg-amber-800')
               }, cLoading ? 'Thinking…' : '\u2728 Critique my answer')
             )
           ),
@@ -18101,7 +18101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             return h('button', {
               key: c.code,
               onClick: function() { upd({ ideaCategoryFocus: c.code }); },
-              className: 'p-3 rounded-lg text-left transition focus:ring-2 focus:ring-sky-400 focus:outline-none ' + (selected ? 'bg-sky-600 text-white' : 'bg-slate-800/60 border border-sky-500/30 text-slate-200 hover:bg-slate-700/60')
+              className: 'p-3 rounded-lg text-left transition focus:ring-2 focus:ring-sky-400 focus:outline-none ' + (selected ? 'bg-sky-700 text-white' : 'bg-slate-800/60 border border-sky-500/30 text-slate-200 hover:bg-slate-700/60')
             },
               h('div', { className: 'text-xs font-black' }, c.code),
               h('div', { className: 'text-xs' }, c.name)
@@ -18628,7 +18628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('button', {
             onClick: genHandout,
             disabled: hLoading || !hStudent || !hFindings,
-            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-600 text-white hover:bg-sky-500')
+            className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-700 text-white hover:bg-sky-800')
           }, hLoading ? 'Generating…' : '\u2728 Generate parent handout')
         ),
 
@@ -19257,7 +19257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('button', {
               onClick: runCritique,
               disabled: loading || domains.length === 0,
-              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-600 text-white hover:bg-sky-500')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-700 text-white hover:bg-sky-800')
             }, loading ? 'Thinking…' : '\u2728 Get AI critique of my plan'),
             h('span', { className: 'text-xs text-slate-300' }, domains.length + ' / ' + CASE_DOMAIN_OPTIONS.length + ' domains selected')
           )
@@ -20061,7 +20061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
         h('div', { className: 'flex gap-2' },
-          h('button', { onClick: reset, className: 'transition-colors flex-1 py-2 rounded-lg bg-fuchsia-600 text-white text-sm font-bold hover:bg-fuchsia-500' }, '\uD83D\uDD04 Replay (new order)'),
+          h('button', { onClick: reset, className: 'transition-colors flex-1 py-2 rounded-lg bg-fuchsia-700 text-white text-sm font-bold hover:bg-fuchsia-800' }, '\uD83D\uDD04 Replay (new order)'),
           h('button', { onClick: function() { upd({ view: 'menu', sub: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-600' }, 'Main menu')
         )
       );
@@ -20136,7 +20136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             disabled: reveal,
             onClick: function() { pick(opt.v); },
             className: 'p-3 rounded-lg text-left border-2 transition focus:ring-2 focus:ring-fuchsia-400 focus:outline-none ' +
-              (showCorrect ? 'bg-emerald-600 border-emerald-600 text-white' :
+              (showCorrect ? 'bg-emerald-700 border-emerald-800 text-white' :
                showWrong ? 'bg-rose-600 border-rose-600 text-white' :
                picked ? 'bg-' + opt.color + '-700/50 border-' + opt.color + '-400 text-white' :
                'transition-colors bg-slate-800/60 border-slate-600 text-slate-100 hover:bg-slate-700/60')
@@ -20159,7 +20159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       reveal && h('div', { className: 'flex justify-end' },
         h('button', {
           onClick: next,
-          className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-fuchsia-600 text-white hover:bg-fuchsia-500'
+          className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-fuchsia-700 text-white hover:bg-fuchsia-800'
         }, idx + 1 >= total ? 'See results \u2192' : 'Next item \u2192')
       )
     );

@@ -1344,7 +1344,14 @@ const handleAdventureChoice = async (choice, deps) => {
       if (isTeacherMode && activeSessionCode && sessionData?.democracy?.isActive) {
            const targetAppId = activeSessionAppId || appId;
            const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
-           updateDoc(sessionRef, { "democracy.votes": {} }).catch(e => warnLog("Vote reset failed", e));
+           const nextActiveOptions = Array.from(new Set((data.scene?.options || [])
+               .map(option => String(typeof option === 'object' && option?.action ? option.action : option).trim())
+               .filter(Boolean))).slice(0, 12);
+           updateDoc(sessionRef, {
+               "democracy.phase": "voting",
+               "democracy.activeOptions": nextActiveOptions,
+               "democracy.votes": {}
+           }).catch(e => warnLog("Vote round refresh failed", e));
       }
     } catch (error) {
       warnLog("Adventure Turn Error:", error);

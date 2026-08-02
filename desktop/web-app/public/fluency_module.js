@@ -610,6 +610,346 @@
     };
   }
 
+
+
+  // Reading/Math Fluency -> AlloSheet handoff. This is a reduced, educator-
+  // reviewed measure export: passage text, word-level classifications, audio,
+  // transcripts, problem text, answers, notes, and reviewer identity never
+  // enter the envelope. Aggregate tables are descriptive until three sessions
+  // are available; benchmark readiness still requires three calibrated,
+  // distinct parallel reading forms from one passage set.
+  var FLUENCY_ALLOSHEET_KIND = 'alloflow.tabular.v1';
+  var FLUENCY_ALLOSHEET_LIMITS = Object.freeze({
+    maxTables: 3,
+    maxColumns: 32,
+    maxRows: 200,
+    maxCellChars: 1200,
+    maxEnvelopeBytes: 2 * 1024 * 1024,
+    minimumAggregateSessions: 3
+  });
+  function fluencyAlloText(value, max) {
+    var out = value == null ? '' : String(value);
+    try { if (typeof out.normalize === 'function') out = out.normalize('NFKC'); } catch (err) {}
+    out = out.replace(/\r\n?/g, '\n').trim();
+    return out.length > (max || FLUENCY_ALLOSHEET_LIMITS.maxCellChars)
+      ? out.slice(0, max || FLUENCY_ALLOSHEET_LIMITS.maxCellChars).trim() : out;
+  }
+  function fluencyAlloNumber(value) {
+    var n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  function fluencyAlloInteger(value, fallback) {
+    var n = fluencyAlloNumber(value);
+    return n == null ? (fallback == null ? 0 : fallback) : Math.max(0, Math.floor(n));
+  }
+  function fluencyAlloRound(value, digits) {
+    var n = fluencyAlloNumber(value);
+    if (n == null) return null;
+    var factor = Math.pow(10, digits || 0);
+    return Math.round(n * factor) / factor;
+  }
+  function fluencyAlloDate(value) {
+    if (value == null || value === '') return null;
+    var date = value instanceof Date ? value : new Date(value);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+  function fluencyAlloIso(value) {
+    var date = fluencyAlloDate(value);
+    return date ? date.toISOString() : null;
+  }
+  function fluencyAlloCell(value) {
+    if (value == null) return null;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'boolean') return value;
+    return fluencyAlloText(value, FLUENCY_ALLOSHEET_LIMITS.maxCellChars);
+  }
+  function fluencyAlloColumn(key, title, type) {
+    return { key: key, title: title, type: type };
+  }
+  function fluencyAlloTable(id, title, columns, rows, sourceRowCount, truncated) {
+    return {
+      id: id,
+      title: title,
+      columns: columns.slice(0, FLUENCY_ALLOSHEET_LIMITS.maxColumns),
+      rows: rows.slice(0, FLUENCY_ALLOSHEET_LIMITS.maxRows),
+      rowCount: Math.min(rows.length, FLUENCY_ALLOSHEET_LIMITS.maxRows),
+      sourceRowCount: Math.max(sourceRowCount || 0, rows.length),
+      truncated: !!truncated || rows.length > FLUENCY_ALLOSHEET_LIMITS.maxRows
+    };
+  }
+  function fluencyAlloMedian(values) {
+    var clean = values.filter(function (value) { return Number.isFinite(Number(value)); })
+      .map(Number).sort(function (a, b) { return a - b; });
+    if (!clean.length) return null;
+    var mid = Math.floor(clean.length / 2);
+    return clean.length % 2 ? clean[mid] : fluencyAlloRound((clean[mid - 1] + clean[mid]) / 2, 1);
+  }
+  function fluencyAlloPick(record, keys, fallback) {
+    for (var i = 0; i < keys.length; i += 1) {
+      var current = record && record[keys[i]];
+      if (current != null && current !== '') return current;
+    }
+    return fallback;
+  }
+  function fluencyAlloRecordData(item) {
+    return item && item.data && typeof item.data === 'object' ? item.data : (item || {});
+  }
+  function fluencyAlloDateFor(record) {
+    return fluencyAlloIso(fluencyAlloPick(record, ['timestamp', 'date', 'createdAt'], null));
+  }
+  function fluencyAlloWithinRange(date, rangeStart) {
+    if (!rangeStart || !date) return true;
+    return Date.parse(date) >= rangeStart;
+  }
+  function fluencyAlloReviewStatus(record) {
+    var status = record && record.review && record.review.status;
+    return status === 'reviewed' ? 'educator-reviewed' : 'automated-review-recommended';
+  }
+  function fluencyAlloReading(record, index, settings) {
+    var data = fluencyAlloRecordData(record);
+    var metrics = data.metrics && typeof data.metrics === 'object' ? data.metrics : {};
+    var words = Array.isArray(data.wordData) ? data.wordData : [];
+    var insertions = Array.isArray(data.insertions) ? data.insertions
+      : (data.fullAnalysis && Array.isArray(data.fullAnalysis.insertions) ? data.fullAnalysis.insertions : []);
+    var running = words.length ? calculateRunningRecordMetrics(words, insertions) : {};
+    var passage = data.passageMetadata && typeof data.passageMetadata === 'object' ? data.passageMetadata : {};
+    var wcpm = fluencyAlloNumber(fluencyAlloPick(data, ['wcpm'], fluencyAlloPick(metrics, ['wcpm'], null)));
+    var accuracy = fluencyAlloNumber(fluencyAlloPick(data, ['accuracy', 'accuracyScore'], fluencyAlloPick(metrics, ['accuracy'], null)));
+    var totalWords = fluencyAlloInteger(fluencyAlloPick(data, ['totalReferenceWordCount'], fluencyAlloPick(metrics, ['totalWords'], words.length)), 0);
+    var correctWords = fluencyAlloInteger(fluencyAlloPick(data, ['correctWords'], fluencyAlloPick(metrics, ['correctWords'], null)), 0);
+    if (correctWords === 0 && words.length && accuracy != null) correctWords = Math.round(totalWords * accuracy / 100);
+    var date = fluencyAlloDateFor(data);
+    var calibrated = passage.calibrated === true;
+    var benchmarkStatus = calibrated && passage.passageSetId && passage.formId
+      ? 'calibrated-form' : 'descriptive-only';
+    return {
+      id: 'reading-' + (index + 1),
+      family: 'reading',
+      measure: 'wcpm',
+      date: date,
+      rate: wcpm,
+      accuracy: accuracy,
+      duration: fluencyAlloNumber(fluencyAlloPick(data, ['durationSeconds'], fluencyAlloPick(metrics, ['durationSeconds'], null))),
+      attempted: totalWords,
+      correct: correctWords,
+      errors: fluencyAlloInteger(running.totalErrors, 0),
+      substitutions: fluencyAlloInteger(running.substitutions, 0),
+      omissions: fluencyAlloInteger(running.omissions, 0),
+      insertions: fluencyAlloInteger(running.insertions, 0),
+      selfCorrections: fluencyAlloInteger(running.selfCorrections, 0),
+      errorRate: running.errorRate == null ? null : fluencyAlloText(running.errorRate, 40),
+      readingLevel: fluencyAlloText(running.readingLevel || 'unknown', 40),
+      operation: null,
+      difficulty: null,
+      benchmarkGrade: fluencyAlloText(fluencyAlloPick(data, ['benchmarkGrade', 'grade'], fluencyAlloPick(passage, ['grade'], settings.benchmarkGrade || '')), 40) || null,
+      benchmarkSeason: fluencyAlloText(fluencyAlloPick(data, ['benchmarkSeason', 'season'], settings.benchmarkSeason || ''), 40) || null,
+      benchmarkStatus: benchmarkStatus,
+      reviewStatus: fluencyAlloReviewStatus(data),
+      passageCalibrated: calibrated,
+      passageSetId: passage.passageSetId ? fluencyAlloText(passage.passageSetId, 80) : null,
+      formId: passage.formId ? fluencyAlloText(passage.formId, 80) : null
+    };
+  }
+  function fluencyAlloMath(record, index) {
+    var data = fluencyAlloRecordData(record);
+    var attempted = fluencyAlloInteger(fluencyAlloPick(data, ['totalAttempted', 'attempted'], 0), 0);
+    var correct = fluencyAlloInteger(fluencyAlloPick(data, ['totalCorrect', 'correct'], 0), 0);
+    var date = fluencyAlloDateFor(data);
+    return {
+      id: 'math-' + (index + 1),
+      family: 'math',
+      measure: 'dcpm',
+      date: date,
+      rate: fluencyAlloNumber(fluencyAlloPick(data, ['dcpm'], null)),
+      accuracy: fluencyAlloNumber(fluencyAlloPick(data, ['accuracy'], null)),
+      duration: fluencyAlloNumber(fluencyAlloPick(data, ['elapsedSeconds', 'durationSeconds'], null)),
+      attempted: attempted,
+      correct: correct,
+      errors: Math.max(0, attempted - correct),
+      substitutions: null,
+      omissions: null,
+      insertions: null,
+      selfCorrections: null,
+      errorRate: null,
+      readingLevel: null,
+      operation: fluencyAlloText(fluencyAlloPick(data, ['operation'], 'mixed'), 40) || 'mixed',
+      difficulty: fluencyAlloText(fluencyAlloPick(data, ['difficulty'], ''), 40) || null,
+      benchmarkGrade: null,
+      benchmarkSeason: null,
+      benchmarkStatus: 'descriptive-only',
+      reviewStatus: 'practice-record',
+      passageCalibrated: false,
+      passageSetId: null,
+      formId: null
+    };
+  }
+  function buildFluencyAlloSheetEnvelope(source, options) {
+    var input = source && typeof source === 'object' ? source : {};
+    var settings = options && typeof options === 'object' ? options : {};
+    var createdAt = fluencyAlloIso(settings.createdAt || input.createdAt || Date.now()) || new Date().toISOString();
+    var dateRange = ['30d', '90d', 'all'].indexOf(settings.dateRange) >= 0 ? settings.dateRange : '90d';
+    var createdMs = Date.parse(createdAt);
+    var rangeStart = dateRange === '30d' ? createdMs - 30 * 24 * 60 * 60 * 1000
+      : dateRange === '90d' ? createdMs - 90 * 24 * 60 * 60 * 1000 : null;
+    var selected = settings.datasets && typeof settings.datasets === 'object' ? settings.datasets : {};
+    var datasets = {
+      measures: selected.measures !== false,
+      trends: selected.trends !== false,
+      errors: selected.errors !== false
+    };
+    var readingSource = Array.isArray(input.readingAssessments) ? input.readingAssessments
+      : (Array.isArray(input.assessments) ? input.assessments : []);
+    var mathSource = Array.isArray(input.mathFluencyHistory) ? input.mathFluencyHistory
+      : (Array.isArray(input.mathHistory) ? input.mathHistory : []);
+    var readings = settings.includeReading === false ? [] : readingSource.map(function (item, index) {
+      return fluencyAlloReading(item, index, settings);
+    }).filter(function (item) { return fluencyAlloWithinRange(item.date, rangeStart); });
+    var maths = settings.includeMath === false ? [] : mathSource.map(function (item, index) {
+      return fluencyAlloMath(item, index);
+    }).filter(function (item) { return fluencyAlloWithinRange(item.date, rangeStart); });
+    var records = readings.concat(maths);
+    var sortedRecords = records.slice().sort(function (a, b) {
+      var aTime = a.date ? Date.parse(a.date) : 0;
+      var bTime = b.date ? Date.parse(b.date) : 0;
+      return aTime - bTime;
+    });
+    sortedRecords.forEach(function (item, index) { item.id = item.family + '-' + (index + 1); });
+    var measureRows = sortedRecords.map(function (item) {
+      var values = {
+        session_id: item.id,
+        measure_family: item.family,
+        measure: item.measure,
+        date: item.date,
+        rate: fluencyAlloRound(item.rate, 1),
+        accuracy_percent: fluencyAlloRound(item.accuracy, 1),
+        duration_seconds: fluencyAlloRound(item.duration, 0),
+        attempted_count: item.attempted,
+        correct_count: item.correct,
+        error_count: item.errors,
+        substitutions: item.substitutions,
+        omissions: item.omissions,
+        insertions: item.insertions,
+        self_corrections: item.selfCorrections,
+        error_rate: item.errorRate,
+        reading_level: item.readingLevel,
+        operation: item.operation,
+        difficulty: item.difficulty,
+        benchmark_grade: item.benchmarkGrade,
+        benchmark_season: item.benchmarkSeason,
+        benchmark_status: item.benchmarkStatus,
+        review_status: item.reviewStatus,
+        privacy_status: 'reduced-data; no raw response content'
+      };
+      return { values: Object.fromEntries(Object.keys(values).map(function (key) { return [key, fluencyAlloCell(values[key])]; })) };
+    });
+    var readingEvidence = readings.length ? summarizeFluencyEvidence(readingSource.filter(function (item) {
+      var data = fluencyAlloRecordData(item);
+      return fluencyAlloWithinRange(fluencyAlloDateFor(data), rangeStart);
+    }), { sampleSize: 3 }) : null;
+    var aggregateAllowed = sortedRecords.length >= FLUENCY_ALLOSHEET_LIMITS.minimumAggregateSessions;
+    var aggregateFamilies = {};
+    var trendRows = [];
+    ['reading', 'math'].forEach(function (family) {
+      var familyRecords = sortedRecords.filter(function (item) { return item.family === family; });
+      if (!familyRecords.length) return;
+      var familyAggregateAllowed = familyRecords.length >= FLUENCY_ALLOSHEET_LIMITS.minimumAggregateSessions;
+      aggregateFamilies[family] = familyAggregateAllowed;
+      var values = {
+        measure_family: family,
+        sample_count: familyAggregateAllowed ? familyRecords.length : null,
+        median_rate: familyAggregateAllowed ? fluencyAlloMedian(familyRecords.map(function (item) { return item.rate; })) : null,
+        median_accuracy_percent: familyAggregateAllowed ? fluencyAlloMedian(familyRecords.map(function (item) { return item.accuracy; })) : null,
+        minimum_rate: familyAggregateAllowed ? Math.min.apply(null, familyRecords.map(function (item) { return item.rate; }).filter(function (v) { return Number.isFinite(v); })) : null,
+        maximum_rate: familyAggregateAllowed ? Math.max.apply(null, familyRecords.map(function (item) { return item.rate; }).filter(function (v) { return Number.isFinite(v); })) : null,
+        evidence_kind: family === 'reading' && readingEvidence ? readingEvidence.evidenceKind : 'descriptive-only',
+        benchmark_ready: family === 'reading' && readingEvidence ? readingEvidence.benchmarkReady : false,
+        privacy_status: familyAggregateAllowed ? 'descriptive aggregate' : 'suppressed (<3 sessions)'
+      };
+      trendRows.push({ values: Object.fromEntries(Object.keys(values).map(function (key) { return [key, fluencyAlloCell(values[key])]; })) });
+    });
+    var errorBuckets = {};
+    sortedRecords.forEach(function (item) {
+      if (!aggregateFamilies[item.family]) return;
+      if (item.family === 'reading') {
+        [['substitutions', item.substitutions], ['omissions', item.omissions], ['insertions', item.insertions], ['self_corrections', item.selfCorrections]].forEach(function (entry) {
+          var key = 'reading|' + entry[0];
+          errorBuckets[key] = (errorBuckets[key] || 0) + fluencyAlloInteger(entry[1], 0);
+        });
+      } else {
+        var key = 'math|' + (item.operation || 'mixed');
+        errorBuckets[key] = (errorBuckets[key] || 0) + fluencyAlloInteger(item.errors, 0);
+      }
+    });
+    var errorRows = Object.keys(errorBuckets).sort().map(function (key) {
+      var parts = key.split('|');
+      var values = {
+        measure_family: parts[0],
+        error_category: parts[1],
+        error_count: errorBuckets[key],
+        privacy_status: aggregateFamilies[parts[0]] ? 'descriptive aggregate' : 'suppressed (<3 sessions)'
+      };
+      return { values: Object.fromEntries(Object.keys(values).map(function (field) { return [field, fluencyAlloCell(values[field])]; })) };
+    });
+    if (sortedRecords.length && !Object.keys(errorBuckets).length) errorRows = Array.from(new Set(sortedRecords.map(function (item) { return item.family; }))).map(function (family) { return { values: {
+      measure_family: family, error_category: 'suppressed', error_count: null, privacy_status: 'suppressed (<3 sessions)'
+    } }; });
+    ['reading', 'math'].forEach(function (family) {
+      if (sortedRecords.some(function (item) { return item.family === family; }) && aggregateFamilies[family] === false && !errorRows.some(function (row) { return row.values && row.values.measure_family === family && row.values.error_category === 'suppressed'; })) {
+        errorRows.push({ values: { measure_family: family, error_category: 'suppressed', error_count: null, privacy_status: 'suppressed (<3 sessions)' } });
+      }
+    });
+    var tables = [];
+    if (datasets.measures) tables.push(fluencyAlloTable('fluency-measures', 'Fluency measure summary', [
+      fluencyAlloColumn('session_id', 'Session code', 'category'), fluencyAlloColumn('measure_family', 'Measure family', 'category'),
+      fluencyAlloColumn('measure', 'Rate measure', 'category'), fluencyAlloColumn('date', 'Date', 'datetime'),
+      fluencyAlloColumn('rate', 'Rate', 'number'), fluencyAlloColumn('accuracy_percent', 'Accuracy (%)', 'number'),
+      fluencyAlloColumn('duration_seconds', 'Duration (seconds)', 'duration'), fluencyAlloColumn('attempted_count', 'Attempted', 'integer'),
+      fluencyAlloColumn('correct_count', 'Correct', 'integer'), fluencyAlloColumn('error_count', 'Errors', 'integer'),
+      fluencyAlloColumn('substitutions', 'Substitutions', 'integer'), fluencyAlloColumn('omissions', 'Omissions', 'integer'),
+      fluencyAlloColumn('insertions', 'Insertions', 'integer'), fluencyAlloColumn('self_corrections', 'Self-corrections', 'integer'),
+      fluencyAlloColumn('error_rate', 'Error rate', 'category'), fluencyAlloColumn('reading_level', 'Reading level', 'category'),
+      fluencyAlloColumn('operation', 'Math operation', 'category'), fluencyAlloColumn('difficulty', 'Difficulty', 'category'),
+      fluencyAlloColumn('benchmark_grade', 'Benchmark grade', 'category'), fluencyAlloColumn('benchmark_season', 'Benchmark season', 'category'),
+      fluencyAlloColumn('benchmark_status', 'Benchmark status', 'category'), fluencyAlloColumn('review_status', 'Review status', 'category'),
+      fluencyAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], measureRows, sortedRecords.length, records.length > FLUENCY_ALLOSHEET_LIMITS.maxRows));
+    if (datasets.trends) tables.push(fluencyAlloTable('fluency-trend-summary', 'Fluency trend summary', [
+      fluencyAlloColumn('measure_family', 'Measure family', 'category'), fluencyAlloColumn('sample_count', 'Sessions', 'integer'),
+      fluencyAlloColumn('median_rate', 'Median rate', 'number'), fluencyAlloColumn('median_accuracy_percent', 'Median accuracy (%)', 'number'),
+      fluencyAlloColumn('minimum_rate', 'Minimum rate', 'number'), fluencyAlloColumn('maximum_rate', 'Maximum rate', 'number'),
+      fluencyAlloColumn('evidence_kind', 'Evidence kind', 'category'), fluencyAlloColumn('benchmark_ready', 'Benchmark ready', 'boolean'),
+      fluencyAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], trendRows, trendRows.length, false));
+    if (datasets.errors) tables.push(fluencyAlloTable('fluency-error-summary', 'Fluency error category summary', [
+      fluencyAlloColumn('measure_family', 'Measure family', 'category'), fluencyAlloColumn('error_category', 'Error category', 'category'),
+      fluencyAlloColumn('error_count', 'Error count', 'integer'), fluencyAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], errorRows, errorRows.length, false));
+    var byteSize = (function () { try { return new TextEncoder().encode(JSON.stringify(tables)).length; } catch (err) { return JSON.stringify(tables).length; } }());
+    return {
+      kind: FLUENCY_ALLOSHEET_KIND,
+      version: 1,
+      source: { tool: 'fluency', label: 'Reading & Math Fluency', version: '1' },
+      title: 'Reading & Math Fluency summary',
+      createdAt: createdAt,
+      classification: { level: 'sensitive-education-data', identifierIncluded: false, studentIdentifierIncluded: false, freeTextNotesIncluded: false, rawResponsesIncluded: false },
+      privacy: { scope: 'educator-reviewed-measures', identifierIncluded: false, reducedData: true, notesIncluded: false, rawResponsesIncluded: false, transferEnablesAI: false },
+      capabilities: { writeBack: false, aiEnabled: false },
+      tables: tables.slice(0, FLUENCY_ALLOSHEET_LIMITS.maxTables),
+      provenance: {
+        sourceRecords: 'opaque; record identifiers omitted',
+        dateRange: dateRange,
+        includedTables: tables.map(function (table) { return table.id; }),
+        excludedFields: ['sourceText', 'referenceText', 'passage title/content', 'audio/base64', 'transcript', 'feedback', 'wordData', 'insertions text', 'said text', 'low-confidence word flags', 'problem text', 'student answers', 'attempt logs', 'reviewer identity', 'stable source record ids'],
+        suppression: { minimumAggregateSessions: FLUENCY_ALLOSHEET_LIMITS.minimumAggregateSessions, missingWorkInferred: false, aggregateTrendAndErrorCountsSuppressed: Object.keys(aggregateFamilies).some(function (family) { return aggregateFamilies[family] === false; }), aggregateFamilyStatus: aggregateFamilies },
+        limits: FLUENCY_ALLOSHEET_LIMITS,
+        reducedData: true,
+        byteSize: byteSize,
+        truncated: records.length > FLUENCY_ALLOSHEET_LIMITS.maxRows
+      },
+      metadata: { dateRange: dateRange, readingSessionCount: readings.length, mathSessionCount: maths.length, sessionCount: sortedRecords.length, aggregateStatus: !sortedRecords.length ? 'no sessions' : (Object.keys(aggregateFamilies).every(function (family) { return aggregateFamilies[family] === true; }) ? 'available' : 'partial; suppressed (<3 sessions per family)') }
+    };
+  };
+
   // Mirror to window.* so the monolith's _upgradeFluency() can swap its
   // top-level shims to point at the real implementations.
   window.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
@@ -624,6 +964,7 @@
   window.createFluencyPassageMetadata = createFluencyPassageMetadata;
   window.applyFluencyReview = applyFluencyReview;
   window.summarizeFluencyEvidence = summarizeFluencyEvidence;
+  window.buildFluencyAlloSheetEnvelope = buildFluencyAlloSheetEnvelope;
 
   // Trigger the monolith's upgrade callback if it exists.
   if (typeof window._upgradeFluency === 'function') {
@@ -643,7 +984,8 @@
       triangulateFluency: triangulateFluency,
       createFluencyPassageMetadata: createFluencyPassageMetadata,
       applyFluencyReview: applyFluencyReview,
-      summarizeFluencyEvidence: summarizeFluencyEvidence
+      summarizeFluencyEvidence: summarizeFluencyEvidence,
+      buildFluencyAlloSheetEnvelope: buildFluencyAlloSheetEnvelope
   };
   console.log('[CDN] Fluency loaded');
 })();

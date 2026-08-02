@@ -139,6 +139,32 @@ describe('session resource asset sync', () => {
     expect(hydrated).toEqual(resources);
   });
 
+  it('retries a briefly missing resource document and returns the complete pack', async () => {
+    const resources = [{ id: 'retry-me', type: 'document', title: 'Retry', data: { text: 'Ready after retry' } }];
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'RETRY');
+    const assetId = manifest[0].__alloResourceRef;
+    const key = docKey('artifacts', 'app-test', 'public', 'data', 'session_assets', assetId);
+    const saved = clone(store.get(key));
+    store.delete(key);
+    setTimeout(() => store.set(key, saved), 40);
+
+    await expect(window.hydrateSessionAssets('app-test', manifest)).resolves.toEqual(resources);
+  });
+
+  it('fails explicitly after bounded retries when a referenced resource stays unavailable', async () => {
+    const resources = [{ id: 'missing', type: 'document', title: 'Missing', data: { text: 'Do not silently drop me' } }];
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'MISSING');
+    const assetId = manifest[0].__alloResourceRef;
+    const key = docKey('artifacts', 'app-test', 'public', 'data', 'session_assets', assetId);
+    store.delete(key);
+
+    await expect(window.hydrateSessionAssets('app-test', manifest)).rejects.toMatchObject({
+      name: 'SessionAssetHydrationError',
+      code: 'session-asset-unavailable',
+      assetId,
+    });
+  });
+
   it('does not sync raw audio recordings as live-session resource assets', async () => {
     const resources = [
       { id: 'voice', type: 'fluency-record', data: { metrics: { wcpm: 91 }, audioRecording: 'data:audio/webm;base64,' + 'B'.repeat(1000), mimeType: 'audio/webm' } },

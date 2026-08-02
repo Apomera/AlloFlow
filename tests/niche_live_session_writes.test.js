@@ -13,6 +13,10 @@ import { resolve } from 'node:path';
 const escapeMod = readFileSync(resolve(process.cwd(), 'escape_room_module.js'), 'utf8');
 const rules = readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8');
 const adventure = readFileSync(resolve(process.cwd(), 'adventure_handlers_source.jsx'), 'utf8');
+const adventureView = readFileSync(resolve(process.cwd(), 'view_adventure_source.jsx'), 'utf8');
+const shell = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const adventureModule = readFileSync(resolve(process.cwd(), 'view_adventure_module.js'), 'utf8');
+const publicAdventureModule = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_adventure_module.js'), 'utf8');
 
 describe('escape room: every session ref uses the real sessions path', () => {
   it('has no session doc refs missing the public/data segments', () => {
@@ -24,11 +28,28 @@ describe('escape room: every session ref uses the real sessions path', () => {
 });
 
 describe('firestore.rules cover the niche student writes', () => {
-  it('lets students cast their own democracy vote', () => {
+  it('lets students cast only an active teacher-authored fixed-choice democracy vote', () => {
     expect(rules).toContain('function democracyOnlySelfVote()');
     expect(rules).toContain("'democracy', 'escapeRoomState'");
+    expect(rules).toContain("get('phase', '') == 'voting'");
+    expect(rules).toContain("in resource.data.get('democracy', {}).get('activeOptions', [])");
     // The write these rules exist for:
     expect(adventure).toContain('democracy.votes.${user.uid}');
+    expect(shell).toContain("'democracy.activeOptions': activeOptions");
+    expect(shell).toContain("'democracy.phase': 'voting'");
+    expect(shell).toContain("const activeOptions = newOptions.map(option => String(option.action || '').trim())");
+    expect(adventure).toContain('const nextActiveOptions = Array.from(new Set((data.scene?.options || [])');
+    expect(adventure).toContain('"democracy.activeOptions": nextActiveOptions');
+  });
+
+  it('shows a private change-vote state to students and aggregate participation only to teachers', () => {
+    expect(adventureView).toContain('var currentUserUid = props.currentUserUid');
+    expect(adventureView).toContain("Vote submitted. Choose another option to change it.");
+    expect(adventureView).toContain("aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}");
+    expect(adventureView).toContain("isDemocracy && isTeacherMode && voteCount > 0");
+    expect(adventureView).toContain("democracyTotalVotes + ' of ' + democracyAudienceTotal + ' students voted'");
+    expect(shell).toContain('currentUserUid: user && user.uid');
+    expect(publicAdventureModule).toBe(adventureModule);
   });
 
   it('lets students update shared escape-room team progress (per-uid team claims)', () => {

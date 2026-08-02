@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio geöffnet.",
   "cmd.open_video_studio_hint": "Anleitungen aufnehmen, untertiteln und schneiden",
   "palette.ctx.videoStudio": "Hier — Video Studio",
-  "palette.close": "Befehlspalette schließen"
+  "palette.close": "Befehlspalette schließen",
+  "cmd.apply_lesson_template": "Mit einer gespeicherten Vorlage beginnen",
+  "cmd.apply_lesson_template_done": "Begonnen mit ",
+  "cmd.apply_lesson_template_hint": "Startet einen neuen Plan aus einer deiner gespeicherten Vorlagen",
+  "cmd.apply_lesson_template_missing": "Vorlage mit dem Namen nicht gefunden: ",
+  "cmd.apply_lesson_template_which": "Welche Vorlage?",
+  "cmd.rebuild_lesson_step": "Einen Planschritt neu erstellen",
+  "cmd.rebuild_lesson_step_done": "Schritt wird neu erstellt: ",
+  "cmd.rebuild_lesson_step_hint": "Erstellt eine einzelne Ressource neu — nenne die Nummer des Schritts",
+  "cmd.rebuild_lesson_step_missing": "Dieser Schritt wurde im Plan nicht gefunden.",
+  "cmd.rebuild_lesson_step_none": "Der Plan enthält noch keine Schritte.",
+  "cmd.rebuild_lesson_step_which": "Welcher Schritt?",
+  "cmd.run_lesson_blueprint": "Unterrichtsplan erstellen",
+  "cmd.run_lesson_blueprint_done": "Plan wird erstellt — du kannst jeden Schritt auf der Karte verfolgen.",
+  "cmd.run_lesson_blueprint_hint": "Erstellt jede Ressource im aktuellen Plan",
+  "cmd.cancelled": "Abbruch angefordert. Der aktuelle Vorgang wird beendet, sobald der Anbieter dies unterstützt."
 }

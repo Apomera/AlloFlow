@@ -1423,7 +1423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'flex gap-2 flex-wrap' },
                   h('button', {
                     onClick: function() { setRunning(!running); },
-                    className: 'flex-1 min-w-[120px] py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                    className: 'flex-1 min-w-[120px] py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-700 hover:bg-emerald-800 text-white')
                   }, running ? 'Pause ride' : 'Start ride'),
                   h('button', {
                     onClick: function() { setRunning(false); reset(); },
@@ -1541,7 +1541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', {
                   onClick: function() { setRunning(!running); },
-                  className: 'flex-1 py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                  className: 'flex-1 py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-700 hover:bg-emerald-800 text-white')
                 }, running ? '⏸ Pause' : '▶ Start'),
                 h('button', {
                   onClick: function() { setRunning(false); reset(); },
@@ -1550,18 +1550,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('button', {
                   onClick: function() { setShowVectors(!showVectors); upd('sandboxShowVectors', !showVectors); },
                   'aria-pressed': showVectors,
-                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showVectors ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600')
+                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showVectors ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600')
                 }, t('stem.bikelab.force_vectors', '→ Force Vectors')),
                 h('button', {
                   onClick: function() { setShowGraph(!showGraph); upd('sandboxShowEnergyGraph', !showGraph); },
                   'aria-pressed': showGraph,
-                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showGraph ? 'bg-pink-500 text-white' : 'bg-slate-200 text-slate-600')
+                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showGraph ? 'bg-pink-700 text-white' : 'bg-slate-200 text-slate-600')
                 }, t('stem.bikelab.energy_graph', '📈 Energy Graph')),
                 h('button', {
                   onClick: function() { setCoasting(!coasting); },
                   'aria-pressed': coasting,
                   title: t('stem.bikelab.stop_pedaling_watch_drag_rolling_and_g', 'Stop pedaling \u2014 watch drag, rolling, and gravity decelerate the bike on their own.'),
-                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (coasting ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600')
+                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (coasting ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-600')
                 }, coasting ? '\uD83D\uDED1 Coasting' : '\uD83D\uDECC\uFE0F Coast Down')
               ),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
@@ -1696,7 +1696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         return h('button', {
                           key: i,
                           onClick: function() { setRingIdx(i); },
-                          className: 'w-12 h-12 rounded-full border-2 font-black transition-colors ' + (ringIdx === i ? 'border-violet-500 bg-violet-500 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
+                          className: 'w-12 h-12 rounded-full border-2 font-black transition-colors ' + (ringIdx === i ? 'border-violet-700 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
                         }, t);
                       })
                     )
@@ -1708,7 +1708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         return h('button', {
                           key: i,
                           onClick: function() { setCogIdx(i); },
-                          className: 'w-10 h-10 rounded-full border-2 font-bold text-sm transition-colors ' + (cogIdx === i ? 'border-fuchsia-500 bg-fuchsia-500 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
+                          className: 'w-10 h-10 rounded-full border-2 font-bold text-sm transition-colors ' + (cogIdx === i ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
                         }, t);
                       })
                     ),
@@ -2043,7 +2043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('button', {
                 onClick: prevStep,
                 disabled: step === 0,
-                className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (step === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
+                className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (step === 0 ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
               }, t('stem.bikelab.previous_step', '← Previous Step')),
               h('div', { className: 'flex-1 text-center text-sm text-slate-600' },
                 'Step ' + (step + 1) + ' / ' + job.steps.length),
@@ -2108,7 +2108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         return h('button', {
                           key: opt[0],
                           onClick: function() { setBikeType(opt[0]); upd('fitBikeType', opt[0]); },
-                          className: 'py-2 rounded-lg border-2 font-bold text-sm transition-colors ' + (bikeType === opt[0] ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
+                          className: 'py-2 rounded-lg border-2 font-bold text-sm transition-colors ' + (bikeType === opt[0] ? 'border-indigo-700 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
                         }, opt[1]);
                       })
                     )
@@ -2120,7 +2120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         return h('button', {
                           key: opt[0],
                           onClick: function() { setFlexibility(opt[0]); upd('fitFlexibility', opt[0]); },
-                          className: 'py-2 rounded-lg border-2 font-bold text-xs transition-colors ' + (flexibility === opt[0] ? 'border-fuchsia-500 bg-fuchsia-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
+                          className: 'py-2 rounded-lg border-2 font-bold text-xs transition-colors ' + (flexibility === opt[0] ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
                         }, opt[1]);
                       })
                     ),
@@ -2277,7 +2277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     return h('button', {
                       key: k,
                       onClick: function() { setSurf(k); upd('brakingSurface', k); },
-                      className: 'py-1.5 rounded border-2 text-xs font-bold transition-colors ' + (surf === k ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
+                      className: 'py-1.5 rounded border-2 text-xs font-bold transition-colors ' + (surf === k ? 'border-indigo-700 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
                     }, SURFACES[k].label);
                   })
                 ),
@@ -2290,7 +2290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     return h('button', {
                       key: opt[0],
                       onClick: function() { setBrakeSplit(opt[0]); upd('brakingSplit', opt[0]); },
-                      className: 'py-1.5 rounded border-2 text-xs font-bold transition-colors ' + (brakeSplit === opt[0] ? 'border-rose-500 bg-rose-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
+                      className: 'py-1.5 rounded border-2 text-xs font-bold transition-colors ' + (brakeSplit === opt[0] ? 'border-rose-700 bg-rose-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300')
                     }, opt[1]);
                   })
                 ),
@@ -2564,7 +2564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('button', {
                 onClick: goPrev,
                 disabled: idx === 0,
-                className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (idx === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
+                className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (idx === 0 ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-slate-200 hover:bg-slate-300 text-slate-700')
               }, t('stem.bikelab.previous', '← Previous')),
               h('div', { className: 'flex-1' }),
               idx === QUESTIONS.length - 1
@@ -2572,7 +2572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 : h('button', {
                     onClick: goNext,
                     disabled: !hasAnswered,
-                    className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (!hasAnswered ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                    className: 'px-4 py-2 rounded-lg font-bold text-sm ' + (!hasAnswered ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800 text-white')
                   }, t('stem.bikelab.next', 'Next →'))
             )
           )
@@ -2900,7 +2900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600' }, t('stem.bikelab.session', 'Session')),
                 !finished && h('button', {
                   onClick: function() { setRunning(!running); },
-                  className: 'py-2.5 px-4 rounded-lg font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                  className: 'py-2.5 px-4 rounded-lg font-bold transition-colors shadow ' + (running ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-700 hover:bg-emerald-800 text-white')
                 }, running ? '⏸ Pause' : (posRef.current > 0 && posRef.current < COURSE_LENGTH ? '▶ Resume' : '▶ Start Ride')),
                 finished && h('button', {
                   onClick: function() { reset(); setRunning(true); },
@@ -3189,7 +3189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                           return h('button', {
                             key: p.id,
                             onClick: function() { setSelectedId(p.id); upd('partsLastId', p.id); },
-                            className: 'text-[11px] px-2 py-0.5 rounded border transition-colors ' + (selectedId === p.id ? 'border-indigo-500 bg-indigo-500 text-white font-bold' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
+                            className: 'text-[11px] px-2 py-0.5 rounded border transition-colors ' + (selectedId === p.id ? 'border-indigo-700 bg-indigo-600 text-white font-bold' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
                           }, p.name);
                         })
                       )

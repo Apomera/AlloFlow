@@ -205,6 +205,8 @@
     var theme = props.theme;
     var isTeacherToolbarExpanded = props.isTeacherToolbarExpanded;
     var downloadingContentId = props.downloadingContentId;
+    var playingContentId = props.playingContentId;
+    var isSimplifiedAudioDownloading = downloadingContentId === 'dl-simplified-main';
     var isClozeComplete = props.isClozeComplete;
     var isSideBySide = props.isSideBySide;
     var cursorStyles = props.cursorStyles;
@@ -434,6 +436,9 @@
     var editAudioMediaRecorderRef = React.useRef(null);
     var editAudioMediaStreamRef = React.useRef(null);
     var editAudioChunksRef = React.useRef([]);
+    var editAudioRecordingTimerRef = React.useRef(null);
+    var editAudioRecordingStartedAtRef = React.useRef(0);
+    var EDIT_AUDIO_MAX_RECORDING_MS = 120000;
     var immersiveDialogRef = React.useRef(null);
     var phonicsDialogRef = React.useRef(null);
     var phonicsCloseRef = React.useRef(null);
@@ -454,15 +459,18 @@
       setEditAudioPlayingKey(null);
       setEditAudioLoadingKey(null);
     };
-    var getReadAloudAudioKey = function (sentence) {
+    var getReadAloudAudioKey = function (sentence, identityOptions) {
+      var baseKey = '';
       try {
         var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-        if (KS && typeof KS.keyFor === 'function') return KS.keyFor(sentence);
+        if (KS && typeof KS.keyFor === 'function') baseKey = KS.keyFor(sentence);
       } catch (_) {}
-      return String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      if (!baseKey) baseKey = String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      var occurrence = identityOptions && Number.isInteger(Number(identityOptions.occurrence)) ? Number(identityOptions.occurrence) : 0;
+      return baseKey ? baseKey + '\u241f' + occurrence : '';
     };
-    var updateEditAudioPlaybackIssue = function (sentence, issue) {
-      var audioKey = getReadAloudAudioKey(sentence);
+    var updateEditAudioPlaybackIssue = function (sentence, issue, identityOptions) {
+      var audioKey = getReadAloudAudioKey(sentence, identityOptions);
       if (!audioKey) return;
       setEditAudioPlaybackErrors(function (prev) {
         var next = Object.assign({}, prev);
@@ -471,7 +479,7 @@
         return next;
       });
     };
-    var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error) {
+    var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error, identityOptions) {
       if (error && error.name === 'NotAllowedError') {
         setEditAudioNotice('Audio playback was blocked. Press Play again.');
         return;
@@ -479,7 +487,7 @@
       updateEditAudioPlaybackIssue(sentence, {
         code: error && error.name ? error.name : 'playback-failed',
         reason: 'The saved audio could not be decoded or loaded.'
-      });
+      }, identityOptions);
       setEditAudioNotice('Saved audio for sentence ' + sentenceNumber + ' could not be played. Rebuild or replace it.');
     };
     var setSaveTtsAsPlayedEnabled = function (value) {
@@ -493,7 +501,7 @@
       var onAudioCapture = function (event) {
         var detail = event && event.detail ? event.detail : {};
         if (generatedContent && generatedContent.id && detail.resourceId && detail.resourceId !== generatedContent.id) return;
-        var key = getReadAloudAudioKey(detail.sentence);
+        var key = getReadAloudAudioKey(detail.sentence, detail);
         if (!key) return;
         if (detail.status === 'saving') {
           setSavingAudioKeys(function (prev) { return Object.assign({}, prev, { [key]: true }); });
@@ -524,7 +532,7 @@
           if (detail.status === 'error' || detail.status === 'limit') {
             setEditAudioNotice(detail.reason || 'Played TTS could not be saved. Generate that sentence again to retry.');
           } else {
-            updateEditAudioPlaybackIssue(detail.sentence, null);
+            updateEditAudioPlaybackIssue(detail.sentence, null, detail);
           }
           setAudioStatusTick(function (n) { return n + 1; });
         }
@@ -564,6 +572,8 @@
           }
         } catch (_) {}
         editAudioPlayerRef.current = null;
+        if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+        editAudioRecordingTimerRef.current = null;
         var recorder = editAudioMediaRecorderRef.current;
         try {
           if (recorder && recorder.state !== 'inactive') {
@@ -598,18 +608,18 @@
         return null;
       }
     };
-    var getStoredReadAloudAudioUrl = function (sentence) {
+    var getStoredReadAloudAudioUrl = function (sentence, identityOptions) {
       try {
         var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
         if (typeof sharedInspect === 'function') {
-          var inspection = sharedInspect(sentence, 'reference');
+          var inspection = sharedInspect(sentence, 'reference', identityOptions);
           if (inspection && inspection.storedUrl) return inspection.storedUrl;
           if (inspection && inspection.status === 'ready' && inspection.url) return inspection.url;
         }
       } catch (_) {}
       var st = getReadAloudStore();
       try {
-        return st && typeof st.get === 'function' ? st.get(sentence) : null;
+        return st && typeof st.get === 'function' ? st.get(sentence, identityOptions || {}) : null;
       } catch (_) {
         return null;
       }
@@ -668,19 +678,19 @@
       if (typeof resolver !== 'function') return Promise.resolve(null);
       return Promise.resolve(resolver(sentenceText, voice, speed, options, language)).catch(function () { return null; });
     }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
-    var getReadAloudAudioProvenance = function (sentence) {
+    var getReadAloudAudioProvenance = function (sentence, identityOptions) {
       var inspection = null;
       try {
         var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
-        if (typeof sharedInspect === 'function') inspection = sharedInspect(sentence, 'reference');
+        if (typeof sharedInspect === 'function') inspection = sharedInspect(sentence, 'reference', identityOptions);
       } catch (_) {}
       var st = getReadAloudStore();
       var source = inspection && inspection.source != null ? inspection.source : null;
       var metadata = inspection && inspection.metadata ? inspection.metadata : null;
       if (!inspection) {
         try {
-          if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
-          if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
+          if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence, identityOptions || {});
+          if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence, identityOptions || {});
         } catch (_) {}
       }
       if (source === 'human-teacher') return { source: source, label: 'Teacher recording', metadata: metadata, stale: false };
@@ -688,7 +698,7 @@
       if (source && String(source).indexOf('human') === 0) return { source: source, label: 'Human recording', metadata: metadata, stale: false };
       var currentVoice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
-      var currentLanguage = leveledTextLanguage || 'English';
+      var currentLanguage = identityOptions && identityOptions.language ? identityOptions.language : (leveledTextLanguage || 'English');
       var stale = inspection
         ? inspection.status === 'stale'
         : (!metadata || Number(metadata.voiceResolverVersion) !== 2 || !!(
@@ -702,27 +712,43 @@
       if (metadata && metadata.language) details.push(metadata.language);
       return { source: source || 'ai', label: details.join(' · '), metadata: metadata, stale: stale };
     };
-    var hasStoredReadAloudAudio = function (sentence) {
+    var hasStoredReadAloudAudio = function (sentence, identityOptions) {
       try {
         var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
         if (typeof sharedInspect === 'function') {
-          var inspection = sharedInspect(sentence, 'reference');
+          var inspection = sharedInspect(sentence, 'reference', identityOptions);
           if (inspection && inspection.status) return inspection.status === 'ready' || inspection.status === 'stale';
         }
       } catch (_) {}
       var st = getReadAloudStore();
-      try { return !!(st && st.has(sentence)); } catch (_) { return false; }
+      try { return !!(st && st.has(sentence, identityOptions || {})); } catch (_) { return false; }
+    };
+    var getReadAloudIdentityOptions = function (entry) {
+      var language = entry && entry.language ? entry.language : (leveledTextLanguage || 'English');
+      var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
+      var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
+      return {
+        occurrence: entry && Number.isInteger(Number(entry.occurrence)) ? Number(entry.occurrence) : 0,
+        identity: entry && entry.identity ? entry.identity : null,
+        language: language,
+        profile: { voice: voice, speed: speed, synthesisRate: speed, language: language, voiceResolverVersion: 2 }
+      };
     };
     var getReadAloudAudioSummary = function (sentences) {
       var list = Array.isArray(sentences) ? sentences : [];
+      var entries = list.map(function (item, index) {
+        return item && typeof item === 'object' ? item : { text: String(item || ''), occurrence: 0, identity: 'legacy:' + index };
+      });
       var sharedSummary = null;
       try {
         var summaryResolver = typeof window !== 'undefined' && window.__alloGetReadAloudAudioSummary;
-        if (typeof summaryResolver === 'function') sharedSummary = summaryResolver(list, 'reference');
+        if (typeof summaryResolver === 'function') {
+          sharedSummary = summaryResolver(entries.map(function (entry) { return entry.text; }), 'reference', { entries: entries });
+        }
       } catch (_) {}
       var saved = sharedSummary
         ? Number(sharedSummary.ready || 0) + Number(sharedSummary.stale || 0)
-        : list.reduce(function (n, sentence) { return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0); }, 0);
+        : entries.reduce(function (n, entry) { return n + (hasStoredReadAloudAudio(entry.text, getReadAloudIdentityOptions(entry)) ? 1 : 0); }, 0);
       var bytes = sharedSummary ? Number(sharedSummary.estimatedBytes || 0) : 0;
       var maxBytes = 0;
       try {
@@ -730,9 +756,9 @@
         if (!sharedSummary && st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
         if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
       } catch (_) {}
-      return { saved: saved, total: list.length, bytes: bytes, maxBytes: maxBytes };
+      return { saved: saved, total: entries.length, bytes: bytes, maxBytes: maxBytes };
     };
-    var getReadAloudSentencesForText = function (rawText) {
+    var getReadAloudSentenceEntriesForText = function (rawText) {
       var text = typeof rawText === 'string' ? rawText : String(rawText || '');
       var isTableText = function (p) { return p.trim().startsWith('|') || p.indexOf('\n|') !== -1; };
       var splitForReadAloud = function (part) {
@@ -742,18 +768,66 @@
         } catch (_) {}
         return splitTextToSentences(part);
       };
+      var splitBlock = function (block) {
+        return String(block || '').split(/\n{2,}/).flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); });
+      };
       var parts = getSideBySideContent(text);
-      var list = parts
-        ? parts.source.concat(parts.target).flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); })
-        : text.split(/\n{2,}/).flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); });
-      return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
+      var sourceList = [];
+      var targetList = [];
+      if (parts) {
+        sourceList = parts.source.flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); });
+        targetList = parts.target.flatMap(function (p) { return isTableText(p) ? [] : splitForReadAloud(p); });
+      } else {
+        var marker = '--- ENGLISH TRANSLATION ---';
+        var markerIndex = text.indexOf(marker);
+        if (markerIndex >= 0) {
+          sourceList = splitBlock(text.slice(0, markerIndex));
+          targetList = splitBlock(text.slice(markerIndex + marker.length));
+        } else {
+          sourceList = splitBlock(text);
+        }
+      }
+      var counts = new Map();
+      var makeEntries = function (list, language, scope) {
+        return list.map(function (sentence, index) {
+          var cleaned = cleanSentenceForAudio(sentence);
+          if (!cleaned || !cleaned.trim()) return null;
+          // Match Phase K and the shared service exactly: occurrence is scoped
+          // to identical spoken text. Case-folding here made distinct spoken
+          // sentences consume each other's duplicate slot.
+          var countKey = cleaned;
+          var occurrence = counts.get(countKey) || 0;
+          counts.set(countKey, occurrence + 1);
+          return {
+            text: cleaned,
+            language: language || 'English',
+            occurrence: occurrence,
+            identity: scope + ':' + index + ':' + occurrence
+          };
+        }).filter(Boolean);
+      };
+      return makeEntries(sourceList, leveledTextLanguage || 'English', 'source')
+        .concat(makeEntries(targetList, 'English', 'target'));
+    };
+    var getReadAloudSentencesForText = function (rawText) {
+      return getReadAloudSentenceEntriesForText(rawText).map(function (entry) { return entry.text; });
     };
     var karaokeReaderSentences = React.useMemo(function () {
       return getReadAloudSentencesForText(simplifiedReadAloudText);
     }, [generatedContent && generatedContent.data]);
+    var activeReadAloudStatus = React.useMemo(function () {
+      if (!isPlaying || (playingContentId && playingContentId !== 'simplified-main')) return '';
+      var currentIndex = playbackState && Number(playbackState.currentIdx);
+      if (!Number.isInteger(currentIndex) || currentIndex < 0) return '';
+      var stateSentences = playbackState && Array.isArray(playbackState.sentences) ? playbackState.sentences : karaokeReaderSentences;
+      var currentSentence = stateSentences[currentIndex];
+      if (!currentSentence) return '';
+      return 'Reading sentence ' + (currentIndex + 1) + ': ' + String(currentSentence);
+    }, [isPlaying, playingContentId, playbackState && playbackState.currentIdx, playbackState && playbackState.sentences, karaokeReaderSentences]);
     var handlePrepareReadAloudAudio = async function () {
       if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
-      var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
+      var entries = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
+      var sentences = entries.map(function (entry) { return entry.text; });
       if (!sentences.length) return;
       // Note: prep saves every sentence regardless of the capture toggle, and
       // capture now defaults ON — no longer force-enable it here, so a
@@ -762,7 +836,7 @@
       try {
         var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
           setTtsPrepState({ busy: true, done: done, total: total || sentences.length });
-        });
+        }, { entries: entries });
         if (result && result.remaining) {
           setEditAudioNotice((result.failure && result.failure.reason) || (result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.'));
         } else if (result && result.ok) {
@@ -772,20 +846,20 @@
         setTtsPrepState({ busy: false, done: 0, total: 0 });
       }
     };
-    var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber) {
+    var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
       if (!sentence || regenAudioKey) return;
       if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
         setEditAudioNotice('Sentence audio tools are still loading. Please try again.');
         return;
       }
-      var wasSaved = hasStoredReadAloudAudio(sentence);
+      var wasSaved = hasStoredReadAloudAudio(sentence, identityOptions);
       if (editAudioPlayerRef.current && editAudioPlayerRef.current._alloSentenceKey === key) stopEditAudioPlayback();
       setRegenAudioKey(key);
       setEditAudioNotice((wasSaved ? 'Regenerating' : 'Generating') + ' sentence ' + sentenceNumber + ' audio...');
       try {
-        var url = await window.__alloRegenerateSentenceAudio(sentence);
+        var url = await window.__alloRegenerateSentenceAudio(sentence, identityOptions || {});
         if (!url) throw new Error('No audio was returned');
-        updateEditAudioPlaybackIssue(sentence, null);
+        updateEditAudioPlaybackIssue(sentence, null, identityOptions);
         setAudioStatusTick(function (n) { return n + 1; });
         setEditAudioNotice((wasSaved ? 'Regenerated' : 'Generated') + ' audio for sentence ' + sentenceNumber + '.');
       } catch (_) {
@@ -794,7 +868,7 @@
         setRegenAudioKey(null);
       }
     };
-    var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber) {
+    var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
       if (!sentence || editAudioLoadingKey) return;
       var current = editAudioPlayerRef.current;
       if (current && current._alloSentenceKey === key) {
@@ -807,15 +881,15 @@
         try {
           if (isFinite(current.duration) && current.currentTime >= current.duration) current.currentTime = 0;
           await current.play();
-          updateEditAudioPlaybackIssue(sentence, null);
+          updateEditAudioPlaybackIssue(sentence, null, identityOptions);
           setEditAudioPlayingKey(key);
           setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
         } catch (error) {
-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
+          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
         }
         return;
       }
-      if (!hasStoredReadAloudAudio(sentence)) {
+      if (!hasStoredReadAloudAudio(sentence, identityOptions)) {
         setEditAudioNotice('Generate or record audio for sentence ' + sentenceNumber + ' before playing it.');
         return;
       }
@@ -824,7 +898,7 @@
       setEditAudioLoadingKey(key);
       setEditAudioNotice('Loading sentence ' + sentenceNumber + ' audio...');
       try {
-        var url = getStoredReadAloudAudioUrl(sentence);
+        var url = getStoredReadAloudAudioUrl(sentence, identityOptions);
         if (token !== editAudioPlayTokenRef.current) return;
         if (!url) throw new Error('No saved audio URL');
         var audio = new Audio(url);
@@ -842,7 +916,7 @@
           if (editAudioPlayerRef.current === audio) {
             editAudioPlayerRef.current = null;
             setEditAudioPlayingKey(null);
-            reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error);
+            reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error, identityOptions);
           }
         };
         editAudioPlayerRef.current = audio;
@@ -851,25 +925,27 @@
           try { audio.pause(); } catch (_) {}
           return;
         }
-        updateEditAudioPlaybackIssue(sentence, null);
+        updateEditAudioPlaybackIssue(sentence, null, identityOptions);
         setEditAudioPlayingKey(key);
         setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
       } catch (error) {
         if (token === editAudioPlayTokenRef.current) {
           editAudioPlayerRef.current = null;
           setEditAudioPlayingKey(null);
-          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
+          reportEditAudioPlaybackFailure(sentence, sentenceNumber, error, identityOptions);
         }
       } finally {
         if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
       }
     };
     var releaseEditAudioStream = function () {
+      if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+      editAudioRecordingTimerRef.current = null;
       var stream = editAudioMediaStreamRef.current;
       try { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
       editAudioMediaStreamRef.current = null;
     };
-    var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber) {
+    var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber, identityOptions) {
       var activeRecorder = editAudioMediaRecorderRef.current;
       if (activeRecorder && activeRecorder._alloSentenceKey === key && activeRecorder.state !== 'inactive') {
         try {
@@ -914,6 +990,13 @@
           if (event && event.data && event.data.size > 0) editAudioChunksRef.current.push(event.data);
         };
         recorder.onerror = function () {
+          recorder._alloFailed = true;
+          editAudioChunksRef.current = [];
+          if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
+          releaseEditAudioStream();
+          setEditAudioMicRequestKey(null);
+          setEditAudioRecordingKey(null);
+          setEditAudioRecordingSaveKey(null);
           setEditAudioNotice('The microphone stopped unexpectedly. Please record sentence ' + sentenceNumber + ' again.');
         };
         recorder.onstop = async function () {
@@ -922,6 +1005,8 @@
           if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
           releaseEditAudioStream();
           setEditAudioRecordingKey(null);
+          var durationMs = Math.max(0, Date.now() - (recorder._alloStartedAt || editAudioRecordingStartedAtRef.current || Date.now()));
+          if (recorder._alloFailed) return;
           if (!chunks.length) {
             setEditAudioNotice('No audio was captured for sentence ' + sentenceNumber + '.');
             return;
@@ -930,10 +1015,10 @@
           setEditAudioRecordingSaveKey(key);
           setEditAudioNotice('Saving the teacher recording for sentence ' + sentenceNumber + ' as MP3...');
           try {
-            var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher');
+            var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher', Object.assign({}, identityOptions || {}, { durationMs: durationMs }));
             if (saved === false) throw new Error('Recording was not saved');
             setAudioStatusTick(function (n) { return n + 1; });
-            updateEditAudioPlaybackIssue(sentence, null);
+            updateEditAudioPlaybackIssue(sentence, null, identityOptions);
             setEditAudioNotice('Teacher recording saved for sentence ' + sentenceNumber + '.');
           } catch (_) {
             setEditAudioNotice('Could not save the recording for sentence ' + sentenceNumber + '. Please try again.');
@@ -942,11 +1027,23 @@
           }
         };
         editAudioMediaRecorderRef.current = recorder;
+        recorder._alloFailed = false;
+        recorder._alloStartedAt = Date.now();
+        editAudioRecordingStartedAtRef.current = recorder._alloStartedAt;
         recorder.start(250);
+        editAudioRecordingTimerRef.current = setTimeout(function () {
+          if (editAudioMediaRecorderRef.current === recorder && recorder.state !== 'inactive') {
+            setEditAudioNotice('The two-minute recording limit was reached. Finishing sentence ' + sentenceNumber + '...');
+            try { recorder.stop(); } catch (_) { recorder.onerror(); }
+          }
+        }, EDIT_AUDIO_MAX_RECORDING_MS);
         setEditAudioMicRequestKey(null);
         setEditAudioRecordingKey(key);
         setEditAudioNotice('Recording sentence ' + sentenceNumber + '. Press Stop when finished.');
       } catch (_) {
+        editAudioMediaRecorderRef.current = null;
+        editAudioChunksRef.current = [];
+        releaseEditAudioStream();
         if (stream) {
           try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_err) {}
         }
@@ -957,7 +1054,7 @@
         }
       }
     };
-    var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber) {
+    var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber, identityOptions) {
       if (!sentence || removeAudioKey) return;
       if (typeof window.__alloRemoveSentenceAudio !== 'function') {
         setEditAudioNotice('Sentence audio removal is still loading. Please try again.');
@@ -967,10 +1064,10 @@
       setRemoveAudioKey(key);
       setEditAudioNotice('Removing saved audio for sentence ' + sentenceNumber + '...');
       try {
-        var removed = await window.__alloRemoveSentenceAudio(sentence);
+        var removed = await window.__alloRemoveSentenceAudio(sentence, identityOptions || {});
         if (removed === false) throw new Error('Audio was not removed');
         setAudioStatusTick(function (n) { return n + 1; });
-        updateEditAudioPlaybackIssue(sentence, null);
+        updateEditAudioPlaybackIssue(sentence, null, identityOptions);
         setEditAudioNotice('Saved audio removed from sentence ' + sentenceNumber + '.');
       } catch (_) {
         setEditAudioNotice('Could not remove the audio for sentence ' + sentenceNumber + '.');
@@ -1051,20 +1148,22 @@
 
     var renderEditAudioSentenceTools = function () {
       if (!isTeacherMode || !isEditingLeveledText) return null;
-      var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
+      var sentences = getReadAloudSentenceEntriesForText(simplifiedReadAloudText);
       if (!sentences.length) return null;
       var summary = getReadAloudAudioSummary(sentences);
       var savingCount = Object.keys(savingAudioKeys || {}).length;
       var captureErrorCount = Object.keys(captureAudioErrors || {}).length;
       var panelId = 'allo-edit-audio-' + String((generatedContent && generatedContent.id) || 'current').replace(/[^a-z0-9_-]/gi, '-');
       var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
-      return <div className="border-t border-orange-100 bg-orange-50/80"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button type="button" onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} aria-label={`Edit audio. ${summary.saved} of ${summary.total} sentences saved.`} className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>Edit audio</span><span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} saved{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> Saving {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} save {captureErrorCount === 1 ? 'issue' : 'issues'}</span>}<button type="button" onClick={copyTtsDiagnostics} aria-label="Copy read-aloud diagnostics to clipboard" title="Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck." className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">{ttsDiagCopied ? '✓ Copied' : '🩺 Diagnostics'}</button><label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label="Save played TTS into this resource" /><span>Save played TTS</span></label></div></div>{editAudioOpen && <div id={panelId} role="region" aria-label="Sentence audio editor" className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.</p></div>{editAudioNotice && <div role="status" aria-live="polite" className="mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800">{editAudioNotice}</div>}<div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (sentence, i) {
+      return <div className="border-t border-orange-100 bg-orange-50/80"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button type="button" onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} aria-label={`Edit audio. ${summary.saved} of ${summary.total} sentences saved.`} className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>Edit audio</span><span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} saved{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> Saving {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} save {captureErrorCount === 1 ? 'issue' : 'issues'}</span>}<button type="button" onClick={copyTtsDiagnostics} aria-label="Copy read-aloud diagnostics to clipboard" title="Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck." className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">{ttsDiagCopied ? '✓ Copied' : '🩺 Diagnostics'}</button><label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label="Save played TTS into this resource" /><span>Save played TTS</span></label></div></div>{editAudioOpen && <div id={panelId} role="region" aria-label="Sentence audio editor" className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.</p></div>{editAudioNotice && <div role="status" aria-live="polite" className="mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800">{editAudioNotice}</div>}<div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (entry, i) {
+        var sentence = entry.text;
+        var identityOptions = getReadAloudIdentityOptions(entry);
         var key = 'simplified-' + i;
         var sentenceNumber = i + 1;
-        var audioKey = getReadAloudAudioKey(sentence);
+        var audioKey = getReadAloudAudioKey(sentence, identityOptions);
         var isSaving = !!savingAudioKeys[audioKey];
-        var isSaved = hasStoredReadAloudAudio(sentence);
-        var provenance = isSaved ? getReadAloudAudioProvenance(sentence) : { source: null, label: 'No saved source', stale: false };
+        var isSaved = hasStoredReadAloudAudio(sentence, identityOptions);
+        var provenance = isSaved ? getReadAloudAudioProvenance(sentence, identityOptions) : { source: null, label: 'No saved source', stale: false };
         var captureIssue = captureAudioErrors[audioKey];
         var playbackIssue = editAudioPlaybackErrors[audioKey];
         var needsRebuild = !!(isSaved && (provenance.stale || playbackIssue));
@@ -1080,10 +1179,10 @@
         var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
         var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
         var actionClass = 'inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
-        return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`Audio actions for sentence ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`} title={!isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio'} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play'}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`} title={needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.'} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? 'Regenerating' : 'Generating') : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`} title={isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio'} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record'}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`Remove saved audio for sentence ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? 'Removing' : 'Remove'}</span></button>}</div></div>;
+        return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`Audio actions for sentence ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`} title={!isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio'} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play'}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`} title={needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.'} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? 'Regenerating' : 'Generating') : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`} title={isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio'} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record'}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`Remove saved audio for sentence ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? 'Removing' : 'Remove'}</span></button>}</div></div>;
       })}</div></div>}</div>;
     };
-    return <div className="space-y-6">{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
+    return <div className="space-y-6">{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onMouseMove={e => setImmersiveRulerY(e.clientY)}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);
@@ -1289,7 +1388,7 @@
                 } else {
                   handleAnalyzePOS();
                 }
-              }} disabled={isAnalyzingPos || isEditingLeveledText} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title={t('simplified.tip_immersive_btn')}>{isAnalyzingPos ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <BookOpen size={14} />}{isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')}</button><select value={readingTheme} onChange={e => setReadingTheme(e.target.value)} aria-label="Reading theme" className={`px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`}><option value="default">🎨 Default (App Theme)</option><option value="warm">☀️ Warm Cream</option><option value="sepia">📜 Sepia</option>{theme !== 'dark' && <option value="dark">🌙 Dark Mode</option>}<option value="highContrast">◼️ High Contrast</option><option value="blue">💧 Blue Wash</option><option value="green">🌿 Green Tint</option><option value="rose">🌸 Rose</option><option value="dyslexia">🔤 Easy Read</option></select>{isTeacherMode && <div className="flex items-center mr-2"><button type="button" aria-label={t('common.settings')} data-help-key="simplified_teacher_tools" onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span className="hidden sm:inline">{t('simplified.teacher_tools_label')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button><div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`}><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} aria-label={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} aria-label={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} aria-label={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} disabled={downloadingContentId === 'dl-simplified-main'} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{downloadingContentId === 'dl-simplified-main' ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Download size={14} />}{downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={ttsPrepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✕` : 'Save TTS'}</button></div></div>}{isTeacherMode && <button type="button" aria-label={t('common.toggle_edit_text')} onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}</div></div>{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={{
+              }} disabled={isAnalyzingPos || isEditingLeveledText} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" title={t('simplified.tip_immersive_btn')}>{isAnalyzingPos ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <BookOpen size={14} />}{isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')}</button><select value={readingTheme} onChange={e => setReadingTheme(e.target.value)} aria-label="Reading theme" className={`px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`}><option value="default">🎨 Default (App Theme)</option><option value="warm">☀️ Warm Cream</option><option value="sepia">📜 Sepia</option>{theme !== 'dark' && <option value="dark">🌙 Dark Mode</option>}<option value="highContrast">◼️ High Contrast</option><option value="blue">💧 Blue Wash</option><option value="green">🌿 Green Tint</option><option value="rose">🌸 Rose</option><option value="dyslexia">🔤 Easy Read</option></select>{isTeacherMode && <div className="flex items-center mr-2"><button type="button" aria-label={t('common.settings')} data-help-key="simplified_teacher_tools" onClick={handleToggleIsTeacherToolbarExpanded} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isTeacherToolbarExpanded ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600 hover:border-indigo-200'}`} title={t('simplified.teacher_tools_tooltip')}><Settings size={14} /><span className="hidden sm:inline">{t('simplified.teacher_tools_label')}</span>{isTeacherToolbarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}</button><div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`}><button type="button" onClick={handleDuplicateResource} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_duplicate_btn')} aria-label={t('simplified.tip_duplicate_btn')} data-help-key="simplified_duplicate"><Copy size={14} /> {t('common.duplicate')}</button><button type="button" onClick={handleCheckLevel} disabled={isCheckingLevel} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" title={t('simplified.tip_check_level_btn')} aria-label={t('simplified.tip_check_level_btn')} data-help-key="simplified_check_level">{isCheckingLevel ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Search size={14} />}{isCheckingLevel ? t('simplified.checking') : t('simplified.check_level')}</button><button type="button" onClick={handleCheckAlignment} disabled={isCheckingAlignment || !standardsInput} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${!standardsInput ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-600 border-slate-300' : 'bg-white text-indigo-600 hover:bg-indigo-50 border-slate-300'}`} title={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} aria-label={!standardsInput ? t('simplified.tip_rigor_disabled') : t('simplified.tip_rigor_btn')} data-help-key="simplified_rigor_report">{isCheckingAlignment ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <ShieldCheck size={14} />}{isCheckingAlignment ? t('simplified.checking') : t('simplified.rigor_report')}</button><button type="button" onClick={() => copyToClipboard(generatedContent?.data)} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={t('simplified.tip_copy_btn')} aria-label={t('simplified.tip_copy_btn')} data-help-key="simplified_copy_text"><Copy size={14} /> {t('common.copy_text')}</button><button type="button" onClick={() => { if (isSimplifiedAudioDownloading) { try { window.__alloCancelAudioDownload?.(); } catch (_) {} return; } handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main'); }} title={isSimplifiedAudioDownloading ? 'Stop audio download' : (t('simplified.tip_download_audio') || t('common.download_audio'))} aria-label={isSimplifiedAudioDownloading ? 'Stop audio download' : (t('common.download_audio') || 'Download audio')} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{isSimplifiedAudioDownloading ? <StopCircle size={14} /> : <Download size={14} />}{isSimplifiedAudioDownloading ? (t('common.stop') || 'Stop download') : t('common.download_audio')}</button><button type="button" onClick={function () { if (ttsPrepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } handlePrepareReadAloudAudio(); }} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" title={ttsPrepState.busy ? (t('common.stop') || 'Stop') : (t('immersive.prepare_all') || 'Save TTS')} aria-label={ttsPrepState.busy ? (t('common.stop') || 'Stop saving TTS') : (t('immersive.prepare_all') || 'Save TTS')} data-help-key="simplified_save_tts">{ttsPrepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✕` : 'Save TTS'}</button></div></div>}{isTeacherMode && <button type="button" aria-label={t('common.toggle_edit_text')} onClick={handleToggleIsEditingLeveledText} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`} data-help-key="simplified_edit">{isEditingLeveledText ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingLeveledText ? t('common.done_editing') : t('common.edit')}</button>}</div>}</div></div>{definitionData && <div ref={definitionDialogRef} role="dialog" aria-modal="true" aria-labelledby="simplified-definition-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, definitionDialogRef.current, closeDefinition)} className={`fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in motion-reduce:animate-none fade-in zoom-in-75 duration-300 ease-out motion-reduce:animate-none motion-reduce:transition-none`} style={{
           top: Math.min(window.innerHeight - 300, definitionData.y + 10) + 'px',
           left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
         }}><div className="flex justify-between items-start mb-2"><h5 id="simplified-definition-title" className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><button ref={definitionCloseRef} type="button" onClick={closeDefinition} className="min-h-11 min-w-11 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={t('common.close')}><X size={14} /></button></div>{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button type="button" onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in motion-reduce:animate-none zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={{
@@ -1436,7 +1535,7 @@
                       e.preventDefault();
                       handleSpeak(simplifiedReadAloudText, 'simplified-main', globalIdx);
                     }
-                  }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200' : ''} ${isActive ? 'bg-yellow-200 text-black shadow-sm' : ''} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
+                  }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200' : ''} ${isActive ? 'bg-yellow-200 text-black shadow-sm' : ''} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
                 });
               }
             };
@@ -1617,7 +1716,7 @@
                             e.preventDefault();
                             handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
                           }
-                        }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
+                        }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
                       })}</p>;
                   });
                 }
@@ -1698,7 +1797,7 @@
                                 e.preventDefault();
                                 handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
                               }
-                            }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'text-slate-700'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
+                            }} tabIndex={interactionMode !== 'cloze' ? "0" : "-1"} role={interactionMode !== 'cloze' ? "button" : "text"} aria-current={isActive ? "true" : undefined} aria-label={`Read sentence: ${cleanText}`} className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'text-slate-700'} ${headerClass}`} title={interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""}>{formatInteractiveText(cleanText, interactionMode === 'cloze')} </span>;
                           })}</p>;
                       })}</div></div>;
                 })()}<SourceReferencesPanel referencesText={_references} /></>;

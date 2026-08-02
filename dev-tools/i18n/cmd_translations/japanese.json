@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio を開きました。",
   "cmd.open_video_studio_hint": "操作説明を録画・字幕付け・編集",
   "palette.ctx.videoStudio": "ここ — Video Studio",
-  "palette.close": "コマンドパレットを閉じる"
+  "palette.close": "コマンドパレットを閉じる",
+  "cmd.apply_lesson_template": "保存したテンプレートから開始",
+  "cmd.apply_lesson_template_done": "次から開始しました: ",
+  "cmd.apply_lesson_template_hint": "保存したテンプレートのいずれかから新しいプランを開始します",
+  "cmd.apply_lesson_template_missing": "次の名前のテンプレートが見つかりません: ",
+  "cmd.apply_lesson_template_which": "どのテンプレート？",
+  "cmd.rebuild_lesson_step": "プランのステップを1つ再構築",
+  "cmd.rebuild_lesson_step_done": "ステップを再構築中: ",
+  "cmd.rebuild_lesson_step_hint": "1つのリソースを再生成します — ステップ番号を言ってください",
+  "cmd.rebuild_lesson_step_missing": "プランにそのステップが見つかりません。",
+  "cmd.rebuild_lesson_step_none": "プランにはまだステップがありません。",
+  "cmd.rebuild_lesson_step_which": "どのステップ？",
+  "cmd.run_lesson_blueprint": "授業プランを生成",
+  "cmd.run_lesson_blueprint_done": "プランを生成中です — カードで各ステップを確認できます。",
+  "cmd.run_lesson_blueprint_hint": "現在のプランのすべてのリソースを生成します",
+  "cmd.cancelled": "キャンセルが要求されました。提供元が対応すると、現在の操作は停止します。"
 }

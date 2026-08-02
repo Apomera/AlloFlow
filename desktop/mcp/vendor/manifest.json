@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "policy": "remote-runner-local-assets-only",
+  "generatedFrom": {
+    "pdfjs": "pdfjs-dist@3.11.174",
+    "pdfLib": "pdf-lib@1.17.1",
+    "pako": "pako@2.1.0",
+    "fontkit": "@pdf-lib/fontkit@1.1.1",
+    "axe": "axe-core@4.10.2",
+    "tesseract": "tesseract.js@5.1.1",
+    "tesseractCore": "tesseract.js-core@5.1.0"
+  },
+  "files": [
+    { "path": "THIRD_PARTY_NOTICES.md", "sha256": "ea65933c353a0f48dd16dda7c6fc0cfd4c24f207952252700dff6b29d990f258", "bytes": 1061 },
+    { "path": "axe.min.js", "sha256": "b511cd9dec01c76f4b2ad1723b66b6db37d4c2eb4ed199076e1829d9ee7b75e3", "bytes": 553290 },
+    { "path": "fontkit.umd.min.js", "sha256": "d8df561b9fba98e24f2e5130e40948809281bbbc55a20c412359f1a0a5eb35a6", "bytes": 758440 },
+    { "path": "pako.min.js", "sha256": "ede2693a4a6a5126b9d35669062b358ecab6ae7b9b86a1cf302feb45a8514907", "bytes": 46859 },
+    { "path": "pdf-lib.min.js", "sha256": "0f9a5cad07941f0826586c94e089d89b918c46e5c17cf2d5a3c6f666e3bc694f", "bytes": 525099 },
+    { "path": "pdf.worker.min.js", "sha256": "feabdf309770ed24bba31a5467836cdc8cf639c705af27d52b585b041bb8527b", "bytes": 1087212 },
+    { "path": "pdfjs.min.js", "sha256": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946", "bytes": 320004 },
+    { "path": "tessdata/eng.traineddata.gz", "sha256": "45b4cb346724ac1774f1c36f42f182b887bcdb28ebe63e6fff90ac41f3fcff91", "bytes": 2952873 },
+    { "path": "tesseract-core.wasm", "sha256": "b47a852b19181ae0999f9d970c368cd351135a320ea978b35bd38602d8bcc0bc", "bytes": 3457035 },
+    { "path": "tesseract-core.wasm.js", "sha256": "fe68f746dc186bb19e2c55de3514d3d6c4036ede53488b5a4db00dfe3f75e5f1", "bytes": 4734776 },
+    { "path": "tesseract.min.js", "sha256": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8", "bytes": 66695 },
+    { "path": "tesseract.worker.min.js", "sha256": "aca1229639fc9907d86f96e825955a2b7c5716d17f3bc3acd71f9c7ab66181fc", "bytes": 123724 }
+  ]
+}

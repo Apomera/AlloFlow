@@ -306,11 +306,26 @@ window.StemLab = window.StemLab || {
       var seen = {};
       var counts = { symbiosis: 0, cleaning: 0, browsing: 0, cover: 0, grazing: 0, recycling: 0 };
       function residentY(resident) { return resident.zone === 'bottom' ? 0.75 : resident.zone === 'top' ? 4.3 : 2.25; }
+      function safeVitality(value, fallback) {
+        var numeric = Number(value);
+        return isFinite(numeric) ? clamp(numeric, 0, 100) : fallback;
+      }
       function residentEndpoint(resident) {
-        return { kind: 'organism', id: resident.id, label: resident.name || 'Organism', x: Number(resident.targetX) || 0, y: residentY(resident), z: Number(resident.targetZ) || 0 };
+        return { kind: 'organism', id: resident.id, label: resident.name || 'Organism', x: Number(resident.targetX) || 0, y: residentY(resident), z: Number(resident.targetZ) || 0, vitality: safeVitality(resident.score, safeVitality(resident.vitality, 100)), stress: safeVitality(resident.stress, 0) };
       }
       function plantEndpoint(plant) {
-        return { kind: 'plant', id: plant.id, label: plant.name || 'Plant', x: Number(plant.x) || 0, y: (Number(plant.y) || 0) + 0.7, z: Number(plant.z) || 0 };
+        return { kind: 'plant', id: plant.id, label: plant.name || 'Plant', x: Number(plant.x) || 0, y: (Number(plant.y) || 0) + 0.7, z: Number(plant.z) || 0, vitality: safeVitality(plant.health, 100) };
+      }
+      function interactionHealth(source, target) {
+        var sourceVitality = safeVitality(source && source.vitality, 100);
+        var targetVitality = safeVitality(target && target.vitality, 100);
+        var strength = Math.round(Math.min(sourceVitality, targetVitality));
+        var healthSignal = strength >= 85 ? 'Healthy endpoints support a strong exchange.' : strength >= 65 ? 'Exchange is active, but one endpoint is below peak vitality.' : 'Stress or low health may weaken this exchange.';
+        var limiting = sourceVitality <= targetVitality ? source : target;
+        var limitingVitality = Math.min(sourceVitality, targetVitality);
+        var limitingEndpoint = limiting ? { kind: limiting.kind, id: limiting.id, label: limiting.label || 'Endpoint', vitality: limitingVitality } : null;
+        return { strength: strength, healthSignal: healthSignal, limitingEndpoint: limitingEndpoint };
+
       }
       function addLink(type, source, target, label, detail, color, bidirectional) {
         if (!source || !target || links.length >= 32) return;
@@ -318,7 +333,8 @@ window.StemLab = window.StemLab || {
         if (seen[key]) return;
         seen[key] = true;
         counts[type] = (counts[type] || 0) + 1;
-        links.push({ id: key, type: type, source: source, target: target, label: label, detail: detail, color: color, bidirectional: !!bidirectional });
+        var health = interactionHealth(source, target);
+        links.push({ id: key, type: type, source: source, target: target, label: label, detail: detail, color: color, bidirectional: !!bidirectional, strength: health.strength, healthSignal: health.healthSignal, limitingEndpoint: health.limitingEndpoint });
       }
       residents.forEach(function(resident, index) {
         resident = resident || {};
@@ -332,7 +348,9 @@ window.StemLab = window.StemLab || {
             if (!seen[pairKey]) {
               seen[pairKey] = true;
               counts.symbiosis++;
-              links.push({ id: pairKey, type: 'symbiosis', source: residentPoint, target: residentEndpoint(partner), label: residentPoint.label + ' and ' + (partner.name || 'partner') + ' symbiosis', detail: 'Partners exchange protection, access, or services.', color: '#c084fc', bidirectional: true });
+              var partnerPoint = residentEndpoint(partner);
+              var symbiosisHealth = interactionHealth(residentPoint, partnerPoint);
+              links.push({ id: pairKey, type: 'symbiosis', source: residentPoint, target: partnerPoint, label: residentPoint.label + ' and ' + (partner.name || 'partner') + ' symbiosis', detail: 'Partners exchange protection, access, or services.', color: '#c084fc', bidirectional: true, strength: symbiosisHealth.strength, healthSignal: symbiosisHealth.healthSignal, limitingEndpoint: symbiosisHealth.limitingEndpoint });
             }
           }
         }
@@ -349,17 +367,47 @@ window.StemLab = window.StemLab || {
           addLink('cover', plantEndpoint(coverPlant), residentPoint, residentPoint.label + ' uses ' + (coverPlant.name || 'living plant') + ' cover', 'Living cover can reduce exposure and stress.', '#4ade80', false);
         }
         if (relationship.algaeGrazer) {
-          var algaePoint = { kind: 'algae', id: 'algae-zone-' + index, label: 'Algae / biofilm', x: clamp(residentPoint.x + 0.55, -5, 5), y: 0.16, z: clamp(residentPoint.z + 0.35, -2.6, 2.6) };
+          var algaePoint = { kind: 'algae', id: 'algae-zone-' + index, label: 'Algae / biofilm', x: clamp(residentPoint.x + 0.55, -5, 5), y: 0.16, z: clamp(residentPoint.z + 0.35, -2.6, 2.6), vitality: 100 };
           addLink('grazing', algaePoint, residentPoint, residentPoint.label + ' grazes algae or biofilm', 'Stored algal energy becomes organism biomass and waste.', '#84cc16', false);
         }
         if (relationship.detritusRecycler) {
-          var detritusPoint = { kind: 'detritus', id: 'detritus-zone-' + index, label: 'Detritus', x: clamp(residentPoint.x - 0.45, -5, 5), y: 0.12, z: clamp(residentPoint.z - 0.3, -2.6, 2.6) };
+          var detritusPoint = { kind: 'detritus', id: 'detritus-zone-' + index, label: 'Detritus', x: clamp(residentPoint.x - 0.45, -5, 5), y: 0.12, z: clamp(residentPoint.z - 0.3, -2.6, 2.6), vitality: 100 };
           addLink('recycling', detritusPoint, residentPoint, residentPoint.label + ' recycles detritus', 'Organic particles are consumed, fragmented, and returned to nutrient cycles.', '#fb923c', false);
         }
       });
       return { links: links, counts: counts, total: links.length };
     }
 
+    function summarizeSpatialInteractionNetwork(network) {
+      var links = network && Array.isArray(network.links) ? network.links : [];
+      var sorted = links.slice().sort(function(a, b) { return (Number(a.strength) || 0) - (Number(b.strength) || 0); });
+      var bands = { healthy: 0, watch: 0, weak: 0 };
+      links.forEach(function(link) {
+        var strength = Number(link.strength) || 0;
+        if (strength >= 85) bands.healthy++;
+        else if (strength >= 65) bands.watch++;
+        else bands.weak++;
+      });
+      var averageStrength = links.length ? Math.round(links.reduce(function(sum, link) { return sum + (Number(link.strength) || 0); }, 0) / links.length) : 0;
+      var weakest = sorted[0] || null;
+      var strongest = sorted.length ? sorted[sorted.length - 1] : null;
+      var recommendation = !links.length
+        ? 'Add compatible living roles to reveal a measurable exchange pathway.'
+        : weakest && weakest.strength < 65
+          ? 'Prioritize the weakest endpoint: improve its water quality, plant health, refuge, or stress load before judging the exchange.'
+          : weakest && weakest.strength < 85
+            ? 'The network is active but has a watch pathway. Compare one habitat change at a time and observe whether its strength rises.'
+            : 'The visible pathways are well supported. Use the network as a baseline before changing one variable.';
+      return {
+        total: links.length,
+        averageStrength: averageStrength,
+        minimumStrength: weakest ? Number(weakest.strength) || 0 : 0,
+        strongest: strongest,
+        weakest: weakest,
+        bands: bands,
+        recommendation: recommendation
+      };
+    }
     function assignHabitatOccupancy(entries, layout, catalog) {
       var organisms = Array.isArray(entries) ? entries : [];
       var safeLayout = sanitizeHabitatLayout(layout);
@@ -707,6 +755,7 @@ window.StemLab = window.StemLab || {
       summarizeHabitatCommunity: summarizeHabitatCommunity,
       getPlantHabitatPosition: getPlantHabitatPosition,
       buildSpatialInteractionNetwork: buildSpatialInteractionNetwork,
+      summarizeSpatialInteractionNetwork: summarizeSpatialInteractionNetwork,
       assignHabitatOccupancy: assignHabitatOccupancy,
       getHabitatMissionCatalog: getHabitatMissionCatalog,
       evaluateHabitatMission: evaluateHabitatMission,
@@ -11715,21 +11764,45 @@ window.StemLab = window.StemLab || {
         (interactions || []).slice(0, 32).forEach(function(interaction, interactionIndex) {
           if (!interaction || !interaction.source || !interaction.target) return;
           var interactionColor = new THREE.Color(interaction.color || '#67e8f9');
+          var interactionStrength = Math.max(0, Math.min(100, Number(interaction.strength) || 0));
+          var interactionSelected = interaction.selected === true;
           var startPoint = new THREE.Vector3(interaction.source.x, interaction.source.y, interaction.source.z);
           var endPoint = new THREE.Vector3(interaction.target.x, interaction.target.y, interaction.target.z);
+          var interactionDirection = endPoint.clone().sub(startPoint);
+          var interactionLength = interactionDirection.length();
+          if (interactionLength > 0.12) {
+            interactionDirection.normalize();
+            function addDirectionMarker(point, direction) {
+              var marker = new THREE.Mesh(new THREE.ConeGeometry(0.11 + (interactionSelected ? 0.04 : 0), 0.28 + interactionStrength / 100 * 0.16, 8), new THREE.MeshBasicMaterial({ color: interactionColor, transparent: true, opacity: interactionSelected ? 0.95 : 0.55 }));
+              marker.position.copy(point);
+              marker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+              marker.userData.isInteractionDirectionMarker = true;
+              overlayRoot.add(marker);
+            }
+            addDirectionMarker(startPoint.clone().lerp(endPoint, 0.68), interactionDirection);
+            if (interaction.bidirectional) {
+              addDirectionMarker(startPoint.clone().lerp(endPoint, 0.32), interactionDirection.clone().multiplyScalar(-1));
+            }
+          }
           var interactionGeometry = new THREE.BufferGeometry().setFromPoints([startPoint, endPoint]);
-          var interactionLine = new THREE.Line(interactionGeometry, new THREE.LineBasicMaterial({ color: interactionColor, transparent: true, opacity: 0.42 }));
+          var interactionLine = new THREE.Line(interactionGeometry, new THREE.LineBasicMaterial({ color: interactionColor, transparent: true, opacity: interactionSelected ? 0.78 : 0.16 + interactionStrength / 100 * 0.48 }));
           overlayRoot.add(interactionLine);
           var pulse = new THREE.Mesh(new THREE.SphereGeometry(0.09, 9, 7), new THREE.MeshBasicMaterial({ color: interactionColor }));
           pulse.position.lerpVectors(startPoint, endPoint, 0.5);
+          pulse.scale.setScalar((interactionSelected ? 1.25 : 0.7) + interactionStrength / 100 * 0.7);
           pulse.userData.isInteractionPulse = true;
           pulse.userData.startPoint = startPoint;
           pulse.userData.endPoint = endPoint;
           pulse.userData.phase = interactionIndex * 0.17;
           pulse.userData.bidirectional = !!interaction.bidirectional;
+          pulse.userData.strength = interactionStrength;
           overlayRoot.add(pulse);
           [startPoint, endPoint].forEach(function(point, endpointIndex) {
-            var endpointHalo = new THREE.Mesh(new THREE.SphereGeometry(0.15, 9, 7), new THREE.MeshBasicMaterial({ color: interactionColor, wireframe: true, transparent: true, opacity: endpointIndex === 0 ? 0.55 : 0.35 }));
+            var endpointId = endpointIndex === 0 ? interaction.source.id : interaction.target.id;
+            var endpointIsLimiting = !!(interaction.limitingEndpoint && interaction.limitingEndpoint.id === endpointId);
+            var endpointColor = endpointIsLimiting ? new THREE.Color('#fbbf24') : interactionColor;
+            var endpointHalo = new THREE.Mesh(new THREE.SphereGeometry(endpointIsLimiting ? 0.2 : 0.15, 9, 7), new THREE.MeshBasicMaterial({ color: endpointColor, wireframe: true, transparent: true, opacity: (endpointIsLimiting ? 0.82 : (endpointIndex === 0 ? 0.55 : 0.35)) * (interactionSelected ? 1 : (0.55 + interactionStrength / 200)) }));
+            endpointHalo.userData.isInteractionLimitHalo = endpointIsLimiting;
             endpointHalo.position.copy(point);
             overlayRoot.add(endpointHalo);
           });
@@ -15491,6 +15564,22 @@ var d = (labToolData && labToolData._aquarium) || {};
           var habitatStudioOpen = d.habitatStudioOpen === true;
           var habitatViewMode = d.habitatViewMode === '3d' ? '3d' : 'plan';
           var habitatOverlay = ['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions'].indexOf(d.habitatOverlay) !== -1 ? d.habitatOverlay : 'none';
+          var habitatInteractionFilter = ['all', 'weak', 'watch', 'healthy'].indexOf(d.habitatInteractionFilter) !== -1 ? d.habitatInteractionFilter : 'all';
+          var rawHabitatInteractionBaseline = d.habitatInteractionBaseline && typeof d.habitatInteractionBaseline === 'object' ? d.habitatInteractionBaseline : null;
+          var habitatInteractionBaseline = rawHabitatInteractionBaseline
+            ? {
+                tick: Math.max(0, Math.floor(Number(rawHabitatInteractionBaseline.tick) || 0)),
+                filter: ['all', 'weak', 'watch', 'healthy'].indexOf(rawHabitatInteractionBaseline.filter) !== -1 ? rawHabitatInteractionBaseline.filter : 'all',
+                averageStrength: Math.max(0, Math.min(100, Number(rawHabitatInteractionBaseline.averageStrength) || 0)),
+                total: Math.max(0, Math.floor(Number(rawHabitatInteractionBaseline.total) || 0)),
+                bands: {
+                  weak: Math.max(0, Math.floor(Number(rawHabitatInteractionBaseline.bands && rawHabitatInteractionBaseline.bands.weak) || 0)),
+                  watch: Math.max(0, Math.floor(Number(rawHabitatInteractionBaseline.bands && rawHabitatInteractionBaseline.bands.watch) || 0)),
+                  healthy: Math.max(0, Math.floor(Number(rawHabitatInteractionBaseline.bands && rawHabitatInteractionBaseline.bands.healthy) || 0))
+                }
+              }
+            : null;
+          var requestedHabitatInteractionId = typeof d.habitatSelectedInteractionId === 'string' ? d.habitatSelectedInteractionId : null;
           var selectedHabitatItemId = typeof d.selectedHabitatItemId === 'string' && habitatLayout.some(function(item) { return item.id === d.selectedHabitatItemId; }) ? d.selectedHabitatItemId : null;
           var selectedHabitatItem = selectedHabitatItemId ? habitatLayout.find(function(item) { return item.id === selectedHabitatItemId; }) : null;
           var selectedHabitatType = selectedHabitatItem ? habitatCatalog.find(function(type) { return type.id === selectedHabitatItem.type; }) : null;
@@ -16653,7 +16742,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               selectedTank: tankId,
               selectedPlantId: null,
-              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', habitatLayout: [], habitatUndoLayout: [], habitatPlantZones: {}, habitatStudioOpen: false, habitatViewMode: 'plan', habitatOverlay: 'none', selectedHabitatItemId: null, nextHabitatItemId: 1, lastEcosystemExchange: null,
+              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', habitatLayout: [], habitatUndoLayout: [], habitatPlantZones: {}, habitatStudioOpen: false, habitatViewMode: 'plan', habitatOverlay: 'none', habitatInteractionFilter: 'all', habitatInteractionBaseline: null, habitatSelectedInteractionId: null, selectedHabitatItemId: null, nextHabitatItemId: 1, lastEcosystemExchange: null,
               ecosystemExchangeHistory: [], vitalityHistory: [], fishVitality: {}, ecosystemBaseline: null, ecosystemPrediction: { oxygen: null, nitrate: null, vitality: null }, ecosystemInterventionNote: '',
               habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '', habitatMissionCompleted: {}, habitatMissionPoints: 0, habitatMissionPanelOpen: true,
 
@@ -19547,7 +19636,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement("button", {
                   type: "button",
                   onClick: dismissTutorial,
-                  className: "rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100"
+                  className: "rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-100"
                 }, "Hide learning path")
               )
             ),
@@ -20095,9 +20184,31 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var interactionPlant = plantCatalog.find(function(candidate) { return candidate.id === plantId; }) || {};
                 var interactionZone = habitatPlantZones[plantId] || inferPlantHabitatZone(interactionPlant);
                 var interactionPosition = AquariumEcosystemCore.getPlantHabitatPosition(interactionZone, plantIndex);
-                return { id: plantId, name: interactionPlant.name || 'Plant', zone: interactionZone, x: interactionPosition.x, y: interactionPosition.y, z: interactionPosition.z };
+                return { id: plantId, name: interactionPlant.name || 'Plant', zone: interactionZone, x: interactionPosition.x, y: interactionPosition.y, z: interactionPosition.z, health: plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80 };
               });
               var habitatInteractionNetwork = AquariumEcosystemCore.buildSpatialInteractionNetwork(habitatFitItems, habitatInteractionPlants);
+              var habitatInteractionSummary = AquariumEcosystemCore.summarizeSpatialInteractionNetwork(habitatInteractionNetwork);
+              var habitatVisibleInteractionLinks = habitatInteractionNetwork.links.filter(function(link) { var strength = Number(link.strength) || 0; return habitatInteractionFilter === 'all' || habitatInteractionFilter === 'weak' && strength < 65 || habitatInteractionFilter === 'watch' && strength >= 65 && strength < 85 || habitatInteractionFilter === 'healthy' && strength >= 85; });
+              var habitatVisibleInteractionSummary = AquariumEcosystemCore.summarizeSpatialInteractionNetwork({ links: habitatVisibleInteractionLinks });
+              var habitatSelectedInteractionId = habitatVisibleInteractionLinks.some(function(link) { return link.id === requestedHabitatInteractionId; }) ? requestedHabitatInteractionId : null;
+              var habitatInteractionLinksForScene = habitatVisibleInteractionLinks.map(function(link) { return Object.assign({}, link, { selected: link.id === habitatSelectedInteractionId }); });
+              var habitatFocusedInteraction = habitatInteractionLinksForScene.find(function(link) { return link.selected; }) || null;
+              var interactionPanelSummary = habitatInteractionFilter === 'all' ? habitatInteractionSummary : habitatVisibleInteractionSummary;
+              var interactionPanelRecommendation = habitatInteractionFilter !== 'all' && !habitatVisibleInteractionLinks.length ? 'No pathways match this strength filter. Choose All to restore the complete network.' : interactionPanelSummary.recommendation;
+              var interactionLearningPrompt = habitatFocusedInteraction
+                ? 'Predict which endpoint limits this exchange. Change one habitat variable, run an observation, then recheck the focused pathway strength.'
+                : habitatVisibleInteractionLinks.length
+                  ? 'Focus one pathway, predict which endpoint limits it, then change one habitat variable and recheck the modeled strength.'
+                  : 'Add compatible living roles, then focus one pathway to begin a predict, change, observe, and recheck cycle.';
+              var habitatInteractionBaselineComparable = !!(habitatInteractionBaseline && habitatInteractionBaseline.filter === habitatInteractionFilter);
+              var interactionBaselineDelta = habitatInteractionBaselineComparable
+                ? {
+                    average: interactionPanelSummary.averageStrength - habitatInteractionBaseline.averageStrength,
+                    weak: (interactionPanelSummary.bands.weak || 0) - habitatInteractionBaseline.bands.weak,
+                    watch: (interactionPanelSummary.bands.watch || 0) - habitatInteractionBaseline.bands.watch,
+                    healthy: (interactionPanelSummary.bands.healthy || 0) - habitatInteractionBaseline.bands.healthy
+                  }
+                : null;
               var habitatWeakestFit = habitatFitItems.slice().sort(function(a, b) { return a.score - b.score; })[0] || null;
               var habitatFitAverage = habitatCommunityFit.average;
               var habitatRecommendedType = null;
@@ -20458,7 +20569,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                       plantZones: habitatPlantZones,
                       summary: habitatSummary,
                       occupancy: habitatFitItems.map(function(item) { return { id: item.id, name: item.name, fit: item.score, zone: item.zone, behaviorMode: item.behaviorMode, behaviorLabel: item.behaviorLabel, targetX: item.targetX, targetZ: item.targetZ, anchorId: item.anchorId, anchorLabel: item.anchorLabel }; }),
-                      interactions: habitatInteractionNetwork
+                      interactions: habitatInteractionNetwork,
+                      interactionSummary: habitatInteractionSummary
                     },
                     baseline: ecosystemBaseline,
                     investigation: {
@@ -20653,7 +20765,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       return React.createElement("button", {
                         key: lm.id,
                         onClick: function() { upd('tankLight', lm.id); sfxClick(); },
-                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-200 border-slate-200 hover:bg-slate-100')
+                        className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-700 border-slate-500 hover:bg-slate-100')
                       }, lm.label);
                     })
                   )
@@ -21544,7 +21656,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             disabled: alreadyAdded,
                             onClick: function () { addPlant(ps.id); },
                             'aria-label': alreadyAdded ? ps.name + " is already planted" : "Plant " + ps.name,
-                            className: "shrink-0 rounded-md border px-1.5 text-[9px] font-black " + (alreadyAdded ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400" : "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700")
+                            className: "shrink-0 rounded-md border px-1.5 text-[9px] font-black " + (alreadyAdded ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-600" : "border-emerald-800 bg-emerald-700 text-white hover:bg-emerald-800")
                           }, alreadyAdded ? "\u2713" : "+ Plant")
                         );
 
@@ -21580,7 +21692,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("button", {
                         type: "button",
                         onClick: closePlantProfile,
-                        className: "rounded-md px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800",
+                        className: "rounded-md px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-800",
                         'aria-label': "Close plant field guide"
                       }, "\u2715")
                     ),
@@ -21920,11 +22032,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           !isGestating && cooldownLeft === 0 && React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (popOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (popOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, popOk ? "\u2714 Pop" : "\u2718 Pop"),
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (stressOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, stressOk ? "\u2714 Calm" : "\u2718 Stress"),
 
-                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
+                            React.createElement("span", { className: "text-[11px] rounded px-1 " + (hungerOk ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700") }, hungerOk ? "\u2714 Fed" : "\u2718 Hungry")
 
                           )
 
@@ -22822,24 +22934,30 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   anchorId: fitItem.anchorId,
                                   selected: ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id
                                 }; }),
-                                interactions: habitatInteractionNetwork.links
+                                interactions: habitatInteractionLinksForScene
                               }
                             })
                           : React.createElement("div", { className: "relative h-[320px] overflow-hidden rounded-xl border border-cyan-300/30 bg-gradient-to-b from-cyan-800 via-cyan-950 to-slate-950", role: "group", 'aria-label': "Editable aquarium habitat floor plan. Select a structure, then use the movement controls." },
                               React.createElement("div", { className: "absolute inset-0 opacity-30", 'aria-hidden': "true", style: { backgroundImage: 'linear-gradient(rgba(103,232,249,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,.3) 1px, transparent 1px)', backgroundSize: '10% 16.66%' } }),
                               habitatOverlay === 'flow' && [22, 48, 74].map(function(top) { return React.createElement("div", { key: top, className: "absolute left-[5%] right-[5%] h-0.5 bg-cyan-300/60", style: { top: top + '%' }, 'aria-hidden': "true" }, React.createElement("span", { className: "absolute -right-1 -top-2 text-cyan-200" }, "\u25B6")); }),
                               habitatOverlay === 'light' && [18, 50, 82].map(function(left) { return React.createElement("div", { key: left, className: "absolute top-0 h-full w-[18%] bg-gradient-to-b from-yellow-100/25 to-transparent", style: { left: (left - 9) + '%' }, 'aria-hidden': "true" }); }),
-                              habitatOverlay === 'interactions' && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, habitatInteractionNetwork.links.map(function(interaction) {
+                              habitatOverlay === 'interactions' && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, habitatInteractionLinksForScene.map(function(interaction) {
                                 var sourceLeft = (interaction.source.x + 5.5) / 11 * 100;
                                 var sourceTop = (interaction.source.z + 3) / 6 * 100;
                                 var targetLeft = (interaction.target.x + 5.5) / 11 * 100;
                                 var targetTop = (interaction.target.z + 3) / 6 * 100;
                                 var pulseLeft = sourceLeft + (targetLeft - sourceLeft) * 0.62;
                                 var pulseTop = sourceTop + (targetTop - sourceTop) * 0.62;
+                                var interactionSelected = interaction.selected === true;
+                                var limitingIsSource = !!(interaction.limitingEndpoint && interaction.limitingEndpoint.id === interaction.source.id);
+                                var limitingLeft = limitingIsSource ? sourceLeft : targetLeft;
+                                var limitingTop = limitingIsSource ? sourceTop : targetTop;
                                 return React.createElement("g", { key: interaction.id },
-                                  React.createElement("line", { x1: sourceLeft, y1: sourceTop, x2: targetLeft, y2: targetTop, stroke: interaction.color, strokeWidth: 0.8, strokeDasharray: interaction.bidirectional ? "1.4 1.4" : "3 1.5", opacity: 0.82 }),
-                                  React.createElement("circle", { cx: pulseLeft, cy: pulseTop, r: 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 }),
-                                  interaction.bidirectional && React.createElement("circle", { cx: targetLeft + (sourceLeft - targetLeft) * 0.62, cy: targetTop + (sourceTop - targetTop) * 0.62, r: 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 })
+                                  React.createElement("line", { x1: sourceLeft, y1: sourceTop, x2: targetLeft, y2: targetTop, stroke: interaction.color, strokeWidth: interactionSelected ? 1.25 : 0.45 + (interaction.strength || 0) / 100 * 0.55, strokeDasharray: interaction.bidirectional ? "1.4 1.4" : "3 1.5", opacity: interactionSelected ? 0.98 : 0.45 + (interaction.strength || 0) / 100 * 0.45 }),
+                                  React.createElement("circle", { cx: pulseLeft, cy: pulseTop, r: interactionSelected ? 1.45 : 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 }),
+                                  interaction.bidirectional && React.createElement("circle", { cx: targetLeft + (sourceLeft - targetLeft) * 0.62, cy: targetTop + (sourceTop - targetTop) * 0.62, r: interactionSelected ? 1.45 : 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 }),
+                                  interaction.limitingEndpoint && React.createElement("circle", { cx: limitingLeft, cy: limitingTop, r: interactionSelected ? 3 : 2.3, fill: "none", stroke: "#fbbf24", strokeWidth: interactionSelected ? 0.8 : 0.6, opacity: 0.9 }),
+                                  React.createElement("text", { x: pulseLeft, y: pulseTop + 1.4, fill: interaction.color, fontSize: interactionSelected ? 4 : 3, fontWeight: "800", textAnchor: "middle", 'aria-hidden': "true" }, interaction.bidirectional ? "\u21C4" : "\u2192")
                                 );
                               })),
                               habitatOverlay === 'organisms' && habitatFitItems.slice(0, 12).map(function(fitItem) {
@@ -22887,25 +23005,99 @@ var d = (labToolData && labToolData._aquarium) || {};
                         habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[8px] text-slate-100", 'aria-labelledby': "habitat-interaction-title" },
                           React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
                             React.createElement("strong", { id: "habitat-interaction-title", className: "text-[9px] text-white" }, "Living interaction network"),
-                            React.createElement("span", { className: "rounded-full bg-fuchsia-300/10 px-2 py-0.5 font-bold text-fuchsia-100" }, habitatInteractionNetwork.total + " visible " + (habitatInteractionNetwork.total === 1 ? "exchange" : "exchanges"))
+                            React.createElement("span", { className: "rounded-full bg-fuchsia-300/10 px-2 py-0.5 font-bold text-fuchsia-100" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total + " exchanges")
+                          ),
+                          React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1", role: "group", 'aria-label': "Filter interaction pathways by modeled strength" },
+                            React.createElement("span", { className: "mr-1 text-[7px] font-bold text-slate-300" }, "Show:"),
+                            ['all', 'weak', 'watch', 'healthy'].map(function(filterId) {
+                              var filterActive = habitatInteractionFilter === filterId;
+                              var filterLabel = filterId === 'all' ? 'All' : filterId === 'weak' ? 'Weak <65%' : filterId === 'watch' ? 'Watch 65–84%' : 'Healthy 85%+';
+                              return React.createElement("button", { key: filterId, type: "button", 'aria-pressed': filterActive, onClick: function() { upd('habitatInteractionFilter', filterId); }, className: "rounded-full border px-1.5 py-0.5 text-[7px] font-bold " + (filterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/15 bg-white/5 text-slate-200 hover:bg-white/10") }, filterLabel);
+                            }),
+                            React.createElement("span", { className: "ml-auto text-[7px] text-slate-400" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total)
+                          ),
+                          React.createElement("div", { className: "mt-1 rounded-md border border-white/10 bg-white/5 p-1.5 text-[7px] text-fuchsia-100", role: "note", 'aria-label': "Interaction network diagnostic" },
+                            React.createElement("div", { className: "flex flex-wrap items-center gap-x-2 gap-y-1" },
+                              React.createElement("strong", null, "Network reading:"),
+                              interactionPanelSummary.total > 0 ? "Average pathway strength " + interactionPanelSummary.averageStrength + "%. Weakest: " + interactionPanelSummary.weakest.label + " (" + interactionPanelSummary.minimumStrength + "%). Strongest: " + interactionPanelSummary.strongest.label + " (" + interactionPanelSummary.strongest.strength + ")." : "No exchange pathway is modeled yet."
+                            ),
+                            React.createElement("div", { className: "mt-1 h-1.5 overflow-hidden rounded-full bg-slate-950/80", role: "progressbar", 'aria-label': "Average interaction pathway strength", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': interactionPanelSummary.averageStrength }, React.createElement("div", { className: "h-full rounded-full bg-fuchsia-300", style: { width: interactionPanelSummary.averageStrength + '%' } })),
+                            React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1", role: "list", 'aria-label': "Interaction strength distribution" }, [
+                              ['weak', 'Weak', 'text-rose-200'], ['watch', 'Watch', 'text-amber-200'], ['healthy', 'Healthy', 'text-emerald-200']
+                            ].map(function(band) { return React.createElement("span", { key: band[0], role: "listitem", className: band[2] }, band[1] + ": " + (interactionPanelSummary.bands[band[0]] || 0)); })),
+                            habitatFocusedInteraction && React.createElement("p", { className: "mt-1 rounded bg-fuchsia-300/10 px-1.5 py-1 font-bold text-fuchsia-100" }, "Focused path: " + habitatFocusedInteraction.label + " • " + habitatFocusedInteraction.strength + "% strength"),
+                            React.createElement("p", { className: "mt-1 leading-snug text-slate-300" }, interactionPanelRecommendation)
+                          ),
+                          React.createElement("div", { className: "mt-1 rounded-md border border-amber-300/20 bg-amber-300/10 px-1.5 py-1 text-[7px] leading-snug text-amber-100", role: "note", 'aria-label': "Interaction experiment prompt" },
+                            React.createElement("strong", null, "Micro-experiment: "),
+                            interactionLearningPrompt
+                          ),
+                          React.createElement("div", { className: "mt-1 rounded-md border border-sky-300/20 bg-sky-300/10 px-1.5 py-1 text-[7px] leading-snug text-sky-100", role: "group", 'aria-label': "Interaction baseline comparison" },
+                            React.createElement("div", null,
+                              React.createElement("strong", null, "Before / after: "),
+                              habitatInteractionBaselineComparable
+                                ? "Average " + habitatInteractionBaseline.averageStrength + "% \u2192 " + interactionPanelSummary.averageStrength + "% (" + (interactionBaselineDelta.average >= 0 ? "+" : "") + interactionBaselineDelta.average + " pts). Bands W/W/H " + habitatInteractionBaseline.bands.weak + "/" + habitatInteractionBaseline.bands.watch + "/" + habitatInteractionBaseline.bands.healthy + " \u2192 " + interactionPanelSummary.bands.weak + "/" + interactionPanelSummary.bands.watch + "/" + interactionPanelSummary.bands.healthy + "."
+                                : habitatInteractionBaseline
+                                  ? "Baseline captured with the " + habitatInteractionBaseline.filter + " filter. Switch back to it to compare."
+                                  : "Capture a baseline before changing one habitat variable."
+                            ),
+                            React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
+                              React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', { tick: simTick, filter: habitatInteractionFilter, averageStrength: interactionPanelSummary.averageStrength, total: interactionPanelSummary.total, bands: Object.assign({}, interactionPanelSummary.bands) }); }, className: "rounded border border-sky-200/30 bg-sky-200/10 px-1.5 py-0.5 text-[7px] font-bold text-sky-50" }, habitatInteractionBaselineComparable ? "Update baseline" : "Capture baseline"),
+                              habitatInteractionBaseline && React.createElement("button", { type: "button", onClick: function() { upd('habitatInteractionBaseline', null); }, className: "rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[7px] font-bold text-slate-200" }, "Clear baseline")
+                            )
                           ),
                           React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-3 gap-y-1", 'aria-label': "Interaction diagram legend" }, [
                             ['symbiosis', 'purple', 'two-way partnership'], ['cleaning', 'cyan', 'cleaner to client'], ['browsing', 'amber', 'plant to browser'],
                             ['cover', 'green', 'plant cover to resident'], ['grazing', 'lime', 'algae to grazer'], ['recycling', 'orange', 'detritus to recycler']
                           ].map(function(legendItem) { return React.createElement("span", { key: legendItem[0] }, React.createElement("strong", null, legendItem[0] + ": "), legendItem[1] + " — " + legendItem[2]); })),
-                          habitatInteractionNetwork.links.length
-                            ? React.createElement("div", { className: "mt-1.5 grid gap-1 md:grid-cols-2", role: "list", 'aria-label': "Visible organism and plant interactions" }, habitatInteractionNetwork.links.slice(0, 12).map(function(interaction) {
+                          React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[7px] text-slate-300", 'aria-label': "Interaction direction and strength key" }, [
+                            React.createElement("span", { key: "directed", className: "font-bold text-cyan-200" }, "\u2192 Directed flow"),
+                            React.createElement("span", { key: "bidirectional", className: "font-bold text-purple-200" }, "\u21C4 Bidirectional exchange"),
+                            React.createElement("span", { key: "strength" }, "Thicker/brighter paths = stronger"),
+                            React.createElement("span", { key: "focused", className: "font-bold text-fuchsia-200" }, "Fuchsia emphasis = focused path")
+                          ]),
+                          habitatVisibleInteractionLinks.length
+                            ? React.createElement("div", { className: "mt-1.5 grid gap-1 md:grid-cols-2", role: "list", 'aria-label': "Visible organism and plant interactions" }, habitatInteractionLinksForScene.slice(0, 12).map(function(interaction) {
                                 function focusEndpoint(endpoint) {
                                   if (endpoint.kind === 'organism') updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: endpoint.id });
                                   else if (endpoint.kind === 'plant') selectPlant(endpoint.id);
                                 }
+                                function endpointVitality(endpoint) {
+                                  return endpoint && endpoint.vitality !== undefined ? Math.max(0, Math.min(100, Math.round(Number(endpoint.vitality) || 0))) : 100;
+                                }
+                                var sourceVitality = endpointVitality(interaction.source);
+                                var targetVitality = endpointVitality(interaction.target);
+                                var limitingEndpoint = interaction.limitingEndpoint || (sourceVitality <= targetVitality ? { label: interaction.source.label, kind: interaction.source.kind, id: interaction.source.id, vitality: sourceVitality } : { label: interaction.target.label, kind: interaction.target.kind, id: interaction.target.id, vitality: targetVitality });
                                 return React.createElement("article", { key: interaction.id, role: "listitem", className: "rounded-md border border-white/10 bg-white/5 p-1.5", style: { borderLeftColor: interaction.color, borderLeftWidth: '3px' } },
                                   React.createElement("div", { className: "flex flex-wrap items-center gap-1 font-bold text-white" },
                                     (interaction.source.kind === 'organism' || interaction.source.kind === 'plant') ? React.createElement("button", { type: "button", onClick: function() { focusEndpoint(interaction.source); }, className: "rounded bg-white/10 px-1 py-0.5 underline decoration-dotted underline-offset-2" }, interaction.source.label) : React.createElement("span", null, interaction.source.label),
                                     React.createElement("span", { 'aria-label': interaction.bidirectional ? "exchanges with" : "flows to" }, interaction.bidirectional ? "↔" : "→"),
                                     (interaction.target.kind === 'organism' || interaction.target.kind === 'plant') ? React.createElement("button", { type: "button", onClick: function() { focusEndpoint(interaction.target); }, className: "rounded bg-white/10 px-1 py-0.5 underline decoration-dotted underline-offset-2" }, interaction.target.label) : React.createElement("span", null, interaction.target.label)
                                   ),
-                                  React.createElement("p", { className: "mt-0.5 leading-snug text-slate-300" }, interaction.detail)
+                                  React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-1", 'aria-label': "Endpoint vitality" }, [
+                                    { key: "source", endpoint: interaction.source, vitality: sourceVitality },
+                                    { key: "target", endpoint: interaction.target, vitality: targetVitality }
+                                  ].map(function(endpoint) {
+                                    var endpointTone = endpoint.vitality >= 85 ? "text-emerald-200" : endpoint.vitality >= 65 ? "text-amber-200" : "text-rose-200";
+                                    var endpointBar = endpoint.vitality >= 85 ? "bg-emerald-300" : endpoint.vitality >= 65 ? "bg-amber-300" : "bg-rose-300";
+                                    return React.createElement("div", { key: endpoint.key, className: "rounded border border-white/10 bg-slate-950/40 px-1 py-0.5" },
+                                      React.createElement("div", { className: "flex items-center justify-between gap-1 text-[7px]" },
+                                        React.createElement("span", { className: "truncate text-slate-300", title: endpoint.endpoint.label }, endpoint.endpoint.label),
+                                        React.createElement("strong", { className: endpointTone }, endpoint.vitality + "%")
+                                      ),
+                                      React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded bg-slate-950/80", role: "progressbar", 'aria-label': endpoint.endpoint.label + " vitality", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': endpoint.vitality }, React.createElement("div", { className: "h-full " + endpointBar, style: { width: endpoint.vitality + '%' } }))
+                                    );
+                                  })),
+                                  React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2 rounded border border-amber-200/20 bg-amber-300/10 px-1 py-0.5 text-[7px]", role: "status" },
+                                    React.createElement("span", { className: "font-bold text-amber-100" }, "Limiting endpoint"),
+                                    React.createElement("span", { className: "truncate text-amber-50", title: limitingEndpoint.label }, limitingEndpoint.label + " • " + limitingEndpoint.vitality + "%"),
+                                    (limitingEndpoint.kind === 'organism' || limitingEndpoint.kind === 'plant') && React.createElement("button", { type: "button", onClick: function() { focusEndpoint(limitingEndpoint); }, className: "shrink-0 rounded border border-amber-200/30 bg-amber-200/10 px-1 py-0.5 font-bold text-amber-50" }, "Inspect")
+                                  ),
+                                  React.createElement("p", { className: "mt-0.5 leading-snug text-slate-300" }, interaction.detail + " " + interaction.strength + "% modeled pathway strength. " + interaction.healthSignal),
+                                  React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2" },
+                                    React.createElement("span", { className: "text-[7px] text-slate-400" }, interaction.selected ? "Focused in both views" : "Select this pathway to trace it"),
+                                    React.createElement("button", { type: "button", 'aria-pressed': interaction.selected === true, 'aria-label': (interaction.selected ? "Clear focus from " : "Focus ") + interaction.label, onClick: function() { updMulti({ habitatSelectedInteractionId: interaction.selected ? null : interaction.id, habitatOverlay: 'interactions' }); }, className: "rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 text-[7px] font-bold text-fuchsia-100" }, interaction.selected ? "Clear focus" : "Focus path")
+                                  )
                                 );
                               }))
                             : React.createElement("p", { className: "mt-1.5 rounded-md border border-dashed border-white/15 p-2 text-slate-300" }, "No spatial exchanges are visible yet. Add a living plant plus a grazer, browser, cover-dependent resident, cleaner, detritivore, or compatible symbiotic pair.")
@@ -23016,7 +23208,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                               ),
                               residentInteractionLinks.length > 0 && React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1 rounded-md border border-fuchsia-300/15 bg-fuchsia-400/5 px-1.5 py-1 text-[7px] text-fuchsia-100" },
                                 React.createElement("strong", null, "Interactions:"),
-                                residentInteractionLinks.slice(0, 3).map(function(interaction) { return React.createElement("span", { key: interaction.id, className: "rounded-full bg-slate-950/55 px-1.5 py-0.5" }, interaction.type + " — " + interaction.label); }),
+                                residentInteractionLinks.slice(0, 3).map(function(interaction) { return React.createElement("span", { key: interaction.id, className: "rounded-full bg-slate-950/55 px-1.5 py-0.5" }, interaction.type + " — " + interaction.label + " (" + interaction.strength + "%)"); }),
                                 residentInteractionLinks.length > 3 && React.createElement("span", null, "+" + (residentInteractionLinks.length - 3) + " more"),
                                 React.createElement("button", { type: "button", onClick: function() { upd('habitatOverlay', 'interactions'); }, className: "ml-auto rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 font-bold text-fuchsia-100" }, "Map links")
                               ),
@@ -23670,7 +23862,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                                 disabled: hunger <= 10,
                                 'aria-label': hunger <= 10 ? displayName + " is full" : "Feed " + displayName + " individually",
                                 onClick: function () { feedIndividual(fishKey, fId); },
-                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (hunger <= 10 ? "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400" : "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
+                                className: "rounded-md border px-1.5 py-0.5 text-[10px] font-bold " + (hunger <= 10 ? "cursor-not-allowed border-slate-300 bg-slate-100 text-slate-600" : "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
                               }, hunger <= 10 ? "Full" : "Feed"),
                               fishSickness[fishKey] && React.createElement("button", {
                                 type: "button",
@@ -24101,7 +24293,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     // Percentage badge
 
-                    React.createElement("div", { className: "mt-1 inline-block px-1.5 py-0.5 rounded-full text-[11px] font-bold " + (critical ? "bg-red-100 text-red-600" : pct > 50 ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600") }, pct + "% K")
+                    React.createElement("div", { className: "mt-1 inline-block px-1.5 py-0.5 rounded-full text-[11px] font-bold " + (critical ? "bg-red-100 text-red-700" : pct > 50 ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800") }, pct + "% K")
 
                   );
 
@@ -24511,7 +24703,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 if (!sp) return null;
 
-                var statusColors = { LC: 'text-green-600 bg-green-50', VU: 'text-amber-600 bg-amber-50', EN: 'text-red-600 bg-red-50', CR: 'text-red-800 bg-red-100' };
+                var statusColors = { LC: 'text-green-700 bg-green-50', VU: 'text-amber-800 bg-amber-50', EN: 'text-red-700 bg-red-50', CR: 'text-red-800 bg-red-100' };
 
                 var statusLabels = { LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' };
 
@@ -24655,7 +24847,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     return React.createElement('button', {
                       key: c, 'aria-pressed': sel,
                       onClick: function () { upd('libCategory', c); },
-                      className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50')
+                      className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-emerald-700 text-white border-emerald-800' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50')
                     }, c);
                   })
                 ),
@@ -24667,7 +24859,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       return React.createElement('button', {
                         key: a.id,
                         onClick: function () { upd('libArticle', a.id); },
-                        className: 'w-full text-left rounded-xl border p-2.5 transition-all ' + (sel ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-300')
+                        className: 'w-full text-left rounded-xl border p-2.5 transition-all ' + (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-300')
                       },
                         React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide opacity-70' }, a.category + ' \u00b7 ' + a.level + ' \u00b7 ' + a.readMinutes + ' min'),
                         React.createElement('div', { className: 'text-sm font-extrabold mt-0.5 leading-tight' }, a.title),
@@ -24770,7 +24962,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var sel = c === quizCategory;
                         return React.createElement('button', { key: c, 'aria-pressed': sel,
                           onClick: function () { updMulti({ quizCategory: c, quizCurrent: 0, quizShowExplanation: false }); },
-                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50')
+                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50')
                         }, c);
                       })
                     )
@@ -24782,7 +24974,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var sel = dif === quizDifficulty;
                         return React.createElement('button', { key: dif, 'aria-pressed': sel,
                           onClick: function () { updMulti({ quizDifficulty: dif, quizCurrent: 0, quizShowExplanation: false }); },
-                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-800 border-orange-300 hover:bg-orange-50')
+                          className: 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-orange-800 border-orange-300 hover:bg-orange-50')
                         }, dif === 'All' ? 'All' : dif.charAt(0).toUpperCase() + dif.slice(1));
                       })
                     )
@@ -24988,7 +25180,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                           STAGES.map(function (s, i) {
                             return React.createElement(React.Fragment, { key: s.k },
                               i > 0 && React.createElement('span', { className: 'text-slate-300 text-[10px]' }, '→'),
-                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-400 bg-slate-100'), style: i === stageIdx ? { background: s.color } : {} }, s.k));
+                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: s.color } : {} }, s.k));
                           })
                         ),
                         React.createElement('p', { className: 'text-[11px] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)

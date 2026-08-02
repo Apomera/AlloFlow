@@ -907,6 +907,284 @@
     return summary;
   };
   // ──────────────────────────────────────────────────────────────────────
+
+  // Live Polling -> AlloSheet handoff. This is deliberately post-session and
+  // aggregate-only: prompts, codenames, peer ids, routing, feedback, Q&A,
+  // and response text never enter the transfer envelope.
+  const LP_ALLOSHEET_KIND = 'alloflow.tabular.v1';
+  const LP_ALLOSHEET_LIMITS = Object.freeze({ maxTables: 4, maxColumns: 40, maxRows: 200, maxCellChars: 1200, maxEnvelopeBytes: 2 * 1024 * 1024, minimumGroupSize: 5 });
+  const lpAlloText = (value, max) => {
+    let out = value == null ? '' : String(value);
+    try { if (typeof out.normalize === 'function') out = out.normalize('NFKC'); } catch (err) {}
+    out = out.replace(/\r\n?/g, '\n').trim();
+    return out.length > max ? out.slice(0, max).trim() : out;
+  };
+  const lpAlloNumber = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  };
+  const lpAlloInteger = (value, fallback) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : (fallback == null ? 0 : fallback);
+  };
+  const lpAlloRound = (value, digits) => {
+    const n = lpAlloNumber(value);
+    if (n == null) return null;
+    const factor = Math.pow(10, digits || 0);
+    return Math.round(n * factor) / factor;
+  };
+  const lpAlloDate = (value) => {
+    if (value == null || value === '') return null;
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isFinite(date.getTime()) ? date : null;
+  };
+  const lpAlloIso = (value) => {
+    const date = lpAlloDate(value);
+    return date ? date.toISOString() : null;
+  };
+  const lpAlloHash = (value) => {
+    const source = lpAlloText(value, 200);
+    let hash = 2166136261;
+    for (let i = 0; i < source.length; i += 1) {
+      hash ^= source.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  };
+  const lpAlloCell = (value) => {
+    if (value == null) return null;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'boolean') return value;
+    return lpAlloText(value, LP_ALLOSHEET_LIMITS.maxCellChars);
+  };
+  const lpAlloColumn = (key, title, type) => ({ key: key, title: title, type: type });
+  const lpAlloTable = (id, title, columns, rows, sourceRowCount, truncated) => ({
+    id: id,
+    title: title,
+    columns: columns,
+    rows: rows.slice(0, LP_ALLOSHEET_LIMITS.maxRows),
+    rowCount: Math.min(rows.length, LP_ALLOSHEET_LIMITS.maxRows),
+    sourceRowCount: Math.max(sourceRowCount || 0, rows.length),
+    truncated: !!truncated || rows.length > LP_ALLOSHEET_LIMITS.maxRows,
+  });
+  const lpAlloVisibleCount = (count, threshold) => {
+    const n = lpAlloInteger(count, 0);
+    return n < (threshold || LP_ALLOSHEET_LIMITS.minimumGroupSize) ? null : n;
+  };
+  const lpAlloBucketCount = (count, total) => {
+    const n = lpAlloInteger(count, 0);
+    const denominator = lpAlloInteger(total, 0);
+    if (denominator < LP_ALLOSHEET_LIMITS.minimumGroupSize) return null;
+    return n > 0 && n < LP_ALLOSHEET_LIMITS.minimumGroupSize ? null : n;
+  };
+  const lpAlloPercent = (count, total) => {
+    const visibleCount = lpAlloBucketCount(count, total);
+    const denominator = lpAlloInteger(total, 0);
+    if (visibleCount == null || denominator < LP_ALLOSHEET_LIMITS.minimumGroupSize) return null;
+    return lpAlloRound((visibleCount / denominator) * 100, 1);
+  };
+  const lpAlloPollType = (poll) => ['rating', 'mcq', 'freetext', 'wordcloud'].indexOf(String(poll && poll.type || '')) >= 0
+    ? String(poll.type)
+    : 'poll';
+  const lpAlloResponses = (entry) => uniqueResponsesForSummary(entry && Array.isArray(entry.responses) ? entry.responses : []);
+  const lpAlloAudienceCount = (entry, responses) => {
+    const raw = lpAlloNumber(entry && entry.audienceCount);
+    if (raw != null && raw >= 0) return Math.floor(raw);
+    const ids = Array.isArray(entry && entry.audienceUids) ? entry.audienceUids : [];
+    if (ids.length) return new Set(ids.map((id) => String(id || '')).filter(Boolean)).size;
+    return Math.max(0, responses.length);
+  };
+  const lpAlloParticipantIds = (entry, responses) => {
+    const ids = Array.isArray(entry && entry.audienceUids) ? entry.audienceUids : responses.map((item) => item && item.uid);
+    return Array.from(new Set(ids.map((id) => String(id || '')).filter(Boolean)));
+  };
+  const lpAlloChoiceRows = (poll, responses, itemId, includeLabels) => {
+    const type = lpAlloPollType(poll);
+    if (type === 'freetext' || type === 'wordcloud') return [];
+    const options = type === 'rating'
+      ? getRatingValues(normalizeRatingScale(poll)).map((value) => ({ value: value, label: normalizeRatingScale(poll).labels[String(value)] || String(value) }))
+      : (Array.isArray(poll && poll.options) ? poll.options.slice(0, 40).map((value, index) => ({ value: String(value), label: String(value), index: index })) : []);
+    const total = responses.length;
+    return options.map((option, index) => {
+      const count = responses.filter((entry) => type === 'rating'
+        ? Number(entry && entry.response) === Number(option.value)
+        : String(entry && entry.response) === String(option.value)).length;
+      const values = {
+        item_id: itemId,
+        answer_code: type === 'rating' ? 'rating-' + String(option.value) : 'choice-' + String(index + 1),
+        answer_value: type === 'rating' ? Number(option.value) : index + 1,
+        answer_label: includeLabels ? lpAlloText(option.label, 160) : null,
+        response_count: lpAlloBucketCount(count, total),
+        response_rate_percent: lpAlloPercent(count, total),
+        privacy_status: count > 0 && count < LP_ALLOSHEET_LIMITS.minimumGroupSize
+          ? 'suppressed (<5 responses)'
+          : (total < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses total)' : 'available'),
+      };
+      return { values: Object.fromEntries(Object.keys(values).map((key) => [key, lpAlloCell(values[key])])) };
+    });
+  };
+  const lpAlloCorrectness = (poll, responses) => {
+    const hasCorrect = poll && (Number.isInteger(poll.correctIndex) || poll.correctOption != null);
+    if (!hasCorrect) return { count: null, status: 'not_available' };
+    const correct = responses.filter((entry) => Number.isInteger(poll.correctIndex)
+      ? (lpAlloPollType(poll) === 'rating' ? Number(entry && entry.response) === Number(poll.correctIndex) : String(entry && entry.response) === String((poll.options || [])[poll.correctIndex]))
+      : String(entry && entry.response) === String(poll.correctOption)).length;
+    return { count: lpAlloBucketCount(correct, responses.length), status: correct > 0 && correct < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses)' : (responses.length < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses total)' : 'available') };
+  };
+  const lpAlloTimeBucket = (value) => {
+    const date = lpAlloDate(value);
+    if (!date) return null;
+    const bucket = new Date(date.getTime());
+    bucket.setUTCMinutes(Math.floor(bucket.getUTCMinutes() / 15) * 15, 0, 0);
+    return bucket.toISOString();
+  };
+  const buildLivePollingAlloSheetEnvelope = (source, options) => {
+    const input = source && typeof source === 'object' ? source : {};
+    const settings = options && typeof options === 'object' ? options : {};
+    const createdAt = lpAlloIso(settings.createdAt || input.createdAt || Date.now()) || new Date().toISOString();
+    const dateRange = ['session', '7d', 'all'].indexOf(settings.dateRange) >= 0 ? settings.dateRange : 'session';
+    const createdMs = Date.parse(createdAt);
+    const rangeStart = dateRange === '7d' ? createdMs - (7 * 24 * 60 * 60 * 1000) : null;
+    const allPolls = Array.isArray(input.polls) ? input.polls : [];
+    const filteredPolls = allPolls.filter((entry) => {
+      const poll = entry && entry.poll && typeof entry.poll === 'object' ? entry.poll : entry;
+      const started = lpAlloDate(entry && (entry.startedAt || (poll && poll.startedAt)));
+      return !rangeStart || !started || started.getTime() >= rangeStart;
+    });
+    const clippedPolls = filteredPolls.slice(0, LP_ALLOSHEET_LIMITS.maxRows);
+    const truncatedPolls = filteredPolls.length > LP_ALLOSHEET_LIMITS.maxRows;
+    const includeLabels = settings.includeChoiceLabels === true;
+    const selectedDatasets = settings.datasets && typeof settings.datasets === 'object' ? settings.datasets : {};
+    const datasets = {
+      sessionSummary: selectedDatasets.sessionSummary !== false,
+      itemSummary: selectedDatasets.itemSummary !== false,
+      answerDistribution: selectedDatasets.answerDistribution !== false,
+      timeSummary: selectedDatasets.timeSummary !== false,
+    };
+    const sessionCode = lpAlloText(input.sessionCode, 120);
+    const sessionId = 'session-' + lpAlloHash(sessionCode || input.sessionStartedAt || 'live-polling-session');
+    const normalized = clippedPolls.map((entry, index) => {
+      const poll = entry && entry.poll && typeof entry.poll === 'object' ? entry.poll : entry || {};
+      const responses = lpAlloResponses(entry || {});
+      const audienceCount = lpAlloAudienceCount(entry || {}, responses);
+      const participantIds = lpAlloParticipantIds(entry || {}, responses);
+      const startedAt = lpAlloIso(entry && (entry.startedAt || poll.startedAt));
+      const endedAt = lpAlloIso(entry && (entry.endedAt || entry.closedAt || poll.endedAt));
+      const itemId = 'poll-' + String(index + 1);
+      return { poll: poll, responses: responses, audienceCount: audienceCount, participantIds: participantIds, startedAt: startedAt, endedAt: endedAt, itemId: itemId };
+    });
+    const sessionParticipants = Array.from(new Set(normalized.reduce((out, item) => out.concat(item.participantIds), [])));
+    const sessionAudience = normalized.reduce((max, item) => Math.max(max, item.audienceCount), 0);
+    const sessionResponses = normalized.reduce((sum, item) => sum + item.responses.length, 0);
+    const startedDates = normalized.map((item) => lpAlloDate(item.startedAt)).filter(Boolean);
+    const endedDates = normalized.map((item) => lpAlloDate(item.endedAt)).filter(Boolean);
+    const sessionStartedAt = lpAlloIso(input.sessionStartedAt) || (startedDates.length ? new Date(Math.min.apply(null, startedDates.map((date) => date.getTime()))).toISOString() : null);
+    const sessionEndedAt = lpAlloIso(input.sessionEndedAt) || (endedDates.length ? new Date(Math.max.apply(null, endedDates.map((date) => date.getTime()))).toISOString() : null);
+    const sessionDuration = sessionStartedAt && sessionEndedAt ? Math.max(0, Math.round((Date.parse(sessionEndedAt) - Date.parse(sessionStartedAt)) / 1000)) : null;
+    const itemRows = normalized.map((item) => {
+      const total = item.responses.length;
+      const correctness = lpAlloCorrectness(item.poll, item.responses);
+      const duration = item.startedAt && item.endedAt ? Math.max(0, Math.round((Date.parse(item.endedAt) - Date.parse(item.startedAt)) / 1000)) : null;
+      const smallStatus = item.audienceCount > 0 && item.audienceCount < LP_ALLOSHEET_LIMITS.minimumGroupSize
+        ? 'suppressed (<5 participants)'
+        : (total < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses)' : 'available');
+      const values = {
+        item_id: item.itemId,
+        poll_type: lpAlloPollType(item.poll),
+        started_at: item.startedAt,
+        ended_at: item.endedAt,
+        duration_seconds: duration,
+        audience_count: lpAlloVisibleCount(item.audienceCount),
+        response_count: lpAlloVisibleCount(total),
+        response_rate_percent: item.audienceCount >= LP_ALLOSHEET_LIMITS.minimumGroupSize ? lpAlloRound((total / Math.max(1, item.audienceCount)) * 100, 1) : null,
+        answer_mode: ['freetext', 'wordcloud'].indexOf(lpAlloPollType(item.poll)) >= 0 ? 'text_suppressed' : 'coded_options',
+        option_count: Array.isArray(item.poll && item.poll.options) ? item.poll.options.length : (lpAlloPollType(item.poll) === 'rating' ? getRatingValues(normalizeRatingScale(item.poll)).length : 0),
+        correct_response_count: correctness.count,
+        correctness_status: correctness.status,
+        choice_labels_included: includeLabels,
+        privacy_status: smallStatus,
+      };
+      return { values: Object.fromEntries(Object.keys(values).map((key) => [key, lpAlloCell(values[key])])) };
+    });
+    const distributionRows = normalized.reduce((out, item) => out.concat(lpAlloChoiceRows(item.poll, item.responses, item.itemId, includeLabels)), []);
+    const timeBuckets = {};
+    normalized.forEach((item) => {
+      const pollBucket = lpAlloTimeBucket(item.startedAt);
+      if (pollBucket) {
+        timeBuckets[pollBucket] = timeBuckets[pollBucket] || { pollCount: 0, responses: 0 };
+        timeBuckets[pollBucket].pollCount += 1;
+      }
+      item.responses.forEach((response) => {
+        const bucket = lpAlloTimeBucket(response && response.timestamp);
+        if (!bucket) return;
+        timeBuckets[bucket] = timeBuckets[bucket] || { pollCount: 0, responses: 0 };
+        timeBuckets[bucket].responses += 1;
+      });
+    });
+    const timeRows = Object.keys(timeBuckets).sort().map((bucket) => {
+      const counts = timeBuckets[bucket];
+      const visibleResponses = lpAlloVisibleCount(counts.responses);
+      return { values: {
+        time_bucket: bucket,
+        poll_count: counts.pollCount,
+        response_count: visibleResponses,
+        privacy_status: counts.responses < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses)' : 'available',
+      } };
+    });
+    const summaryValues = {
+      session_id: sessionId,
+      started_at: sessionStartedAt,
+      ended_at: sessionEndedAt,
+      duration_seconds: sessionDuration,
+      poll_count: normalized.length,
+      participant_count: lpAlloVisibleCount(Math.max(sessionAudience, sessionParticipants.length)),
+      response_count: lpAlloVisibleCount(sessionResponses),
+      response_rate_percent: sessionAudience >= LP_ALLOSHEET_LIMITS.minimumGroupSize ? lpAlloRound((sessionResponses / Math.max(1, sessionAudience * Math.max(1, normalized.length))) * 100, 1) : null,
+      free_text_responses_included: false,
+      privacy_status: sessionAudience > 0 && sessionAudience < LP_ALLOSHEET_LIMITS.minimumGroupSize
+        ? 'suppressed (<5 participants)'
+        : (sessionResponses < LP_ALLOSHEET_LIMITS.minimumGroupSize ? 'suppressed (<5 responses)' : 'available'),
+    };
+    const tables = [];
+    if (datasets.sessionSummary) tables.push(lpAlloTable('lp-session-summary', 'Live Polling session summary', [
+      lpAlloColumn('session_id', 'Session code', 'category'), lpAlloColumn('started_at', 'Started', 'datetime'), lpAlloColumn('ended_at', 'Ended', 'datetime'), lpAlloColumn('duration_seconds', 'Duration (seconds)', 'duration'), lpAlloColumn('poll_count', 'Poll count', 'integer'), lpAlloColumn('participant_count', 'Participants', 'integer'), lpAlloColumn('response_count', 'Responses', 'integer'), lpAlloColumn('response_rate_percent', 'Response rate (%)', 'number'), lpAlloColumn('free_text_responses_included', 'Free-text responses included', 'boolean'), lpAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], [{ values: Object.fromEntries(Object.keys(summaryValues).map((key) => [key, lpAlloCell(summaryValues[key])])) }], 1, false));
+    if (datasets.itemSummary) tables.push(lpAlloTable('lp-item-summary', 'Live Polling item summary', [
+      lpAlloColumn('item_id', 'Item code', 'category'), lpAlloColumn('poll_type', 'Poll type', 'category'), lpAlloColumn('started_at', 'Started', 'datetime'), lpAlloColumn('ended_at', 'Ended', 'datetime'), lpAlloColumn('duration_seconds', 'Duration (seconds)', 'duration'), lpAlloColumn('audience_count', 'Audience', 'integer'), lpAlloColumn('response_count', 'Responses', 'integer'), lpAlloColumn('response_rate_percent', 'Response rate (%)', 'number'), lpAlloColumn('answer_mode', 'Answer mode', 'category'), lpAlloColumn('option_count', 'Option count', 'integer'), lpAlloColumn('correct_response_count', 'Correct responses', 'integer'), lpAlloColumn('correctness_status', 'Correctness status', 'category'), lpAlloColumn('choice_labels_included', 'Choice labels included', 'boolean'), lpAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], itemRows, normalized.length, truncatedPolls));
+    if (datasets.answerDistribution) tables.push(lpAlloTable('lp-answer-distribution', 'Live Polling coded answer distribution', [
+      lpAlloColumn('item_id', 'Item code', 'category'), lpAlloColumn('answer_code', 'Answer code', 'category'), lpAlloColumn('answer_value', 'Answer value', 'number'), lpAlloColumn('answer_label', 'Teacher-authored label', 'text'), lpAlloColumn('response_count', 'Responses', 'integer'), lpAlloColumn('response_rate_percent', 'Response rate (%)', 'number'), lpAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], distributionRows, distributionRows.length, false));
+    if (datasets.timeSummary) tables.push(lpAlloTable('lp-time-summary', 'Live Polling time-window summary', [
+      lpAlloColumn('time_bucket', '15-minute UTC bucket', 'datetime'), lpAlloColumn('poll_count', 'Polls', 'integer'), lpAlloColumn('response_count', 'Responses', 'integer'), lpAlloColumn('privacy_status', 'Privacy status', 'category')
+    ], timeRows, timeRows.length, false));
+    const byteSize = (() => { try { return new TextEncoder().encode(JSON.stringify(tables)).length; } catch (err) { return JSON.stringify(tables).length; } })();
+    return {
+      kind: LP_ALLOSHEET_KIND,
+      version: 1,
+      source: { tool: 'live-polling', label: 'Live Polling', version: '1' },
+      title: 'Live Polling aggregate snapshot',
+      createdAt: createdAt,
+      classification: { level: 'aggregate-education-data', identifierIncluded: false, studentIdentifierIncluded: false, freeTextNotesIncluded: false, rawResponsesIncluded: false },
+      privacy: { scope: 'educator-reviewed-aggregate', identifierIncluded: false, reducedData: true, notesIncluded: false, rawResponsesIncluded: false, transferEnablesAI: false },
+      capabilities: { writeBack: false, aiEnabled: false },
+      tables: tables.slice(0, LP_ALLOSHEET_LIMITS.maxTables),
+      provenance: {
+        sourceSession: 'opaque-' + sessionId,
+        dateRange: dateRange,
+        includedTables: tables.map((table) => table.id),
+        excludedFields: ['poll.prompt', 'poll.options (labels unless explicitly selected)', 'response.uid', 'response.codename', 'response.response', 'feedback', 'routing', 'session Q&A', 'peer showcase', 'signaling metadata'],
+        choiceLabelsIncluded: includeLabels,
+        suppression: { minimumGroupSize: LP_ALLOSHEET_LIMITS.minimumGroupSize, missingWorkInferred: false, freeTextResponsesSuppressed: true },
+        limits: LP_ALLOSHEET_LIMITS,
+        reducedData: true,
+        byteSize: byteSize,
+        truncated: truncatedPolls,
+      },
+      metadata: { sessionId: sessionId, dateRange: dateRange, pollCount: normalized.length, choiceLabelsIncluded: includeLabels },
+    };
+  };
+
   // PollingHost — teacher device
   // Listens for guest signaling docs, accepts incoming offers, exchanges
   // ICE candidates, opens a data channel per guest, aggregates responses
@@ -2146,6 +2424,8 @@
     const groupNameTriggerRef = R.useRef(null);
     const groupNameDialogRef = R.useRef(null);
     const groupNameCancelRef = R.useRef(null);
+    const alloSheetDialogRef = R.useRef(null);
+    const alloSheetInitialRef = R.useRef(null);
     const [pendingGroupName, setPendingGroupName] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
     const [responses, setResponses] = R.useState({});
@@ -2158,6 +2438,12 @@
     const [afterSubmitMode, setAfterSubmitMode] = R.useState('dismiss');
     const [lastSharedResultsAt, setLastSharedResultsAt] = R.useState(null);
     const [activePoll, setActivePoll] = R.useState(null);
+    const [completedPolls, setCompletedPolls] = R.useState([]);
+    const [alloSheetReviewOpen, setAlloSheetReviewOpen] = R.useState(false);
+    const [alloSheetIncludeChoiceLabels, setAlloSheetIncludeChoiceLabels] = R.useState(false);
+    const [alloSheetDatasets, setAlloSheetDatasets] = R.useState({ sessionSummary: true, itemSummary: true, answerDistribution: true, timeSummary: true });
+    const [alloSheetBusy, setAlloSheetBusy] = R.useState(false);
+    const [alloSheetFeedback, setAlloSheetFeedback] = R.useState({ kind: '', text: '' });
     const [composerRules, setComposerRules] = R.useState([]);
     // Local additions only bridge the round-trip until the canonical session
     // groups prop contains the newly written group. Canonical entries always
@@ -2226,6 +2512,9 @@
         setCreatedGroups([]);
         setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
         setSessionQaSortMode('latest');
+        setCompletedPolls([]);
+        setAlloSheetReviewOpen(false);
+        setAlloSheetFeedback({ kind: '', text: '' });
       }
     }, [hostTransportActive, sessionCode]);
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
@@ -2237,6 +2526,15 @@
       panelWasOpenRef.current = isOpen;
       if (sessionChanged || !wasOpen || isOpen || !hostTransportActive) return;
       const poll = activePollRef.current;
+      if (poll) {
+        const closedAt = Date.now();
+        const responsesForPoll = uniqueResponsesForSummary(responses[poll.id] || []);
+        const audienceUidsForPoll = activeParticipantUids.slice();
+        setCompletedPolls(function (prev) {
+          const next = prev.filter(function (entry) { return entry && entry.poll && entry.poll.id !== poll.id; });
+          return next.concat([{ poll: poll, responses: responsesForPoll, audienceCount: audienceUidsForPoll.length, audienceUids: audienceUidsForPoll, startedAt: poll.startedAt, endedAt: closedAt }]).slice(-100);
+        });
+      }
       if (poll && hostRef.current) hostRef.current.closePoll(poll.id);
       activePollRef.current = null;
       routingByPollRef.current = {};
@@ -2553,6 +2851,13 @@
     };
     const closePoll = function () {
       if (!hostRef.current || !activePoll) return;
+      const closedAt = Date.now();
+      const responsesForPoll = uniqueResponsesForSummary(responses[activePoll.id] || []);
+      const audienceUidsForPoll = activeParticipantUids.slice();
+      setCompletedPolls(function (prev) {
+        const next = prev.filter(function (entry) { return entry && entry.poll && entry.poll.id !== activePoll.id; });
+        return next.concat([{ poll: activePoll, responses: responsesForPoll, audienceCount: audienceUidsForPoll.length, audienceUids: audienceUidsForPoll, startedAt: activePoll.startedAt, endedAt: closedAt }]).slice(-100);
+      });
       hostRef.current.closePoll(activePoll.id);
       activePollRef.current = null;
       routingByPollRef.current = {};
@@ -2560,6 +2865,51 @@
       setPeerShowcaseRound(null);
       setActiveParticipantUids([]);
     };
+
+    const currentAlloSheetSnapshot = function () {
+      if (!activePoll) return null;
+      return { poll: activePoll, responses: uniqueResponsesForSummary(responses[activePoll.id] || []), audienceCount: activeParticipantUids.length, audienceUids: activeParticipantUids.slice(), startedAt: activePoll.startedAt, endedAt: Date.now() };
+    };
+    const openAlloSheetReview = function () {
+      if (!activePoll && completedPolls.length === 0) return;
+      setAlloSheetFeedback({ kind: '', text: '' });
+      setAlloSheetReviewOpen(true);
+    };
+    const closeAlloSheetReview = function () {
+      if (alloSheetBusy) return;
+      setAlloSheetReviewOpen(false);
+      setAlloSheetFeedback({ kind: '', text: '' });
+    };
+    const toggleAlloSheetDataset = function (key) {
+      setAlloSheetDatasets(function (prev) { return Object.assign({}, prev, { [key]: !prev[key] }); });
+    };
+    const transferAlloSheetReview = function () {
+      if (alloSheetBusy || typeof props.onOpenAlloSheet !== 'function') return;
+      const current = currentAlloSheetSnapshot();
+      const snapshots = completedPolls.slice();
+      if (current && !snapshots.some(function (entry) { return entry && entry.poll && entry.poll.id === current.poll.id; })) snapshots.push(current);
+      const envelope = buildLivePollingAlloSheetEnvelope({ sessionCode: sessionCode, polls: snapshots, sessionStartedAt: snapshots[0] && snapshots[0].startedAt, sessionEndedAt: Date.now() }, { includeChoiceLabels: alloSheetIncludeChoiceLabels, datasets: alloSheetDatasets, createdAt: new Date().toISOString() });
+      if (!envelope.tables.some(function (table) { return table.rowCount > 0; })) {
+        setAlloSheetFeedback({ kind: 'error', text: tr('No completed poll data matches this review.') });
+        return;
+      }
+      setAlloSheetBusy(true);
+      setAlloSheetFeedback({ kind: 'status', text: tr('Opening the reviewed aggregate tables in AlloSheet...') });
+      try {
+        const pending = props.onOpenAlloSheet(envelope);
+        if (pending === false || pending == null) throw new Error(tr('AlloSheet could not open. Allow pop-ups and try again.'));
+        Promise.resolve(pending).then(function () {
+          setAlloSheetReviewOpen(false);
+          setAlloSheetFeedback({ kind: '', text: '' });
+        }).catch(function (error) {
+          setAlloSheetFeedback({ kind: 'error', text: error && error.message ? error.message : tr('AlloSheet could not finish the review.') });
+        }).finally(function () { setAlloSheetBusy(false); });
+      } catch (error) {
+        setAlloSheetFeedback({ kind: 'error', text: error && error.message ? error.message : tr('AlloSheet could not open these tables.') });
+        setAlloSheetBusy(false);
+      }
+    };
+
     const shareResults = function () {
       if (!hostRef.current || !activePoll || isFeedbackPoll(activePoll)) return;
       const eligibleResponses = uniqueResponsesForSummary(filterLivePollingResponsesToAudience(
@@ -2699,6 +3049,7 @@
     }, [hostTransportActive, sessionCode, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, sessionQaState, onActivitySnapshot]);
 
     useLivePollingDialogFocus(hostDialogRef, isOpen, onClose, hostCloseRef);
+    useLivePollingDialogFocus(alloSheetDialogRef, alloSheetReviewOpen, closeAlloSheetReview, alloSheetInitialRef);
     useLivePollingDialogFocus(groupNameDialogRef, pendingGroupName !== null, cancelPendingGroupName, groupNameCancelRef);
 
     if (!isOpen) return null;
@@ -2928,6 +3279,47 @@
       if (hostRef.current) hostRef.current.featureSessionQaQuestion(questionId);
     };
 
+    const renderAlloSheetReview = function () {
+      if (!alloSheetReviewOpen) return null;
+      const current = currentAlloSheetSnapshot();
+      const snapshots = completedPolls.slice();
+      if (current && !snapshots.some(function (entry) { return entry && entry.poll && entry.poll.id === current.poll.id; })) snapshots.push(current);
+      const preview = buildLivePollingAlloSheetEnvelope({ sessionCode: sessionCode, polls: snapshots, sessionStartedAt: snapshots[0] && snapshots[0].startedAt, sessionEndedAt: Date.now() }, { includeChoiceLabels: alloSheetIncludeChoiceLabels, datasets: alloSheetDatasets, createdAt: new Date().toISOString() });
+      const previewRows = preview.tables.reduce(function (sum, table) { return sum + (table.rowCount || 0); }, 0);
+      const datasetOptions = [
+        ['sessionSummary', tr('Session summary'), tr('Counts, duration, and response-rate status.')],
+        ['itemSummary', tr('Item summary'), tr('Coded poll rows with no prompt text.')],
+        ['answerDistribution', tr('Coded answer distribution'), tr('Rating/choice counts with small-group suppression.')],
+        ['timeSummary', tr('15-minute time summary'), tr('Response volume by UTC time bucket.')],
+      ];
+      return ce('div', { role: 'presentation', onMouseDown: function (event) { if (event.target === event.currentTarget) closeAlloSheetReview(); }, style: { position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' } },
+        ce('div', { ref: alloSheetDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'live-polling-allosheet-title', 'aria-describedby': 'live-polling-allosheet-description', style: { width: '100%', maxWidth: 620, maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', background: 'white', borderRadius: 12, padding: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' } },
+            ce('div', null,
+              ce('div', { style: { color: '#1d4ed8', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase' } }, tr('One-way reviewed handoff')),
+              ce('h2', { id: 'live-polling-allosheet-title', style: { margin: '0.2rem 0 0', color: '#0f172a', fontSize: '1.1rem' } }, tr('Open Live Polling in AlloSheet')),
+              ce('p', { id: 'live-polling-allosheet-description', style: { margin: '0.45rem 0 0', color: '#475569', fontSize: '0.78rem', lineHeight: 1.45 } }, tr('Review a bounded post-session aggregate copy. Poll prompts, response text, codenames, routing, feedback, Q&A, and signaling metadata are excluded. AlloSheet cannot write back or enable AI.'))
+            ),
+            ce('button', { ref: alloSheetInitialRef, type: 'button', onClick: closeAlloSheetReview, disabled: alloSheetBusy, 'aria-label': tr('Close Live Polling AlloSheet review'), style: { minWidth: 44, minHeight: 44, border: '1px solid #cbd5e1', borderRadius: 6, background: 'white', color: '#0f172a', fontWeight: 800, cursor: alloSheetBusy ? 'default' : 'pointer' } }, '×')
+          ),
+          ce('fieldset', { style: { margin: '1rem 0 0', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0.75rem' } },
+            ce('legend', { style: { padding: '0 0.35rem', color: '#0f172a', fontSize: '0.78rem', fontWeight: 900 } }, tr('Tables to copy')),
+            datasetOptions.map(function (entry) { return ce('label', { key: entry[0], style: { display: 'flex', gap: 8, alignItems: 'flex-start', margin: '0.45rem 0', color: '#334155', fontSize: '0.78rem' } }, ce('input', { type: 'checkbox', 'aria-label': entry[1] + ' for AlloSheet', checked: !!alloSheetDatasets[entry[0]], disabled: alloSheetBusy, onChange: function () { toggleAlloSheetDataset(entry[0]); }, style: { marginTop: 2 } }), ce('span', null, ce('strong', null, entry[1]), ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.7rem', lineHeight: 1.35 } }, entry[2]))); })
+          ),
+          ce('label', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: '0.8rem', color: '#334155', fontSize: '0.78rem' } },
+            ce('input', { type: 'checkbox', 'aria-label': tr('Include teacher-authored choice labels in AlloSheet'), checked: alloSheetIncludeChoiceLabels, disabled: alloSheetBusy, onChange: function (event) { setAlloSheetIncludeChoiceLabels(event.target.checked); }, style: { marginTop: 2 } }),
+            ce('span', null, ce('strong', null, tr('Include teacher-authored choice labels')), ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.7rem', lineHeight: 1.35 } }, tr('Off by default. Prompts and learner-authored text remain excluded.')))
+          ),
+          ce('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '0.9rem', padding: '0.65rem 0.75rem', borderRadius: 7, background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', fontSize: '0.75rem', lineHeight: 1.4 } }, tr('Preview: ') + preview.tables.length + ' ' + tr('tables') + ', ' + previewRows + ' ' + tr('rows') + '. Small groups and small answer buckets are suppressed below five.'),
+          alloSheetFeedback.text ? ce('div', { role: alloSheetFeedback.kind === 'error' ? 'alert' : 'status', style: { marginTop: 8, color: alloSheetFeedback.kind === 'error' ? '#b91c1c' : '#334155', fontSize: '0.76rem' } }, alloSheetFeedback.text) : null,
+          ce('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: '1rem', flexWrap: 'wrap' } },
+            ce('button', { type: 'button', onClick: closeAlloSheetReview, disabled: alloSheetBusy, style: { minHeight: 44, padding: '0.55rem 0.85rem', border: '1px solid #94a3b8', borderRadius: 7, background: 'white', color: '#334155', fontWeight: 800, cursor: alloSheetBusy ? 'default' : 'pointer' } }, tr('Cancel')),
+            ce('button', { type: 'button', onClick: transferAlloSheetReview, disabled: alloSheetBusy || previewRows === 0, style: { minHeight: 44, padding: '0.55rem 0.9rem', border: 'none', borderRadius: 7, background: '#1d4ed8', color: 'white', fontWeight: 900, cursor: alloSheetBusy || previewRows === 0 ? 'default' : 'pointer' } }, alloSheetBusy ? tr('Opening AlloSheet...') : tr('Open in AlloSheet'))
+          )
+        )
+      );
+    };
+
     return ce(R.Fragment, null,
       ce('div', {
         role: 'presentation',
@@ -2940,13 +3332,14 @@
           'aria-modal': 'true',
           'aria-labelledby': 'live-polling-host-title',
           'aria-describedby': 'live-polling-host-description',
-          'aria-hidden': pendingGroupName !== null ? 'true' : undefined,
-          inert: pendingGroupName !== null ? '' : undefined,
+          'aria-hidden': (pendingGroupName !== null || alloSheetReviewOpen) ? 'true' : undefined,
+          inert: (pendingGroupName !== null || alloSheetReviewOpen) ? '' : undefined,
           style: { background: 'white', maxWidth: 720, width: '100%', maxHeight: '90vh', overflow: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
         },
         ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' } },
           ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode)),
-          ce('button', { ref: hostCloseRef, type: 'button', onClick: onClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
+          ce('button', { type: 'button', onClick: openAlloSheetReview, disabled: !activePoll && completedPolls.length === 0, 'aria-label': tr('Review Live Polling aggregates in AlloSheet'), style: { minHeight: 44, padding: '0.4rem 0.7rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: '#1d4ed8', cursor: (!activePoll && completedPolls.length === 0) ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.76rem' } }, tr('Open in AlloSheet')),
+                    ce('button', { ref: hostCloseRef, type: 'button', onClick: onClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
         ),
         ce('p', { id: 'live-polling-host-description', style: { fontSize: '0.85rem', color: '#475569', margin: '0 0 0.75rem 0' } }, tr('Connected:') + ' ',
           ce('strong', null, guests.length), ' ' + (guests.length === 1 ? tr('guest') : tr('guests')),
@@ -3344,6 +3737,7 @@
         ) : ce('p', { style: { fontSize: '0.8rem', color: '#64748b', marginTop: 0 } }, tr('No active poll. Compose above and broadcast to start.'))
       )
     ),
+
     pendingGroupName !== null ? ce('div', {
       role: 'presentation',
       onClick: function (event) { if (event.target === event.currentTarget) cancelPendingGroupName(); },
@@ -3934,6 +4328,7 @@
     buildRatingScale: buildRatingScale,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
+    buildLivePollingAlloSheetEnvelope: buildLivePollingAlloSheetEnvelope,
     normalizeWordCloudTerm: normalizeWordCloudTerm,
     buildWordCloudItems: buildWordCloudItems,
     renderWordCloudItems: renderWordCloudItems,
@@ -3986,7 +4381,7 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.12.2',
+      version: '1.13.0',
       description: 'FERPA-by-design live polling via WebRTC peer-to-peer with validated class, group, or individual audience targeting across rating, multiple choice, free text, Feedback Response, and Word Cloud; teacher-reviewed feedback and revision; teacher-moderated word clouds; moderated anonymous peer showcase voting; opt-in session-wide moderated Q&A; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules that reuse existing session groups; reconnect-safe transport (hostClosed terminal event, re-offer handling, audience-correct state sync on reconnect, guest auto-rejoin); bounded initialPoll composer presets; a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
     },
   };

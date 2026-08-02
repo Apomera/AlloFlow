@@ -149,7 +149,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
 function UniversalSettingsPanel(props) {
   const {
     InfoTooltip, addInterest, addToast, aiStandardQuery,
-    dokLevel, gradeLevel, handleAddStandard, handleFindStandards,
+    dokLevel, gradeLevel, handleAddStandard, handleFindStandards, handleUseResolvedStandard,
     handleInterestKeyDown, handleRemoveStandard, handleSetStandardModeToAi, handleSetStandardModeToManual,
     interestInput, isFindingStandards, leveledTextLanguage, removeInterest,
     selectedLanguages, setAiStandardQuery, setDokLevel, setGradeLevel,
@@ -166,6 +166,42 @@ function UniversalSettingsPanel(props) {
   // subtree, so component-local state re-collapsed the card on every tab switch.
   const isOpen = !!isUniversalSettingsOpen;
   const setIsOpen = setIsUniversalSettingsOpen;
+  const [localResolution, setLocalResolution] = React.useState(null);
+  const [isResolvingLocal, setIsResolvingLocal] = React.useState(false);
+  const standardsProviderApi = typeof window !== 'undefined' && window.AlloModules
+    ? window.AlloModules.StandardsProvider
+    : null;
+  const localStandardsProvider = standardsProviderApi && typeof standardsProviderApi.getRegisteredProvider === 'function'
+    ? standardsProviderApi.getRegisteredProvider()
+    : null;
+  const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === 'function'
+    ? localStandardsProvider.getManifest()
+    : null;
+  const resolveFromLocalSnapshot = () => {
+    const query = String(standardInputValue || '').trim();
+    if (!query || !localStandardsProvider) return;
+    setIsResolvingLocal(true);
+    try {
+      setLocalResolution(localStandardsProvider.resolveStandard(query));
+    } catch (error) {
+      setLocalResolution({ status: 'error', query, match: null, candidates: [], context: null });
+      addToast('The local standards snapshot could not be read.', 'error');
+    } finally {
+      setIsResolvingLocal(false);
+    }
+  };
+  const chooseLocalCandidate = (candidate) => {
+    if (!candidate || !localStandardsProvider || typeof localStandardsProvider.getStandardContext !== 'function') return;
+    const context = localStandardsProvider.getStandardContext(candidate.id);
+    if (!context) return;
+    setLocalResolution({
+      status: 'resolved',
+      query: localResolution && localResolution.query ? localResolution.query : candidate.code,
+      match: candidate,
+      candidates: [candidate],
+      context
+    });
+  };
   // Collapsed-state summary keeps the card useful without the height cost.
   const summaryBits = [
     gradeLevel,
@@ -371,23 +407,86 @@ function UniversalSettingsPanel(props) {
                                     )}
                                 </div>
                             ) : (
-                                <div className="flex gap-2">
-                                    <input aria-label={t('common.enter_standard_input_value')}
-                                        type="text"
-                                        value={standardInputValue}
-                                        onChange={(e) => setStandardInputValue(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
-                                        placeholder={t('standards.manual_placeholder')}
-                                        className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                                    />
-                                    <button type="button" aria-label={t('common.add')}
-                                        onClick={handleAddStandard}
-                                        disabled={!standardInputValue.trim() || targetStandards.length >= 3}
-                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title={t('standards.add_button')}
-                                    >
-                                        <Plus size={16} />
-                                    </button>
+                                <div className="space-y-2">
+                                    <div className="flex gap-2">
+                                        <input aria-label={t('common.enter_standard_input_value')}
+                                            type="text"
+                                            value={standardInputValue}
+                                            onChange={(e) => {
+                                                setStandardInputValue(e.target.value);
+                                                setLocalResolution(null);
+                                            }}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+                                            placeholder={t('standards.manual_placeholder')}
+                                            className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                        />
+                                        <button type="button" aria-label={t('common.add')}
+                                            onClick={handleAddStandard}
+                                            disabled={!standardInputValue.trim() || targetStandards.length >= 3}
+                                            className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title={t('standards.add_button')}
+                                        >
+                                            <Plus size={16} />
+                                        </button>
+                                    </div>
+                                    {localStandardsProvider && (
+                                        <div className="rounded-md border border-cyan-200 bg-cyan-50/60 p-2 space-y-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <button type="button"
+                                                    onClick={resolveFromLocalSnapshot}
+                                                    disabled={!standardInputValue.trim() || isResolvingLocal}
+                                                    className="inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    {isResolvingLocal ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Search size={12}/>} Resolve from local snapshot
+                                                </button>
+                                                {localStandardsManifest && (
+                                                    <span className="text-[10px] text-cyan-900" title={localStandardsManifest.attribution || localStandardsManifest.provider}>
+                                                        {localStandardsManifest.datasetVersion || localStandardsManifest.provider}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {localResolution && localResolution.status === 'resolved' && localResolution.match && (
+                                                <div role="status" className="rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700">
+                                                    <div className="font-bold text-emerald-800">Exact local match: {localResolution.match.code}</div>
+                                                    <div className="mt-0.5">{localResolution.match.label || localResolution.match.text}</div>
+                                                    <button type="button"
+                                                        onClick={() => handleUseResolvedStandard && handleUseResolvedStandard(localResolution)}
+                                                        disabled={targetStandards.length > 0 || typeof handleUseResolvedStandard !== 'function'}
+                                                        className="mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        Use resolved standard
+                                                    </button>
+                                                    {targetStandards.length > 0 && <div className="mt-1 text-amber-800">Remove the current target standard before using a resolved local record.</div>}
+                                                </div>
+                                            )}
+                                            {localResolution && localResolution.status === 'ambiguous' && (
+                                                <div role="status" className="rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700">
+                                                    <div className="font-bold text-amber-800">Multiple exact matches. Choose the intended framework.</div>
+                                                    <div className="mt-1 flex flex-wrap gap-1">
+                                                        {(localResolution.candidates || []).map((candidate) => (
+                                                            <button type="button" key={candidate.id}
+                                                                onClick={() => chooseLocalCandidate(candidate)}
+                                                                className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-left hover:bg-amber-100"
+                                                            >
+                                                                <span className="font-bold">{candidate.code}</span> · {candidate.framework || candidate.jurisdiction || candidate.id}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {localResolution && localResolution.status === 'not-found' && (
+                                                <div role="status" className="rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700">
+                                                    <div className="font-bold">No exact local match.</div>
+                                                    {(localResolution.candidates || []).length > 0 && (
+                                                        <div className="mt-1">Possible codes to review: {(localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(', ')}. They were not selected automatically.</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {localResolution && localResolution.status === 'error' && (
+                                                <div role="alert" className="rounded border border-red-200 bg-white p-2 text-[11px] text-red-700">The local snapshot could not resolve this entry.</div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             <UniversalApplicability settingKey="standards" t={t} />

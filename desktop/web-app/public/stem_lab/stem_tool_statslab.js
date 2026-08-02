@@ -2283,6 +2283,46 @@ window.StemLab = window.StemLab || {
     }
     var t = d.twoColData;
     var t2 = d.multiColData;
+    var kernelSQL = d.kernelSQL || 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name';
+    var kernelBusy = !!d.kernelBusy;
+    var kernelError = d.kernelError || '';
+    var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
+    var kernelRows = [];
+    function addKernelRows(group, values) {
+      (values || []).forEach(function(value, index) {
+        if (_isNum(value)) kernelRows.push({ group_name: group || 'Data', measure_value: value, row_index: index + 1 });
+      });
+    }
+    addKernelRows(t.aLabel || 'Group A', t.a);
+    addKernelRows(t.bLabel || 'Group B', t.b);
+    (t2.groups || []).forEach(function(g) { addKernelRows(g.label || 'Group', g.values); });
+    addKernelRows('Single column', d.oneColData.values);
+    var kernelRecipeId = d.kernelRecipeId || '';
+    var kernelRecipes = window.AlloDataKernel && typeof window.AlloDataKernel.suggestRecipes === 'function' ? window.AlloDataKernel.suggestRecipes(kernelRows) : [];
+    var kernelHistory = window.AlloDataKernel && window.AlloDataKernel.queryHistory && typeof window.AlloDataKernel.queryHistory.list === 'function' ? window.AlloDataKernel.queryHistory.list() : [];
+    var applyKernelRecipe = function(recipe) {
+      if (!recipe) return;
+      upd({ kernelSQL: recipe.sql, kernelRecipeId: recipe.id, kernelError: '', kernelResult: null });
+    };
+    var runKernelQuery = function() {
+      var kernel = window.AlloDataKernel;
+      if (!kernel || typeof kernel.queryRows !== 'function') {
+        upd({ kernelBusy: false, kernelError: 'Local analytical engine is still loading. Please try again in a moment.', kernelResult: null });
+        return;
+      }
+      upd({ kernelSQL: kernelSQL, kernelBusy: true, kernelError: '', kernelResult: null });
+      Promise.resolve().then(function() { return kernel.queryRows(kernelRows, kernelSQL); }).then(function(result) {
+        var rows = Array.isArray(result.rows) ? result.rows.slice(0, 100) : [];
+        var columns = rows.length ? Object.keys(rows[0]) : ((result.provenance && result.provenance.columns) || []);
+        if (kernel.queryHistory && typeof kernel.queryHistory.record === 'function') kernel.queryHistory.record({ tool: 'statsLab', recipe: kernelRecipeId || null, sql: result.query || kernelSQL, backend: result.backend || 'local', rowCount: rows.length, sourceRowCount: result.provenance && result.provenance.rowCount, columns: result.provenance && result.provenance.columns });
+        upd({ kernelBusy: false, kernelError: '', kernelResult: { rows: rows, columns: columns, backend: result.backend || 'local', provenance: result.provenance || null, summary: result.summary || null } });
+        if (addToast) addToast('Local query complete (' + rows.length + ' rows)', 'success');
+      }).catch(function(error) {
+        var message = error && error.message ? error.message : String(error || 'Query failed');
+        upd({ kernelBusy: false, kernelError: message, kernelResult: null });
+        if (addToast) addToast('Local query failed: ' + message, 'error');
+      });
+    };
     // Helper: build a one-line summary card for a column.
     function _summaryCard(values, label, key) {
       var x = _clean(values);
@@ -2336,7 +2376,42 @@ window.StemLab = window.StemLab || {
           sumCards.filter(Boolean)
         )
       ),
-      // Two-column data (most tests)
+      // Shared local analytical workspace
+      h('div', {
+        style: {
+          background: 'rgba(14,165,233,0.07)',
+          border: '1px solid rgba(56,189,248,0.42)',
+          borderRadius: 10, padding: 12, marginBottom: 12
+        }
+      },
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, '🧮 Local analytical workspace'),
+        h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Run read-only SQL over the numeric data currently in Stats Lab. The query executes locally in your browser and keeps its source/provenance with the result.'),
+        h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': 'Local analytical SQL query', placeholder: 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name', style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
+        kernelRecipes.length > 0 && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' } },
+          h('label', { htmlFor: 'sl-kernel-recipe', style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc' } }, 'Starter recipe'),
+          h('select', { id: 'sl-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, 'data-sl-focusable': 'true', style: { flex: 1, minWidth: 190, padding: '5px 7px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontSize: 10 } },
+            h('option', { value: '' }, 'Choose a local analysis…'),
+            kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); })
+          ),
+          h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Recipes adapt to the columns above.')
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' } },
+          h('button', { onClick: runKernelQuery, disabled: kernelBusy || !kernelRows.length, 'data-sl-focusable': 'true', style: { padding: '6px 12px', background: '#0369a1', color: '#fff', border: '1px solid #0284c7', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 800, opacity: kernelBusy || !kernelRows.length ? 0.45 : 1 } }, kernelBusy ? '⏳ Loading local engine…' : '▶ Run local query'),
+          !kernelRows.length && h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Enter numeric data above first.')
+        ),
+        kernelError && h('div', { role: 'alert', style: { marginTop: 7, padding: 7, background: 'rgba(127,29,29,0.28)', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, color: '#fca5a5', fontSize: 11, whiteSpace: 'pre-wrap' } }, kernelError),
+        kernelResult && h('div', { style: { marginTop: 9, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.18)' } },
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, 'Result · ' + kernelResult.rows.length + ' row' + (kernelResult.rows.length === 1 ? '' : 's') + ' · ' + (kernelResult.backend || 'local')),
+          kernelResult.provenance && h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
+          kernelResult.rows.length > 0 && h('div', { style: { overflowX: 'auto' } },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10, fontFamily: 'monospace' } },
+              h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, style: { textAlign: 'left', padding: '4px 6px', background: 'rgba(56,189,248,0.12)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.2)' } }, column); }))),
+              h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, style: { padding: '4px 6px', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(56,189,248,0.16)' } }, row[column] == null ? '—' : String(row[column])); })); }))
+            )
+          ),
+          kernelResult.rows.length === 100 && h('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Showing the first 100 result rows.')
+        )
+      ),      // Two-column data (most tests)
       h('div', {
         style: {
           background: 'rgba(99,102,241,0.05)',
@@ -3220,7 +3295,17 @@ window.StemLab = window.StemLab || {
         lines.push('  Empirical p = ' + d.permResult.pPerm.toFixed(4) + '  (formula-based p = ' + (_isNum(r.p) ? (r.p < 0.001 ? '< .001' : r.p.toFixed(4)) : '?') + ')');
         lines.push('');
       }
-      if (d.interpretationDraft && d.interpretationDraft.trim()) {
+      if (d.kernelResult) {
+        lines.push('─── LOCAL DATA KERNEL ─────────────────────────────────────────');
+        lines.push('  Backend: ' + (d.kernelResult.backend || 'local'));
+        if (d.kernelRecipeId) lines.push('  Recipe: ' + d.kernelRecipeId);
+        lines.push('  Query: ' + (d.kernelSQL || ''));
+        if (d.kernelResult.provenance) lines.push('  Source shape: ' + d.kernelResult.provenance.rowCount + ' rows; columns = ' + (d.kernelResult.provenance.columns || []).join(', '));
+        lines.push('  Returned rows: ' + ((d.kernelResult.rows || []).length));
+        var savedKernelHistory = window.AlloDataKernel && window.AlloDataKernel.queryHistory && typeof window.AlloDataKernel.queryHistory.list === 'function' ? window.AlloDataKernel.queryHistory.list() : [];
+        lines.push('  Notebook entries: ' + savedKernelHistory.length);
+        lines.push('');
+      }      if (d.interpretationDraft && d.interpretationDraft.trim()) {
         lines.push('─── STUDENT INTERPRETATION ────────────────────────────────');
         lines.push(d.interpretationDraft);
         lines.push('');

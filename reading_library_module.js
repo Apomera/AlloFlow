@@ -11,7 +11,8 @@
  *   - Props: isOpen, onClose, addToast(msg, type), t (optional),
  *     callGemini(prompt) (optional), handleGenerate(type, lang, keep, text)
  *     (optional), setInputText(text) (optional), onPracticeLanguage(selection)
- *     (optional), isTeacherMode (optional).
+ *     (optional), isTeacherMode (optional), onSaveReadingSet(set) (optional).
+ *   - Reading sets contain metadata/source links only; no page content is copied.
  *   - No bare t() calls (free-t crash class): tr() guards window.__alloT and
  *     falls back to English when the key echoes back untranslated.
  *   - Theme: root carries .allo-docsuite so .theme-dark/.theme-contrast CSS
@@ -166,6 +167,103 @@
     return 'unknown';
   }
 
+  // Reading sets intentionally contain catalog metadata only. They never
+  // copy page text, images, audio, or generated adaptations, so a teacher can
+  // share an ordered reading path while each title keeps its own source and
+  // licence obligations.
+  function readingSetBookRef(book, order) {
+    var source = (book && book.source) || {};
+    var sourceId = bookSourceId(book);
+    return {
+      order: Number(order) || 1,
+      slug: book && book.slug ? String(book.slug) : '',
+      title: book && book.title ? String(book.title) : 'Untitled reading',
+      sourceId: sourceId,
+      sourceName: sourceLabel(sourceId),
+      sourceUrl: source.url || (book && (book.sourceUrl || book.sourceURL)) || null,
+      attributionUrl: source.attributionUrl || source.url || (book && book.attributionUrl) || null,
+      language: book && book.language ? String(book.language) : 'Not specified',
+      level: book && book.level != null ? book.level : null,
+      contentType: book && book.contentType ? String(book.contentType) : null,
+      license: book && book.license ? String(book.license) : null,
+      licenseUrl: book && book.licenseUrl ? String(book.licenseUrl) : null,
+      hasAudio: !!(book && (book.hasAudio || book.audio)),
+    };
+  }
+
+  function readingSetKey(title, refs) {
+    var name = String(title || 'Reading set').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'reading-set';
+    return name + '|' + (refs || []).map(function (ref) { return ref.slug; }).join('|');
+  }
+
+  function buildReadingSet(title, books) {
+    var refs = (books || []).filter(function (book) { return book && book.slug; })
+      .map(function (book, index) { return readingSetBookRef(book, index + 1); });
+    var cleanTitle = String(title || '').trim() || 'Reading set';
+    return {
+      schema: 'allo-reading-set@1',
+      id: 'readingset-' + readingSetKey(cleanTitle, refs),
+      title: cleanTitle,
+      setKey: readingSetKey(cleanTitle, refs),
+      createdAt: new Date().toISOString(),
+      books: refs,
+      rightsNote: 'This set stores catalog metadata and source links only; open each title under its listed licence and usage policy.',
+    };
+  }
+
+  function safeReadingSetUrl(value) {
+    var url = String(value || '').trim();
+    return /^https?:\/\//i.test(url) ? url : null;
+  }
+
+  function normalizeReadingSet(input) {
+    if (!input || input.schema !== 'allo-reading-set@1' || !Array.isArray(input.books)) return null;
+    var refs = input.books.slice(0, 200).map(function (book, index) {
+      if (!book || !book.slug || !book.title) return null;
+      return {
+        order: index + 1,
+        slug: String(book.slug),
+        title: String(book.title),
+        sourceId: book.sourceId ? String(book.sourceId) : 'unknown',
+        sourceName: book.sourceName ? String(book.sourceName) : sourceLabel(book.sourceId),
+        sourceUrl: safeReadingSetUrl(book.sourceUrl),
+        attributionUrl: safeReadingSetUrl(book.attributionUrl),
+        language: book.language ? String(book.language) : 'Not specified',
+        level: book.level != null ? book.level : null,
+        contentType: book.contentType ? String(book.contentType) : null,
+        license: book.license ? String(book.license) : null,
+        licenseUrl: safeReadingSetUrl(book.licenseUrl),
+        hasAudio: !!book.hasAudio,
+      };
+    }).filter(Boolean);
+    if (!refs.length) return null;
+    var title = String(input.title || 'Reading set').trim() || 'Reading set';
+    return {
+      schema: 'allo-reading-set@1',
+      id: input.id ? String(input.id) : 'readingset-' + readingSetKey(title, refs),
+      title: title,
+      setKey: input.setKey ? String(input.setKey) : readingSetKey(title, refs),
+      createdAt: input.createdAt ? String(input.createdAt) : null,
+      books: refs,
+      rightsNote: 'This set stores catalog metadata and source links only; open each title under its listed licence and usage policy.',
+    };
+  }
+  function downloadJson(payload, filename) {
+    try {
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
   function collectionById(id) {
     return LIBRARY_COLLECTIONS.filter(function (c) { return c.id === id; })[0] || null;
   }
@@ -3229,6 +3327,54 @@
     );
   }
 
+  function ReadingSetNavigator(props) {
+    var set = props.set || {};
+    var refs = Array.isArray(set.books) ? set.books : [];
+    var available = props.availableSlugs || [];
+    return e('div', { className: 'flex flex-col h-full min-h-0', 'data-testid': 'reading-set-navigator' },
+      e('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-3' },
+        e('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+          e('div', { className: 'min-w-0' },
+            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-indigo-600' }, tr('readinglib_set_sequence', 'Reading sequence')),
+            e('h3', { className: 'text-xl font-extrabold text-indigo-950 truncate', dir: 'auto' }, set.title || tr('readinglib_set_resource', 'Reading set')),
+            e('p', { className: 'text-sm text-indigo-900/80' }, refs.length + ' ' + tr('readinglib_books', 'books') + ' · ' + tr('readinglib_set_sequence_hint', 'Open titles in order or choose your own pace.'))
+          ),
+          e('div', { className: 'flex flex-wrap gap-2' },
+            props.isTeacherMode && typeof props.onSaveReadingSet === 'function' ? e('button', {
+              className: 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
+              onClick: function () { props.onSaveReadingSet(set); props.addToast && props.addToast('"' + set.title + '" ' + tr('readinglib_set_saved', 'was added to this lesson\'s resources.'), 'success'); },
+            }, '📌 ' + tr('readinglib_set_save', 'Save to lesson')) : null,
+            e('button', {
+              className: 'rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-bold text-indigo-800 hover:bg-indigo-100',
+              onClick: props.onBack,
+            }, tr('readinglib_set_back_catalog', 'Back to catalog'))
+          )
+        ),
+        e('p', { className: 'mt-2 text-[11px] text-indigo-950/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
+      ),
+      e('ol', { className: 'flex-1 min-h-0 overflow-y-auto space-y-2 pr-1', 'aria-label': tr('readinglib_set_order', 'Reading set order') },
+        refs.map(function (ref, index) {
+          var local = available.indexOf(ref.slug) !== -1;
+          return e('li', { key: 'sequence-' + ref.slug, className: 'flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3' },
+            e('span', { className: 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-extrabold text-indigo-800', 'aria-hidden': true }, String(index + 1)),
+            e('div', { className: 'min-w-0 flex-1' },
+              e('div', { className: 'font-bold text-slate-800 truncate', dir: 'auto' }, ref.title),
+              e('div', { className: 'text-xs text-slate-500 truncate' }, [ref.sourceName, ref.language, ref.license].filter(Boolean).join(' · '))
+            ),
+            local ? e('button', {
+              className: 'shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-indigo-700',
+              onClick: function () { props.onOpen(ref); },
+              'aria-label': tr('readinglib_set_open_title', 'Open title') + ': ' + ref.title,
+            }, tr('readinglib_open', 'Open')) : ref.sourceUrl ? e('a', {
+              className: 'shrink-0 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-bold text-sky-800 hover:bg-sky-100',
+              href: ref.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+              'aria-label': tr('readinglib_set_open_source', 'Open source') + ': ' + ref.title,
+            }, tr('readinglib_set_source', 'Source')) : e('span', { className: 'shrink-0 text-xs text-slate-400' }, tr('readinglib_set_unavailable', 'Unavailable'))
+          );
+        })
+      )
+    );
+  }
   function ReadingLibrary(props) {
     if (!props.isOpen) return null;
 
@@ -3237,11 +3383,18 @@
     var _f = useState({ language: 'English', level: '', topic: '', length: '', license: '', search: '', audio: false, fullOnly: false, sort: 'level', source: '', searchAll: false });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
+    var _setView = useState(null); var activeReadingSet = _setView[0]; var setActiveReadingSet = _setView[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
     var _opt = useState(false); var optionsOpen = _opt[0]; var setOptionsOpen = _opt[1];
     var _fm = useState(false); var findMoreOpen = _fm[0]; var setFindMoreOpen = _fm[1];
     var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
     var _visible = useState(VISIBLE_BOOK_BATCH); var visibleLimit = _visible[0]; var setVisibleLimit = _visible[1];
+    // Teacher reading-set builder. Selection stores slugs only; the payload is
+    // assembled from the current catalog cards when the teacher saves/exports.
+    var _setSlugs = useState([]); var selectedSetSlugs = _setSlugs[0]; var setSelectedSetSlugs = _setSlugs[1];
+    var _setPanel = useState(false); var setPanelOpen = _setPanel[0]; var setSetPanelOpen = _setPanel[1];
+    var _setName = useState(''); var setName = _setName[0]; var setSetName = _setName[1];
+    var setImportRef = useRef(null);
     // Lazy catalog cards: the core index omits the large link-out discovery
     // sets; they are fetched from index.cardsFile only when a card-bearing
     // view needs them (History / Study / All shelves, or any search). extraCards holds
@@ -3360,6 +3513,81 @@
     }, [collectionBooks, books, filters]);
     useEffect(function () { setVisibleLimit(VISIBLE_BOOK_BATCH); }, [selectedCollectionId, filters]);
     var visibleBooks = filtered.length > visibleLimit ? filtered.slice(0, visibleLimit) : filtered;
+    var selectedSetBooks = useMemo(function () {
+      var bySlug = {};
+      books.forEach(function (book) { if (book && book.slug) bySlug[book.slug] = book; });
+      return selectedSetSlugs.map(function (slug) { return bySlug[slug]; }).filter(Boolean);
+    }, [books, selectedSetSlugs]);
+    var toggleSetBook = function (book) {
+      if (!book || !book.slug) return;
+      setSelectedSetSlugs(function (current) {
+        return current.indexOf(book.slug) !== -1
+          ? current.filter(function (slug) { return slug !== book.slug; })
+          : current.concat([book.slug]);
+      });
+    };
+    var moveSetBook = function (index, direction) {
+      setSelectedSetSlugs(function (current) {
+        var nextIndex = index + direction;
+        if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+        var next = current.slice();
+        var item = next[index]; next[index] = next[nextIndex]; next[nextIndex] = item;
+        return next;
+      });
+    };
+    var removeSetBook = function (slug) {
+      setSelectedSetSlugs(function (current) { return current.filter(function (item) { return item !== slug; }); });
+    };
+    var currentReadingSet = function () { return buildReadingSet(setName, selectedSetBooks); };
+    var saveReadingSet = function () {
+      if (!selectedSetBooks.length) return;
+      var payload = currentReadingSet();
+      if (typeof props.onSaveReadingSet === 'function') props.onSaveReadingSet(payload);
+      props.addToast && props.addToast('"' + payload.title + '" ' + tr('readinglib_set_saved', 'was added to this lesson\'s resources.'), 'success');
+      setSetPanelOpen(false);
+    };
+    var exportReadingSet = function () {
+      if (!selectedSetBooks.length) return;
+      var payload = currentReadingSet();
+      if (!downloadJson(payload, 'alloflow-reading-set.json')) {
+        props.addToast && props.addToast(tr('readinglib_set_export_failed', 'Could not export this reading set.'), 'error');
+        return;
+      }
+      props.addToast && props.addToast(tr('readinglib_set_exported', 'Reading set exported.'), 'success');
+    };
+    var importReadingSet = function (file) {
+      if (!file) return;
+      var read = file.text ? file.text() : new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(String(reader.result || '')); };
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+      read.then(function (text) {
+        var normalized = normalizeReadingSet(JSON.parse(text));
+        if (!normalized) throw new Error('invalid reading set');
+        setActiveReadingSet(normalized);
+        setSetName(normalized.title);
+        setSetPanelOpen(false);
+        props.addToast && props.addToast('"' + normalized.title + '" ' + tr('readinglib_set_imported', 'is ready.'), 'success');
+      }).catch(function () {
+        props.addToast && props.addToast(tr('readinglib_set_import_failed', 'That file is not a valid AlloFlow reading set.'), 'error');
+      });
+    };
+    var renderSelectableCard = function (book, key) {
+      var selected = selectedSetSlugs.indexOf(book.slug) !== -1;
+      return e('div', { key: key || book.slug, className: 'relative' },
+        e(BookCard, { book: book, onOpen: openBookBySlug, busy: loadingBook === book.slug, familySize: workFamilySizes[workIdentity(book)] || 0 }),
+        props.isTeacherMode ? e('button', {
+          className: 'absolute top-2 left-2 z-10 min-w-[2rem] h-8 px-2 rounded-full border shadow text-sm font-extrabold ' +
+            (selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/95 text-indigo-800 border-indigo-200 hover:bg-indigo-50'),
+          onClick: function (ev) { ev.preventDefault(); ev.stopPropagation(); toggleSetBook(book); },
+          'aria-pressed': selected,
+          'aria-label': (selected ? tr('readinglib_remove_from_set', 'Remove from reading set') : tr('readinglib_add_to_set', 'Add to reading set')) + ': ' + book.title,
+          title: selected ? tr('readinglib_remove_from_set', 'Remove from reading set') : tr('readinglib_add_to_set', 'Add to reading set'),
+        }, selected ? '✓' : '+') : null
+      );
+    };
 
     var languages = useMemo(function () {
       var source = selectedCollection ? collectionBooks : books;
@@ -3613,6 +3841,19 @@
       if (typeof props.onInitialBookConsumed === 'function') props.onInitialBookConsumed();
     }, [props.initialBookSlug, index.status]);
 
+    // Restore an entire lesson reading set as an ordered navigator. The host
+    // consumes the prop after validation; the normalized copy stays local so
+    // returning from a title lands back on the sequence.
+    useEffect(function () {
+      if (!props.initialReadingSet) return;
+      var normalized = normalizeReadingSet(props.initialReadingSet);
+      if (!normalized) {
+        props.addToast && props.addToast(tr('readinglib_set_invalid', 'That reading-set file is not valid.'), 'error');
+      } else {
+        setActiveReadingSet(normalized);
+      }
+      if (typeof props.onInitialReadingSetConsumed === 'function') props.onInitialReadingSetConsumed();
+    }, [props.initialReadingSet]);
     var body;
     if (openBook) {
       body = e(BookReader, {
@@ -3634,6 +3875,19 @@
         onSaveToLesson: props.onSaveToLesson,
         onPracticeLanguage: props.onPracticeLanguage,
         onThemeChange: setReaderThemeId,
+      });
+    } else if (activeReadingSet) {
+      body = e(ReadingSetNavigator, {
+        set: activeReadingSet,
+        isTeacherMode: props.isTeacherMode,
+        onSaveReadingSet: props.onSaveReadingSet,
+        availableSlugs: books.map(function (book) { return book.slug; }),
+        onBack: function () { setActiveReadingSet(null); },
+        onOpen: function (ref) {
+          var entry = books.filter(function (book) { return book.slug === ref.slug; })[0];
+          if (entry) openBookBySlug(entry);
+          else props.addToast && props.addToast(tr('readinglib_assigned_missing', 'That book is no longer in the library.'), 'info');
+        },
       });
     } else if (!selectedCollection) {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
@@ -3753,7 +4007,69 @@
             title: tr('readinglib_search_all_hint', 'Include books from every collection in search results'),
           }, '🔎 ' + tr('readinglib_search_all', 'All collections'))
         ),
-        activeFilterPills.length ? e('div', {
+        props.isTeacherMode && selectedSetSlugs.length ? e('div', {
+          className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3',
+          'data-testid': 'reading-set-builder',
+        },
+          e('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+            e('div', { className: 'text-sm font-bold text-indigo-900' },
+              '📚 ' + selectedSetSlugs.length + ' ' + tr('readinglib_set_selected', 'titles selected')),
+            e('button', {
+              className: 'rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-indigo-700',
+              onClick: function () { setSetPanelOpen(!setPanelOpen); },
+              'aria-expanded': setPanelOpen,
+              'aria-controls': 'reading-set-editor',
+            }, setPanelOpen ? tr('readinglib_set_hide', 'Hide set editor') : tr('readinglib_set_edit', 'Edit reading set'))
+          ),
+          setPanelOpen ? e('div', { id: 'reading-set-editor', className: 'mt-3 space-y-2' },
+            e('label', { className: 'block text-xs font-bold text-indigo-900', htmlFor: 'reading-set-name' }, tr('readinglib_set_name', 'Reading set name')),
+            e('input', {
+              id: 'reading-set-name',
+              className: 'w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800',
+              value: setName,
+              onChange: function (ev) { setSetName(ev.target.value); },
+              placeholder: tr('readinglib_set_name_ph', 'e.g., Week 1 · Weather stories'),
+            }),
+            e('ol', { className: 'space-y-1', 'aria-label': tr('readinglib_set_order', 'Reading set order') },
+              selectedSetBooks.map(function (book, index) {
+                return e('li', { key: 'set-' + book.slug, className: 'flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-2 py-1.5' },
+                  e('span', { className: 'w-5 text-center text-xs font-bold text-indigo-500' }, String(index + 1)),
+                  e('span', { className: 'min-w-0 flex-1 truncate text-sm font-semibold text-slate-800', dir: 'auto' }, book.title),
+                  e('button', {
+                    className: 'rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600 disabled:opacity-40',
+                    onClick: function () { moveSetBook(index, -1); }, disabled: index === 0,
+                    'aria-label': tr('readinglib_set_move_up', 'Move up') + ': ' + book.title,
+                  }, '↑'),
+                  e('button', {
+                    className: 'rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600 disabled:opacity-40',
+                    onClick: function () { moveSetBook(index, 1); }, disabled: index === selectedSetBooks.length - 1,
+                    'aria-label': tr('readinglib_set_move_down', 'Move down') + ': ' + book.title,
+                  }, '↓'),
+                  e('button', {
+                    className: 'rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-700 hover:bg-red-50',
+                    onClick: function () { removeSetBook(book.slug); },
+                    'aria-label': tr('readinglib_remove_from_set', 'Remove from reading set') + ': ' + book.title,
+                  }, '×')
+                );
+              })
+            ),
+            e('div', { className: 'flex flex-wrap gap-2 pt-1' },
+              typeof props.onSaveReadingSet === 'function' ? e('button', {
+                className: 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
+                onClick: saveReadingSet,
+              }, '📌 ' + tr('readinglib_set_save', 'Save to lesson')) : null,
+              e('button', {
+                className: 'rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-bold text-indigo-800 hover:bg-indigo-100',
+                onClick: exportReadingSet,
+              }, '⇩ ' + tr('readinglib_set_export', 'Download JSON')),
+              e('button', {
+                className: 'rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100',
+                onClick: function () { setSelectedSetSlugs([]); setSetPanelOpen(false); },
+              }, tr('readinglib_set_clear', 'Clear selection'))
+            ),
+            e('p', { className: 'text-[11px] text-indigo-900/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
+          ) : null
+        ) : null,        activeFilterPills.length ? e('div', {
           className: 'flex flex-wrap items-center gap-1.5 pb-3',
           'data-testid': 'active-catalog-filters',
           'aria-label': tr('readinglib_active_filters', 'Active filters'),
@@ -3861,7 +4177,7 @@
           ) : null,
           e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-2' },
             visibleBooks.map(function (b) {
-              return e(BookCard, { key: b.slug, book: b, onOpen: openBookBySlug, busy: loadingBook === b.slug, familySize: workFamilySizes[workIdentity(b)] || 0 });
+              return renderSelectableCard(b, b.slug);
             })
           ),
           visibleBooks.length < filtered.length ? e('div', { className: 'flex justify-center py-3' },
@@ -3904,7 +4220,17 @@
               onClick: function () { setFindMoreOpen(true); },
               title: tr('readinglib_find_more_hint', 'Search Project Gutenberg and request books to add'),
             }, '🔎 ' + tr('readinglib_find_more', 'Find more books')) : null,
-            props.isTeacherMode && !openBook ? e('button', {
+            props.isTeacherMode && !openBook ? e('div', { className: 'flex items-center gap-1' },
+              e('button', {
+                className: 'px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-sm font-semibold border border-emerald-200',
+                onClick: function () { if (setImportRef.current) setImportRef.current.click(); },
+                title: tr('readinglib_set_import_hint', 'Open an AlloFlow reading-set JSON file'),
+              }, '⇧ ' + tr('readinglib_set_import', 'Import set')),
+              e('input', {
+                ref: setImportRef, type: 'file', accept: 'application/json,.json', className: 'hidden', 'aria-hidden': true,
+                onChange: function (ev) { var file = ev.target.files && ev.target.files[0]; importReadingSet(file); ev.target.value = ''; },
+              })
+            ) : null,            props.isTeacherMode && !openBook ? e('button', {
               className: 'px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-sm font-semibold border border-indigo-200',
               onClick: function () { setOptionsOpen(true); },
             }, '🌍 ' + tr('readinglib_lang_options', 'Language options')) : null,
@@ -3971,6 +4297,10 @@
   ReadingLibrary._bookPlainTextForLocalAccessibility = function (book) {
     return bookPlainText(book, { localAccessibility: true });
   };
+  ReadingLibrary._readingSetBookRef = readingSetBookRef;
+  ReadingLibrary._buildReadingSet = buildReadingSet;
+  ReadingLibrary._readingSetKey = readingSetKey;
+  ReadingLibrary._normalizeReadingSet = normalizeReadingSet;
   ReadingLibrary._textLayoutClass = textLayoutClass;
   ReadingLibrary._chromeThemeClass = chromeThemeClass;
   ReadingLibrary._readingTimeLabel = readingTimeLabel;

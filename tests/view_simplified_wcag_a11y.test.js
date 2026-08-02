@@ -35,12 +35,13 @@ describe('Simplified View read-aloud sentence alignment', () => {
     expect(source).toContain('const _references = simplifiedReferences;');
     expect(source).not.toContain('_refsInputCount > _refsContentCount');
 
-    const sentenceListConsumers =
-      source.match(/getReadAloudSentencesForText\(simplifiedReadAloudText\)/g) || [];
-    const sideBySideConsumers =
-      source.match(/getSideBySideContent\(simplifiedReadAloudText\)/g) || [];
-    expect(sentenceListConsumers.length).toBeGreaterThanOrEqual(3);
-    expect(sideBySideConsumers.length).toBeGreaterThanOrEqual(3);
+    // Sentence enumeration is centralized so display, playback, preparation,
+    // and Edit Audio cannot independently drift on bilingual/duplicate text.
+    expect(source).toContain('var getReadAloudSentenceEntriesForText = function (rawText) {');
+    expect(source).toContain('var parts = getSideBySideContent(text);');
+    const entryConsumers =
+      source.match(/getReadAloudSentenceEntriesForText\(simplifiedReadAloudText\)/g) || [];
+    expect(entryConsumers.length).toBeGreaterThanOrEqual(2);
 
     expect(source).toContain("handleSpeak(simplifiedReadAloudText, 'simplified-main',");
     expect(source).not.toMatch(/handleSpeak\(generatedContent\?\.data,\s*'simplified-main'/);

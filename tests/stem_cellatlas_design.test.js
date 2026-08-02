@@ -86,6 +86,7 @@ describe('Cell Atlas Lab experimental-design literacy', () => {
     expect(html).toContain('Qualitative rubric');
     expect(html).toContain('not budgets, power calculations, or predictions');
     expect(html).toContain('No configuration removes every bias');
+    expect(html).toContain('Copy study plan packet');
     expect(html).toContain('Missing fragile cells');
     expect(html).toContain('Compare preparation methods or use nuclei');
   });

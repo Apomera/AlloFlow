@@ -1,0 +1,127 @@
+name: mcpb-release
+
+# Builds the local-first Claude Desktop extension. No Worker, Cloudflare account, hosted
+# document processing, Gemini key, or student document is used by this workflow.
+on:
+workflow_dispatch:
+  push:
+    tags:
+      - 'mcpb-v*'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/mcpb-release.yml'
+      - 'desktop/mcp/**'
+      - 'verification_policy_module.js'
+      - 'doc_builder_renderer_module.js'
+      - 'doc_pipeline_module.js'
+      - 'view_pdf_validator_module.js'
+      - 'view_pdf_audit_module.js'
+      - 'verapdf/**'
+      - 'dev-tools/mcp_capability_inventory.cjs'
+      - 'tests/mcp_remediation_stdio_smoke.test.js'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcpb-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Verify and package MCPB
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install pinned test dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium for app-to-MCP parity
+        run: npx playwright install chromium
+      - name: Verify canonical app-to-MCP parity
+        run: npm run verify:mcp-parity
+      - name: Require release tag to match the MCPB manifest version
+        if: startsWith(github.ref, 'refs/tags/mcpb-v')
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $manifestVersion = node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version"
+          $tagVersion = $env:RELEASE_TAG -replace '^mcpb-v', ''
+          if ($manifestVersion -ne $tagVersion) {
+            throw "Tag $env:RELEASE_TAG does not match MCPB manifest version $manifestVersion."
+          }
+      - name: Build, officially validate, extract, and boot-check the exact MCPB
+        run: node desktop/mcp/build_mcpb.cjs
+      - name: Audit the dependencies actually bundled
+        run: npm audit --omit=dev --audit-level=high --prefix desktop/dist/mcpb/staging
+      - name: Write checksums, dependency SBOM, and vendor evidence
+        shell: pwsh
+        run: |
+          $dist = 'desktop/dist/mcpb'
+          $artifact = Get-Item "$dist/alloflow-remediation.mcpb"
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifact.FullName).Hash.ToLowerInvariant()
+          "$hash  $($artifact.Name)" | Set-Content -Encoding ascii "$dist/SHA256SUMS.txt"
+          $manifestVersion = node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version"
+          node desktop/mcp/build_registry_metadata.cjs --artifact "$dist/alloflow-remediation.mcpb" --tag "mcpb-v$manifestVersion" --output "$dist/server.json"
+          npm sbom --prefix "$dist/staging" --omit=dev --sbom-format=cyclonedx |
+            Out-File -Encoding utf8 "$dist/alloflow-remediation.cdx.json"
+          node -e "JSON.parse(require('fs').readFileSync('$dist/alloflow-remediation.cdx.json','utf8').replace(/^\uFEFF/,''))"
+          Copy-Item desktop/mcp/vendor/manifest.json "$dist/vendor-manifest.json"
+          Copy-Item desktop/mcp/vendor/THIRD_PARTY_NOTICES.md "$dist/THIRD_PARTY_NOTICES.md"
+          $releaseDir = "$dist/release"
+          New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
+          Copy-Item "$dist/alloflow-remediation.mcpb","$dist/SHA256SUMS.txt","$dist/server.json","$dist/alloflow-remediation.cdx.json","$dist/vendor-manifest.json","$dist/THIRD_PARTY_NOTICES.md",desktop/mcp/MCPB_RELEASE.md,desktop/mcp/PRIVACY.md $releaseDir
+      - name: Attest release build provenance
+        if: github.event_name != 'pull_request'
+        uses: actions/attest@v4
+        with:
+          subject-path: desktop/dist/mcpb/alloflow-remediation.mcpb
+      - name: Attest the CycloneDX dependency SBOM
+        if: github.event_name != 'pull_request'
+        uses: actions/attest@v4
+        with:
+          subject-path: desktop/dist/mcpb/alloflow-remediation.mcpb
+          sbom-path: desktop/dist/mcpb/alloflow-remediation.cdx.json
+      - name: Upload verified installable and integrity evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: alloflow-remediation-mcpb-${{ github.sha }}
+          if-no-files-found: error
+          path: desktop/dist/mcpb/release/*
+
+  release:
+    name: Publish tagged GitHub release
+    if: startsWith(github.ref, 'refs/tags/mcpb-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: alloflow-remediation-mcpb-${{ github.sha }}
+          path: release-assets
+      - name: Create tag release or repair its assets
+        shell: pwsh
+        run: |
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG release-assets/* --clobber --repo $env:GITHUB_REPOSITORY
+          } else {
+            gh release create $env:RELEASE_TAG release-assets/* --verify-tag --repo $env:GITHUB_REPOSITORY --title "AlloFlow Remediation MCP $env:RELEASE_TAG" --notes-file desktop/mcp/MCPB_RELEASE.md
+          }

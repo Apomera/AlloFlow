@@ -739,6 +739,18 @@ describe('AlloSheet browser-local workspace accessibility and lifecycle', () => 
     expect(await page.locator('#analysisMeasureColumn option').allTextContents())
       .toContain('Score');
     await page.click('#analysisTab');
+    await page.waitForFunction(() => document.querySelectorAll('#analysisProfileBody tr').length === 3);
+    expect(await page.evaluate(() => ({
+      caption: document.querySelector('#analysisProfileCaption')?.textContent,
+      headers: Array.from(document.querySelectorAll('#analysisProfileHead th'), (cell) => cell.textContent),
+      score: Array.from(document.querySelectorAll('#analysisProfileBody tr')).find((row) => row.cells[0]?.textContent === 'Score')?.textContent,
+      profileRegionLabel: document.querySelector('#analysisProfileTableScroll')?.getAttribute('aria-label'),
+    }))).toEqual({
+      caption: '3 columns profiled across 3 loaded rows.',
+      headers: ['Column', 'Inferred type', 'Filled', 'Blank', 'Distinct nonblank', 'Range'],
+      score: 'Scorenumber3 / 3030 to 20',
+      profileRegionLabel: 'Scrollable column profile. Use arrow keys to review every column.',
+    });
 
     await page.selectOption('#analysisFilterColumn', 'Score');
     await page.selectOption('#analysisFilterOperator', 'gte');
@@ -762,6 +774,16 @@ describe('AlloSheet browser-local workspace accessibility and lifecycle', () => 
     await page.selectOption('#analysisRepresentation', 'bar');
     await page.click('#runAnalysisButton');
     await page.waitForFunction(() => document.querySelectorAll('#analysisBody tr').length === 2);
+    expect(await page.locator('#downloadAnalysisButton').isEnabled()).toBe(true);
+    const analysisDownloadPromise = page.waitForEvent('download');
+    await page.click('#downloadAnalysisButton');
+    const analysisDownload = await analysisDownloadPromise;
+    expect(analysisDownload.suggestedFilename()).toBe('Progress_checks_analysis.csv');
+    const analysisCsv = fs.readFileSync(await analysisDownload.path(), 'utf8');
+    expect(analysisCsv).toContain('\"Phase\",\"Rows in group\",\"Score values used\",\"Average of Score\"');
+    expect(analysisCsv).toContain('\"Baseline\",\"1\",\"1\",\"0\"');
+    expect(analysisCsv).toContain('\"Intervention\",\"2\",\"2\",\"15\"');
+    expect(await page.locator('#analysisExportStatus').textContent()).toContain('Analysis result downloaded.');
 
     expect(await page.locator('#analysisBody tr').evaluateAll((rows) =>
       rows.map((row) => Array.from(row.cells, (cell) => cell.textContent))

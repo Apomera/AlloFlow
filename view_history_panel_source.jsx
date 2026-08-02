@@ -282,6 +282,13 @@ function HistoryPanel(props) {
                         </div>
                         <div className="flex items-center gap-1">
                             <input aria-label={t('common.upload_file')} type="file" ref={projectFileInputRef} onChange={handleLoadProject} className="hidden" accept=".json" />
+                            {!isCanvas && (
+                                <button type="button" onClick={onOpenDeviceRecovery}
+                                    className="min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+                                    title="Manage local storage and recovery" aria-label="Manage local storage and recovery" data-help-key="history_device_storage">
+                                    <Settings size={14} aria-hidden="true" />
+                                </button>
+                            )}
                             <button type="button" onClick={() => projectFileInputRef.current.click()} className="min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" title={t('history.load_project')} aria-label={t('history.load_project')} data-help-key="history_load_project">
                                 <Upload size={14} aria-hidden="true" />
                             </button>

@@ -153,6 +153,7 @@ function UniversalSettingsPanel(props) {
     gradeLevel,
     handleAddStandard,
     handleFindStandards,
+    handleUseResolvedStandard,
     handleInterestKeyDown,
     handleRemoveStandard,
     handleSetStandardModeToAi,
@@ -195,6 +196,36 @@ function UniversalSettingsPanel(props) {
   } = props;
   const isOpen = !!isUniversalSettingsOpen;
   const setIsOpen = setIsUniversalSettingsOpen;
+  const [localResolution, setLocalResolution] = React.useState(null);
+  const [isResolvingLocal, setIsResolvingLocal] = React.useState(false);
+  const standardsProviderApi = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
+  const localStandardsProvider = standardsProviderApi && typeof standardsProviderApi.getRegisteredProvider === "function" ? standardsProviderApi.getRegisteredProvider() : null;
+  const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === "function" ? localStandardsProvider.getManifest() : null;
+  const resolveFromLocalSnapshot = () => {
+    const query = String(standardInputValue || "").trim();
+    if (!query || !localStandardsProvider) return;
+    setIsResolvingLocal(true);
+    try {
+      setLocalResolution(localStandardsProvider.resolveStandard(query));
+    } catch (error) {
+      setLocalResolution({ status: "error", query, match: null, candidates: [], context: null });
+      addToast("The local standards snapshot could not be read.", "error");
+    } finally {
+      setIsResolvingLocal(false);
+    }
+  };
+  const chooseLocalCandidate = (candidate) => {
+    if (!candidate || !localStandardsProvider || typeof localStandardsProvider.getStandardContext !== "function") return;
+    const context = localStandardsProvider.getStandardContext(candidate.id);
+    if (!context) return;
+    setLocalResolution({
+      status: "resolved",
+      query: localResolution && localResolution.query ? localResolution.query : candidate.code,
+      match: candidate,
+      candidates: [candidate],
+      context
+    });
+  };
   const summaryBits = [
     gradeLevel,
     leveledTextLanguage,
@@ -343,13 +374,16 @@ function UniversalSettingsPanel(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
     /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
-  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_standard_input_value"),
       type: "text",
       value: standardInputValue,
-      onChange: (e) => setStandardInputValue(e.target.value),
+      onChange: (e) => {
+        setStandardInputValue(e.target.value);
+        setLocalResolution(null);
+      },
       onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
       placeholder: t("standards.manual_placeholder"),
       className: "flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
@@ -365,7 +399,37 @@ function UniversalSettingsPanel(props) {
       title: t("standards.add_button")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+  )), localStandardsProvider && /* @__PURE__ */ React.createElement("div", { className: "rounded-md border border-cyan-200 bg-cyan-50/60 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: resolveFromLocalSnapshot,
+      disabled: !standardInputValue.trim() || isResolvingLocal,
+      className: "inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    isResolvingLocal ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 12 }),
+    " Resolve from local snapshot"
+  ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-emerald-800" }, "Exact local match: ", localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleUseResolvedStandard && handleUseResolvedStandard(localResolution),
+      disabled: targetStandards.length > 0 || typeof handleUseResolvedStandard !== "function",
+      className: "mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "Use resolved standard"
+  ), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-amber-800" }, "Remove the current target standard before using a resolved local record.")), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key: candidate.id,
+      onClick: () => chooseLocalCandidate(candidate),
+      className: "rounded border border-amber-300 bg-amber-50 px-2 py-1 text-left hover:bg-amber-100"
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, candidate.code),
+    " \xB7 ",
+    candidate.framework || candidate.jurisdiction || candidate.id
+  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, "Possible codes to review: ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, "The local snapshot could not resolve this entry."))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

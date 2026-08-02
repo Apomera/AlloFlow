@@ -12,7 +12,7 @@ telemetry, or analytics of any kind.
 | The documents you audit/remediate (full content) | **Google Gemini API**, under the API key **you** provide | The pipeline's OCR, audits, and fixes are AI calls |
 | Background-job records (arguments, paths, status, capped logs, result/error metadata) | **Your local disk only**, under `~/.alloflow-mcp/jobs` by default | Lets status and results survive a client/server restart |
 | Nothing | AlloFlow / the connector author | The connector has no backend |
-| Library fetches (no document content) | Public CDNs (pdf.js, Tesseract, pdf-lib, axe-core) | Runtime libraries the pipeline loads |
+| Core validation and pipeline libraries | **Your local machine** | veraPDF and the core browser libraries are packaged locally; optional Office export may fetch public libraries, without sending the source document |
 | Output files (accessible HTML, tagged PDF, report JSON) | **Your local disk only**, at paths you choose | The deliverables |
 
 ## Your API key

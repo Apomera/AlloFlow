@@ -3,7 +3,11 @@
   "scripts": {
     "test": "vitest run",
     "build:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs",
-    "verify:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs --check && vitest run tests/portable_skill_contract.test.js tests/portable_remediation_core.test.js --maxWorkers=1 --testTimeout=30000",
+    "verify:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs --check && vitest run tests/portable_skill_contract.test.js tests/portable_remediation_core.test.js tests/portable_benchmark.test.js --maxWorkers=1 --testTimeout=30000",
+    "benchmark:portable-remediation": "node dev-tools/benchmark_alloflow_portable.cjs",
+    "verify:mcp-parity": "node dev-tools/mcp_capability_inventory.cjs --assert-parity && vitest run tests/mcp_remediation_stdio_smoke.test.js --maxWorkers=1 --testTimeout=70000",
+    "verify:mcpb-artifact": "node desktop/mcp/verify_mcpb_artifact.cjs --require-playwright",
+    "build:mcp-registry-metadata": "node desktop/mcp/build_registry_metadata.cjs",
     "qa:ap-psychology-pilot": "node dev-tools/qa_ap_psychology_pilot.cjs",
     "build:test-prep-manifest": "node dev-tools/build_test_prep_pack_manifest.cjs",
     "build:test-prep-hub": "node dev-tools/build_test_prep_hub_release.cjs",
@@ -16,6 +20,8 @@
     "build:eppp-library": "node dev-tools/build_eppp_learning_library.cjs",
     "build:eppp-pack": "node dev-tools/build_eppp_part_one_pack.cjs",
     "build:blockly": "node dev-tools/build_blockly_runtime.cjs",
+    "build:data-kernel": "node dev-tools/build_data_kernel_assets.cjs",
+    "verify:data-kernel": "node dev-tools/build_data_kernel_assets.cjs --check",
     "verify:blockly-build": "node dev-tools/build_blockly_runtime.cjs --check",
     "test:e2e": "playwright test",
     "test:e2e:gl": "playwright test tests/e2e/17-memory-palace-gl.spec.ts tests/e2e/18-geometry-world-gl.spec.ts tests/e2e/19-solar-system-gl.spec.ts tests/e2e/20-galaxy-gl.spec.ts tests/e2e/21-moon-mission-gl.spec.ts tests/e2e/22-stem-gl-conformance.spec.ts --workers=1",
@@ -91,6 +97,7 @@
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs --strict && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs && node dev-tools/check_firebase_security.cjs",
     "verify:gate": "node dev-tools/sync_allosheet_assets.cjs --check && node _build_adventure_module.js --check && node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.cjs --quiet && node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs",
     "audit:a11y": "cd a11y-audit && node static-audit.js",
+    "audit:reading": "node dev-tools/audit_reading_catalog.cjs",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
     "audit:promo": "node dev-tools/audit_promo_site.cjs",
     "audit:docs": "node dev-tools/audit_current_docs.cjs",
@@ -105,6 +112,7 @@
     "check:quarantine": "node dev-tools/check_quarantine.cjs --paths-only"
   },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.32.0",
     "acorn": "^8.16.0",
     "blockly": "^13.1.1",
     "compromise": "14.15.1"

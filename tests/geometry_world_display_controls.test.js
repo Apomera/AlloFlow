@@ -92,6 +92,8 @@ describe('Geometry World display stability controls', function() {
     expect(resolve('balanced', {}).maxPixelRatio).toBe(1.5);
     expect(resolve('saver', {}).shadows).toBe(false);
     expect(resolve('detail', {}).postFx).toBe(true);
+    expect(resolve('auto', { hardwareConcurrency: 8 }).reason).toContain('Detailed');
+    expect(resolve('auto', { isMobile: true }).reason).toContain('Battery saver');
   });
 
   it('renders and persists an accessible graphics-quality selector', function() {
@@ -99,6 +101,8 @@ describe('Geometry World display stability controls', function() {
     let select = view.container.querySelector('[data-geometry-render-quality=true]');
     expect(select).toBeTruthy();
     expect(select.getAttribute('aria-label')).toBe('3D graphics quality');
+    expect(select.getAttribute('aria-describedby')).toBe('gw-quality-help');
+    expect(view.container.querySelector('.gw-quality-resolved').textContent).toBe('Detailed');
     expect(select.value).toBe('auto');
     expect(select.querySelectorAll('option')).toHaveLength(4);
     React.act(function() {
@@ -109,6 +113,7 @@ describe('Geometry World display stability controls', function() {
     select = view.container.querySelector('[data-geometry-render-quality=true]');
     expect(view.toolData.geometryWorld.renderQuality).toBe('saver');
     expect(select.value).toBe('saver');
+    expect(view.container.querySelector('.gw-quality-resolved').textContent).toBe('Battery saver');
     expect(window[ENGINE_KEY].qualityCalls).toEqual(['saver']);
   });
 
@@ -136,5 +141,129 @@ describe('Geometry World display stability controls', function() {
     expect(SOURCE).toContain('engine._intersectionObserver.disconnect()');
     expect(SOURCE).toContain('engine._pausedByVisibility || engine._pausedByViewport');
     expect(SOURCE).toContain('engine._postFxEnabled !== false');
+  });
+  it('offers explicit touch and desktop-style modes with a persistent fullscreen toggle', function() {
+    const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' });
+    try {
+      const view = mountTool({ _introShownOnce: true, worldActive: true });
+      const touchCta = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.textContent.indexOf('Enter touch mode') >= 0; });
+      const desktopCta = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.textContent.indexOf('Use desktop-style view') >= 0; });
+      expect(view.container.querySelector('#gw-mobile-title').textContent).toBe('Touch-ready Geometry World');
+      expect(touchCta).toBeTruthy();
+      expect(desktopCta).toBeTruthy();
+      React.act(function() { desktopCta.dispatchEvent(new Event('click', { bubbles: true })); });
+      let toggle = view.container.querySelector('[data-geometry-touch-toggle=true]');
+      expect(view.toolData.geometryWorld.touchMode).toBe(false);
+      expect(toggle.getAttribute('aria-pressed')).toBe('false');
+      expect(view.container.querySelector('#geoworld-fs-workspace').getAttribute('data-touch-mode')).toBe('desktop');
+      expect(view.container.querySelector('.gw-touch-controls')).toBeNull();
+      React.act(function() { toggle.dispatchEvent(new Event('click', { bubbles: true })); });
+      toggle = view.container.querySelector('[data-geometry-touch-toggle=true]');
+      expect(view.toolData.geometryWorld.touchMode).toBe(true);
+      expect(toggle.getAttribute('aria-pressed')).toBe('true');
+      expect(view.container.querySelector('#geoworld-fs-workspace').getAttribute('data-touch-mode')).toBe('touch');
+      expect(SOURCE).toContain('isMobile && touchMode && worldActive && engine');
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', { configurable: true, value: originalUserAgent });
+    }
+  });
+
+
+  it('reveals an accessible layer explorer for measured structures', function() {
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true, measureResult: { count: 12, L: 2, W: 2, H: 3, boundingVolume: 12, totalVolume: 12, shapeCounts: { cube: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true } });
+    const panel = view.container.querySelector('[data-geometry-layer-explorer=true]');
+    expect(panel).toBeTruthy();
+    const slider = panel.querySelector('#gw-layer-focus');
+    expect(slider).toBeTruthy();
+    expect(slider.getAttribute('aria-label')).toBe('Layer explorer depth');
+    expect(slider.getAttribute('aria-valuetext')).toBe('All layers visible');
+    expect(slider.max).toBe('3');
+    expect(panel.querySelector('[aria-label="Show all layers"]')).toBeTruthy();
+    expect(SOURCE).toContain('engine.setLayerFocus = function(level, silent)');
+    expect(SOURCE).toContain('engine.clearLayerFocus = function(silent)');
+    expect(SOURCE).toContain('engine._layerExplorerBlocks');
+    expect(SOURCE).toContain('engine._layerExplorerMinY');
+  });
+  it('opens a semantic Scene Map with structure jump actions', function() {
+    window[ENGINE_KEY].getSceneOverview = function() {
+      return { title: 'Test lesson', structures: [{ index: 0, label: 'Blue prism', type: 'fill', dimensions: { length: 2, width: 3, height: 4 }, origin: { x: 1, y: 2, z: 3 } }], npcs: [{ index: 0, name: 'Guide Ada', prompt: 'Question available' }], camera: { x: 1, y: 2, z: 3 }, target: null };
+    };
+    window[ENGINE_KEY].focusStructure = function() {};
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    let button = view.container.querySelector('[aria-label="Open textual scene map"]');
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    React.act(function() { button.dispatchEvent(new Event('click', { bubbles: true })); });
+    const panel = view.container.querySelector('#gw-scene-map');
+    expect(panel).toBeTruthy();
+    expect(panel.querySelector('#gw-scene-map-title').textContent).toBe('Scene map');
+    expect(panel.querySelector('[aria-label="View structure: Blue prism"]')).toBeTruthy();
+    expect(panel.textContent).toContain('2 × 3 × 4 units');
+    expect(panel.textContent).toContain('Guide Ada');
+    button = view.container.querySelector('[aria-label="Close textual scene map"]');
+    expect(button).toBeTruthy();
+    React.act(function() { button.dispatchEvent(new Event('click', { bubbles: true })); });
+    expect(view.container.querySelector('#gw-scene-map')).toBeNull();
+  });
+  it('offers repeatable front, side, top, and free camera evidence views', function() {
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    const group = view.container.querySelector('[aria-label="Camera views"]');
+    expect(group).toBeTruthy();
+    ['Front', 'Side', 'Top', 'Free'].forEach(function(label) {
+      const button = group.querySelector('[aria-label="' + label + ' camera view"]');
+      expect(button).toBeTruthy();
+      expect(button.getAttribute('aria-pressed')).toBe(label === 'Free' ? 'true' : 'false');
+    });
+    expect(SOURCE).toContain('engine.setViewPreset = function(preset, focusOverride)');
+    expect(SOURCE).toContain('getViewPresetTarget');
+    expect(SOURCE).toContain("className: 'gw-view-presets'");
+    expect(SOURCE).toContain("'aria-label': 'Camera views'");
+    expect(SOURCE).toContain("'aria-label': viewPresetLabels[preset] + ' camera view'");
+    expect(SOURCE).toContain('engine._viewPresetReturn');
+  });
+  it('offers a guided explore tour with visible checkpoints and an exit path', function() {
+    const view = mountTool({ _introShownOnce: true, worldActive: true, tutorialDismissed: true });
+    const button = Array.from(view.container.querySelectorAll('button')).find(function(node) { return node.getAttribute('aria-label') === 'Start guided explore tour'; });
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+    expect(SOURCE).toContain('engine.startGuidedTour = function()');
+    expect(SOURCE).toContain('engine.stopGuidedTour = function(completed)');
+    expect(SOURCE).toContain("className: 'gw-tour-overlay'");
+    expect(SOURCE).toContain("'aria-label': 'Guided explore checkpoint'");
+    expect(SOURCE).toContain('guidedTourSteps');
+    expect(SOURCE).toContain('tourProgress');
+    expect(SOURCE).toContain('reducedMotion: guidedTourReducedMotion');
+  });
+  it('keeps touch controls discoverable and WCAG-sized in source and fullscreen markup', function() {
+    expect(SOURCE).toContain("'data-geometry-touch-toggle': 'true'");
+    expect(SOURCE).toContain("'aria-label': 'Touch joystick: drag on the left side to move'");
+    expect(SOURCE).toContain("'aria-label': 'Touch actions'");
+    expect(SOURCE).toContain('.gw-touch-controls button{min-width:56px!important;min-height:56px!important');
+    expect(SOURCE).toContain('engine.setTouchControlsEnabled = function(enabled)');
+    expect(SOURCE).toContain("'data-touch-mode': touchMode ? 'touch' : 'desktop'");
+    expect(SOURCE).toContain('env(safe-area-inset-bottom)');
+    expect(SOURCE).toContain('height:100dvh');
+    expect(SOURCE).toContain('overscroll-behavior:contain');
+    expect(SOURCE).toContain('@media(max-height:520px) and (orientation:landscape)');
+    expect(SOURCE).toContain('flex-direction:row!important');
+    expect(SOURCE).toContain("canvas.addEventListener('touchcancel'");
+    expect(SOURCE).toContain('engine._touchActive = false');
+    expect(SOURCE).toContain("canvas.style.touchAction = 'none'");
+    expect(SOURCE).toContain("className: 'gw-touch-toggle-label'");
+    expect(SOURCE).toContain("touchMode ? 'Touch' : 'Desktop'");
+    expect(SOURCE).toContain("className: 'gw-touch-joystick-thumb'");
+    expect(SOURCE).toContain("className: 'gw-touch-look-zone'");
+    expect(SOURCE).toContain("className: 'gw-touch-look-panel'");
+    expect(SOURCE).toContain("id: 'gw-touch-look-sensitivity'");
+    expect(SOURCE).toContain('engine.setTouchLookSensitivity');
+    expect(SOURCE).toContain('updateTouchLookFeedback(dx, dy)');
+    expect(SOURCE).toContain('--gw-touch-look-x');
+    expect(SOURCE).toContain('.gw-touch-look-reticle{transition:none!important}');
+    expect(SOURCE).toContain('updateTouchJoystick(mx, mz, mag)');
+    expect(SOURCE).toContain('resetTouchJoystick()');
+    expect(SOURCE).toContain('--gw-touch-stick-x');
+    expect(SOURCE).toContain('.gw-touch-joystick-thumb{transition:transform 80ms ease-out');
+    expect(SOURCE).toContain('.gw-touch-joystick-thumb{transition:none!important}');
   });
 });

@@ -57,7 +57,194 @@ describe('solar system main 3D canvas loop', () => {
     });
   });
 
-  it('defines drone display scale before drawing POI distance labels', () => {
+  it('exposes elapsed Earth time and hover target cues in the Orrery', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('function orbitCalendarLabel(time)');
+      expect(source).toContain('var timeLabel = "Elapsed " + fmt(t, 2) + " Earth yr";');
+      expect(source).toContain('var calendarLabel = orbitCalendarLabel(t);');
+      expect(source).toContain('var isHoveredBody =');
+      expect(source).toContain('if ((showLabels && labelVisible) || isHoveredBody)');
+      expect(source).toContain('A dashed halo makes the hovered target legible');
+      expect(source).toContain('hover for details');
+    });
+  });
+  it('offers honest body-size modes and collision-safe Orrery labels', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var scaleMode = d.orr_scale_mode === "relative" ? "relative" : "teaching";');
+      expect(source).toContain('function placeOrbitLabel(sx, sy, dotR, pillW, pillH)');
+      expect(source).toContain('var relativeDotR =');
+      expect(source).toContain('Body size:');
+      expect(source).toContain('Use relative body sizes with a visibility floor');
+      expect(source).toContain('Relative body sizes');
+    });
+  });
+  it('adds labeled orbit timeline landmarks and a live phase context', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var timelineMilestones = scrubBody ? [');
+      expect(source).toContain('{ phase: scrubPeriod * 0.5, label: "Aphelion" }');
+      expect(source).toContain('orbit timeline landmarks');
+      expect(source).toContain('scrubTimelineValue');
+      expect(source).toContain('role: "status", "aria-live": paused ? "polite" : "off"');
+      expect(source).toContain('"aria-valuetext": scrubBody ? fmt(scrubPhase, scrubPrecision) + " years into " + scrubBody.name + "\'s orbit; "');
+    });
+  });
+  it('keeps DOM orbit readouts synchronized without remounting the canvas', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('Keep the compact DOM readout synchronized without triggering a React tree');
+      expect(source).toContain('liveNow - cv._orreryLiveDomLast >= 180');
+      expect(source).toContain('orrery-live-distance');
+      expect(source).toContain('orrery-live-speed');
+      expect(source).toContain('orrery-live-phase');
+      expect(source).toContain('orrery-live-kepler-cue');
+      expect(source).toContain('orrery-live-compare-secondary-speed');
+      expect(source).toContain('orrery-live-timeline-value');
+      expect(source).toContain('phaseInput.value = String(liveScrubPhase);');
+      expect(source).toContain('id: liveId || undefined');
+      expect(source).toContain('var timelineMarkIsActiveAt = function(mark, phase)');
+      expect(source).toContain('id: "orrery-timeline-mark-" + idx');
+      expect(source).toContain('"data-orrery-timeline-jump": idx');
+      expect(source).toContain('setLiveTimelineState(liveMarkIdx, timelineMarkIsActiveAt(timelineMilestones[liveMarkIdx], liveScrubPhase));');
+    });
+  });  it('makes every orbit timeline landmark keyboard- and pointer-actionable', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var timelineJumpLabel = function(mark)');
+      expect(source).toContain('timelineMilestones.map(function(mark, idx)');
+      expect(source).toContain('setScrubPhase(mark.phase)');
+      expect(source).toContain('"aria-label": "Jump to " + mark.label.toLowerCase() + " for " + scrubBody.name');
+      expect(source).toContain('var timelineMarkIsActive = function(mark)');
+      expect(source).toContain('timelineMarkIsActive(mark), function()');
+      expect(source).toContain('btn("Reset view"');
+      expect(source).toContain('orr_follow: null, orr_compare: null');
+    });
+  });  it('adds A/B orbital evidence snapshots and a live speed gauge', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var snapshotStore = d.orr_snapshots || {};');
+      expect(source).toContain('var captureTime = timeRef.current;');
+      expect(source).toContain('Save A');
+      expect(source).toContain('Save B');
+      expect(source).toContain('B minus A');
+      expect(source).toContain('var snapshotEntries =');
+      expect(source).toContain('live speed gauge');
+      expect(source).toContain('var orbitalSpeedLabel =');
+      expect(source).toContain('if (slot === "b" && !snapshotA) return;');
+      expect(source).toContain('disabled: !snapshotA');
+      expect(source).toContain('after saving snapshot A');
+      expect(source).toContain('var evidenceStepLabel = !snapshotA');
+      expect(source).toContain('Next: predict B');
+      expect(source).toContain('Ready to record');
+      expect(source).toContain('.orr-btn:disabled{cursor:not-allowed');
+    });
+  });
+  it('turns A/B evidence into a prediction, explanation, and mission-log observation', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var predictionChoice = bodySnapshotState.prediction || "";');
+
+      expect(source).toContain('var saveBDisabled = !snapshotA || !predictionChoice;');
+      expect(source).toContain('snapshotA && (!snapshotB || !predictionChoice)');
+      expect(source).toContain('after choosing a prediction');      expect(source).toContain('var buildPredictionResult = function(state)');
+      expect(source).toContain('Predict B: will orbital speed be faster, slower, or about the same as A?');
+      expect(source).toContain('value: "about the same"');
+      expect(source).toContain('nearly the same distance can mean about the same speed');
+      expect(source).toContain('Prediction supported');
+      expect(source).toContain('Prediction revised');
+      expect(source).toContain('Record observation');
+      expect(source).toContain('addMissionEntry("🔮 Orrery observation: " + sb.name');
+    });
+  });  it('exports readable A/B orbital evidence for review', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var exportEvidence = function()');
+      expect(source).toContain('Export evidence');
+      expect(source).toContain('evidenceLines.join("\\n")');
+      expect(source).toContain('orbital_evidence.txt');
+      expect(source).toContain('Exported orbital evidence for');
+    });
+  });  it('announces core Orrery toggle states to assistive technology', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('"aria-pressed": paused');
+      expect(source).toContain('"aria-pressed": timelineMarkIsActive(mark)');
+      expect(source).toContain('"aria-pressed": scaleMode === "teaching"');
+      expect(source).toContain('"aria-pressed": zoomMode === "inner"');
+      expect(source).toContain('"aria-pressed": showComets');
+    });
+  });  it('honors reduced-motion preferences without removing orbital interaction', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var reduceMotion = false;');
+      expect(source).toContain('reduceMotion: reduceMotion');
+      expect(source).toContain('var visualTime = reduceMotion ? 0 : (timestamp || 0);');
+      expect(source).toContain('if (props.reduceMotion) { cancelInertia(); return; }');
+      expect(source).toContain('Reduced motion on · pulses and camera glides off');
+      expect(source).toContain('reduced-motion mode keeps decorative effects still');
+    });
+  });
+  it('keeps Orrery section-tab focus synchronized with keyboard navigation', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var focusTab = function(index)');
+      expect(source).toContain('document.getElementById("orrery-tab-" + index)');
+      expect(source).toContain('id: "orrery-tab-" + i');
+      expect(source).toContain('var nextTab = null;');
+      expect(source).toContain('if (nextTab !== null) { ev.preventDefault(); focusTab(nextTab); }');
+    });
+  });
+  it('prevents drag-release clicks and exposes canvas keyboard shortcuts', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('st.dragDistance = 0;');
+      expect(source).toContain('if (st.dragDistance > 6) st.suppressClick = true;');
+      expect(source).toContain('if (st.suppressClick) { st.suppressClick = false; return; }');
+      expect(source).toContain('function onCancel()');
+      expect(source).toContain('window.addEventListener("pointercancel", onCancel);');
+      expect(source).toContain('function cancelInertia()');
+      expect(source).toContain('if (st.inertiaRaf) cancelAnimationFrame(st.inertiaRaf);');
+      expect(source).toContain('st.inertiaRaf = requestAnimationFrame(inertiaStep);');
+      expect(source).toContain('st.inertiaRaf = null;');
+      expect(source).toContain("'aria-keyshortcuts': props.panZoom ? 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home 0 Enter Space Escape'");
+      expect(source).toContain("if (key === 'Escape' && props.onEscape)");
+      expect(source).toContain('onEscape: function() { updMulti({ orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); }');
+      expect(source).toContain('Escape clears selection');
+      expect(source).toContain('if (!nextBody) {');
+      expect(source).toContain('Keyboard: arrows pan; + and - zoom; Home reset; Escape clears selection');
+      expect(source).toContain('type: "button",');
+      expect(source).toContain('Choose faster, slower, or about the same...');
+      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help"');
+      expect(source).toContain('id: "orrery-canvas-help"');
+      expect(source).toContain('var bufferChanged = cv._dpr !== dpr');
+      expect(source).toContain('cv._logicalWidth = props.width;');
+      expect(source).toContain('cv._nebulaCache = null;');
+      expect(source).toContain('if (!isFinite(st.cx) || !isFinite(st.cy) || !isFinite(st.scale))');
+      expect(source).toContain('function scheduleFrame()');
+      expect(source).toContain('if (!running || document.hidden || raf.current) return;');
+      expect(source).toContain('function onCanvasVisibilityChange()');
+      expect(source).toContain('document.addEventListener("visibilitychange", onCanvasVisibilityChange);');
+      expect(source).toContain('document.removeEventListener("visibilitychange", onCanvasVisibilityChange);');
+      expect(source).toContain('var insideCanvas = ev.clientX >= rect.left');
+      expect(source).toContain('if (insideCanvas) {');
+      expect(source).toContain('st.hoverX = null;');
+    });
+  });  it('defines drone display scale before drawing POI distance labels', () => {
+
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       const scaleIndex = source.indexOf('var scaleFactor = isOcean ? 100 : isGas ? 100 : 50;');

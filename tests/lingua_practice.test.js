@@ -186,7 +186,23 @@ describe('Lingua Practice spaced review helpers', () => {
     expect(Lingua._reviewQueue(words, 'Spanish', 100, ['first'], 'SCHOOL').map((word) => word.id))
       .toEqual(['second']);
     expect(Lingua._reviewQueue(words, 'Spanish', 100, null, 'missing')).toEqual([]);
-    expect(Lingua._dueWords([{ id: 'bad', language: 'Spanish', nextReviewAt: 'later' }], 'Spanish', 100, 'all')).toEqual([]);
+    const ordered = [
+      { id: 'zeta', language: 'Spanish', term: 'zeta', nextReviewAt: 0, reviews: 0 },
+      { id: 'alpha', language: 'Spanish', term: 'alpha', nextReviewAt: 5, reviews: 4 },
+      { id: 'beta', language: 'Spanish', term: 'beta', nextReviewAt: 1, reviews: 2 },
+    ];
+    expect(Lingua._sortReviewQueue(ordered, 'reviews').map((word) => word.id)).toEqual(['zeta', 'beta', 'alpha']);
+    expect(Lingua._sortReviewQueue(ordered, 'term').map((word) => word.id)).toEqual(['alpha', 'beta', 'zeta']);
+    expect(Lingua._reviewQueue(ordered, 'Spanish', 100, null, 'all', 'reviews').map((word) => word.id)).toEqual(['zeta', 'beta', 'alpha']);
+    expect(Lingua._reviewQueue(ordered, 'Spanish', 100, null, 'all', 'term').map((word) => word.id)).toEqual(['alpha', 'beta', 'zeta']);
+    expect(Lingua._reviewSessionWindow(ordered, 1, '2')).toMatchObject({ remaining: 1, reached: false, limit: '2' });
+    expect(Lingua._reviewSessionWindow(ordered, 1, '2').items.map((word) => word.id)).toEqual(['zeta']);
+    expect(Lingua._reviewSessionWindow(ordered, 2, '2')).toMatchObject({ items: [], remaining: 0, reached: true, limit: '2' });
+    expect(Lingua._reviewSessionWindow(ordered, 0, 'all')).toMatchObject({ remaining: 3, reached: false, limit: 'all' });
+    const snapshot = Lingua._reviewQueueSnapshot(words, 'Spanish', 100, ['first'], 'School');
+    expect(snapshot).toMatchObject({ due: 2, ready: 1, skipped: 1, tag: 'School', order: 'due' });
+    expect(snapshot.dueWords.map((word) => word.id)).toEqual(['first', 'second']);
+    expect(snapshot.readyWords.map((word) => word.id)).toEqual(['second']);    expect(Lingua._dueWords([{ id: 'bad', language: 'Spanish', nextReviewAt: 'later' }], 'Spanish', 100, 'all')).toEqual([]);
     expect(Lingua._dueWords(words, 'Spanish', 'not-a-time', 'School')).toEqual([]);
   });
 
@@ -713,12 +729,23 @@ describe('Lingua Practice saved-word organization', () => {
     const now = 1000;
     const words = [
       { id: 'Spanish::lapiz', language: 'Spanish', term: 'l\u00e1piz', meaning: 'pencil', example: 'Necesito un l\u00e1piz.', tags: ['Unit 2', 'School'], nextReviewAt: 5000, reviews: 1 },
-      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', example: 'Bonjour Marie.', tags: ['Travel'], nextReviewAt: 0, reviews: 8 },
+      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', example: 'Bonjour Marie.', tags: ['Travel'], reviewStage: 3, nextReviewAt: 0, reviews: 8 },
       { id: 'Spanish::agua', language: 'Spanish', term: 'agua', meaning: 'water', translation: 'I need water.', note: 'Hydration reminder', tags: ['Health', 'Difficult words'], nextReviewAt: 0, reviews: 3 },
     ];
 
     expect(Lingua._wordBankLanguages(words)).toEqual(['French', 'Spanish']);
     expect(Lingua._wordBankTags(words)).toEqual(['Difficult words', 'Health', 'School', 'Travel', 'Unit 2']);
+    expect(Lingua._savedReviewStatus({ reviewStage: 0, nextReviewAt: 0 }, now)).toEqual({ due: true, mastery: 'learning' });
+    expect(Lingua._savedReviewStatus({ reviewStage: 3, nextReviewAt: 5000 }, now)).toEqual({ due: false, mastery: 'established' });
+    expect(Lingua._savedReviewStatus({ reviewStage: 4, nextReviewAt: 0 }, now)).toEqual({ due: true, mastery: 'established' });
+    expect(Lingua._savedWordStatusCounts(words, now)).toEqual({ total: 3, due: 2, learning: 2, established: 1 });
+    expect(Lingua._savedWordStatusCounts(null, now)).toEqual({ total: 0, due: 0, learning: 0, established: 0 });
+    const bulk = Lingua._bulkAddSavedTags(words, ['Spanish::lapiz', 'Spanish::agua'], 'School, Travel');
+    expect(bulk.changed).toBe(2);
+    expect(bulk.tags).toEqual(['School', 'Travel']);
+    expect(bulk.items.map((item) => item.tags)).toEqual([['Unit 2', 'School', 'Travel'], ['Travel'], ['Health', 'Difficult words', 'School', 'Travel']]);
+    expect(words[0].tags).toEqual(['Unit 2', 'School']);
+    expect(Lingua._bulkAddSavedTags(null, null, 'travel')).toEqual({ items: [], changed: 0, tags: ['travel'] });
     expect(Lingua._savedWordView(words, { query: 'lapiz', language: 'all', sort: 'term', now }).map((item) => item.term)).toEqual(['l\u00e1piz']);
     expect(Lingua._savedWordView(words, { query: 'pencil', language: 'Spanish', sort: 'term', now }).map((item) => item.term)).toEqual(['l\u00e1piz']);
     expect(Lingua._savedWordView(words, { query: 'hydration', language: 'all', sort: 'term', now }).map((item) => item.term)).toEqual(['agua']);
@@ -728,13 +755,46 @@ describe('Lingua Practice saved-word organization', () => {
     expect(Lingua._savedWordView(words, { sort: 'due', now }).map((item) => item.term)).toEqual(['agua', 'bonjour', 'l\u00e1piz']);
     expect(Lingua._savedWordView(words, { sort: 'review', now }).map((item) => item.term)).toEqual(['bonjour', 'agua', 'l\u00e1piz']);
     expect(Lingua._savedWordView(words, { sort: 'language', now }).map((item) => item.term)).toEqual(['bonjour', 'agua', 'l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { status: 'due', sort: 'term', now }).map((item) => item.term)).toEqual(['agua', 'bonjour']);
+    expect(Lingua._savedWordView(words, { status: 'learning', sort: 'term', now }).map((item) => item.term)).toEqual(['agua', 'l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { status: 'established', sort: 'term', now }).map((item) => item.term)).toEqual(['bonjour']);
     expect(words.map((item) => item.term)).toEqual(['l\u00e1piz', 'bonjour', 'agua']);
   });
 
   it('handles malformed collections and unmatched searches safely', () => {
     expect(Lingua._wordBankLanguages(null)).toEqual([]);
     expect(Lingua._wordBankTags(null)).toEqual([]);
-    expect(Lingua._normalizeWordTags([' Unit 2 ', 'travel', 'TRAVEL', '', 'x'.repeat(40), 'sixth', 'seventh'])).toEqual(['Unit 2', 'travel', 'x'.repeat(Lingua._maxWordTagLength), 'sixth', 'seventh']);
+    const tagSummary = Lingua._tagProgressSummary([
+      { language: 'Spanish', tags: ['School', 'Core'], nextReviewAt: 0, reviewStage: 3 },
+      { language: 'Spanish', tags: ['School', 'Travel'], nextReviewAt: 100, reviewStage: 1 },
+      { language: 'French', tags: ['School'], nextReviewAt: 0, reviewStage: 4 },
+    ], 'Spanish', 100);
+    expect(tagSummary).toEqual([
+      { tag: 'Core', total: 1, due: 1, established: 1 },
+      { tag: 'School', total: 2, due: 2, established: 1 },
+      { tag: 'Travel', total: 1, due: 1, established: 0 },
+    ].sort((a, b) => b.due - a.due || b.total - a.total || a.tag.localeCompare(b.tag)));
+    expect(Lingua._tagProgressSummary(null, 'Spanish', 100)).toEqual([]);
+    const momentumNow = new Date(2025, 0, 8, 12, 0, 0).getTime();
+    const yesterdayReview = new Date(momentumNow);
+    yesterdayReview.setDate(yesterdayReview.getDate() - 1);
+    yesterdayReview.setHours(12, 0, 0, 0);
+    const reviewMomentum = Lingua._reviewActivitySummary({ activityLog: [
+      { language: 'Spanish', kind: 'reviews', count: 2, at: momentumNow - 60 * 60 * 1000 },
+      { language: 'Spanish', kind: 'reviews', count: 1, at: yesterdayReview.getTime() },
+      { language: 'Spanish', kind: 'spokenAttempts', count: 4, at: momentumNow },
+      { language: 'Spanish', kind: 'reviews', count: 5, at: momentumNow - 8 * 86400000 },
+      { language: 'French', kind: 'reviews', count: 9, at: momentumNow },
+    ] }, 'Spanish', momentumNow, 7);
+    expect(reviewMomentum).toEqual({
+      days: 7,
+      reviews: 3,
+      activeDays: 2,
+      lastReviewAt: momentumNow - 60 * 60 * 1000,
+    });
+    expect(Lingua._reviewActivitySummary(null, 'Spanish', momentumNow, 7)).toEqual({
+      days: 7, reviews: 0, activeDays: 0, lastReviewAt: 0,
+    });    expect(Lingua._normalizeWordTags([' Unit 2 ', 'travel', 'TRAVEL', '', 'x'.repeat(40), 'sixth', 'seventh'])).toEqual(['Unit 2', 'travel', 'x'.repeat(Lingua._maxWordTagLength), 'sixth', 'seventh']);
     expect(Lingua._normalizeWordTags(' school, priority , SCHOOL ')).toEqual(['school', 'priority']);
     expect(Lingua._savedWordView(null, {})).toEqual([]);
     expect(Lingua._savedWordView([{ language: 'Spanish', term: 'hola' }], { query: 'missing' })).toEqual([]);

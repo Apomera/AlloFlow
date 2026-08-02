@@ -3344,12 +3344,12 @@
                 React.createElement("button", { "aria-label": t('stem.coding.toggle_turtle_cursor_visibility', "Toggle turtle cursor visibility"),
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
-                    (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                    (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-800' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
                 React.createElement("button", { "aria-label": t('stem.coding.toggle_cumulative_drawing_mode', "Toggle cumulative drawing mode"),
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
-                    (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                    (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-800 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, cumulativeMode ? '📚 Cumulative Mode' : '🔄 Fresh Start Mode'),
                 cumulativeMode && runHistory.length > 0 && React.createElement("span", {
                   className: "flex items-center gap-1 text-[11px] text-amber-300/80 font-medium bg-amber-900/30 px-2 py-1 rounded-full"

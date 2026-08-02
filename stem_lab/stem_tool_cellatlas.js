@@ -898,12 +898,12 @@
       '.cal-shell *{box-sizing:border-box}.cal-shell button,.cal-shell select,.cal-shell textarea{font:inherit}.cal-shell button:focus-visible,.cal-shell select:focus-visible,.cal-shell textarea:focus-visible,.cal-shell a:focus-visible,.cal-cluster:focus-visible{outline:3px solid #0369a1;outline-offset:3px}',
       '.cal-top{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--cal-line);border-radius:16px;background:#fff;box-shadow:0 12px 34px rgba(16,42,67,.09)}',
       '.cal-back{display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--cal-line);border-radius:11px;background:#fff;color:var(--cal-ink);font-weight:900}.cal-brand{min-width:0;flex:1}.cal-kicker{margin:0 0 2px;color:var(--cal-teal);font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.cal-title{margin:0;font-size:clamp(20px,3vw,30px);line-height:1.08}.cal-subtitle{margin:5px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.45}.cal-source-chip{flex:0 0 auto;border:1px solid #99f6e4;border-radius:999px;background:#f0fdfa;color:#115e59;padding:7px 10px;font-size:10px;font-weight:900}',
-      '.cal-mission{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:14px;margin-top:14px;padding:18px;border:1px solid #a5d8ff;border-radius:18px;background:radial-gradient(circle at 92% 10%,rgba(14,116,144,.13),transparent 38%),linear-gradient(135deg,#f8fcff,#eef8f8)}.cal-mission h2{margin:0;font-size:20px}.cal-mission p{margin:7px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.58}.cal-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.cal-metric{padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:#fff}.cal-metric b{display:block;font-size:18px}.cal-metric span{display:block;margin-top:3px;color:var(--cal-muted);font-size:9px;font-weight:800}',
+      '.cal-mission{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:14px;margin-top:14px;padding:18px;border:1px solid #a5d8ff;border-radius:18px;background:radial-gradient(circle at 92% 10%,rgba(14,116,144,.13),transparent 38%),linear-gradient(135deg,#f8fcff,#eef8f8)}.cal-mission h2{margin:0;font-size:20px}.cal-mission p{margin:7px 0 0;color:var(--cal-muted);font-size:12px;line-height:1.58}.cal-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.cal-metric{padding:10px;border:1px solid #cbd5e1;border-radius:11px;background:#fff}.cal-metric b{display:block;font-size:18px}.cal-metric span{display:block;margin-top:3px;color:var(--cal-muted);font-size:9px;font-weight:800}.cal-route{margin-top:12px;padding:13px 14px;border:1px solid #bae6fd;border-radius:14px;background:linear-gradient(135deg,#f0f9ff,#ecfeff)}.cal-route-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.cal-route-head strong{color:#0f3b4d;font-size:12px}.cal-route-head span{color:#0e7490;font-size:10px;font-weight:950}.cal-route-bar{height:7px;margin-top:8px;overflow:hidden;border-radius:999px;background:#dbeafe}.cal-route-bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#0e7490,#14b8a6);transition:width .2s ease}.cal-route-steps{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.cal-route-step{display:flex;align-items:center;gap:6px;flex:1 1 150px;min-width:0;padding:7px 8px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#47616d;font-size:9px;line-height:1.35}.cal-route-step[data-done=true]{border-color:#86efac;background:#f0fdf4;color:#166534}.cal-route-step-icon{display:grid;place-items:center;width:16px;height:16px;flex:0 0 auto;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-weight:950}.cal-route-step[data-done=true] .cal-route-step-icon{background:#bbf7d0;color:#166534}.cal-next-step{margin-top:10px;padding-top:9px;border-top:1px solid #bae6fd;color:#164e63;font-size:10px;line-height:1.45}.cal-next-step strong{display:block;margin-bottom:3px}.cal-next-step span{display:block}.cal-next-step button{margin-top:7px;border:1px solid #0e7490;border-radius:8px;background:#fff;color:#0e7490;padding:6px 9px;font-size:9px;font-weight:900;cursor:pointer}.cal-next-step button:hover{background:#ecfeff}.cal-import-card{border-left:5px solid #0e7490;background:linear-gradient(135deg,#f0fdfa,#f0f9ff)}.cal-import-input{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}.cal-import-input input{max-width:100%;font-size:10px}.cal-import-status{margin-top:9px;padding:8px 10px;border-radius:9px;background:#ecfeff;color:#155e75;font-size:10px;line-height:1.45}.cal-import-status[data-error=true]{background:#fff7ed;color:#9a3412}.cal-import-status .cal-import-route{display:block;margin-top:5px;font-size:9px;font-weight:850}.cal-import-provenance{margin-top:7px;padding:8px 10px;border-radius:9px;font-size:10px;line-height:1.45}.cal-import-provenance[data-status=verified]{background:#f0fdf4;color:#166534}.cal-import-provenance[data-status=review]{background:#fffbeb;color:#92400e}.cal-import-provenance[data-status=missing]{background:#fff7ed;color:#9a3412}.cal-teacher-review{border-left:5px solid #7c3aed;background:linear-gradient(135deg,#faf5ff,#f5f3ff)}.cal-teacher-review-intro{margin:5px 0 9px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-teacher-review-total{margin:8px 0;color:#5b21b6;font-size:12px;font-weight:950}.cal-teacher-review-table{width:100%;border-collapse:collapse;font-size:10px}.cal-teacher-review-table th,.cal-teacher-review-table td{border-bottom:1px solid #ddd6fe;padding:7px;text-align:left;vertical-align:top}.cal-teacher-review-table th{color:#5b21b6;font-size:9px;text-transform:uppercase}.cal-teacher-review-score{font-weight:950;color:#6d28d9;white-space:nowrap}.cal-teacher-review textarea{width:100%;min-height:62px;margin-top:8px;border:1px solid #c4b5fd;border-radius:9px;padding:8px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-teacher-review-next{margin:9px 0;padding:9px 10px;border-left:4px solid #7c3aed;border-radius:9px;background:#ede9fe;color:#5b21b6;font-size:10px;line-height:1.45}.cal-teacher-review-next strong{display:block;margin-bottom:3px;font-size:9px;text-transform:uppercase}.cal-teacher-review-next span{display:block;color:#6b21a8}.cal-portfolio-history{margin-top:12px;padding-top:10px;border-top:1px solid #ddd6fe}.cal-self-check{margin:10px 0;padding:10px;border:1px solid #c4b5fd;border-radius:10px;background:#fff}.cal-self-check h4{margin:0;color:#5b21b6;font-size:12px}.cal-self-check p{margin:4px 0 8px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-self-check-options{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.cal-self-check-options button{border:1px solid #c4b5fd;border-radius:999px;background:#faf5ff;color:#6d28d9;padding:6px 8px;font-size:9px;font-weight:900;cursor:pointer}.cal-self-check-options button[aria-pressed=true]{border-color:#7c3aed;background:#ede9fe;color:#4c1d95}.cal-self-check label{display:block;margin-top:7px;color:#5b21b6;font-size:8px;font-weight:900;text-transform:uppercase}.cal-self-check textarea{width:100%;min-height:44px;margin-top:4px;border:1px solid #ddd6fe;border-radius:8px;padding:7px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-portfolio-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.cal-portfolio-head h4{margin:0;color:#5b21b6;font-size:12px}.cal-portfolio-head span{color:#6d28d9;font-size:9px;font-weight:900}.cal-portfolio-delta{margin:7px 0;padding:8px 10px;border-radius:9px;background:#f5f3ff;color:#5b21b6;font-size:10px;line-height:1.45}.cal-portfolio-list{margin:7px 0 0;padding-left:18px;color:#6b21a8;font-size:10px;line-height:1.55}.cal-portfolio-list li[data-direction=up]{color:#166534}.cal-portfolio-list li[data-direction=down]{color:#9a3412}.cal-evidence-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.cal-evidence-map-item{padding:8px;border:1px solid #ddd6fe;border-radius:9px;background:#fff;color:#5b21b6;font-size:9px;line-height:1.45}.cal-evidence-map-item strong{display:block;margin-bottom:3px;font-size:8px;text-transform:uppercase}.cal-evidence-map-item span{display:block;color:#6b21a8}.cal-portfolio-boundary{margin-top:8px;color:#6b21a8;font-size:9px;line-height:1.45}',
       '.cal-tissues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0 8px}.cal-tissue{display:flex;align-items:center;gap:9px;min-height:52px;border:1px solid var(--cal-line);border-radius:13px;background:#fff;color:var(--cal-ink);padding:9px 11px;text-align:left}.cal-tissue b{display:block;font-size:12px}.cal-tissue span{color:var(--cal-muted);font-size:9px}.cal-tissue[aria-pressed=true]{border-color:#0f766e;background:#f0fdfa;box-shadow:inset 0 0 0 1px #0f766e}.cal-tissue-icon{font-size:20px;color:#0f766e}',
       '.cal-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 14px}.cal-tab{min-height:38px;border:1px solid var(--cal-line);border-radius:10px;background:#fff;color:var(--cal-ink);padding:8px 12px;font-size:11px;font-weight:900}.cal-tab[aria-pressed=true]{border-color:#075985;background:#075985;color:#fff}',
       '.cal-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.75fr);gap:14px}.cal-card{border:1px solid var(--cal-line);border-radius:16px;background:#fff;padding:14px;box-shadow:0 9px 26px rgba(16,42,67,.06)}.cal-card h3,.cal-card h4{margin:0}.cal-card-intro{margin:5px 0 12px;color:var(--cal-muted);font-size:11px;line-height:1.5}',
       '.cal-gene-row,.cal-cell-row,.cal-actions{display:flex;flex-wrap:wrap;gap:6px}.cal-pill{border:1px solid var(--cal-line);border-radius:999px;background:#fff;color:var(--cal-ink);padding:6px 9px;font-size:10px;font-weight:850}.cal-pill[aria-pressed=true]{border-color:#0f766e;background:#0f766e;color:#fff}',
-      '.cal-map-stack{display:grid;gap:12px}.cal-evidence-switch{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:10px 0;padding:10px;border:1px solid #bae6fd;border-radius:12px;background:#f0f9ff}.cal-evidence-switch strong{font-size:10px}.cal-mode-buttons{display:flex;flex-wrap:wrap;gap:6px}.cal-real-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.cal-real-meta div{padding:8px;border:1px solid #cbd5e1;border-radius:9px;background:#f8fafc}.cal-real-meta b{display:block;font-size:11px}.cal-real-meta span{display:block;margin-top:3px;color:var(--cal-muted);font-size:8px}.cal-real-insight{border-left:5px solid #0284c7;background:#f0f9ff}.cal-unavailable{margin:10px 0;padding:12px;border:1px dashed #f59e0b;border-radius:11px;background:#fffbeb;color:#78350f;font-size:10px;line-height:1.5}.cal-provenance-code{display:block;overflow-wrap:anywhere;margin-top:7px;padding:7px;border-radius:8px;background:#0f172a;color:#e2e8f0;font-family:ui-monospace,monospace;font-size:8px}',
+      '.cal-map-stack{display:grid;gap:12px}.cal-evidence-switch{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:10px 0;padding:10px;border:1px solid #bae6fd;border-radius:12px;background:#f0f9ff}.cal-evidence-switch strong{font-size:10px}.cal-mode-buttons{display:flex;flex-wrap:wrap;gap:6px}.cal-real-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.cal-real-meta div{padding:8px;border:1px solid #cbd5e1;border-radius:9px;background:#f8fafc}.cal-real-meta b{display:block;font-size:11px}.cal-real-meta span{display:block;margin-top:3px;color:var(--cal-muted);font-size:8px}.cal-real-insight{border-left:5px solid #0284c7;background:#f0f9ff}.cal-unavailable{margin:10px 0;padding:12px;border:1px dashed #f59e0b;border-radius:11px;background:#fffbeb;color:#78350f;font-size:10px;line-height:1.5}.cal-provenance-code{display:block;overflow-wrap:anywhere;margin-top:7px;padding:7px;border-radius:8px;background:#0f172a;color:#e2e8f0;font-family:ui-monospace,monospace;font-size:8px}.cal-provenance-wrap{display:grid;gap:6px;margin-top:7px}.cal-provenance-link{color:#075985;font-size:10px;font-weight:900;overflow-wrap:anywhere}',
       '.cal-benchmark{border-left:5px solid #7c3aed}.cal-benchmark-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0}.cal-benchmark-card{border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;padding:11px}.cal-benchmark-card[data-current=true]{border-color:#7c3aed;background:#f5f3ff}.cal-benchmark-card strong{display:block;margin:5px 0;font-size:20px}.cal-benchmark-card p{min-height:40px;margin:0 0 9px;color:var(--cal-muted);font-size:9px;line-height:1.45}.cal-benchmark-detail{margin-top:12px;padding:12px;border:1px solid #ddd6fe;border-radius:12px;background:#faf5ff}.cal-benchmark-detail h4{margin-bottom:8px}.cal-rank-list{margin:8px 0 0;padding-left:22px;color:#4c1d95;font-size:10px;line-height:1.65}.cal-model-boundary{margin-top:11px;padding:10px;border-left:4px solid #b45309;background:#fffbeb;color:#78350f;font-size:10px;line-height:1.5}.cal-benchmark .cal-table tr[data-selected=true]{background:#ede9fe}.cal-benchmark .cal-table td:last-child{white-space:nowrap}',
       '.cal-ablation{border-left:5px solid #0891b2}.cal-ablation-controls{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:10px;margin:11px 0}.cal-ablation-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:11px}.cal-ablation-result{padding:12px;border:1px solid #a5f3fc;border-radius:12px;background:#ecfeff}.cal-ablation-result strong{display:block;margin-top:5px;font-size:18px}.cal-ablation-result p{margin:5px 0 0;color:var(--cal-muted);font-size:9px;line-height:1.45}.cal-ablation-status{margin-top:10px;padding:10px;border-radius:10px;font-size:10px;font-weight:850;line-height:1.45}.cal-ablation-status[data-changed=true]{background:#fef3c7;color:#92400e}.cal-ablation-status[data-changed=false]{background:#dcfce7;color:#166534}.cal-ablation .cal-gene-row{margin-top:7px}.cal-ablation .cal-table td:last-child{font-weight:850}',
       '.cal-panel-builder{border-left:5px solid #059669}.cal-panel-builder>summary{cursor:pointer;font-size:14px;font-weight:950;color:#065f46}.cal-panel-builder>summary::marker{color:#059669}.cal-panel-inner{margin-top:13px}.cal-panel-score{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:11px 0;padding:12px;border:1px solid #a7f3d0;border-radius:12px;background:#ecfdf5}.cal-panel-score strong{font-size:22px;color:#065f46}.cal-panel-score span{color:#047857;font-size:10px;font-weight:850}.cal-frontier{margin-top:12px}.cal-panel-builder .cal-table tr[data-aligned=false]{background:#fff7ed}.cal-panel-builder .cal-table td:last-child{font-weight:850}',
@@ -917,8 +917,8 @@
       '.cal-mystery{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(270px,.9fr);gap:14px}.cal-question{padding:14px;border:1px solid #c4b5fd;border-radius:14px;background:#f5f3ff}.cal-question h3{color:#5b21b6}.cal-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}.cal-choice{border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#243b53;padding:9px;text-align:left;font-size:11px;font-weight:850}.cal-choice[aria-pressed=true]{border-color:#7c3aed;background:#ede9fe}.cal-feedback{margin-top:10px;padding:10px;border-radius:10px;font-size:11px;font-weight:800}.cal-feedback[data-correct=true]{background:#dcfce7;color:#14532d}.cal-feedback[data-correct=false]{background:#fff7ed;color:#9a3412}',
       '.cal-design{display:grid;gap:12px}.cal-design-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cal-design-control{padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc}.cal-design-control label{display:block;margin-bottom:6px;color:#334e68;font-size:10px;font-weight:900;text-transform:uppercase}.cal-design-control select{width:100%;border:1px solid #bcccdc;border-radius:9px;background:#fff;padding:8px;color:var(--cal-ink)}.cal-design-control p{margin:7px 0 0;color:var(--cal-muted);font-size:9px;line-height:1.4}.cal-rubric{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.cal-rubric-card{border:1px solid #cbd5e1;border-radius:12px;background:#fff;padding:11px}.cal-rubric-card b{display:block;font-size:11px}.cal-rubric-card p{margin:7px 0 0;color:var(--cal-muted);font-size:9px;line-height:1.4}.cal-level{display:inline-block;margin-top:8px;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:950;text-transform:uppercase}.cal-level[data-level=strong]{background:#dcfce7;color:#166534}.cal-level[data-level=developing]{background:#fef3c7;color:#92400e}.cal-level[data-level=limited]{background:#fee2e2;color:#991b1b}.cal-complexity{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;padding:10px;border-radius:11px;background:#eff6ff;color:#1e3a8a;font-size:10px}.cal-case-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:12px}.cal-case-signal{padding:12px;border:1px solid #fbbf24;border-radius:12px;background:#fffbeb;color:#78350f;font-size:11px;line-height:1.5}',
       '.cal-cross{display:grid;gap:12px}.cal-lens-tabs{display:flex;flex-wrap:wrap;gap:7px}.cal-cross-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cal-cross-card{border:1px solid #cbd5e1;border-radius:14px;background:#fff;padding:13px}.cal-cross-card h4{margin:5px 0}.cal-cross-card .cal-marker{display:inline-block}.cal-cross-link{margin:8px 0 0;color:var(--cal-muted);font-size:10px;line-height:1.48}.cal-conserved{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cal-cer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cal-cer .cal-field{padding:10px;border:1px solid #d9e2ec;border-radius:12px;background:#f8fafc}.cal-checks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.cal-check{border-radius:999px;background:#e2e8f0;color:#475569;padding:5px 8px;font-size:9px;font-weight:900}.cal-check[data-done=true]{background:#dcfce7;color:#166534}.cal-caution{border-left:5px solid #7c3aed;background:#f5f3ff}.cal-methods{grid-column:1/-1}.cal-pipeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}.cal-stage{border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;padding:11px}.cal-stage b{display:block;font-size:11px}.cal-stage p{margin:6px 0;color:var(--cal-muted);font-size:10px;line-height:1.45}.cal-stage small{display:block;border-left:3px solid #b45309;padding-left:7px;color:#7c2d12;font-size:9px;line-height:1.4}',
-      '.cal-source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cal-source-list{margin:9px 0 0;padding-left:18px;color:var(--cal-muted);font-size:11px;line-height:1.6}.cal-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.cal-links a{color:#075985;font-size:11px;font-weight:900}.cal-boundary{border-left:5px solid #b45309;background:#fffbeb}.cal-af-return{border-left:5px solid #0e7490;background:linear-gradient(135deg,#f0fdfa,#f0f9ff)}.cal-af-return-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.cal-af-return-meta span{padding:5px 8px;border-radius:999px;background:#cffafe;color:#155e75;font-size:9px;font-weight:900}.cal-af-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.cal-af-record-item{padding:11px;border:1px solid #bae6fd;border-radius:12px;background:#fff}.cal-af-record-item span{display:block;color:#0e7490;font-size:8px;font-weight:950;text-transform:uppercase}.cal-af-record-item p{margin:6px 0 0;color:#334e68;font-size:10px;line-height:1.5}.cal-af-atlas-evidence{padding:10px;border-left:4px solid #0e7490;background:#ecfeff;color:#164e63;font-size:10px;line-height:1.5}.cal-footer{margin-top:14px;padding:11px 13px;border:1px solid var(--cal-line);border-radius:12px;background:#f8fafc;color:var(--cal-muted);font-size:10px;line-height:1.5}',
-      '@media(max-width:850px){.cal-mission,.cal-layout,.cal-mystery,.cal-cross-grid,.cal-cer,.cal-pipeline,.cal-design-controls,.cal-rubric,.cal-case-grid,.cal-real-meta,.cal-benchmark-grid,.cal-ablation-controls,.cal-ablation-results,.cal-stability-grid,.cal-replicate-tabs,.cal-replicate-controls,.cal-transfer-summary,.cal-pseudo-grid,.cal-af-record-grid{grid-template-columns:1fr}.cal-source-chip{display:none}.cal-source-grid{grid-template-columns:1fr}}',
+      '.cal-source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cal-source-list{margin:9px 0 0;padding-left:18px;color:var(--cal-muted);font-size:11px;line-height:1.6}.cal-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.cal-links a{color:#075985;font-size:11px;font-weight:900}.cal-boundary{border-left:5px solid #b45309;background:#fffbeb}.cal-af-return{border-left:5px solid #0e7490;background:linear-gradient(135deg,#f0fdfa,#f0f9ff)}.cal-af-return-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.cal-af-return-meta span{padding:5px 8px;border-radius:999px;background:#cffafe;color:#155e75;font-size:9px;font-weight:900}.cal-af-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.cal-af-record-item{padding:11px;border:1px solid #bae6fd;border-radius:12px;background:#fff}.cal-af-record-item span{display:block;color:#0e7490;font-size:8px;font-weight:950;text-transform:uppercase}.cal-af-record-item p{margin:6px 0 0;color:#334e68;font-size:10px;line-height:1.5}.cal-af-atlas-evidence{padding:10px;border-left:4px solid #0e7490;background:#ecfeff;color:#164e63;font-size:10px;line-height:1.5}.cal-af-review{margin-top:13px;padding:12px;border:1px solid #c4b5fd;border-radius:13px;background:#faf5ff}.cal-af-review h4{margin:0;color:#5b21b6;font-size:13px}.cal-af-review-intro{margin:5px 0 9px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-af-review-table{width:100%;border-collapse:collapse;font-size:10px}.cal-af-review-table th,.cal-af-review-table td{border-bottom:1px solid #ddd6fe;padding:7px;text-align:left;vertical-align:top}.cal-af-review-table th{color:#5b21b6;font-size:9px;text-transform:uppercase}.cal-af-review-score{font-weight:950;color:#6d28d9;white-space:nowrap}.cal-af-review-total{margin-top:9px;color:#5b21b6;font-size:10px;font-weight:900}.cal-af-review textarea{width:100%;min-height:62px;margin-top:8px;border:1px solid #c4b5fd;border-radius:9px;padding:8px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-af-review .cal-actions{margin-top:8px}.cal-footer{margin-top:14px;padding:11px 13px;border:1px solid var(--cal-line);border-radius:12px;background:#f8fafc;color:var(--cal-muted);font-size:10px;line-height:1.5}',
+      '@media(max-width:850px){.cal-mission,.cal-layout,.cal-mystery,.cal-cross-grid,.cal-cer,.cal-pipeline,.cal-design-controls,.cal-rubric,.cal-case-grid,.cal-real-meta,.cal-benchmark-grid,.cal-ablation-controls,.cal-ablation-results,.cal-stability-grid,.cal-replicate-tabs,.cal-replicate-controls,.cal-transfer-summary,.cal-pseudo-grid,.cal-af-record-grid,.cal-af-review-table{grid-template-columns:1fr}.cal-source-chip{display:none}.cal-source-grid{grid-template-columns:1fr}}',
       '@media(max-width:560px){.cal-top{align-items:flex-start}.cal-tissues{grid-template-columns:1fr}.cal-progress{grid-template-columns:1fr}.cal-compare-controls{grid-template-columns:1fr}.cal-compare-vs{padding:0}.cal-choice-grid{grid-template-columns:1fr}}',
       '@media(prefers-reduced-motion:reduce){.cal-shell *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}'
     ].join('');
@@ -989,6 +989,12 @@
         progress: function (d) { return Object.keys((d && d.replicatesVisited) || {}).length + '/2 replicates'; }
       },
       {
+        id: 'atlas_reproducibility',
+        label: 'Separate internal transfer from independent replication',
+        icon: '\u21c4',
+        check: function (d) { return !!(d && d.reproducibilityInterpretation === 'external-study'); }
+      },
+      {
         id: 'atlas_design_3',
         label: 'Design a study and solve 3 QC cases',
         icon: '\u2699',
@@ -1015,6 +1021,13 @@
         label: 'Build a cross-scale evidence record',
         icon: '\u2234',
         check: function (d) { return !!(d && d.alphaFoldEvidenceRecord && d.alphaFoldEvidenceRecord.complete); }
+      },
+      {
+        id: 'atlas_export',
+        label: 'Export an auditable evidence packet',
+        icon: '\u21e9',
+        check: function (d) { return Object.keys((d && d.exportedArtifacts) || {}).length >= 1; },
+        progress: function (d) { return Object.keys((d && d.exportedArtifacts) || {}).length + '/1 packet'; }
       }
     ],
     render: function (ctx) {
@@ -1027,6 +1040,63 @@
       var setStemLabTool = ctx.setStemLabTool;
       var setStemLabTab = ctx.setStemLabTab;
       var announce = ctx.announceToSR || function () {};
+      function downloadTextFile(filename, content, mimeType) {
+        try {
+          if (typeof document === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined' || !URL.createObjectURL) return false;
+          var blob = new Blob([content], { type: mimeType || 'text/markdown;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.rel = 'noopener';
+          link.click();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+      var EXPORT_SCHEMA_VERSION = 'cell-atlas-artifact/v1';
+      var EXPORT_BOUNDARY = 'This artifact is an instructional evidence record. It preserves source context and learner reasoning, but it is not a raw donor dataset, clinical interpretation, or proof of biological mechanism.';
+      function buildExportArtifact(artifactType, title, markdown, extra) {
+        var base = {
+          schemaVersion: EXPORT_SCHEMA_VERSION,
+          artifactType: artifactType,
+          title: title,
+          generatedAt: new Date().toISOString(),
+          context: { tissueId: tissue.id, tissueLabel: tissue.label, view: view },
+          provenance: SOURCE ? { project: SOURCE.project, hcaId: SOURCE.hcaId, hcaUrl: SOURCE.hcaUrl, license: SOURCE.license } : null,
+          boundary: EXPORT_BOUNDARY,
+          learningPath: {
+            routeId: 'cell-atlas-evidence-route/v1',
+            completedCount: routeDoneCount,
+            total: routeSteps.length,
+            steps: routeSteps.map(function (step) { return { id: step.id, label: step.label, complete: step.done }; }),
+            nextStep: nextRouteStep ? { id: nextRouteStep.id, label: nextRouteStep.label, action: nextRouteStep.action } : null
+          },
+          markdown: markdown
+        };
+        return Object.assign(base, extra || {});
+      }
+      function exportMarkdown(artifact) {
+        var context = artifact.context || {};
+        var provenance = artifact.provenance || {};
+        var sourceLine = Array.isArray(provenance.sources) ? provenance.sources.map(function (source) { return source.project + ' (' + (source.hcaId || source.hcaUrl || 'source context') + ')'; }).join('; ') : (provenance.project ? provenance.project + ' (' + (provenance.hcaId || provenance.hcaUrl || 'source context') + ')' : 'not recorded');
+        var learningPath = artifact.learningPath || {};
+        var learningRouteLine = learningPath.total ? String(learningPath.completedCount || 0) + '/' + String(learningPath.total) + ' milestones complete' : 'not recorded';
+        var nextRouteLine = learningPath.nextStep && learningPath.nextStep.label ? learningPath.nextStep.label : 'none recorded';
+        return ['# ' + artifact.title, '', 'Learning route: ' + learningRouteLine, 'Next recommended step: ' + nextRouteLine, '', 'Artifact schema: ' + artifact.schemaVersion, 'Artifact type: ' + artifact.artifactType, 'Generated: ' + artifact.generatedAt, 'Context: ' + (context.tissueLabel || context.tissueId || 'not recorded'), 'Source context: ' + sourceLine, 'Boundary: ' + artifact.boundary, '', '## Packet content', '', artifact.markdown].join('\n');
+      }
+      function downloadArtifact(filenameBase, artifact, format) {
+        var isJson = format === 'json';
+        var body = isJson ? JSON.stringify(artifact, null, 2) : exportMarkdown(artifact);
+        return downloadTextFile(filenameBase + (isJson ? '.json' : '.md'), body, isJson ? 'application/json;charset=utf-8' : 'text/markdown;charset=utf-8');
+      }
+      function recordArtifactExport(kind, format) {
+        var exports = Object.assign({}, d.exportedArtifacts || {});
+        exports[kind] = { format: format, exportedAt: new Date().toISOString() };
+        return exports;
+      }
       var view = d.view || 'map';
       var tissue = tissueById(d.tissue || 'pancreas');
       var SOURCE = tissue.source;
@@ -1048,9 +1118,32 @@
       var visitedForProgress = Object.assign({}, d.tissuesVisited || {});
       visitedForProgress[tissue.id] = true;
       var visitedCount = Object.keys(visitedForProgress).length;
+      var exportedArtifactCount = Object.keys(d.exportedArtifacts || {}).length;
+      var packetImportStatus = String(d.packetImportStatus || '');
+      var packetImportLabel = String(d.packetImportLabel || '').slice(0, 120);
+      var packetImportProvenance = String(d.packetImportProvenance || '');
+      var packetImportSourceSummary = String(d.packetImportSourceSummary || '').slice(0, 180);
+      var packetImportRouteSummary = String(d.packetImportRouteSummary || '').slice(0, 120);
+      var reasoningComplete = Object.keys(d.crossNotebook || {}).some(function (key) { return notebookProgress(d.crossNotebook[key], key).complete; }) && d.cautionAnswer === 'cautious';
+      var routeSteps = [
+        { id: 'observe', label: 'Explore 3 cell types', done: exploredCount >= 3, view: 'map', action: 'Open the map', detail: 'Use marker evidence to build a first identity claim.' },
+        { id: 'compare', label: 'Compare marker evidence', done: !!d.comparisonViewed, view: 'compare', action: 'Open comparison', detail: 'Put two cell types side by side and explain the strongest contrast.' },
+        { id: 'test', label: 'Solve 2 mystery cells', done: correctCount >= 2, view: 'mystery', action: 'Try a mystery', detail: 'Test whether a marker panel supports the proposed identity.' },
+        { id: 'reason', label: 'Write a cautious CER', done: reasoningComplete, view: 'cross', action: 'Open the CER', detail: 'Connect a claim, two markers, and a limitation across tissues.' },
+        { id: 'export', label: 'Save an evidence packet', done: exportedArtifactCount >= 1, view: 'design', action: 'Open study design', detail: 'Package the reasoning with provenance and an explicit boundary.' }
+      ];
+      var routeDoneCount = routeSteps.filter(function (step) { return step.done; }).length;
+      var routePercent = Math.round((routeDoneCount / routeSteps.length) * 100);
+      var nextRouteStep = routeSteps.filter(function (step) { return !step.done; })[0] || null;
       var systemLens = lensById(d.systemLens || 'vascular');
       var notebook = (d.crossNotebook && d.crossNotebook[systemLens.id]) || {};
       var notebookState = notebookProgress(notebook, systemLens.id);
+      var PORTFOLIO_SCHEMA_VERSION = 'cell-atlas-portfolio/v1';
+      var portfolioState = d.cellAtlasPortfolio && typeof d.cellAtlasPortfolio === 'object' ? d.cellAtlasPortfolio : {};
+      var portfolioAttempts = Array.isArray(portfolioState.attempts) ? portfolioState.attempts.filter(function (attempt) { return attempt && typeof attempt === 'object' && attempt.schemaVersion === PORTFOLIO_SCHEMA_VERSION; }).slice(-8) : [];
+      var portfolioLatest = portfolioAttempts.length ? portfolioAttempts[portfolioAttempts.length - 1] : null;
+      var portfolioPrevious = portfolioAttempts.length > 1 ? portfolioAttempts[portfolioAttempts.length - 2] : null;
+      var learnerSelfCheck = d.cellAtlasLearnerSelfCheck && typeof d.cellAtlasLearnerSelfCheck === 'object' ? d.cellAtlasLearnerSelfCheck : {};
       var studyDesign = Object.assign({}, DESIGN_DEFAULT, d.studyDesign || {});
       var designEvaluation = evaluateDesign(studyDesign);
       var designCaseIndex = Math.max(0, Math.min(DESIGN_CASES.length - 1, Number(d.designCaseIndex) || 0));
@@ -1101,6 +1194,152 @@
           next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, nextPatch || {});
           return next;
         });
+      }
+
+      function portfolioSafeText(value, fallback) {
+        var safe = String(value == null ? '' : value).replace(/\s+/g, ' ').replace(/\b[ACGTN]{16,}\b/gi, '[sequence omitted]').trim().slice(0, 700);
+        return safe || fallback;
+      }
+      function portfolioSafeId(value, fallback) {
+        var safe = portfolioSafeText(value, fallback).replace(/[^a-z0-9_-]/gi, '-').slice(0, 80);
+        return safe || fallback;
+      }
+      function sanitizePortfolioAttempt(raw) {
+        if (!raw || typeof raw !== 'object' || raw.schemaVersion !== PORTFOLIO_SCHEMA_VERSION) return null;
+        var rubric = Array.isArray(raw.rubric) ? raw.rubric.slice(0, 4).map(function (item) {
+          if (!item || typeof item !== 'object' || !item.label) return null;
+          var score = Math.max(1, Math.min(4, Math.round(Number(item.score) || 1)));
+          return { label: portfolioSafeText(item.label, 'Criterion'), score: score, detail: portfolioSafeText(item.detail, 'Evidence signal not recorded.'), nextMove: portfolioSafeText(item.nextMove, 'Review this criterion with the learner.') };
+        }).filter(Boolean) : [];
+        if (rubric.length !== 4) return null;
+        var map = raw.evidenceMap && typeof raw.evidenceMap === 'object' ? raw.evidenceMap : {};
+        var markers = Array.isArray(map.markers) ? map.markers.slice(0, 8).map(function (marker) { return portfolioSafeText(marker, 'marker reference'); }).filter(Boolean) : [];
+        var sources = raw.provenance && Array.isArray(raw.provenance.sources) ? raw.provenance.sources.slice(0, 8).map(function (source) {
+          if (!source || typeof source !== 'object') return null;
+          return { tissue: portfolioSafeText(source.tissue, 'tissue context'), project: portfolioSafeText(source.project, 'HCA source'), hcaId: portfolioSafeText(source.hcaId, ''), hcaUrl: portfolioSafeText(source.hcaUrl, ''), license: portfolioSafeText(source.license, '') };
+        }).filter(Boolean) : [];
+        var total = rubric.reduce(function (sum, item) { return sum + item.score; }, 0);
+        return {
+          schemaVersion: PORTFOLIO_SCHEMA_VERSION,
+          id: portfolioSafeId(raw.id, 'imported-attempt'),
+          createdAt: portfolioSafeText(raw.createdAt, new Date().toISOString()),
+          tissue: { id: portfolioSafeId(raw.tissue && raw.tissue.id, tissue.id), label: portfolioSafeText(raw.tissue && raw.tissue.label, tissue.label), lens: portfolioSafeText(raw.tissue && raw.tissue.lens, systemLens.id) },
+          rubric: rubric,
+          total: total,
+          route: { completedCount: Math.max(0, Math.min(5, Math.round(Number(raw.route && raw.route.completedCount) || 0))), total: 5 },
+          nextMove: { label: portfolioSafeText(raw.nextMove && raw.nextMove.label, 'Review evidence'), action: portfolioSafeText(raw.nextMove && raw.nextMove.action, 'Review the learner work with a teacher.') },
+          evidenceMap: { claim: portfolioSafeText(map.claim, 'not recorded'), evidence: portfolioSafeText(map.evidence, 'not recorded'), reasoning: portfolioSafeText(map.reasoning, 'not recorded'), limitation: portfolioSafeText(map.limitation, 'not recorded'), markers: markers },
+          provenance: { sources: sources },
+          reflection: { confidence: ['uncertain', 'developing', 'confident'].indexOf(String(raw.reflection && raw.reflection.confidence || '')) >= 0 ? String(raw.reflection.confidence) : '', strongestEvidence: portfolioSafeText(raw.reflection && raw.reflection.strongestEvidence, 'not recorded'), uncertainty: portfolioSafeText(raw.reflection && raw.reflection.uncertainty, 'not recorded') },
+          teacherFeedback: portfolioSafeText(raw.teacherFeedback, 'not recorded'),
+          revision: { previousAttemptId: portfolioSafeId(raw.revision && raw.revision.previousAttemptId, ''), scoreDelta: Math.max(-16, Math.min(16, Math.round(Number(raw.revision && raw.revision.scoreDelta) || 0))) },
+          boundary: 'Local, sequence-free learning record; not a raw donor dataset, clinical interpretation, or automatic grade.'
+        };
+      }
+      function openRouteStep(step) {
+        if (!step) return;
+        var nextPatch = { view: step.view };
+        if (step.view === 'cross') nextPatch.crossTissueCompared = true;
+        patch(nextPatch);
+        announce('Next route step opened: ' + step.label + '.');
+      }
+
+      function importLearningPacket(event) {
+        var input = event && event.target;
+        var file = input && input.files && input.files[0];
+        if (!file) return;
+        function resetInput() { try { input.value = ''; } catch (error) {} }
+        function fail(status, message) {
+          patch({ packetImportStatus: status, packetImportLabel: message });
+          announce(message);
+          resetInput();
+        }
+        if (Number(file.size) > 2 * 1024 * 1024) {
+          fail('too-large', 'That packet is larger than 2 MB. Choose a JSON export from Cell Atlas.');
+          return;
+        }
+        if (typeof FileReader === 'undefined') {
+          fail('unsupported', 'This browser cannot read packet files here.');
+          return;
+        }
+        var reader = new FileReader();
+        reader.onerror = function () { fail('error', 'The packet could not be read.'); };
+        reader.onload = function () {
+          var artifact = null;
+          try { artifact = JSON.parse(String(reader.result || '')); } catch (error) { fail('invalid', 'That file is not valid JSON.'); return; }
+          var allowed = ['cross-tissue-cer', 'reproducibility-audit', 'study-design'];
+          allowed.push('teacher-review-portfolio');
+          if (!artifact || artifact.schemaVersion !== EXPORT_SCHEMA_VERSION || allowed.indexOf(artifact.artifactType) < 0 || !artifact.fields || typeof artifact.fields !== 'object') {
+            fail('unsupported', 'Choose a Cell Atlas JSON packet exported by this lab.');
+            return;
+          }
+          function clip(value, max) { return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max); }
+          var next = {
+            packetImportStatus: 'imported',
+            packetImportLabel: clip(artifact.title || artifact.artifactType, 120),
+            packetImportAt: new Date().toISOString()
+          };
+          var provenance = artifact.provenance && typeof artifact.provenance === 'object' ? artifact.provenance : {};
+          var provenanceEntries = Array.isArray(provenance.sources) ? provenance.sources : (provenance.hcaId ? [provenance] : []);
+          var knownHcaIds = TISSUES.map(function (item) { return item.source.hcaId; });
+          var knownProvenanceCount = provenanceEntries.filter(function (entry) { return entry && knownHcaIds.indexOf(entry.hcaId) >= 0; }).length;
+          var provenanceStatus = provenanceEntries.length && knownProvenanceCount === provenanceEntries.length ? 'verified' : provenanceEntries.length ? 'review' : 'missing';
+          next.packetImportProvenance = provenanceStatus;
+          next.packetImportSourceSummary = provenanceEntries.length ? knownProvenanceCount + '/' + provenanceEntries.length + ' pinned HCA source records recognized' : 'No pinned HCA source records found; review before continuing.';
+          var savedRoute = artifact.learningPath && typeof artifact.learningPath === 'object' ? artifact.learningPath : {};
+          next.packetImportRouteSummary = savedRoute.total ? String(savedRoute.completedCount || 0) + '/' + String(savedRoute.total) + ' saved route milestones' : 'Route snapshot unavailable; continue with local checks.';
+          var contextId = artifact.context && String(artifact.context.tissueId || '');
+          var importedTissue = TISSUES.filter(function (item) { return item.id === contextId; })[0];
+          if (importedTissue) {
+            var visited = Object.assign({}, d.tissuesVisited || {});
+            visited[importedTissue.id] = true;
+            next.tissue = importedTissue.id;
+            next.tissuesVisited = visited;
+          }
+          var fields = artifact.fields;
+          if (artifact.artifactType === 'teacher-review-portfolio') {
+            var importedAttempt = sanitizePortfolioAttempt(fields.portfolioAttempt);
+            if (!importedAttempt) { fail('invalid', 'That portfolio packet is missing a bounded review attempt.'); return; }
+            var importedAttempts = (Array.isArray(d.cellAtlasPortfolio && d.cellAtlasPortfolio.attempts) ? d.cellAtlasPortfolio.attempts : []).filter(function (attempt) { return attempt && attempt.schemaVersion === PORTFOLIO_SCHEMA_VERSION; });
+            importedAttempts.push(Object.assign({}, importedAttempt, { imported: true, importedAt: new Date().toISOString() }));
+            next.cellAtlasPortfolio = { schemaVersion: PORTFOLIO_SCHEMA_VERSION, activeAttemptId: importedAttempt.id, attempts: importedAttempts.slice(-8) };
+            next.cellAtlasPortfolioStatus = 'imported';
+            next.cellAtlasPortfolioLabel = 'Imported revision attempt ' + importedAttempt.id + '.';
+            next.view = 'source';
+          } else if (artifact.artifactType === 'cross-tissue-cer') {
+            var lensId = CROSS_TISSUE_LENSES.some(function (lens) { return lens.id === fields.lens; }) ? fields.lens : 'vascular';
+            var notes = Object.assign({}, d.crossNotebook || {});
+            notes[lensId] = { claim: clip(fields.claim, 600), evidence: clip(fields.evidence, 900), reasoning: clip(fields.reasoning, 900) };
+            next.crossNotebook = notes;
+            next.systemLens = lensId;
+            next.cautionAnswer = ['cautious', 'marker', 'lineage'].indexOf(fields.caution) >= 0 ? fields.caution : '';
+            next.crossTissueCompared = true;
+            next.view = 'cross';
+          } else if (artifact.artifactType === 'study-design') {
+            var importedDesign = fields.studyDesign && typeof fields.studyDesign === 'object' ? fields.studyDesign : {};
+            var safeDesign = Object.assign({}, DESIGN_DEFAULT);
+            DESIGN_FIELDS.forEach(function (field) {
+              var value = importedDesign[field.id];
+              if (field.options.some(function (option) { return option.value === value; })) safeDesign[field.id] = value;
+            });
+            next.studyDesign = safeDesign;
+            next.designChanged = true;
+            next.view = 'design';
+          } else {
+            var validReplicateIds = replicateOptions.map(function (item) { return item.id; });
+            var importedReplicates = Array.isArray(fields.replicatesInspected) ? fields.replicatesInspected : [];
+            var visitedReplicates = Object.assign({}, d.replicatesVisited || {});
+            importedReplicates.forEach(function (id) { if (validReplicateIds.indexOf(id) >= 0) visitedReplicates[id] = true; });
+            next.replicatesVisited = visitedReplicates;
+            if (['rerun', 'heldout', 'external-study'].indexOf(fields.interpretation) >= 0) next.reproducibilityInterpretation = fields.interpretation;
+            next.reproducibilityViewed = true;
+            next.view = 'source';
+          }
+          patch(next);
+          announce('Imported ' + next.packetImportLabel + '. Review the restored fields, then save a local packet to record your new export.');
+          resetInput();
+        };
+        reader.readAsText(file);
       }
 
       function chooseTissue(nextTissue) {
@@ -1166,7 +1405,12 @@
           prefillEvidenceDetail: evidenceDetail,
           prefillCellCount: realCellSummary && realCellSummary.available ? realCellSummary.cellCount : null,
           prefillBiologicalRole: selectedGene.role,
-          prefillEvidenceBoundary: 'RNA evidence supports a transcript-level hypothesis. It does not directly measure protein abundance, localization, molecular activity, or cell function.'
+          prefillEvidenceBoundary: 'RNA evidence supports a transcript-level hypothesis. It does not directly measure protein abundance, localization, molecular activity, or cell function.',
+          prefillAtlasDatasetVersion: evidenceMode === 'real' && realSnapshot ? realSnapshot.source.datasetVersionId : '',
+          prefillAtlasAssetSha256: evidenceMode === 'real' && realSnapshot ? realSnapshot.source.assetSha256 : '',
+          prefillAtlasSourceTitle: evidenceMode === 'real' && realSnapshot ? realSnapshot.source.title : '',
+          prefillAtlasSourceUrl: evidenceMode === 'real' && realSnapshot ? realSnapshot.source.assetUrl : '',
+          prefillAtlasCitation: evidenceMode === 'real' && realSnapshot ? realSnapshot.source.citation : ''
         }, 'AlphaFold Explorer with ' + selectedGene.protein);
       }
 
@@ -1298,9 +1542,43 @@
           h('b', null, rounded));
       }
 
+      function reviewText(value, fallback) {
+        var safe = String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, 700);
+        return safe || fallback;
+      }
+
+      function scoreReviewCriterion(text, type) {
+        var value = String(text || '').toLowerCase();
+        if (!value) return 1;
+        if (type === 'source') return alphaFoldEvidenceRecord.captureMethod === 'alphafold-companion-explicit-send' ? 4 : 3;
+        if (type === 'claim') {
+          var cautious = /(hypothes|support|suggest|not prove|does not|cannot|separate|still require)/.test(value);
+          var overclaim = /(proves|guarantee|definitive|certain|causes|is active)/.test(value);
+          return overclaim ? 1 : cautious ? 4 : 2;
+        }
+        if (type === 'evidence') {
+          var specific = /(plddt|confidence|pae|region|core|flexib|domain|residue|structure)/.test(value);
+          return specific ? 4 : 2;
+        }
+        var testable = /(test|measure|assay|experiment|locali[sz]|abundance|function|activity|secretion|proteom|immun)/.test(value);
+        return testable ? 4 : 2;
+      }
+
       function renderAlphaFoldEvidenceRecord() {
         var record = alphaFoldEvidenceRecord;
         if (!record || !record.complete) return null;
+        var recordProvenance = record.atlasProvenance && record.atlasProvenance.datasetVersion
+          ? record.atlasProvenance
+          : (record.tissue === tissue.label && tissue.id === 'pancreas' && realSnapshot && realSnapshot.source ? {
+            datasetVersion: realSnapshot.source.datasetVersionId,
+            assetSha256: realSnapshot.source.assetSha256,
+            sourceTitle: realSnapshot.source.title,
+            sourceUrl: realSnapshot.source.assetUrl,
+            citation: realSnapshot.source.citation
+          } : null);
+        var provenanceUrl = recordProvenance && /^https?:\/\/[^\s]+$/i.test(String(recordProvenance.sourceUrl || '').trim())
+          ? String(recordProvenance.sourceUrl).trim().slice(0, 320)
+          : '';
         function text(value, fallback) {
           var safe = String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, 600);
           return safe || fallback;
@@ -1311,6 +1589,54 @@
           { label: 'Cautious cross-scale claim', value: text(record.cautiousClaim, 'No cautious claim recorded.') },
           { label: 'Missing evidence or next test', value: text(record.nextTest, 'No next test recorded.') }
         ];
+        var reviewItems = [
+          { label: 'Source provenance', score: scoreReviewCriterion(record.accession, 'source'), detail: record.captureMethod === 'alphafold-companion-explicit-send' ? 'Public accession and successful companion load were captured.' : 'An accession is present, but companion load confirmation was not captured.' },
+          { label: 'Claim caution', score: scoreReviewCriterion(record.cautiousClaim, 'claim'), detail: 'Looks for language that separates prediction from protein abundance, localization, and function.' },
+          { label: 'Evidence specificity', score: scoreReviewCriterion(record.structureEvidence, 'evidence'), detail: 'Looks for a named model feature, confidence/PAE clue, region, or residue.' },
+          { label: 'Validation planning', score: scoreReviewCriterion(record.nextTest, 'next'), detail: 'Looks for a measurable follow-up such as abundance, localization, activity, or an experiment.' }
+        ];
+        var reviewTotal = reviewItems.reduce(function (total, item) { return total + item.score; }, 0);
+        function teacherPacket() {
+          return [
+            'Cell Atlas ↔ AlphaFold teacher review packet',
+            'Record: ' + text(record.gene, 'gene') + ' / ' + text(record.protein, 'protein') + ' / ' + text(record.accession, 'accession'),
+            'Tissue and cell: ' + text(record.tissue, 'tissue') + ' / ' + text(record.cellType, 'cell type'),
+            'Source atlas observation: ' + text(record.atlasEvidence, 'not recorded'),
+            recordProvenance && recordProvenance.datasetVersion ? 'Atlas provenance: dataset version ' + text(recordProvenance.datasetVersion, 'not recorded') + ' | asset SHA-256 ' + text(recordProvenance.assetSha256, 'not recorded') + ' | ' + text(recordProvenance.citation || recordProvenance.sourceTitle, 'source not recorded') : 'Atlas provenance: curated teaching context or legacy record without a pinned dataset.',
+            'Rubric suggestion: ' + reviewTotal + '/16',
+            reviewItems.map(function (item) { return item.label + ': ' + item.score + '/4 — ' + item.detail; }).join('\n'),
+            'Learner claim: ' + text(record.cautiousClaim, 'not recorded'),
+            'Structure evidence: ' + text(record.structureEvidence, 'not recorded'),
+            'Limit or next test: ' + text(record.nextTest, 'not recorded'),
+            'Teacher feedback: ' + text(d.alphaFoldTeacherNote, 'not recorded'),
+            'Boundary: RNA, protein abundance, localization, structure, and function remain distinct evidence levels. No sequence is included.'
+          ].join('\n');
+        }
+        function copyTeacherPacket() {
+          var report = teacherPacket();
+          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldTeacherReviewStatus: 'unavailable' }); return; }
+          navigator.clipboard.writeText(report).then(function () { patch({ alphaFoldTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ alphaFoldTeacherReviewStatus: 'failed' }); });
+        }
+        function learnerPacket() {
+          return [
+            'Cell Atlas ↔ AlphaFold learner evidence record',
+            'Record: ' + text(record.gene, 'gene') + ' / ' + text(record.protein, 'protein') + ' / ' + text(record.accession, 'accession'),
+            'Tissue and cell: ' + text(record.tissue, 'tissue') + ' / ' + text(record.cellType, 'cell type'),
+            'Source atlas observation: ' + text(record.atlasEvidence, 'not recorded'),
+            recordProvenance && recordProvenance.datasetVersion ? 'Atlas provenance: dataset version ' + text(recordProvenance.datasetVersion, 'not recorded') + ' | asset SHA-256 ' + text(recordProvenance.assetSha256, 'not recorded') : 'Atlas provenance: not recorded',
+            provenanceUrl ? 'Pinned atlas source URL: ' + provenanceUrl : 'Pinned atlas source URL: not recorded',
+            'Learner structural observation: ' + text(record.structureObservation, 'not recorded'),
+            'AlphaFold model evidence: ' + text(record.structureEvidence, 'not recorded'),
+            'Cautious cross-scale claim: ' + text(record.cautiousClaim, 'not recorded'),
+            'Missing evidence or next test: ' + text(record.nextTest, 'not recorded'),
+            'Boundary: RNA, protein abundance, localization, structure, and function remain distinct evidence levels. No sequence is included.'
+          ].join('\n');
+        }
+        function copyLearnerPacket() {
+          var report = learnerPacket();
+          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldLearnerExportStatus: 'unavailable' }); return; }
+          navigator.clipboard.writeText(report).then(function () { patch({ alphaFoldLearnerExportStatus: 'copied' }); }).catch(function () { patch({ alphaFoldLearnerExportStatus: 'failed' }); });
+        }
         return h('section', { className: 'cal-card cal-af-return', 'aria-labelledby': 'cal-af-return-title' },
           h('p', { className: 'cal-kicker' }, 'Returned from AlphaFold'),
           h('h3', { id: 'cal-af-return-title' }, 'Cross-scale evidence record'),
@@ -1323,6 +1649,9 @@
           h('div', { className: 'cal-af-atlas-evidence' },
             h('strong', null, 'Source atlas observation (' + text(record.atlasMetricLabel, 'RNA evidence') + '): '),
             text(record.atlasEvidence, 'No atlas evidence detail recorded.')),
+          recordProvenance && recordProvenance.datasetVersion && h('div', { className: 'cal-provenance-wrap' },
+            h('code', { className: 'cal-provenance-code' }, 'Atlas provenance: dataset version ' + text(recordProvenance.datasetVersion, 'not recorded') + ' | SHA-256 ' + text(recordProvenance.assetSha256, 'not recorded') + ' | ' + text(recordProvenance.citation || recordProvenance.sourceTitle, 'source not recorded')),
+            provenanceUrl && h('a', { className: 'cal-provenance-link', href: provenanceUrl, target: '_blank', rel: 'noreferrer' }, 'Open pinned atlas source ↗')),
           record.captureMethod === 'alphafold-companion-explicit-send' && record.structureRecord && h('div', { className: 'cal-callout' },
             h('strong', null, 'Companion verification: '),
             'The public AlphaFold DB record ' + text(record.structureRecord.accession, record.accession) + ' was successfully loaded before this explicit handoff. Confidence summary: ' + text(record.structureRecord.confidenceSummary, 'not reported') + '.',
@@ -1332,6 +1661,24 @@
           h('div', { className: 'cal-af-record-grid' }, fields.map(function (field) {
             return h('article', { key: field.label, className: 'cal-af-record-item' }, h('span', null, field.label), h('p', null, field.value));
           })),
+          h('div', { className: 'cal-af-review', 'aria-labelledby': 'cal-af-review-title' },
+            h('h4', { id: 'cal-af-review-title' }, 'Teacher review packet'),
+            h('p', { className: 'cal-af-review-intro' }, 'Draft rubric suggestion only: review the learner’s actual reasoning and adjust the score. The tool never infers a grade from a single number.'),
+            h('table', { className: 'cal-af-review-table' },
+              h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Criterion'), h('th', { scope: 'col' }, 'Draft score'), h('th', { scope: 'col' }, 'What it checks'))),
+              h('tbody', null, reviewItems.map(function (item) { return h('tr', { key: item.label }, h('th', { scope: 'row' }, item.label), h('td', { className: 'cal-af-review-score' }, item.score + '/4'), h('td', null, item.detail)); }))),
+            h('div', { className: 'cal-af-review-total' }, 'Draft total: ' + reviewTotal + '/16'),
+            h('label', { htmlFor: 'cal-af-teacher-feedback', style: { display: 'block', marginTop: '9px', color: '#5b21b6', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, 'Teacher feedback'),
+            h('textarea', { id: 'cal-af-teacher-feedback', rows: 3, maxLength: 800, value: d.alphaFoldTeacherNote || '', placeholder: 'Name one strength and one revision that would make the evidence or limitation more specific.', onChange: function (event) { patch({ alphaFoldTeacherNote: event.target.value.slice(0, 800), alphaFoldTeacherReviewStatus: '' }); } }),
+            h('div', { className: 'cal-actions' },
+              h('button', { type: 'button', className: 'cal-secondary', onClick: copyTeacherPacket }, 'Copy teacher review packet'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: copyLearnerPacket }, 'Copy learner evidence record'),
+              d.alphaFoldTeacherReviewStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free review packet.'),
+              d.alphaFoldTeacherReviewStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the review text manually.'),
+              d.alphaFoldTeacherReviewStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the review text manually.'),
+              d.alphaFoldLearnerExportStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free learner record.'),
+              d.alphaFoldLearnerExportStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the learner record manually.'),
+              d.alphaFoldLearnerExportStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the learner record manually.'))),
           h('div', { className: 'cal-model-boundary' },
             h('strong', null, 'Record boundary: '),
             'The structural notes are learner-authored interpretations of a prediction, not measurements imported from AlphaFold DB. No amino-acid sequence is stored. RNA, protein abundance, localization, structure, and function remain distinct evidence levels.'));
@@ -1498,7 +1845,41 @@
         if (evidenceMode !== 'real' || !realSnapshot || !selectedReplicate || !selectedTransferAudit) return null;
         var answer = d.replicateInterpretation || '';
         var correct = answer === 'cautious';
-        var relativeAligned = relativeReplicateTransfer.reduce(function (total, item) { return total + item.alignedCount; }, 0);
+        var reproducibilityAnswer = d.reproducibilityInterpretation || '';
+        var reproducibilityCorrect = reproducibilityAnswer === 'external-study';
+        function reproducibilityPacket() {
+          var visited = Object.keys(d.replicatesVisited || {}).filter(function (id) { return (d.replicatesVisited || {})[id]; }).sort().join(', ') || 'not recorded';
+          return [
+            'Cell Atlas reproducibility audit',
+            'Dataset version: ' + realSnapshot.source.datasetVersionId,
+            'Asset SHA-256: ' + realSnapshot.source.assetSha256,
+            'Pseudonymous replicates inspected: ' + visited,
+            'Relative-mean held-out transfer: ' + relativeAligned + ' of ' + relativeTotal,
+            'Detection-frequency held-out transfer: ' + detectionAligned + ' of ' + detectionTotal,
+            'External study status: not included',
+            'Learner independent-replication interpretation: ' + (reproducibilityAnswer || 'not answered'),
+            'Boundary: donor holdout is internal transfer within one study. Independent replication requires a separate pinned source, prespecified mapping and QC rules, and uncertainty reporting. No source donor identifiers are included.'
+          ].join('\n');
+        }
+        function copyReproducibilityPacket() {
+          var report = reproducibilityPacket();
+          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ reproducibilityPacketStatus: 'unavailable' }); return; }
+          navigator.clipboard.writeText(report).then(function () { patch({ reproducibilityPacketStatus: 'copied' }); }).catch(function () { patch({ reproducibilityPacketStatus: 'failed' }); });
+        }
+        function reproducibilityArtifact() {
+          return buildExportArtifact('reproducibility-audit', 'Cell Atlas reproducibility audit', reproducibilityPacket(), {
+            context: { tissueId: 'pancreas', tissueLabel: 'Pancreas', view: view, evidenceMode: evidenceMode },
+            provenance: { datasetVersionId: realSnapshot.source.datasetVersionId, assetSha256: realSnapshot.source.assetSha256, project: realSnapshot.source.citation, sourceTitle: realSnapshot.source.title, sourceUrl: realSnapshot.source.assetUrl },
+            fields: { replicatesInspected: Object.keys(d.replicatesVisited || {}).filter(function (id) { return (d.replicatesVisited || {})[id]; }).sort(), relativeAligned: relativeAligned, relativeTotal: relativeTotal, detectionAligned: detectionAligned, detectionTotal: detectionTotal, externalStudyStatus: 'not included', interpretation: reproducibilityAnswer || '' }
+          });
+        }
+        function downloadReproducibilityPacket(format) {
+          var downloaded = downloadArtifact('cell-atlas-reproducibility-audit', reproducibilityArtifact(), format);
+          var status = downloaded ? (format === 'json' ? 'downloaded-json' : 'downloaded') : 'download-failed';
+          var nextPatch = { reproducibilityPacketStatus: status };
+          if (downloaded) nextPatch.exportedArtifacts = recordArtifactExport('reproducibility-audit', format);
+          patch(nextPatch);
+        }        var relativeAligned = relativeReplicateTransfer.reduce(function (total, item) { return total + item.alignedCount; }, 0);
         var relativeTotal = relativeReplicateTransfer.reduce(function (total, item) { return total + item.totalCount; }, 0);
         var detectionAligned = detectionReplicateTransfer.reduce(function (total, item) { return total + item.alignedCount; }, 0);
         var detectionTotal = detectionReplicateTransfer.reduce(function (total, item) { return total + item.totalCount; }, 0);
@@ -1587,6 +1968,30 @@
           h('div', { className: 'cal-model-boundary' },
             h('strong', null, 'Held-out here is internal, not external. '),
             'There are only four source donors from one study, assay, and preprocessing pipeline. Replicate-relative scaling can sharpen within-replicate contrasts. These aggregate rotations test donor transfer inside this dataset; they do not establish population coverage or clinical validity.'),
+          h('div', { className: 'cal-model-boundary cal-reproducibility-status' },
+            h('strong', null, 'External study status: not included. '),
+            'This snapshot contains four pseudonymous donor aggregates from one study, assay, and preprocessing pipeline. A held-out donor transfer is useful internal validation, but independent replication requires a separate version-pinned study with a prespecified mapping, quality-control rule, and uncertainty report.'),
+          h('div', { className: 'cal-question', style: { marginTop: '12px' } },
+            h('h3', null, 'What result would count as independent replication?'),
+            h('p', { className: 'cal-card-intro' }, 'Choose the strongest next test, not the most convenient re-analysis.'),
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Independent replication choices' },
+              h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'rerun' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'rerun', reproducibilityViewed: true }); } }, 'Rerun the same source cells with the same pipeline and call the agreement independent.'),
+              h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'heldout' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'heldout', reproducibilityViewed: true }); } }, 'Hold out one donor from this study; this tests internal transfer, but it is not external replication.'),
+              h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'external-study' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'external-study', reproducibilityViewed: true }); } }, 'Apply a prespecified marker and QC plan to a separate version-pinned pancreas study, then report mapping failures and uncertainty.')),
+            reproducibilityAnswer && h('div', { className: 'cal-feedback', 'data-correct': reproducibilityCorrect ? 'true' : 'false', role: 'status' },
+              reproducibilityCorrect
+                ? 'Correct: a separate study, declared mapping rules, and visible failures make the replication claim auditable.'
+                : 'That is still a re-analysis of the same study. Donor holdout can test internal transfer, but independent replication needs a separate pinned source.')),
+            h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
+              h('button', { type: 'button', className: 'cal-secondary', onClick: copyReproducibilityPacket }, 'Copy reproducibility audit'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('md'); }, 'aria-label': 'Download cell-atlas-reproducibility-audit.md' }, 'Download audit (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('json'); }, 'aria-label': 'Download cell-atlas-reproducibility-audit.json' }, 'Download audit (.json)'),
+              d.reproducibilityPacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-reproducibility-audit.md.'),
+              d.reproducibilityPacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-reproducibility-audit.json.'),
+              d.reproducibilityPacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free reproducibility audit.'),
+              d.reproducibilityPacketStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the audit text manually.'),
+              d.reproducibilityPacketStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the audit text manually.'),
+              d.reproducibilityPacketStatus === 'download-failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Download unavailable; select the audit text manually.')),
           smallKdr && h('div', { className: 'cal-question', style: { marginTop: '12px' } },
             h('h3', null, 'Replicate B has ' + smallEndothelial.cellCount + ' endothelial cells, with KDR detected in ' + smallKdr.detectionPct + '%. What is justified?'),
             h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Replicate sample-size interpretation choices' },
@@ -1995,7 +2400,43 @@
       function renderDesignStudio() {
         var selectedAnswer = d.designAnswer || '';
         var correct = selectedAnswer === designCase.answer;
-        return h('section', { className: 'cal-design', 'aria-labelledby': 'cal-design-title' },
+        function designPacket() {
+          var decisions = DESIGN_FIELDS.map(function (field) {
+            var selected = field.options.filter(function (option) { return option.value === studyDesign[field.id]; })[0] || field.options[0];
+            return field.label + ': ' + selected.label + ' — ' + selected.note;
+          }).join('\n');
+          var dimensions = designEvaluation.dimensions.map(function (dimension) { return dimension.label + ': ' + dimension.level + ' — ' + dimension.reason; }).join('\n');
+          return [
+            'Cell Atlas study-design packet',
+            'Tissue context: ' + tissue.label,
+            'Selected decisions:',
+            decisions,
+            'Qualitative rubric emphasis: ' + designEvaluation.priority,
+            'Rubric dimensions:',
+            dimensions,
+            'Resource complexity: ' + designEvaluation.complexity,
+            'QC cases diagnosed: ' + completedDesignCount + '/' + DESIGN_CASES.length,
+            'Boundary: these are teaching heuristics, not power calculations, budgets, ethics approval, or a prespecified real-world analysis plan.'
+          ].join('\n');
+        }
+        function copyDesignPacket() {
+          var report = designPacket();
+          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ designPacketStatus: 'unavailable' }); return; }
+          navigator.clipboard.writeText(report).then(function () { patch({ designPacketStatus: 'copied' }); }).catch(function () { patch({ designPacketStatus: 'failed' }); });
+        }
+        function designArtifact() {
+          return buildExportArtifact('study-design', 'Cell Atlas study-design packet', designPacket(), {
+            context: { tissueId: tissue.id, tissueLabel: tissue.label, view: view, studyQuestion: studyDesign.question },
+            fields: { studyDesign: Object.assign({}, studyDesign), completedQcCases: completedDesignCount, totalQcCases: DESIGN_CASES.length, rubric: designEvaluation }
+          });
+        }
+        function downloadDesignPacket(format) {
+          var downloaded = downloadArtifact('cell-atlas-study-design', designArtifact(), format);
+          var status = downloaded ? (format === 'json' ? 'downloaded-json' : 'downloaded') : 'download-failed';
+          var nextPatch = { designPacketStatus: status };
+          if (downloaded) nextPatch.exportedArtifacts = recordArtifactExport('study-design', format);
+          patch(nextPatch);
+        }        return h('section', { className: 'cal-design', 'aria-labelledby': 'cal-design-title' },
           h('div', { className: 'cal-card' },
             h('p', { className: 'cal-kicker' }, 'Experimental design studio'),
             h('h3', { id: 'cal-design-title' }, 'Design a cell-atlas study'),
@@ -2052,7 +2493,17 @@
                 h('li', null, 'Check mixed profiles for doublets before naming new types.'),
                 h('li', null, 'Use metadata to detect batch structure.'),
                 h('li', null, 'Use panels and replicated cells—not one zero or one marker.')),
-              h('p', { className: 'cal-map-note' }, 'The aim is not to memorize one correction. It is to ask what else could produce the observation.')))
+              h('p', { className: 'cal-map-note' }, 'The aim is not to memorize one correction. It is to ask what else could produce the observation.'),
+              h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
+                h('button', { type: 'button', className: 'cal-secondary', onClick: copyDesignPacket }, 'Copy study plan packet'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('md'); }, 'aria-label': 'Download cell-atlas-study-design.md' }, 'Download plan (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('json'); }, 'aria-label': 'Download cell-atlas-study-design.json' }, 'Download plan (.json)'),
+              d.designPacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-study-design.md.'),
+              d.designPacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-study-design.json.'),
+                d.designPacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free study plan packet.'),
+                d.designPacketStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the study plan text manually.'),
+                d.designPacketStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the study plan text manually.'),
+                d.designPacketStatus === 'download-failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Download unavailable; select the study plan text manually.'))))
         );
       }
 
@@ -2066,6 +2517,54 @@
       function renderCrossTissue() {
         var cautionAnswer = d.cautionAnswer || '';
         var cautious = cautionAnswer === 'cautious';
+        function crossTissuePacket() {
+          var members = systemLens.members.map(function (member) {
+            var memberTissue = tissueById(member.tissueId);
+            var memberCell = cellById(member.cellId, member.tissueId);
+            return memberTissue.label + ' / ' + memberCell.label + ' / ' + memberCell.marker + ' evidence ' + memberCell.evidence[memberCell.marker] + '/100';
+          }).join('\n');
+          var sourceContexts = systemLens.members.map(function (member) {
+            var source = tissueById(member.tissueId).source;
+            return source.project + ' | ' + (source.hcaId || source.title) + ' | ' + source.license;
+          }).join('\n');
+          return [
+            'Cell Atlas cross-tissue CER packet',
+            'Lens: ' + systemLens.title,
+            'Question: ' + systemLens.question,
+            'Displayed members:',
+            members,
+            'Source contexts:',
+            sourceContexts,
+            'Conserved problem: ' + systemLens.conserved,
+            'Claim: ' + (notebook.claim || 'not recorded'),
+            'Evidence: ' + (notebook.evidence || 'not recorded'),
+            'Reasoning + limitation: ' + (notebook.reasoning || 'not recorded'),
+            'Caution checkpoint: ' + (cautionAnswer || 'not answered'),
+            'Boundary: these are curated teaching profiles with attributed source context, not pooled cross-study statistics. Related support jobs can motivate comparison, but this model cannot prove shared identity, developmental lineage, or mechanism.'
+          ].join('\n');
+        }
+        function copyCrossTissuePacket() {
+          var report = crossTissuePacket();
+          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ crossTissuePacketStatus: 'unavailable' }); return; }
+          navigator.clipboard.writeText(report).then(function () { patch({ crossTissuePacketStatus: 'copied' }); }).catch(function () { patch({ crossTissuePacketStatus: 'failed' }); });
+        }
+        function crossTissueArtifact() {
+          return buildExportArtifact('cross-tissue-cer', 'Cell Atlas cross-tissue CER packet', crossTissuePacket(), {
+            context: { tissueId: 'multi-tissue', tissueLabel: 'Pancreas, Lung, Brain', view: view, lens: systemLens.id },
+            provenance: { sources: systemLens.members.map(function (member) {
+              var memberTissue = tissueById(member.tissueId);
+              return { tissue: memberTissue.label, project: memberTissue.source.project, hcaId: memberTissue.source.hcaId, hcaUrl: memberTissue.source.hcaUrl, license: memberTissue.source.license };
+            }) },
+            fields: { lens: systemLens.id, claim: notebook.claim || '', evidence: notebook.evidence || '', reasoning: notebook.reasoning || '', caution: cautionAnswer || '' }
+          });
+        }
+        function downloadCrossTissuePacket(format) {
+          var downloaded = downloadArtifact('cell-atlas-cross-tissue-cer', crossTissueArtifact(), format);
+          var status = downloaded ? (format === 'json' ? 'downloaded-json' : 'downloaded') : 'download-failed';
+          var nextPatch = { crossTissuePacketStatus: status };
+          if (downloaded) nextPatch.exportedArtifacts = recordArtifactExport('cross-tissue-cer', format);
+          patch(nextPatch);
+        }
         return h('section', { className: 'cal-cross', 'aria-labelledby': 'cal-cross-title' },
           h('div', { className: 'cal-card' },
             h('p', { className: 'cal-kicker' }, 'Across organs'),
@@ -2092,7 +2591,9 @@
                   h('h4', null, memberCell.label),
                   h('span', { className: 'cal-marker', style: { background: memberCell.color } }, memberCell.marker + ' evidence ' + strength + '/100'),
                   h('p', { className: 'cal-job' }, memberCell.job),
-                  h('p', { className: 'cal-cross-link' }, member.connection));
+                  h('p', { className: 'cal-cross-link' }, member.connection),
+                  h('p', { className: 'cal-cross-link' }, 'Source: ' + memberTissue.source.project),
+                  memberTissue.source.hcaUrl && h('a', { className: 'cal-cross-link', href: memberTissue.source.hcaUrl, target: '_blank', rel: 'noopener', 'aria-label': 'Open ' + memberTissue.source.hcaId + ' source context' }, 'Open ' + memberTissue.source.hcaId + ' source context'));
               }))),
           h('div', { className: 'cal-conserved' },
             h('div', { className: 'cal-card' }, h('p', { className: 'cal-kicker' }, 'Pattern that carries across'), h('h3', null, 'Conserved problem'), h('p', { className: 'cal-job' }, systemLens.conserved)),
@@ -2114,7 +2615,17 @@
             h('div', { className: 'cal-checks', role: 'status', 'aria-label': 'Notebook completion checks' },
               h('span', { className: 'cal-check', 'data-done': notebookState.claim ? 'true' : 'false' }, notebookState.claim ? '\u2713 specific claim' : 'claim needs more detail'),
               h('span', { className: 'cal-check', 'data-done': notebookState.evidence ? 'true' : 'false' }, notebookState.evidence ? '\u2713 two markers cited' : notebookState.markerHits + '/2 markers cited'),
-              h('span', { className: 'cal-check', 'data-done': notebookState.reasoning ? 'true' : 'false' }, notebookState.reasoning ? '\u2713 reasoning developed' : 'reasoning needs more detail'))),
+              h('span', { className: 'cal-check', 'data-done': notebookState.reasoning ? 'true' : 'false' }, notebookState.reasoning ? '\u2713 reasoning developed' : 'reasoning needs more detail')),
+            h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
+              h('button', { type: 'button', className: 'cal-secondary', onClick: copyCrossTissuePacket }, 'Copy cross-tissue CER packet'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('md'); }, 'aria-label': 'Download cell-atlas-cross-tissue-cer.md' }, 'Download CER packet (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('json'); }, 'aria-label': 'Download cell-atlas-cross-tissue-cer.json' }, 'Download CER packet (.json)'),
+              d.crossTissuePacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free CER packet.'),
+              d.crossTissuePacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-cross-tissue-cer.md.'),
+              d.crossTissuePacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-cross-tissue-cer.json.'),
+              d.crossTissuePacketStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the CER text manually.'),
+              d.crossTissuePacketStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the CER text manually.'),
+              d.crossTissuePacketStatus === 'download-failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Download unavailable; select the CER text manually.'))),
           h('div', { className: 'cal-card cal-caution' },
             h('p', { className: 'cal-kicker' }, 'Caution checkpoint'),
             h('h3', null, 'Which conclusion is scientifically defensible?'),
@@ -2127,7 +2638,163 @@
         );
       }
 
+      function cellAtlasReviewItems() {
+        var routeScore = routeDoneCount >= routeSteps.length ? 4 : routeDoneCount >= 3 ? 3 : routeDoneCount >= 1 ? 2 : 1;
+        var claimScore = reasoningComplete ? 4 : notebookState.claim && notebookState.evidence ? 3 : notebookState.claim ? 2 : 1;
+        var provenanceScore = packetImportStatus === 'imported' ? (packetImportProvenance === 'verified' ? 4 : packetImportProvenance === 'review' ? 2 : 1) : (SOURCE && SOURCE.hcaId ? 3 : 1);
+        var packetScore = exportedArtifactCount >= 1 ? 4 : packetImportStatus === 'imported' ? 2 : 1;
+        return [
+          { label: 'Evidence route', score: routeScore, detail: routeDoneCount + '/' + routeSteps.length + ' milestones completed; use the route as a learning signal, not a grade.', nextMove: routeScore >= 4 ? 'Maintain: revisit the route when you package or present the work.' : (nextRouteStep ? 'Open ' + nextRouteStep.action + ': ' + nextRouteStep.detail : 'Complete the next route milestone before sharing.') },
+          { label: 'Claim + limitation', score: claimScore, detail: reasoningComplete ? 'A complete CER includes a specific claim, two marker references, reasoning, and a cautious limitation.' : 'Look for a specific claim, two marker references, reasoning, and a cautious limitation.', nextMove: reasoningComplete ? 'Maintain: keep the claim tied to two marker references and a stated limit.' : 'Revise: state one claim, cite two marker references, explain the reasoning, and name one limitation.' },
+          { label: 'Source provenance', score: provenanceScore, detail: packetImportStatus === 'imported' ? (packetImportSourceSummary || 'Imported source context needs review.') : 'Current atlas view is tied to the displayed HCA source record.', nextMove: provenanceScore >= 4 ? 'Maintain: carry the recognized HCA record into the next packet.' : packetImportStatus === 'imported' ? 'Review: compare the packet source record with the current pinned HCA source before sharing.' : 'Add: include the pinned HCA source ID in the packet before sharing.' },
+          { label: 'Portfolio evidence', score: packetScore, detail: exportedArtifactCount >= 1 ? exportedArtifactCount + ' local packet type(s) saved.' : packetImportStatus === 'imported' ? 'Packet resumed; save a local copy after review.' : 'Save an auditable packet after revising the work.', nextMove: packetScore >= 4 ? 'Maintain: keep the local packet with its route and feedback.' : 'Save: export a JSON packet after revising the evidence.' }
+        ];
+      }
+      function cellAtlasReviewNextMove(items) {
+        return items.slice().sort(function (a, b) { return a.score - b.score || a.label.localeCompare(b.label); })[0] || null;
+      }
+      function cellAtlasLearnerReflection() {
+        var reflection = d.cellAtlasLearnerSelfCheck && typeof d.cellAtlasLearnerSelfCheck === 'object' ? d.cellAtlasLearnerSelfCheck : {};
+        var confidence = ['uncertain', 'developing', 'confident'].indexOf(String(reflection.confidence || '')) >= 0 ? String(reflection.confidence) : '';
+        return { confidence: confidence, strongestEvidence: portfolioSafeText(reflection.strongestEvidence, 'not recorded'), uncertainty: portfolioSafeText(reflection.uncertainty, 'not recorded') };
+      }
+      function cellAtlasEvidenceMap() {
+        return {
+          claim: portfolioSafeText(notebook.claim, 'not recorded'),
+          evidence: portfolioSafeText(notebook.evidence, 'not recorded'),
+          reasoning: portfolioSafeText(notebook.reasoning, 'not recorded'),
+          limitation: d.cautionAnswer === 'cautious' ? 'Cautious checkpoint selected: support is not proof of identity or lineage.' : 'Caution checkpoint not completed.',
+          markers: systemLens.members.slice(0, 8).map(function (member) { var memberCell = cellById(member.cellId, member.tissueId); return memberCell.label + ' / ' + memberCell.marker; })
+        };
+      }
+      function portfolioSourceRecords() {
+        var records = [];
+        var seen = {};
+        function add(source, tissueLabel) {
+          if (!source) return;
+          var key = String(source.hcaId || source.project || source.hcaUrl || tissueLabel || 'source');
+          if (seen[key]) return;
+          seen[key] = true;
+          records.push({ tissue: portfolioSafeText(tissueLabel, tissue.label), project: portfolioSafeText(source.project, 'HCA source'), hcaId: portfolioSafeText(source.hcaId, ''), hcaUrl: portfolioSafeText(source.hcaUrl, ''), license: portfolioSafeText(source.license, '') });
+        }
+        add(SOURCE, tissue.label);
+        systemLens.members.forEach(function (member) { var memberTissue = tissueById(member.tissueId); add(memberTissue.source, memberTissue.label); });
+        return records.slice(0, 8);
+      }
+      function cellAtlasPortfolioDelta(latest, previous) {
+        if (!latest) return { direction: 'neutral', label: 'No saved attempts yet.', detail: 'Save an attempt after reviewing this work to begin a revision history.' };
+        if (!previous) return { direction: 'neutral', label: 'First saved attempt.', detail: 'This snapshot is the baseline for a future revision comparison.' };
+        var delta = Number(latest.total || 0) - Number(previous.total || 0);
+        var direction = delta > 0 ? 'up' : delta < 0 ? 'down' : 'same';
+        var label = delta > 0 ? '+' + delta + ' rubric points' : delta < 0 ? delta + ' rubric points' : 'No rubric change';
+        return { direction: direction, label: label, detail: 'Compared with the previous saved attempt; review the evidence map and feedback before interpreting the change.' };
+      }
+      function cellAtlasPortfolioSnapshot() {
+        var items = cellAtlasReviewItems();
+        var total = items.reduce(function (sum, item) { return sum + item.score; }, 0);
+        var nextMove = cellAtlasReviewNextMove(items);
+        var previousTotal = portfolioLatest ? Number(portfolioLatest.total || 0) : null;
+        return {
+          schemaVersion: PORTFOLIO_SCHEMA_VERSION,
+          id: 'attempt-' + Date.now().toString(36) + '-' + (portfolioAttempts.length + 1),
+          createdAt: new Date().toISOString(),
+          tissue: { id: tissue.id, label: tissue.label, lens: systemLens.id },
+          rubric: items.map(function (item) { return { label: item.label, score: item.score, detail: item.detail, nextMove: item.nextMove }; }),
+          total: total,
+          route: { completedCount: routeDoneCount, total: routeSteps.length },
+          nextMove: { label: nextMove ? nextMove.label : 'Review evidence', action: nextMove ? nextMove.nextMove : 'Review the learner work with a teacher.' },
+          evidenceMap: cellAtlasEvidenceMap(),
+          provenance: { sources: portfolioSourceRecords() },
+          reflection: cellAtlasLearnerReflection(),
+          teacherFeedback: portfolioSafeText(d.cellAtlasTeacherNote, 'not recorded'),
+          revision: { previousAttemptId: portfolioLatest ? portfolioLatest.id : '', scoreDelta: previousTotal == null ? 0 : total - previousTotal },
+          boundary: 'Local, sequence-free learning record; not a raw donor dataset, clinical interpretation, or automatic grade.'
+        };
+      }
+      function cellAtlasPortfolioPacket(snapshot) {
+        var map = snapshot.evidenceMap || {};
+        var rubric = (snapshot.rubric || []).map(function (item) { return item.label + ': ' + item.score + '/4 - ' + item.detail + ' Next move: ' + item.nextMove; }).join('\n');
+        var sources = snapshot.provenance && Array.isArray(snapshot.provenance.sources) ? snapshot.provenance.sources.map(function (source) { return source.tissue + ' | ' + source.project + ' | ' + (source.hcaId || 'HCA source'); }).join('\n') : 'not recorded';
+        return [
+          'Cell Atlas teacher review portfolio snapshot',
+          'Attempt: ' + snapshot.id,
+          'Created: ' + snapshot.createdAt,
+          'Tissue + lens: ' + snapshot.tissue.label + ' / ' + snapshot.tissue.lens,
+          'Draft rubric suggestion: ' + snapshot.total + '/16 (not an automatic grade)',
+          'Revision delta: ' + (snapshot.revision && snapshot.revision.scoreDelta > 0 ? '+' : '') + (snapshot.revision ? snapshot.revision.scoreDelta : 0) + ' points',
+          'Route: ' + snapshot.route.completedCount + '/' + snapshot.route.total + ' milestones',
+          'Best next move: ' + snapshot.nextMove.label + ' - ' + snapshot.nextMove.action,
+          'Rubric:', rubric,
+          'Claim: ' + map.claim,
+          'Evidence: ' + map.evidence,
+          'Reasoning: ' + map.reasoning,
+          'Limitation: ' + map.limitation,
+          'Marker anchors: ' + (Array.isArray(map.markers) ? map.markers.join('; ') : 'not recorded'),
+          'Source records:', sources,
+          'Learner confidence: ' + ((snapshot.reflection && snapshot.reflection.confidence) || 'not recorded'),
+          'Strongest evidence reflection: ' + ((snapshot.reflection && snapshot.reflection.strongestEvidence) || 'not recorded'),
+          'Remaining uncertainty reflection: ' + ((snapshot.reflection && snapshot.reflection.uncertainty) || 'not recorded'),
+          'Teacher feedback: ' + snapshot.teacherFeedback,
+          'Boundary: ' + snapshot.boundary
+        ].join('\n');
+      }
+      function cellAtlasPortfolioArtifact(snapshot) {
+        return buildExportArtifact('teacher-review-portfolio', 'Cell Atlas teacher review portfolio snapshot', cellAtlasPortfolioPacket(snapshot), {
+          context: { tissueId: snapshot.tissue.id, tissueLabel: snapshot.tissue.label, view: 'source', lens: snapshot.tissue.lens },
+          provenance: { sources: snapshot.provenance.sources },
+          fields: { portfolioAttempt: snapshot }
+        });
+      }
+      function persistCellAtlasPortfolioAttempt(snapshot, status, format) {
+        var attempts = portfolioAttempts.concat(snapshot).slice(-8);
+        var nextPatch = { cellAtlasPortfolio: { schemaVersion: PORTFOLIO_SCHEMA_VERSION, activeAttemptId: snapshot.id, attempts: attempts }, cellAtlasPortfolioStatus: status || 'saved', cellAtlasPortfolioLabel: 'Attempt ' + attempts.length + ' of 8 retained.' };
+        if (format) nextPatch.exportedArtifacts = recordArtifactExport('teacher-review-portfolio', format);
+        patch(nextPatch);
+      }
+      function saveCellAtlasPortfolioAttempt() {
+        var snapshot = cellAtlasPortfolioSnapshot();
+        persistCellAtlasPortfolioAttempt(snapshot, 'saved');
+        announce('Saved Cell Atlas revision attempt ' + snapshot.id + '.');
+      }
+      function downloadCellAtlasPortfolio(format) {
+        var snapshot = cellAtlasPortfolioSnapshot();
+        var downloaded = downloadArtifact('cell-atlas-teacher-review-' + snapshot.id, cellAtlasPortfolioArtifact(snapshot), format);
+        if (downloaded) {
+          persistCellAtlasPortfolioAttempt(snapshot, 'downloaded', format);
+          announce('Downloaded and saved Cell Atlas revision attempt.');
+        } else {
+          patch({ cellAtlasPortfolioStatus: 'download-failed' });
+        }
+      }
+      function cellAtlasTeacherPacket() {
+        var items = cellAtlasReviewItems();
+        var total = items.reduce(function (sum, item) { return sum + item.score; }, 0);
+        var nextMove = cellAtlasReviewNextMove(items);
+        return [
+          'Cell Atlas teacher review snapshot',
+          'Tissue: ' + tissue.label,
+          'Draft rubric suggestion: ' + total + '/16 (not an automatic grade)',
+          'Evidence route: ' + routeDoneCount + '/' + routeSteps.length + ' milestones',
+          'Source context: ' + (packetImportSourceSummary || SOURCE.project + ' | HCA ' + SOURCE.hcaId),
+          'Next recommended step: ' + (nextRouteStep ? nextRouteStep.label : 'Core route complete'),
+          'Best next move: ' + (nextMove ? nextMove.label + ' - ' + nextMove.nextMove : 'none recorded'),
+          items.map(function (item) { return item.label + ': ' + item.score + '/4 - ' + item.detail + ' Next move: ' + item.nextMove; }).join('\n'),
+          'Teacher feedback: ' + reviewText(d.cellAtlasTeacherNote, 'not recorded'),
+          'Boundary: draft review aid only. No raw donor rows, sequences, clinical data, or automatic grade inference.'
+        ].join('\n');
+      }
+      function copyCellAtlasTeacherReview() {
+        var report = cellAtlasTeacherPacket();
+        if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.writeText) { patch({ cellAtlasTeacherReviewStatus: 'unavailable' }); return; }
+        navigator.clipboard.writeText(report).then(function () { patch({ cellAtlasTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ cellAtlasTeacherReviewStatus: 'failed' }); });
+      }
+
       function renderSource() {
+        var teacherReviewItems = cellAtlasReviewItems();
+        var teacherReviewTotal = teacherReviewItems.reduce(function (sum, item) { return sum + item.score; }, 0);
+        var teacherReviewNextMove = cellAtlasReviewNextMove(teacherReviewItems);
+        var teacherEvidenceMap = cellAtlasEvidenceMap();
+        var teacherPortfolioDelta = cellAtlasPortfolioDelta(portfolioLatest, portfolioPrevious);
         return h('div', { className: 'cal-source-grid' },
           h('section', { className: 'cal-card cal-methods', 'aria-labelledby': 'cal-pipeline-title' },
             h('p', { className: 'cal-kicker' }, 'From specimen to atlas'),
@@ -2187,6 +2854,60 @@
               h('li', null, 'One marker alone can be misleading; real annotation uses multiple genes and expert review.'),
               h('li', null, 'Cluster distance is not physical distance inside the ' + tissue.label.toLowerCase() + '.'),
               h('li', null, 'Sampling, tissue processing, sequencing chemistry, and analysis choices can influence results.'))),
+          h('section', { className: 'cal-card cal-teacher-review', 'aria-labelledby': 'cal-teacher-review-title' },
+            h('p', { className: 'cal-kicker' }, 'Teacher review + portfolio'),
+            h('h3', { id: 'cal-teacher-review-title' }, 'Draft review snapshot'),
+            h('p', { className: 'cal-teacher-review-intro' }, 'Use this transparent rubric suggestion to guide feedback. It is not an automatic grade and should be checked against the learner’s actual reasoning.'),
+            h('div', { className: 'cal-teacher-review-total' }, 'Draft rubric suggestion: ' + teacherReviewTotal + '/16'),
+            h('div', { className: 'cal-teacher-review-next', role: 'status' }, h('strong', null, 'Best next move'), h('span', null, teacherReviewNextMove ? teacherReviewNextMove.label + ': ' + teacherReviewNextMove.nextMove : 'Review the evidence with the learner before sharing.')),
+            h('table', { className: 'cal-teacher-review-table' },
+              h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Criterion'), h('th', { scope: 'col' }, 'Score'), h('th', { scope: 'col' }, 'Evidence signal'), h('th', { scope: 'col' }, 'Next move'))),
+              h('tbody', null, teacherReviewItems.map(function (item) { return h('tr', { key: item.label }, h('th', { scope: 'row' }, item.label), h('td', { className: 'cal-teacher-review-score' }, item.score + '/4'), h('td', null, item.detail), h('td', null, item.nextMove)); }))),
+            h('div', { className: 'cal-evidence-map', role: 'group', 'aria-label': 'Claim to evidence map' },
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Claim'), h('span', null, teacherEvidenceMap.claim)),
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Evidence'), h('span', null, teacherEvidenceMap.evidence)),
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Reasoning'), h('span', null, teacherEvidenceMap.reasoning)),
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Limitation'), h('span', null, teacherEvidenceMap.limitation)),
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Marker anchors'), h('span', null, teacherEvidenceMap.markers.join('; '))),
+              h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Provenance'), h('span', null, packetImportSourceSummary || (SOURCE.project + ' | HCA ' + SOURCE.hcaId)))),
+            h('p', { className: 'cal-portfolio-boundary' }, 'This map links learner reasoning to displayed evidence and provenance; it never claims raw donor access or biological proof.'),
+            h('label', { htmlFor: 'cal-teacher-feedback', style: { display: 'block', marginTop: '9px', color: '#5b21b6', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, 'Teacher feedback'),
+            h('textarea', { id: 'cal-teacher-feedback', rows: 3, maxLength: 800, value: d.cellAtlasTeacherNote || '', placeholder: 'Name one strength and one revision that would make the evidence or limitation more specific.', onChange: function (event) { patch({ cellAtlasTeacherNote: event.target.value.slice(0, 800), cellAtlasTeacherReviewStatus: '' }); } }),
+            h('div', { className: 'cal-actions' },
+              h('button', { type: 'button', className: 'cal-secondary', onClick: copyCellAtlasTeacherReview }, 'Copy teacher review snapshot'),
+              d.cellAtlasTeacherReviewStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free review snapshot.'),
+              d.cellAtlasTeacherReviewStatus === 'unavailable' && h('span', { className: 'cal-map-note', role: 'status' }, 'Clipboard unavailable; select the review text manually.'),
+              d.cellAtlasTeacherReviewStatus === 'failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copy failed; select the review text manually.'))),
+          h('section', { className: 'cal-card cal-portfolio-history', 'aria-labelledby': 'cal-portfolio-title' },
+            h('div', { className: 'cal-self-check', role: 'group', 'aria-labelledby': 'cal-self-check-title' },
+              h('h4', { id: 'cal-self-check-title' }, 'Learner self-check'),
+              h('p', null, 'Record your confidence and uncertainty before saving. This reflection is preserved with the attempt but is not part of the rubric score.'),
+              h('div', { className: 'cal-self-check-options', role: 'group', 'aria-label': 'Confidence level' },
+                [{ id: 'uncertain', label: 'I need more evidence' }, { id: 'developing', label: 'I can explain a tentative claim' }, { id: 'confident', label: 'I can defend the claim and its limits' }].map(function (option) { return h('button', { key: option.id, type: 'button', 'aria-pressed': learnerSelfCheck.confidence === option.id ? 'true' : 'false', onClick: function () { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { confidence: option.id }), cellAtlasPortfolioStatus: '' }); } }, option.label); })),
+              h('label', { htmlFor: 'cal-self-check-evidence' }, 'Strongest evidence I used'),
+              h('textarea', { id: 'cal-self-check-evidence', rows: 2, maxLength: 500, value: learnerSelfCheck.strongestEvidence || '', placeholder: 'Name the marker, comparison, or source detail that most supports your claim.', onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { strongestEvidence: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } }),
+              h('label', { htmlFor: 'cal-self-check-uncertainty' }, 'What remains uncertain?'),
+              h('textarea', { id: 'cal-self-check-uncertainty', rows: 2, maxLength: 500, value: learnerSelfCheck.uncertainty || '', placeholder: 'Name one limitation, alternative explanation, or next test.', onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { uncertainty: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } })),
+            h('div', { className: 'cal-portfolio-head' }, h('h4', { id: 'cal-portfolio-title' }, 'Revision portfolio'), h('span', null, portfolioAttempts.length + '/8 attempts saved')),
+            h('div', { className: 'cal-portfolio-delta', 'data-direction': teacherPortfolioDelta.direction, role: 'status' }, h('strong', null, teacherPortfolioDelta.label), ' ', teacherPortfolioDelta.detail),
+            portfolioAttempts.length ? h('ol', { className: 'cal-portfolio-list', 'aria-label': 'Saved revision attempts' }, portfolioAttempts.slice(-4).reverse().map(function (attempt) { var previous = portfolioAttempts[portfolioAttempts.indexOf(attempt) - 1]; var delta = cellAtlasPortfolioDelta(attempt, previous); return h('li', { key: attempt.id, 'data-direction': delta.direction }, String(attempt.createdAt || '').slice(0, 10) + ' - ' + attempt.total + '/16 - ' + (attempt.imported ? 'imported' : 'local') + ' - ' + delta.label); })) : h('p', { className: 'cal-card-intro' }, 'No saved attempts yet. Save one after reviewing this work to begin a revision history.'),
+            h('div', { className: 'cal-actions' },
+              h('button', { type: 'button', className: 'cal-primary', onClick: saveCellAtlasPortfolioAttempt }, 'Save portfolio attempt'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('json'); }, 'aria-label': 'Download Cell Atlas teacher review portfolio JSON' }, 'Download snapshot (.json)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('md'); }, 'aria-label': 'Download Cell Atlas teacher review portfolio markdown' }, 'Download snapshot (.md)'),
+              d.cellAtlasPortfolioStatus === 'saved' && h('span', { className: 'cal-map-note', role: 'status' }, 'Saved a local, sequence-free revision attempt.'),
+              d.cellAtlasPortfolioStatus === 'imported' && h('span', { className: 'cal-map-note', role: 'status' }, d.cellAtlasPortfolioLabel || 'Imported a bounded portfolio attempt.'),
+              d.cellAtlasPortfolioStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded and saved the revision snapshot.'),
+              d.cellAtlasPortfolioStatus === 'download-failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Download unavailable; use Save portfolio attempt to retain progress locally.'))),
+          h('section', { className: 'cal-card cal-import-card', 'aria-labelledby': 'cal-import-title' },
+            h('p', { className: 'cal-kicker' }, 'Resume a saved investigation'),
+            h('h3', { id: 'cal-import-title' }, 'Resume from a Cell Atlas JSON packet'),
+            h('p', { className: 'cal-card-intro' }, 'Import only a packet exported by this lab. The resume path restores bounded learner notes and study controls; it never loads raw donor rows, sequences, or clinical data.'),
+            h('div', { className: 'cal-import-input' },
+              h('label', null, 'Choose packet (.json)', h('input', { type: 'file', accept: '.json,application/json', onChange: importLearningPacket }))),
+            packetImportStatus === 'imported' && h('div', { className: 'cal-import-status', role: 'status' }, 'Imported: ' + packetImportLabel + '. Review the restored work, then save a local packet to complete the export milestone.', h('span', { className: 'cal-import-route' }, 'Saved route: ' + packetImportRouteSummary)),
+            packetImportStatus === 'imported' && h('div', { className: 'cal-import-provenance', 'data-status': packetImportProvenance || 'missing', role: 'status' }, 'Source check: ' + (packetImportSourceSummary || 'not recorded')),
+            packetImportStatus && packetImportStatus !== 'imported' && h('div', { className: 'cal-import-status', 'data-error': 'true', role: 'alert' }, packetImportLabel)),
           h('section', { className: 'cal-card', 'aria-labelledby': 'cal-journey-title' },
             h('h3', { id: 'cal-journey-title' }, 'Continue the scale journey'),
             h('p', { className: 'cal-card-intro' }, 'Carry the same evidence outward to organs or inward to molecular structure.'),
@@ -2223,7 +2944,24 @@
           h('div', { className: 'cal-progress', role: 'list', 'aria-label': 'Investigation progress' },
             h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, exploredCount), h('span', null, 'cell types explored')),
             h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, correctCount + '/3'), h('span', null, 'mysteries solved')),
-            h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, visitedCount + '/3'), h('span', null, 'tissue atlases visited')))),
+            h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, visitedCount + '/3'), h('span', null, 'tissue atlases visited')),
+            h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, exportedArtifactCount), h('span', null, 'packets saved')))),
+        h('section', { className: 'cal-route', 'aria-labelledby': 'cal-route-title' },
+          h('div', { className: 'cal-route-head' },
+            h('strong', { id: 'cal-route-title' }, 'Evidence route'),
+            h('span', null, routeDoneCount + '/5 milestones')),
+          h('div', { className: 'cal-route-bar', role: 'progressbar', 'aria-label': 'Evidence route progress', 'aria-valuemin': '0', 'aria-valuemax': '5', 'aria-valuenow': String(routeDoneCount), 'aria-valuetext': routeDoneCount + ' of 5 milestones complete' },
+            h('span', { style: { width: routePercent + '%' } })),
+          h('div', { className: 'cal-route-steps', role: 'list' },
+            routeSteps.map(function (step) {
+              return h('div', { key: step.id, className: 'cal-route-step', 'data-done': step.done ? 'true' : 'false', role: 'listitem' },
+                h('span', { className: 'cal-route-step-icon', 'aria-hidden': 'true' }, step.done ? '\u2713' : '\u2022'),
+                h('span', null, step.label));
+            })),
+          h('div', { className: 'cal-next-step', role: 'status' },
+            h('strong', null, nextRouteStep ? 'Next recommended step' : 'Core route complete'),
+            h('span', null, nextRouteStep ? nextRouteStep.detail : 'All five milestones are complete; revisit Methods + sources when preparing to share your work.'),
+            nextRouteStep && h('button', { type: 'button', onClick: function () { openRouteStep(nextRouteStep); } }, 'Open ' + nextRouteStep.action))),
         h('nav', { className: 'cal-tissues', 'aria-label': 'Choose a Human Cell Atlas tissue investigation' },
           TISSUES.map(function (item) {
             return h('button', { key: item.id, type: 'button', className: 'cal-tissue', 'aria-pressed': tissue.id === item.id ? 'true' : 'false', onClick: function () { chooseTissue(item); } },

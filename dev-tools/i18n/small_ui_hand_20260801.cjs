@@ -1,0 +1,83 @@
+// Locally authored translations for compact UI gaps identified by the full
+// source audit. Product names and dynamic placeholders are preserved.
+const wizard = {
+  acholi: "Web search pe onongo tye, meno code magi ki aa ki ngec pa AI kende, pe ki temo i internet. Nen acel acel ki framework mamegi mapwudhi ka itiyo kwede i plan me pwony onyo IEP.",
+  amharic: "የድር ፍለጋ አልተገኘም፤ ስለዚህ እነዚህ ኮዶች የመጡት ከAI የራሱ እውቀት ነው እንጂ በመስመር ላይ አልተፈተሹም። በትምህርት እቅድ ወይም IEP ከመጠቀምዎ በፊት እያንዳንዱን ከማዕቀፍዎ ጋር ያረጋግጡ።",
+  arabic: "لم يتوفر بحث الويب، لذلك جاءت هذه الرموز من معرفة الذكاء الاصطناعي نفسه ولم يُتحقق منها عبر الإنترنت. تحقّق من كل رمز مقابل إطارك قبل استخدامه في خطة درس أو IEP.",
+  bengali: "ওয়েব অনুসন্ধান উপলভ্য ছিল না, তাই এই কোডগুলো AI-এর নিজস্ব জ্ঞান থেকে এসেছে এবং অনলাইনে যাচাই করা হয়নি। পাঠ পরিকল্পনা বা IEP-তে ব্যবহারের আগে প্রতিটি কোড আপনার কাঠামোর সঙ্গে মিলিয়ে নিন।",
+  burmese: "ဝဘ်ရှာဖွေမှု မရနိုင်သောကြောင့် ဤကုဒ်များသည် AI ၏ ကိုယ်ပိုင်အသိပညာမှသာ ရရှိပြီး အွန်လိုင်းတွင် စစ်ဆေးထားခြင်းမရှိပါ။ သင်ခန်းစာအစီအစဉ် သို့မဟုတ် IEP တွင် အသုံးမပြုမီ တစ်ခုချင်းစီကို သင့်မူဘောင်နှင့် စစ်ဆေးပါ။",
+  chin_falam: "Web search a um lo, cuangin code hi AI i ngeihnak in an ra, online ah zoh an si lo. Cawnnak plan asilole IEP ah hman hlan in code pakhat cio kha na framework he zohfel hna.",
+  chin_hakha: "Web search a um lo, cuangin code hi AI i ngeihnak in an ra, online ah zoh an si lo. Cawnnak plan asilole IEP ah hman hlan in code pakhat cio kha na framework he zohfel hna.",
+  chinese_simplified: "网页搜索不可用，因此这些代码来自 AI 自身的知识，并未在网上查证。在将其用于课程计划或 IEP 之前，请逐一对照你的框架进行核实。",
+  chinese_traditional: "網頁搜尋無法使用，因此這些代碼來自 AI 自身的知識，並未在網路上查證。在將其用於課程計畫或 IEP 之前，請逐一對照你的框架進行核實。",
+  dari: "جست‌وجوی وب در دسترس نبود؛ بنابراین این کدها از دانش خود AI آمده‌اند و آنلاین بررسی نشده‌اند. پیش از استفاده در برنامهٔ درسی یا IEP، هر کد را با چارچوب خود بررسی کنید.",
+  dutch: "Zoeken op het web was niet beschikbaar. Deze codes komen daarom uit de eigen kennis van de AI en zijn niet online gecontroleerd. Controleer elke code aan de hand van je kader voordat je die in een lesplan of IEP gebruikt.",
+  esperanto: "Reta serĉado ne estis disponebla, do ĉi tiuj kodoj venas el la propra scio de la AI kaj ne estis kontrolitaj rete. Kontrolu ĉiun kontraŭ via kadro antaŭ ol uzi ĝin en lecionplano aŭ IEP.",
+  farsi: "جست‌وجوی وب در دسترس نبود؛ بنابراین این کدها از دانش خود AI آمده‌اند و آنلاین بررسی نشده‌اند. پیش از استفاده در برنامهٔ درسی یا IEP، هر کد را با چارچوب خود بررسی کنید.",
+  french: "La recherche Web était indisponible; ces codes proviennent donc des connaissances propres de l’IA et n’ont pas été vérifiés en ligne. Vérifiez chacun avec votre référentiel avant de l’utiliser dans un plan de cours ou un IEP.",
+  french_canadian: "La recherche Web était indisponible; ces codes proviennent donc des connaissances propres de l’IA et n’ont pas été vérifiés en ligne. Vérifiez chacun avec votre référentiel avant de l’utiliser dans un plan de cours ou un IEP.",
+  german: "Die Websuche war nicht verfügbar. Diese Codes stammen daher aus dem eigenen Wissen der KI und wurden nicht online nachgeschlagen. Prüfe jeden Code anhand deines Bezugsrahmens, bevor du ihn in einem Unterrichtsplan oder IEP verwendest.",
+  greek: "Η αναζήτηση στον ιστό δεν ήταν διαθέσιμη, επομένως αυτοί οι κωδικοί προέρχονται από τη γνώση της AI και δεν ελέγχθηκαν στο διαδίκτυο. Επαληθεύστε κάθε κωδικό με το πλαίσιό σας πριν τον χρησιμοποιήσετε σε σχέδιο μαθήματος ή IEP.",
+  gujarati: "વેબ શોધ ઉપલબ્ધ ન હતી, તેથી આ કોડ AIના પોતાના જ્ઞાનમાંથી આવ્યા છે અને ઑનલાઇન તપાસાયા નથી. પાઠ યોજના અથવા IEPમાં ઉપયોગ કરતા પહેલાં દરેક કોડને તમારા માળખા સામે ચકાસો.",
+  haitian_creole: "Rechèch sou entènèt la pa t disponib, kidonk kòd sa yo soti nan konesans AI a epi yo pa t verifye sou entènèt. Verifye chak kòd ak kad ou anvan ou sèvi avè l nan yon plan leson oswa IEP.",
+  hausa: "Binciken yanar gizo bai samu ba, saboda haka waɗannan lambobin sun fito ne daga ilimin AI kawai kuma ba a duba su a kan layi ba. Ka tabbatar da kowanne da tsarin ka kafin amfani da shi a shirin darasi ko IEP.",
+  hebrew: "חיפוש באינטרנט לא היה זמין, ולכן הקודים האלה מגיעים מהידע של ה-AI עצמו ולא נבדקו באופן מקוון. בדקו כל קוד מול המסגרת שלכם לפני שתשתמשו בו בתוכנית שיעור או ב-IEP.",
+  hindi: "वेब खोज उपलब्ध नहीं थी, इसलिए ये कोड AI के अपने ज्ञान से आए हैं और ऑनलाइन जाँचे नहीं गए हैं। पाठ योजना या IEP में उपयोग करने से पहले हर कोड को अपने ढाँचे के अनुसार जाँच लें।",
+  hmong: "Kev tshawb hauv web tsis muaj, yog li cov cai no yog los ntawm AI txoj kev paub xwb thiab tsis tau kuaj hauv online. Xyuas txhua tus cai raws li koj lub moj khaum ua ntej siv hauv ib txoj kev qhia lossis IEP.",
+  igbo: "Ọchịchọ web adịghị, ya mere koodu ndị a sitere n’ihe AI maara n’onwe ya, a naghị elekwa ha anya n’ịntanetị. Lelee koodu ọ bụla megide usoro gị tupu i jiri ya na atụmatụ nkuzi ma ọ bụ IEP.",
+  indonesian: "Pencarian web tidak tersedia, jadi kode-kode ini berasal dari pengetahuan AI sendiri dan belum diperiksa secara daring. Periksa setiap kode terhadap kerangka kerja Anda sebelum menggunakannya dalam rencana pelajaran atau IEP.",
+  italian: "La ricerca sul Web non era disponibile, quindi questi codici provengono dalla conoscenza dell’IA e non sono stati verificati online. Controllali uno per uno rispetto al tuo quadro di riferimento prima di usarli in un piano di lezione o in un IEP.",
+  japanese: "ウェブ検索を利用できなかったため、これらのコードはAI自身の知識に基づくもので、オンラインで確認されていません。授業計画やIEPで使う前に、それぞれを自分の基準に照らして確認してください。",
+  kannada: "ವೆಬ್ ಹುಡುಕಾಟ ಲಭ್ಯವಿರಲಿಲ್ಲ. ಆದ್ದರಿಂದ ಈ ಕೋಡ್‌ಗಳು AI ಯ ಸ್ವಂತ ಜ್ಞಾನದಿಂದ ಬಂದಿದ್ದು, ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಲಾಗಿಲ್ಲ. ಪಾಠ ಯೋಜನೆ ಅಥವಾ IEP ನಲ್ಲಿ ಬಳಸುವ ಮೊದಲು ಪ್ರತಿಯೊಂದನ್ನೂ ನಿಮ್ಮ ಚೌಕಟ್ಟಿನೊಂದಿಗೆ ಪರಿಶೀಲಿಸಿ.",
+  karen: "Web search တအိၣ်ဘၣ်, လီၤဆီလၢ code တဖၣ်အံၤ ဟဲလၢ AI အတၢ်သ့ၣ်ညါအပူၤဒီး online တၢ်မၤလီၤတံၢ်တအိၣ်ဘၣ်. ပာ်ဖျါ code တခါစုာ်စုာ်ဒီး န framework အဖီခိၣ် တချုးနမၤအီၤလၢ lesson plan မ့တမ့ၢ် IEP.",
+  khmer: "ការស្វែងរកតាមអ៊ីនធឺណិតមិនអាចប្រើបានទេ ដូច្នេះកូដទាំងនេះមកពីចំណេះដឹងរបស់ AI ផ្ទាល់ ហើយមិនត្រូវបានពិនិត្យតាមអ៊ីនធឺណិតឡើយ។ សូមផ្ទៀងផ្ទាត់កូដនីមួយៗជាមួយក្របខណ្ឌរបស់អ្នក មុនប្រើក្នុងផែនការមេរៀន ឬ IEP។",
+  kinyarwanda: "Gushakisha kuri murandasi ntibyashobokaga, bityo izi kode zavuye ku bumenyi bwa AI kandi ntizagenzuwe kuri murandasi. Banza ugereranye buri kode n’imiterere y’inyigisho zawe mbere yo kuyikoresha muri gahunda y’isomo cyangwa IEP.",
+  kirundi: "Gusaka kuri internet ntivyashobotse, rero izi kode zavuye ku bumenyi bwa AI kandi ntizagenzuwe kuri internet. Raba kode imwe imwe uyigereranye n’ishimikiro ryawe imbere yo kuyikoresha muri gahunda y’icigwa canke IEP.",
+  korean: "웹 검색을 사용할 수 없어 이 코드는 AI 자체의 지식에서 나온 것이며 온라인으로 확인되지 않았습니다. 수업 계획이나 IEP에 사용하기 전에 각 코드를 자신의 기준에 맞춰 확인하세요.",
+  lao: "ການຄົ້ນຫາເວັບບໍ່ສາມາດໃຊ້ໄດ້, ດັ່ງນັ້ນລະຫັດເຫຼົ່ານີ້ມາຈາກຄວາມຮູ້ຂອງ AI ເອງ ແລະບໍ່ໄດ້ກວດສອບອອນລາຍ. ກວດສອບແຕ່ລະລະຫັດກັບກອບມາດຕະຖານຂອງທ່ານກ່ອນໃຊ້ໃນແຜນການສອນ ຫຼື IEP.",
+  latin: "Quaestio interretialis praesto non erat; ideo hi codices ex propria AI scientia veniunt neque in rete quaesiti sunt. Unumquemque cum tuo compage confer antequam eum in consilio lectionis aut IEP utaris.",
+  lingala: "Boluki na web ezalaki te, yango wana ba code oyo ewuti na boyebi ya AI moko mpe batalaki yango te na internet. Tala code moko na moko na kolanda cadre na yo liboso ya kosalela yango na plan ya liteya to IEP.",
+  maay_maay: "Raadinta web-ka ma furnayn, sidaas darteed koodhadhani waxay ka yimaadeen aqoonta AI-da oo keliya mana lagu hubin internetka. Koodh kasta ku hubi qaab-dhismeedkaaga ka hor intaadan ku isticmaalin qorshe cashar ama IEP.",
+  malayalam: "വെബ് തിരച്ചിൽ ലഭ്യമല്ലായിരുന്നു. അതിനാൽ ഈ കോഡുകൾ AIയുടെ സ്വന്തം അറിവിൽ നിന്നുള്ളവയാണ്; ഓൺലൈനിൽ പരിശോധിച്ചിട്ടില്ല. പാഠപദ്ധതിയിലോ IEPയിലോ ഉപയോഗിക്കുന്നതിന് മുമ്പ് ഓരോ കോഡും നിങ്ങളുടെ ചട്ടക്കൂടുമായി പരിശോധിക്കുക.",
+  marathi: "वेब शोध उपलब्ध नव्हता, त्यामुळे हे कोड AIच्या स्वतःच्या ज्ञानातून आले आहेत आणि ऑनलाइन तपासलेले नाहीत. धडा आराखड्यात किंवा IEPमध्ये वापरण्यापूर्वी प्रत्येक कोड तुमच्या चौकटीशी पडताळा.",
+  marshallese: "Web search eo ejjab kōṃṃan, innāinwōt code ko rej itok jān jela eo an AI wōt im rejjab kōṃṃan ilo online. Kōṃṃan bwe code otemjej renaj tōl ñan framework eo am mokta jen am kōjerbal ilo lesson plan ak IEP.",
+  nepali: "वेब खोज उपलब्ध थिएन, त्यसैले यी कोडहरू AI को आफ्नै ज्ञानबाट आएका हुन् र अनलाइन जाँचिएका छैनन्। पाठ योजना वा IEP मा प्रयोग गर्नुअघि प्रत्येक कोडलाई आफ्नो ढाँचासँग जाँच गर्नुहोस्।",
+  pashto: "د ویب لټون شتون نه درلود، نو دا کوډونه یوازې د AI له خپلې پوهې څخه راغلي او آنلاین نه دي کتل شوي. مخکې له دې چې په درسي پلان یا IEP کې یې وکاروئ، هر کوډ له خپل چوکاټ سره پرتله کړئ.",
+  polish: "Wyszukiwanie w internecie było niedostępne, więc te kody pochodzą z własnej wiedzy AI i nie zostały sprawdzone online. Przed użyciem ich w planie lekcji lub IEP sprawdź każdy kod względem swojego systemu.",
+  portuguese_angola: "A pesquisa na Web não estava disponível, por isso estes códigos vêm do conhecimento próprio da IA e não foram verificados online. Confirme cada código com o seu referencial antes de o usar num plano de aula ou IEP.",
+  portuguese_brazil: "A busca na Web não estava disponível, então estes códigos vêm do conhecimento próprio da IA e não foram verificados on-line. Confira cada código no seu referencial antes de usá-lo em um plano de aula ou IEP.",
+  portuguese_portugal: "A pesquisa na Web não estava disponível, por isso estes códigos vêm do conhecimento próprio da IA e não foram verificados online. Confirme cada código com o seu referencial antes de o usar num plano de aula ou IEP.",
+  punjabi: "ਵੈੱਬ ਖੋਜ ਉਪਲਬਧ ਨਹੀਂ ਸੀ, ਇਸ ਲਈ ਇਹ ਕੋਡ AI ਦੇ ਆਪਣੇ ਗਿਆਨ ਤੋਂ ਆਏ ਹਨ ਅਤੇ ਆਨਲਾਈਨ ਜਾਂਚੇ ਨਹੀਂ ਗਏ। ਪਾਠ ਯੋਜਨਾ ਜਾਂ IEP ਵਿੱਚ ਵਰਤਣ ਤੋਂ ਪਹਿਲਾਂ ਹਰ ਕੋਡ ਨੂੰ ਆਪਣੇ ਢਾਂਚੇ ਨਾਲ ਮਿਲਾ ਕੇ ਵੇਖੋ।",
+  romanian: "Căutarea pe web nu a fost disponibilă, așa că aceste coduri provin din cunoștințele proprii ale AI și nu au fost verificate online. Verifică fiecare cod în raport cu cadrul tău înainte de a-l folosi într-un plan de lecție sau IEP.",
+  russian: "Веб-поиск был недоступен, поэтому эти коды взяты из собственных знаний ИИ и не проверялись в интернете. Сверьте каждый код со своей системой перед использованием в плане урока или IEP.",
+  somali: "Raadinta web-ku ma jirin, sidaas darteed koodhadhkani waxay ka yimaadeen aqoonta AI-da oo keliya mana lagu hubin internetka. Koodh kasta ku xaqiiji qaabkaaga ka hor intaadan ku isticmaalin qorshe cashar ama IEP.",
+  spanish_castilian: "La búsqueda web no estaba disponible, así que estos códigos proceden del conocimiento propio de la IA y no se han comprobado en línea. Verifica cada uno con tu marco antes de usarlo en un plan de clase o IEP.",
+  spanish_latin_america: "La búsqueda web no estaba disponible, así que estos códigos provienen del conocimiento propio de la IA y no se verificaron en línea. Comprueba cada uno con tu marco antes de usarlo en un plan de clase o IEP.",
+  swahili: "Utafutaji wa wavuti haukupatikana, kwa hiyo misimbo hii imetokana na maarifa ya AI yenyewe na haikuthibitishwa mtandaoni. Thibitisha kila msimbo kwa mfumo wako kabla ya kuutumia katika mpango wa somo au IEP.",
+  tagalog: "Hindi available ang web search, kaya nagmula ang mga code na ito sa sariling kaalaman ng AI at hindi nasuri online. Suriin ang bawat code ayon sa iyong framework bago gamitin sa lesson plan o IEP.",
+  tamil: "வலைத் தேடல் கிடைக்கவில்லை; எனவே இந்தக் குறியீடுகள் AI-யின் சொந்த அறிவிலிருந்து வந்தவை, இணையத்தில் சரிபார்க்கப்படவில்லை. பாடத் திட்டம் அல்லது IEP-ல் பயன்படுத்துவதற்கு முன் ஒவ்வொரு குறியீட்டையும் உங்கள் கட்டமைப்புடன் சரிபார்க்கவும்.",
+  telugu: "వెబ్ శోధన అందుబాటులో లేదు. అందువల్ల ఈ కోడ్‌లు AI స్వంత జ్ఞానం నుంచి వచ్చాయి; ఆన్‌లైన్‌లో తనిఖీ చేయబడలేదు. పాఠ్య ప్రణాళిక లేదా IEPలో ఉపయోగించే ముందు ప్రతి కోడ్‌ను మీ ఫ్రేమ్‌వర్క్‌తో సరిపోల్చి చూడండి.",
+  thai: "ไม่สามารถค้นหาเว็บได้ ดังนั้นรหัสเหล่านี้มาจากความรู้ของ AI เองและยังไม่ได้ตรวจสอบทางออนไลน์ โปรดตรวจสอบแต่ละรหัสกับกรอบงานของคุณก่อนใช้ในแผนการสอนหรือ IEP",
+  tigrinya: "ምድላይ ዌብ ኣይነበረንን፣ ስለዚ እዞም ኮዳት ካብ ናይ AI ፍልጠት ጥራይ ዝመጹ እዮም እምበር ኣብ ኢንተርነት ኣይተረጋገጹን። ኣብ መደብ ትምህርቲ ወይ IEP ቅድሚ ምጥቃምካ ነፍሲ ወከፍ ኮድ ምስ ማዕቀፍካ ኣረጋግጽ።",
+  turkish: "Web araması kullanılamadı; bu nedenle bu kodlar yalnızca yapay zekânın kendi bilgisinden geliyor ve çevrim içi olarak doğrulanmadı. Bir ders planında veya IEP'de kullanmadan önce her kodu çerçevenizle karşılaştırın.",
+  ukrainian: "Вебпошук був недоступний, тому ці коди взято із власних знань ШІ й не перевірено онлайн. Перевірте кожен код за своєю системою перед використанням у плані уроку або IEP.",
+  urdu: "ویب تلاش دستیاب نہیں تھی، اس لیے یہ کوڈز صرف AI کے اپنے علم سے آئے ہیں اور آن لائن نہیں دیکھے گئے۔ سبق کے منصوبے یا IEP میں استعمال کرنے سے پہلے ہر کوڈ کو اپنے فریم ورک کے مطابق جانچ لیں۔",
+  vietnamese: "Không thể tìm kiếm trên web, vì vậy các mã này đến từ kiến thức của riêng AI và chưa được kiểm tra trực tuyến. Hãy đối chiếu từng mã với khung của bạn trước khi dùng trong kế hoạch bài học hoặc IEP.",
+  yoruba: "Àwárí lórí wẹ́ẹ̀bù kò sí, nítorí náà àwọn kóòdù wọ̀nyí wá láti inú ìmọ̀ AI fúnra rẹ̀, a kò sì ti ṣàyẹ̀wò wọn lórí ayélujára. Ṣàyẹ̀wò kóòdù kọ̀ọ̀kan pẹ̀lú ètò rẹ ṣáájú kí o tó lò ó nínú ètò ẹ̀kọ́ tàbí IEP."
+};
+
+const crossword = {
+  acholi: "Coc crossword otyeko!", amharic: "የቃላት መስቀል ተጠናቋል!", arabic: "اكتملت الكلمات المتقاطعة!", bengali: "ক্রসওয়ার্ড সম্পূর্ণ হয়েছে!", burmese: "စကားလုံးဖြည့်ပဟေဠိ ပြီးပါပြီ!", chin_falam: "Crossword a tling zo!", chin_hakha: "Crossword a tling zo!", chinese_simplified: "填字游戏完成！", chinese_traditional: "填字遊戲完成！", dari: "جدول کلمات متقاطع کامل شد!", dutch: "Kruiswoordraadsel voltooid!", esperanto: "La krucvorto estas kompleta!", farsi: "جدول کلمات متقاطع کامل شد!", french: "Mots croisés terminés !", french_canadian: "Mots croisés terminés!", german: "Kreuzworträtsel abgeschlossen!", greek: "Το σταυρόλεξο ολοκληρώθηκε!", gujarati: "ક્રોસવર્ડ પૂર્ણ થયું!", haitian_creole: "Kwaze a fini!", hausa: "An kammala wasan kalmomin tsallake-tsallake!", hebrew: "התשבץ הושלם!", hindi: "क्रॉसवर्ड पूरा हुआ!", hmong: "Lo lus sib dhos tiav lawm!", igbo: "E mechara crossword!", indonesian: "Teka-teki silang selesai!", italian: "Cruciverba completato!", japanese: "クロスワードが完成しました！", kannada: "ಪದಬಂಧ ಪೂರ್ಣಗೊಂಡಿದೆ!", karen: "Crossword တၢ်မၤလၢာ်ဝဲ!", khmer: "ល្បែងពាក្យឆ្លងបានបញ្ចប់!", kinyarwanda: "Umukino w’amagambo wuzuye!", kirundi: "Crossword irarangiye!", korean: "십자말풀이가 완료되었습니다!", lao: "ເກມປິດສະໜາອັກສອນສຳເລັດແລ້ວ!", latin: "Cruciverbium completum est!", lingala: "Mots croisés esili!", maay_maay: "Crossword waa dhammaaday!", malayalam: "ക്രോസ്‌വേഡ് പൂർത്തിയായി!", marathi: "शब्दकोडे पूर्ण झाले!", marshallese: "Crossword eo em̧m̧an!", nepali: "क्रसवर्ड पूरा भयो!", pashto: "کراسورډ بشپړ شو!", polish: "Krzyżówka ukończona!", portuguese_angola: "Palavras cruzadas concluídas!", portuguese_brazil: "Palavras cruzadas concluídas!", portuguese_portugal: "Palavras cruzadas concluídas!", punjabi: "ਕਰਾਸਵਰਡ ਪੂਰਾ ਹੋ ਗਿਆ!", romanian: "Rebusul este complet!", russian: "Кроссворд завершён!", somali: "Eray-is-dhaafka waa dhammaaday!", spanish_castilian: "¡Crucigrama completado!", spanish_latin_america: "¡Crucigrama completado!", swahili: "Mchezo wa maneno umeisha!", tagalog: "Kumpleto na ang crossword!", tamil: "குறுக்கெழுத்து முடிந்தது!", telugu: "క్రాస్‌వర్డ్ పూర్తయింది!", thai: "ครอสเวิร์ดเสร็จสมบูรณ์!", tigrinya: "እቲ ክሮስወርድ ተወዲኡ!", turkish: "Bulmaca tamamlandı!", ukrainian: "Кросворд завершено!", urdu: "کراس ورڈ مکمل ہو گیا!", vietnamese: "Đã hoàn thành ô chữ!", yoruba: "Àgbéléwọ̀n ọ̀rọ̀ ti parí!"
+};
+
+const throughline = {
+  acholi: "Ket pwony mamegi i kin jami me yubu: kit pwony, gin ma myero con, ki file acel ma iromo cato woko.",
+  chin_falam: "Na cawnnak pawl kha ruang khat ah ser: cawnnak zawn, hlan dingmi, le file pakhat in export khawh.",
+  chin_hakha: "Na cawnnak pawl kha ruang khat ah ser: cawnnak zawn, hlan dingmi, le file pakhat in export khawh.",
+  karen: "နအ့ၣ်သိၣ်လိတဖၣ်ကို တၢ်စံးဆီတဲာ်အဖီခိၣ် စီၤလီၤ—တၢ်သိၣ်လိအကျိၤ၊ အဆိကတီၢ်တဖၣ်၊ ဒီး ဖဲလ်တခါလၢ export လုပ်လို့ရမယ်။",
+  lao: "ຈັດບົດຮຽນຂອງທ່ານເປັນໜ່ວຍຕາມລຳດັບ: ລຳດັບການສອນ, ສິ່ງທີ່ຕ້ອງຮຽນກ່ອນ, ແລະໄຟລ໌ດຽວທີ່ສົ່ງອອກໄດ້.",
+  maay_maay: "Casharradaada u habeey unug meelaysan: taxanaha waxbarashada, waxyaabaha hore loo baahan yahay, iyo hal fayl oo la dhoofin karo.",
+  marshallese: "Kōṃṃan lesson ko am ilo juon unit eo ej bōk ial in katak, prerequisites, im juon file eo kwōj maroñ export."
+};
+
+module.exports = { wizard, crossword, throughline };

@@ -4,6 +4,7 @@ ENV NODE_ENV=production \
     PORT=8080 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     ALLOFLOW_MCP_ASSETS_DIR=/app/alloflow \
+    ALLOFLOW_MCP_OFFLINE_ASSETS=1 \
     ALLOFLOW_MCP_NO_KEY_FILES=1 \
     ALLOFLOW_MCP_GEMINI_BASE=http://gemini.internal/v1beta/models \
     ALLOFLOW_MCP_GEMINI_KEY=alloflow-container-routing-placeholder \
@@ -13,7 +14,10 @@ ENV NODE_ENV=production \
 WORKDIR /app
 
 COPY runner/package.json runner/package-lock.json ./
-RUN npm ci --omit=dev --no-audit --no-fund \
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y openjdk-17-jre-headless \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm ci --omit=dev --no-audit --no-fund \
     && npx playwright install --with-deps chromium \
     && chmod -R a+rX /ms-playwright
 

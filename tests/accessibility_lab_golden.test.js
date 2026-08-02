@@ -301,6 +301,12 @@ describe('artifact accessibility scorecards', () => {
     expect(saved.verification).toMatchObject({
       profile: 'accessibility-lab', verificationState: 'partial', outcomeState: 'fail',
     });
+    expect(saved.verification.evidenceProvenance).toMatchObject({
+      profile: 'accessibility-lab',
+      artifactFingerprint: expect.stringMatching(/^sha256:/),
+      evidenceDigest: expect.stringMatching(/^sha256:/),
+    });
+    expect(saved.evidenceProvenance).toMatchObject({ profile: 'accessibility-lab' });
     expect(A.loadReviewScorecards()['artifact-audit'].automated.affectedElements).toBe(2);
   });
 });
@@ -413,6 +419,11 @@ describe('rendered Accessibility Lab modal', () => {
 
     expect(document.body.textContent).toContain('Artifact accessibility scorecard');
     expect(document.body.textContent).toContain('Persistent review');
+    expect(document.querySelector('[data-a11y-evidence-provenance="true"]')).toBeTruthy();
+    const exportButton = document.querySelector('[data-a11y-evidence-export="true"]');
+    expect(exportButton).toBeTruthy();
+    expect(exportButton.disabled).toBe(false);
+    expect(document.body.textContent).toContain('Evidence provenance');
     const checkIds = ['keyboard', 'focus', 'reflow', 'text_spacing', 'errors', 'motion', 'media', 'assistive_tech'];
     for (const id of checkIds) {
       const select = document.getElementById('a11y-review-check-' + id);

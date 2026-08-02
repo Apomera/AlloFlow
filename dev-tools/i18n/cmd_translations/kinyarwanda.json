@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio yafunguwe.",
   "cmd.open_video_studio_hint": "Fata amajwi, shyiraho amagambo maze uhindure amashusho y’ubuyobozi",
   "palette.ctx.videoStudio": "Hano — Video Studio",
-  "palette.close": "Funga urutonde rw’amategeko"
+  "palette.close": "Funga urutonde rw’amategeko",
+  "cmd.apply_lesson_template": "Tangirira ku mbonerahamwe yabitswe",
+  "cmd.apply_lesson_template_done": "Byatangiriye kuri ",
+  "cmd.apply_lesson_template_hint": "Itangiza gahunda nshya ikoresheje imwe mu mbonerahamwe wabikije",
+  "cmd.apply_lesson_template_missing": "Sinabonye mbonerahamwe yitwa ",
+  "cmd.apply_lesson_template_which": "Ni iyihe mbonerahamwe?",
+  "cmd.rebuild_lesson_step": "Ongera wubake intambwe imwe ya gahunda",
+  "cmd.rebuild_lesson_step_done": "Ongera wubaka intambwe ",
+  "cmd.rebuild_lesson_step_hint": "Ongera ukore umutungo umwe — vuga nimero y’intambwe",
+  "cmd.rebuild_lesson_step_missing": "Sinabonye iyo ntambwe muri gahunda.",
+  "cmd.rebuild_lesson_step_none": "gahunda ntiragira intambwe.",
+  "cmd.rebuild_lesson_step_which": "Ni iyihe ntambwe?",
+  "cmd.run_lesson_blueprint": "Kora gahunda y’isomo",
+  "cmd.run_lesson_blueprint_done": "Gahunda irakorwa — ushobora gukurikirana buri ntambwe ku ikarita.",
+  "cmd.run_lesson_blueprint_hint": "Kora umutungo wose uri muri gahunda iriho",
+  "cmd.cancelled": "Gusubika byasabwe. Igikorwa kiriho kizarahagarara igihe utanga serivisi azagishyigikira."
 }

@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio باز شد.",
   "cmd.open_video_studio_hint": "آموزش‌های گام‌به‌گام را ثبت، زیرنویس و ویرایش کنید",
   "palette.ctx.videoStudio": "اینجا — Video Studio",
-  "palette.close": "بستن پالت فرمان"
+  "palette.close": "بستن پالت فرمان",
+  "cmd.apply_lesson_template": "از قالب ذخیره‌شده شروع کنید",
+  "cmd.apply_lesson_template_done": "از این مورد شروع شد: ",
+  "cmd.apply_lesson_template_hint": "یک برنامهٔ جدید را از یکی از قالب‌های ذخیره‌شدهٔ شما آغاز می‌کند",
+  "cmd.apply_lesson_template_missing": "قالبی با نام پیدا نشد: ",
+  "cmd.apply_lesson_template_which": "کدام قالب؟",
+  "cmd.rebuild_lesson_step": "بازسازی یک مرحله از برنامه",
+  "cmd.rebuild_lesson_step_done": "در حال بازسازی مرحلهٔ ",
+  "cmd.rebuild_lesson_step_hint": "یک منبع را دوباره تولید می‌کند — شمارهٔ مرحله را بگویید",
+  "cmd.rebuild_lesson_step_missing": "آن مرحله در برنامه پیدا نشد.",
+  "cmd.rebuild_lesson_step_none": "برنامه هنوز هیچ مرحله‌ای ندارد.",
+  "cmd.rebuild_lesson_step_which": "کدام مرحله؟",
+  "cmd.run_lesson_blueprint": "ایجاد برنامهٔ درس",
+  "cmd.run_lesson_blueprint_done": "برنامه در حال ایجاد است — می‌توانید هر مرحله را روی کارت ببینید.",
+  "cmd.run_lesson_blueprint_hint": "همهٔ منابع برنامهٔ فعلی را ایجاد می‌کند",
+  "cmd.cancelled": "درخواست لغو ارسال شد. عملیات فعلی وقتی ارائه‌دهنده‌اش آن را پشتیبانی کند متوقف می‌شود."
 }

@@ -34,6 +34,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
     document.body.appendChild(liveRegion);
   })();
 
+  var ANXIETY_GUIDANCE = {
+    elementary: {
+      homeTitle: 'Anxiety is a body alarm, not a flaw.',
+      homeIntro: 'Worry can show up as big body feelings, stomach feelings, or what-if thoughts. Try one small skill, and ask a trusted adult to help when the alarm feels too big.',
+      support: 'If worry keeps getting in the way of school, sleep, eating, play, or relationships, tell a trusted adult and ask for help. This toolkit is a companion, not therapy.'
+    },
+    middle: {
+      homeTitle: 'Anxiety is a body alarm, not a flaw.',
+      homeIntro: 'Anxiety can show up in your body, thoughts, choices, and relationships. Learn to notice the alarm, choose a skill, and ask for support when it starts taking over.',
+      support: 'If anxiety keeps interfering with school, sleep, eating, or relationships for more than a few weeks, tell a trusted adult or clinician. This toolkit is a companion, not therapy.'
+    },
+    high: {
+      homeTitle: 'Anxiety is a body alarm, not a flaw.',
+      homeIntro: 'Anxiety is an alarm system designed to protect you. This toolkit helps you notice when the alarm is too loud, choose a skill, and connect with human support when anxiety starts taking over.',
+      support: 'If anxiety significantly interferes with school, sleep, eating, or relationships for more than a few weeks, talk with a trusted adult or clinician. This toolkit is a companion, not therapy.'
+    }
+  };
   function defaultState() {
     return {
       view: 'triage',
@@ -19405,6 +19422,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       var announceToSR = ctx.announceToSR;
 
       var d = labToolData.anxietyToolkit || defaultState();
+      var _anxBand = (ctx && ctx.gradeBand) || 'high';
+      var _anxGuidance = ANXIETY_GUIDANCE[_anxBand] || ANXIETY_GUIDANCE.high;
       function setA(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.anxietyToolkit) || defaultState();
@@ -19461,7 +19480,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         return h('div', {
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _anxFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Anxiety that significantly interferes with school, sleep, eating, or relationships for more than a few weeks deserves a clinician. This tool is a companion, not therapy. Crisis Text Line: text HOME to 741741.'
+          _anxGuidance.support + ' If you might hurt yourself or feel unsafe, use crisis support now.'
         );
       }
 
@@ -19739,9 +19758,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       function renderHome() {
         return h('div', null,
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(6,182,212,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(6,182,212,0.4)', marginBottom: 14 } },
-            h('div', { style: { fontSize: 22, fontWeight: 900, color: _anxFg('#a5f3fc'), marginBottom: 4 } }, 'Anxiety is a body, not a flaw.'),
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: _anxFg('#a5f3fc'), marginBottom: 4 } }, _anxGuidance.homeTitle),
             h('p', { style: { margin: 0, color: _anxFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
-              'Anxiety is your alarm system — a body response designed by millions of years of evolution to keep you alive. It is supposed to fire when something matters. The problem is not that the alarm fires; the problem is that for some people, the alarm fires more loudly than the situation warrants, or stays on after the situation has passed, or fires at things that are not actually threats.'
+              _anxGuidance.homeIntro
             )
           ),
 
@@ -19795,7 +19814,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: _anxFg('#bbf7d0'), lineHeight: 1.7 } },
             h('strong', null, '🌳 The Worry Tree '),
-            'is one of the most useful CBT tools for adolescent anxiety. The basic question: is this worry SOLVABLE right now, or am I just spinning? If it is solvable, make a plan. If it is not solvable right now, the worry is not doing useful work — that\'s when other skills kick in.'
+            'is a practical CBT tool for sorting worry. The basic question: is this worry SOLVABLE right now, or am I just spinning? If it is solvable, make a plan. If it is not solvable right now, the worry is not doing useful work — that\'s when other skills kick in.'
           ),
 
           // The worry

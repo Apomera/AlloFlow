@@ -15,7 +15,7 @@ describe('Story Forge nested dialog accessibility', () => {
   it('dismisses only the top nested layer with Escape', () => {
     expect(source).toContain('else if (showCloseConfirm) setShowCloseConfirm(false)');
     expect(source).toContain('else if (showRestorePrompt) setShowRestorePrompt(false)');
-    expect(source).toContain('[isOpen, exportConsent, showCloseConfirm, showRestorePrompt');
+    expect(source).toContain('[isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt');
   });
 
   it('names and describes both confirmation dialogs', () => {

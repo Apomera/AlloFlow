@@ -5035,7 +5035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
                 h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
                 h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
+                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.ecosystem.observations_logged_suffix', ' observations logged'))
               ),
               // Log table
@@ -5061,12 +5061,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('textarea', { id: 'eq-hypo', value: iq.hypothesis || '',
                   onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                   placeholder: __alloT('stem.ecosystem.iq_hypo_placeholder', 'Which slider matters MOST for triggering a collapse? Can you balance the system with predator birth at 80%? Type your own theory.'),
-                  className: 'w-full text-[12px] border border-slate-500 dark:border-slate-600 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
+                  className: 'w-full text-[12px] border border-slate-500 dark:border-slate-500 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
               ),
               // Opt-in
               h('div', { className: 'mb-3' },
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 active:scale-[0.97]' },
+                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 active:scale-[0.97]' },
                   '🤔 ' + __alloT('stem.ecosystem.iq_stuck_btn', 'I\'m stuck — show me questions to think about (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed' },
                   h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, __alloT('stem.ecosystem.open_questions', 'Open questions — investigate by manipulating:')),

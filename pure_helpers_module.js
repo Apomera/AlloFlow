@@ -69,19 +69,90 @@ const repairSourceMarkdown = (rawText, deps) => {
     return finalLines.join('\n');
 };
 
+const _protectSentenceSplitLinks = (text, linkMap) => {
+    let output = '';
+    let cursor = 0;
+    const input = String(text || '');
+    while (cursor < input.length) {
+        const open = input.indexOf('[', cursor);
+        if (open < 0) { output += input.slice(cursor); break; }
+        output += input.slice(cursor, open);
+        const labelEnd = input.indexOf('](', open + 1);
+        if (labelEnd < 0) { output += input.slice(open); break; }
+        let pos = labelEnd + 2;
+        let depth = 1;
+        while (pos < input.length && depth > 0) {
+            if (input[pos] === '\\') { pos += 2; continue; }
+            if (input[pos] === '(') depth += 1;
+            else if (input[pos] === ')') depth -= 1;
+            pos += 1;
+        }
+        if (depth !== 0) { output += input.slice(open, pos); cursor = pos; continue; }
+        linkMap.push(input.slice(open, pos));
+        output += `{{LINK_${linkMap.length - 1}}}`;
+        cursor = pos;
+    }
+    return output;
+};
+
+const _isSentenceCitationLink = (link) => {
+    const label = String(link || '').match(/^\[([^\]]+)\]\(/);
+    if (!label) return false;
+    const normalized = label[1].replace(/\s+/g, ' ').trim();
+    return /^(?:Source\s+)?\d+$/i.test(normalized)
+        || /^\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?$/.test(normalized);
+};
+
+const _attachLeadingSentenceCitations = (units, linkMap) => {
+    const result = [];
+    (Array.isArray(units) ? units : []).forEach(unit => {
+        let remaining = String(unit || '').trim();
+        const citations = [];
+        while (remaining) {
+            const linkToken = remaining.match(/^\{\{LINK_(\d+)\}\}/);
+            if (linkToken && _isSentenceCitationLink(linkMap[Number(linkToken[1])])) {
+                citations.push(linkToken[0]);
+                remaining = remaining.slice(linkToken[0].length).trimStart().replace(/^[,;]\s*/, '');
+                continue;
+            }
+            const bare = remaining.match(/^\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/);
+            if (bare) {
+                citations.push(bare[0]);
+                remaining = remaining.slice(bare[0].length).trimStart().replace(/^[,;]\s*/, '');
+                continue;
+            }
+            break;
+        }
+        if (!citations.length) { if (remaining) result.push(remaining); return; }
+        const cluster = citations.join(' ');
+        if (!result.length) {
+            result.push((cluster + (remaining ? ' ' + remaining : '')).trim());
+            return;
+        }
+        result[result.length - 1] = `${result[result.length - 1].trimEnd()} ${cluster}`;
+        remaining = remaining.replace(/^[,;]\s*/, '').trim();
+        if (remaining && !/^[.!?]+$/.test(remaining)) result.push(remaining);
+    });
+    return result;
+};
 const splitTextToSentences = (text, deps) => {
   // No closure deps — fully pure helper.
   try { if (window._DEBUG_PURE_HELPERS) console.log("[PureHelpers] splitTextToSentences fired"); } catch(_) {}
       if (!text) return [];
       const linkMap = [];
-      let protectedText = text.replace(/(\[.*?\]\(.*?\))/g, (match) => {
-          linkMap.push(match);
-          return `{{LINK_${linkMap.length - 1}}}`;
-      });
+      let protectedText = _protectSentenceSplitLinks(text, linkMap);
       const latexMap = [];
       protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g, (match) => {
           latexMap.push(match);
           return `{{LATEX_${latexMap.length - 1}}}`;
+      });
+      // Protect multi-dot and common abbreviations before the single-initial
+      // rule. Running this later would see U{{DOT}}S. and miss its final dot.
+      [
+          /\b(?:e\.g|i\.e|etc|vs|Ph\.D|M\.D|B\.A|M\.A)\./gi,
+          /\b(?:[A-Za-z]\.){2,}/g,
+      ].forEach(pattern => {
+          protectedText = protectedText.replace(pattern, match => match.replace(/\./g, '{{DOT}}'));
       });
       protectedText = protectedText.replace(/(^|\s)([A-Z])\.(\s)/g, "$1$2{{DOT}}$3");
       const honorifics = ['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'St', 'Gen', 'Rep', 'Sen'];
@@ -104,21 +175,21 @@ const splitTextToSentences = (text, deps) => {
       protectedText = protectedText
         .replace(/(^|\n)([ \t]*#{1,6}[ \t][^\n]*[^\s|])[ \t]*(?=\n|$)/g, "$1$2|")
         .replace(/\n[ \t]*\n\s*/g, "|");
-      const sentences = protectedText
+      const sentenceUnits = protectedText
         .replace(/([.!?]+["']?)(\s+|$)/g, "$1|")
         .split("|")
-        .map(s => {
-            let restored = s.replace(/{{DOT}}/g, ".").trim();
-            restored = restored.replace(/{{LATEX_(\d+)}}/g, (_, index) => {
-                return latexMap[parseInt(index, 10)] || "";
-            });
-            restored = restored.replace(/{{LINK_(\d+)}}/g, (_, index) => {
-                return linkMap[parseInt(index, 10)] || "";
-            });
-            return restored;
-        })
+        .map(s => s.trim())
         .filter(s => s.length > 0);
-      return sentences;
+      // A citation emitted after terminal punctuation ("Claim. [⁽¹⁾](…)")
+      // belongs to the claim that precedes it. Normalize comma/semicolon
+      // separators inside citation clusters while retaining exact link tokens.
+      const attachedUnits = _attachLeadingSentenceCitations(sentenceUnits, linkMap);
+      return attachedUnits.map(s => {
+          let restored = s.replace(/{{DOT}}/g, ".").trim();
+          restored = restored.replace(/{{LATEX_(\d+)}}/g, (_, index) => latexMap[parseInt(index, 10)] || "");
+          restored = restored.replace(/{{LINK_(\d+)}}/g, (_, index) => linkMap[parseInt(index, 10)] || "");
+          return restored;
+      }).filter(s => s.length > 0);
 };
 
 const diffWords = (oldText, newText, deps) => {

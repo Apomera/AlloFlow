@@ -8,6 +8,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { validAudioBase64 } from './lib/audio_fixtures.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
@@ -182,7 +183,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
       ),
     }));
     const encode = vi.fn(async (url) => ({
-      b64: Buffer.from(`encoded:${url}`).toString('base64'),
+      b64: validAudioBase64(192, 65 + (String(url).length % 20)),
       mime: 'audio/mpeg',
     }));
     const persist = vi.fn(async ({ payload, resourceId }) => {
@@ -332,7 +333,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
     const callTTS = vi.fn(async () => 'blob:generated-twin');
     const synthesize = vi.fn(async ({ text, profile }) => ({ url: await callTTS(text, profile.voice) }));
     const encode = vi.fn(async (url) => ({
-      b64: Buffer.from(`encoded:${url}`).toString('base64'),
+      b64: validAudioBase64(192, 65 + (String(url).length % 20)),
       mime: 'audio/mpeg',
     }));
     const persist = vi.fn(async ({ payload }) => {
@@ -434,7 +435,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
     let liveVoice = 'Kore';
     const synthesize = vi.fn(async ({ profile }) => ({ url: 'blob:wiring-' + profile.voice }));
     const encode = vi.fn(async (url) => ({
-      b64: Buffer.from(`encoded:${url}`).toString('base64'),
+      b64: validAudioBase64(192, 65 + (String(url).length % 20)),
       mime: 'audio/mpeg',
     }));
     const persist = vi.fn(async ({ payload }) => {

@@ -244,9 +244,77 @@
 
   // ── Blueprint ──────────────────────────────────────────────────────────
 
-  var BLUEPRINT_KNOWN_FIELDS = ['schemaVersion', 'blueprintId', 'audience', 'standards', 'sourcePolicy',
+  var BLUEPRINT_KNOWN_FIELDS = ['schemaVersion', 'blueprintId', 'audience', 'standards', 'standardsContext', 'sourcePolicy',
     'lessonDNA', 'globalSettings', 'plan', 'configs', 'requiredCapabilities', 'warnings', 'review', 'provenance'];
   var REVIEW_STATES = ['draft', 'approved'];
+  // Keep the structured standards snapshot bounded at the contract boundary.
+  // The browser module performs the richer normalization; this fallback keeps
+  // Blueprint validation deterministic when that module is not loaded (for
+  // example in a desktop/MCP contract test).
+  function normalizeStandardsContext(input) {
+    if (!isPlainObject(input)) return null;
+    var cap = function (value, limit) {
+      if (value === undefined || value === null) return '';
+      return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 600);
+    };
+    var out = {
+      version: cap(input.version, 80),
+      inputText: cap(input.inputText || input.rawInput, 2400),
+      promptText: cap(input.promptText, 3600),
+      provider: cap(input.provider || input.resolver, 160),
+      datasetVersion: cap(input.datasetVersion, 160),
+      snapshotId: cap(input.snapshotId, 160),
+      resolutionStatus: cap(input.resolutionStatus || input.status, 80),
+      attribution: cap(input.attribution || (input.provenance && input.provenance.attribution), 600),
+      sourceUrls: [],
+      standards: []
+    };
+    var urls = Array.isArray(input.sourceUrls) ? input.sourceUrls : [];
+    for (var u = 0; u < urls.length && out.sourceUrls.length < 12; u++) {
+      var url = cap(urls[u], 600);
+      if (url && out.sourceUrls.indexOf(url) === -1) out.sourceUrls.push(url);
+    }
+    var rawStandards = Array.isArray(input.standards) ? input.standards : [];
+    for (var i = 0; i < rawStandards.length && out.standards.length < 32; i++) {
+      var raw = typeof rawStandards[i] === 'string' ? { label: rawStandards[i] } : rawStandards[i];
+      if (!isPlainObject(raw)) continue;
+      var entry = {
+        id: cap(raw.id || raw.standardId || raw.identifier || raw.code, 160),
+        code: cap(raw.code || raw.standardCode || raw.identifier || raw.id, 160),
+        label: cap(raw.label || raw.title || raw.name || raw.standard || raw.text, 600),
+        text: cap(raw.text || raw.statement || raw.description || raw.officialText, 600),
+        framework: cap(raw.framework || raw.frameworkName || raw.system, 160),
+        jurisdiction: cap(raw.jurisdiction || raw.region || raw.state, 160),
+        grade: cap(raw.grade || raw.gradeLevel || raw.band, 120),
+        subject: cap(raw.subject || raw.discipline, 160),
+        sourceUrl: cap(raw.sourceUrl || raw.url || raw.officialUrl, 600),
+        sourceUrls: Array.isArray(raw.sourceUrls) ? raw.sourceUrls.slice(0, 12).map(function (v) { return cap(v, 600); }).filter(Boolean) : [],
+        relationships: Array.isArray(raw.relationships) ? raw.relationships.slice(0, 12).map(function (rel) {
+          if (typeof rel === 'string') return { label: cap(rel, 600) };
+          if (!isPlainObject(rel)) return null;
+          return {
+            id: cap(rel.id || rel.standardId || rel.code, 160),
+            relation: cap(rel.relation || rel.type || rel.relationship, 120),
+            label: cap(rel.label || rel.title || rel.name || rel.text || rel.description, 600)
+          };
+        }).filter(Boolean) : []
+      };
+      if (entry.id || entry.code || entry.label || entry.text) out.standards.push(entry);
+    }
+    if (isPlainObject(input.provenance)) {
+      out.provenance = {
+        provider: cap(input.provenance.provider, 160),
+        datasetVersion: cap(input.provenance.datasetVersion, 160),
+        snapshotId: cap(input.provenance.snapshotId, 160),
+        sourceUrls: Array.isArray(input.provenance.sourceUrls) ? input.provenance.sourceUrls.slice(0, 12).map(function (v) { return cap(v, 600); }).filter(Boolean) : [],
+        resolutionStatus: cap(input.provenance.resolutionStatus, 80),
+        retrievedAt: cap(input.provenance.retrievedAt, 80),
+        license: cap(input.provenance.license, 240),
+        attribution: cap(input.provenance.attribution, 600)
+      };
+    }
+    return out;
+  }
 
   function normalizePlanItems(rawPlan, toolDirectives) {
     var items = [];
@@ -351,6 +419,7 @@
       blueprintId: input.blueprintId,
       audience: isPlainObject(input.audience) ? input.audience : {},
       standards: typeof input.standards === 'string' ? input.standards : '',
+      standardsContext: normalizeStandardsContext(input.standardsContext),
       sourcePolicy: isPlainObject(input.sourcePolicy) ? input.sourcePolicy : { kind: 'workspace-source' },
       lessonDNA: isPlainObject(input.lessonDNA) ? input.lessonDNA : {},
       globalSettings: isPlainObject(input.globalSettings) ? input.globalSettings : {},
@@ -370,7 +439,7 @@
 
   /**
    * Wrap the live autoConfigureSettings output in a versioned Blueprint.
-   * context: { blueprintId, gradeLevel, language, standards, interests }.
+   * context: { blueprintId, gradeLevel, language, standards, standardsContext, interests }.
    */
   function fromLegacyConfig(config, context) {
     var c = isPlainObject(config) ? config : {};
@@ -390,6 +459,7 @@
         interests: ctx.interests || ''
       },
       standards: ctx.standards || '',
+      standardsContext: normalizeStandardsContext(ctx.standardsContext),
       sourcePolicy: { kind: 'workspace-source' },
       lessonDNA: isPlainObject(c.lessonDNA) ? c.lessonDNA : {},
       globalSettings: isPlainObject(c.globalSettings) ? c.globalSettings : {},

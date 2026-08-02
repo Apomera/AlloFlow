@@ -29,6 +29,7 @@
     uiStyle.textContent = [
       '.gw-root{--gw-glass:rgba(15,23,42,0.78);--gw-line:rgba(148,163,184,0.18);}',
       '.gw-toolbar{position:relative;z-index:40;box-shadow:0 10px 32px rgba(2,6,23,0.2);}',
+      '.gw-view-presets{flex:0 1 auto;max-width:100%;}.gw-view-preset{touch-action:manipulation;}@media(max-width:420px){.gw-view-presets-label{display:none}.gw-view-preset{min-width:32px!important;padding:3px!important}}',
       '.gw-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.36),rgba(34,211,238,0.2));border:1px solid rgba(167,139,250,0.35);box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);}',
       '.gw-title{letter-spacing:-0.015em;text-shadow:0 1px 12px rgba(124,58,237,0.2);}',
       '.gw-lesson-title{min-width:0;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
@@ -61,9 +62,9 @@
       '.gw-tutorial-card{border:1px solid rgba(167,139,250,0.42)!important;background:linear-gradient(160deg,rgba(30,27,75,0.95),rgba(15,23,42,0.96))!important;box-shadow:0 22px 60px rgba(2,6,23,0.52),0 0 0 1px rgba(255,255,255,0.05)!important;}',
       '.gw-target-hint{padding:3px 7px;border:1px solid rgba(251,191,36,0.34);border-radius:999px;background:rgba(15,23,42,0.82);backdrop-filter:blur(6px);box-shadow:0 5px 14px rgba(2,6,23,0.35);}',
       '.gw-viewport{margin:8px 10px 10px;border:1px solid rgba(148,163,184,0.2);border-radius:16px;box-shadow:0 18px 54px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.06);isolation:isolate;}',
-      '.gw-viewport-control{position:absolute!important;top:10px!important;z-index:100!important;display:inline-flex!important;min-width:36px;min-height:36px;align-items:center!important;justify-content:center!important;gap:6px!important;border:1px solid rgba(196,181,253,.38)!important;border-radius:10px!important;background:linear-gradient(155deg,rgba(30,27,75,.9),rgba(15,23,42,.9))!important;color:#e9d5ff!important;box-shadow:0 10px 28px rgba(2,6,23,.45),inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(120%)!important}.gw-viewport-control--fullscreen{right:10px!important}.gw-viewport-control--vr{left:10px!important;border-color:rgba(129,140,248,.48)!important;background:linear-gradient(135deg,rgba(79,70,229,.94),rgba(91,33,182,.92))!important;color:#fff!important}',
-      '.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
-      '@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(prefers-reduced-motion:reduce){.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
+      '.gw-viewport-control{position:absolute!important;top:10px!important;z-index:100!important;display:inline-flex!important;min-width:36px;min-height:36px;align-items:center!important;justify-content:center!important;gap:6px!important;border:1px solid rgba(196,181,253,.38)!important;border-radius:10px!important;background:linear-gradient(155deg,rgba(30,27,75,.9),rgba(15,23,42,.9))!important;color:#e9d5ff!important;box-shadow:0 10px 28px rgba(2,6,23,.45),inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(120%)!important}.gw-viewport-control--fullscreen{right:10px!important}.gw-viewport-control--touch{right:48px!important}.gw-viewport-control--vr{left:10px!important;border-color:rgba(129,140,248,.48)!important;background:linear-gradient(135deg,rgba(79,70,229,.94),rgba(91,33,182,.92))!important;color:#fff!important}',
+      '.gw-touch-controls button{min-width:56px!important;min-height:56px!important;touch-action:manipulation!important}.gw-touch-toggle-label{font-size:10px;font-weight:850;letter-spacing:.02em}.gw-touch-look-zone{opacity:.62}.gw-touch-look-reticle{transition:transform 80ms ease-out;will-change:transform}.gw-touch-look-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(221,214,254,.62);font-size:9px;font-weight:850;letter-spacing:.12em;pointer-events:none}.gw-touch-look-panel{box-sizing:border-box;padding:7px 9px;border:1px solid rgba(196,181,253,.24);border-radius:10px;background:rgba(15,23,42,.74);box-shadow:0 8px 20px rgba(2,6,23,.26);backdrop-filter:blur(8px)}.gw-touch-look-panel > .gw-touch-look-label{position:static;display:flex;align-items:center;justify-content:space-between;gap:8px;transform:none;color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em}.gw-touch-look-panel output{color:#a7f3d0;font-size:10px;font-weight:850}.gw-touch-look-panel input{display:block;width:100%;margin:6px 0 0;accent-color:#a78bfa}.gw-touch-joystick-thumb{transition:transform 80ms ease-out;will-change:transform}.gw-touch-mode-hint{position:absolute;top:50px;left:50%;z-index:2;transform:translateX(-50%);padding:5px 10px;border:1px solid rgba(167,139,250,.3);border-radius:999px;background:rgba(15,23,42,.72);color:#ddd6fe;font-size:10px;font-weight:800;letter-spacing:.02em;white-space:nowrap;pointer-events:none;backdrop-filter:blur(7px)}.gw-touch-controls{padding-bottom:env(safe-area-inset-bottom);overscroll-behavior:contain}.gw-touch-controls > [role="img"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-controls > [role="group"]{bottom:calc(80px + env(safe-area-inset-bottom))!important}.gw-touch-mode-hint{top:calc(50px + env(safe-area-inset-top))}.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
+      '@media(max-width:420px){.gw-touch-toggle-label{display:none}}@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--touch{right:46px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(max-height:520px) and (orientation:landscape){.gw-touch-controls > [role="group"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 140px);flex-direction:row!important;flex-wrap:wrap;justify-content:flex-end;align-content:flex-end;gap:6px!important}.gw-touch-controls > [role="img"]{bottom:calc(14px + env(safe-area-inset-bottom))!important;left:14px}.gw-touch-controls .gw-touch-mode-hint{top:calc(42px + env(safe-area-inset-top))}.gw-touch-controls button{min-width:52px!important;min-height:52px!important}}@media(prefers-reduced-motion:reduce){.gw-touch-look-reticle{transition:none!important}.gw-touch-joystick-thumb{transition:none!important}.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
       '.gw-minimap{position:absolute!important;right:10px!important;bottom:150px!important;z-index:24!important;border:1px solid rgba(167,139,250,.32)!important;border-radius:12px!important;box-shadow:0 14px 34px rgba(2,6,23,.48),0 0 0 3px rgba(15,23,42,.36);opacity:.92;transition:opacity 150ms ease,transform 150ms ease}.gw-minimap:hover{opacity:1;transform:translateY(-2px)}',
       '.gw-collab-roster{position:absolute;top:50px;left:10px;z-index:24;display:flex;max-width:210px;flex-direction:column;gap:5px;padding:9px;border:1px solid rgba(52,211,153,.23);border-radius:12px;background:linear-gradient(155deg,rgba(6,78,59,.76),rgba(15,23,42,.88));box-shadow:0 14px 34px rgba(2,6,23,.38);backdrop-filter:blur(10px)}.gw-collab-title{margin-bottom:2px;color:#6ee7b7;font-size:10px;font-weight:800;letter-spacing:.04em}.gw-collab-player{display:flex;min-height:24px;align-items:center;gap:6px;padding:3px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(15,23,42,.62);color:#cbd5e1;font-size:11px}.gw-collab-player[data-self="true"]{border-color:rgba(52,211,153,.5);background:rgba(5,150,105,.22);color:#6ee7b7}.gw-collab-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12)}',
       '.gw-transform-panel{position:absolute;top:52px;right:10px;z-index:30;box-sizing:border-box;width:min(260px,calc(100% - 20px));padding:12px;border:1px solid rgba(167,139,250,.34);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.95));box-shadow:0 18px 48px rgba(2,6,23,.5),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0;backdrop-filter:blur(12px)}.gw-transform-heading{margin:0 0 8px;color:#c4b5fd;font-size:12px;font-weight:800;letter-spacing:-.01em}.gw-transform-state{margin-bottom:10px;padding:7px;border-radius:8px;text-align:center;font-size:11px;font-weight:850}.gw-transform-control{margin-bottom:8px}.gw-transform-control label{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;color:#cbd5e1;font-size:10px;font-weight:700}.gw-transform-control input{width:100%;accent-color:#8b5cf6}.gw-transform-actions{display:flex;gap:6px;margin-top:10px}.gw-transform-action{min-height:32px;padding:4px 9px;border:1px solid rgba(148,163,184,.28);border-radius:8px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-minimap{right:8px!important;bottom:146px!important;width:84px;height:84px}.gw-collab-roster{left:8px;max-width:118px;padding:7px}.gw-collab-player{overflow:hidden;padding:3px 5px;white-space:nowrap;text-overflow:ellipsis}.gw-collab-player span:last-child{display:none}.gw-transform-panel{right:8px;width:min(214px,calc(100% - 134px));max-height:calc(100% - 166px);overflow:auto}}@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}.gw-minimap:hover{transform:none}}',
@@ -72,14 +73,14 @@
       '.gw-history-panel{position:absolute!important;left:230px!important;bottom:150px!important;z-index:23!important;box-sizing:border-box;width:280px!important;max-width:calc(100% - 470px)!important;max-height:44%;overflow:auto;padding:10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(8,47,73,.88),rgba(15,23,42,.93))!important;box-shadow:0 16px 42px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px);scrollbar-width:thin}.gw-history-title{margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;min-height:25px;padding:4px 6px;border-radius:7px;color:#94a3b8;font-size:9px}.gw-history-row[data-current="true"]{background:rgba(8,145,178,.14);color:#e2e8f0;font-weight:700}.gw-history-row[data-incomplete="true"]{color:#fecaca}.gw-history-comparison,.gw-retrieval-card{margin-top:8px;padding:8px;border-top:1px solid rgba(103,232,249,.24);border-radius:0 0 8px 8px;background:rgba(2,6,23,.18)}.gw-retrieval-title{margin-bottom:3px;color:#67e8f9;font-size:8px;font-weight:850;letter-spacing:.08em}.gw-retrieval-controls{display:flex;align-items:center;gap:6px;margin-top:6px}.gw-retrieval-input{box-sizing:border-box;width:76px!important;min-height:30px;padding:4px 6px!important;border:1px solid rgba(103,232,249,.34)!important;border-radius:7px!important;background:rgba(2,6,23,.66)!important;color:#fff!important}.gw-retrieval-button{min-height:30px;padding:4px 10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:7px!important;background:#0e7490!important;color:#fff!important;font-size:9px!important;font-weight:800!important}',
       '.gw-inventory-panel{position:absolute!important;top:52px!important;right:280px!important;z-index:23!important;box-sizing:border-box;width:166px;padding:10px!important;border:1px solid rgba(251,191,36,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(69,26,3,.78),rgba(15,23,42,.92))!important;box-shadow:0 16px 42px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px)}.gw-inventory-title{margin-bottom:6px;color:#fde68a;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-inventory-volume{margin-bottom:7px;padding:6px;border:1px solid rgba(251,191,36,.16);border-radius:8px;background:rgba(120,53,15,.18);color:#fbbf24;font-size:13px;font-weight:850;text-align:center}.gw-inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;padding:3px 5px;border-radius:6px;color:#dbeafe;font-size:9px}.gw-inventory-row:nth-child(even){background:rgba(15,23,42,.34)}.gw-inventory-count{color:#d8b4fe;font-family:monospace;font-weight:800}@media(max-width:720px){.gw-history-panel{left:8px!important;bottom:238px!important;width:calc(50% - 12px)!important;max-width:none!important;max-height:34vh}.gw-inventory-panel{top:auto!important;right:8px!important;bottom:238px!important;width:calc(50% - 12px)}.gw-history-row{grid-template-columns:minmax(0,1fr) auto}.gw-history-row span:nth-child(3){grid-column:1/-1}}@media(max-width:420px){.gw-history-panel,.gw-inventory-panel{padding:7px!important}.gw-history-title,.gw-inventory-title{letter-spacing:.04em}.gw-inventory-row{padding-left:2px;padding-right:2px}}',
       '.gw-environment-tint{position:absolute;inset:0;z-index:5;pointer-events:none;transition:background .3s ease}.gw-environment-tint--water{background:linear-gradient(180deg,rgba(14,116,144,.12),rgba(30,64,175,.24))}.gw-environment-tint--lava{background:radial-gradient(circle at 50% 70%,rgba(251,146,60,.34),rgba(220,38,38,.18) 52%,rgba(69,10,10,.3))}.gw-environment-warning{position:absolute;left:50%;bottom:50%;display:flex;align-items:center;gap:8px;transform:translate(-50%,50%);max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(253,186,116,.62);border-radius:12px;background:rgba(67,20,7,.9);box-shadow:0 12px 32px rgba(69,10,10,.46),inset 0 1px 0 rgba(255,255,255,.08);color:#ffedd5;font-size:13px;font-weight:850;line-height:1.3;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75);backdrop-filter:blur(8px)}@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}}',
-      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
+      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-quality-resolved{max-width:72px;overflow:hidden;color:#a7f3d0;font-size:9px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.gw-quality-help{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
       '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
       '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
       '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
       '.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px)!important;overflow:auto;padding:24px!important;border-color:rgba(251,191,36,.46)!important;background:linear-gradient(155deg,rgba(69,26,3,.9),rgba(15,23,42,.97))!important;text-align:center!important;scrollbar-width:thin}.gw-completion-icon{display:flex;width:68px;height:68px;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(251,191,36,.32);border-radius:21px;background:linear-gradient(145deg,rgba(245,158,11,.24),rgba(124,58,237,.12));box-shadow:0 14px 34px rgba(2,6,23,.3);font-size:35px}.gw-completion-title{margin:0;color:#fde68a;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}.gw-completion-description{margin:6px 0 13px;color:#cbd5e1;font-size:12px;line-height:1.5}.gw-completion-metrics{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px}.gw-completion-metric{padding:5px 9px;border:1px solid rgba(251,191,36,.18);border-radius:999px;background:rgba(120,53,15,.18);color:#fde68a;font-size:10px;font-weight:750}.gw-completion-actions{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap}.gw-completion-next,.gw-completion-replay{min-height:44px;padding:9px 16px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important;cursor:pointer}.gw-completion-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#4f46e5)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}.gw-completion-replay{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.56)!important;color:#cbd5e1!important}.gw-completion-journey{flex-basis:100%;margin-top:8px;padding-top:14px;border-top:1px solid rgba(251,191,36,.18)}.gw-journey-icon{font-size:28px}.gw-journey-title{margin:5px 0;color:#fde68a;font-size:16px;font-weight:850}.gw-journey-description{margin:0 0 10px;color:#a8b3c7;font-size:11px;line-height:1.5}.gw-journey-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gw-journey-stat{padding:8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.42);color:#cbd5e1;font-size:9px}.gw-journey-value{display:block;margin-bottom:2px;color:#f8fafc;font-size:18px;font-weight:850}.gw-journey-quote{margin:10px 0 0;color:#c4b5fd;font-size:10px;font-style:italic;line-height:1.45}@media(max-width:520px){.gw-completion-dialog{padding:18px!important}.gw-completion-icon{width:56px;height:56px;border-radius:18px;font-size:29px}.gw-completion-actions{flex-direction:column}.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}.gw-journey-stats{gap:5px}}',
       '@keyframes gw-state-drift{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}@keyframes gw-loading-sweep{0%{transform:translateX(-130%)}100%{transform:translateX(310%)}}',
       '.gw-state-screen{position:relative;box-sizing:border-box;display:flex;flex:1;min-height:0;align-items:center;justify-content:center;overflow:auto;padding:clamp(18px,4vw,48px);color:var(--allo-stem-text,#e2e8f0);background:radial-gradient(circle at 50% 14%,rgba(124,58,237,.24),transparent 34%),linear-gradient(160deg,var(--allo-stem-canvas,#0f172a),#171433 60%,#090b18)}.gw-state-screen--inline{margin:8px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px}.gw-state-card{box-sizing:border-box;width:min(520px,100%);padding:clamp(24px,5vw,38px);text-align:center;border:1px solid rgba(167,139,250,.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,.78),rgba(15,23,42,.9));box-shadow:0 30px 90px rgba(2,6,23,.56),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(125%)}.gw-state-kicker{margin-bottom:9px;color:#c4b5fd;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.gw-state-icon{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;margin-bottom:18px;border:1px solid rgba(167,139,250,.3);border-radius:24px;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(34,211,238,.12));box-shadow:0 16px 40px rgba(2,6,23,.34);font-size:38px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-state-icon--error{background:linear-gradient(145deg,rgba(244,63,94,.2),rgba(124,58,237,.2));border-color:rgba(251,113,133,.32)}.gw-state-title{margin:0;color:var(--allo-stem-text,#f8fafc);font-size:clamp(21px,4vw,28px);font-weight:850;letter-spacing:-.025em;line-height:1.15}.gw-state-copy{max-width:430px;margin:12px auto 0;color:var(--allo-stem-text-soft,#a8b3c7);font-size:13px;line-height:1.65}.gw-state-note{margin-top:14px;padding:10px 12px;border:1px solid rgba(103,232,249,.16);border-radius:12px;background:rgba(8,47,73,.2);color:#cbd5e1;font-size:11px;line-height:1.55}.gw-state-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:22px}.gw-state-primary,.gw-state-secondary{min-height:44px;padding:9px 18px;border-radius:11px;font-size:13px;font-weight:750;cursor:pointer}.gw-state-primary{border:1px solid rgba(196,181,253,.34);background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}.gw-state-secondary{border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.62);color:#dbeafe}',
-      '.gw-loading-mark{display:flex;justify-content:center;gap:8px;margin-bottom:18px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-loading-mark span{font-size:30px;filter:drop-shadow(0 8px 12px rgba(2,6,23,.35))}.gw-loading-track{height:6px;margin:22px auto 0;overflow:hidden;border:1px solid rgba(167,139,250,.15);border-radius:999px;background:rgba(2,6,23,.55)}.gw-loading-sweep{width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#a78bfa,#22d3ee);box-shadow:0 0 18px rgba(167,139,250,.7);animation:gw-loading-sweep 1.45s cubic-bezier(.4,0,.2,1) infinite}.gw-state-tip{margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.14);color:#a8b3c7;font-size:11px;line-height:1.55}.gw-recovery-details{margin-top:18px;padding:10px 12px;text-align:left;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.34);color:#a8b3c7;font-size:11px}.gw-recovery-details summary{cursor:pointer;text-align:center;font-weight:700;color:#cbd5e1}.gw-recovery-details code{display:block;max-height:120px;margin-top:10px;padding:10px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:8px;background:rgba(2,6,23,.7);color:#fecdd3}',
+      '.gw-loading-mark{display:flex;justify-content:center;gap:8px;margin-bottom:18px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-loading-mark span{font-size:30px;filter:drop-shadow(0 8px 12px rgba(2,6,23,.35))}.gw-loading-track{height:6px;margin:22px auto 0;overflow:hidden;border:1px solid rgba(167,139,250,.15);border-radius:999px;background:rgba(2,6,23,.55)}.gw-loading-sweep{width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#a78bfa,#22d3ee);box-shadow:0 0 18px rgba(167,139,250,.7);animation:gw-loading-sweep 1.45s cubic-bezier(.4,0,.2,1) infinite}.gw-state-tip{margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.14);color:#a8b3c7;font-size:11px;line-height:1.55}.gw-recovery-details{margin-top:18px;padding:10px 12px;text-align:left;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.34);color:#a8b3c7;font-size:11px}.gw-recovery-details summary{cursor:pointer;text-align:center;font-weight:700;color:#cbd5e1}.gw-recovery-details code{display:block;max-height:120px;margin-top:10px;padding:10px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:8px;background:rgba(2,6,23,.7);color:#fecdd3}.gw-recovery-summary{margin-top:14px;padding:10px 12px;border:1px solid rgba(167,139,250,.2);border-radius:10px;background:rgba(76,29,149,.14);color:#ddd6fe;font-size:11px;line-height:1.45}.gw-recovery-checklist{display:flex;flex-direction:column;gap:6px;margin:12px 0 0;padding:0;list-style:none;text-align:left}.gw-recovery-check{position:relative;padding:7px 8px 7px 24px;border:1px solid rgba(148,163,184,.14);border-radius:8px;background:rgba(15,23,42,.4);color:#cbd5e1;font-size:10px;line-height:1.4}.gw-recovery-check::before{content:"";position:absolute;left:9px;top:11px;width:7px;height:7px;border:1px solid rgba(167,139,250,.6);border-radius:50%;background:rgba(124,58,237,.45)}.gw-recovery-retry-status{margin-top:12px;color:#a7f3d0;font-size:11px;font-weight:800}.gw-recovery-actions{flex-wrap:wrap}.gw-recovery-actions button:disabled{cursor:wait;opacity:.62}#gw-webgl-recovery:focus-visible{outline:3px solid #f8fafc;outline-offset:3px}',
       '@media(max-width:520px){.gw-state-screen{align-items:flex-start;padding:12px}.gw-state-screen--inline{margin:6px}.gw-state-card{padding:24px 18px;border-radius:18px}.gw-state-actions{align-items:stretch;flex-direction:column}.gw-state-actions button{width:100%}.gw-state-icon{width:64px;height:64px;border-radius:20px;font-size:32px}}@media(prefers-reduced-motion:reduce){.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}.gw-loading-sweep{width:64%;transform:none}}',
       '.gw-root [role="dialog"]{box-shadow:0 24px 70px rgba(2,6,23,0.58),0 0 0 1px rgba(255,255,255,0.05)!important;backdrop-filter:blur(18px) saturate(120%)!important;}',
       '.gw-root [role="dialog"]{z-index:80!important;}',
@@ -212,7 +213,8 @@
       balanced: { label: 'Balanced', maxPixelRatio: 1.5, shadows: true, postFx: false, ambientMotion: true },
       detail: { label: 'Detailed', maxPixelRatio: 2, shadows: true, postFx: true, ambientMotion: true }
     };
-    return Object.assign({ preference: requested, tier: tier }, profiles[tier]);
+    var reason = requested === 'auto' ? (lowPower ? 'Auto selected Battery saver for this device or motion preference.' : 'Auto selected Detailed for this device.') : 'Manual graphics-quality selection.';
+    return Object.assign({ preference: requested, tier: tier, reason: reason }, profiles[tier]);
   }
   window.StemLab.GeometryWorldRenderProfile = resolveGeometryRenderProfile;
 
@@ -2279,6 +2281,17 @@
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      var webglRetryState = React.useState(false);
+      var webglRetrying = webglRetryState[0];
+      var setWebglRetrying = webglRetryState[1];
+      var webglRecoveryRef = React.useRef(null);
+      React.useEffect(function() {
+        if (!webglError) return;
+        var focusTimer = setTimeout(function() {
+          if (webglRecoveryRef.current && typeof webglRecoveryRef.current.focus === 'function') webglRecoveryRef.current.focus();
+        }, 0);
+        return function() { clearTimeout(focusTimer); };
+      }, [webglError]);
       var fullscreenState = React.useState(false);
       var isWorkspaceFullscreen = fullscreenState[0];
       var setWorkspaceFullscreen = fullscreenState[1];
@@ -2430,6 +2443,25 @@
       var showLessonIntro = d.showLessonIntro || false;
       var soundMuted = d.soundMuted || false;
       var renderQuality = d.renderQuality || 'auto';
+      // Touch mode is an explicit, persisted preference on touch devices. It
+      // defaults on so the first mobile visit has clear, discoverable controls;
+      // desktop users keep the familiar keyboard/mouse path unchanged.
+      var touchMode = d.touchMode !== false;
+      var touchLookSensitivity = typeof d.touchLookSensitivity === 'number' && isFinite(d.touchLookSensitivity) ? Math.max(0.002, Math.min(0.008, d.touchLookSensitivity)) : 0.004;
+      var guidedTourState = React.useState(false);
+      var guidedTourActive = guidedTourState[0];
+      var setGuidedTourActive = guidedTourState[1];
+      var guidedTourStepState = React.useState(0);
+      var guidedTourStep = guidedTourStepState[0];
+      var setGuidedTourStep = guidedTourStepState[1];
+      var guidedTourSteps = ['Survey the world', 'Read the structure', 'Plan your measurement'];
+      var viewPresetState = React.useState('free');
+      var viewPreset = viewPresetState[0];
+      var setViewPreset = viewPresetState[1];
+      var viewPresetLabels = { free: 'Free', front: 'Front', side: 'Side', top: 'Top' };
+      var sceneMapState = React.useState(false);
+      var sceneMapOpen = sceneMapState[0];
+      var setSceneMapOpen = sceneMapState[1];
       var showReflection = d.showReflection || false;
       var reflectionText = d.reflectionText || '';
       var lessonEditorJson = d.lessonEditorJson || '';
@@ -2437,6 +2469,10 @@
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
       var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
+      var layerFocusState = React.useState(0);
+      var layerFocus = layerFocusState[0];
+      var setLayerFocus = layerFocusState[1];
+      var layerExplorerHeight = measureResult && measureResult.isComplete !== false ? Math.max(1, Math.ceil(Number(measureResult.H) || 1)) : 0;
       var volumePrediction = d.volumePrediction || '';
       var volumeRepresentationFromKey = d.volumeRepresentationFromKey || '';
       var volumeRepresentationReason = d.volumeRepresentationReason || '';
@@ -2499,6 +2535,16 @@
       var showTeacherView = d.showTeacherView || false;
       var studentProgressMap = d.studentProgressMap || {};
       var teacherUnsub = d.teacherUnsub || null;
+
+      // Keep the live engine in sync when a learner switches between touch
+      // controls and the desktop-style viewport. The engine may not exist yet
+      // during the loading render, so the init path also applies the preference.
+      React.useEffect(function() {
+        var liveEngine = window[engineKey];
+        if (liveEngine && typeof liveEngine.setTouchControlsEnabled === 'function') {
+          liveEngine.setTouchControlsEnabled(touchMode);
+        }
+      }, [touchMode]);
 
       function toggleTeacherView() {
         if (showTeacherView) {
@@ -3447,6 +3493,13 @@
         engine.loadLesson = function(lesson) {
           if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
           engine._currentLesson = lesson; // remember for returnToSpawn
+          if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._viewPreset = 'free';
+          setViewPreset('free');
+          if (engine.clearLayerFocus) engine.clearLayerFocus();
+          setLayerFocus(0);
           engine.clearWorld();
           // Reset sky to daytime
           engine.scene.background.setRGB(0.53, 0.81, 0.92);
@@ -3709,6 +3762,15 @@
 
         // Input handlers
         var canvas = engine.renderer.domElement;
+        if (canvas && canvas.style) {
+          canvas.style.touchAction = 'none';
+          canvas.style.userSelect = 'none';
+          canvas.style.webkitUserSelect = 'none';
+        }
+        // Keep the virtual joystick thumb in sync with the active finger. The
+        // viewport is the shared parent of the canvas and touch overlay, so CSS
+        // custom properties update the visual thumb without querying React DOM.
+        var touchFeedbackTarget = canvas && canvas.parentElement ? canvas.parentElement : canvas;
         // Memory-leak fix: track every listener so destroyEngine can detach them.
         // Without this, document-scoped handlers (mousemove, keydown, etc.) keep
         // firing forever after the user navigates away from Geometry World.
@@ -3717,7 +3779,7 @@
         var _winH = engine._winHandlers = {};
         canvas.addEventListener('webglcontextlost', _cvH.webglcontextlost = function(ev) {
           ev.preventDefault();
-          stopAnimationAfterError(new Error('WebGL context lost. The browser may have reset the graphics device or reclaimed GPU memory.'));
+          stopAnimationAfterError(new Error('WebGL context lost. The browser may have reset the graphics device or reclaimed GPU memory.'), 'context');
         });
 
         // Releasing the keys on blur. Held keys never emit a keyup once the window
@@ -4231,6 +4293,10 @@
           var gp = hit.object.userData.gridPos;
           var m = engine.measureStructure(gp.x, gp.y, gp.z);
           if (!m) return null;
+          if (engine.clearLayerFocus) engine.clearLayerFocus(true);
+          engine._layerExplorerBlocks = Array.isArray(m.blocks) ? m.blocks.slice() : null;
+          engine._layerExplorerMinY = Number(m.minY) || 0;
+          setLayerFocus(0);
           sfxMeasure();
 
           var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
@@ -4376,13 +4442,252 @@
 
         // ── Touch controls (mobile-friendly Minecraft-style) ──
         engine._touchActive = false;
+        engine._touchControlsEnabled = d.touchMode !== false;
         engine._touchLookId = null; // active touch ID for look (right side)
         engine._touchMoveId = null; // active touch ID for move (left side)
         engine._touchLookStart = null;
         engine._touchMoveStart = null;
         engine._touchMoveVec = { x: 0, z: 0 };
+        engine._touchLookSensitivity = touchLookSensitivity;
+        engine.setTouchLookSensitivity = function(value) {
+          var next = Number(value);
+          if (!isFinite(next)) next = 0.004;
+          engine._touchLookSensitivity = Math.max(0.002, Math.min(0.008, next));
+          return engine._touchLookSensitivity;
+        };
+        function resetTouchLookFeedback() {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-x', '0px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-y', '0px');
+        }
+        function updateTouchLookFeedback(dx, dy) {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          var lookX = Math.max(-46, Math.min(46, dx * 1.25));
+          var lookY = Math.max(-46, Math.min(46, dy * 1.25));
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-x', lookX + 'px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-look-y', lookY + 'px');
+        }
+        function resetTouchJoystick() {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style) return;
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-x', '0px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-y', '0px');
+        }
+        function updateTouchJoystick(mx, mz, mag) {
+          if (!touchFeedbackTarget || !touchFeedbackTarget.style || !mag) return;
+          var stickScale = Math.min(1, mag / 48);
+          var stickRadius = 34 * stickScale;
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-x', (mx / mag * stickRadius) + 'px');
+          touchFeedbackTarget.style.setProperty('--gw-touch-stick-y', (mz / mag * stickRadius) + 'px');
+        }
+        resetTouchJoystick();
+        resetTouchLookFeedback();
+        engine.setTouchControlsEnabled = function(enabled) {
+          engine._touchControlsEnabled = enabled !== false;
+          resetTouchJoystick();
+          resetTouchLookFeedback();
+          if (!engine._touchControlsEnabled) {
+            engine._touchActive = false;
+            engine._touchLookId = null;
+            engine._touchMoveId = null;
+            engine._touchLookStart = null;
+            engine._touchMoveStart = null;
+            engine._touchMoveVec = { x: 0, z: 0 };
+            if (engine.moveState) {
+              engine.moveState.forward = false; engine.moveState.backward = false;
+              engine.moveState.left = false; engine.moveState.right = false;
+            }
+          }
+        };
 
+        function getStructureFocus(structure) {
+          if (!structure) return null;
+          var x1 = Number(structure.x1) || 0, x2 = Number(structure.x2) || x1;
+          var y1 = Number(structure.y1) || 0, y2 = Number(structure.y2) || y1;
+          var z1 = Number(structure.z1) || 0, z2 = Number(structure.z2) || z1;
+          return {
+            x: (Math.min(x1, x2) + Math.max(x1, x2) + 1) / 2,
+            y: Math.max(y1, y2) + 0.5,
+            z: (Math.min(z1, z2) + Math.max(z1, z2) + 1) / 2,
+            radius: Math.max(8, Math.min(14, Math.max(Math.abs(x2 - x1), Math.abs(z2 - z1)) * 1.4 + 6))
+          };
+        }
+        function getGuidedTourFocus(lesson) {
+          var structures = lesson && Array.isArray(lesson.structures) ? lesson.structures : [];
+          var target = null;
+          for (var si = 0; si < structures.length; si++) {
+            var candidate = structures[si];
+            if (candidate && candidate.type === 'fill' && (Number(candidate.y2 || 0) > Number(candidate.y1 || 0) || Number(candidate.y1 || 0) > 0)) {
+              target = candidate;
+              break;
+            }
+          }
+          if (!target && structures.length) target = structures[0];
+          if (target) return getStructureFocus(target);
+          var spawn = lesson && lesson.spawnPoint ? lesson.spawnPoint : [2, 3, 2];
+          return { x: Number(spawn[0]) || 2, y: (Number(spawn[1]) || 3) + 0.5, z: Number(spawn[2]) || 2, radius: 9 };
+        }
+        engine.startGuidedTour = function() {
+          if (!engine.camera || !engine._currentLesson || engine._guidedTour) return false;
+          try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+          engine.isLocked = false;
+          engine._touchActive = false;
+          engine._entryAnim = null;
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._viewPreset = 'free';
+          setViewPreset('free');
+          engine.moveState.forward = false; engine.moveState.backward = false;
+          engine.moveState.left = false; engine.moveState.right = false;
+          var focus = getGuidedTourFocus(engine._currentLesson);
+          var guidedTourReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          engine._guidedTour = { elapsed: 0, duration: 12, focus: focus, step: -1, reducedMotion: guidedTourReducedMotion };
+          engine.camera.position.set(focus.x + focus.radius, focus.y + 4.5, focus.z);
+          engine.camera.lookAt(focus.x, focus.y, focus.z);
+          setGuidedTourStep(0);
+          setGuidedTourActive(true);
+          announceToSR('Guided explore tour started. ' + guidedTourSteps[0] + '.');
+          return true;
+        };
+        engine.stopGuidedTour = function(completed) {
+          var wasActive = !!engine._guidedTour;
+          engine._guidedTour = null;
+          engine._entryAnim = null;
+          engine._touchActive = false;
+          if (engine.moveState) {
+            engine.moveState.forward = false; engine.moveState.backward = false;
+            engine.moveState.left = false; engine.moveState.right = false;
+          }
+          setGuidedTourActive(false);
+          setGuidedTourStep(0);
+          if (wasActive) announceToSR(completed ? 'Guided explore tour complete. You can now explore the world.' : 'Guided explore tour stopped.');
+          return wasActive;
+        };
+        // ── Camera view presets: stable front/side/top evidence views ──
+        // These views let learners inspect a structure from a repeatable angle
+        // before measuring it. The return path preserves the learner's free view.
+        function getViewPresetTarget(preset, focus) {
+          var radius = focus.radius || 9;
+          if (preset === 'front') return { x: focus.x + radius * 1.65, y: focus.y + radius * 0.42, z: focus.z };
+          if (preset === 'side') return { x: focus.x, y: focus.y + radius * 0.42, z: focus.z + radius * 1.65 };
+          if (preset === 'top') return { x: focus.x + radius * 0.16, y: focus.y + radius * 1.75, z: focus.z + radius * 0.16 };
+          return { x: focus.x + radius, y: focus.y + 4.5, z: focus.z };
+        }
+        engine.setViewPreset = function(preset, focusOverride) {
+          var allowed = { free: true, front: true, side: true, top: true };
+          var selected = String(preset || 'free');
+          if (!allowed[selected] || !engine.camera || !engine._currentLesson) return false;
+          if (engine._guidedTour && engine.stopGuidedTour) engine.stopGuidedTour(false);
+          try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+          engine.isLocked = false;
+          engine._touchActive = false;
+          engine._entryAnim = null;
+          var THREE = window.THREE;
+          var currentPosition = engine.camera.position.clone();
+          var currentTarget;
+          try {
+            var currentDirection = engine.camera.getWorldDirection(new THREE.Vector3());
+            currentTarget = currentPosition.clone().add(currentDirection.multiplyScalar(10));
+          } catch (e2) {
+            currentTarget = currentPosition.clone().add(new THREE.Vector3(0, 0, -10));
+          }
+          var focus = focusOverride || getGuidedTourFocus(engine._currentLesson);
+          var fromPosition = currentPosition;
+          var fromTarget = currentTarget;
+          var toPosition;
+          var toTarget;
+          if (selected === 'free') {
+            var restore = engine._viewPresetReturn;
+            toPosition = restore ? restore.position.clone() : currentPosition.clone();
+            toTarget = restore ? restore.target.clone() : currentTarget.clone();
+            engine._viewPresetReturn = null;
+          } else {
+            if (!engine._viewPresetReturn) engine._viewPresetReturn = { position: currentPosition.clone(), target: currentTarget.clone() };
+            var presetPosition = getViewPresetTarget(selected, focus);
+            toPosition = new THREE.Vector3(presetPosition.x, presetPosition.y, presetPosition.z);
+            toTarget = new THREE.Vector3(focus.x, focus.y, focus.z);
+          }
+          engine._viewPreset = selected;
+          engine._viewPresetAnim = { preset: selected, elapsed: 0, duration: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0.01 : 0.55, fromPosition: fromPosition, fromTarget: fromTarget, toPosition: toPosition, toTarget: toTarget };
+          setViewPreset(selected);
+          announceToSR('Camera view: ' + (selected === 'free' ? 'free exploration' : selected + ' evidence view') + '.');
+          return true;
+        };
+        // ── Textual Scene Map ──
+        // A semantic companion to the canvas: learners can inspect the same
+        // lesson objects and jump to a structure without relying on color or depth.
+        engine.getSceneOverview = function() {
+          var lesson = engine._currentLesson || {};
+          var structures = Array.isArray(lesson.structures) ? lesson.structures : [];
+          var npcs = Array.isArray(lesson.npcs) ? lesson.npcs : [];
+          return {
+            title: lesson.title || 'Geometry World',
+            structures: structures.map(function(structure, index) {
+              var x1 = Number(structure.x1) || 0, x2 = Number(structure.x2) || x1;
+              var y1 = Number(structure.y1) || 0, y2 = Number(structure.y2) || y1;
+              var z1 = Number(structure.z1) || 0, z2 = Number(structure.z2) || z1;
+              return {
+                index: index,
+                label: structure.label || structure.name || ('Structure ' + (index + 1)),
+                type: structure.type || 'structure',
+                dimensions: { length: Math.abs(x2 - x1) + 1, width: Math.abs(z2 - z1) + 1, height: Math.abs(y2 - y1) + 1 },
+                origin: { x: Math.min(x1, x2), y: Math.min(y1, y2), z: Math.min(z1, z2) }
+              };
+            }),
+            npcs: npcs.map(function(npc, index) { return { index: index, name: npc.name || ('Guide ' + (index + 1)), prompt: npc.question ? 'Question available' : 'Conversation guide' }; }),
+            camera: engine.camera ? { x: Math.round(engine.camera.position.x * 10) / 10, y: Math.round(engine.camera.position.y * 10) / 10, z: Math.round(engine.camera.position.z * 10) / 10 } : null,
+            target: engine._targetGrid ? { x: engine._targetGrid.x, y: engine._targetGrid.y, z: engine._targetGrid.z, type: engine._targetGrid.type || 'block' } : null
+          };
+        };
+        engine.focusStructure = function(index) {
+          var lesson = engine._currentLesson || {};
+          var structures = Array.isArray(lesson.structures) ? lesson.structures : [];
+          var structure = structures[Number(index)];
+          var focus = getStructureFocus(structure);
+          if (!focus || !engine.setViewPreset) return false;
+          engine.setViewPreset('front', focus);
+          announceToSR('Viewing ' + (structure.label || structure.name || ('structure ' + (Number(index) + 1))) + ' from the front evidence view.');
+          return true;
+        };        // ── Layer Explorer ──
+        // Reveal only the measured component one horizontal layer at a time.
+        // The world data stays intact; this is a visual reasoning aid for
+        // connecting base area × height to occupied volume.
+        engine._layerFocus = null;
+        engine._layerExplorerBlocks = null;
+        engine._layerExplorerMinY = null;
+        engine.setLayerFocus = function(level, silent) {
+          var parsed = Number(level);
+          var next = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+          engine._layerFocus = next;
+          var targets = Array.isArray(engine._layerExplorerBlocks) && engine._layerExplorerBlocks.length ? engine._layerExplorerBlocks : null;
+          var visibleCount = 0;
+          var layerBase = Number(engine._layerExplorerMinY);
+          if (!Number.isFinite(layerBase)) layerBase = 0;
+          if (targets) {
+            targets.forEach(function(pos) {
+              var mesh = pos && engine.blocks[pos.x + ',' + pos.y + ',' + pos.z];
+              if (!mesh) return;
+              mesh.visible = next === null || (Math.floor(Number(pos.y) || 0) - layerBase) < next;
+              if (mesh.visible) visibleCount++;
+            });
+          } else {
+            Object.keys(engine.blocks).forEach(function(key) {
+              var mesh = engine.blocks[key];
+              var grid = mesh && mesh.userData && mesh.userData.gridPos;
+              if (!mesh || !grid) return;
+              mesh.visible = next === null || (Math.floor(Number(grid.y) || 0) - layerBase) < next;
+              if (mesh.visible) visibleCount++;
+            });
+          }
+          if (!silent) announceToSR(next === null ? 'Layer explorer reset. Showing all layers.' : 'Showing layers 1 through ' + next + '. ' + visibleCount + ' measured blocks visible.');
+          return next;
+        };
+        engine.clearLayerFocus = function(silent) {
+          engine._layerExplorerBlocks = null;
+          engine._layerExplorerMinY = null;
+          return engine.setLayerFocus(null, !!silent);
+        };
         canvas.addEventListener('touchstart', _cvH.touchstart = function(ev) {
+          if (engine._touchControlsEnabled === false) return;
           ev.preventDefault();
           engine._touchActive = true;
           engine.isLocked = true; // Treat touch as "locked" for rendering purposes
@@ -4392,14 +4697,17 @@
             if (isLeftSide && engine._touchMoveId === null) {
               engine._touchMoveId = touch.identifier;
               engine._touchMoveStart = { x: touch.clientX, y: touch.clientY };
+              resetTouchJoystick();
             } else if (!isLeftSide && engine._touchLookId === null) {
               engine._touchLookId = touch.identifier;
               engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
+              resetTouchLookFeedback();
             }
           }
         }, { passive: false });
 
         canvas.addEventListener('touchmove', _cvH.touchmove = function(ev) {
+          if (engine._touchControlsEnabled === false) return;
           ev.preventDefault();
           for (var ti = 0; ti < ev.changedTouches.length; ti++) {
             var touch = ev.changedTouches[ti];
@@ -4408,8 +4716,9 @@
               var dx = touch.clientX - engine._touchLookStart.x;
               var dy = touch.clientY - engine._touchLookStart.y;
               engine.euler.setFromQuaternion(engine.camera.quaternion);
-              engine.euler.y -= dx * 0.004;
-              engine.euler.x -= dy * 0.004;
+              engine.euler.y -= dx * engine._touchLookSensitivity;
+              engine.euler.x -= dy * engine._touchLookSensitivity;
+              updateTouchLookFeedback(dx, dy);
               engine.euler.x = Math.max(-Math.PI * 0.49, Math.min(Math.PI * 0.49, engine.euler.x));
               engine.camera.quaternion.setFromEuler(engine.euler);
               engine._touchLookStart = { x: touch.clientX, y: touch.clientY };
@@ -4420,12 +4729,14 @@
               var mag = Math.sqrt(mx * mx + mz * mz);
               if (mag > 10) {
                 engine._touchMoveVec = { x: mx / mag, z: mz / mag };
+                updateTouchJoystick(mx, mz, mag);
                 engine.moveState.forward = mz < -15;
                 engine.moveState.backward = mz > 15;
                 engine.moveState.left = mx < -15;
                 engine.moveState.right = mx > 15;
               } else {
                 engine._touchMoveVec = { x: 0, z: 0 };
+                resetTouchJoystick();
                 engine.moveState.forward = false; engine.moveState.backward = false;
                 engine.moveState.left = false; engine.moveState.right = false;
               }
@@ -4434,18 +4745,34 @@
         }, { passive: false });
 
         canvas.addEventListener('touchend', _cvH.touchend = function(ev) {
+          if (engine._touchControlsEnabled === false) return;
           for (var ti = 0; ti < ev.changedTouches.length; ti++) {
             var touch = ev.changedTouches[ti];
             if (touch.identifier === engine._touchMoveId) {
               engine._touchMoveId = null; engine._touchMoveStart = null;
               engine._touchMoveVec = { x: 0, z: 0 };
+              resetTouchJoystick();
               engine.moveState.forward = false; engine.moveState.backward = false;
               engine.moveState.left = false; engine.moveState.right = false;
             }
             if (touch.identifier === engine._touchLookId) {
               engine._touchLookId = null; engine._touchLookStart = null;
+              resetTouchLookFeedback();
             }
           }
+          if (engine._touchMoveId === null && engine._touchLookId === null) engine._touchActive = false;
+        }, { passive: false });
+
+        canvas.addEventListener('touchcancel', _cvH.touchcancel = function() {
+          if (engine._touchControlsEnabled === false) return;
+          engine._touchActive = false;
+          engine._touchLookId = null; engine._touchMoveId = null;
+          engine._touchLookStart = null; engine._touchMoveStart = null;
+          engine._touchMoveVec = { x: 0, z: 0 };
+          resetTouchJoystick();
+          resetTouchLookFeedback();
+          engine.moveState.forward = false; engine.moveState.backward = false;
+          engine.moveState.left = false; engine.moveState.right = false;
         }, { passive: false });
 
         // ── Cached blocks array (rebuilt only when blocks change). Avoids allocating
@@ -4628,15 +4955,17 @@
         engine._headBobPhase = 0;
         engine._headBobBase = 0; // will be set to groundY when on ground
 
-        function stopAnimationAfterError(error) {
+        function stopAnimationAfterError(error, failureKind) {
           if (!engine || engine._destroyed || engine._runtimeFailed) return;
           engine._runtimeFailed = true;
           if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; }
           var detail = String(error && (error.stack || error.message) || error || 'Unknown animation error').slice(0, 1200);
+          var kind = failureKind || 'runtime';
           console.error('[GeometryWorld] Animation stopped to protect page responsiveness:', error);
-          window[engineKey + '_failure'] = { kind: 'runtime', message: detail };
+          window[engineKey + '_failure'] = { kind: kind, message: detail };
           window[engineKey + '_failed'] = true;
           setWebglError(true);
+          setWebglRetrying(false);
         }
 
         // Animation loop
@@ -4698,6 +5027,59 @@
           }
 
           // ── Camera entry animation (swoop down to spawn) ──
+          // ── Guided explore tour: a predictable, low-motion orbit around the
+          // first meaningful structure gives learners a spatial overview before
+          // keyboard, mouse, or touch input takes over.
+          if (engine._guidedTour) {
+            if (engine.isInputActive()) {
+              engine.stopGuidedTour(false);
+            } else {
+              var tour = engine._guidedTour;
+              tour.elapsed += dt;
+              var tourProgress = Math.min(1, tour.elapsed / tour.duration);
+              var tourStep = Math.min(2, Math.floor(tourProgress * 3));
+              if (tourStep !== tour.step) {
+                tour.step = tourStep;
+                setGuidedTourStep(tourStep);
+                announceToSR(guidedTourSteps[tourStep] + '.');
+              }
+              if (!tour.reducedMotion) {
+                var tourAngle = -0.75 + tourProgress * Math.PI * 2;
+                var tourFocus = tour.focus;
+                var tourLift = 4.5 + Math.sin(tourProgress * Math.PI * 2) * 0.8;
+                engine.camera.position.x = tourFocus.x + Math.cos(tourAngle) * tourFocus.radius;
+                engine.camera.position.y = tourFocus.y + tourLift;
+                engine.camera.position.z = tourFocus.z + Math.sin(tourAngle) * tourFocus.radius;
+                engine.camera.lookAt(tourFocus.x, tourFocus.y, tourFocus.z);
+              }
+              if (tourProgress >= 1) engine.stopGuidedTour(true);
+            }
+          }
+          // ── Preset camera transition ──
+          if (engine._viewPresetAnim && !engine._guidedTour) {
+            if (engine.isInputActive()) {
+              engine._viewPresetAnim = null;
+              engine._viewPresetReturn = null;
+              engine._viewPreset = 'free';
+              setViewPreset('free');
+              announceToSR('Camera preset canceled. Free exploration restored.');
+            } else {
+              var viewAnim = engine._viewPresetAnim;
+              viewAnim.elapsed += dt;
+              var viewProgress = Math.min(1, viewAnim.elapsed / viewAnim.duration);
+              var viewEase = 1 - Math.pow(1 - viewProgress, 3);
+              var viewPosition = viewAnim.fromPosition.clone().lerp(viewAnim.toPosition, viewEase);
+              var viewTarget = viewAnim.fromTarget.clone().lerp(viewAnim.toTarget, viewEase);
+              engine.camera.position.x = viewPosition.x;
+              engine.camera.position.y = viewPosition.y;
+              engine.camera.position.z = viewPosition.z;
+              engine.camera.lookAt(viewTarget.x, viewTarget.y, viewTarget.z);
+              if (viewProgress >= 1) {
+                engine._viewPresetAnim = null;
+                if (viewAnim.preset === 'free') engine._viewPresetReturn = null;
+              }
+            }
+          }
           if (engine._entryAnim && !engine.isInputActive()) {
             var ea = engine._entryAnim;
             ea.progress = Math.min(1, ea.progress + dt * 0.6);
@@ -5737,12 +6119,14 @@
 
         // Auto-load default lesson
         engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
+        setWebglRetrying(false);
         } catch(e) {
           var initDetail = String(e && (e.stack || e.message) || e || 'Unknown initialization error').slice(0, 1200);
           console.error('[GeometryWorld] WebGL init failed:', e);
           window[engineKey + '_failure'] = { kind: 'initialization', message: initDetail };
           window[engineKey + '_failed'] = true;
           setWebglError(true);
+          setWebglRetrying(false);
         }
       }
 
@@ -5750,6 +6134,12 @@
       function destroyEngine() {
         var engine = window[engineKey];
         if (engine) {
+          engine._guidedTour = null;
+          engine._viewPresetAnim = null;
+          engine._viewPresetReturn = null;
+          engine._layerFocus = null;
+          engine._layerExplorerBlocks = null;
+          engine._layerExplorerMinY = null;
           engine._destroyed = true;
           try { if (engine.vr && engine.vr.destroy) engine.vr.destroy(); engine.vr = null; } catch(e){}
           if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
@@ -5865,6 +6255,11 @@
 
       // Mobile detection — friendly message for touch devices
       var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || (window.innerWidth < 768 && 'ontouchstart' in window);
+      var renderQualityProfile = resolveGeometryRenderProfile(renderQuality, {
+        isMobile: isMobile,
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0
+      });
       if (isMobile && !d._mobileDismissed) {
         return el('section', {
           className: 'gw-root gw-state-screen',
@@ -5874,22 +6269,22 @@
           el('div', { className: 'gw-state-card' },
             el('div', { className: 'gw-state-icon', 'aria-hidden': 'true' }, '\uD83D\uDCF1'),
             el('div', { className: 'gw-state-kicker' }, 'Device note'),
-            el('h2', { id: 'gw-mobile-title', className: 'gw-state-title' }, 'Desktop Recommended'),
+            el('h2', { id: 'gw-mobile-title', className: 'gw-state-title' }, 'Touch-ready Geometry World'),
             el('p', { className: 'gw-state-copy' },
-              'Geometry World uses a 3D engine with mouse and keyboard controls. For the smoothest experience, open it on a laptop or desktop computer.'),
+              'Geometry World is ready for phones and tablets. Touch mode keeps movement, looking, building, measuring, and conversations within easy reach.'),
             el('div', { className: 'gw-state-note' },
-              'Touch controls are available: swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk.'),
+              'Touch guide: swipe the right side to look, drag the left joystick to move, and use the large action buttons to build, break, measure, and talk. You can switch modes any time.'),
             el('div', { className: 'gw-state-actions' },
               el('button', {
                 type: 'button',
                 className: 'gw-primary-cta gw-state-primary gw-focusable',
-                onClick: function() { upd('_mobileDismissed', true); }
-              }, 'Continue with touch controls \u2192'),
+                onClick: function() { upd({ _mobileDismissed: true, touchMode: true }); }
+              }, 'Enter touch mode \u2192'),
               el('button', {
                 type: 'button',
                 className: 'gw-state-secondary gw-focusable',
-                onClick: function() { upd('_mobileDismissed', true); }
-              }, 'Continue with a keyboard')
+                onClick: function() { upd({ _mobileDismissed: true, touchMode: false }); }
+              }, 'Use desktop-style view')
             )
           )
         );
@@ -6155,8 +6550,9 @@
       };
 
       var engine = window[engineKey];
+      var sceneOverview = sceneMapOpen && engine && engine.getSceneOverview ? engine.getSceneOverview() : null;
       function runMobileButtonAction(actionKey, action, ev) {
-        if (!engine || typeof action !== 'function') return;
+        if (!engine || engine._touchControlsEnabled === false || typeof action !== 'function') return;
         if (ev && ev.type === 'touchstart') {
           ev.stopPropagation();
           engine._lastTouchAction = { key: actionKey, at: Date.now() };
@@ -6310,6 +6706,13 @@
       // exactly the students who most needed to hear otherwise.
       var engineFailure = window[engineKey + '_failure'] || null;
       var runtimeFailure = !!(engineFailure && engineFailure.kind === 'runtime');
+      var contextFailure = !!(engineFailure && engineFailure.kind === 'context');
+      var recoveryFailureLabel = contextFailure ? 'Graphics device reset' : (runtimeFailure ? 'Animation paused' : '3D setup issue');
+      var recoveryGuidance = contextFailure
+        ? 'The browser reported that the graphics device was reset. Close other graphics-heavy tabs, then try again.'
+        : (runtimeFailure
+          ? 'The animation loop was paused after an error to keep this tab responsive. Your lesson data remains safe.'
+          : 'Rendering could not start in this view. A direct Chrome, Firefox, or Edge tab usually provides the best WebGL support.');
       function copyEngineFailureDetails() {
         if (!engineFailure || !engineFailure.message) return;
         var report = 'Geometry World ' + (engineFailure.kind || 'unknown') + ' failure\n' + new Date().toISOString() + '\n' + (navigator.userAgent || 'Unknown browser') + '\n\n' + engineFailure.message;
@@ -6322,8 +6725,17 @@
           .catch(function() { if (addToast) addToast('Could not copy automatically. Select the technical details manually.', 'error'); });
       }
 
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
-        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen .gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen .gw-toolbar{max-height:32vh;overflow:auto;padding:8px 10px}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0}'),
+      function retryWebglMode(useSaverQuality) {
+        if (webglRetrying) return;
+        setWebglRetrying(true);
+        if (useSaverQuality) upd('renderQuality', 'saver');
+        if (window[engineKey]) destroyEngine();
+        window[engineKey + '_failed'] = false;
+        delete window[engineKey + '_failure'];
+        setWebglError(false);
+      }
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen .gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen .gw-toolbar{max-height:32vh;overflow:auto;padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom))}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
@@ -6334,12 +6746,13 @@
             )
           ),
           el('div', { className: 'gw-status-cluster', 'aria-label': 'Lesson status' },
-          el('label', { className: 'gw-quality-control' },
+          el('label', { className: 'gw-quality-control', title: renderQualityProfile.reason },
             el('span', { className: 'gw-quality-label' }, '3D quality'),
             el('select', {
               value: renderQuality,
               'data-geometry-render-quality': 'true',
               'aria-label': '3D graphics quality',
+              'aria-describedby': 'gw-quality-help',
               onChange: function(ev) {
                 var preference = ev.target.value;
                 upd('renderQuality', preference);
@@ -6348,12 +6761,49 @@
                 announceToSR('3D graphics quality set to ' + profile.label + '.');
               }
             },
-              el('option', { value: 'auto' }, 'Auto'),
+              el('option', { value: 'auto' }, 'Auto (' + renderQualityProfile.label + ')'),
               el('option', { value: 'saver' }, 'Battery saver'),
               el('option', { value: 'balanced' }, 'Balanced'),
               el('option', { value: 'detail' }, 'Detailed')
-            )
+            ),
+            el('span', { className: 'gw-quality-resolved', role: 'status', 'aria-live': 'polite', 'aria-label': 'Resolved graphics mode: ' + renderQualityProfile.label }, renderQualityProfile.label),
+            el('span', { id: 'gw-quality-help', className: 'gw-quality-help' }, renderQualityProfile.reason)
           ),
+          worldActive && tutorialDismissed && engine && el('button', {
+            type: 'button',
+            className: 'gw-tour-button gw-focusable',
+            'aria-pressed': guidedTourActive,
+            'aria-label': guidedTourActive ? 'Stop guided explore tour' : 'Start guided explore tour',
+            title: guidedTourActive ? 'Stop guided explore tour' : 'Show a guided overview of the active structure',
+            onClick: function() {
+              if (!engine) return;
+              if (guidedTourActive && engine.stopGuidedTour) engine.stopGuidedTour(false);
+              else if (engine.startGuidedTour) engine.startGuidedTour();
+            },
+            style: { minHeight: 30, padding: '4px 9px', border: guidedTourActive ? '1px solid rgba(251,191,36,0.62)' : '1px solid rgba(167,139,250,0.38)', borderRadius: 9, background: guidedTourActive ? 'rgba(120,53,15,0.5)' : 'rgba(76,29,149,0.42)', color: guidedTourActive ? '#fde68a' : '#e9d5ff', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+          }, guidedTourActive ? '\u23F9 Exit tour' : '\u2728 Explore tour'),
+          worldActive && tutorialDismissed && engine && el('div', {
+            className: 'gw-view-presets', role: 'group', 'aria-label': 'Camera views',
+            style: { display: 'inline-flex', alignItems: 'center', gap: 3, minHeight: 30, padding: '2px 4px', border: '1px solid rgba(148,163,184,0.22)', borderRadius: 9, background: 'rgba(15,23,42,0.58)' }
+          },
+            el('span', { className: 'gw-view-presets-label', style: { color: '#94a3b8', fontSize: 9, fontWeight: 800, padding: '0 3px' } }, 'View'),
+            ['front', 'side', 'top', 'free'].map(function(preset) {
+              var active = viewPreset === preset;
+              return el('button', {
+                key: preset, type: 'button', className: 'gw-view-preset gw-focusable',
+                'aria-pressed': active, 'aria-label': viewPresetLabels[preset] + ' camera view',
+                title: preset === 'free' ? 'Return to free exploration' : 'Show the ' + viewPresetLabels[preset].toLowerCase() + ' evidence view',
+                onClick: function() { if (engine && engine.setViewPreset) engine.setViewPreset(preset); },
+                style: { minHeight: 26, minWidth: 36, padding: '3px 5px', border: active ? '1px solid rgba(196,181,253,0.72)' : '1px solid transparent', borderRadius: 6, background: active ? 'rgba(124,58,237,0.58)' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: 9, fontWeight: 800, cursor: 'pointer' }
+              }, viewPresetLabels[preset]);
+            })
+          ),          worldActive && tutorialDismissed && engine && el('button', {
+            type: 'button', className: 'gw-scene-map-button gw-focusable',
+            'aria-expanded': sceneMapOpen, 'aria-controls': 'gw-scene-map', 'aria-label': sceneMapOpen ? 'Close textual scene map' : 'Open textual scene map',
+            title: 'Open a text alternative to the 3D scene',
+            onClick: function() { var next = !sceneMapOpen; setSceneMapOpen(next); announceToSR(next ? 'Textual scene map opened.' : 'Textual scene map closed.'); },
+            style: { minHeight: 30, padding: '4px 9px', border: sceneMapOpen ? '1px solid rgba(45,212,191,0.68)' : '1px solid rgba(45,212,191,0.32)', borderRadius: 9, background: sceneMapOpen ? 'rgba(13,148,136,0.4)' : 'rgba(15,118,110,0.26)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+          }, sceneMapOpen ? 'Close map' : 'Scene map'),
           // Score
           // Block counter
           engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -6430,7 +6880,7 @@
           measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'aria-label': 'Measurement inspector', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
               el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
-              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': 'Close measurement inspector', title: 'Close measurement inspector', onClick: function() { upd('measureResult', null); } }, '\u00D7')
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': 'Close measurement inspector', title: 'Close measurement inspector', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); upd('measureResult', null); } }, '\u00D7')
             ),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
@@ -6450,7 +6900,30 @@
               measureResult.isComplete === false
                 ? 'Surface area unavailable until the full structure is measured'
                 : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
-            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+            layerExplorerHeight > 1 && el('section', { className: 'gw-layer-explorer', role: 'region', 'aria-label': 'Layer explorer', 'data-geometry-layer-explorer': 'true', style: { marginTop: '4px', padding: '7px 8px', border: '1px solid rgba(45,212,191,0.28)', borderRadius: '8px', background: 'rgba(13,148,136,0.1)' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+                el('span', { style: { color: '#99f6e4', fontSize: '9px', fontWeight: 850, letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Layer explorer'),
+                el('output', { htmlFor: 'gw-layer-focus', 'aria-live': 'polite', style: { color: '#f0fdfa', fontSize: '9px', fontWeight: 800 } }, layerFocus === 0 ? 'All layers' : 'Layers 1-' + layerFocus + ' of ' + layerExplorerHeight)
+              ),
+              el('label', { htmlFor: 'gw-layer-focus', style: { display: 'block', marginTop: '4px', color: '#ccfbf1', fontSize: '9px', fontWeight: 700 } }, 'Reveal through layer'),
+              el('input', {
+                id: 'gw-layer-focus', type: 'range', min: 0, max: layerExplorerHeight, step: 1, value: layerFocus,
+                className: 'gw-focusable', 'aria-label': 'Layer explorer depth',
+                'aria-valuetext': layerFocus === 0 ? 'All layers visible' : 'Layers 1 through ' + layerFocus + ' of ' + layerExplorerHeight + ' visible',
+                onChange: function(ev) {
+                  var next = Math.max(0, Math.min(layerExplorerHeight, Number(ev.target.value) || 0));
+                  setLayerFocus(next);
+                  var eng = window[engineKey];
+                  if (eng && eng.setLayerFocus) eng.setLayerFocus(next);
+                },
+                style: { display: 'block', width: '100%', margin: '5px 0 2px', accentColor: '#2dd4bf' }
+              }),
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#99f6e4', fontSize: '8px' } },
+                el('span', null, 'All'),
+                el('span', null, 'Top layer ' + layerExplorerHeight)
+              ),
+              el('button', { type: 'button', className: 'gw-focusable', disabled: layerFocus === 0, 'aria-label': 'Show all layers', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); }, style: { minHeight: 28, marginTop: '5px', padding: '3px 8px', border: '1px solid rgba(153,246,228,0.28)', borderRadius: '6px', background: 'rgba(15,23,42,0.54)', color: '#ccfbf1', fontSize: '9px', fontWeight: 800, cursor: layerFocus === 0 ? 'not-allowed' : 'pointer', opacity: layerFocus === 0 ? 0.6 : 1 } }, 'Show all layers')
+            ),            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
               el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
               el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)')),
               (predictionResult.strategy || predictionResult.reason) && el('div', { style: { color: '#bfdbfe', fontSize: '9px' } },
@@ -7869,17 +8342,33 @@
           }, '\uD83D\uDDD1\uFE0F Clear Mine')
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
-        isMobile && worldActive && engine && el('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
+        isMobile && touchMode && worldActive && engine && el('div', { className: 'gw-touch-controls', style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
+          el('div', { className: 'gw-touch-mode-hint', role: 'status', 'aria-live': 'polite' }, 'Touch mode - swipe right to look'),
+          el('div', { className: 'gw-touch-look-zone', role: 'img', 'aria-label': 'Touch look area: swipe on the right side to look around', style: { position: 'absolute', top: '50%', right: '18px', width: '120px', height: '120px', borderRadius: '50%', border: '1px dashed rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.04)', pointerEvents: 'none' } },
+            el('div', { className: 'gw-touch-look-reticle', style: { position: 'absolute', top: '50%', left: '50%', width: '42px', height: '42px', borderRadius: '50%', border: '1px solid rgba(196,181,253,0.42)', background: 'rgba(124,58,237,0.14)', transform: 'translate(calc(-50% + var(--gw-touch-look-x, 0px)), calc(-50% + var(--gw-touch-look-y, 0px)))' } }),
+            el('div', { className: 'gw-touch-look-label' }, 'LOOK')
+          ),
+          el('div', { className: 'gw-touch-look-panel', role: 'group', 'aria-label': 'Touch look settings', style: { position: 'absolute', top: '82px', right: '12px', width: '134px', pointerEvents: 'auto' }, onTouchStart: function(ev) { ev.stopPropagation(); } },
+            el('label', { className: 'gw-touch-look-label', htmlFor: 'gw-touch-look-sensitivity' },
+              el('span', null, 'Look speed'),
+              el('output', { htmlFor: 'gw-touch-look-sensitivity' }, Math.round(touchLookSensitivity / 0.004 * 100) + '%')
+            ),
+            el('input', { id: 'gw-touch-look-sensitivity', type: 'range', min: 0.002, max: 0.008, step: 0.001, value: touchLookSensitivity, 'aria-label': 'Touch look sensitivity', 'aria-valuetext': 'Look speed ' + Math.round(touchLookSensitivity / 0.004 * 100) + ' percent', onChange: function(ev) {
+              var next = Math.max(0.002, Math.min(0.008, Number(ev.target.value)));
+              upd('touchLookSensitivity', next);
+              if (engine && engine.setTouchLookSensitivity) engine.setTouchLookSensitivity(next);
+            } })
+          ),
           // Left side: virtual joystick zone indicator
-          el('div', { style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
-            el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' } }),
+          el('div', { role: 'img', 'aria-label': 'Touch joystick: drag on the left side to move', style: { position: 'absolute', bottom: '80px', left: '20px', width: '100px', height: '100px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' } },
+            el('div', { className: 'gw-touch-joystick-thumb', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(calc(-50% + var(--gw-touch-stick-x, 0px)), calc(-50% + var(--gw-touch-stick-y, 0px)))', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' } }),
             el('div', { style: { position: 'absolute', top: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B2'),
             el('div', { style: { position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25BC'),
             el('div', { style: { position: 'absolute', left: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25C0'),
             el('div', { style: { position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: 'rgba(255,255,255,0.25)' } }, '\u25B6')
           ),
           // Right side: action buttons
-          el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
+          el('div', { role: 'group', 'aria-label': 'Touch actions', style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
               type: 'button', className: 'gw-focusable', 'aria-label': 'Jump', title: 'Jump',
@@ -8044,6 +8533,53 @@
               );
             });
           })()
+        ),
+        sceneMapOpen && worldActive && engine && sceneOverview && el('section', {
+          id: 'gw-scene-map', className: 'gw-scene-map', role: 'region', 'aria-labelledby': 'gw-scene-map-title',
+          style: { position: 'absolute', top: '58px', right: '10px', zIndex: 34, width: 'min(360px, calc(100vw - 20px))', maxHeight: 'min(560px, calc(100% - 90px))', overflow: 'auto', padding: '12px', border: '1px solid rgba(45,212,191,0.34)', borderRadius: 14, background: 'linear-gradient(155deg,rgba(6,78,59,0.96),rgba(15,23,42,0.97))', boxShadow: '0 20px 54px rgba(2,6,23,0.56)', backdropFilter: 'blur(14px)' }
+        },
+          el('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' } },
+            el('div', null,
+              el('div', { style: { color: '#99f6e4', fontSize: 9, fontWeight: 850, letterSpacing: '0.12em', textTransform: 'uppercase' } }, 'Text alternative'),
+              el('h3', { id: 'gw-scene-map-title', style: { margin: '3px 0 0', color: '#f0fdfa', fontSize: 16, fontWeight: 850 } }, 'Scene map')
+            ),
+            el('button', { type: 'button', className: 'gw-focusable', 'aria-label': 'Close textual scene map', onClick: function() { setSceneMapOpen(false); announceToSR('Textual scene map closed.'); }, style: { minWidth: 32, minHeight: 32, border: '1px solid rgba(153,246,228,0.3)', borderRadius: 8, background: 'rgba(15,23,42,0.56)', color: '#ccfbf1', fontSize: 18, cursor: 'pointer' } }, '×')
+          ),
+          el('p', { style: { margin: '7px 0 10px', color: '#ccfbf1', fontSize: 10, lineHeight: 1.45 } }, 'A readable inventory of the 3D lesson. Use View structure to jump to a repeatable camera view.'),
+          el('section', { 'aria-labelledby': 'gw-scene-structures-title' },
+            el('h4', { id: 'gw-scene-structures-title', style: { margin: '0 0 6px', color: '#99f6e4', fontSize: 10, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Structures · ' + sceneOverview.structures.length),
+            sceneOverview.structures.length > 0 && el('div', { role: 'list', 'aria-label': 'Structures in scene', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              sceneOverview.structures.map(function(structure) {
+                return el('div', { key: structure.index, role: 'listitem', style: { padding: '8px', border: '1px solid rgba(153,246,228,0.18)', borderRadius: 9, background: 'rgba(15,23,42,0.5)' } },
+                  el('div', { style: { color: '#f0fdfa', fontSize: 11, fontWeight: 800 } }, structure.label),
+                  el('div', { style: { marginTop: 2, color: '#a7f3d0', fontFamily: 'monospace', fontSize: 10 } }, structure.dimensions.length + ' × ' + structure.dimensions.width + ' × ' + structure.dimensions.height + ' units'),
+                  el('div', { style: { marginTop: 2, color: '#94a3b8', fontSize: 9 } }, 'Origin X' + structure.origin.x + ' Y' + structure.origin.y + ' Z' + structure.origin.z + ' · ' + structure.type),
+                  el('button', { type: 'button', className: 'gw-focusable', 'aria-label': 'View structure: ' + structure.label, onClick: function() { if (engine && engine.focusStructure) engine.focusStructure(structure.index); }, style: { minHeight: 34, marginTop: 6, padding: '5px 9px', border: '1px solid rgba(45,212,191,0.3)', borderRadius: 7, background: 'rgba(13,148,136,0.28)', color: '#ccfbf1', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'View structure')
+                );
+              })
+            ),
+            sceneOverview.structures.length === 0 && el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'No named structures are listed for this lesson.')
+          ),
+          sceneOverview.npcs.length > 0 && el('section', { 'aria-labelledby': 'gw-scene-guides-title', style: { marginTop: 12 } },
+            el('h4', { id: 'gw-scene-guides-title', style: { margin: '0 0 6px', color: '#99f6e4', fontSize: 10, fontWeight: 850, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'Guides · ' + sceneOverview.npcs.length),
+            el('ul', { style: { display: 'grid', gap: 4, margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, sceneOverview.npcs.map(function(npc) { return el('li', { key: npc.index }, npc.name + ' — ' + npc.prompt); }))
+          ),
+          sceneOverview.camera && el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(153,246,228,0.18)', color: '#a7f3d0', fontFamily: 'monospace', fontSize: 9 } }, 'Camera X' + sceneOverview.camera.x + ' Y' + sceneOverview.camera.y + ' Z' + sceneOverview.camera.z + (sceneOverview.target ? ' · Target ' + sceneOverview.target.type + ' X' + sceneOverview.target.x + ' Y' + sceneOverview.target.y + ' Z' + sceneOverview.target.z : ''))
+        ),        // ── Guided explore tour overlay ──
+        guidedTourActive && worldActive && engine && el('div', {
+          className: 'gw-tour-overlay',
+          role: 'region', 'aria-label': 'Guided explore checkpoint',
+          style: { position: 'absolute', top: '58px', left: '50%', transform: 'translateX(-50%)', zIndex: 31, width: 'min(330px, calc(100vw - 24px))', pointerEvents: 'auto' }
+        },
+          el('div', { style: { padding: '10px 12px', border: '1px solid rgba(196,181,253,0.34)', borderRadius: 13, background: 'linear-gradient(155deg,rgba(30,27,75,0.94),rgba(15,23,42,0.95))', boxShadow: '0 16px 36px rgba(2,6,23,0.48)', backdropFilter: 'blur(12px)' } },
+            el('div', { style: { color: '#c4b5fd', fontSize: 9, fontWeight: 850, letterSpacing: '0.12em', textTransform: 'uppercase' } }, 'Guided explore'),
+            el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 3, color: '#f8fafc', fontSize: 14, fontWeight: 850 } }, guidedTourSteps[guidedTourStep] || guidedTourSteps[0]),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 } },
+              [0, 1, 2].map(function(si) { return el('span', { key: si, 'aria-hidden': 'true', style: { height: 4, flex: 1, borderRadius: 999, background: si <= guidedTourStep ? '#a78bfa' : 'rgba(100,116,139,0.38)', boxShadow: si === guidedTourStep ? '0 0 10px rgba(167,139,250,0.55)' : 'none' } }); }),
+              el('span', { style: { color: '#a8b3c7', fontSize: 9, fontWeight: 750, whiteSpace: 'nowrap' } }, (guidedTourStep + 1) + ' / 3')
+            ),
+            el('button', { type: 'button', className: 'gw-focusable', 'aria-label': 'Exit guided explore tour', onClick: function() { if (engine && engine.stopGuidedTour) engine.stopGuidedTour(false); }, style: { minHeight: 34, marginTop: 9, padding: '5px 10px', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 8, background: 'rgba(15,23,42,0.56)', color: '#cbd5e1', fontSize: 10, fontWeight: 750, cursor: 'pointer' } }, 'Exit tour')
+          )
         ),
         // ── Tutorial overlay (first-time users) ──
         !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', { className: 'gw-tutorial-shell',
@@ -8793,15 +9329,19 @@
         ),
         // 3D Canvas container (or fallback if WebGL unavailable)
         (webglError || window[engineKey + '_failed'])
-          ? el('section', { role: 'alert', 'aria-live': 'assertive', className: 'gw-state-screen gw-state-screen--inline' },
+          ? el('section', { id: 'gw-webgl-recovery', ref: webglRecoveryRef, tabIndex: -1, role: 'alert', 'aria-live': 'assertive', 'aria-labelledby': 'gw-webgl-recovery-title', 'data-geometry-webgl-recovery': 'true', className: 'gw-state-screen gw-state-screen--inline' },
               el('div', { className: 'gw-state-card' },
                 el('div', { className: 'gw-state-icon gw-state-icon--error', 'aria-hidden': 'true' }, '\uD83C\uDFAE'),
-                el('div', { className: 'gw-state-kicker' }, runtimeFailure ? 'Recovery mode' : '3D setup'),
-                el('h2', { className: 'gw-state-title' }, runtimeFailure ? '3D View Paused' : '3D View Could Not Start'),
-                el('p', { className: 'gw-state-copy' },
-                  runtimeFailure
-                    ? 'Geometry World stopped the 3D animation to keep this tab responsive. Your work is safe, and you can retry below.'
-                    : 'Geometry World could not initialize 3D rendering. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
+                el('div', { className: 'gw-state-kicker' }, recoveryFailureLabel),
+                el('h2', { id: 'gw-webgl-recovery-title', className: 'gw-state-title' }, contextFailure ? 'Graphics Device Reset' : (runtimeFailure ? '3D View Paused' : '3D View Could Not Start')),
+                el('p', { className: 'gw-state-copy' }, recoveryGuidance),
+                el('div', { className: 'gw-recovery-summary', role: 'status' },
+                  contextFailure ? 'Try the saver-quality retry first if the graphics reset repeats.' : 'Your lesson data remains in this session while you recover the 3D view.'
+                ),
+                el('ul', { className: 'gw-recovery-checklist', 'aria-label': 'Recovery suggestions' },
+                  el('li', { className: 'gw-recovery-check' }, 'Close other graphics-heavy tabs if the device is under load.'),
+                  el('li', { className: 'gw-recovery-check' }, 'Use saver quality if the standard retry fails.'),
+                  el('li', { className: 'gw-recovery-check' }, 'Keep Technical details available when asking for support.')
                 ),
                 engineFailure && engineFailure.message && el('details', { className: 'gw-recovery-details' },
                   el('summary', null, 'Technical details'),
@@ -8810,17 +9350,21 @@
                     el('button', { type: 'button', className: 'gw-state-secondary gw-focusable', onClick: copyEngineFailureDetails }, 'Copy error details')
                   )
                 ),
-                el('div', { className: 'gw-state-actions' },
+                webglRetrying && el('div', { className: 'gw-recovery-retry-status', role: 'status', 'aria-live': 'polite' }, 'Restarting 3D mode…'),
+                el('div', { className: 'gw-state-actions gw-recovery-actions' },
                   el('button', {
                     type: 'button',
                     className: 'gw-primary-cta gw-state-primary gw-focusable',
-                    onClick: function() {
-                      if (window[engineKey]) destroyEngine();
-                      window[engineKey + '_failed'] = false;
-                      delete window[engineKey + '_failure'];
-                      setWebglError(false);
-                    }
-                  }, 'Retry 3D Mode')
+                    disabled: webglRetrying,
+                    'aria-busy': webglRetrying,
+                    onClick: function() { retryWebglMode(false); }
+                  }, webglRetrying ? 'Retrying 3D mode…' : 'Retry 3D Mode'),
+                  el('button', {
+                    type: 'button',
+                    className: 'gw-state-secondary gw-focusable',
+                    disabled: webglRetrying,
+                    onClick: function() { retryWebglMode(true); }
+                  }, 'Retry in saver mode')
                 )
               )
             )
@@ -8857,6 +9401,30 @@
                 id: 'geoworld-instructions',
                 style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
               }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L says where the characters are and who still has a question, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
+              isMobile && el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--touch gw-focusable',
+                'data-geometry-touch-toggle': 'true',
+                'aria-pressed': touchMode,
+                'aria-label': touchMode ? 'Turn touch controls off' : 'Turn touch controls on',
+                title: touchMode ? 'Turn touch controls off' : 'Turn touch controls on',
+                onClick: function(ev) {
+                  ev.stopPropagation();
+                  var next = !touchMode;
+                  upd('touchMode', next);
+                  var liveEngine = window[engineKey];
+                  if (liveEngine && typeof liveEngine.setTouchControlsEnabled === 'function') liveEngine.setTouchControlsEnabled(next);
+                  announceToSR(next ? 'Touch controls on. Swipe right to look and drag left to move.' : 'Touch controls off. Desktop-style view selected.');
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 48, zIndex: 100,
+                  minWidth: 40, height: 32, padding: '0 7px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: touchMode ? 'rgba(6,78,59,0.9)' : 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: touchMode ? '1px solid rgba(52,211,153,0.65)' : '1px solid rgba(148,163,184,0.45)', color: touchMode ? '#a7f3d0' : '#cbd5e1',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, el('span', { 'aria-hidden': 'true' }, touchMode ? '\u261d\uFE0F' : '\u2328\uFE0F'), el('span', { className: 'gw-touch-toggle-label' }, touchMode ? 'Touch' : 'Desktop')),
               // Fullscreen toggle (top-right). React will mount this as a
               // child of the engine container; the engine's renderer DOM
               // element is appended later via initEngine, so the button

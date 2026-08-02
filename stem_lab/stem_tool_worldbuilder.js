@@ -1671,7 +1671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
                   (hwPenmanshipOn || hwTeacherPenmanship
                     ? 'bg-violet-100 border-violet-300 text-violet-700'
-                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
+                    : 'bg-slate-50 border-slate-400 text-slate-600 hover:border-violet-500 hover:text-violet-700')
               }, __alloT('stem.worldbuilder.penmanship_tips', '✏️ Penmanship Tips '), hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
               hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[11px] text-violet-500 font-medium' }, __alloT('stem.worldbuilder.teacher_enabled', '(teacher enabled)'))
             ),

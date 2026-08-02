@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "បានបើក Video Studio។",
   "cmd.open_video_studio_hint": "ថត ដាក់ចំណងជើងរង និងកែសម្រួលវីដេអូណែនាំ",
   "palette.ctx.videoStudio": "ទីនេះ — Video Studio",
-  "palette.close": "បិទផ្ទាំងពាក្យបញ្ជា"
+  "palette.close": "បិទផ្ទាំងពាក្យបញ្ជា",
+  "cmd.apply_lesson_template": "ចាប់ផ្តើមពីគំរូដែលបានរក្សាទុក",
+  "cmd.apply_lesson_template_done": "បានចាប់ផ្តើមពី ",
+  "cmd.apply_lesson_template_hint": "ចាប់ផ្តើមផែនការថ្មីពីគំរូមួយក្នុងចំណោមគំរូដែលអ្នកបានរក្សាទុក",
+  "cmd.apply_lesson_template_missing": "រកមិនឃើញគំរូឈ្មោះ ",
+  "cmd.apply_lesson_template_which": "គំរូមួយណា?",
+  "cmd.rebuild_lesson_step": "បង្កើតជំហានមួយនៃផែនការឡើងវិញ",
+  "cmd.rebuild_lesson_step_done": "កំពុងបង្កើតជំហានឡើងវិញ ",
+  "cmd.rebuild_lesson_step_hint": "បង្កើតធនធានតែមួយឡើងវិញ — ប្រាប់លេខជំហាន",
+  "cmd.rebuild_lesson_step_missing": "រកមិនឃើញជំហាននោះក្នុងផែនការ។",
+  "cmd.rebuild_lesson_step_none": "ផែនការមិនទាន់មានជំហានទេ។",
+  "cmd.rebuild_lesson_step_which": "ជំហានមួយណា?",
+  "cmd.run_lesson_blueprint": "បង្កើតផែនការមេរៀន",
+  "cmd.run_lesson_blueprint_done": "កំពុងបង្កើតផែនការ — អ្នកអាចមើលជំហាននីមួយៗលើកាត។",
+  "cmd.run_lesson_blueprint_hint": "បង្កើតធនធានទាំងអស់ក្នុងផែនការបច្ចុប្បន្ន",
+  "cmd.cancelled": "បានស្នើសុំបោះបង់។ ប្រតិបត្តិការបច្ចុប្បន្ននឹងឈប់ នៅពេលអ្នកផ្តល់សេវាគាំទ្រការបោះបង់។"
 }

@@ -51,7 +51,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-hero="true"');
       expect(html).toContain('data-beehive-mode-switcher="true"');
       expect(html).toContain('data-beehive-mode-tab=');
-      expect(html).toContain('data-beehive-visual-version="22"');
+      expect(html).toContain('data-beehive-visual-version="35"');
       expect(html).toContain('data-beehive-theme=');
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
@@ -314,7 +314,18 @@ describe('beehive — simulation modes render without throwing', () => {
     const keeper = render({ viewMode: 'beekeeper', day: 8, actionPoints: 0, honey: 10, varroaLevel: 5, diseaseRisk: 0 });
     expect(keeper).toContain('data-management-action=');
     expect(keeper).toContain('data-action-ready=');
+    expect(keeper).toContain('data-action-budget="true"');
+    expect(keeper).toContain('aria-label="0 of 3 action points available"');
+    expect(keeper).toContain('All action points spent');
+    expect(keeper).toContain('data-management-cost="1 AP"');
+    expect(keeper).toContain('data-management-cost-badge="Feed"');
     expect(keeper).toContain('+5 honey / +5 morale');
+    expect(keeper).toContain('data-conservation-impact="plant_wildflowers"');
+    expect(keeper).toContain('data-conservation-preview="plant_wildflowers"');
+    expect(keeper).toContain('Impact: Habitat +10 | Foraging +5');
+    expect(keeper).toContain('data-conservation-ready="false"');
+    const readyKeeper = render({ viewMode: 'beekeeper', day: 8, actionPoints: 3 });
+    expect(readyKeeper).toContain('data-conservation-impact="plant_wildflowers" data-conservation-ready="true"');
     expect(keeper).toContain('Need 1 AP');
     expect(keeper).toContain('Mites below threshold');
     expect(keeper).toContain('Need more than 15 lb');
@@ -343,6 +354,14 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('data-quick-command="scout_rival"');
     expect(queen).toContain('data-quick-command="alarm_signal"');
     expect(queen).toContain('data-quick-command="raid_rival"');
+    expect(queen).toContain('data-command-preview="scout_rival"');
+    expect(queen).toContain('data-structure-preview="brood"');
+    expect(queen).toContain('data-structure-preview="guard"');
+    expect(queen).toContain('Each cycle adds nurse and forager capacity for a stronger workforce.');
+    expect(queen).toContain('Each cycle adds guards to absorb rival pressure.');
+    expect(queen).toContain('Reveal rival power; shift forage +2% immediately.');
+    expect(queen).toContain('Mobilize 20 guards; raise defense before pressure peaks.');
+    expect(queen).toContain('Damage the rival hive; trade guards for territory.');
     expect(queen.indexOf('data-beehive-queen-canvas')).toBeLessThan(queen.indexOf('Strategic advisor'));
   });
 

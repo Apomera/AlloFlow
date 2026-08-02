@@ -16,6 +16,7 @@
  *   server/                  — the stdio server + headless driver (verbatim)
  *   assets/                  — the 3 pipeline modules + verapdf/ (the driver
  *                              resolves these via ALLOFLOW_MCP_ASSETS_DIR)
+ *   skills/                  - canonical remediation workflow for clients that support skill import
  *   node_modules/ + package.json — playwright, unless --lean
  *
  * Two host-machine requirements survive packaging (disclosed in the manifest
@@ -45,6 +46,9 @@ const MCPB_CLI_VERSION = '2.1.2';
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
 const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'README_REMEDIATION.md'];
+// The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
+// Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
+const SERVER_DIRS = ['vendor'];
 // view_pdf_audit_module.js carries the accessible Office (DOCX/ODT) export. It is a VIEW module
 // that needs React at load time, so the driver loads it ON DEMAND with React from a CDN rather
 // than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
@@ -52,6 +56,7 @@ const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headles
 // reached 11% of the pipeline, partly because capabilities lived in modules it never shipped.
 const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js'];
 const ASSET_DIRS = ['verapdf'];
+const SKILL_DIRS = ['alloflow-pdf-remediation'];
 
 function log(m) { process.stderr.write('[build-mcpb] ' + m + '\n'); }
 
@@ -67,6 +72,7 @@ function buildManifest() {
   const tools = [
     { name: 'remediation_capabilities', description: 'Report whether this machine can run PDF remediation (key, Chromium, assets). Read-only.' },
     { name: 'remediation_selftest', description: 'Prove the install can actually remediate: real pipeline, scripted local model, no API key or quota.' },
+    { name: 'generate_resource_pack', description: "Generate the normal app's student/teacher resource-pack HTML from app-shaped JSON. No API key." },
     { name: 'remediation_setup', description: 'One-time Chromium download via Playwright. Idempotent; needs no API key.' },
     { name: 'pdf_audit', description: 'Accessibility audit of a local PDF/DOCX/PPTX: score, issues, scanned detection, language.' },
     { name: 'pdf_validate_ua', description: 'Independent PDF/UA-1 (ISO 14289-1) validation via veraPDF. Needs no API key.' },
@@ -100,7 +106,7 @@ function buildManifest() {
     display_name: 'AlloFlow PDF Remediation',
     version: '0.3.0',
     description: 'Remediate PDFs (and DOCX/PPTX) for accessibility with AlloFlow\'s honesty-gated pipeline: audit, accessible-HTML rebuild, AI fix passes, tagged-PDF export, and independent PDF/UA-1 validation.',
-    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+ and a one-time Chromium download. AI-dependent tools require a Google Gemini API key and send the selected document to Gemini under your key; deterministic tools remain available without a key. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
+    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+ and a one-time Chromium download. AI-dependent tools require a Google Gemini API key and send the selected document to Gemini under your key; deterministic tools remain available without a key. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
     author: { name: 'Aaron Pomeranz', url: 'https://github.com/Apomera' },
     homepage: 'https://apomera.github.io/AlloFlow/',
     documentation: 'https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/README_REMEDIATION.md',
@@ -116,6 +122,7 @@ function buildManifest() {
         env: {
           GEMINI_API_KEY: '${user_config.gemini_api_key}',
           ALLOFLOW_MCP_ASSETS_DIR: '${__dirname}/assets',
+          ALLOFLOW_MCP_SKILLS_DIR: '${__dirname}/skills',
           ALLOFLOW_MCP_NO_KEY_FILES: '1',
         },
       },
@@ -136,26 +143,37 @@ function buildManifest() {
   };
 }
 
-function main() {
+function stageBundle(stagingDir) {
+  const dest = path.resolve(stagingDir || STAGING);
   // Preflight: every input must exist before we stage anything.
   const missing = []
     .concat(SERVER_FILES.filter((f) => !fs.existsSync(path.join(MCP_DIR, f))))
+    .concat(SERVER_DIRS.filter((d) => !fs.existsSync(path.join(MCP_DIR, d))))
     .concat(ASSET_FILES.filter((f) => !fs.existsSync(path.join(REPO_ROOT, f))))
     .concat(ASSET_DIRS.filter((d) => !fs.existsSync(path.join(REPO_ROOT, d))))
+    .concat(SKILL_DIRS.filter((d) => !fs.existsSync(path.join(REPO_ROOT, 'agent_skills', d, 'SKILL.md'))).map((d) => 'agent_skills/' + d + '/SKILL.md'))
     .concat(!fs.existsSync(path.join(MCP_DIR, 'PRIVACY.md')) ? ['PRIVACY.md'] : [])
     .concat(!fs.existsSync(path.join(REPO_ROOT, 'LICENSE')) ? ['LICENSE'] : []);
-  if (missing.length) { log('MISSING inputs: ' + missing.join(', ')); process.exit(1); }
+  if (missing.length) throw new Error('MISSING bundle inputs: ' + missing.join(', '));
 
-  fs.rmSync(STAGING, { recursive: true, force: true });
-  fs.mkdirSync(path.join(STAGING, 'server'), { recursive: true });
-  fs.mkdirSync(path.join(STAGING, 'assets'), { recursive: true });
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.mkdirSync(path.join(dest, 'server'), { recursive: true });
+  fs.mkdirSync(path.join(dest, 'assets'), { recursive: true });
+  fs.mkdirSync(path.join(dest, 'skills'), { recursive: true });
 
-  for (const f of SERVER_FILES) copyRecursive(path.join(MCP_DIR, f), path.join(STAGING, 'server', f));
-  for (const f of ASSET_FILES) copyRecursive(path.join(REPO_ROOT, f), path.join(STAGING, 'assets', f));
-  for (const d of ASSET_DIRS) copyRecursive(path.join(REPO_ROOT, d), path.join(STAGING, 'assets', d));
-  copyRecursive(path.join(MCP_DIR, 'PRIVACY.md'), path.join(STAGING, 'PRIVACY.md'));
-  copyRecursive(path.join(REPO_ROOT, 'LICENSE'), path.join(STAGING, 'LICENSE'));
-  fs.writeFileSync(path.join(STAGING, 'manifest.json'), JSON.stringify(buildManifest(), null, 2), 'utf8');
+  for (const f of SERVER_FILES) copyRecursive(path.join(MCP_DIR, f), path.join(dest, 'server', f));
+  for (const d of SERVER_DIRS) copyRecursive(path.join(MCP_DIR, d), path.join(dest, 'server', d));
+  for (const f of ASSET_FILES) copyRecursive(path.join(REPO_ROOT, f), path.join(dest, 'assets', f));
+  for (const d of ASSET_DIRS) copyRecursive(path.join(REPO_ROOT, d), path.join(dest, 'assets', d));
+  for (const d of SKILL_DIRS) copyRecursive(path.join(REPO_ROOT, 'agent_skills', d), path.join(dest, 'skills', d));
+  copyRecursive(path.join(MCP_DIR, 'PRIVACY.md'), path.join(dest, 'PRIVACY.md'));
+  copyRecursive(path.join(REPO_ROOT, 'LICENSE'), path.join(dest, 'LICENSE'));
+  fs.writeFileSync(path.join(dest, 'manifest.json'), JSON.stringify(buildManifest(), null, 2), 'utf8');
+  return dest;
+}
+
+function main() {
+  stageBundle(STAGING);
 
   if (!LEAN) {
     log('installing playwright into the bundle (use --lean to skip; ~50MB)…');
@@ -196,7 +214,9 @@ function main() {
   }
   const mb = (fs.statSync(BUNDLE).size / 1024 / 1024).toFixed(1);
   log((packed ? 'VALIDATED' : 'UNVALIDATED DIAGNOSTIC') + ' → ' + BUNDLE + ' (' + mb + ' MB)');
-  log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; it will prompt for the Gemini API key.');
+  log('extracting and boot-checking the emitted artifact...');
+  execSync('node "' + path.join(MCP_DIR, 'verify_mcpb_artifact.cjs') + '" "' + BUNDLE + '" --require-playwright', { stdio: ['ignore', 'inherit', 'inherit'] });
+  log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; the Gemini API key field is optional and can be left blank for no-account tools.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
   log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');
 }
@@ -204,5 +224,5 @@ function main() {
 // Guarded so the manifest can be imported and checked against the live tool registry without
 // building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
 // Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
-module.exports = { buildManifest };
+module.exports = { buildManifest, stageBundle };
 if (require.main === module) main();

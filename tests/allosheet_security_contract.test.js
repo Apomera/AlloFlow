@@ -162,7 +162,12 @@ describe('AlloSheet security and deployment contracts', () => {
     expect(hostBridge).toContain('data.version !== 1');
     expect(hostBridge).toContain('data.bridgeToken !== bridgeToken');
     expect(hostBridge).toContain('window.crypto.getRandomValues');
+    expect(hostBridge).toContain('BRIDGE_TOKEN_TTL_MS');
+    expect(hostBridge).toContain('isBridgeTokenFresh');
+    expect(hostBridge).toContain('pairingExpiresAt');
+    expect(hostBridge).toContain('allosheet-pairing-expired');
     expect(companion).toContain('event.source !== window.opener');
+    expect(companion).toContain('allosheet-pairing-expired');
     expect(companion).toContain('event.origin !== state.hostOrigin');
     expect(companion).toContain('data.bridgeToken !== state.bridgeToken');
     expect(companion).not.toContain("state.hostOrigin || '*'");
@@ -271,6 +276,7 @@ describe('AlloSheet security and deployment contracts', () => {
       type: 'allosheet-ready',
       version: 1,
       bridgeToken: token,
+      pairingExpiresAt: expect.any(Number),
     });
     expect(popup.postMessage.mock.calls[0][1]).toBe(launch.origin);
 
@@ -285,6 +291,27 @@ describe('AlloSheet security and deployment contracts', () => {
     });
     expect(fakeWindow.focus).toHaveBeenCalledTimes(1);
     expect(launcher.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it('expires a pairing token and rejects the stale companion connection', () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    try {
+      const harness = loadHostBridgeHarness();
+      harness.bridge.open();
+      const launch = new URL(harness.openedUrl());
+      const token = new URLSearchParams(launch.hash.slice(1)).get('bridgeToken');
+      harness.emit({ type: 'allosheet-hello', version: 1, bridgeToken: token });
+      expect(harness.bridge.getPairingStatus().paired).toBe(true);
+      now.mockReturnValue(1_000_000 + (15 * 60 * 1000) + 1);
+      harness.emit({ type: 'allosheet-hello', version: 1, bridgeToken: token });
+      expect(harness.bridge.getPairingStatus()).toEqual({ paired: false, expiresAt: null });
+      expect(harness.popup.postMessage.mock.calls.at(-1)[0]).toMatchObject({
+        type: 'allosheet-pairing-expired',
+        bridgeToken: token,
+      });
+    } finally {
+      now.mockRestore();
+    }
   });
 
   it('sends a revalidated tabular artifact only over the authenticated postMessage channel', () => {
@@ -751,14 +778,14 @@ describe('AlloSheet security and deployment contracts', () => {
     const scripts = Array.from(document.querySelectorAll('script'));
     expect(scripts).toHaveLength(4);
     expect(scripts.every((script) => Boolean(script.src))).toBe(true);
-    expect(scripts.every((script) => script.src.includes('?v=7'))).toBe(true);
+    expect(scripts.every((script) => script.src.includes('?v=8'))).toBe(true);
     expect(scripts.map((script) => new URL(script.src).pathname.split('/').pop())).toEqual([
       'allo_sheet_adapter.js',
       'allo_sheet_analysis.js',
       'allo_sheet_workspace.js',
       'allo_sheet.js',
     ]);
-    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=7');
+    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=8');
     expect(document.querySelector('iframe').getAttribute('sandbox')).toContain('allow-scripts');
     expect(document.querySelector('[role="tablist"]')).not.toBeNull();
     expect(document.querySelector('#artifactReview').getAttribute('role')).toBe('dialog');

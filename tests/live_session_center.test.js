@@ -78,7 +78,7 @@ describe('HostPanel initialPoll presets (live_polling_module.js)', () => {
 describe('per-student resource send (#9)', () => {
   it('allowlists resourceId + viewing leaves as Tier-1', () => {
     expect(anti).toContain("'resourceId',");
-    expect(anti).toContain("'viewingResourceId', 'viewingAt',");
+    expect(anti).toContain("'viewingResourceId', 'viewingResourceAt', 'viewingResourceStatus', 'viewingAt',");
   });
 
   it('teacher handler writes id + consume-once nonce, and clears with null', () => {
@@ -107,12 +107,12 @@ describe('delivery acknowledgment (#10)', () => {
     expect(anti).toContain('const lastViewingSyncRef');
     expect(anti).toContain('roster.${user.uid}.viewingResourceId');
     expect(anti).toContain('roster.${user.uid}.viewingAt');
-    expect(anti).toContain('if (lastViewingSyncRef.current === viewingId) return;');
+    expect(anti).toContain('if (lastViewingSyncRef.current === viewingKey) return;');
   });
 
   it('dock Students section shows delivery status with per-student push/clear', () => {
     expect(anti).toContain("t('live_dock.group_students')");
-    expect(anti).toContain('const targetFor = (entry) => entry.resourceId');
+    expect(anti).toContain('const targetFor = (entry) => resolveLiveStudentResourceTarget({');
     expect(anti).toContain("t('live_dock.status_on')");
     expect(anti).toContain('handleSetStudentResource(uid, null)');
     expect(anti).toContain('handleSetStudentResource(uid, generatedContent.id)');

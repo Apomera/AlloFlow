@@ -78,7 +78,63 @@ describe('Cell microdissection experience', () => {
     expect(source).toContain("'SECTION PLANE \\u2022 DEPTH '");
     expect(source).toContain("'MICRODISSECTION PROTOCOL'");
     expect(source).toContain("sel === 'cellWall' ? { x: 0.975");
-    expect(source).toContain('function interiorGeometry(W, H, type)');
+    expect(source).toContain('function interiorGeometry(W, H, type, zoom)');
+    expect(source).toContain('data-cell-comparison');
+    expect(source).toContain('data-cell-guided-pathway');
+    expect(source).toContain('GUIDED TRACE');
+    expect(source).toContain('guideKeys');
+    expect(source).toContain('reduced ? 4 : 14');
+    expect(source).toContain('EVIDENCE SAMPLE');
+    expect(source).toContain('aria-keyshortcuts');
+    expect(source).toContain('ArrowRight ArrowLeft Enter Space');
+    expect(source).toContain('interiorHighContrast');
+    expect(source).toContain('HIGH CONTRAST');
+    expect(source).toContain('data-cell-zoom-control');
+    expect(source).toContain('DETAIL ZOOM');
+    expect(source).toContain('data-cell-specialization-control');
+    expect(source).toContain('data-cell-prediction-check');
+    expect(source).toContain('data-cell-label-toggle');
+    expect(source).toContain('data-cell-structure-directory');
+    expect(source).toContain('data-cell-reset-view');
+    expect(source).toContain('data-cell-depth-toggle');
+    expect(source).toContain('data-cell-depth-control');
+    expect(source).toContain('data-cell-structure-transcript');
+    expect(source).toContain('Text transcript of cell diagram');
+    expect(source).toContain('data-cell-microdissection-link');
+    expect(source).toContain('data-cell-optical-handoff');
+    expect(source).toContain('moveToMicrodissection');
+    expect(source).toContain('returnToInterior');
+    expect(source).toContain('data-cell-review-filter');
+    expect(source).toContain('data-cell-mastery-controls');
+    expect(source).toContain('Mark mastered');
+    expect(source).toContain('interiorMastered');
+    expect(source).toContain('CELL_PROGRESS_SCHEMA_VERSION');
+    expect(source).toContain('normalizeCellProgress');
+    expect(source).toContain('data-cell-progress-portability');
+    expect(source).toContain('data-cell-progress-overview');
+    expect(source).toContain('Portfolio overview');
+    expect(source).toContain('Progress across cell types');
+    expect(source).toContain('function switchInteriorType(nextType)');
+    expect(source).toContain('Export progress');
+    expect(source).toContain('Import progress');
+    expect(source).toContain('Reset all progress');
+    expect(source).toContain('data-cell-adaptive-quiz');
+    expect(source).toContain('data-cell-learning-progress');
+    expect(source).toContain('Study progress');
+    expect(source).toContain('Open review queue');
+    expect(source).toContain('aria-valuenow');
+    expect(source).toContain('interiorAdaptiveQuiz');
+    expect(source).toContain('Review-first retrieval');
+    expect(source).toContain('answerAdaptiveQuiz');
+    expect(source).toContain('OPTICAL SECTION');
+    expect(source).toContain('Search structure directory');
+    expect(source).toContain('Unexplored only');
+    expect(source).toContain('resetInteriorView');
+    expect(source).toContain('Mechanism:');
+    expect(source).toContain('STUDY LABELS');
+    expect(source).toContain('Predict before reveal');
+    expect(source).toContain('SPECIALIZATION');
+    expect(source).toContain('Compare cell architectures');
     expect(source).toContain('function traceInteriorBoundary');
     expect(source).toContain('cv.width, cv.height');
     expect(source).toContain('A bacterial flagellum extends beyond the cell wall');
@@ -194,6 +250,104 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
     const result = draw(context, 640, 480, { modality: 'CT', region: 'forged', plane: 'forged', slice: 0, windowWidth: 400, windowLevel: 0 });
     expect(result).toMatchObject({ modality: 'CT', region: 'chest', plane: 'axial', slice: 0, windowWidth: 400, windowLevel: 0 });
     expect(result.labelCount).toBeGreaterThan(3);
+    const focused = draw(context, 640, 480, { modality: 'CT', region: 'chest', plane: 'axial', slice: 50, focusTerms: ['heart'] });
+    expect(focused.focusLabelCount).toBeGreaterThan(0);
+  });
+
+  it.each(ANATOMY_PATHS)('renders a synchronized BodyScope spatial navigator from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const html = renderTool('anatomy', { anatomy: {
+      _activeTab: 'imaging',
+      imaging: { modality: 'CT', region: 'abdomen', plane: 'sagittal', slice: 82 },
+    } });
+    expect(html).toContain('data-anatomy-bodyscope="true"');
+    expect(html).toContain('data-bodyscope-region="abdomen"');
+    expect(html).toContain('data-bodyscope-plane="sagittal"');
+    expect(html).toContain('data-bodyscope-position="Left-sided slice band"');
+    expect(html).toContain('data-bodyscope-locator="true"');
+    expect(html).toContain('data-bodyscope-plane-mark="sagittal"');
+    expect(html).toContain('BodyScope');
+    expect(html).toContain('Many bowel loops lie anterior to the kidneys');
+    expect(html).toContain('Which paired organs lie posterior to most bowel loops?');
+    expect(html).toContain('data-bodyscope-choice="kidneys"');
+    expect(html).toContain('data-bodyscope-depth-focus="field"');
+    expect(html).toContain('data-bodyscope-depth="boundary"');
+    expect(html).toContain('data-bodyscope-depth="anchor"');
+    expect(html).toContain('Depth focus: Bowel and liver');
+    expect(html).toContain('data-bodyscope-depth-ladder="field"');
+    expect(html).toContain('data-depth-node="Abdominal wall"');
+    expect(html).toMatch(/data-depth-node="Bowel and liver"[^>]*data-depth-focus="true"|data-depth-focus="true"[^>]*data-depth-node="Bowel and liver"/);
+    expect(html).toContain('Posterior abdominal wall');
+    expect(html).toContain('Depth sequence from superficial to deep');
+  });
+
+  it('normalizes BodyScope planes and returns precise orientation guidance', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const getProfile = window.__alloAnatomyImagingPure?.getBodyScopeSpatialProfile;
+    expect(typeof getProfile).toBe('function');
+    const fallback = getProfile('forged', 'forged', 0);
+    expect(fallback).toMatchObject({
+      region: 'chest',
+      plane: 'axial',
+      slice: 0,
+      positionLabel: 'Inferior slice band',
+      regionLabel: 'Thorax and mediastinum',
+    });
+    expect(fallback.orientation).toContain('patient right appears on the image’s left');
+    expect(fallback.relations).toHaveLength(3);
+    expect(fallback.depthLayers.map((layer) => layer.id)).toEqual(['boundary', 'field', 'anchor']);
+    expect(fallback.depthLayers.find((layer) => layer.id === 'anchor')?.targets).toEqual(['heart']);
+    expect(fallback.depthLayers.find((layer) => layer.id === 'anchor')?.path).toEqual(['Sternum', 'Heart', 'Esophagus and spine']);
+    expect(fallback.depthLayers.find((layer) => layer.id === 'anchor')?.focusIndex).toBe(1);
+    const posteriorHead = getProfile('head', 'coronal', 100);
+    expect(posteriorHead.positionLabel).toBe('Posterior slice band');
+    expect(posteriorHead.challenge.options.find((option) => option.correct)?.id).toBe('cerebellum');
+  });
+
+  it('renders validated BodyScope feedback and rejects forged saved answers', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const correct = renderTool('anatomy', { anatomy: {
+      _activeTab: 'imaging',
+      imaging: {
+        region: 'abdomen', plane: 'sagittal', slice: 50,
+        bodyScopeAnswers: { 'abdomen-sagittal': 'kidneys' },
+      },
+    } });
+    const forged = renderTool('anatomy', { anatomy: {
+      _activeTab: 'imaging',
+      imaging: {
+        region: 'abdomen', plane: 'sagittal', slice: 50,
+        bodyScopeAnswers: { 'abdomen-sagittal': 'forged-answer' },
+      },
+    } });
+    expect(correct).toContain('data-selected="true"');
+    expect(correct).toContain('data-bodyscope-result="correct"');
+    expect(correct).toContain('Spatial relationship matched.');
+    expect(correct).toContain('The kidneys are retroperitoneal');
+    expect(forged).not.toContain('data-bodyscope-result=');
+  });
+
+  it('emphasizes the selected BodyScope depth and safely falls back from forged state', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const anchor = renderTool('anatomy', { anatomy: {
+      _activeTab: 'imaging',
+      imaging: { region: 'abdomen', plane: 'axial', slice: 50, bodyScopeDepth: 'anchor' },
+    } });
+    const forged = renderTool('anatomy', { anatomy: {
+      _activeTab: 'imaging',
+      imaging: { region: 'head', plane: 'axial', slice: 50, bodyScopeDepth: 'forged-depth' },
+    } });
+    expect(anchor).toContain('data-bodyscope-depth-focus="anchor"');
+    expect(anchor).toMatch(/data-bodyscope-depth="anchor"[^>]*aria-pressed="true"|aria-pressed="true"[^>]*data-bodyscope-depth="anchor"/);
+    expect(anchor).toContain('Depth focus: Kidneys');
+    expect(anchor).toContain('Highlighted labels on the teaching slice: Kidneys.');
+    expect(anchor).toContain('data-bodyscope-depth-ladder="anchor"');
+    expect(anchor).toContain('data-depth-node="Bowel and peritoneum"');
+    expect(anchor).toMatch(/data-depth-node="Kidneys"[^>]*data-depth-focus="true"|data-depth-focus="true"[^>]*data-depth-node="Kidneys"/);
+    expect(anchor).toContain('Posterior wall and spine');
+    expect(forged).toContain('data-bodyscope-depth-focus="field"');
+    expect(forged).toContain('Depth focus: Brain');
+    expect(forged).not.toContain('data-bodyscope-depth-focus="forged-depth"');
   });
 
   it('supports licensed local GLB files with a resilient procedural fallback', () => {

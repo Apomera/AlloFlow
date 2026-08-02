@@ -217,7 +217,7 @@ function registerPilotTools(server: McpServer): void {
     {
       title: "Get a privacy-safe remediation report",
       description:
-        "Return an integrity-checked, owner-bound quality summary for a completed job. Unknown and document-derived fields are stripped before the report enters the MCP transcript. Independent PDF/UA validation is reported honestly as not run.",
+        "Return an integrity-checked, owner-bound quality summary for a completed job. Unknown and document-derived fields are stripped before the report enters the MCP transcript. Bounded veraPDF PDF/UA-1 evidence is included when available; unavailable is reported explicitly and no conformance certificate is implied.",
       inputSchema: z.object({
         jobId: z.string().regex(/^job_[0-9a-f]{32}$/u),
       }),

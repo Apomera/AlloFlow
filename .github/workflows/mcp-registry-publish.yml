@@ -1,0 +1,106 @@
+name: mcp-registry-publish
+
+# Registry versions are immutable and currently cannot be unpublished. This workflow is
+# intentionally manual and requires an exact confirmation phrase.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing verified MCPB release tag, for example mcpb-v0.3.0'
+        required: true
+        type: string
+      confirmation:
+        description: 'Type PUBLISH io.github.apomera/alloflow-remediation'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish immutable Registry metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      CONFIRMATION: ${{ inputs.confirmation }}
+      MCP_NAME: io.github.apomera/alloflow-remediation
+      PUBLISHER_VERSION: v1.7.9
+      PUBLISHER_SHA256: ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac
+    steps:
+      - name: Require explicit immutable-publication confirmation
+        shell: bash
+        run: |
+          if [ "$CONFIRMATION" != "PUBLISH $MCP_NAME" ]; then
+            echo "::error::Confirmation must be exactly: PUBLISH $MCP_NAME"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Download the existing verified GitHub release
+        shell: bash
+        run: |
+          mkdir release-assets
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir release-assets --pattern alloflow-remediation.mcpb --pattern SHA256SUMS.txt --pattern server.json
+      - name: Verify checksum and GitHub build provenance
+        shell: bash
+        run: |
+          cd release-assets
+          sha256sum --check SHA256SUMS.txt
+          gh attestation verify alloflow-remediation.mcpb --repo "$GITHUB_REPOSITORY"
+
+      - name: Regenerate registry metadata and require byte-for-byte release parity
+        shell: bash
+        run: |
+          node desktop/mcp/build_registry_metadata.cjs --artifact release-assets/alloflow-remediation.mcpb --tag "$RELEASE_TAG" --output release-assets/server.generated.json
+          cmp release-assets/server.json release-assets/server.generated.json
+
+      - name: Install checksum-pinned official MCP publisher
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location "https://github.com/modelcontextprotocol/registry/releases/download/$PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz" --output mcp-publisher.tgz
+          echo "$PUBLISHER_SHA256  mcp-publisher.tgz" | sha256sum --check
+          tar -xzf mcp-publisher.tgz mcp-publisher
+          ./mcp-publisher validate release-assets/server.json
+
+      - name: Check whether this immutable version already exists
+        id: existing
+        shell: bash
+        run: |
+          version="$(node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version")"
+          curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-before.json
+          if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-before.json >/dev/null; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$MCP_NAME@$version is already present; publication is idempotently complete."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Authenticate with Registry using GitHub OIDC
+        if: steps.existing.outputs.published != 'true'
+        run: ./mcp-publisher login github-oidc
+      - name: Publish MCPB metadata
+        if: steps.existing.outputs.published != 'true'
+        run: ./mcp-publisher publish release-assets/server.json
+      - name: Confirm discoverability
+        shell: bash
+        run: |
+          version="$(node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version")"
+          for attempt in 1 2 3 4 5 6; do
+            curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-after.json
+            if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-after.json >/dev/null; then
+              echo "Published and discoverable: $MCP_NAME@$version"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Registry publication did not become discoverable."
+          exit 1

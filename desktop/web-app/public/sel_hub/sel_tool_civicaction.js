@@ -937,7 +937,7 @@ window.SelHub = window.SelHub || {
       // ═══════════════════════════════════════
 
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
@@ -968,8 +968,8 @@ window.SelHub = window.SelHub || {
           TABS.map(function(t) {
             return h('button', { 'aria-label': t.label,
               key: t.id,
-              role: 'tab', 'aria-selected': tab === t.id,
-              onClick: function() { upd('tab', t.id); },
+              role: 'tab', 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1,
+              onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
               className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
                 (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-600/60 hover:text-teal-700')
             }, t.label);
@@ -1276,14 +1276,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ ACTION PLAN BUILDER (NEW) ═══
-        tab === 'planner' && h('div', { className: 'space-y-4' },
+        tab === 'planner' && h('div', { role: 'region', 'aria-labelledby': 'cv-planner-title', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdd Civic Action Plan Builder'),
+            h('h3', { id: 'cv-planner-title', className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdd Civic Action Plan Builder'),
             h('p', { className: 'text-sm text-slate-600' }, 'Build a step-by-step plan to create real change in your community.')
           ),
 
           // Progress bar
-          h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+          h('div', { role: 'progressbar', 'aria-label': 'Civic action plan progress', 'aria-valuemin': 1, 'aria-valuemax': PLANNER_STEPS.length, 'aria-valuenow': plannerStep + 1, 'aria-valuetext': 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
             h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((plannerStep + 1) / PLANNER_STEPS.length * 100) + '%' } })
           ),
           h('div', { className: 'flex justify-between text-[10px] text-slate-600 font-bold' },
@@ -1292,8 +1292,8 @@ window.SelHub = window.SelHub || {
           ),
 
           // Current step
-          h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('h4', { id: 'cv-planner-step-label', className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
+          h('div', { role: 'region', 'aria-labelledby': 'cv-planner-step-label', className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+            h('h4', { id: 'cv-planner-step-label', 'aria-live': 'polite', className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
             h('p', { id: 'cv-planner-step-prompt', className: 'text-xs text-slate-600' }, PLANNER_STEPS[plannerStep].prompt),
             h('textarea', {
               'aria-labelledby': 'cv-planner-step-label',
@@ -1313,14 +1313,15 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd('plannerStep', plannerStep - 1); },
                 className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
               }, '\u2190 Previous') : h('div'),
-              plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 
-                onClick: function() { upd('plannerStep', plannerStep + 1); ctx.awardXP(5); },
+              plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 'aria-label': 'Next civic action plan step',
+                onClick: function() { upd('plannerStep', plannerStep + 1); if (announceToSR) announceToSR('Step ' + (plannerStep + 2) + ' of ' + PLANNER_STEPS.length); ctx.awardXP(5); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
-              }, 'Next \u2192') : h('button', { 'aria-label': 'Next',
+              }, 'Next \u2192') : h('button', { 'aria-label': 'Complete civic action plan',
                 onClick: function() {
                   awardBadge('action_planner');
                   ctx.awardXP(20);
                   addToast('Your civic action plan is complete! You are a changemaker.', 'success');
+                  if (announceToSR) announceToSR('Civic action plan complete');
                   ctx.celebrate();
                 },
                 className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
@@ -2185,9 +2186,9 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ SERVICE LEARNING PROJECT PLANNER (NEW) ═══
-        tab === 'service' && h('div', { className: 'space-y-4' },
+        tab === 'service' && h('div', { role: 'region', 'aria-labelledby': 'cv-service-title', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
+            h('h3', { id: 'cv-service-title', className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
             h('p', { className: 'text-sm text-slate-600' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
           ),
 
@@ -2229,12 +2230,13 @@ window.SelHub = window.SelHub || {
               ),
 
               // Phase progress
-              h('div', { className: 'flex gap-1' },
+              h('div', { role: 'progressbar', 'aria-label': 'Service learning phase progress', 'aria-valuemin': 1, 'aria-valuemax': SERVICE_PHASES.length, 'aria-valuenow': servicePhase + 1, 'aria-valuetext': 'Phase ' + (servicePhase + 1) + ' of ' + SERVICE_PHASES.length, className: 'flex gap-1' },
                 SERVICE_PHASES.map(function(phase, pi) {
                   var isActive = pi === servicePhase;
                   var isDone = pi < servicePhase;
                   return h('div', {
                     key: pi,
+                    'aria-current': isActive ? 'step' : undefined,
                     className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
                       (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-300')
                   }, phase.label);
@@ -2242,8 +2244,8 @@ window.SelHub = window.SelHub || {
               ),
 
               // Current phase
-              h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-                h('h4', { id: 'cv-service-phase-label', className: 'text-sm font-bold text-teal-700' }, currentPhase.label + ': ' + currentPhase.desc),
+              h('div', { role: 'region', 'aria-labelledby': 'cv-service-phase-label', className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+                h('h4', { id: 'cv-service-phase-label', 'aria-live': 'polite', className: 'text-sm font-bold text-teal-700' }, currentPhase.label + ': ' + currentPhase.desc),
                 h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
                   h('p', { id: 'cv-service-task', className: 'text-xs text-teal-800 leading-relaxed' }, '\ud83d\udccb Task: ' + currentStep.task)
                 ),
@@ -2286,15 +2288,16 @@ window.SelHub = window.SelHub || {
                     onClick: function() { upd('servicePhase', servicePhase - 1); },
                     className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                   }, '\u2190 Previous Phase') : h('div'),
-                  servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 
-                    onClick: function() { upd('servicePhase', servicePhase + 1); ctx.awardXP(5); },
+                  servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 'aria-label': 'Next service-learning phase',
+                    onClick: function() { upd('servicePhase', servicePhase + 1); if (announceToSR) announceToSR('Phase ' + (servicePhase + 2) + ' of ' + SERVICE_PHASES.length); ctx.awardXP(5); },
                     className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
-                  }, 'Next Phase \u2192') : h('button', { 'aria-label': 'Next Phase',
+                  }, 'Next Phase \u2192') : h('button', { 'aria-label': 'Complete service-learning project plan',
                     onClick: function() {
                       upd('serviceDone', true);
                       awardBadge('service_leader');
                       ctx.awardXP(25);
                       addToast('Service project plan complete! You logged ' + serviceHours.toFixed(1) + ' hours. Amazing work!', 'success');
+                      if (announceToSR) announceToSR('Service-learning project plan complete');
                       ctx.celebrate();
                     },
                     className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'

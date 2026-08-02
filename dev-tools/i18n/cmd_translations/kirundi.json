@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio yafunguwe.",
   "cmd.open_video_studio_hint": "Fata amajwi, shiramwo insiguro maze uhindure amasanamu y'ubuyobozi",
   "palette.ctx.videoStudio": "Hano — Video Studio",
-  "palette.close": "Ugara urutonde rw'amategeko"
+  "palette.close": "Ugara urutonde rw'amategeko",
+  "cmd.apply_lesson_template": "Tangura ku kigereranyo kibitswe",
+  "cmd.apply_lesson_template_done": "Bitanguye kuri ",
+  "cmd.apply_lesson_template_hint": "Bitangura umugambi mushasha hakoreshejwe kimwe mu bigereranyo wabikiye",
+  "cmd.apply_lesson_template_missing": "Sinabonye ikigereranyo citwa ",
+  "cmd.apply_lesson_template_which": "Ni ikigereranyo ikihe?",
+  "cmd.rebuild_lesson_step": "Subira wubake intambwe imwe y’umugambi",
+  "cmd.rebuild_lesson_step_done": "Subira wubaka intambwe ",
+  "cmd.rebuild_lesson_step_hint": "Subira urememwo umutungo umwe — vuga inomero y’intambwe",
+  "cmd.rebuild_lesson_step_missing": "Sinabonye iyo ntambwe mu mugambi.",
+  "cmd.rebuild_lesson_step_none": "umugambi nturagira intambwe.",
+  "cmd.rebuild_lesson_step_which": "Ni intambwe iyihe?",
+  "cmd.run_lesson_blueprint": "Remako umugambi w’isomo",
+  "cmd.run_lesson_blueprint_done": "Umugambi uraremwa — ushobora gukurikirana intambwe yose ku karata.",
+  "cmd.run_lesson_blueprint_hint": "Rema imitungo yose iri mu mugambi w’ubu",
+  "cmd.cancelled": "Guhagarika vyasabwe. Igikorwa kiriho kizohagarara igihe uwugitanga azogishigikira."
 }

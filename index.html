@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlloFlow | Open-Source AI Classroom Assistant</title>
     <meta name="description"
-        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. July 2026 audit: 122 STEM plugin files / 123 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
+        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. August 2026 inventory: 130 STEM plugin files / 131 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/">
     <meta property="og:type" content="website">
@@ -14,7 +14,7 @@
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
     <meta property="og:description"
-        content="Free, open-source classroom AI with 122 STEM plugin files / 123 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
+        content="Free, open-source classroom AI with 130 STEM plugin files / 131 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
@@ -41,7 +41,7 @@
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow
                 <span
-                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.1</span>
+                    style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px"><span data-release-version>v1.2</span></span>
             </a>
             <div class="nav-links">
                 <a href="index.html" aria-current="page">Home</a>
@@ -142,7 +142,7 @@
                     <div class="stat-label">Documented Features</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="123">0</div>
+                    <div class="stat-number" data-target="131">0</div>
                     <div class="stat-label">Registered STEM IDs</div>
                 </div>
                 <div class="stat-item">
@@ -1078,9 +1078,7 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #34d399;">
                                         <div class="info-title">⚡ Offline: Interactive Play</div>
-                                        <div class="info-desc">Once loaded, all STEM Lab tools, Interactive Games, Word
-                                            Sounds, and Immersive Reader execute 100% locally in the browser with zero
-                                            server round-trips.</div>
+                                        <div class="info-desc">After assets are loaded, many STEM, game, Word Sounds, and Immersive Reader interactions can run locally in the browser. AI generation, cloud providers, and hosted-session features remain connection-dependent.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #059669;">
                                         <div class="info-title">📥 The Bridge: HTML Bundles</div>
@@ -1092,14 +1090,14 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">0</span>
-                                            <span class="stat-label">Server round-trips required</span>
+                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">0*</span>
+                                            <span class="stat-label">Server round-trips for offline core play</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">100%</span>
-                                            <span class="stat-label">Interactive parity offline</span>
+                                                style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text;">Core</span>
+                                            <span class="stat-label">Core interactions offline</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1671,11 +1669,7 @@
                                         <span class="stat-number" style="color:#2dd4bf;">0</span>
                                         <span class="stat-label">student PII required by default</span>
                                     </div>
-                                    <p>Student data should never be collected, sold, or stored on corporate servers.
-                                        AlloFlow reduces data exposure by keeping ordinary work in the browser,
-                                        downloaded files, Desktop runtime, or school-controlled infrastructure whenever
-                                        those paths are selected. Cloud AI and hosted live-session paths remain
-                                        deployment-dependent.
+                                    <p>AlloFlow is designed to minimize student data collection and keep ordinary work in the browser, downloaded files, Desktop runtime, or school-controlled infrastructure when those paths are selected. Cloud AI, hosted live-session paths, provider terms, and retention settings remain deployment-dependent; districts should review their contracts and configuration.
                                     </p>
 
                                     <div class="info-box" style="border-left: 4px solid #14b8a6;">
@@ -1692,18 +1686,15 @@
                                             contracts, retention policy, and actual classroom use.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #0d9488;">
-                                        <div class="info-title">🔐 Zero-Knowledge Architecture</div>
-                                        <div class="info-desc">Even AlloFlow's developers cannot access student
-                                            data—because there is no server to query. The entire platform runs
-                                            client-side, making unauthorized data collection architecturally
-                                            impossible.</div>
+                                        <div class="info-title">🔐 Minimized Data Exposure</div>
+                                        <div class="info-desc">Local-first paths can keep work on teacher devices or school-controlled infrastructure. Cloud and hosted paths may involve provider or server processing, so districts should review deployment boundaries, contracts, and retention settings.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
                                             style="border-color: rgba(20, 184, 166, 0.3); background: rgba(20, 184, 166, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #14b8a6, #2dd4bf); -webkit-background-clip: text; background-clip: text;">0</span>
-                                            <span class="stat-label">Vendor agreements needed</span>
+                                                style="background: linear-gradient(135deg, #14b8a6, #2dd4bf); -webkit-background-clip: text; background-clip: text;">Varies</span>
+                                            <span class="stat-label">Provider / hosting agreements</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(45, 212, 191, 0.3); background: rgba(45, 212, 191, 0.08);">
@@ -2077,7 +2068,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">116 STEM IDs → Browser Tools → Desktop-Ready
+                                            font-family="Inter">131 STEM IDs → Browser Tools → Desktop-Ready
                                             Native</text>
                                     </svg>
                                 </div>
@@ -2277,15 +2268,14 @@
                                         <span class="stat-label">study setup with automated data collection</span>
                                     </div>
                                     <p>AlloFlow includes a complete <strong>clinical research infrastructure</strong>
-                                        built directly into the platform — no external tools needed.
+                                        built directly into the platform for core study setup and collection; external analysis tools remain optional.
                                         Design a study, collect data, and export CSV files for analysis.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #4f46e5;">
                                         <div class="info-title">🔬 Research Mode</div>
                                         <div class="info-desc">Name your study, set an IRB number, and configure
                                             auto-survey frequency (every 3/5/10/15 sessions). Research Mode automatically
-                                            logs every session — student, activity, duration, and date — with zero
-                                            teacher effort.</div>
+                                            logs configured sessions automatically after setup.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #818cf8;">
                                         <div class="info-title">📊 Embedded Surveys & CBM</div>
@@ -2564,7 +2554,7 @@
                                         <div class="info-title">🏰 Dynamic Room Generation</div>
                                         <div class="info-desc">Gemini AI generates themed rooms, NPC dialogue,
                                             obstacle logic, and boss encounters from any standard or
-                                            reading passage — with zero teacher prep time.</div>
+                                            reading passage — with reduced setup time after the lesson content is configured.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -2576,8 +2566,8 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #7c3aed, #a78bfa); -webkit-background-clip: text; background-clip: text;">0</span>
-                                            <span class="stat-label">Prep time for teachers</span>
+                                                style="background: linear-gradient(135deg, #7c3aed, #a78bfa); -webkit-background-clip: text; background-clip: text;">Reduced</span>
+                                            <span class="stat-label">Manual prep after content setup</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2817,7 +2807,7 @@
                                         <strong>Review Games, Bingo, Memory Match, Crossword, Word Search,
                                             Escape Room, Team Showdown, and Concept Sort</strong> — all from the same
                                         academic
-                                        content, with zero teacher setup.
+                                        content, with minimal setup after the content is selected.
                                     </p>
 
                                     <div class="info-box" style="border-left: 4px solid #ea580c;">
@@ -2920,7 +2910,7 @@
                                             stroke-dasharray="3 3" opacity="0.4" />
 
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">One Lesson → 8+ Game Types → Zero Setup → Instant
+                                            font-family="Inter">One Lesson → 8+ Game Types → Guided Setup → Instant
                                             Play</text>
                                     </svg>
                                 </div>
@@ -3358,7 +3348,7 @@
                                         Immersive Reader</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(96,165,250,0.08)); border: 1px solid rgba(37,99,235,0.3);">
-                                        <span class="stat-number" style="color:#60a5fa;">WCAG 2.1</span>
+                                        <span class="stat-number" style="color:#60a5fa;">WCAG 2.2</span>
                                         <span class="stat-label">AA-oriented accessibility evidence</span>
                                     </div>
                                     <p>Built-in <strong>Immersive Reader</strong> with Dyslexia-friendly fonts,
@@ -3522,9 +3512,7 @@
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #2dd4bf;">
                                         <div class="info-title">📤 Canvas QTI Export</div>
-                                        <div class="info-desc">One-click export to QTI 2.1 format imports directly
-                                            into Canvas, Schoology, or any LMS with zero reformatting.
-                                            Question banks build automatically over time.</div>
+                                        <div class="info-desc">Export as QTI 2.1 for Canvas, Schoology, or other compatible LMS workflows; verify import settings. Question banks build automatically over time.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #5eead4;">
                                         <div class="info-title">✅ Instant Grading & Feedback</div>
@@ -3808,7 +3796,7 @@
                                     <p>Built by a public school educator to dismantle the "Differentiation Tax"—the
                                         unacceptable reality
                                         that teachers spend their own money on accommodations.
-                                        AlloFlow is <strong>MIT-licensed</strong> and will never charge educators.</p>
+                                        AlloFlow is licensed under <strong>AGPL v3</strong> and currently has no AlloFlow software license fee. Hosting, hardware, support, and provider usage can still carry costs.</p>
 
                                     <div class="info-box" style="border-left: 4px solid #6366f1;">
                                         <div class="info-title">Fully Open Infrastructure</div>
@@ -3819,10 +3807,8 @@
                                             vendor lock-in.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #818cf8;">
-                                        <div class="info-title">No-Profit, Pro-Teacher Model</div>
-                                        <div class="info-desc">Every feature—leveled text, adventure mode, quizzes,
-                                            decodables—ships free. No premium tier, no "contact sales," no district
-                                            budget line required.</div>
+                                        <div class="info-title">No AlloFlow License Fee</div>
+                                        <div class="info-desc">Core software is available under AGPL v3 with no AlloFlow license fee; districts still budget for deployment, support, hosting, hardware, and provider usage when applicable.</div>
                                     </div>
                                     <div class="info-box" style="border-left: 4px solid #a5b4fc;">
                                         <div class="info-title">🤝 Community Contributions Welcome</div>
@@ -3834,14 +3820,14 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text; background-clip: text;">MIT</span>
+                                                style="background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text; background-clip: text;">AGPL</span>
                                             <span class="stat-label">AGPL v3 licensed</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(129, 140, 248, 0.3); background: rgba(129, 140, 248, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text; background-clip: text;">$0</span>
-                                            <span class="stat-label">Cost to educators</span>
+                                            <span class="stat-label">AlloFlow software license fee</span>
                                         </div>
                                     </div>
                                 </div>
@@ -3938,18 +3924,18 @@
                                             text-anchor="middle">Devs</text>
                                         <path d="M 107 198 L 165 170" class="path-solid" stroke="#475569" />
 
-                                        <!-- MIT License Badge -->
+                                        <!-- AGPL License Badge -->
                                         <circle cx="50" cy="35" r="22" fill="#1e1b4b" stroke="#818cf8"
                                             stroke-width="1.5" />
                                         <text x="50" y="32" font-size="10" fill="#a5b4fc" text-anchor="middle"
-                                            font-weight="bold">MIT</text>
+                                            font-weight="bold">AGPL</text>
                                         <text x="50" y="46" font-size="7" fill="#818cf8" text-anchor="middle"
                                             font-weight="bold">License</text>
 
                                         <!-- Bottom label -->
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">Open Source → Fork Freely → Community Driven →
-                                            Forever Free</text>
+                                            No License Fee</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3991,7 +3977,7 @@
                                         <div class="info-desc">Teachers set topic, tone (Informative, Narrative,
                                             Persuasive, Humorous), grade level, standards alignment,
                                             vocabulary targets, and word count — the AI handles the rest
-                                            with zero prompt engineering required.</div>
+                                            with no prompt engineering required for presets.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -4473,7 +4459,7 @@
                                         <div class="info-title">🔌 Pluggable Backends</div>
                                         <div class="info-desc">Choose your AI provider: Gemini, Ollama, OpenAI,
                                             Claude, or any OpenAI-compatible endpoint. Switch backends in one click —
-                                            zero code changes required.</div>
+                                            no code changes for supported provider configurations.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -4862,7 +4848,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#10b981">
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">122 STEM plugin files / 123 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
+                        <p style="font-size:0.85rem;color:#475569">130 STEM plugin files / 131 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
                         </p>
                     </div>
                     <div class="card">
@@ -4897,8 +4883,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0d9488">
                             <i data-lucide="clipboard-check" style="width:18px;height:18px"></i> Exit Tickets
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">AI-generated DOK-leveled quizzes with instant
-                            grading and one-click Canvas QTI export — zero paper, zero data entry.
+                        <p style="font-size:0.85rem;color:#475569">AI-generated DOK-leveled quizzes with instant grading and one-click Canvas QTI export — a paperless workflow with less manual data entry.
                         </p>
                     </div>
                     <div class="card">
@@ -4936,6 +4921,34 @@
                         <p style="font-size:0.85rem;color:#475569">Built-in Research Mode with study setup (IRB tracking),
                             auto-triggered student/teacher/parent surveys, CBM score import, fidelity logging,
                             math and reading fluency probes, and one-click CSV research data export.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#7c3aed">
+                            <i data-lucide="file-image" style="width:18px;height:18px"></i> AlloStudio
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569">Create born-accessible visual documents with real text, reading-order controls, alt/decorative image states, and transparent process history.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#db2777">
+                            <i data-lucide="film" style="width:18px;height:18px"></i> Cinematic Studio
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569">Turn source documents into grounded storyboards and captioned, translated videos rendered in the browser.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0f766e">
+                            <i data-lucide="music-2" style="width:18px;height:18px"></i> Open Groove Studio
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569">Compose classroom-safe beats and music in a browser groovebox with synthesis, samples, and license-aware workflows.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#2563eb">
+                            <i data-lucide="graduation-cap" style="width:18px;height:18px"></i> Professional Development
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569">Publish and complete community-authored PD modules with AI co-authoring, progress tracking, and certificates.</p>
                     </div>
                 </div>
                 <div style="text-align:center;margin-top:36px">
@@ -5000,8 +5013,7 @@
             <div class="section-inner">
                 <div class="section-header">
                     <h2>Simple, Transparent Access</h2>
-                    <p>AlloFlow itself is <strong>100% free and open-source</strong>. You only need a Google account to
-                        power the AI.</p>
+                    <p>AlloFlow has no software license fee and is open source. The web Gemini Canvas path may require an eligible Google account; Desktop and local-provider paths can run without one.</p>
                 </div>
                 <div class="grid-3">
                     <div class="card" style="border-width:2px">
@@ -5084,9 +5096,7 @@
                         style="font-weight:700;color:#991b1b;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">
                         <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
                     </h4>
-                    <p style="font-size:0.85rem;color:#7f1d1d">Student progress, XP, quiz scores, and session data
-                        are tracked — but <strong>stored locally on the device</strong>, never uploaded to external
-                        servers. Teachers can export data as JSON files for record-keeping. The Student Portal uses
+                    <p style="font-size:0.85rem;color:#7f1d1d">Student progress, XP, quiz scores, and session data can stay on-device in local-first paths. Cloud, hosted-session, and provider-backed paths vary by deployment. Teachers can export data as JSON files for record-keeping. The Student Portal uses
                         generated codenames instead of real names, keeping learner identities private by default.
                     </p>
                 </div>

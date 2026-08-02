@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "เปิด Video Studio แล้ว",
   "cmd.open_video_studio_hint": "บันทึก ใส่คำบรรยาย และตัดต่อวิดีโอสาธิต",
   "palette.ctx.videoStudio": "ที่นี่ — Video Studio",
-  "palette.close": "ปิดแผงคำสั่ง"
+  "palette.close": "ปิดแผงคำสั่ง",
+  "cmd.apply_lesson_template": "เริ่มจากเทมเพลตที่บันทึกไว้",
+  "cmd.apply_lesson_template_done": "เริ่มจาก ",
+  "cmd.apply_lesson_template_hint": "เริ่มแผนใหม่จากเทมเพลตที่บันทึกไว้ของคุณ",
+  "cmd.apply_lesson_template_missing": "ไม่พบเทมเพลตชื่อ ",
+  "cmd.apply_lesson_template_which": "เทมเพลตใด",
+  "cmd.rebuild_lesson_step": "สร้างขั้นตอนหนึ่งของแผนใหม่",
+  "cmd.rebuild_lesson_step_done": "กำลังสร้างขั้นตอนใหม่: ",
+  "cmd.rebuild_lesson_step_hint": "สร้างทรัพยากรเดียวอีกครั้ง — บอกหมายเลขขั้นตอน",
+  "cmd.rebuild_lesson_step_missing": "ไม่พบขั้นตอนนั้นในแผน",
+  "cmd.rebuild_lesson_step_none": "แผนยังไม่มีขั้นตอน",
+  "cmd.rebuild_lesson_step_which": "ขั้นตอนใด",
+  "cmd.run_lesson_blueprint": "สร้างแผนการสอน",
+  "cmd.run_lesson_blueprint_done": "กำลังสร้างแผน — คุณดูแต่ละขั้นตอนได้บนการ์ด",
+  "cmd.run_lesson_blueprint_hint": "สร้างทรัพยากรทั้งหมดในแผนปัจจุบัน",
+  "cmd.cancelled": "มีการขอยกเลิกแล้ว การดำเนินการปัจจุบันจะหยุดเมื่อผู้ให้บริการรองรับการยกเลิก"
 }

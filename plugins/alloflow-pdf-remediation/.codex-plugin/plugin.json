@@ -1,7 +1,7 @@
 {
   "name": "alloflow-pdf-remediation",
   "version": "0.1.0",
-  "description": "Rebuild attached PDFs for accessibility inside the active file sandbox.",
+  "description": "Rebuild attached PDFs for accessibility in the active file sandbox with no paid Worker, institution account, or separate API key.",
   "author": {
     "name": "AlloFlow",
     "url": "https://github.com/Apomera/AlloFlow"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "AlloFlow PDF Remediation",
-    "shortDescription": "Remediate inaccessible PDFs privately.",
-    "longDescription": "Rebuild attached PDFs as accessible HTML and, when local capabilities permit, a tagged PDF plus a scoped verification report without sending documents to an AlloFlow service.",
+    "shortDescription": "Remediate PDFs with no extra account or API key.",
+    "longDescription": "Rebuild attached PDFs as accessible HTML and, when local capabilities permit, a tagged PDF plus a scoped verification report without a paid Worker, institution account, AlloFlow service, or separate model API key.",
     "developerName": "AlloFlow",
     "category": "Education",
     "capabilities": [

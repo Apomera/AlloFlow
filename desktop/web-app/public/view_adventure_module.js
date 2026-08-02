@@ -148,6 +148,7 @@ function AdventureView(props) {
   var immersiveHideUI = props.immersiveHideUI;
   var immersiveShowChoices = props.immersiveShowChoices;
   var sessionData = props.sessionData;
+  var currentUserUid = props.currentUserUid;
   var activeSessionCode = props.activeSessionCode;
   var isPlaying = props.isPlaying;
   var playbackState = props.playbackState;
@@ -238,6 +239,28 @@ function AdventureView(props) {
   var xpProgressPercent = Math.max(0, Math.min(100, xpValue / xpMax * 100));
   var energyValue = Math.max(0, Math.min(100, Number(adventureState.energy) || 0));
   var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
+  var democracyActive = !!(sessionData && sessionData.democracy && sessionData.democracy.isActive);
+  var democracyVotes = democracyActive && sessionData.democracy.votes && typeof sessionData.democracy.votes === 'object' ? sessionData.democracy.votes : {};
+  var democracyTotalVotes = Object.keys(democracyVotes).length;
+  var democracyRosterTotal = sessionData && sessionData.roster && typeof sessionData.roster === 'object' ? Object.keys(sessionData.roster).length : 0;
+  var democracyAudienceTotal = Math.max(democracyTotalVotes, Number(sessionData && sessionData.participantCount) || democracyRosterTotal);
+  var currentUserVote = !isTeacherMode && currentUserUid && Object.prototype.hasOwnProperty.call(democracyVotes, currentUserUid) ? String(democracyVotes[currentUserUid]).trim() : '';
+  var normalizeAdventureVoteOption = function (option) {
+    return String(typeof option === 'object' && option && option.action ? option.action : option).trim();
+  };
+  var renderDemocracyStatus = function (isDark) {
+    if (!democracyActive) return null;
+    var message = isTeacherMode ? democracyAudienceTotal > 0 ? democracyTotalVotes + ' of ' + democracyAudienceTotal + ' students voted' : democracyTotalVotes + ' student votes received' : currentUserVote ? 'Vote submitted. Choose another option to change it.' : 'Choose one option. You can change your vote until the teacher continues.';
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      className: (isDark ? 'md:col-span-2 bg-teal-500/15 border-teal-300/40 text-teal-50' : 'sm:col-span-2 bg-teal-50 border-teal-300 text-teal-950') + ' flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold'
+    }, /*#__PURE__*/React.createElement(Users, {
+      size: 15,
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", null, message));
+  };
   var renderStrategyHintCard = function (isDark) {
     var hint = adventureState.currentHint;
     if (!hint || hint.turn !== adventureState.turnCount) return null;
@@ -1470,22 +1493,22 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", t('adventure.send_action')), renderStrategyHintButton(true))) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
-  }, (() => {
+  }, renderDemocracyStatus(true), (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
     const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
     const textSentenceCount = mainTextParagraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p)).length;
     return adventureState.currentScene.options.map((opt, idx) => {
-      const isDemocracy = sessionData?.democracy?.isActive;
-      const votes = isDemocracy && sessionData?.democracy?.votes ? sessionData.democracy.votes : {};
-      const voteCount = Object.values(votes).filter(v => String(v).trim() === String(opt).trim()).length;
-      const totalVotes = Object.keys(votes).length;
-      const percent = totalVotes > 0 ? Math.round(voteCount / totalVotes * 100) : 0;
+      const isDemocracy = democracyActive;
+      const optionValue = normalizeAdventureVoteOption(opt);
+      const voteCount = isTeacherMode ? Object.values(democracyVotes).filter(v => String(v).trim() === optionValue).length : 0;
+      const percent = isTeacherMode && democracyTotalVotes > 0 ? Math.round(voteCount / democracyTotalVotes * 100) : 0;
+      const isMyVote = isDemocracy && !isTeacherMode && !!currentUserVote && currentUserVote === optionValue;
       const isReadingThisOption = isPlaying && playingContentId === 'adventure-active' && playbackState.currentIdx === textSentenceCount + idx;
       return /*#__PURE__*/React.createElement("div", {
         key: idx,
         className: `bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all backdrop-blur-sm group relative overflow-hidden motion-reduce:transform-none
-                                                                ${isReadingThisOption ? 'border-yellow-400 ring-2 ring-yellow-400/50 bg-white/20 shadow-lg scale-[1.02] z-10' : 'border-white/30 hover:border-white'}`
-      }, isDemocracy && voteCount > 0 && /*#__PURE__*/React.createElement("div", {
+                                                                ${isMyVote ? 'border-emerald-300 ring-2 ring-emerald-300/60 bg-emerald-500/20 shadow-lg z-10' : isReadingThisOption ? 'border-yellow-400 ring-2 ring-yellow-400/50 bg-white/20 shadow-lg scale-[1.02] z-10' : 'border-white/30 hover:border-white'}`
+      }, isDemocracy && isTeacherMode && voteCount > 0 && /*#__PURE__*/React.createElement("div", {
         "aria-hidden": "true",
         className: "absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500 motion-reduce:transition-none",
         style: {
@@ -1498,9 +1521,10 @@ function AdventureView(props) {
         "data-help-key": "adventure_choice_btn",
         onClick: () => handleAdventureChoice(opt),
         disabled: adventureState.isLoading,
+        "aria-pressed": isDemocracy && !isTeacherMode ? isMyVote : undefined,
         className: "min-h-11 flex items-center gap-3 flex-grow text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed"
       }, /*#__PURE__*/React.createElement("span", {
-        className: `bg-white/20 px-2.5 py-1 rounded text-xs opacity-70 group-hover:bg-white group-hover:text-black transition-colors ${isReadingThisOption ? 'bg-yellow-400 text-black opacity-100' : ''}`
+        className: `bg-white/20 px-2.5 py-1 rounded text-xs opacity-70 group-hover:bg-white group-hover:text-black transition-colors ${isMyVote ? 'bg-emerald-300 text-emerald-950 opacity-100' : isReadingThisOption ? 'bg-yellow-400 text-black opacity-100' : ''}`
       }, idx + 1), /*#__PURE__*/React.createElement("span", {
         className: "text-left"
       }, typeof opt === 'object' && opt?.action ? opt.action : opt)), /*#__PURE__*/React.createElement("div", {
@@ -1523,14 +1547,16 @@ function AdventureView(props) {
       }, /*#__PURE__*/React.createElement(Volume2, {
         size: 16,
         "aria-hidden": "true"
-      })), isDemocracy && /*#__PURE__*/React.createElement("span", {
+      })), isDemocracy && isTeacherMode && /*#__PURE__*/React.createElement("span", {
         "aria-live": "polite",
         "aria-atomic": "true",
         className: `text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`
       }, t('adventure.vote_status', {
         count: voteCount,
         percent: percent
-      })))));
+      })), isMyVote && /*#__PURE__*/React.createElement("span", {
+        className: "text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-300 text-emerald-950"
+      }, "Your vote"))));
     });
   })()))) : /*#__PURE__*/React.createElement("div", {
     className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
@@ -1702,12 +1728,17 @@ function AdventureView(props) {
     className: "min-h-11 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-500 hover:bg-slate-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
   }, t('common.cancel')))) : !adventureFreeResponseEnabled || adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
-  }, (() => {
+  }, renderDemocracyStatus(false), (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
     const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
     const textSentenceCount = mainTextParagraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p)).length;
     return adventureState.currentScene.options.map((opt, idx) => {
       const isDebateSetup = adventureInputMode === 'debate' && adventureState.debatePhase === 'setup';
+      const isDemocracy = democracyActive && !isDebateSetup;
+      const optionValue = normalizeAdventureVoteOption(opt);
+      const voteCount = isTeacherMode ? Object.values(democracyVotes).filter(v => String(v).trim() === optionValue).length : 0;
+      const percent = isTeacherMode && democracyTotalVotes > 0 ? Math.round(voteCount / democracyTotalVotes * 100) : 0;
+      const isMyVote = isDemocracy && !isTeacherMode && !!currentUserVote && currentUserVote === optionValue;
       const isReadingThisOption = isPlaying && playingContentId === 'adventure-active' && playbackState.currentIdx === textSentenceCount + idx;
       return /*#__PURE__*/React.createElement("button", {
         key: idx,
@@ -1715,19 +1746,30 @@ function AdventureView(props) {
         "data-help-key": "adventure_choice_btn",
         onClick: () => handleAdventureChoice(opt),
         disabled: adventureState.isLoading,
+        "aria-pressed": isDemocracy && !isTeacherMode ? isMyVote : undefined,
         className: `min-h-11 p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed motion-reduce:transform-none
                                                                 ${isDebateSetup ? 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-600 hover:text-white hover:border-teal-600' : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'}
-                                                                ${isReadingThisOption ? 'ring-4 ring-yellow-400 bg-yellow-100 border-yellow-400 text-indigo-900 scale-[1.02] z-10' : ''}
+                                                                ${isMyVote ? 'ring-4 ring-emerald-300 bg-emerald-50 border-emerald-500 text-emerald-950 z-10' : isReadingThisOption ? 'ring-4 ring-yellow-400 bg-yellow-100 border-yellow-400 text-indigo-900 scale-[1.02] z-10' : ''}
                                                             `
-      }, /*#__PURE__*/React.createElement("span", {
+      }, isDemocracy && isTeacherMode && voteCount > 0 && /*#__PURE__*/React.createElement("div", {
+        "aria-hidden": "true",
+        className: "absolute inset-y-0 left-0 bg-indigo-100 transition-all duration-500 motion-reduce:transition-none",
+        style: {
+          width: `${percent}%`
+        }
+      }), /*#__PURE__*/React.createElement("span", {
         className: `w-6 h-6 rounded-full flex items-center justify-center text-xs border shrink-0 transition-colors z-10
-                                                                ${isReadingThisOption ? 'bg-yellow-400 text-indigo-900 border-yellow-600' : isDebateSetup ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent' : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`
+                                                                ${isMyVote ? 'bg-emerald-500 text-white border-emerald-700' : isReadingThisOption ? 'bg-yellow-400 text-indigo-900 border-yellow-600' : isDebateSetup ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent' : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`
       }, isDebateSetup ? /*#__PURE__*/React.createElement(Scale, {
         size: 12,
         "aria-hidden": "true"
       }) : idx + 1), /*#__PURE__*/React.createElement("span", {
         className: "z-10"
-      }, typeof opt === 'object' && opt?.action ? opt.action : opt), /*#__PURE__*/React.createElement("div", {
+      }, typeof opt === 'object' && opt?.action ? opt.action : opt), isDemocracy && isTeacherMode && /*#__PURE__*/React.createElement("span", {
+        className: "z-10 ml-auto text-[11px] font-black whitespace-nowrap"
+      }, voteCount, " · ", percent, "%"), isMyVote && /*#__PURE__*/React.createElement("span", {
+        className: "z-10 ml-auto text-[11px] font-black whitespace-nowrap text-emerald-800"
+      }, "Your vote"), /*#__PURE__*/React.createElement("div", {
         "aria-hidden": "true",
         className: "absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 motion-reduce:transition-none motion-reduce:transform-none"
       }));

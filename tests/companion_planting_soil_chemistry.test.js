@@ -104,6 +104,8 @@ describe('Companion Planting soil chemistry explanations', () => {
 
     expect(source).toContain("soilNitrogenDailyDelta += (chemistryPlant.nEffect || 0) * 0.3");
     expect(source).toContain("if (p && !p.isStructure) nDelta += (p.nEffect || 0) * 0.3");
+    expect(source).toContain("var nextSoilHistory = cgSoilHistory.concat");
+    expect(source).toContain("soilHistory: nextSoilHistory");
     expect(source).toContain("soilPhosphorusDailyDelta += chemistryProfile.p * 0.3");
     expect(source).toContain("soilPotassiumDailyDelta += chemistryProfile.k * 0.3");
     expect(source).toContain("soilOrganicDailyDelta += 0.05");
@@ -406,4 +408,84 @@ describe('Companion Planting soil chemistry explanations', () => {
     expect(html).toContain('1 outside range');
     expect(html).toContain('pH is a shared availability condition, not a consumed nutrient.');
   });
-});
+
+  it('charts recorded soil observations and distinguishes event-affected days', () => {
+    const soilHistory = [
+      { day: 2, season: 'Spring', nitrogen: 42, phosphorus: 30, potassium: 35, ph: 6.4, organic: 3.1, event: null },
+      { day: 3, season: 'Spring', nitrogen: 41.7, phosphorus: 27.5, potassium: 33.5, ph: 6.4, organic: 3.15, event: null, care: 'Watered garden' },
+      { day: 4, season: 'Spring', nitrogen: 42.2, phosphorus: 28, potassium: 34, ph: 6.4, organic: 3.25, event: 'Compost delivery' },
+      { day: 5, season: 'Spring', nitrogen: 41.9, phosphorus: 25, potassium: 32.5, ph: 6.4, organic: 3.3, event: null, forecast: { nitrogen: 42.1, phosphorus: 28, potassium: 32.5, ph: 6.4, organic: 3.3 } },
+    ];
+
+    const html = renderCompanionPlanting({
+      phase: 'grow', grid: emptyGrid(), soilDiagramFocus: 'phosphorus', soilHistory,
+      nitrogen: 41.9, phosphorus: 25, potassium: 32.5, pH: 6.4, organicMatter: 3.3, moisture: 60,
+    });
+
+    expect(html).toContain('data-soil-history="phosphorus"');
+    expect(html).toContain('data-soil-history-chart="phosphorus"');
+    expect(html).toContain('data-soil-history-line="phosphorus"');
+    expect(html).toContain('data-soil-history-forecast-line="phosphorus"');
+    expect(html).toContain('data-soil-history-forecast="true"');
+    expect(html).toContain('data-soil-history-forecast-point="6"');
+    expect(html).toContain('D6 forecast');
+    expect(html).toContain('Dashed = next-day model');
+    expect(html).toContain('The next-day model forecast is 25.0 pts.');
+    expect(html).toContain('data-soil-history-watch-band="phosphorus"');
+    expect(html).toContain('data-soil-history-watch-label="phosphorus"');
+    expect(html).toContain('Low pool watch zone: below 15.0 pts');
+    expect(html).toContain('data-soil-history-watch-status="phosphorus"');
+    expect(html).toContain('Above watch threshold by 10.0 pts');
+    expect(html).toContain('data-soil-history-latest-change="phosphorus"');
+    expect(html).toContain('Latest movement: -3.0 pts since day 4 · No event or care tag on day 5');
+    expect(html).toContain('data-soil-history-checkpoint="phosphorus"');
+    expect(html).toContain('data-soil-history-checkpoint-status="actual-below"');
+    expect(html).toContain('Forecast check');
+    expect(html).toContain('Predicted');
+    expect(html).toContain('Observed');
+    expect(html).toContain('-3.0 pts actual vs forecast');
+    expect(html).toContain('data-soil-history-forecast-trail="phosphorus"');
+    expect(html).toContain('data-soil-history-forecast-error-day="5"');
+    expect(html).toContain('D5 -3.0 pts');
+    expect(html).toContain('Mean absolute error: 3.0 pts');
+    expect(html).toContain('data-soil-history-forecast-check-line="5"');
+    expect(html).toContain('data-soil-history-forecast-check-point="5"');
+    expect(html).toContain('Hollow square = prior forecast');
+    expect(html).toContain('data-soil-history-checkpoint-action="phosphorus"');
+    expect(html).toContain('Inspect drawdown on garden map');
+    expect(html).toContain('href="#community-garden-map"');
+    expect(html).toContain('data-soil-history-checkpoint-matrix');
+    expect(html).toContain('Whole-soil checkpoint');
+    expect((html.match(/data-soil-history-checkpoint-metric=/g) || []).length).toBe(5);
+    expect(html).toContain('data-soil-history-checkpoint-metric="nitrogen"');
+    expect(html).toContain('Select Map to inspect contributors');
+    expect(html).toContain('Delta is observed minus predicted');
+    expect((html.match(/data-soil-history-checkpoint-inspect=/g) || []).length).toBe(5);
+    expect(html).toContain('data-soil-history-checkpoint-inspect="phosphorus"');
+    expect(html).toContain('Inspect Phosphorus contributors on the garden map');
+    expect(html).toContain('42.1 pts');
+    expect(html).toContain('28.0 pts');
+    expect(html).toContain('-3.0 pts');
+    expect(html.match(/data-soil-history-point=/g)).toHaveLength(4);
+    expect(html.match(/data-soil-history-event="true"/g)).toHaveLength(1);
+    expect(html).toContain('data-soil-history-point="2"');
+    expect(html).toContain('data-soil-history-point="5"');
+    expect(html).toContain('30.0');
+    expect(html).toContain('25.0');
+    expect(html).toContain('-5 pts across recorded days');
+    expect(html).toContain('Compost delivery');
+    expect(html).toContain('Amber ring = garden event (1)');
+    expect(html).toContain('data-soil-history-context="true"');
+    expect(html).toContain('Context to investigate');
+    expect(html).toContain('Care: Watered garden');
+    expect(html).toContain('data-soil-history-context-day="3"');
+
+    const emptyHtml = renderCompanionPlanting({
+      phase: 'grow', grid: emptyGrid(), soilDiagramFocus: 'organic', soilHistory: [],
+      nitrogen: 42, phosphorus: 30, potassium: 35, pH: 6.4, organicMatter: 3.1, moisture: 60,
+    });
+    expect(emptyHtml).toContain('data-soil-history="organic"');
+    expect(emptyHtml).toContain('data-soil-history-empty="true"');
+    expect(emptyHtml).toContain('Advance a simulated day to record the first soil observation.');
+    expect(emptyHtml).not.toContain('data-soil-history-chart=');
+  });});

@@ -57,14 +57,21 @@ These are the *de facto* machines in the code. Anything not on an edge below is 
 idle ──startClassSession()──▶ live ──(session modal "End")──▶ hard-ended (doc DELETED)
                                 │──(quiz controls "End")────▶ soft-ended (isActive:false, status:'ended', doc kept)
                                 │──(tab close/pagehide)─────▶ live (session preserved; standard session resumes)
-                                └──(tab crash / network)────▶ orphaned (doc lingers; students stuck until they leave)
+                                └──(tab crash / network)────▶ reconnecting → stale (doc lingers; students retain work; host may resume)
 ```
 
 - Creation is a full-overwrite `setDoc` (phase_o `startClassSession`), so a reused code never
   inherits `status:'ended'` from a previous life.
 - **Invariant:** every end path must be *observable by students*. Hard end → doc-not-found.
-  Soft end → terminal fields. Both are now handled (§2.2). A teacher crash still has no
-  terminal signal; the shipped student heartbeat reports student presence, not host liveness.
+  Soft end remains terminal as described in §2.2. A teacher crash is non-terminal; the hostPresence lease
+  lets students show reconnecting/stale while preserving the explicit end contract.
+
+**Host liveness refinement [SHIPPED 2026-08-01].** The existing session document now carries a host-owned
+Tier-1 `hostPresence: { state, heartbeatAt, expiresAt, leaseId }` lease. Teachers refresh it about every
+20s with a 90s expiry. Students derive `online → reconnecting → stale` locally (a 45s grace after expiry).
+A reconnecting banner is non-blocking; a stale banner preserves work on the device and offers **Leave session**.
+Stale host presence never implicitly ends the session, clears/replays resources, or moves student responses to
+Firestore. Existing explicit hard/soft end paths remain the only terminal transitions.
 
 ### 2.2 Student session
 
@@ -117,7 +124,7 @@ Formalizes the existing `SESSION_TIER1_LEAVES` gate (AlloFlowANTI.txt, `writeToS
 | Tier | Definition | Examples | Transport |
 |---|---|---|---|
 | **0** | Ephemeral student content — never stored anywhere | poll responses, free text, strokes, guesses, hidden concept | WebRTC only |
-| **1** | Operational metadata, structurally non-PII | roster codename/xp/groupId/role, `pictionaryRound`, `interactiveOrganizer`, `livePolling` presence, help signals (`roster.{uid}.signal`/`signalAt` — enum from `LIVE_SIGNAL_OPTIONS`, no free text), mode, `quizState` phase | Firestore via `writeToSession()` |
+| **1** | Operational metadata, structurally non-PII | roster codename/xp/groupId/role, `pictionaryRound`, `interactiveOrganizer`, `livePolling`/`hostPresence` presence, help signals (`roster.{uid}.signal`/`signalAt` — enum from `LIVE_SIGNAL_OPTIONS`, no free text), mode, `quizState` phase | Firestore via `writeToSession()` |
 | **2** | Teacher-authored content, synced with intent | `resources` (manifest), `bridgePayload`, organizer payloads | Firestore, size-guarded |
 | **3** | Student responses/voice/free text | quiz free-text answers, fluency audio | **Blocked** — stripped by sanitizers or Tier-1 refusal |
 | **4** | Real PII | real names, contact info | Never; codenames are dropdown-curated so students can't free-type |
@@ -159,8 +166,12 @@ this unsolved was wrong:
 
 **Correction (verified 2026-07-01):** the live update path (`syncResourcesToSession`, debounced
 1.5s on history change) ALSO goes through `uploadSessionAssets` manifest externalization before the
-trim-guard, and the teacher gets a toast when trimming occurs. The remaining gap is student-side:
-a student whose hydration missed the target resource fails silently (see §4.1 delivery acks).
+trim-guard, and the teacher gets a toast when trimming occurs. **Recoverable hydration [SHIPPED 2026-08-01]:** manifest, resource, chunk, image, and JSON refs now
+retry with bounded backoff and then fail explicitly. The student keeps the last complete pack instead
+of replacing it with unresolved pointers, sees one unobtrusive loading/error banner with a manual Retry,
+and automatically retries twice more. Targeted delivery acknowledgments add only an enum
+(`loading|ready|failed`) bound to the existing resource id + assignment nonce; the teacher dock and
+end-session guard distinguish still-loading and failed devices without storing content or error text.
 
 ### 4.1 Resource targeting & pacing (verified)
 
@@ -198,8 +209,12 @@ Who sees what, in precedence order (student `onSnapshot` consumer):
 
 - **Adventure democracy mode:** real and working. Students write `democracy.votes.{uid}` (option
   string from the scene's fixed choice list); the teacher's next turn tallies and resets votes.
-  Covered by rules (`democracyOnlySelfVote`). Improvement candidates: no live tally for students;
-  no change-my-vote affordance.
+  **Fixed-choice refinement [SHIPPED 2026-08-01]:** enabling a round snapshots the normalized scene
+  choices into the existing `democracy.activeOptions` field, marks the phase as `voting`, and clears
+  stale votes. Firestore rules and the mailbox now accept only the participant's own bounded vote when
+  it exactly matches an active teacher-authored option. Students see their selected option and can
+  change it until the teacher continues, while class totals remain teacher-only; the teacher sees
+  live per-option percentages and an aggregate participation count in both Adventure layouts.
 - **Collaborative escape room:** WORKS end-to-end after the 2026-07-02 path fix. Students
   auto-assign teams on entry (`escapeRoomState.teams.{uid}`, StudentEscapeRoomOverlay in
   teacher_module); the overlay plays the session-doc room; the one real defect was the student
@@ -284,8 +299,8 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 | Student reloads tab | overlay reappears on next poll/round | fresh offer → host re-offer replacement |
 | Teacher closes panel | poll/round clears (terminal event) | presence marker / round metadata re-opens flow |
 | Teacher soft-ends session | toast "session ended", full session exit | terminal-state check (§2.2) |
-| Teacher hard-ends / tab close | same, via doc-not-found | existing behavior |
-| Teacher tab crashes | overlays clear on channel death via bounded rejoin → failed + Retry | host-liveness/lease remains open; student heartbeat does not solve host death |
+| Teacher hard-ends | same, via doc-not-found | existing behavior |
+| Teacher tab closes/crashes | paused banner, then stale banner + Leave session; work remains local | host resumes the same session or student chooses Leave session; no implicit end or resource replay |
 | UDP blocked (school network) | polling: file-export fallback; pictionary: failed + Retry | TURN server [ROADMAP §8] |
 
 ---
@@ -327,13 +342,17 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    `window.__alloRtcConfig` at connection time, so adding TURN is config, not code. The actual
    relay + short-lived-credential minting is an infrastructure decision — see
    `docs/LIVE_SESSION_HARDENING_PROPOSAL.md` §4. Keep the file-export fallback regardless.
-4. **Presence heartbeat + roster status** — [SHIPPED 2026-07-16] students stamp
+4. **Presence heartbeat + host liveness** — [SHIPPED 2026-07-16 / 2026-08-01] students stamp
    Tier-1 `roster.{uid}.lastSeen` on a jittered slow cadence and on tab return; the
-   Live Session Center derives connected/quiet/disconnected bands without storing
-   navigation history or response content. A host-liveness lease remains separate open
-   work: student heartbeats cannot prove that a crashed teacher client is still present.
-5. **Live resource updates through the manifest path** (§4 gap) — stop silently dropping oldest
-   resources on the trim-guard path.
+   Live Session Center derives connected/quiet/disconnected bands without storing navigation
+   history or response content. Teachers refresh the host-owned `hostPresence` lease over the
+   same gated session path; students derive online/reconnecting/stale locally. Stale presence is
+   conservative: it never implicitly ends a session, replays/clears targeted resources, or stores
+   student responses.
+5. **Live resource updates through the manifest path** — [SHIPPED 2026-08-01] bounded ref retries,
+   last-good-pack preservation, explicit student recovery UI, and nonce-bound enum delivery status
+   prevent silent targeted-resource hydration failures. The externalized manifest remains the single
+   Firebase content path; no duplicate resource store or response channel was added.
 6. **Live Session Center** — [PARTIALLY SHIPPED 2026-07-01] one teacher dock now replaces the
    per-feature floating buttons: Run (Live Poll / Quick Check / Word Cloud / Feedback Response / Pictionary / Sketch Response), Guide (pacing
    toggle, groups, session code), Signals (student help signals, see below), and a privacy note.
@@ -432,9 +451,26 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    snapshots and omits uid maps, activity prompts, answers, scores, and codenames.
    The queue reuses the already-shipped **Help signals**: students send an enum-only status
    (`stuck`/`slow`/`repeat`/`ready`) as Tier-1 `roster.{uid}.signal` + `signalAt`; the
-   dock lists fresh (<10 min) signals with clear buttons. Still open for the full vision:
-   roster connected/disconnected
-   per-card privacy badges and longer-term cross-session activity analysis.
+   dock lists fresh (<10 min) signals with clear buttons. **Delivery-aware attention + provenance
+   badges** [SHIPPED 2026-08-01] consume the existing exact-nonce `loading|ready|failed`
+   acknowledgment: failed and long-loading individual/group sends remain visible, and the bulk
+   release action cannot clear a support that never opened. Each attention card labels its bounded
+   evidence source (Student signal, Connection status, Activity status, or Delivery status), without
+   exposing response content or adding a transport field. Still open for the full vision:
+   **Assignment Control Center** [SHIPPED 2026-08-01] refines Recent Homework links into a
+   device-local lifecycle view for active, expired, and revoked assignments. Hosted shared activities
+   refresh through the existing admin-only summary endpoint and cache only aggregate participant and
+   moderation counts in React memory; response text and pseudonymous participant tokens remain inside
+   the existing activity owner. Resource-only and self-contained assignments are labeled honestly as
+   untracked. **Assignment lifecycle controls** [SHIPPED 2026-08-01] extend that same view and
+   store: active Class Mailbox assignments can receive a later deadline (up to one year) or be
+   revoked directly; expired hosted assignments can be copied to a fresh pack capability with empty
+   activity sidecars, but cannot be revived. Revoked packs cannot be copied because revocation deletes
+   their hosted chunks and activity data. Filters derive from the existing row model, failures remain
+   isolated per card, and CSV export contains titles, lifecycle/delivery metadata, dates, resource
+   counts, and aggregate moderation totals only—never assignment URLs, pack ids/secrets, activity
+   prompts, response content, or participant tokens. These admin-only operations require Class Mailbox
+   protocol v12. Still open for the full vision: longer-term cross-session instructional analysis.
    **Private Presenter Cues** [SHIPPED 2026-07-25] refine the existing
    Live Lesson path rather than adding speaker-note fields to resources. Each
    selected student-safe step has bounded Say/Ask, Look/Listen for, and Next

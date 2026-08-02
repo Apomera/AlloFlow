@@ -124,7 +124,7 @@ async function mount(extraProps = {}) {
   host = document.createElement('div');
   document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
-  const calls = { toasts: [], generate: [], inputText: [], saved: [], closed: 0 };
+  const calls = { toasts: [], generate: [], inputText: [], saved: [], savedSets: [], closed: 0 };
   const props = {
     isOpen: true,
     onClose: () => { calls.closed++; },
@@ -133,6 +133,7 @@ async function mount(extraProps = {}) {
     handleGenerate: (...a) => calls.generate.push(a),
     setInputText: (t) => calls.inputText.push(t),
     onSaveToLesson: (ref) => calls.saved.push(ref),
+    onSaveReadingSet: (set) => calls.savedSets.push(set),
     isTeacherMode: true,
     ...extraProps,
   };
@@ -713,6 +714,42 @@ describe('reader view (RTL original)', () => {
     expect(calls.saved[0].language).toBe(rtlBook.language);
     expect(String(calls.saved[0].level)).toBe(String(rtlBook.level));
     expect(calls.saved[0]).toHaveProperty('hasAudio');
+  });
+  it('lets teachers select, reorder, and save a metadata-only reading set', async () => {
+    const { calls } = await mount();
+    await chooseStories();
+    const addButtons = Array.from(host.querySelectorAll('button[aria-label]'))
+      .filter((button) => button.getAttribute('aria-label').startsWith('Add to reading set'));
+    expect(addButtons.length).toBeGreaterThanOrEqual(2);
+    act(() => { addButtons[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    act(() => { addButtons[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+    expect(host.querySelector('[data-testid="reading-set-builder"]')).toBeTruthy();
+    clickByText(host, 'button', 'Edit reading set');
+    await flush();
+    const name = host.querySelector('#reading-set-name');
+    setInputValue(name, 'Weather week');
+    await flush();
+    clickByText(host, 'button', 'Save to lesson');
+    expect(calls.savedSets).toHaveLength(1);
+    expect(calls.savedSets[0]).toMatchObject({ schema: 'allo-reading-set@1', title: 'Weather week' });
+    expect(calls.savedSets[0].books).toHaveLength(2);
+    expect(calls.savedSets[0].books[0]).not.toHaveProperty('pages');
+  });
+  it('restores a reading set as an ordered navigator', async () => {
+    const first = index.books.find((entry) => entry && entry.file);
+    await mount({
+      initialReadingSet: {
+        schema: 'allo-reading-set@1', title: 'Restored sequence',
+        books: [{ slug: first.slug, title: first.title, sourceUrl: 'https://example.org/source' }],
+      },
+    });
+    await settle();
+    const navigator = host.querySelector('[data-testid="reading-set-navigator"]');
+    expect(navigator).toBeTruthy();
+    expect(textOf(navigator)).toContain('Restored sequence');
+    expect(textOf(navigator)).toContain(first.title);
+    expect(navigator.querySelector('button[aria-label^="Open title"]')).toBeTruthy();
   });
 });
 

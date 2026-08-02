@@ -105,11 +105,24 @@ describe('universal settings panel — wiring', () => {
     const tile = anti.indexOf('id="tour-tool-analysis"');
     expect(at, 'mounts before the first accordion tile').toBeLessThan(tile);
     const mountBlock = anti.slice(at, anti.indexOf('})}', at));
-    for (const p of ['handleFindStandards', 'setGradeLevel', 'setLeveledTextLanguage', 'setDokLevel', 'setUseEmojis', 'setTargetStandards']) {
+    for (const p of ['handleFindStandards', 'handleUseResolvedStandard', 'setGradeLevel', 'setLeveledTextLanguage', 'setDokLevel', 'setUseEmojis', 'setTargetStandards']) {
       expect(mountBlock).toContain(p);
     }
   });
 
+  it('gates the local resolver on a registered snapshot and exposes every safe outcome', () => {
+    const body = componentBody(panelSrc, 'UniversalSettingsPanel', 'AdventurePanel');
+    expect(body).toContain('getRegisteredProvider');
+    expect(body).toContain('Resolve from local snapshot');
+    expect(body).toContain("localResolution.status === 'resolved'");
+    expect(body).toContain("localResolution.status === 'ambiguous'");
+    expect(body).toContain("localResolution.status === 'not-found'");
+    expect(body).toContain('Use resolved standard');
+    expect(body).toContain('They were not selected automatically.');
+    expect(body).toContain('targetStandards.length > 0');
+    expect(anti).toContain('resolvedStandardsSelection.targetKey === standardsPromptString');
+    expect(anti).toContain('standardsContext: activeResolvedStandardsContext');
+  });
   it('SimplifiedPanel mount no longer passes the moved props', () => {
     const at = anti.indexOf('window.AlloModules.SimplifiedPanel && React.createElement');
     expect(at).toBeGreaterThan(-1);

@@ -94,7 +94,22 @@ function writeFileIfChanged(filePath, content) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   return retryTransientFileOperation(() => {
     if (sameFileBytes(filePath, expectedBuffer)) return false;
-    fs.writeFileSync(filePath, expectedBuffer);
+    try {
+      fs.writeFileSync(filePath, expectedBuffer);
+    } catch (error) {
+      // OneDrive can transiently deny replacement of a tracked generated file
+      // while allowing adjacent writes. Keep a recoverable backup, replace via
+      // an adjacent file, and verify the final bytes exactly.
+      if (error?.code !== 'UNKNOWN' || !/pack_manifest\.json$/i.test(filePath)) throw error;
+      const backup = filePath + '.codex-backup';
+      const replacement = filePath + '.codex-replacement';
+      fs.copyFileSync(filePath, backup);
+      fs.writeFileSync(replacement, expectedBuffer);
+      fs.unlinkSync(filePath);
+      try { fs.renameSync(replacement, filePath); }
+      catch (renameError) { fs.copyFileSync(backup, filePath); throw renameError; }
+      try { fs.unlinkSync(backup); } catch (_) {}
+    }
     if (!sameFileBytes(filePath, expectedBuffer)) {
       fail('Generated asset failed byte verification: ' + path.relative(root, filePath).replace(/\\/g, '/') + '.');
     }

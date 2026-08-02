@@ -34,7 +34,14 @@ test('runner context check traverses nested files and performs no writes', () =>
 
   const checked = run('--check');
   assert.equal(checked.status, 0, checked.stderr || checked.stdout);
-  assert.match(checked.stdout, /Verified 6 staged runner dependencies/u);
+  assert.match(checked.stdout, /Verified 21 staged runner dependencies/u);
+  assert.ok(fs.existsSync(path.join(
+    contextRoot,
+    'desktop', 'mcp', 'vendor', 'pdf-lib.min.js',
+  )));
+  assert.ok(fs.existsSync(path.join(contextRoot, 'desktop', 'mcp', 'vendor', 'THIRD_PARTY_NOTICES.md')));
+  assert.ok(fs.existsSync(path.join(contextRoot, 'verapdf', 'verapdf-cli.jar')));
+  assert.ok(fs.existsSync(path.join(contextRoot, 'verapdf', 'THIRD_PARTY_NOTICES.md')));
   assert.deepEqual(fs.readFileSync(manifestPath), manifestBefore);
   assert.equal(fs.statSync(manifestPath).mtimeMs, manifestMtimeBefore);
   assert.equal(fs.statSync(nestedDependency).mtimeMs, dependencyMtimeBefore);

@@ -323,6 +323,64 @@ var d = (labToolData && labToolData._dataStudio) || {};
             if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 5, 'CSV import');
           };
 
+
+          // Local analytical workspace (DuckDB-Wasm when available). The
+          // query is read-only and derived results remain in the Data Studio
+          // snapshot so they can travel with an exported analysis.
+          var kernelSQL = d.kernelSQL || 'SELECT COUNT(*) AS rows, AVG(value) AS mean_value FROM data';
+          var kernelBusy = !!d.kernelBusy;
+          var kernelError = d.kernelError || '';
+          var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
+          var kernelHistoryVisible = !!d.kernelHistoryVisible;
+          var kernelHistoryApi = window.AlloDataKernel && window.AlloDataKernel.queryHistory;
+          var kernelHistory = kernelHistoryApi && typeof kernelHistoryApi.list === 'function' ? kernelHistoryApi.list() : [];
+          (Array.isArray(d.kernelHistory) ? d.kernelHistory : []).forEach(function (entry) {
+            if (!kernelHistory.some(function (existing) { return existing.id === entry.id; })) kernelHistory.push(entry);
+          });
+          kernelHistory = kernelHistory.slice(-50);
+          var kernelRecipeId = d.kernelRecipeId || '';
+          var kernelRecipes = window.AlloDataKernel && typeof window.AlloDataKernel.suggestRecipes === 'function' ? window.AlloDataKernel.suggestRecipes(dataRows) : [];
+          var applyKernelRecipe = function (recipe) {
+            if (!recipe) return;
+            updDSMany({ kernelSQL: recipe.sql, kernelRecipeId: recipe.id, kernelError: '', kernelResult: null });
+          };
+          var runKernelQuery = function (sqlOverride, recipeOverride) {
+            var kernel = window.AlloDataKernel;
+            var selectedRecipe = recipeOverride === undefined ? (kernelRecipeId || null) : (recipeOverride || null);
+            var queryText = String(sqlOverride || kernelSQL || '').trim();
+            if (!kernel || typeof kernel.queryRows !== 'function') {
+              updDSMany({ kernelError: 'The local analytical workspace is still loading. Try again in a moment.', kernelBusy: false });
+              return;
+            }
+            updDSMany({ kernelSQL: queryText, kernelBusy: true, kernelError: '', kernelResult: null });
+            Promise.resolve().then(function () { return kernel.queryRows(dataRows, queryText); }).then(function (result) {
+              var rows = Array.isArray(result && result.rows) ? result.rows.slice(0, 100) : [];
+              var columns = rows.length ? Object.keys(rows[0]) : [];
+              var history = kernel.queryHistory && typeof kernel.queryHistory.record === 'function' ? kernel.queryHistory.record({
+                tool: 'dataStudio', recipe: selectedRecipe, sql: (result && result.query) || queryText, backend: result.backend || 'local',
+                rowCount: rows.length, sourceRowCount: result.provenance && result.provenance.rowCount, columns: result.provenance && result.provenance.columns
+              }) : kernelHistory;
+              updDSMany({ kernelBusy: false, kernelError: '', kernelHistory: history, kernelResult: {
+                rows: rows, columns: columns, backend: result.backend || 'local',
+                provenance: result.provenance || null, summary: result.summary || null
+              } });
+              if (addToast) addToast('Local analysis complete. The query and dataset shape stay on this device.', 'success');
+              if (typeof announceToSR === 'function') announceToSR('Local analysis complete. ' + rows.length + ' result row' + (rows.length === 1 ? '' : 's') + '.');
+            }).catch(function (error) {
+              updDSMany({ kernelBusy: false, kernelError: String(error && error.message || error || 'Local analysis failed.'), kernelResult: null });
+              if (addToast) addToast('Local analysis failed. ' + String(error && error.message || error || ''), 'warning');
+            });
+          };
+
+          var clearKernelHistory = function () {
+            if (kernelHistoryApi && typeof kernelHistoryApi.clear === 'function') kernelHistoryApi.clear();
+            updDSMany({ kernelHistory: [], kernelHistoryVisible: false });
+          };
+          var rerunKernelHistoryEntry = function (entry) {
+            if (!entry || !entry.sql) return;
+            updDSMany({ kernelSQL: entry.sql, kernelRecipeId: entry.recipe || '', kernelError: '', kernelResult: null });
+            runKernelQuery(entry.sql, entry.recipe || null);
+          };
           // Apply sort and filter
 
           var filteredRows = dataRows;
@@ -1296,7 +1354,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
                     statistics: { count: values.length, sum: total, mean: mean, median: median, standardDeviation: stdDev, standardDeviationMethod: stdDevMode,
                       minimum: minVal, maximum: maxVal, range: range, q1: q1, q3: q3, iqr: iqr, mode: modeVal,
                       pearsonR: chartType === 'scatter' ? pearsonR : null },
-                    chartCoach: { recommendation: recommendedChart, reason: recommendationReason }
+                    chartCoach: { recommendation: recommendedChart, reason: recommendationReason },
+                    kernel: kernelResult ? { recipe: kernelRecipeId || null, sql: kernelSQL, backend: kernelResult.backend, provenance: kernelResult.provenance, rows: kernelResult.rows, notebook: { version: 1, entries: kernelHistory } } : { notebook: { version: 1, entries: kernelHistory } }
                   };
                   var blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), a = document.createElement('a');
                   a.href = url; a.download = (((chartTitle || 'analysis').replace(/[^a-z0-9 _-]/gi, '').trim() || 'analysis') + '.json');
@@ -1310,6 +1369,57 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── Data Editor ──
 
+            // ── Local analytical workspace ──
+            kernelHistory.length > 0 && React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("button", { onClick: function() { updDS('kernelHistoryVisible', !kernelHistoryVisible); }, className: "text-xs font-bold", style: { color: _accent } }, (kernelHistoryVisible ? "▾" : "▸") + " Query notebook (" + kernelHistory.length + ")"),
+                React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "SQL metadata only; result values are not persisted here."),
+                React.createElement("button", { onClick: clearKernelHistory, className: "ml-auto px-2 py-1 rounded text-[10px] font-bold", style: { background: _svgBg, border: '1px solid ' + _border, color: _muted } }, "Clear")
+              ),
+              kernelHistoryVisible && React.createElement("div", { className: "mt-2 space-y-1.5" },
+                kernelHistory.slice().reverse().slice(0, 8).map(function(entry, index) {
+                  return React.createElement("div", { key: entry.id || index, className: "flex items-start gap-2 p-2 rounded-lg", style: { background: _svgBg, border: '1px solid ' + _border } },
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("div", { className: "text-[10px] font-bold", style: { color: _accent } }, (entry.tool || 'local') + (entry.recipe ? " · " + entry.recipe : "") + (entry.backend ? " · " + entry.backend : "")),
+                      React.createElement("code", { className: "block truncate text-[10px] mt-0.5", title: entry.sql, style: { color: _text } }, entry.sql),
+                      React.createElement("div", { className: "text-[9px] mt-0.5", style: { color: _muted } }, (entry.rowCount == null ? '?' : entry.rowCount) + " result rows · " + new Date(entry.timestamp).toLocaleString())
+                    ),
+                    React.createElement("button", { onClick: function() { rerunKernelHistoryEntry(entry); }, className: "px-2 py-1 rounded text-[10px] font-bold shrink-0", style: { background: _btnBg, color: '#fff' } }, "Rerun")
+                  );
+                })
+              )
+            ),
+            React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                React.createElement("div", { className: "text-xs font-bold", style: { color: _accent } }, "🧮 Local analytical workspace"),
+                React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "read-only · stays in this browser")
+              ),
+              React.createElement("p", { className: "text-[11px] mb-2", style: { color: _muted } }, "Use a starter recipe or write a SELECT query over the current data. Results include the dataset shape and local backend provenance."),
+              kernelRecipes.length > 0 && React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                React.createElement("label", { htmlFor: "ds-kernel-recipe", className: "text-[11px] font-bold", style: { color: _accent } }, "Starter recipe"),
+                React.createElement("select", { id: "ds-kernel-recipe", value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, className: "flex-1 min-w-[200px] px-2 py-1.5 rounded-lg text-[11px]", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } },
+                  React.createElement("option", { value: "" }, "Choose a local analysis…"),
+                  kernelRecipes.map(function(recipe) { return React.createElement("option", { key: recipe.id, value: recipe.id }, recipe.label); })
+                )
+              ),
+              React.createElement("textarea", { value: kernelSQL, onChange: function(e) { updDSMany({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, "aria-label": "Local analytical SQL query", className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-mono", placeholder: "SELECT COUNT(*) AS row_count FROM data", style: { background: _svgBg, border: '1px solid ' + _border, color: _text, resize: 'vertical' } }),
+              React.createElement("div", { className: "flex items-center gap-2 mt-2 flex-wrap" },
+                React.createElement("button", { onClick: runKernelQuery, disabled: kernelBusy || !dataRows.length, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, kernelBusy ? "⏳ Loading local engine…" : "▶ Run local query"),
+                !dataRows.length && React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "Add data first.")
+              ),
+              kernelError && React.createElement("div", { role: "alert", className: "mt-2 p-2 rounded-lg text-[11px]", style: { background: 'rgba(127,29,29,0.16)', border: '1px solid rgba(248,113,113,0.35)', color: isDark ? '#fca5a5' : '#991b1b' } }, kernelError),
+              kernelResult && React.createElement("div", { className: "mt-3 pt-2", style: { borderTop: '1px solid ' + _border } },
+                React.createElement("div", { className: "text-[11px] font-bold", style: { color: _accent } }, "Result · " + kernelResult.rows.length + " row" + (kernelResult.rows.length === 1 ? '' : 's') + " · " + (kernelResult.backend || 'local')),
+                kernelResult.provenance && React.createElement("div", { className: "text-[10px] mt-1", style: { color: _muted } }, "Source: " + kernelResult.provenance.rowCount + " rows · " + (kernelResult.provenance.columns || []).join(', ') + " · read-only query"),
+                kernelResult.rows.length > 0 && React.createElement("div", { className: "overflow-x-auto mt-2" },
+                  React.createElement("table", { className: "w-full text-left text-[10px]", style: { borderCollapse: 'collapse' } },
+                    React.createElement("thead", null, React.createElement("tr", null, kernelResult.columns.map(function(column) { return React.createElement("th", { key: column, className: "p-1", style: { background: _svgBg, color: _accent, border: '1px solid ' + _border } }, column); }))),
+                    React.createElement("tbody", null, kernelResult.rows.map(function(row, ri) { return React.createElement("tr", { key: ri }, kernelResult.columns.map(function(column) { return React.createElement("td", { key: column, className: "p-1 font-mono", style: { color: _text, border: '1px solid ' + _border } }, row[column] == null ? '—' : String(row[column])); })); }))
+                  )
+                ),
+                kernelResult.rows.length === 100 && React.createElement("div", { className: "text-[10px] mt-1", style: { color: _muted } }, "Showing the first 100 result rows.")
+              )
+            ),
             React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },

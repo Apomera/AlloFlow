@@ -4,6 +4,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_psychology_pilot.json');
@@ -1506,7 +1507,7 @@ const report = {
   },
 };
 
-fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
+writeGeneratedFile(reportPath, JSON.stringify(report, null, 2) + '\n');
 
 if (automatedStatus === 'fail') {
   console.error(

@@ -115,10 +115,12 @@
   "log": "📋 Log",
   "reset_2": "↺ Reset",
   "hypothesis_when_does_area_rows_cols": "Hypothesis: When does area = rows + cols?",
+  "area_hypothesis": "Area relationship hypothesis",
   "stuck_show_open_prompts": "🤔 Stuck — show open prompts",
   "find_sizes_where_area_perimeter_rare_i": "Find sizes where area = perimeter (rare integers).",
   "when_does_swapping_rows_cols_change_an": "When does swapping rows/cols change anything?",
   "i_understand_explain_in_own_words": "I understand — explain in own words",
   "explain_commutative_property_area_leng": "Explain commutative property + area = length × width.",
+  "area_explanation": "Explain the area multiplication relationship",
   "design_note_discrete_4_state_classific": "Design note: discrete 4-state classification; no area-test score; no reveal — by design."
 }

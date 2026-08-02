@@ -57,9 +57,9 @@
  *     No response is sent for a cancelled request, per spec.
  *
  * Safety properties:
- *   - stdio only; no network listener. Network egress = Gemini API (document
- *     content!) + public CDNs for pdf.js/Tesseract/pdf-lib/axe. Use only with
- *     documents you are authorized to send to the configured Gemini key.
+ *   - stdio only; no network listener. AI tools send document content to Gemini.
+ *     Core browser libraries and veraPDF are bundled locally; optional Office export
+ *     may fetch public libraries. Use AI tools only with authorized documents.
  *   - stdout carries ONLY protocol messages; all logging goes to stderr.
  *   - Input validation happens BEFORE the browser/driver is touched, so bad
  *     arguments never launch Chromium or spend quota.
@@ -89,6 +89,63 @@ const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remedia
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_PDF_BYTES = 200 * 1024 * 1024; // mirrors the app's per-file batch preflight
+
+// The skill remains authored once in agent_skills/. The MCPB builder copies those exact bytes
+// into skills/, while repo runs resolve the source directly. Clients that understand the bounded
+// skills extension can import the workflow; every other client safely ignores the capability.
+const SKILL_NAME = 'alloflow-pdf-remediation';
+const SKILL_URI = 'skill://alloflow-remediation/' + SKILL_NAME + '/SKILL.md';
+function loadBundledSkill() {
+  const candidates = [
+    process.env.ALLOFLOW_MCP_SKILLS_DIR && path.join(process.env.ALLOFLOW_MCP_SKILLS_DIR, SKILL_NAME, 'SKILL.md'),
+    path.resolve(__dirname, '..', 'skills', SKILL_NAME, 'SKILL.md'),
+    path.resolve(__dirname, '..', '..', 'agent_skills', SKILL_NAME, 'SKILL.md'),
+  ].filter(Boolean);
+  const skillPath = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!skillPath) return null;
+  const text = fs.readFileSync(skillPath, 'utf8');
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
+  if (!match) throw new Error('Bundled skill has no YAML frontmatter: ' + skillPath);
+  const frontmatter = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const pair = /^([a-zA-Z0-9_-]+):\s*(.+)$/.exec(line);
+    if (pair) frontmatter[pair[1]] = pair[2].trim().replace(/^(["'])(.*)\1$/, '$2');
+  }
+  if (frontmatter.name !== SKILL_NAME || !frontmatter.description) {
+    throw new Error('Bundled skill frontmatter must contain the expected name and description: ' + skillPath);
+  }
+  const digest = 'sha256:' + crypto.createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex');
+  return {
+    path: skillPath, text,
+    entry: { uri: SKILL_URI, frontmatter, resources: [{ uri: SKILL_URI, digest }] },
+  };
+}
+const BUNDLED_SKILL = loadBundledSkill();
+const REMEDIATION_PROMPT_NAME = 'remediate_document';
+const REMEDIATION_PROMPT = {
+  name: REMEDIATION_PROMPT_NAME,
+  title: 'Remediate a document with AlloFlow',
+  description: 'Apply AlloFlow canonical privacy-aware remediation workflow to a user-selected document.',
+  arguments: [
+    { name: 'document', description: 'A local path or an attached-document reference supplied by the user.', required: true },
+    { name: 'goal', description: 'Optional remediation priorities or output requirements.', required: false },
+  ],
+};
+
+function remediationPromptText(document, goal) {
+  return [
+    BUNDLED_SKILL.text.trimEnd(),
+    '',
+    '---',
+    '',
+    '## Current user request',
+    '',
+    'Document reference: ' + document,
+    goal ? 'Additional goal: ' + goal : 'Additional goal: Use the canonical full remediation workflow.',
+    '',
+    'Apply the workflow above. Do not invent a local path, claim a privacy tier the connector did not return, or imply that merely retrieving this prompt opened the document.',
+  ].join('\n');
+}
 
 function log(msg) { process.stderr.write('[alloflow-remediation-mcp] ' + msg + '\n'); }
 
@@ -140,6 +197,38 @@ const RUN_CANCELLABLE_TOOLS = new Set(['pdf_audit', 'pdf_remediate']);
 function getDriver() {
   if (!driver) driver = Driver.createDriver({ log });
   return driver;
+}
+
+async function validatePdfUaLocally(filePath, onLog) {
+  try {
+    const result = await getDriver().validatePdfUaCli({
+      filePath, onLog, timeoutMs: 120000, maxBytes: MAX_PDF_BYTES,
+    });
+    return {
+      validator: 'veraPDF CLI',
+      validatorVersion: result.validatorVersion || undefined,
+      transport: 'local-java-cli',
+      compliant: result.status === 'compliant',
+      failedChecks: result.failedChecks,
+      failedRuleCount: result.failedRules,
+      failedRules: result.failedRuleSummaries || [],
+      passedChecks: result.passedChecks,
+      passedRuleCount: result.passedRules,
+    };
+  } catch (error) {
+    const message = String(error && error.message || error);
+    if (!/CLI could not start|CLI JAR is not packaged/i.test(message)) throw error;
+    if (onLog) onLog('Local veraPDF CLI unavailable; using the bundled browser validator fallback.');
+    const result = await getDriver().validatePdfUa({ filePath, onLog });
+    return {
+      validator: 'veraPDF browser fallback',
+      transport: 'local-browser-jvm',
+      compliant: !!(result && result.compliant),
+      failedChecks: (result && result.failedChecks) || 0,
+      failedRuleCount: ((result && result.failedRules) || []).length,
+      failedRules: ((result && result.failedRules) || []).slice(0, 100),
+    };
+  }
 }
 
 function invalidParams(message) { const e = new Error(message); e.rpcCode = -32602; return e; }
@@ -792,8 +881,8 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
   let pdfUa;
   if (opts.validateUa && files.taggedPdf) {
     try {
-      const v = await getDriver().validatePdfUa({ filePath: files.taggedPdf, onLog });
-      pdfUa = { standard: 'PDF/UA-1 (ISO 14289-1)', compliant: !!(v && v.compliant), failedChecks: (v && v.failedChecks) || 0, failedRules: ((v && v.failedRules) || []).slice(0, 100) };
+      const v = await validatePdfUaLocally(files.taggedPdf, onLog);
+      pdfUa = { standard: 'PDF/UA-1 (ISO 14289-1)', compliant: !!(v && v.compliant), validator: v && v.validator, validatorVersion: v && v.validatorVersion, failedChecks: (v && v.failedChecks) || 0, failedRuleCount: (v && v.failedRuleCount) || 0, failedRules: ((v && v.failedRules) || []).slice(0, 100) };
     } catch (e) { pdfUa = { error: (e && e.message) || String(e) }; }
   } else if (opts.validateUa) {
     pdfUa = { skipped: out.taggedPdfB64 ? 'tagged PDF not written' : 'no tagged PDF (office input or tagged_pdf: false)' };
@@ -837,7 +926,7 @@ const TOOLS = [
   {
     name: 'remediation_capabilities',
     title: 'Check remediation environment',
-    description: 'Report whether this machine can run PDF remediation: Gemini key present, Playwright/Chromium available, pipeline modules found, configured models and limits. Call this first. Read-only; launches nothing, spends nothing.',
+    description: 'Report both operating modes: the tools available without a Gemini key/account/Worker and whether the optional full AI pipeline has its key, Playwright/Chromium, and modules. Call this first. Read-only; launches nothing, spends nothing.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     annotations: { title: 'Check remediation environment', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   },
@@ -847,6 +936,20 @@ const TOOLS = [
     description: 'Run the REAL remediation pipeline end-to-end in headless Chromium against a scripted local model and a generated one-page PDF, then report which stage worked. Needs NO Gemini key and spends NO quota (nothing leaves the machine; the scripted model is a loopback server), writes no files you keep. Takes roughly 20-60s. Use this when remediation_capabilities says ready but real runs fail, after installing or updating the connector, or to tell a broken install apart from an API-key/quota problem: a failure here names the stage (assets / browser / module-boot / ownership-gate / audit-contract) and is never about your key.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     annotations: { title: 'Prove this install can actually remediate', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  },
+  {
+    name: 'generate_resource_pack',
+    title: 'Generate an AlloFlow resource pack (no API key)',
+    description: "Generate the same student/teacher resource-pack HTML as the normal AlloFlow app by calling its existing generateFullPackHTML pipeline export unchanged. The input JSON uses the app's native resource shape, so this is a thin adapter rather than a second renderer. Deterministic: needs NO Gemini key, account, or Worker. The JSON must contain `items` and may include `topic`, `isWorksheet`, `responses`, and `config`.",
+    inputSchema: {
+      type: 'object', required: ['resource_pack_json', 'output_path'],
+      properties: {
+        resource_pack_json: { type: 'string', description: 'Absolute path to a local .json file containing {items, topic?, isWorksheet?, responses?, config?}' },
+        output_path: { type: 'string', description: 'Where to write the generated .html file (collision-safe; existing files are not overwritten)' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Generate an AlloFlow resource pack', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'export_accessible_office',
@@ -892,7 +995,7 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
-    annotations: { title: 'Repair colour contrast', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    annotations: { title: 'Repair colour contrast', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'generate_conformance_report',
@@ -909,7 +1012,7 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
-    annotations: { title: 'Generate the AlloFlow conformance report', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    annotations: { title: 'Generate the AlloFlow conformance report', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'describe_images',
@@ -999,12 +1102,18 @@ const TOOLS = [
   {
     name: 'apply_form_fields',
     title: 'Turn accepted blanks into labelled form fields (no API key)',
-    description: 'Convert the blanks you accepted from detect_form_fields into real, labelled form inputs in the HTML. Deterministic, no API key. Pass the ids you want applied; anything you omit is left as-is, so a reviewer stays in control of which blanks become fields.',
+    description: 'Convert the blanks you accepted from detect_form_fields into real, labelled form inputs in the HTML. Deterministic, no API key. Pass the production pipeline\'s native object map keyed by candidate id, for example `{ "f0": { "label": "Student name" } }`; anything omitted is left as-is.',
     inputSchema: {
       type: 'object', required: ['file_path', 'accepted'],
       properties: {
         file_path: { type: 'string', description: 'Absolute path to a local .html file' },
-        accepted: { type: 'array', items: {}, description: 'The accepted entries from detect_form_fields (or their ids)' },
+        accepted: {
+          type: 'object', minProperties: 1, maxProperties: 500,
+          additionalProperties: {
+            type: 'object', properties: { label: { type: 'string', maxLength: 200 } }, additionalProperties: false,
+          },
+          description: 'Object map keyed by ids from detect_form_fields; each value may override the label',
+        },
         output_path: { type: 'string', description: 'Where to write the result (default: <name>-fillable.html beside the input)' },
       },
       additionalProperties: false,
@@ -1034,7 +1143,7 @@ const TOOLS = [
       properties: { file_path: { type: 'string', description: 'Absolute path to a local .html file' } },
       additionalProperties: false,
     },
-    annotations: { title: 'Audit with two engines', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    annotations: { title: 'Audit with two engines', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'check_document_structure',
@@ -1048,7 +1157,7 @@ const TOOLS = [
       },
       additionalProperties: false,
     },
-    annotations: { title: 'Check structure and extract plain text', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    annotations: { title: 'Check structure and extract plain text', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'remediation_setup',
@@ -1060,7 +1169,7 @@ const TOOLS = [
   {
     name: 'pdf_audit',
     title: 'Audit a PDF for accessibility',
-    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, or PPTX: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API and fetches pdf.js/Tesseract from public CDNs. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
+    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, or PPTX: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API; core browser libraries are bundled locally. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
@@ -1075,7 +1184,7 @@ const TOOLS = [
   {
     name: 'pdf_validate_ua',
     title: 'Validate PDF/UA-1 conformance',
-    description: 'Independent ISO 14289-1 (PDF/UA-1) validation of a local PDF using veraPDF (a real JVM in headless Chromium via CheerpJ — the same validator the app uses). Run it on a -tagged.pdf produced by remediation to independently confirm the byte-level tagging, or on any PDF to check its current conformance. Needs NO Gemini key, sends the document only to the validator page loaded from AlloFlow\'s CDN (validation runs locally in the browser JVM), writes nothing. Typically 30-60s including JVM boot. This is a DIFFERENT artifact from the remediation score: the score judges the accessible-HTML content; this judges the exported PDF bytes.',
+    description: 'Independent ISO 14289-1 (PDF/UA-1) validation of a local PDF using the packaged veraPDF CLI and local Java, with the bundled browser JVM only as a fallback. Run it on a -tagged.pdf produced by remediation or on any PDF. Needs NO Gemini key, paid Worker, institution account, AlloFlow service, or document upload; writes nothing. Typically 30-120s including JVM startup. This is a DIFFERENT artifact from the remediation score: the score judges the accessible-HTML content; this judges the exported PDF bytes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
@@ -1195,6 +1304,51 @@ const TOOLS = [
   })(),
 ].flat();
 
+// This is the one classification source for capability reporting. It does not duplicate
+// implementations: the names refer to the registry above, and keyless names are derived by
+// subtraction so adding a tool cannot silently create a second hand-maintained list.
+const GEMINI_REQUIRED_TOOL_NAMES = Object.freeze([
+  'describe_images',
+  'transcribe_media',
+  'translate_accessible_html',
+  'simplify_accessible_html',
+  'pdf_audit',
+  'pdf_remediate',
+  'pdf_remediate_start',
+  'pdf_batch_audit_start',
+  'pdf_batch_remediate_start',
+  'pdf_remediate_from_scoreboard_start',
+]);
+const GEMINI_REQUIRED_TOOL_SET = new Set(GEMINI_REQUIRED_TOOL_NAMES);
+const KEYLESS_TOOL_NAMES = Object.freeze(
+  TOOLS.map((tool) => tool.name).filter((name) => !GEMINI_REQUIRED_TOOL_SET.has(name))
+);
+
+// Keyless is an account/cost classification, not a privacy classification. Keep these
+// dependency-download exceptions explicit so clients can distinguish "no document egress"
+// from "no network request at all". The remaining keyless tools use only local files,
+// bundled assets, local processes, and (for selftest) loopback HTTP.
+const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES = Object.freeze([
+  'remediation_setup',
+  'export_accessible_office',
+  'export_alt_format',
+]);
+const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET = new Set(PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES);
+const OFFLINE_TOOL_NAMES = Object.freeze(
+  KEYLESS_TOOL_NAMES.filter((name) => !PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET.has(name))
+);
+
+// Fail closed if a future tool is added without a data-handling classification. This remains
+// metadata only: every operation still calls the normal app pipeline implementation.
+const PRIVACY_CLASSIFIED_TOOL_NAMES = new Set([
+  ...OFFLINE_TOOL_NAMES,
+  ...PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES,
+  ...GEMINI_REQUIRED_TOOL_NAMES,
+]);
+if (PRIVACY_CLASSIFIED_TOOL_NAMES.size !== TOOLS.length || TOOLS.some((tool) => !PRIVACY_CLASSIFIED_TOOL_NAMES.has(tool.name))) {
+  throw new Error('Every MCP tool must have exactly one data-handling classification.');
+}
+
 // ── Output schemas ──────────────────────────────────────────────────────────
 // Every tool returns structuredContent, and until now none said what shape it had — so a caller
 // had to guess that `verdict`, `aiVerificationIncomplete` and `integrityWarning` even exist.
@@ -1281,8 +1435,30 @@ const OUTPUT_SCHEMAS = {
   remediation_capabilities: obj({
     ready: { type: 'boolean', description: 'Parts are present. Presence is not function — see readyMeans and remediation_selftest.' },
     readyMeans: S_STR,
+    fullAiPipelineReady: S_BOOL,
+    keylessModeAvailable: S_BOOL,
+    keylessModeMeans: S_STR,
+    keylessToolNames: { type: 'array', items: S_STR },
+    geminiRequiredToolNames: { type: 'array', items: S_STR },
+    dataHandling: strictObj({
+      offlineToolNames: { type: 'array', items: S_STR },
+      publicDependencyDownloadToolNames: { type: 'array', items: S_STR },
+      geminiDocumentEgressToolNames: { type: 'array', items: S_STR },
+      dependencyDownloadsSendDocumentContent: S_BOOL,
+      note: S_STR,
+    }, ['offlineToolNames', 'publicDependencyDownloadToolNames', 'geminiDocumentEgressToolNames', 'dependencyDownloadsSendDocumentContent', 'note']),
+    onboarding: strictObj({
+      state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'keyless-ready', 'full-ai-ready'] },
+      nextTool: { type: ['string', 'null'] },
+      actionRequired: S_BOOL,
+      message: S_STR,
+    }, ['state', 'nextTool', 'actionRequired', 'message']),
+    alloflowAccountRequired: S_BOOL,
+    paidWorkerRequired: S_BOOL,
+    institutionAccountRequired: S_BOOL,
     geminiKeyPresent: S_BOOL, geminiKeySource: S_STR,
     playwrightAvailable: S_BOOL, chromiumInstalled: S_BOOL, setupHint: S_STR,
+    vendorAssets: obj({ present: S_BOOL, hashVerified: S_BOOL, root: {}, files: S_NUM, error: S_STR }, ['present', 'hashVerified', 'files']),
     pipelineModulesPresent: obj({}), model: S_STR, fallbackModel: S_STR,
     maxRunMinutes: S_NUM, maxPdfMB: S_NUM, singleFlight: S_BOOL, busy: {},
     jobs: obj({ stored: S_NUM, unfinished: S_NUM, interrupted: S_NUM, stateDir: S_STR, durable: S_BOOL, retentionDays: S_NUM }),
@@ -1337,6 +1513,10 @@ const OUTPUT_SCHEMAS = {
   generate_conformance_report: obj({
     output: S_STR, bytes: S_NUM, generator: S_STR, pdfUaIncluded: S_BOOL, note: S_STR,
   }, ['output']),
+  generate_resource_pack: obj({
+    input: S_STR, output: S_STR, bytes: S_NUM, resourcesRequested: S_NUM,
+    worksheet: S_BOOL, modelFree: S_BOOL, generator: S_STR, note: S_STR,
+  }, ['input', 'output', 'resourcesRequested']),
   describe_images: obj({
     input: S_STR, output: S_STR, classified: S_NUM, equations: S_NUM, charts: S_NUM,
     visionCalls: S_NUM, dedupedCopies: S_NUM, note: S_STR,
@@ -1358,7 +1538,7 @@ const OUTPUT_SCHEMAS = {
   pdf_audit: S_AUDIT,
   pdf_validate_ua: obj({
     input: S_STR, standard: S_STR, validator: S_STR,
-    compliant: S_BOOL, failedChecks: S_NUM, failedRules: { type: 'array' }, note: S_STR,
+    compliant: S_BOOL, failedChecks: S_NUM, failedRuleCount: S_NUM, failedRules: { type: 'array' }, passedChecks: S_NUM, passedRuleCount: S_NUM, validatorVersion: S_STR, transport: S_STR, note: S_STR,
   }, ['compliant']),
   pdf_remediate: S_REMEDIATE,
   pdf_remediate_start: S_JOB_START,
@@ -1381,6 +1561,56 @@ for (const t of TOOLS) {
 }
 
 const TOOL_HANDLERS = {
+  async generate_resource_pack(args, ctx) {
+    assertAllowedKeys(args, ['resource_pack_json', 'output_path'], 'arguments');
+    const inputPath = enforceAllowedRoot(path.resolve(String(args.resource_pack_json || '')), 'arguments.resource_pack_json');
+    if (!/\.json$/i.test(inputPath)) throw invalidParams('arguments.resource_pack_json must be a .json file');
+    if (!fs.existsSync(inputPath)) throw invalidParams('arguments.resource_pack_json does not exist: ' + inputPath);
+    const size = fs.statSync(inputPath).size;
+    if (size > 10 * 1024 * 1024) throw invalidParams('arguments.resource_pack_json exceeds the 10 MB limit');
+    if (typeof args.output_path !== 'string' || !args.output_path.trim()) throw invalidParams('arguments.output_path is required');
+    const requestedOutput = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
+    if (!/\.html?$/i.test(requestedOutput)) throw invalidParams('arguments.output_path must end in .html or .htm');
+
+    let payload;
+    try { payload = JSON.parse(fs.readFileSync(inputPath, 'utf8')); }
+    catch (e) { throw invalidParams('arguments.resource_pack_json is not readable JSON: ' + ((e && e.message) || e)); }
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw invalidParams('resource-pack JSON must be an object');
+    assertAllowedKeys(payload, ['items', 'topic', 'isWorksheet', 'responses', 'config'], 'resource-pack JSON');
+    if (!Array.isArray(payload.items) || payload.items.length < 1 || payload.items.length > 500) {
+      throw invalidParams('resource-pack JSON.items must contain 1-500 resources');
+    }
+    if (payload.items.some((item) => !item || typeof item !== 'object' || Array.isArray(item))) {
+      throw invalidParams('every resource-pack JSON.items entry must be an object');
+    }
+    if (payload.topic !== undefined && typeof payload.topic !== 'string') throw invalidParams('resource-pack JSON.topic must be a string');
+    if (payload.isWorksheet !== undefined && typeof payload.isWorksheet !== 'boolean') throw invalidParams('resource-pack JSON.isWorksheet must be a boolean');
+    for (const key of ['responses', 'config']) {
+      if (payload[key] !== undefined && (payload[key] === null || typeof payload[key] !== 'object' || Array.isArray(payload[key]))) {
+        throw invalidParams('resource-pack JSON.' + key + ' must be an object');
+      }
+    }
+
+    fs.mkdirSync(path.dirname(requestedOutput), { recursive: true });
+    const dest = claimOutputPath(path.dirname(requestedOutput), path.basename(requestedOutput));
+    const out = await withSingleFlight('generate_resource_pack', () => getDriver().generateResourcePack({
+      items: payload.items,
+      topic: payload.topic || '',
+      isWorksheet: payload.isWorksheet === true,
+      responses: payload.responses || {},
+      config: payload.config || null,
+      onLog: ctx && ctx.onProgress,
+    }));
+    if (!out || typeof out.html !== 'string') throw new Error('The production resource-pack generator returned no HTML');
+    fs.writeFileSync(dest, out.html, 'utf8');
+    return {
+      input: inputPath, output: dest, bytes: Buffer.byteLength(out.html),
+      resourcesRequested: out.resourcesRequested, worksheet: out.worksheet, modelFree: true,
+      generator: "AlloFlow's production generateFullPackHTML",
+      note: 'This is the normal app resource-pack renderer exposed through MCP; no rendering or remediation logic is duplicated in the connector.',
+    };
+  },
+
   remediation_capabilities(args) {
     assertAllowedKeys(args, [], 'arguments');
     // The playwright PACKAGE resolving is necessary but NOT sufficient — a packaged
@@ -1391,13 +1621,59 @@ const TOOL_HANDLERS = {
     const modules = {};
     for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.ASSETS_ROOT, f));
     const keyInfo = Driver.resolveGeminiApiKey();
+    const vendorAssets = Driver.verifyVendorBundle();
+    const modulesReady = Object.values(modules).every(Boolean);
+    const browserRuntimeReady = playwrightAvailable && chrome.installed && vendorAssets.hashVerified && modulesReady;
+    let onboarding;
+    if (busyWith) {
+      onboarding = {
+        state: 'busy', nextTool: null, actionRequired: true,
+        message: 'A run is already active. Wait for it to finish or use the job id already returned by a background start tool with remediation_job_status.',
+      };
+    } else if (!playwrightAvailable || !vendorAssets.hashVerified || !modulesReady) {
+      onboarding = {
+        state: 'reinstall-required', nextTool: null, actionRequired: true,
+        message: 'The connector package is incomplete or failed its local asset integrity check. Reinstall this connector; adding a Gemini key will not fix it.',
+      };
+    } else if (!chrome.installed) {
+      onboarding = {
+        state: 'setup-required', nextTool: 'remediation_setup', actionRequired: true,
+        message: 'Call remediation_setup once to download Chromium. No Gemini key or AlloFlow account is needed.',
+      };
+    } else if (keyInfo.key) {
+      onboarding = {
+        state: 'full-ai-ready', nextTool: 'remediation_selftest', actionRequired: false,
+        message: 'Local and Gemini-powered tools are available. remediation_selftest is an optional no-key, no-quota end-to-end installation check.',
+      };
+    } else {
+      onboarding = {
+        state: 'keyless-ready', nextTool: 'remediation_selftest', actionRequired: false,
+        message: 'Local tools are ready without an account or key. remediation_selftest can prove the browser remediation pipeline works; a Gemini key is optional and only unlocks the named AI tools.',
+      };
+    }
     return {
       geminiKeyPresent: !!keyInfo.key,
-      geminiKeySource: keyInfo.source, // label only ('env:…'/'file:…'/'none') — never the value
+      geminiKeySource: keyInfo.source, // label only; never the value
+      keylessModeAvailable: true,
+      keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
+      keylessToolNames: KEYLESS_TOOL_NAMES,
+      geminiRequiredToolNames: GEMINI_REQUIRED_TOOL_NAMES,
+      dataHandling: {
+        offlineToolNames: OFFLINE_TOOL_NAMES,
+        publicDependencyDownloadToolNames: PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES,
+        geminiDocumentEgressToolNames: GEMINI_REQUIRED_TOOL_NAMES,
+        dependencyDownloadsSendDocumentContent: false,
+        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Gemini tools send the document or derived content to Gemini under the user-provided key.',
+      },
+      onboarding,
+      alloflowAccountRequired: false,
+      paidWorkerRequired: false,
+      institutionAccountRequired: false,
       playwrightAvailable,
       chromiumInstalled: chrome.installed,
       setupHint: (!chrome.installed && playwrightAvailable) ? 'The Chromium browser binary is not installed yet — call remediation_setup once (a ~200MB one-time download) and this environment becomes ready.' : undefined,
       pipelineModulesPresent: modules,
+      vendorAssets,
       model: process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
       fallbackModel: process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
       maxRunMinutes: Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30,
@@ -1415,12 +1691,13 @@ const TOOL_HANDLERS = {
       // Absent means unrestricted, which is the honest word for it: the connector can read and
       // write wherever this user can. Set ALLOFLOW_MCP_ALLOWED_ROOTS to make that a boundary.
       allowedRoots: ALLOWED_ROOTS.length ? ALLOWED_ROOTS : null,
-      networkEgress: ['generativelanguage.googleapis.com (document content)', 'public CDNs (pdf.js, Tesseract, pdf-lib, axe)'],
-      ready: !!keyInfo.key && playwrightAvailable && chrome.installed && Object.values(modules).every(Boolean),
+      networkEgress: ['generativelanguage.googleapis.com (document or derived content; Gemini tools only)', 'Playwright browser download service (remediation_setup only; no document)', 'unpkg.com and cdn.jsdelivr.net (pinned exporter libraries only; no document intentionally included)'],
+      ready: !!keyInfo.key && browserRuntimeReady,
+      fullAiPipelineReady: !!keyInfo.key && browserRuntimeReady,
       // `ready` is a PRESENCE check, and presence is not function. It reported true for an install
       // where every run died at the pipeline's ownership gate (2026-07-28). Say so, rather than
       // letting one word imply more than it verifies.
-      readyMeans: 'The parts are present (key, Playwright, Chromium, pipeline modules). It does NOT prove a run succeeds — run remediation_selftest for that, which needs no key and no quota.',
+      readyMeans: 'The parts are present (key, Playwright, Chromium, pipeline modules, and hash-verified local vendor assets). It does NOT prove a run succeeds — run remediation_selftest for that, which needs no key and no quota.',
     };
   },
 
@@ -1697,13 +1974,26 @@ const TOOL_HANDLERS = {
   async apply_form_fields(args, ctx) {
     assertAllowedKeys(args, ['file_path', 'accepted', 'output_path'], 'arguments');
     const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
-    if (!Array.isArray(args.accepted)) throw invalidParams('arguments.accepted must be an array');
+    if (!args.accepted || typeof args.accepted !== 'object' || Array.isArray(args.accepted)) {
+      throw invalidParams('arguments.accepted must be an object map keyed by field id');
+    }
+    const acceptedIds = Object.keys(args.accepted);
+    if (!acceptedIds.length || acceptedIds.length > 500) throw invalidParams('arguments.accepted must contain 1-500 field ids');
+    for (const id of acceptedIds) {
+      if (!/^f\d+$/.test(id)) throw invalidParams('arguments.accepted has an invalid field id: ' + id);
+      const override = args.accepted[id];
+      if (!override || typeof override !== 'object' || Array.isArray(override)) throw invalidParams('arguments.accepted.' + id + ' must be an object');
+      assertAllowedKeys(override, ['label'], 'arguments.accepted.' + id);
+      if (override.label !== undefined && (typeof override.label !== 'string' || override.label.length > 200)) {
+        throw invalidParams('arguments.accepted.' + id + '.label must be a string of at most 200 characters');
+      }
+    }
     const dest = _htmlOutputPath(args, htmlPath, '-fillable.html');
     const out = await withSingleFlight('apply_form_fields', () => getDriver().applyFormFields({
       html: fs.readFileSync(htmlPath, 'utf8'), accepted: args.accepted, onLog: ctx && ctx.onProgress,
     }));
     fs.writeFileSync(dest, out.html, 'utf8');
-    return { input: htmlPath, output: dest, applied: args.accepted.length, bytes: Buffer.byteLength(out.html) };
+    return { input: htmlPath, output: dest, applied: out.converted, bytes: Buffer.byteLength(out.html) };
   },
 
   async simplify_accessible_html(args, ctx) {
@@ -1791,18 +2081,14 @@ const TOOL_HANDLERS = {
   async pdf_validate_ua(args, ctx) {
     assertAllowedKeys(args, ['file_path'], 'arguments');
     const filePath = requirePdfPath(args);
-    // No Gemini key, no pipeline globals, its own browser context — deliberately OUTSIDE the
-    // single-flight lane so a 30-minute remediation doesn't block a 60-second validation.
-    const result = await getDriver().validatePdfUa({ filePath, onLog: ctx && ctx.onProgress });
-    return {
+    // No Gemini key and no remote service. Prefer the packaged local CLI; retain the bundled
+    // browser JVM as a compatibility fallback when Java is unavailable.
+    const result = await validatePdfUaLocally(filePath, ctx && ctx.onProgress);
+    return Object.assign({
       input: filePath,
       standard: 'PDF/UA-1 (ISO 14289-1)',
-      validator: 'veraPDF greenfield (in-browser JVM)',
-      compliant: !!(result && result.compliant),
-      failedChecks: (result && result.failedChecks) || 0,
-      failedRules: ((result && result.failedRules) || []).slice(0, 100),
       note: 'Byte-level ISO conformance of THIS file. A remediation score judges the accessible-HTML content instead — the two are complementary, never interchangeable.',
-    };
+    }, result);
   },
 
   async pdf_remediate(args, ctx) {
@@ -2017,15 +2303,78 @@ async function handleRequest(msg) {
       const requested = params && params.protocolVersion;
       const protocolVersion = SUPPORTED_PROTOCOL_VERSIONS.indexOf(requested) !== -1 ? requested : SUPPORTED_PROTOCOL_VERSIONS[0];
       initialized = true;
+      const capabilities = { tools: { listChanged: false } };
+      if (BUNDLED_SKILL) {
+        capabilities.resources = { subscribe: false, listChanged: false };
+        capabilities.prompts = { listChanged: false };
+        capabilities.extensions = { 'io.modelcontextprotocol/skills': {} };
+      }
       sendResult(id, {
         protocolVersion,
-        capabilities: { tools: { listChanged: false } },
+        capabilities,
         serverInfo: SERVER_INFO,
-        instructions: 'AlloFlow PDF remediation connector. Call `remediation_capabilities` first to confirm the environment is ready. `pdf_audit` scores a local PDF (1-3 min). For remediation PREFER the job flow: `pdf_remediate_start` (or `pdf_batch_remediate_start` for a folder) returns a job_id immediately; poll `remediation_job_status` every 30-60s and fetch `remediation_job_result` when completed — full runs take 5-30 minutes, longer than most tool timeouts, which is why the synchronous `pdf_remediate` exists only for small documents. When you do call a synchronous tool, send `_meta.progressToken` to receive live pipeline telemetry as progress notifications, and `notifications/cancelled` to abort the run. Runs send document content to the Gemini API; work is single-flight (jobs queue FIFO).'
-      });
+        instructions: [
+          "AlloFlow local document-remediation connector.",
+          "Call remediation_capabilities first, follow onboarding, and inspect dataHandling before opening a document.",
+          "A false fullAiPipelineReady does not disable keyless tools. offlineToolNames make no external network request; publicDependencyDownloadToolNames fetch software dependencies but do not intentionally send document content.",
+          "The optional AI pipeline sends document content to Gemini under the user's key. Prefer pdf_remediate_start, poll remediation_job_status, then fetch remediation_job_result.",
+          "For synchronous long runs, send _meta.progressToken for progress and notifications/cancelled to stop the request.",
+          "A bundled alloflow-pdf-remediation skill supplies the safe tool sequence and honesty-reporting rules to clients that support MCP skill import.",
+        ].join(' ')      });
       return;
     }
     case 'ping': sendResult(id, {}); return;
+    case 'prompts/list': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled prompts are unavailable in this installation'); return; }
+      const p = params || {};
+      if (typeof p !== 'object' || Array.isArray(p) || Object.keys(p).some((key) => key !== 'cursor')) { sendError(id, -32602, 'prompts/list accepts only an optional cursor'); return; }
+      if (p.cursor !== undefined && typeof p.cursor !== 'string') { sendError(id, -32602, 'prompts/list cursor must be a string'); return; }
+      sendResult(id, { prompts: p.cursor ? [] : [REMEDIATION_PROMPT] });
+      return;
+    }
+    case 'prompts/get': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled prompts are unavailable in this installation'); return; }
+      if (!params || typeof params !== 'object' || Array.isArray(params) || params.name !== REMEDIATION_PROMPT_NAME || Object.keys(params).some((key) => key !== 'name' && key !== 'arguments')) { sendError(id, -32602, 'Unknown or invalid prompt name'); return; }
+      const args = params.arguments || {};
+      if (typeof args !== 'object' || Array.isArray(args) || Object.keys(args).some((key) => key !== 'document' && key !== 'goal')) { sendError(id, -32602, 'Prompt arguments must contain only document and optional goal strings'); return; }
+      const document = typeof args.document === 'string' ? args.document.trim() : '';
+      const goal = typeof args.goal === 'string' ? args.goal.trim() : '';
+      if (!document || document.length > 2000) { sendError(id, -32602, 'document is required and must be at most 2000 characters'); return; }
+      if ((args.goal !== undefined && typeof args.goal !== 'string') || goal.length > 4000) { sendError(id, -32602, 'goal must be a string of at most 4000 characters'); return; }
+      sendResult(id, {
+        description: REMEDIATION_PROMPT.description,
+        messages: [{ role: 'user', content: { type: 'text', text: remediationPromptText(document, goal) } }],
+      });
+      return;
+    }
+    case 'skills/list': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled skills are unavailable in this installation'); return; }
+      const p = params || {};
+      if (typeof p !== 'object' || Array.isArray(p) || Object.keys(p).some((key) => key !== 'cursor')) { sendError(id, -32602, 'skills/list accepts only an optional cursor'); return; }
+      if (p.cursor !== undefined && typeof p.cursor !== 'string') { sendError(id, -32602, 'skills/list cursor must be a string'); return; }
+      sendResult(id, { skills: p.cursor ? [] : [BUNDLED_SKILL.entry] });
+      return;
+    }
+    case 'skills/get': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled skills are unavailable in this installation'); return; }
+      if (!params || params.uri !== SKILL_URI || Object.keys(params).some((key) => key !== 'uri')) { sendError(id, -32602, 'Unknown or invalid skill URI'); return; }
+      sendResult(id, { skill: BUNDLED_SKILL.entry });
+      return;
+    }
+    case 'resources/list': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled resources are unavailable in this installation'); return; }
+      const p = params || {};
+      if (typeof p !== 'object' || Array.isArray(p) || Object.keys(p).some((key) => key !== 'cursor')) { sendError(id, -32602, 'resources/list accepts only an optional cursor'); return; }
+      if (p.cursor !== undefined && typeof p.cursor !== 'string') { sendError(id, -32602, 'resources/list cursor must be a string'); return; }
+      sendResult(id, { resources: p.cursor ? [] : [{ uri: SKILL_URI, name: SKILL_NAME, title: 'AlloFlow PDF Remediation Skill', description: BUNDLED_SKILL.entry.frontmatter.description, mimeType: 'text/markdown' }] });
+      return;
+    }
+    case 'resources/read': {
+      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled resources are unavailable in this installation'); return; }
+      if (!params || params.uri !== SKILL_URI || Object.keys(params).some((key) => key !== 'uri')) { sendError(id, -32602, 'Unknown or invalid resource URI'); return; }
+      sendResult(id, { contents: [{ uri: SKILL_URI, mimeType: 'text/markdown', text: BUNDLED_SKILL.text }] });
+      return;
+    }
     case 'tools/list': sendResult(id, { tools: TOOLS }); return;
     case 'tools/call': {
       const name = params && params.name;

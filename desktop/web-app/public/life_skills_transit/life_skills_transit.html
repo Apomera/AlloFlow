@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Transit &amp; Street Safety Lab</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  if (window.AFRAME) {
+    AFRAME.registerComponent('transit-interactive', {
+      schema: { task: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsTransit3D) window.lifeSkillsTransit3D.activate(this.data.task, 'scene');
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsTransit3D) window.lifeSkillsTransit3D.focus(this.data.task, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root {
+    --transit-bg: #111827;
+    --transit-panel: #182337;
+    --transit-panel-2: #21324b;
+    --transit-line: #557095;
+    --transit-text: #f8fbff;
+    --transit-muted: #c8d6eb;
+    --transit-accent: #67e8f9;
+    --transit-good: #4ade80;
+    --transit-warn: #facc15;
+    --transit-danger: #fb7185;
+  }
+  :root[data-theme="light"] {
+    --transit-bg: #eef4f8;
+    --transit-panel: #ffffff;
+    --transit-panel-2: #e5eef5;
+    --transit-line: #7894af;
+    --transit-text: #122236;
+    --transit-muted: #3b526a;
+    --transit-accent: #075985;
+    --transit-good: #166534;
+    --transit-warn: #854d0e;
+    --transit-danger: #9f1239;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--transit-bg); color: var(--transit-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--transit-warn); outline-offset: 2px; }
+  .transit-app { min-height: 100vh; display: flex; flex-direction: column; }
+  .transit-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 18px; background: linear-gradient(115deg, #1e3a8a, #0e7490 58%, #166534); border-bottom: 1px solid rgba(255,255,255,.24); }
+  .transit-header h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .transit-header p { margin: 4px 0 0; color: #effbff; font-size: 12px; line-height: 1.45; max-width: 700px; }
+  .header-mark { flex: 0 0 auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .transit-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 12px; padding: 12px; }
+  .scene-panel, .coach-panel { min-width: 0; border: 1px solid var(--transit-line); background: var(--transit-panel); box-shadow: 0 16px 42px rgba(0,0,0,.2); }
+  .scene-panel { position: relative; min-height: 590px; overflow: hidden; border-radius: 14px; }
+  .scene-panel a-scene { display: block; width: 100%; height: 100%; min-height: 590px; }
+  .scene-help { position: absolute; left: 12px; bottom: 10px; z-index: 4; max-width: min(470px, calc(100% - 24px)); padding: 7px 9px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: rgba(17,24,39,.88); color: #eef8ff; font-size: 11px; line-height: 1.35; pointer-events: none; }
+  .coach-panel { border-radius: 14px; padding: 14px; overflow: auto; }
+  .coach-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .coach-panel h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .coach-panel h3 { margin: 16px 0 7px; color: var(--transit-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .coach-panel p { margin: 0; color: var(--transit-muted); font-size: 12px; line-height: 1.5; }
+  .mode-wrap { display: grid; gap: 4px; min-width: 132px; }
+  .mode-wrap label { color: var(--transit-muted); font-size: 10px; font-weight: 800; }
+  .mode-wrap select { min-height: 32px; padding: 4px 7px; border: 1px solid var(--transit-line); border-radius: 7px; background: var(--transit-panel-2); color: var(--transit-text); font-size: 11px; font-weight: 750; }
+  .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 9px; padding: 9px 10px; border-left: 4px solid var(--transit-accent); background: var(--transit-panel-2); }
+  .progress-line strong { font-size: 14px; }
+  .progress-line span { color: var(--transit-muted); font-size: 11px; font-weight: 700; text-align: right; }
+  .view-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view-controls span { color: var(--transit-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .view-button { padding: 5px 8px; border: 1px solid var(--transit-line); border-radius: 7px; background: transparent; color: var(--transit-text); font-size: 10px; font-weight: 800; }
+  .view-button[aria-pressed="true"] { border-color: var(--transit-accent); background: rgba(103,232,249,.12); }
+  .prompt { margin: 0 0 10px !important; padding: 9px 10px; border: 1px solid var(--transit-line); border-radius: 9px; background: rgba(103,232,249,.08); color: var(--transit-text) !important; }
+  .feedback { min-height: 42px; margin: 0 0 11px !important; padding: 8px 10px; border-radius: 8px; background: rgba(250,204,21,.12); color: var(--transit-warn) !important; font-weight: 700; }
+  .feedback.good { background: rgba(74,222,128,.13); color: var(--transit-good) !important; }
+  .feedback.error { background: rgba(251,113,133,.13); color: var(--transit-danger) !important; }
+  .scenario-panel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--transit-line); border-left: 4px solid var(--transit-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .scenario-kicker { color: var(--transit-accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .scenario-panel strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.3; }
+  .scenario-situation { margin: 5px 0 8px !important; }
+  .scenario-choices { display: grid; gap: 6px; }
+  .scenario-button { width: 100%; padding: 7px 8px; border: 1px solid var(--transit-line); border-radius: 7px; background: transparent; color: var(--transit-text); font-size: 11px; line-height: 1.35; text-align: left; }
+  .scenario-button:hover, .scenario-button:focus-visible, .scenario-button[aria-pressed="true"] { border-color: var(--transit-accent); background: rgba(103,232,249,.12); }
+  .scenario-button:disabled { cursor: default; opacity: .76; }
+  .scenario-feedback { min-height: 30px; margin: 7px 0 0 !important; font-size: 11px !important; font-weight: 700; }
+  .scenario-feedback.good { color: var(--transit-good) !important; }
+  .scenario-feedback.error { color: var(--transit-danger) !important; }
+  .scenario-hint { margin-top: 7px; padding: 6px 8px; border: 1px solid var(--transit-line); border-radius: 7px; background: transparent; color: var(--transit-text); font-size: 10px; font-weight: 800; }
+  .scenario-hint[aria-expanded="true"] { border-color: var(--transit-accent); background: rgba(103,232,249,.1); }
+  .scenario-hint-text { margin: 6px 0 0 !important; color: var(--transit-muted) !important; font-size: 11px !important; }
+  .scenario-step { display: block; margin-top: 2px; color: var(--transit-muted); font-size: 10px; font-weight: 700; }
+  .scenario-next { width: 100%; margin-top: 7px; padding: 7px 8px; border: 1px solid var(--transit-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--transit-text); font-size: 10px; font-weight: 800; }
+  .scenario-next:disabled { cursor: default; opacity: .7; }
+  .practice-summary { margin: 6px 0 0 !important; color: var(--transit-muted) !important; font-size: 10px !important; font-weight: 700; }
+  .task-list { display: grid; gap: 7px; }
+  .task-button { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; width: 100%; padding: 9px 10px; border: 1px solid var(--transit-line); border-radius: 9px; background: transparent; color: var(--transit-text); text-align: left; }
+  .task-button:hover, .task-button.current { border-color: var(--transit-accent); background: rgba(103,232,249,.09); }
+  .task-button.done { border-color: rgba(74,222,128,.75); background: rgba(74,222,128,.1); }
+  .task-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--transit-panel-2); font-size: 15px; }
+  .task-button.done .task-icon { background: rgba(74,222,128,.2); }
+  .task-copy { min-width: 0; }
+  .task-copy strong { display: block; font-size: 11px; line-height: 1.25; }
+  .task-copy small { display: block; margin-top: 2px; color: var(--transit-muted); font-size: 10px; line-height: 1.3; }
+  .task-room { align-self: start; color: var(--transit-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .reset-button { width: 100%; margin-top: 11px; padding: 9px 10px; border: 1px solid var(--transit-line); border-radius: 8px; background: var(--transit-panel-2); color: var(--transit-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button { width: 100%; margin-top: 7px; padding: 9px 10px; border: 1px solid var(--transit-warn); border-radius: 8px; background: rgba(250,204,21,.1); color: var(--transit-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button:hover { border-color: var(--transit-accent); background: rgba(103,232,249,.12); }
+  .help-pause-text { margin: 6px 0 0 !important; color: var(--transit-good) !important; font-size: 11px !important; font-weight: 700; }
+  .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--transit-line); border-radius: 8px; background: transparent; color: var(--transit-text); font-size: 11px; font-weight: 800; }
+  .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--transit-accent); background: rgba(103,232,249,.1); }
+  .why-text { margin: 6px 0 0 !important; color: var(--transit-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--transit-line); font-size: 11px !important; }
+  .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--transit-line); border-radius: 12px; background: var(--transit-panel); color: var(--transit-text); }
+  .scene-fallback strong { display: block; margin-bottom: 5px; }
+  .scene-fallback p { color: var(--transit-muted); font-size: 12px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 840px) {
+    .transit-layout { grid-template-columns: 1fr; }
+    .scene-panel { min-height: 500px; }
+    .scene-panel a-scene { min-height: 500px; }
+  }
+  @media (max-width: 520px) {
+    .transit-header { padding: 12px; }
+    .transit-header h1 { font-size: 17px; }
+    .header-mark { display: none; }
+    .transit-layout { padding: 8px; gap: 8px; }
+    .scene-panel { min-height: 430px; }
+    .scene-panel a-scene { min-height: 430px; }
+    .coach-panel { padding: 11px; }
+    .coach-top { display: grid; }
+    .mode-wrap { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="transit-app" id="transitApp">
+  <header class="transit-header">
+    <div>
+      <h1>Transit &amp; Street Safety Lab</h1>
+      <p>Practice scanning, crossing, checking routes, using restraints, staying visible, and asking for help when plans change.</p>
+    </div>
+    <div class="header-mark">Life Skills Lab · 3D practice</div>
+  </header>
+
+  <div class="transit-layout">
+    <section class="scene-panel" aria-labelledby="sceneTitle">
+      <h2 class="sr-only" id="sceneTitle">Interactive 3D street and transit scene</h2>
+      <a-scene id="transitScene" embedded renderer="antialias: true; colorManagement: true" background="color: #111827" fog="type: linear; color: #111827; near: 10; far: 34" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #d8e8ff; intensity: 1.5"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.6" position="-4 8 5"></a-entity>
+        <a-entity light="type: point; color: #67e8f9; intensity: .7; distance: 16" position="3 5 3"></a-entity>
+
+        <a-box position="0 -0.12 0" width="12" height=".2" depth="10" material="color: #263a4d; roughness: 1"></a-box>
+        <a-box position="0 3 -4.8" width="12" height="6" depth=".18" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="-5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+
+        <a-plane position="0 .012 -1.85" rotation="-90 0 0" width="11.2" height="2.6" material="color: #111827; roughness: 1"></a-plane>
+        <a-plane position="0 .014 -.15" rotation="-90 0 0" width="11.2" height=".95" material="color: #d1d5db; roughness: .9"></a-plane>
+        <a-plane position="0 .016 2.2" rotation="-90 0 0" width="11.2" height="3.2" material="color: #33405e; opacity: .55; transparent: true"></a-plane>
+        <a-text value="ROAD" position="0 .035 -1.85" rotation="-90 0 0" align="center" width="3" color="#d1d5db" opacity=".8"></a-text>
+        <a-text value="CROSSWALK + CURB" position="0 .035 .45" rotation="-90 0 0" align="center" width="3.7" color="#d9d6ff" opacity=".9"></a-text>
+        <a-text value="TRANSIT + HELP" position="3.9 .035 2.7" rotation="-90 0 0" align="center" width="3.2" color="#b7f0f8" opacity=".85"></a-text>
+
+        <!-- Crosswalk and scan/signal stations. -->
+        <a-box position="0 .24 .65" width="11.2" height=".18" depth=".2" material="color: #94a3b8; roughness: .9"></a-box>
+        <a-box position="-1.9 .36 .48" width=".18" height=".12" depth="1.15" material="color: #f8fafc; roughness: .8"></a-box>
+        <a-box position="-1.05 .36 .48" width=".18" height=".12" depth="1.15" material="color: #f8fafc; roughness: .8"></a-box>
+        <a-box position="-.2 .36 .48" width=".18" height=".12" depth="1.15" material="color: #f8fafc; roughness: .8"></a-box>
+        <a-box position=".65 .36 .48" width=".18" height=".12" depth="1.15" material="color: #f8fafc; roughness: .8"></a-box>
+        <a-box position="1.5 .36 .48" width=".18" height=".12" depth="1.15" material="color: #f8fafc; roughness: .8"></a-box>
+        <a-box id="obj-scan" transit-interactive="task: scan" position="-3.6 .72 .7" width=".62" height=".55" depth=".34" material="color: #f59e0b; roughness: .45"></a-box>
+        <a-text id="label-scan" value="STOP + SCAN\nBOTH DIRECTIONS" position="-3.6 1.58 .72" align="center" width="2.65" color="#fef3c7" side="double"></a-text>
+        <a-box position="-2.45 1.9 -.65" width=".12" height="3.2" depth=".12" material="color: #64748b; roughness: .65"></a-box>
+        <a-box id="obj-signal" transit-interactive="task: signal" position="-2.45 2.95 -.65" width=".5" height=".9" depth=".32" material="color: #1e293b; roughness: .6"></a-box>
+        <a-sphere position="-2.45 3.18 -.47" radius=".13" material="color: #22c55e; emissive: #166534; emissiveIntensity: .45"></a-sphere>
+        <a-sphere position="-2.45 2.86 -.47" radius=".13" material="color: #facc15; roughness: .35"></a-sphere>
+        <a-sphere position="-2.45 2.54 -.47" radius=".13" material="color: #ef4444; roughness: .35"></a-sphere>
+        <a-text id="label-signal" value="WAIT FOR\nWALK SIGNAL" position="-2.45 4.0 -.4" align="center" width="2.3" color="#dcfce7" side="double"></a-text>
+
+        <!-- Bus stop and route verification. -->
+        <a-box position="3.55 1.35 1.8" width="3.7" height=".22" depth="1.2" material="color: #075985; roughness: .65"></a-box>
+        <a-box position="3.55 2.4 1.8" width="3.7" height="1.9" depth="1.2" material="color: #0ea5e9; opacity: .92; transparent: true; roughness: .45"></a-box>
+        <a-box position="2.15 2.38 1.2" width=".15" height="1.65" depth=".9" material="color: #dbeafe; opacity: .75; transparent: true; roughness: .3"></a-box>
+        <a-box position="4.95 2.38 1.2" width=".15" height="1.65" depth=".9" material="color: #dbeafe; opacity: .75; transparent: true; roughness: .3"></a-box>
+        <a-box position="3.55 2.42 1.18" width="2.1" height=".12" depth=".7" material="color: #1e3a8a; roughness: .4"></a-box>
+        <a-text value="ROUTE 12" position="3.55 2.52 1.1" align="center" width="1.7" color="#f8fafc" side="double"></a-text>
+        <a-box position="1.55 1.15 1.55" width=".12" height="2.5" depth=".12" material="color: #64748b; roughness: .65"></a-box>
+        <a-box id="obj-route" transit-interactive="task: route" position="1.55 2.45 1.55" width=".72" height=".8" depth=".15" material="color: #22c55e; roughness: .4"></a-box>
+        <a-text id="label-route" value="CHECK STOP\nROUTE + DIRECTION" position="1.55 3.5 1.46" align="center" width="2.8" color="#dcfce7" side="double"></a-text>
+
+        <!-- Car and restraint station. -->
+        <a-box position="-1.2 1.02 -2.35" width="3.0" height="1.05" depth="1.65" material="color: #475569; roughness: .7"></a-box>
+        <a-box position="-1.2 1.7 -2.35" width="1.9" height=".75" depth="1.35" material="color: #60a5fa; opacity: .7; transparent: true; roughness: .35"></a-box>
+        <a-box position="-1.2 1.45 -1.62" width=".12" height=".82" depth=".1" rotation="0 0 -28" material="color: #ef4444; roughness: .42"></a-box>
+        <a-box id="obj-seatbelt" transit-interactive="task: seatbelt" position="-.42 1.4 -1.55" width=".22" height=".22" depth=".13" material="color: #f59e0b; roughness: .35"></a-box>
+        <a-text id="label-seatbelt" value="BUCKLE UP\nBEFORE MOVING" position="-.42 2.55 -1.52" align="center" width="2.35" color="#fef3c7" side="double"></a-text>
+
+        <!-- Bike visibility station. -->
+        <a-cylinder position="-3.8 .62 2.7" radius=".52" height=".08" rotation="90 0 0" material="color: #111827; roughness: .8"></a-cylinder>
+        <a-cylinder position="-2.75 .62 2.7" radius=".52" height=".08" rotation="90 0 0" material="color: #111827; roughness: .8"></a-cylinder>
+        <a-box position="-3.28 1.06 2.7" width=".15" height=".12" depth="1.25" material="color: #f59e0b; roughness: .45"></a-box>
+        <a-box id="obj-visibility" transit-interactive="task: visibility" position="-3.28 1.46 2.7" width=".36" height=".28" depth=".24" material="color: #22c55e; roughness: .38"></a-box>
+        <a-text id="label-visibility" value="BE VISIBLE\nLIGHTS + HELMET" position="-3.28 2.2 2.62" align="center" width="2.5" color="#dcfce7" side="double"></a-text>
+
+        <!-- Official/trusted help kiosk. -->
+        <a-box position="4.6 1.2 -1.25" width="1.05" height="2.35" depth=".55" material="color: #3730a3; roughness: .65"></a-box>
+        <a-box id="obj-help" transit-interactive="task: help" position="4.6 2.05 -.94" width=".62" height=".7" depth=".12" material="color: #facc15; roughness: .35"></a-box>
+        <a-text id="label-help" value="UNSURE?\nASK OFFICIAL HELP" position="4.6 3.05 -.88" align="center" width="2.6" color="#fef3c7" side="double"></a-text>
+
+        <a-ring id="marker-scan" position="-3.6 .72 .92" radius-inner=".32" radius-outer=".48" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-signal" position="-2.45 2.95 -.32" radius-inner=".32" radius-outer=".46" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-route" position="1.55 2.45 1.78" radius-inner=".38" radius-outer=".54" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-seatbelt" position="-.42 1.4 -1.36" radius-inner=".28" radius-outer=".42" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-visibility" position="-3.28 1.46 2.94" radius-inner=".28" radius-outer=".42" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-help" position="4.6 2.05 -.72" radius-inner=".38" radius-outer=".54" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-text id="sceneNote" value="Select a highlighted station or use the checklist." position="0 4.45 -3.95" align="center" width="5.8" color="#e7f2ff" side="double"></a-text>
+        <a-camera id="transitCamera" position="0 3.45 9.4" rotation="-12 0 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+          <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30; interval: 100"></a-entity>
+        </a-camera>
+        <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 30"></a-entity>
+      </a-scene>
+      <div class="scene-help">Mouse: drag to look · WASD: move · click a station. Keyboard users can use the checklist.</div>
+      <div class="scene-fallback" id="sceneFallback" role="status">
+        <strong>The 3D view is unavailable.</strong>
+        <p>Use the accessible transit checklist on the right to complete the same practice sequence.</p>
+      </div>
+      <p class="sr-only" id="sceneDescription">The scene shows a marked crosswalk, pedestrian signal, bus stop, car restraint, bike visibility station, and official-help kiosk. Six street and transit safety targets can be selected.</p>
+    </section>
+
+    <aside class="coach-panel" aria-labelledby="coachTitle">
+      <div class="coach-top">
+        <div>
+          <h2 id="coachTitle">Transit coach</h2>
+          <p>Practice safer choices before walking, rolling, riding, or using transit.</p>
+        </div>
+        <div class="mode-wrap">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect">
+            <option value="guided">Guided</option>
+            <option value="practice">Practice</option>
+            <option value="challenge">Challenge</option>
+          </select>
+        </div>
+      </div>
+      <div class="progress-line" aria-label="Transit walkthrough progress">
+        <strong id="progressValue">0 / 6</strong>
+        <span id="progressMode">Guided · start with the first target</span>
+      </div>
+      <div class="view-controls" role="group" aria-label="3D scene view">
+        <span>Scene view</span>
+        <button class="view-button" type="button" data-view="left" aria-pressed="false">Left side</button>
+        <button class="view-button" type="button" data-view="center" aria-pressed="true">Center</button>
+        <button class="view-button" type="button" data-view="right" aria-pressed="false">Right side</button>
+      </div>
+      <p class="prompt" id="prompt" role="status">Start by stopping at the curb and scanning traffic.</p>
+      <p class="feedback" id="feedback" role="status" aria-live="polite">Select a highlighted station or use a checklist button.</p>
+
+      <section class="scenario-panel" aria-labelledby="scenarioTitle">
+        <div class="scenario-kicker">Decision practice</div>
+        <strong id="scenarioTitle"></strong>
+        <span class="scenario-step" id="scenarioStep"></span>
+        <p class="scenario-situation" id="scenarioSituation"></p>
+        <div class="scenario-choices" id="scenarioChoices" role="group" aria-label="Scenario responses"></div>
+        <button class="scenario-hint" id="scenarioHint" type="button" aria-expanded="false">Show a hint</button>
+        <p class="scenario-hint-text" id="scenarioHintText" role="status" aria-live="polite" hidden></p>
+        <button class="scenario-next" id="scenarioNext" type="button" hidden>Try another scenario</button>
+        <p class="scenario-feedback" id="scenarioFeedback" role="status" aria-live="polite"></p>
+        <p class="practice-summary" id="practiceSummary" role="status" aria-live="polite"></p>
+      </section>
+      <h3>Accessible transit checklist</h3>
+      <div class="task-list" id="taskList" role="list" aria-label="Transit and street safety targets"></div>
+      <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
+      <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
+      <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
+      <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+      <button class="reset-button" id="resetButton" type="button">Start over</button>
+      <p class="note">Practice only. Follow local traffic, transit, bicycle, and accessibility rules. If a route, pickup, person, or location feels unsafe, move to a visible public place when possible and contact a trusted person or official help.</p>
+      <p class="sr-only" id="srStatus" aria-live="polite"></p>
+    </aside>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var TASKS = [
+    { id: 'scan', icon: '👀', room: 'Cross', label: 'Stop at the curb and scan traffic', short: 'Pause, look for moving vehicles, and do not step out while unsure.', why: 'A pause and full scan gives you time to notice traffic and changing conditions.', base: '#f59e0b' },
+    { id: 'signal', icon: '🚦', room: 'Cross', label: 'Use the marked crossing and signal', short: 'Wait for the walk signal and cross where people are expected.', why: 'Signals and marked crossings make your intention easier to read.', base: '#22c55e' },
+    { id: 'route', icon: '🚌', room: 'Transit', label: 'Verify the stop, route, and direction', short: 'Check the sign, route number, destination, and direction before boarding.', why: 'A quick route check prevents a wrong-vehicle mistake and reduces stress.', base: '#0ea5e9' },
+    { id: 'seatbelt', icon: '🔒', room: 'Ride', label: 'Buckle the seat belt before moving', short: 'Secure the restraint before the vehicle starts.', why: 'A seat belt is a simple first step for safer car and ride travel.', base: '#ef4444' },
+    { id: 'visibility', icon: '🚲', room: 'Roll', label: 'Make yourself visible before rolling', short: 'Use appropriate lights or reflective gear and protect your head when biking.', why: 'Visibility and protective equipment help other people notice you.', base: '#a855f7' },
+    { id: 'help', icon: '🛟', room: 'Help', label: 'Ask official or trusted help when unsure', short: 'Use staff, signs, a trusted contact, or a safer public place instead of guessing.', why: 'Help-seeking is a transportation skill, not a failure.', base: '#be123c' }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var SCENARIO = {"title":"You are unsure about the bus route","situation":"A bus arrives, but you cannot tell whether it is going in the right direction. What should you do?","instruction":"Choose the response that lowers travel stress and risk.","safeTask":"route","choices":[{"id":"safe","label":"Check the route and destination, or ask the driver or staff before boarding.","safe":true,"feedback":"A quick route check or help request prevents a wrong-vehicle mistake."},{"id":"rush","label":"Board quickly because the bus may leave.","feedback":"It is safer to pause and verify the route than to guess under pressure."},{"id":"follow","label":"Follow the crowd without checking the sign.","feedback":"Other riders may have a different destination. Check the sign or ask official help."}],"hint":"When the route is unclear, pause at the sign and use official information or ask staff before boarding.","next":{"title":"You miss your stop and feel unsure","situation":"You realize you missed your stop and the area feels unfamiliar. What is the safer next move?","instruction":"Choose the response that keeps you connected and visible.","safeTask":"help","choices":[{"id":"safe","label":"Move to a visible public place, check official information, and contact trusted or official help.","safe":true,"feedback":"A visible place, reliable information, and help-seeking reduce risk when a route changes."},{"id":"follow","label":"Follow a stranger who offers to take you somewhere.","feedback":"Do not rely on an unknown person. Move to a visible place and use official or trusted help."},{"id":"wander","label":"Walk away from the stop until you recognize something.","feedback":"Wandering can increase stress and risk. Pause, stay visible, and contact reliable help."}],"hint":"When a route changes, pause in a visible place and use signs, staff, or a trusted contact instead of guessing.","next":{"title":"You reach an unfamiliar stop after dark","situation":"The stop is dim and traffic is moving nearby. What should you do?","instruction":"Choose the response that keeps you visible and connected.","safeTask":"visibility","choices":[{"id":"safe","label":"Wait in a visible, well-lit place, use reflective or light gear, and ask official help if needed.","safe":true,"feedback":"Visibility and a reliable help point make an unfamiliar stop safer."},{"id":"hidden","label":"Stand behind parked cars so traffic cannot see you.","feedback":"Hidden areas make it harder for drivers and helpers to see you. Choose a visible, well-lit place."},{"id":"cross","label":"Cross the street quickly without checking traffic.","feedback":"Pause and scan traffic before crossing. Visibility and a calm plan reduce risk."}],"hint":"At an unfamiliar stop after dark, choose a visible, well-lit place, use lights or reflective gear, and ask official help if needed."}}};
+  var activeScenario = SCENARIO;
+  var params = new URLSearchParams(window.location.search);
+  var storageKey = 'alloflow-life-transit-3d-progress-v1';
+  function loadDone() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
+    } catch (_) { return {}; }
+  }
+  function saveProgress() {
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+  }
+  var state = {
+    mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
+    done: loadDone(),
+    focused: null,
+    feedback: 'Select a highlighted station or use a checklist button.',
+    feedbackTone: '',
+    missteps: 0,
+    scenarioChoice: null,
+    scenarioComplete: false,
+    scenarioMessage: '',
+    scenarioTone: '',
+    hintShown: false,
+    scenarioStep: 0,
+    scenarioMissteps: 0,
+    scenarioHintsUsed: 0
+  };
+  var modeSelect = document.getElementById('modeSelect');
+  var progressValue = document.getElementById('progressValue');
+  var progressMode = document.getElementById('progressMode');
+  var prompt = document.getElementById('prompt');
+  var feedback = document.getElementById('feedback');
+  var scenarioTitle = document.getElementById('scenarioTitle');
+  var scenarioSituation = document.getElementById('scenarioSituation');
+  var scenarioChoices = document.getElementById('scenarioChoices');
+  var scenarioFeedback = document.getElementById('scenarioFeedback');
+  var scenarioHint = document.getElementById('scenarioHint');
+  var scenarioHintText = document.getElementById('scenarioHintText');
+  var scenarioNext = document.getElementById('scenarioNext');
+  var scenarioStep = document.getElementById('scenarioStep');
+  var practiceSummary = document.getElementById('practiceSummary');
+  var taskList = document.getElementById('taskList');
+  var resetButton = document.getElementById('resetButton');
+  var helpPauseButton = document.getElementById('helpPauseButton');
+  var helpPauseText = document.getElementById('helpPauseText');
+  var whyButton = document.getElementById('whyButton');
+  var whyText = document.getElementById('whyText');
+  function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
+  function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-transit-3d-why-reveal', task: target.id }); }
+  var srStatus = document.getElementById('srStatus');
+  var sceneFallback = document.getElementById('sceneFallback');
+  var scene = document.getElementById('transitScene');
+  var camera = document.querySelector('a-camera');
+  var VIEW_PRESETS = {
+    left: { position: '-3.5 3.25 8.8', rotation: '-12 0 0', label: 'Left side' },
+    center: { position: '0 3.45 9.4', rotation: '-12 0 0', label: 'Center' },
+    right: { position: '3.5 3.25 8.8', rotation: '-12 0 0', label: 'Right side' }
+  };
+  function setView(view) {
+    var preset = VIEW_PRESETS[view] || VIEW_PRESETS.center;
+    var selectedView = VIEW_PRESETS[view] ? view : 'center';
+    if (camera) {
+      camera.setAttribute('position', preset.position);
+      camera.setAttribute('rotation', preset.rotation);
+    }
+    document.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === selectedView));
+    });
+    say('Scene view: ' + preset.label + '.');
+  }
+  document.querySelectorAll('[data-view]').forEach(function(button) {
+    button.addEventListener('click', function() { setView(button.getAttribute('data-view')); });
+  });
+  scenarioNext.addEventListener('click', loadNextScenario);
+  helpPauseButton.addEventListener('click', pauseForHelp);
+  whyButton.addEventListener('click', revealWhy);
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
+  }
+  setTheme(params.get('theme'));
+  function postToOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-transit-3d' }, payload), '*');
+    } catch (ignore) {}
+  }
+  function say(message) {
+    srStatus.textContent = '';
+    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+  }
+  scenarioHint.addEventListener('click', function () {
+    if (!state.hintShown) state.scenarioHintsUsed += 1;
+    state.hintShown = true;
+    renderScenario();
+    say('Hint: ' + activeScenario.hint);
+  });
+  function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function guidedTarget() { return TASKS.find(function (task) { return !state.done[task.id]; }) || null; }
+  function setFeedback(message, tone) { state.feedback = message; state.feedbackTone = tone || ''; }
+  function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-transit-3d-help-pause' }); }
+  function focusTask(id, announce) {
+    if (!BY_ID[id]) return;
+    state.focused = id;
+    clearWhy();
+    renderScene();
+    if (announce) say(BY_ID[id].label + '. ' + BY_ID[id].short);
+  }
+  function activateTask(id, source) {
+    var task = BY_ID[id];
+    if (!task) return;
+    var target = guidedTarget();
+    state.focused = id;
+    clearWhy();
+    if (state.done[id]) {
+      setFeedback('Already complete: ' + task.label + '.', 'good');
+      render();
+      say('Already complete: ' + task.label);
+      return;
+    }
+    if (state.mode === 'guided' && target && target.id !== id) {
+      state.missteps += 1;
+      setFeedback('Guided mode: start with “' + target.label + '.”', 'error');
+      render();
+      say('Guided mode. Start with ' + target.label);
+      return;
+    }
+    state.done[id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    setFeedback('Completed: ' + task.label + '. ' + task.why, 'good');
+    if (next && state.mode === 'guided') setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
+    if (!next) {
+      setFeedback('Transit walkthrough complete. You practiced all six safer travel decisions.', 'good');
+      postToOpener({ type: 'alloflow-life-transit-3d-complete', score: TASKS.length, missteps: state.missteps });
+      say('Transit walkthrough complete. You practiced all six safer travel decisions.');
+    } else {
+      postToOpener({ type: 'alloflow-life-transit-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
+    }
+    render();
+  }
+  function renderScene() {
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var object = document.getElementById('obj-' + task.id);
+      var label = document.getElementById('label-' + task.id);
+      var marker = document.getElementById('marker-' + task.id);
+      if (!object) return;
+      var done = !!state.done[task.id];
+      var focused = state.focused === task.id || (state.mode === 'guided' && target && target.id === task.id);
+      object.setAttribute('material', 'color: ' + (done ? '#22c55e' : task.base) + '; roughness: .62; metalness: .04; emissive: ' + (done ? '#166534' : (focused ? task.base : '#000000')) + '; emissiveIntensity: ' + (done || focused ? .72 : .04));
+      if (marker) marker.setAttribute('visible', focused && !done);
+      if (label) {
+        label.setAttribute('visible', state.mode !== 'challenge' || done || focused);
+        label.setAttribute('color', done ? '#dcfce7' : '#fff7ed');
+        if (done) label.setAttribute('value', 'DONE\\n' + task.label);
+        else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\\n' + task.label);
+        else if (state.mode === 'challenge') label.setAttribute('value', 'Travel item');
+      }
+    });
+    var sceneNote = document.getElementById('sceneNote');
+    if (sceneNote) sceneNote.setAttribute('value', target ? (state.mode === 'guided' ? 'GUIDED TARGET\\n' + target.label : 'SELECT A TRAVEL ITEM\\nScene + checklist both work') : 'WALKTHROUGH COMPLETE\\nAll six safer travel decisions practiced');
+  }
+  function renderTaskList() {
+    taskList.innerHTML = '';
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var done = !!state.done[task.id];
+      var current = !!target && target.id === task.id && state.mode === 'guided';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-pressed', String(done));
+      if (current) button.setAttribute('aria-current', 'step');
+      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
+      button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span><span class="task-copy"><strong></strong><small></small></span><span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
+      button.querySelector('strong').textContent = task.label;
+      button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
+      button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
+      taskList.appendChild(button);
+    });
+  }
+  function completeScenarioTask() {
+    var task = BY_ID[activeScenario.safeTask];
+    if (!task || state.done[task.id]) return;
+    state.done[task.id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    if (!next) {
+      setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
+      postToOpener({ type: 'alloflow-life-transit-3d-complete', score: TASKS.length, missteps: state.missteps });
+    } else {
+      setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
+      postToOpener({ type: 'alloflow-life-transit-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+    }
+  }
+  function loadNextScenario() {
+    if (!activeScenario.next) return;
+    activeScenario = activeScenario.next;
+    state.scenarioStep += 1;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    setFeedback('New scenario ready. Choose a response and use a hint if you need one.', '');
+    render();
+    say('Next scenario: ' + activeScenario.title);
+  }
+  function chooseScenario(choiceId) {
+    var choice = activeScenario.choices.find(function (item) { return item.id === choiceId; });
+    if (!choice || state.scenarioComplete) return;
+    state.scenarioChoice = choiceId;
+    state.scenarioMessage = choice.feedback;
+    if (choice.safe) {
+      state.scenarioComplete = true;
+      state.scenarioTone = 'good';
+      focusTask(activeScenario.safeTask, false);
+      completeScenarioTask();
+      say('Good choice. ' + choice.feedback);
+    } else {
+      state.missteps += 1;
+      state.scenarioTone = 'error';
+      focusTask(activeScenario.safeTask, false);
+      state.scenarioMissteps += 1;
+      state.scenarioMessage += ' Try another response. The safer scene target is highlighted.';
+      setFeedback('Practice the scenario again: choose a safer first step.', 'error');
+      say('Try another response. ' + choice.feedback);
+    }
+    render();
+  }
+  function renderScenario() {
+    scenarioTitle.textContent = activeScenario.title;
+    scenarioSituation.textContent = activeScenario.situation;
+    scenarioChoices.innerHTML = '';
+    activeScenario.choices.forEach(function (choice) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'scenario-button';
+      button.textContent = choice.label;
+      button.setAttribute('aria-pressed', String(state.scenarioChoice === choice.id));
+      button.disabled = state.scenarioComplete;
+      button.addEventListener('click', function () { chooseScenario(choice.id); });
+      scenarioChoices.appendChild(button);
+    });
+    scenarioFeedback.textContent = state.scenarioChoice ? state.scenarioMessage : activeScenario.instruction;
+    scenarioFeedback.className = 'scenario-feedback' + (state.scenarioTone ? ' ' + state.scenarioTone : '');
+    scenarioHint.disabled = state.scenarioComplete;
+    scenarioHint.setAttribute('aria-expanded', String(state.hintShown));
+    scenarioHint.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    scenarioHintText.hidden = !state.hintShown;
+    scenarioHintText.textContent = state.hintShown ? activeScenario.hint : '';
+    scenarioStep.textContent = 'Scenario ' + (state.scenarioStep + 1) + ' of 3';
+    scenarioNext.hidden = !state.scenarioComplete || !activeScenario.next;
+    scenarioNext.disabled = !state.scenarioComplete || !activeScenario.next;
+    var completedScenarios = state.scenarioStep + (state.scenarioComplete ? 1 : 0);
+    var coachingText = state.scenarioMissteps === 0 ? 'no coaching moments' : state.scenarioMissteps + (state.scenarioMissteps === 1 ? ' coaching moment' : ' coaching moments');
+    var hintText = state.scenarioHintsUsed === 0 ? 'no hints used' : state.scenarioHintsUsed + (state.scenarioHintsUsed === 1 ? ' hint used' : ' hints used');
+    practiceSummary.textContent = 'Session: ' + completedScenarios + '/3 scenarios complete · ' + coachingText + ' · ' + hintText;
+  }
+  function render() {
+    var count = doneCount();
+    var target = guidedTarget();
+    var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    progressValue.textContent = count + ' / ' + TASKS.length;
+    progressMode.textContent = !target ? modeText + ' · complete' : state.mode === 'guided' ? modeText + ' · next target' : state.mode === 'practice' ? modeText + ' · choose any target' : modeText + ' · labels are reduced';
+    prompt.textContent = !target ? 'All decisions complete. Name one travel-safety habit you will practice.' : state.mode === 'guided' ? 'Start with: ' + target.label + '.' : state.mode === 'practice' ? 'Choose any item, then explain why the safety step matters.' : 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
+    feedback.textContent = state.feedback;
+    feedback.className = 'feedback' + (state.feedbackTone ? ' ' + state.feedbackTone : '');
+    renderScenario();
+    modeSelect.value = state.mode;
+    renderTaskList();
+    renderScene();
+  }
+  modeSelect.addEventListener('change', function () {
+    state.mode = modeSelect.value;
+    state.focused = guidedTarget() ? guidedTarget().id : null;
+    setFeedback(state.mode === 'guided' ? 'Guided mode shows one next target at a time.' : state.mode === 'practice' ? 'Practice mode lets you choose the order.' : 'Challenge mode reduces scene labels. The checklist remains available.', '');
+    render();
+    say(modeSelect.options[modeSelect.selectedIndex].text + ' mode selected.');
+  });
+  resetButton.addEventListener('click', function () {
+    helpPauseText.hidden = true;
+    helpPauseText.textContent = '';
+    clearWhy();
+    state.done = {};
+    saveProgress();
+    state.focused = null;
+    state.missteps = 0;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    activeScenario = SCENARIO;
+    state.scenarioStep = 0;
+    state.scenarioMissteps = 0;
+    state.scenarioHintsUsed = 0;
+    setFeedback('Fresh start. Select the first travel-safety target.', '');
+    render();
+    say('Walkthrough reset. Select the first travel-safety target.');
+    postToOpener({ type: 'alloflow-life-transit-3d-reset' });
+  });
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (data && data.type === 'alloflow-theme-change') setTheme(data.theme);
+  });
+  window.lifeSkillsTransit3D = { activate: activateTask, focus: focusTask };
+  function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }
+  if (!window.AFRAME || !scene) showSceneFallback();
+  else if (scene.hasLoaded) sceneFallback.style.display = 'none';
+  else {
+    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    window.setTimeout(function () { if (!scene.canvas) showSceneFallback(); }, 1800);
+  }
+  render();
+  postToOpener({ type: 'alloflow-life-transit-3d-hello' });
+}());
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -27,5 +27,19 @@ describe('SEL Hub control accessibility', () => {
     const text = source();
     expect(text).toContain("h('textarea', { 'aria-label': 'Reflection for ' + q.label,");
     expect(text).toContain("h('textarea', { 'aria-label': 'Teacher note',");
+  });
+
+  it('keeps overlapping tools differentiated and safety boundaries accessible', () => {
+    const text = source();
+    expect(text).toContain("var SEL_TOOL_GUIDANCE = {");
+    expect(text).toContain("conflict: { mode: 'Practice repair'");
+    expect(text).toContain("crisiscompanion: { mode: 'Urgent support'");
+    expect(text).toContain("label: 'Self-Advocacy Studio'");
+    expect(text).toContain("label: 'Advocacy Practice'");
+    expect(text).toContain("'aria-label': tool.label + (tool.recommendedRange");
+    expect(text).toContain("traumaPsychoed: { time: '8-15 min'");
+    expect(text).toContain("{ key: 'crisis', icon:");
+    expect(text).toContain("{ key: 'schoolSupport', icon:");
+    expect(text).toContain("Preview first");
   });
 });

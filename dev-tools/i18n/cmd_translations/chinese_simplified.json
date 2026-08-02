@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio 已打开。",
   "cmd.open_video_studio_hint": "录制、添加字幕并编辑操作演示",
   "palette.ctx.videoStudio": "此处 — Video Studio",
-  "palette.close": "关闭命令面板"
+  "palette.close": "关闭命令面板",
+  "cmd.apply_lesson_template": "从已保存的模板开始",
+  "cmd.apply_lesson_template_done": "已从以下模板开始：",
+  "cmd.apply_lesson_template_hint": "从你保存的模板中选择一个来开始新计划",
+  "cmd.apply_lesson_template_missing": "找不到名为以下内容的模板：",
+  "cmd.apply_lesson_template_which": "哪个模板？",
+  "cmd.rebuild_lesson_step": "重新构建计划中的一个步骤",
+  "cmd.rebuild_lesson_step_done": "正在重新构建步骤：",
+  "cmd.rebuild_lesson_step_hint": "重新生成一个资源——请说出步骤编号",
+  "cmd.rebuild_lesson_step_missing": "在计划中找不到该步骤。",
+  "cmd.rebuild_lesson_step_none": "计划中还没有步骤。",
+  "cmd.rebuild_lesson_step_which": "哪个步骤？",
+  "cmd.run_lesson_blueprint": "生成课程计划",
+  "cmd.run_lesson_blueprint_done": "正在生成计划——你可以在卡片上查看每个步骤。",
+  "cmd.run_lesson_blueprint_hint": "生成当前计划中的所有资源",
+  "cmd.cancelled": "已请求取消。当前操作将在其提供方支持取消时停止。"
 }

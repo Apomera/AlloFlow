@@ -234,6 +234,12 @@
     return {
       type: 'videoRef',
       version: 1,
+      bundleType: String(m.bundleType || '').slice(0, 80) || null,
+      bundleVersion: Math.max(0, Math.round(Number(m.bundleVersion) || 0)) || null,
+      videoFileName: String(m.videoFileName || '').slice(0, 200) || null,
+      videoSizeBytes: Math.max(0, Math.round(Number(m.videoSizeBytes) || 0)),
+      hasDemoRunReport: !!m.hasDemoRunReport,
+      demoRunStatus: String(m.demoRunStatus || '').slice(0, 40) || null,
       title: String(m.title || 'Teacher video').slice(0, 200),
       durationSec: Math.max(0, Math.round(Number(m.duration) || 0)),
       sizeBytes: Math.max(0, Math.round(Number(m.size) || 0)),
@@ -779,6 +785,7 @@
     if (hasFile(/visual_descriptions\.json$/i)) lines.push('- Visual descriptions');
     if (hasFile(/teaching_inserts\.json$/i)) lines.push('- Teaching inserts and overlays');
     if (hasFile(/visual_prompts\.json$/i)) lines.push('- Visual prompts');
+    if (hasFile(/demo_run_report\.json$/i)) lines.push('- Demo execution report and unfinished-step resume data');
     if (hasFile(/localizations\.json$/i)) lines.push('- Localization drafts');
     if (!audio.hasAudioEdits && !hasFile(/media_credits\.json$/i) && !hasFile(/visual_descriptions\.json$/i) && !hasFile(/teaching_inserts\.json$/i) && !hasFile(/localizations\.json$/i)) lines.push('- Basic video metadata in meta.json');
     lines.push('');
@@ -804,6 +811,7 @@
     var restored = [];
     var review = [];
     var warnings = [];
+    var bundleWarnings = [];
     var audio = s.audioManifest ? vsBuildAudioEditManifest(s.audioManifest) : null;
     var captionCount = count(s.captionCount);
     var transcriptEditCount = count(s.transcriptEditCount);
@@ -836,14 +844,20 @@
       var n = clean(name, 120);
       if (n) warnings.push(n);
     });
+    (Array.isArray(s.bundleWarnings) ? s.bundleWarnings : []).slice(0, 6).forEach(function (warning) {
+      var n = clean(warning, 180);
+      if (n) bundleWarnings.push(n);
+    });
     var text = restored.length ? ('Restored ' + restored.join(', ') + '.') : 'No extra project metadata was restored.';
     if (review.length) text += ' Review: ' + review.join(', ') + '.';
     if (warnings.length) text += ' Missing bundled audio: ' + warnings.join(', ') + (warnings.length < (s.missingAudioFiles || []).length ? ', ...' : '') + '.';
+    if (bundleWarnings.length) text += ' Bundle warning: ' + bundleWarnings.join(', ') + (bundleWarnings.length < (s.bundleWarnings || []).length ? ', ...' : '') + '.';
     return {
       restored: restored,
       review: review,
       warnings: warnings,
-      status: warnings.length ? 'warn' : 'ok',
+      bundleWarnings: bundleWarnings,
+      status: (warnings.length || bundleWarnings.length) ? 'warn' : 'ok',
       text: text
     };
   }
@@ -3081,8 +3095,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // itself through the rest of the plan off-camera with nothing able to stop
   // it. Same "sole ingester" reasoning as vsBackgroundBridgeReceiver above.
   var vsDemoHost = { current: {} }; // latest panel props; NOT cleared on unmount
-  var vsDemoRunRef = { current: { running: false, stop: false, kind: null, cleanupAfterStop: false } };
+  var vsDemoRunRef = { current: { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null } };
   var vsDemoPlanRef = { current: { id: null, controller: null, cancelled: false } };
+  var vsDemoScriptJobs = new Map();
+  function vsDemoScriptBegin(id) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
+    var job = { id: String(id || ''), controller: controller, cancelled: false };
+    if (job.id) vsDemoScriptJobs.set(job.id, job);
+    return job;
+  }
+  function vsDemoScriptForget(id) { vsDemoScriptJobs.delete(String(id || '')); }
   var VS_DEMO_BRIDGE_TYPES = [
     'allostudio-official-tutorial-request',
     'allostudio-official-tutorial-run-request',
@@ -3090,6 +3112,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-demoplan-request',
     'allostudio-demoplan-cancel',
     'allostudio-demoscript-request',
+    'allostudio-demoscript-cancel',
     'allostudio-demovalidate-request',
     'allostudio-demorun-request',
     'allostudio-demostop',
@@ -3128,9 +3151,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var closingPlan = demoPlanRef.current;
         if (closingPlan && closingPlan.controller) { closingPlan.cancelled = true; try { closingPlan.controller.abort(); } catch (_) {} }
         demoPlanRef.current = { id: null, controller: null, cancelled: false };
+        vsDemoScriptJobs.forEach(function (job) { job.cancelled = true; if (job.controller) { try { job.controller.abort(); } catch (_) {} } });
+        vsDemoScriptJobs.clear();
         var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
         if (demoRunRef.current.running) {
           demoRunRef.current.stop = true;
+          if (demoRunRef.current.controller) { try { demoRunRef.current.controller.abort(); } catch (_) {} }
           if (demoRunRef.current.kind === 'official') demoRunRef.current.cleanupAfterStop = true;
         } else if (typeof closeCleanupFn === 'function') {
           try { closeCleanupFn(); } catch (_) {}
@@ -3192,8 +3218,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // Script assistance is text-only and teacher-triggered. The popup sends
         // the reviewed goal and step metadata, never captured video or audio.
         var dsReq = ev.data;
+        var dsJob = vsDemoScriptBegin(dsReq.id);
         var dsReplyTo = studioWinRef.current;
         var dsRespond = function (payload) {
+          if (dsJob.cancelled) { vsDemoScriptForget(dsReq.id); return; }
+          vsDemoScriptForget(dsReq.id);
           postToStudio(dsReplyTo, Object.assign({ type: 'allostudio-demoscript-response', id: dsReq.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { dsRespond({ error: 'ai-unavailable' }); return; }
@@ -3229,7 +3258,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // the teacher's own transcript / captions / demo steps, so jsonMode is ON
         // and search is OFF. These all read (prompt, false, true) for a long time,
         // which silently meant JSON mode OFF and Google Search grounding ON.
-        Promise.resolve().then(function () { return propsRef.current.callGemini(dsPrompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(dsPrompt, true, false, null, null, dsJob.controller.signal); }).then(function (res) {
           var rawText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var parsed = null;
           try { parsed = JSON.parse(rawText); } catch (_) {
@@ -3243,8 +3272,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text && (dsFocus < 0 || item.index === dsFocus); });
           dsRespond({ scripts: scripts });
         }).catch(function (e) {
+          if (dsJob.cancelled || (e && e.name === 'AbortError')) { vsDemoScriptForget(dsReq.id); return; }
           dsRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
+      } else if (ev.data.type === 'allostudio-demoscript-cancel') {
+        var cancelDsId = String(ev.data.requestId || '').slice(0, 100);
+        var cancelDsJob = vsDemoScriptJobs.get(cancelDsId);
+        if (cancelDsJob) { cancelDsJob.cancelled = true; if (cancelDsJob.controller) { try { cancelDsJob.controller.abort(); } catch (_) {} } vsDemoScriptForget(cancelDsId); }
       } else if (ev.data.type === 'allostudio-demoplan-cancel') {
         var cancelPlanId = String(ev.data.requestId || '').slice(0, 100);
         var activePlan = demoPlanRef.current;
@@ -3305,23 +3339,25 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
         }).filter(function (s) { return s.id && s.beats.length; });
         if (!officialSteps.length) { otrRespond({ error: 'no tutorial steps' }); return; }
-        demoRunRef.current = { running: true, stop: false, kind: 'official', cleanupAfterStop: false };
+        var officialRunController = typeof AbortController === 'function' ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
+        demoRunRef.current = { running: true, stop: false, kind: 'official', cleanupAfterStop: false, controller: officialRunController };
         Promise.resolve().then(function () {
           return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
             shouldStop: function () { return demoRunRef.current.stop; },
             cursorEmphasis: !(otrReq.polish && otrReq.polish.cursorEmphasis === false),
+            signal: officialRunController.signal,
             onStep: function (i, phase, label, narration) {
               postToStudio(otrReplyTo, { type: 'allostudio-demostep', id: otrReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 220) });
             }
           });
         }).then(function (result) {
           var cleanupAfterStop = !!demoRunRef.current.cleanupAfterStop;
-          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           if (cleanupAfterStop) { var delayedCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedCleanup === 'function') { try { delayedCleanup(); } catch (_) {} } }
           otrRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
         }).catch(function (e) {
           var cleanupAfterError = !!demoRunRef.current.cleanupAfterStop;
-          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           if (cleanupAfterError) { var delayedErrorCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedErrorCleanup === 'function') { try { delayedErrorCleanup(); } catch (_) {} } }
           otrRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
@@ -3349,24 +3385,27 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
         }).filter(function (s) { return s.commandId; });
         if (!drSteps.length) { drRespond({ error: 'no runnable steps' }); return; }
-        demoRunRef.current = { running: true, stop: false, kind: 'generic', cleanupAfterStop: false };
+        var demoRunController = typeof AbortController === 'function' ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
+        demoRunRef.current = { running: true, stop: false, kind: 'generic', cleanupAfterStop: false, controller: demoRunController };
         Promise.resolve().then(function () {
           return runFn(drSteps, {
             shouldStop: function () { return demoRunRef.current.stop; },
             cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false),
+            signal: demoRunController.signal,
             onStep: function (i, phase, label, narration) {
               postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
             }
           }, { rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) });
         }).then(function (result) {
-          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
         }).catch(function (e) {
-          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           drRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-demostop') {
         demoRunRef.current.stop = true;
+        if (demoRunRef.current.controller) { try { demoRunRef.current.controller.abort(); } catch (_) {} }
       } else if (ev.data.type === 'allostudio-official-tutorial-cleanup') {
         var cleanupFn = propsRef.current.onCleanupOfficialTutorial;
         if (typeof cleanupFn === 'function') { try { cleanupFn(String(ev.data.tutorialId || '').slice(0, 60)); } catch (_) {} }
@@ -3401,7 +3440,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-resource-cues-request',
     'allostudio-transcript',
     'allostudio-tts-request',
-    'allostudio-open-cinematic'
+    'allostudio-open-cinematic',
+    'allostudio-ai-cancel'
   ];
 
   // Toast/translate against the LIVE panel props, so these keep working after
@@ -3412,6 +3452,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function vsHostT(key, fallback) {
     return makeT(vsDemoHost.current && vsDemoHost.current.t)(key, fallback);
+  }
+
+  var vsAiAbortControllers = new Map();
+  function vsAiBeginRequest(id) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
+    var key = String(id || '');
+    if (key) vsAiAbortControllers.set(key, controller);
+    return controller;
+  }
+  function vsAiForgetRequest(id) {
+    var key = String(id || '');
+    if (key) vsAiAbortControllers.delete(key);
   }
 
   function vsAiBridgeReceiver(ev) {
@@ -3428,14 +3480,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var T = vsHostT;
       var studioWinRef = { current: (ev.source && typeof ev.source.postMessage === 'function') ? ev.source : vsTakeStore.studioWin };
 
+      if (ev.data.type === 'allostudio-ai-cancel') {
+        var cancelId = String(ev.data.requestId || ev.data.id || '');
+        var cancelController = vsAiAbortControllers.get(cancelId);
+        if (cancelController) { try { cancelController.abort(); } catch (_) {} vsAiAbortControllers.delete(cancelId); }
+        return;
+      }
       if (ev.data.type === 'allostudio-ai-request') {
         // The Studio popup has no Gemini access of its own — it sends the
         // TRANSCRIPT TEXT here (never video/audio bytes) and this relays it
         // through the app's normal callGemini. The popup hard-sanitizes the
         // response (vsSanitizeAiSuggestions) before showing anything.
         var req = ev.data;
+        var aiAbort = vsAiBeginRequest(req.id);
         var replyTo = studioWinRef.current;
         var respond = function (payload) {
+          if (aiAbort.signal.aborted) { vsAiForgetRequest(req.id); return; }
+          vsAiForgetRequest(req.id);
           postToStudio(replyTo, Object.assign({ type: 'allostudio-ai-response', id: req.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }
@@ -3449,7 +3510,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           'Rules: at most 8 suggestions; only clearly beneficial ones; an empty array [] is a good answer for a clean video; never invent timestamps outside 0-' + durSec + 's.\n' +
           'Video duration: ' + durSec + ' seconds. Current title: ' + String(req.title || '(none)').slice(0, 120) + '\n' +
           'Transcript with [start-end] second markers:\n' + String(req.transcript || '').slice(0, 24000);
-        Promise.resolve().then(function () { return propsRef.current.callGemini(prompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(prompt, true, false, null, null, aiAbort.signal); }).then(function (res) {
           var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var parsed = null;
           try { parsed = JSON.parse(text); } catch (_) {
@@ -3468,8 +3529,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } else if (ev.data.type === 'allostudio-script-line-request') {
         // Targeted narration rewriting is text-only and returns one inert line.
         var slReq = ev.data;
+        var slAbort = vsAiBeginRequest(slReq.id);
         var slReplyTo = studioWinRef.current;
         var slRespond = function (payload) {
+          if (slAbort.signal.aborted) { vsAiForgetRequest(slReq.id); return; }
+          vsAiForgetRequest(slReq.id);
           postToStudio(slReplyTo, Object.assign({ type: 'allostudio-script-line-response', id: slReq.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { slRespond({ error: 'ai-unavailable' }); return; }
@@ -3489,7 +3553,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           'Line to rewrite: ' + String(slReq.text || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
           'Next line: ' + String(slReq.next || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
           'Pronunciation glossary JSON: ' + JSON.stringify(slGlossary).slice(0, 5000);
-        Promise.resolve().then(function () { return propsRef.current.callGemini(slPrompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(slPrompt, true, false, null, null, slAbort.signal); }).then(function (res) {
           var slText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var slParsed = null;
           try { slParsed = JSON.parse(slText); } catch (_) {
@@ -3500,13 +3564,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           if (!line) { slRespond({ error: 'The provider did not return a usable line.' }); return; }
           slRespond({ text: line });
         }).catch(function (e) {
+          if (slAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(slReq.id); return; }
           slRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });        } else if (ev.data.type === 'allostudio-script-generate-request') {
         // Freeform script generation is text-only. A reviewed brief, title, and
         // optional current captions are sent; captured pixels and audio stay local.
         var sgReq = ev.data;
+        var sgAbort = vsAiBeginRequest(sgReq.id);
         var sgReplyTo = studioWinRef.current;
         var sgRespond = function (payload) {
+          if (sgAbort.signal.aborted) { vsAiForgetRequest(sgReq.id); return; }
+          vsAiForgetRequest(sgReq.id);
           postToStudio(sgReplyTo, Object.assign({ type: 'allostudio-script-generate-response', id: sgReq.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { sgRespond({ error: 'ai-unavailable' }); return; }
@@ -3526,7 +3594,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           'Current video title: ' + String(sgReq.title || '').replace(/[\r\n]+/g, ' ').slice(0, 160) + '\n' +
           'Teacher brief:\n' + sgBrief + '\n' +
           (sgContext ? ('Current captions/source text for grounding:\n' + sgContext) : 'No source captions were supplied; stay strictly within the brief.');
-        Promise.resolve().then(function () { return propsRef.current.callGemini(sgPrompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(sgPrompt, true, false, null, null, sgAbort.signal); }).then(function (res) {
           var sgText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var sgParsed = null;
           try { sgParsed = JSON.parse(sgText); } catch (_) {
@@ -3538,6 +3606,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           if (!script) { sgRespond({ error: 'The provider did not return a usable script.' }); return; }
           sgRespond({ script: script, title: title });
         }).catch(function (e) {
+          if (sgAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(sgReq.id); return; }
           sgRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-narrate-request') {
@@ -3546,8 +3615,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // relay it through the app's vision call. The popup sanitizes the
         // returned script (vsSanitizeNarrationCues) before showing it.
         var nreq = ev.data;
+        var nAbort = vsAiBeginRequest(nreq.id);
         var nReplyTo = studioWinRef.current;
         var nRespond = function (payload) {
+          if (nAbort.signal.aborted) { vsAiForgetRequest(nreq.id); return; }
+          vsAiForgetRequest(nreq.id);
           postToStudio(nReplyTo, Object.assign({ type: 'allostudio-narrate-response', id: nreq.id }, payload));
         };
         var visionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
@@ -3559,7 +3631,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           (nreq.context ? ('Existing transcript/captions for context:\n' + String(nreq.context).slice(0, 6000) + '\n') : '') +
           'Write 5-12 narration segments that a teacher could speak over this video: plain, warm, grade-appropriate language; describe what is happening on screen and why it matters; never invent details you cannot see.\n' +
           'Respond with ONLY a JSON array (no prose, no fences): [{"start": seconds, "end": seconds, "text": "one or two spoken sentences"}]. Segments must be in order, within 0-' + nDur + 's, and short enough to speak in their time window.';
-        Promise.resolve().then(function () { return visionFn(nPrompt, nreq.imageBase64, nreq.mimeType || 'image/jpeg'); }).then(function (res) {
+        Promise.resolve().then(function () { return visionFn(nPrompt, nreq.imageBase64, nreq.mimeType || 'image/jpeg', { signal: nAbort.signal }); }).then(function (res) {
           var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var parsed = null;
           try { parsed = JSON.parse(text); } catch (_) {
@@ -3568,14 +3640,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }
           nRespond({ segments: parsed || [] });
         }).catch(function (e) {
+          if (nAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(nreq.id); return; }
           nRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-describe-request') {
         // Visual description: popup sends one timestamped contact sheet plus
         // optional teacher notes. This is separate from spoken captions.
         var dreq = ev.data;
+        var dAbort = vsAiBeginRequest(dreq.id);
         var dReplyTo = studioWinRef.current;
         var dRespond = function (payload) {
+          if (dAbort.signal.aborted) { vsAiForgetRequest(dreq.id); return; }
+          vsAiForgetRequest(dreq.id);
           postToStudio(dReplyTo, Object.assign({ type: 'allostudio-describe-response', id: dreq.id }, payload));
         };
         var describeVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
@@ -3589,7 +3665,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           (dreq.captions ? ('Existing spoken captions/transcript for context only:\n' + String(dreq.captions).slice(0, 6000) + '\n') : '') +
           'Rules: do not identify exact species, people, tools, places, or scientific facts unless they are plainly visible text or supported by teacher notes. Mark each segment basis as "observed", "inferred", "source-supported", or "needs-review". Use "needs-review" for uncertain details. Keep descriptions concise and useful for narration or accessibility.\n' +
           'Respond with ONLY a JSON array (no prose, no markdown): [{"start": seconds, "end": seconds, "description": "one concise visual description", "basis": "observed|inferred|source-supported|needs-review", "confidence": "high|medium|low"}]. Return 4-12 segments in time order within 0-' + dDur + 's.';
-        Promise.resolve().then(function () { return describeVisionFn(dPrompt, dreq.imageBase64, dreq.mimeType || 'image/jpeg'); }).then(function (res) {
+        Promise.resolve().then(function () { return describeVisionFn(dPrompt, dreq.imageBase64, dreq.mimeType || 'image/jpeg', { signal: dAbort.signal }); }).then(function (res) {
           var dText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var dParsed = null;
           try { dParsed = JSON.parse(dText); } catch (_) {
@@ -3598,14 +3674,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }
           dRespond({ descriptions: dParsed || [] });
         }).catch(function (e) {
+          if (dAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(dreq.id); return; }
           dRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-lesson-request') {
         // Lesson assistant: sampled frames + captions become editable
         // finishing suggestions, never automatic edits.
         var lreq = ev.data;
+        var lAbort = vsAiBeginRequest(lreq.id);
         var lReplyTo = studioWinRef.current;
         var lRespond = function (payload) {
+          if (lAbort.signal.aborted) { vsAiForgetRequest(lreq.id); return; }
+          vsAiForgetRequest(lreq.id);
           postToStudio(lReplyTo, Object.assign({ type: 'allostudio-lesson-response', id: lreq.id }, payload));
         };
         var lessonVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
@@ -3636,11 +3716,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           lRespond({ plan: parsed || [] });
         };
         if (typeof lessonVisionFn === 'function' && lreq.imageBase64) {
-          Promise.resolve().then(function () { return lessonVisionFn(lPrompt, lreq.imageBase64, lreq.mimeType || 'image/jpeg'); }).then(parseLesson).catch(function (e) {
+          Promise.resolve().then(function () { return lessonVisionFn(lPrompt, lreq.imageBase64, lreq.mimeType || 'image/jpeg', { signal: lAbort.signal }); }).then(parseLesson).catch(function (e) {
             lRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (typeof propsRef.current.callGemini === 'function') {
-          Promise.resolve().then(function () { return propsRef.current.callGemini(lPrompt, true, false); }).then(parseLesson).catch(function (e) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(lPrompt, true, false, null, null, lAbort.signal); }).then(parseLesson).catch(function (e) {
             lRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else {
@@ -3651,8 +3731,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // approved support text, speaker hints, and glossary locks go through
         // the app AI connection after the popup shows a privacy/DPA notice.
         var locReq = ev.data;
+        var locAbort = vsAiBeginRequest(locReq.id);
         var locReplyTo = studioWinRef.current;
         var locRespond = function (payload) {
+          if (locAbort.signal.aborted) { vsAiForgetRequest(locReq.id); return; }
+          vsAiForgetRequest(locReq.id);
           postToStudio(locReplyTo, Object.assign({ type: 'allostudio-localize-response', id: locReq.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { locRespond({ error: 'ai-unavailable' }); return; }
@@ -3676,7 +3759,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           '{"targetLanguage":"...","style":"literal|natural|interpreter|family|bilingual","title":"translated title","speakerMap":[{"speaker":"Teacher","translatedLabel":"..."}],"captions":[{"start":S,"end":E,"speaker":"...","originalText":"...","text":"translated subtitle"}],"chapters":[{"start":S,"title":"translated chapter"}],"inserts":[{"type":"title_card|pause_prompt|callout|sticker|visual_card","start":S,"duration":D,"text":"translated overlay","note":"optional translated support","theme":"blue|green|amber|pink|slate"}],"visualDescriptions":[{"start":S,"end":E,"description":"translated visual description","basis":"observed|inferred|source-supported|needs-review","confidence":"high|medium|low","checked":true}],"narration":[{"start":S,"end":E,"speaker":"Interpreter","originalText":"...","text":"spoken interpreted line"}],"reviewNotes":["short teacher checks"]}\n' +
           'Interpret speaker intent naturally for the target language. Preserve meaning, examples, quantities, math/science terms, names, and safety/privacy boundaries. Do not invent new facts, identities, visuals, or curriculum claims. If speaker identity is unclear, use "Speaker". If bilingual style is requested, include concise original + translated subtitle text in each caption. Keep narration short enough to speak in its timestamp window. Translate all provided chapters, overlays, visual descriptions, and captions. Respect glossary locks exactly.\n' +
           'Source payload JSON:\n' + JSON.stringify(locPayload).slice(0, 28000);
-        Promise.resolve().then(function () { return propsRef.current.callGemini(locPrompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(locPrompt, true, false, null, null, locAbort.signal); }).then(function (res) {
           var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var parsed = null;
           try { parsed = JSON.parse(text); } catch (_) {
@@ -3685,6 +3768,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }
           locRespond({ draft: parsed || {} });
         }).catch(function (e) {
+          if (locAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(locReq.id); return; }
           locRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-teaching-inserts-request') {
@@ -3692,8 +3776,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // pause prompts, callouts, and lightweight animated stickers. The
         // popup sanitizes and stores them as editable overlays.
         var ireq = ev.data;
+        var iAbort = vsAiBeginRequest(ireq.id);
         var iReplyTo = studioWinRef.current;
         var iRespond = function (payload) {
+          if (iAbort.signal.aborted) { vsAiForgetRequest(ireq.id); return; }
+          vsAiForgetRequest(ireq.id);
           postToStudio(iReplyTo, Object.assign({ type: 'allostudio-teaching-inserts-response', id: ireq.id }, payload));
         };
         if (typeof propsRef.current.callGemini !== 'function') { iRespond({ error: 'ai-unavailable' }); return; }
@@ -3708,7 +3795,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           'Rules: at most 10 inserts; keep text classroom-friendly; timestamps must be within 0-' + iDur + 's; prefer fewer, useful inserts over decoration.\n' +
           'Current title: ' + String(ireq.title || '(none)').slice(0, 120) + '\n' +
           'Transcript with [start-end] second markers:\n' + String(ireq.transcript || '').slice(0, 24000);
-        Promise.resolve().then(function () { return propsRef.current.callGemini(iPrompt, true, false); }).then(function (res) {
+        Promise.resolve().then(function () { return propsRef.current.callGemini(iPrompt, true, false, null, null, iAbort.signal); }).then(function (res) {
           var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
           var parsed = null;
           try { parsed = JSON.parse(text); } catch (_) {
@@ -3723,8 +3810,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // Imagen is optional: when available, it creates a still visual card
         // that the popup overlays at a timestamp. No video bytes are sent.
         var greq = ev.data;
+        var gAbort = vsAiBeginRequest(greq.id);
         var gReplyTo = studioWinRef.current;
         var gRespond = function (payload) {
+          if (gAbort.signal.aborted) { vsAiForgetRequest(greq.id); return; }
+          vsAiForgetRequest(greq.id);
           postToStudio(gReplyTo, Object.assign({ type: 'allostudio-imagen-response', id: greq.id }, payload));
         };
         var imagenFn = propsRef.current.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
@@ -3744,8 +3834,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // Frame-to-card: image-edit preserves the source frame's idea. When
         // edit is unavailable, vision drafts an Imagen prompt from the frame.
         var freq = ev.data;
+        var fAbort = vsAiBeginRequest(freq.id);
         var fReplyTo = studioWinRef.current;
         var fRespond = function (payload) {
+          if (fAbort.signal.aborted) { vsAiForgetRequest(freq.id); return; }
+          vsAiForgetRequest(freq.id);
           postToStudio(fReplyTo, Object.assign({ type: 'allostudio-frame-image-response', id: freq.id }, payload));
         };
         var editFn = propsRef.current.callGeminiImageEdit || (typeof window !== 'undefined' ? window.callGeminiImageEdit : null);
@@ -3766,7 +3859,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
         } else if (typeof frameVisionFn === 'function' && typeof frameImagenFn === 'function' && freq.imageBase64) {
           var promptPrompt = 'Look at this video frame and write one concise Imagen prompt for a clean educational still card. Do not include private names or unnecessary text. Teacher request: ' + String(freq.prompt || '').slice(0, 800);
-          Promise.resolve().then(function () { return frameVisionFn(promptPrompt, freq.imageBase64, freq.mimeType || 'image/jpeg'); }).then(function (desc) {
+          Promise.resolve().then(function () { return frameVisionFn(promptPrompt, freq.imageBase64, freq.mimeType || 'image/jpeg', { signal: fAbort.signal }); }).then(function (desc) {
             var imgPrompt = 'Clean classroom-friendly still visual card, no private information, no watermark. ' + String((desc && (desc.text || desc.output)) || desc || freq.prompt || '').slice(0, 900);
             return frameImagenFn(imgPrompt);
           }).then(normalizeFrameImage).catch(function (e) {
@@ -3817,16 +3910,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // Text → spoken audio through the app's existing Gemini TTS path.
         // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
         var treq = ev.data;
+        var tAbort = vsAiBeginRequest(treq.id);
         var tReplyTo = studioWinRef.current;
         var tRespond = function (payload) {
+          if (tAbort.signal.aborted) { vsAiForgetRequest(treq.id); return; }
+          vsAiForgetRequest(treq.id);
           postToStudio(tReplyTo, Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload));
         };
         var ttsFn = (typeof window !== 'undefined') ? window.fetchTTSBytes : null;
         if (typeof ttsFn !== 'function') { tRespond({ error: 'tts-unavailable' }); return; }
-        Promise.resolve().then(function () { return ttsFn(String(treq.text || '').slice(0, 600), treq.voice || 'Puck', 1, treq.language || 'English'); }).then(function (r) {
+        Promise.resolve().then(function () { return ttsFn(String(treq.text || '').slice(0, 600), treq.voice || 'Puck', 1, treq.language || 'English', { signal: tAbort.signal }); }).then(function (r) {
           if (r && r.bytes && r.bytes.length) tRespond({ pcm: r.bytes, sampleRate: 24000 });
           else tRespond({ error: 'no audio returned' });
         }).catch(function (e) {
+          if (tAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(treq.id); return; }
           tRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-open-cinematic') {

@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Đã mở Video Studio.",
   "cmd.open_video_studio_hint": "Quay, thêm phụ đề và chỉnh sửa video hướng dẫn",
   "palette.ctx.videoStudio": "Tại đây — Video Studio",
-  "palette.close": "Đóng bảng lệnh"
+  "palette.close": "Đóng bảng lệnh",
+  "cmd.apply_lesson_template": "Bắt đầu từ mẫu đã lưu",
+  "cmd.apply_lesson_template_done": "Đã bắt đầu từ ",
+  "cmd.apply_lesson_template_hint": "Bắt đầu kế hoạch mới từ một trong các mẫu đã lưu",
+  "cmd.apply_lesson_template_missing": "Không tìm thấy mẫu có tên ",
+  "cmd.apply_lesson_template_which": "Mẫu nào?",
+  "cmd.rebuild_lesson_step": "Tạo lại một bước trong kế hoạch",
+  "cmd.rebuild_lesson_step_done": "Đang tạo lại bước ",
+  "cmd.rebuild_lesson_step_hint": "Tạo lại một tài nguyên — hãy nói số bước",
+  "cmd.rebuild_lesson_step_missing": "Không tìm thấy bước đó trong kế hoạch.",
+  "cmd.rebuild_lesson_step_none": "kế hoạch chưa có bước nào.",
+  "cmd.rebuild_lesson_step_which": "Bước nào?",
+  "cmd.run_lesson_blueprint": "Tạo kế hoạch bài học",
+  "cmd.run_lesson_blueprint_done": "Đang tạo kế hoạch — bạn có thể theo dõi từng bước trên thẻ.",
+  "cmd.run_lesson_blueprint_hint": "Tạo mọi tài nguyên trong kế hoạch hiện tại",
+  "cmd.cancelled": "Đã yêu cầu hủy. Thao tác hiện tại sẽ dừng khi nhà cung cấp hỗ trợ việc đó."
 }

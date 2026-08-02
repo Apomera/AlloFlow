@@ -51,8 +51,16 @@ for (const entry of manifest.entries || []) {
     if (!fs.existsSync(p)) { missing += 1; console.warn('  ! library asset missing: ' + path.basename(p)); continue; }
     let s = fs.readFileSync(p, 'utf8');
     const j = JSON.parse(s);
+    // Wall-clock generation timestamps make otherwise identical release
+    // artifacts hash differently on every rebuild. Review dates live in the
+    // authored/QA metadata, so omit this volatile field from released bytes.
+    let changed = false;
+    if (Object.prototype.hasOwnProperty.call(j, 'generatedAt')) {
+      s = s.replace(/\s*"generatedAt":\s*("[^"]*"|[^,}\]\n]+),?/, '');
+      changed = true;
+    }
     const wrong = ['packId', 'version', 'visibility'].filter((k) => String(j[k] ?? '') !== String(identity[k] ?? ''));
-    if (!wrong.length) { ok += 1; continue; }
+    if (!wrong.length && !changed) { ok += 1; continue; }
     // Remove any stale identity keys, then inject the fresh trio after the
     // opening brace — textual, so a 13MB library keeps its exact formatting.
     for (const k of wrong) {
@@ -62,9 +70,12 @@ for (const entry of manifest.entries || []) {
     }
     const inject = Object.entries(identity).filter(([k]) => wrong.includes(k))
       .map(([k, v]) => JSON.stringify(k) + ': ' + JSON.stringify(v)).join(', ');
-    const brace = s.indexOf('{');
-    s = s.slice(0, brace + 1) + '\n  ' + inject + ',' + s.slice(brace + 1);
+    if (inject) {
+      const brace = s.indexOf('{');
+      s = s.slice(0, brace + 1) + '\n  ' + inject + ',' + s.slice(brace + 1);
+    }
     const check = JSON.parse(s);
+    if (Object.prototype.hasOwnProperty.call(check, 'generatedAt')) throw new Error('volatile generatedAt survived release finalization for ' + p);
     for (const k of Object.keys(identity)) {
       if (String(check[k]) !== String(identity[k])) throw new Error('stamp validation failed for ' + p + ' key ' + k);
     }

@@ -20,4 +20,19 @@ describe('Social Skills Lab chat control accessibility', () => {
   it('does not suppress the input focus outline', () => {
     expect(source()).not.toContain("fontSize: '14px', outline: 'none'");
   });
+
+  it('announces scenario transitions and labels the read-aloud action', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Read peer message aloud'");
+    expect(text).toContain("'aria-label': 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length");
+    expect(text).toContain("announceToSR('Scenario ' + (scenarioIdx + 2) + ' of ' + scenarios.length + '. Choose your response.')");
+  });
+
+  it('exposes feedback and typing states as live status content', () => {
+    const text = source();
+    expect(text).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(text).toContain("role: 'status', 'aria-live': 'polite', 'aria-label': aiScenario.peerName + ' is typing'");
+    expect(text).toContain("role: 'region', 'aria-live': 'polite', 'aria-label': 'Conversation feedback'");
+  });
+
 });

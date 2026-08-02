@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio திறக்கப்பட்டது.",
   "cmd.open_video_studio_hint": "வழிகாட்டிகளைப் பதிவு செய்து, வசனம் சேர்த்து, திருத்தவும்",
   "palette.ctx.videoStudio": "இங்கே — Video Studio",
-  "palette.close": "கட்டளைப் பலகையை மூடு"
+  "palette.close": "கட்டளைப் பலகையை மூடு",
+  "cmd.apply_lesson_template": "சேமிக்கப்பட்ட வார்ப்புருவிலிருந்து தொடங்கு",
+  "cmd.apply_lesson_template_done": "இதிலிருந்து தொடங்கப்பட்டது: ",
+  "cmd.apply_lesson_template_hint": "நீங்கள் சேமித்த வார்ப்புருக்களில் ஒன்றிலிருந்து புதிய திட்டத்தைத் தொடங்குகிறது",
+  "cmd.apply_lesson_template_missing": "என்ற பெயருள்ள வார்ப்புருவைக் கண்டுபிடிக்க முடியவில்லை: ",
+  "cmd.apply_lesson_template_which": "எந்த வார்ப்புரு?",
+  "cmd.rebuild_lesson_step": "திட்டத்தின் ஒரு படியை மீண்டும் உருவாக்கு",
+  "cmd.rebuild_lesson_step_done": "படி மீண்டும் உருவாக்கப்படுகிறது: ",
+  "cmd.rebuild_lesson_step_hint": "ஒரு வளத்தை மட்டும் மீண்டும் உருவாக்கும் — படி எண்ணைச் சொல்லுங்கள்",
+  "cmd.rebuild_lesson_step_missing": "திட்டத்தில் அந்தப் படியைக் கண்டுபிடிக்க முடியவில்லை.",
+  "cmd.rebuild_lesson_step_none": "திட்டத்தில் இன்னும் படிகள் இல்லை.",
+  "cmd.rebuild_lesson_step_which": "எந்தப் படி?",
+  "cmd.run_lesson_blueprint": "பாடத் திட்டத்தை உருவாக்கு",
+  "cmd.run_lesson_blueprint_done": "திட்டம் உருவாக்கப்படுகிறது — அட்டையில் ஒவ்வொரு படியையும் பார்க்கலாம்.",
+  "cmd.run_lesson_blueprint_hint": "தற்போதைய திட்டத்தில் உள்ள அனைத்து வளங்களையும் உருவாக்கும்",
+  "cmd.cancelled": "ரத்துசெய்யக் கோரப்பட்டது. அதன் வழங்குநர் இதை ஆதரிக்கும்போது தற்போதைய செயல்பாடு நிறுத்தப்படும்."
 }

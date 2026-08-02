@@ -8,7 +8,29 @@ let KS;
 let AudioHelpers;
 let nextBlobId;
 
-const b64 = (size, byte = 65) => Buffer.alloc(size, byte).toString('base64');
+const b64 = (size, byte = 65) => {
+  // A compact fixture that is structurally valid as WAV and also contains a
+  // valid MPEG frame header in its data chunk. Tests can exercise either MIME
+  // without relying on arbitrary bytes that production now rejects.
+  const length = Math.max(192, size);
+  const buffer = Buffer.alloc(length, byte);
+  buffer.write('RIFF', 0, 'ascii');
+  buffer.writeUInt32LE(length - 8, 4);
+  buffer.write('WAVE', 8, 'ascii');
+  buffer.write('fmt ', 12, 'ascii');
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(8000, 24);
+  buffer.writeUInt32LE(8000, 28);
+  buffer.writeUInt16LE(1, 32);
+  buffer.writeUInt16LE(8, 34);
+  buffer.write('data', 36, 'ascii');
+  buffer.writeUInt32LE(length - 44, 40);
+  buffer.set([0xff, 0xe3, 0x18, 0x00], 44);
+  buffer.set([0xff, 0xe3, 0x18, 0x00], 116);
+  return buffer.toString('base64');
+};
 const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const hash8 = (file) => createHash('sha256').update(read(file)).digest('hex').slice(0, 8);
 
@@ -306,6 +328,7 @@ describe('KaraokeAudioStore v4 identity migration', () => {
       speed: 1,
       language: 'English',
       voiceResolverVersion: 2,
+      provider: 'gemini',
     })).toBeTruthy();
 
     const readyStore = KS.createStore();
@@ -549,6 +572,7 @@ describe('KaraokeAudioStore v4 identity migration', () => {
       speed: 1,
       language: 'English',
       voiceResolverVersion: 3,
+      provider: 'gemini',
     });
     expect(legacyStore.getCompatible(sentence, v3Profile)).toBe(legacyUrl);
     expect(legacyStore.getCompatible(sentence, { voice: 'Kore' })).toBeNull();
@@ -624,6 +648,146 @@ describe('KaraokeAudioStore v4 identity migration', () => {
     expect(store.inspect(original, profile).status).toBe('missing');
   });
 });
+
+describe('KaraokeAudioStore validation, quarantine, and reconciliation', () => {
+  const identity = (segmentId, spokenText = 'Repeated sentence.') => ({
+    identityVersion: 4,
+    adapterId: 'simplified',
+    adapterVersion: 1,
+    scopeId: 'main',
+    segmentId,
+    spokenFingerprint: 'fingerprint:' + segmentId,
+    spokenText,
+  });
+  const provenance = {
+    voice: 'Kore',
+    language: 'English',
+    synthesisRate: 1,
+    provider: 'gemini',
+    engine: 'cloud-tts',
+    engineVersion: '2026-07',
+    model: 'flash-tts',
+    modelVersion: '1',
+    voiceResolverVersion: 2,
+  };
+
+  it('rejects malformed base64, MIME mismatches, and non-audio response bodies', () => {
+    expect(KS.validateAudioPayload(b64(64), 'audio/mpeg')).toMatchObject({
+      ok: true,
+      mime: 'audio/mpeg',
+    });
+    const unpadded = b64(193).replace(/=+$/, '');
+    expect(KS.validateAudioPayload(unpadded, 'audio/mpeg').ok).toBe(true);
+
+    const store = KS.createStore();
+    expect(store.put('Malformed.', 'not_base64', 'audio/mpeg', 'ai', provenance)).toBeNull();
+    expect(store.lastPutError()).toMatchObject({ code: 'invalid-base64' });
+    expect(store.put(
+      'Error body.',
+      Buffer.from('{"error":"provider failed"}').toString('base64'),
+      'audio/mpeg',
+      'ai',
+      provenance,
+    )).toBeNull();
+    expect(store.lastPutError()).toMatchObject({ code: 'invalid-audio-container' });
+    expect(store.put(
+      'MIME mismatch.',
+      'data:audio/wav;base64,' + b64(64),
+      'audio/mpeg',
+      'ai',
+      provenance,
+    )).toBeNull();
+    expect(store.lastPutError()).toMatchObject({ code: 'mime-mismatch' });
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+
+    expect(store.hydrate({
+      version: 3,
+      format: 'per-entry',
+      sentences: {
+        'Valid clip.': b64(64),
+        'Invalid clip.': Buffer.from('<html>upstream error</html>').toString('base64'),
+      },
+      mimes: {
+        'Valid clip.': 'audio/mpeg',
+        'Invalid clip.': 'audio/mpeg',
+      },
+    })).toBe(1);
+    expect(store.has('Valid clip.')).toBe(true);
+    expect(store.has('Invalid clip.')).toBe(false);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats provider and engine provenance as compatibility data', () => {
+    const store = KS.createStore();
+    const segment = identity('body/0');
+    expect(store.put(segment, b64(64), 'audio/mpeg', 'ai-generated', provenance)).toBeTruthy();
+    expect(store.inspect(segment, provenance).status).toBe('ready');
+    expect(store.inspect(segment, { ...provenance, provider: 'kokoro' }).status).toBe('stale');
+    expect(store.inspect(segment, { ...provenance, engineVersion: '2026-08' }).status).toBe('stale');
+    expect(Object.values(store.serialize().entries)[0].synthesisProfile).toMatchObject({
+      provider: 'gemini',
+      engine: 'cloud-tts',
+      engineVersion: '2026-07',
+      model: 'flash-tts',
+      modelVersion: '1',
+    });
+  });
+
+  it('quarantines an exact repeated occurrence and round-trips it without a playable URL', () => {
+    const first = identity('body/0');
+    const second = identity('body/1');
+    const store = KS.createStore();
+    expect(store.put(first, b64(64, 65), 'audio/mpeg', 'ai-generated', provenance)).toBeTruthy();
+    expect(store.put(second, b64(64, 66), 'audio/mpeg', 'ai-generated', provenance)).toBeTruthy();
+
+    expect(store.quarantine(first, { code: 'media-error', reason: 'Decoder rejected this clip.' })).toBe(true);
+    expect(store.inspect(first, provenance)).toMatchObject({
+      status: 'corrupt',
+      url: null,
+      quarantine: { code: 'media-error', reason: 'Decoder rejected this clip.' },
+    });
+    expect(store.get(first)).toBeNull();
+    expect(store.inspect(second, provenance).status).toBe('ready');
+    expect(store.quarantine('Repeated sentence.', { code: 'ambiguous' })).toBe(false);
+
+    const payload = JSON.parse(JSON.stringify(store.serialize()));
+    const reader = KS.createStore();
+    expect(reader.hydrate(payload)).toBe(2);
+    expect(reader.inspect(first, provenance).status).toBe('corrupt');
+    expect(reader.get(first)).toBeNull();
+    expect(reader.inspect(second, provenance).status).toBe('ready');
+  });
+
+  it('prunes unreachable AI identities while preserving and reporting human orphans', () => {
+    const active = identity('body/active', 'Active sentence.');
+    const aiOrphan = identity('body/ai-orphan', 'Removed AI sentence.');
+    const humanOrphan = identity('body/human-orphan', 'Teacher recording.');
+    const store = KS.createStore();
+    store.put(active, b64(64, 65), 'audio/mpeg', 'ai-generated', provenance);
+    store.put(aiOrphan, b64(64, 66), 'audio/mpeg', 'ai-generated', provenance);
+    store.put(humanOrphan, b64(64, 67), 'audio/mpeg', 'human-teacher', provenance);
+
+    const report = store.reconcile([active]);
+    expect(report).toMatchObject({
+      activeTargets: 1,
+      active: 1,
+      removedAi: 1,
+      preservedHuman: 1,
+      changed: true,
+    });
+    expect(report.humanOrphans).toEqual([
+      expect.objectContaining({
+        source: 'human-teacher',
+        identity: expect.objectContaining({ segmentId: 'body/human-orphan' }),
+      }),
+    ]);
+    expect(report.humanOrphans[0]).not.toHaveProperty('b64');
+    expect(store.inspect(aiOrphan, provenance).status).toBe('missing');
+    expect(store.inspect(humanOrphan, provenance).status).toBe('ready');
+    expect(store.size()).toBe(2);
+  });
+});
+
 describe('karaoke capture integration contracts', () => {
   it('coalesces duplicate captures, retries transient reads, and preserves resource identity', () => {
     const host = read('AlloFlowANTI.txt');
@@ -647,10 +811,14 @@ describe('karaoke capture integration contracts', () => {
     expect(host).toContain('const todo = list.filter(s => _missingSet.has(s) || _karaokeAiVoiceMismatch(st, s));');
 
     const phaseK = read('phase_k_helpers_module.js');
-    expect(phaseK).toContain('const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {');
-    expect(phaseK).toContain('getStoredReadAloudUrl(sentences[index], audioStoreSentence, currentVoice)');
-    expect(phaseK).toContain('getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice)');
-    expect(read('phase_k_helpers_source.jsx')).toContain('getStoredReadAloudUrl(sentences[index], audioStoreSentence, currentVoice)');
+    expect(phaseK).toContain('const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice, options = {}) => {');
+    expect(phaseK).toContain('getStoredReadAloudUrl(readAloudUnitText(currentUnit), audioStoreSentence, currentVoice, {');
+    expect(phaseK).toContain('getStoredReadAloudUrl(readAloudUnitText(targetUnit), textToPreload, targetVoice, {');
+    const phaseKSource = read('phase_k_helpers_source.jsx');
+    expect(phaseKSource).toContain('getStoredReadAloudUrl(readAloudUnitText(currentUnit), audioStoreSentence, currentVoice, {');
+    expect(phaseKSource).toContain('occurrence: segmentOccurrence,');
+    expect(phaseKSource).toContain('identity: segmentIdentity,');
+    expect(phaseKSource).toContain('corruptStoredKeys: playbackRuntime.corruptStoredKeys,');
   });
 
   it('routes every leveled-text TTS entry point through the selected voice', () => {
@@ -701,6 +869,8 @@ describe('karaoke capture integration contracts', () => {
     expect(module).toContain('const _pkTraceId = (value) => {');
     expect(module).not.toContain('contentId: contentId || null');
     // The active sentence rides the interactive lane, never behind bulk preloads.
-    expect(module).toContain("{ maxRetries: 2, priority: 'interactive', reason: 'read-aloud-active' }");
+    expect(module).toContain("priority: 'interactive',");
+    expect(module).toContain("reason: 'read-aloud-active',");
+    expect(module).toContain("mode === 'persona' ? {} : { maxRetries: 1 }");
   });
 });

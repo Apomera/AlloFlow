@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio נפתח.",
   "cmd.open_video_studio_hint": "הקליטו, הוסיפו כתוביות וערכו סרטוני הדרכה",
   "palette.ctx.videoStudio": "כאן — Video Studio",
-  "palette.close": "סגור את לוח הפקודות"
+  "palette.close": "סגור את לוח הפקודות",
+  "cmd.apply_lesson_template": "התחל מתבנית שמורה",
+  "cmd.apply_lesson_template_done": "התחיל מ־",
+  "cmd.apply_lesson_template_hint": "מתחיל תוכנית חדשה מאחת התבניות השמורות שלך",
+  "cmd.apply_lesson_template_missing": "לא מצאתי תבנית בשם ",
+  "cmd.apply_lesson_template_which": "איזו תבנית?",
+  "cmd.rebuild_lesson_step": "בנה מחדש שלב אחד בתוכנית",
+  "cmd.rebuild_lesson_step_done": "בונה מחדש את שלב ",
+  "cmd.rebuild_lesson_step_hint": "מייצר מחדש משאב יחיד — אמור את מספר השלב",
+  "cmd.rebuild_lesson_step_missing": "לא מצאתי את השלב הזה בתוכנית.",
+  "cmd.rebuild_lesson_step_none": "בתוכנית עדיין אין שלבים.",
+  "cmd.rebuild_lesson_step_which": "איזה שלב?",
+  "cmd.run_lesson_blueprint": "צור את תוכנית השיעור",
+  "cmd.run_lesson_blueprint_done": "התוכנית נוצרת — אפשר לעקוב אחרי כל שלב בכרטיס.",
+  "cmd.run_lesson_blueprint_hint": "מייצר את כל המשאבים בתוכנית הנוכחית",
+  "cmd.cancelled": "בקשת הביטול נשלחה. הפעולה הנוכחית תיעצר כאשר הספק שלה יתמוך בכך."
 }

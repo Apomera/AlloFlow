@@ -91,7 +91,104 @@ describe('Throughline lanes + a11y (stateful mount)', () => {
     m.cleanup();
   });
 
-  it('outline rows are keyboard-operable (role=button + hint)', () => {
+  it('opens the read-only alignment graph panel and filters explicit graph data', () => {
+    const openedResources = [];
+    const alignmentGraphExport = {
+      schema: 'alloflow-alignment-graph-export/v1',
+      graph: {
+        version: 'acg/v1',
+        meta: { alignmentMap: { version: 'alloflow-alignment-map/v2', provenancePolicy: 'explicit-attribution-only' } },
+        nodes: [
+          { id: 'audit', label: 'Curriculum audit', type: 'audit' },
+          { id: 'standard', label: 'NGSS 5-LS1-1', type: 'standard' },
+          { id: 'evidence', label: 'Text evidence', type: 'auditEvidence', evidence: 'Plants use structures.', attributionSource: 'audit-model' },
+          { id: 'artifact', label: 'Lesson Plan', type: 'auditArtifact', artifactId: 'h1', attributionSource: 'deterministic-check' },
+          { id: 'finding', label: 'Exit ticket gap', type: 'auditFinding', finding: 'Add a stronger check.' },
+        ],
+        edges: [
+          { id: 'a-s', fromId: 'audit', toId: 'standard', type: 'contains', attributionSource: 'deterministic-check' },
+          { id: 's-e', fromId: 'standard', toId: 'evidence', type: 'evidencedBy', attributionSource: 'deterministic-check' },
+          { id: 'e-a', fromId: 'evidence', toId: 'artifact', type: 'supportedBy', relationType: 'evidenceFrom', attribution: 'explicit', attributionSource: 'teacher' },
+          { id: 's-f', fromId: 'standard', toId: 'finding', type: 'contains', attributionSource: 'deterministic-check' },
+        ],
+      },
+      originalGraph: null,
+      audit: { status: 'Revise' },
+    };
+    const m = mount({ alignmentGraphExport, history: sampleHistory(), onOpenLesson: (item) => openedResources.push(item) });
+    const graphButton = btn(m.host, 'throughline.alignment_graph');
+    expect(graphButton).toBeTruthy();
+    act(() => { graphButton.click(); });
+    const panel = m.host.querySelector('#throughline-alignment-panel');
+    expect(panel).toBeTruthy();
+    expect(panel.textContent).toContain('NGSS 5-LS1-1');
+    expect(panel.textContent).toContain('explicit-attribution-only');
+    expect(panel.querySelector('select[aria-label="Alignment graph node type"]')).toBeTruthy();
+    expect(panel.querySelector('select[aria-label="Alignment graph attribution source"]')).toBeTruthy();
+
+    const typeSelect = panel.querySelector('select[aria-label="Alignment graph node type"]');
+    const setSelect = (select, value) => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      setter.call(select, value);
+      select.dispatchEvent(new window.Event('change', { bubbles: true }));
+    };
+    act(() => { setSelect(typeSelect, 'auditFinding'); });
+    expect(panel.textContent).toContain('Exit ticket gap');
+    expect(panel.textContent).not.toContain('Plants use structures.');
+
+    act(() => { setSelect(typeSelect, 'all'); });
+    const sourceSelect = panel.querySelector('select[aria-label="Alignment graph attribution source"]');
+    act(() => { setSelect(sourceSelect, 'teacher'); });
+    expect(panel.textContent).toContain('Text evidence');
+    expect(panel.textContent).toContain('Lesson Plan');
+    const openResource = panel.querySelector('button[data-graph-resource-id="h1"]');
+    expect(openResource).toBeTruthy();
+    act(() => { openResource.click(); });
+    expect(openedResources[0].id).toBe('h1');
+    m.cleanup();
+  });
+  it('opens a saved alignment graph export without replacing the editable unit', () => {
+    seedStorage(sampleUnit());
+    const received = [];
+    const OriginalFileReader = globalThis.FileReader;
+    class ImmediateFileReader {
+      readAsText(file) {
+        this.onload({ target: { result: file.__text } });
+      }
+    }
+    globalThis.FileReader = ImmediateFileReader;
+    try {
+      const m = mount({
+        onImportAlignmentGraph: (payload) => received.push(payload),
+        onClearImportedAlignmentGraph: noop,
+      });
+      expect(btn(m.host, 'Open graph')).toBeTruthy();
+      const input = m.host.querySelector('input[aria-label="Open saved alignment graph export"]');
+      expect(input).toBeTruthy();
+      const exportPayload = {
+        schema: 'alloflow-alignment-graph-export/v1',
+        graph: {
+          version: 'acg/v1',
+          meta: { alignmentMap: { version: 'alloflow-alignment-map/v2', provenancePolicy: 'explicit-attribution-only' } },
+          nodes: [
+            { id: 'audit', label: 'Audit', type: 'audit' },
+            { id: 'standard', label: 'NGSS 5-LS1-1', type: 'standard' },
+          ],
+          edges: [{ id: 'a-s', fromId: 'audit', toId: 'standard', type: 'contains', attributionSource: 'deterministic-check' }],
+        },
+      };
+      Object.defineProperty(input, 'files', { configurable: true, value: [{ name: 'saved-graph.json', __text: JSON.stringify(exportPayload) }] });
+      act(() => { input.dispatchEvent(new window.Event('change', { bubbles: true })); });
+      expect(received).toHaveLength(1);
+      expect(received[0].schema).toBe('alloflow-alignment-graph-export/v1');
+      expect(received[0].graph.nodes).toHaveLength(2);
+      expect(received[0].sourceFileName).toBe('saved-graph.json');
+      expect(m.host.querySelectorAll('[role="group"]').length).toBe(2);
+      m.cleanup();
+    } finally {
+      globalThis.FileReader = OriginalFileReader;
+    }
+  });  it('outline rows are keyboard-operable (role=button + hint)', () => {
     seedStorage(sampleUnit());
     const m = mount({ history: sampleHistory(), units: sampleUnits(), onOpenLesson: noop });
     act(() => { btn(m.host, 'throughline.outline').click(); });   // open the outline panel

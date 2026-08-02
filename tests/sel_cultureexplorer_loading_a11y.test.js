@@ -22,5 +22,19 @@ describe('Culture Explorer loading and journal accessibility', () => {
     const text = source();
     expect(text).toContain("className: 'text-3xl mb-2', 'aria-hidden': 'true'");
     expect(text).toContain("h('textarea', { 'aria-label': jp.prompt, value: entryVal");
+  });it('connects culture selection, discovery, and follow-up feedback', () => {
+    const text = source();
+    expect(text).toContain("'tabIndex': tab === t.id ? 0 : -1");
+    expect(text).toContain("'aria-pressed': selectedAspect === aspect.id");
+    expect(text).toContain("'aria-label': 'Follow-up answer'");
+    expect(text).toContain("'aria-busy': 'true'");
+  });
+
+  it('exposes quiz and journal progress to assistive technology', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Culture quiz progress'");
+    expect(text).toContain("'aria-label': 'Choice ' + String.fromCharCode(65 + oi) + ': ' + opt");
+    expect(text).toContain("'aria-label': 'Guided journal progress'");
+    expect(text).toContain("'aria-label': 'Save reflection for: ' + jp.prompt");
   });
 });

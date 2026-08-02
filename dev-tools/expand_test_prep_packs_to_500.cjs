@@ -354,11 +354,18 @@ for (const packFile of packFiles) {
   if (pack.items.length !== 500) findings.push({ check: 'inventory', message: 'Pack must contain 500 items' });
   if (new Set(pack.items.map(item => item.id)).size !== 500) findings.push({ check: 'ids', message: 'Item IDs must be unique' });
   if (new Set(pack.items.map(item => canonical(item.prompt))).size !== 500) findings.push({ check: 'prompts', message: 'Normalized prompts must be unique' });
+  // Each independent bank carries its own reviewed allocation; use that
+  // declared bank distribution rather than assuming every credential reuses
+  // source-bank counts (constructed-response-only domains are excluded from
+  // selected-response additions). Guided banks are derived from the same
+  // source sequence and are checked against their actual construction inputs.
+  const independentBatches = Array.from({ length: assistantAuthoredIndependentBatchCount }, (_, index) => independentItems.slice(200 + index * 100, 300 + index * 100));
+  const guidedBatches = Array.from({ length: guidedReviewBatchCount }, (_, index) => guided.slice(index * 100, index * 100 + 100));
   const expectedDomainCounts = [
     countBy(batch1, 'domainId'),
     countBy(batch2, 'domainId'),
-    ...Array.from({ length: assistantAuthoredIndependentBatchCount }, () => countBy(batch1, 'domainId')),
-    ...[batch1, batch2, batch1].slice(0, guidedReviewBatchCount).map(items => countBy(items, 'domainId')),
+    ...independentBatches.map(items => countBy(items, 'domainId')),
+    ...guidedBatches.map(items => countBy(items, 'domainId')),
   ];
   for (let batch = 0; batch < 5; batch++) {
     const items = pack.items.slice(batch * 100, batch * 100 + 100);

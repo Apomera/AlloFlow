@@ -103,12 +103,17 @@ for (const file of files) {
   if (stat.size > 10 * 1024 * 1024) continue;  // skip files >10MB
 
   const src = fs.readFileSync(file, 'utf-8');
+  // Generated Test Prep packs are compressed Base64. Random bytes can contain
+  // credential-shaped substrings (for example an AIza prefix) even though the
+  // decoded source contains no key. Mask only these deterministic payloads
+  // while preserving offsets/newlines for accurate findings elsewhere.
+  const scanSrc = src.replace(/TEST_PREP_DECODE_PACK\("[A-Za-z0-9+/=]+"\)/g, value => value.replace(/[^\r\n]/g, ' '));
   const rel = path.relative(ROOT, file);
 
   for (const pattern of PATTERNS) {
     const re = new RegExp(pattern.regex.source, pattern.regex.flags);
     let m;
-    while ((m = re.exec(src)) !== null) {
+    while ((m = re.exec(scanSrc)) !== null) {
       const matched = m[0];
       // Allowlist check
       if (ALLOWLIST_SUBSTRINGS.some(s => matched.toLowerCase().includes(s.toLowerCase()))) continue;

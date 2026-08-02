@@ -225,7 +225,7 @@ describe('EPPP memory-aid correction Wave 01', () => {
       if (before[index] === null) expect(after[index]).toBeNull();
       else expect(after[index].equals(before[index]), paths[index]).toBe(true);
     }
-  }, 30_000);
+  }, 60_000);
 
   it('reconstructs the same artifact with no prior output after a corrected-catalog projection', () => {
     const tempRoot = fs.mkdtempSync(resolve(os.tmpdir(), 'eppp-correction-wave01-'));

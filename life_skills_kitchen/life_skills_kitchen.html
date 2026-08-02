@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Kitchen &amp; Food Safety Lab</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  if (window.AFRAME) {
+    AFRAME.registerComponent('kitchen-interactive', {
+      schema: { task: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsKitchen3D) window.lifeSkillsKitchen3D.activate(this.data.task, 'scene');
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsKitchen3D) window.lifeSkillsKitchen3D.focus(this.data.task, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root {
+    --kitchen-bg: #111827;
+    --kitchen-panel: #182337;
+    --kitchen-panel-2: #21324b;
+    --kitchen-line: #557095;
+    --kitchen-text: #f8fbff;
+    --kitchen-muted: #c8d6eb;
+    --kitchen-accent: #67e8f9;
+    --kitchen-good: #4ade80;
+    --kitchen-warn: #facc15;
+    --kitchen-danger: #fb7185;
+  }
+  :root[data-theme="light"] {
+    --kitchen-bg: #eef4f8;
+    --kitchen-panel: #ffffff;
+    --kitchen-panel-2: #e5eef5;
+    --kitchen-line: #7894af;
+    --kitchen-text: #122236;
+    --kitchen-muted: #3b526a;
+    --kitchen-accent: #075985;
+    --kitchen-good: #166534;
+    --kitchen-warn: #854d0e;
+    --kitchen-danger: #9f1239;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--kitchen-bg); color: var(--kitchen-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--kitchen-warn); outline-offset: 2px; }
+  .kitchen-app { min-height: 100vh; display: flex; flex-direction: column; }
+  .kitchen-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 18px; background: linear-gradient(115deg, #14532d, #0e7490 58%, #7c2d12); border-bottom: 1px solid rgba(255,255,255,.24); }
+  .kitchen-header h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .kitchen-header p { margin: 4px 0 0; color: #effbff; font-size: 12px; line-height: 1.45; max-width: 700px; }
+  .header-mark { flex: 0 0 auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .kitchen-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 12px; padding: 12px; }
+  .scene-panel, .coach-panel { min-width: 0; border: 1px solid var(--kitchen-line); background: var(--kitchen-panel); box-shadow: 0 16px 42px rgba(0,0,0,.2); }
+  .scene-panel { position: relative; min-height: 590px; overflow: hidden; border-radius: 14px; }
+  .scene-panel a-scene { display: block; width: 100%; height: 100%; min-height: 590px; }
+  .scene-help { position: absolute; left: 12px; bottom: 10px; z-index: 4; max-width: min(470px, calc(100% - 24px)); padding: 7px 9px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: rgba(17,24,39,.88); color: #eef8ff; font-size: 11px; line-height: 1.35; pointer-events: none; }
+  .coach-panel { border-radius: 14px; padding: 14px; overflow: auto; }
+  .coach-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .coach-panel h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .coach-panel h3 { margin: 16px 0 7px; color: var(--kitchen-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .coach-panel p { margin: 0; color: var(--kitchen-muted); font-size: 12px; line-height: 1.5; }
+  .mode-wrap { display: grid; gap: 4px; min-width: 132px; }
+  .mode-wrap label { color: var(--kitchen-muted); font-size: 10px; font-weight: 800; }
+  .mode-wrap select { min-height: 32px; padding: 4px 7px; border: 1px solid var(--kitchen-line); border-radius: 7px; background: var(--kitchen-panel-2); color: var(--kitchen-text); font-size: 11px; font-weight: 750; }
+  .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 9px; padding: 9px 10px; border-left: 4px solid var(--kitchen-accent); background: var(--kitchen-panel-2); }
+  .progress-line strong { font-size: 14px; }
+  .progress-line span { color: var(--kitchen-muted); font-size: 11px; font-weight: 700; text-align: right; }
+  .view-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view-controls span { color: var(--kitchen-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .view-button { padding: 5px 8px; border: 1px solid var(--kitchen-line); border-radius: 7px; background: transparent; color: var(--kitchen-text); font-size: 10px; font-weight: 800; }
+  .view-button[aria-pressed="true"] { border-color: var(--kitchen-accent); background: rgba(103,232,249,.12); }
+  .prompt { margin: 0 0 10px !important; padding: 9px 10px; border: 1px solid var(--kitchen-line); border-radius: 9px; background: rgba(103,232,249,.08); color: var(--kitchen-text) !important; }
+  .feedback { min-height: 42px; margin: 0 0 11px !important; padding: 8px 10px; border-radius: 8px; background: rgba(250,204,21,.12); color: var(--kitchen-warn) !important; font-weight: 700; }
+  .feedback.good { background: rgba(74,222,128,.13); color: var(--kitchen-good) !important; }
+  .feedback.error { background: rgba(251,113,133,.13); color: var(--kitchen-danger) !important; }
+  .scenario-panel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--kitchen-line); border-left: 4px solid var(--kitchen-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .scenario-kicker { color: var(--kitchen-accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .scenario-panel strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.3; }
+  .scenario-situation { margin: 5px 0 8px !important; }
+  .scenario-choices { display: grid; gap: 6px; }
+  .scenario-button { width: 100%; padding: 7px 8px; border: 1px solid var(--kitchen-line); border-radius: 7px; background: transparent; color: var(--kitchen-text); font-size: 11px; line-height: 1.35; text-align: left; }
+  .scenario-button:hover, .scenario-button:focus-visible, .scenario-button[aria-pressed="true"] { border-color: var(--kitchen-accent); background: rgba(103,232,249,.12); }
+  .scenario-button:disabled { cursor: default; opacity: .76; }
+  .scenario-feedback { min-height: 30px; margin: 7px 0 0 !important; font-size: 11px !important; font-weight: 700; }
+  .scenario-feedback.good { color: var(--kitchen-good) !important; }
+  .scenario-feedback.error { color: var(--kitchen-danger) !important; }
+  .scenario-hint { margin-top: 7px; padding: 6px 8px; border: 1px solid var(--kitchen-line); border-radius: 7px; background: transparent; color: var(--kitchen-text); font-size: 10px; font-weight: 800; }
+  .scenario-hint[aria-expanded="true"] { border-color: var(--kitchen-accent); background: rgba(103,232,249,.1); }
+  .scenario-hint-text { margin: 6px 0 0 !important; color: var(--kitchen-muted) !important; font-size: 11px !important; }
+  .scenario-step { display: block; margin-top: 2px; color: var(--kitchen-muted); font-size: 10px; font-weight: 700; }
+  .scenario-next { width: 100%; margin-top: 7px; padding: 7px 8px; border: 1px solid var(--kitchen-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--kitchen-text); font-size: 10px; font-weight: 800; }
+  .scenario-next:disabled { cursor: default; opacity: .7; }
+  .practice-summary { margin: 6px 0 0 !important; color: var(--kitchen-muted) !important; font-size: 10px !important; font-weight: 700; }
+  .task-list { display: grid; gap: 7px; }
+  .task-button { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; width: 100%; padding: 9px 10px; border: 1px solid var(--kitchen-line); border-radius: 9px; background: transparent; color: var(--kitchen-text); text-align: left; }
+  .task-button:hover, .task-button.current { border-color: var(--kitchen-accent); background: rgba(103,232,249,.09); }
+  .task-button.done { border-color: rgba(74,222,128,.75); background: rgba(74,222,128,.1); }
+  .task-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--kitchen-panel-2); font-size: 15px; }
+  .task-button.done .task-icon { background: rgba(74,222,128,.2); }
+  .task-copy { min-width: 0; }
+  .task-copy strong { display: block; font-size: 11px; line-height: 1.25; }
+  .task-copy small { display: block; margin-top: 2px; color: var(--kitchen-muted); font-size: 10px; line-height: 1.3; }
+  .task-room { align-self: start; color: var(--kitchen-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .reset-button { width: 100%; margin-top: 11px; padding: 9px 10px; border: 1px solid var(--kitchen-line); border-radius: 8px; background: var(--kitchen-panel-2); color: var(--kitchen-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button { width: 100%; margin-top: 7px; padding: 9px 10px; border: 1px solid var(--kitchen-warn); border-radius: 8px; background: rgba(250,204,21,.1); color: var(--kitchen-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button:hover { border-color: var(--kitchen-accent); background: rgba(103,232,249,.12); }
+  .help-pause-text { margin: 6px 0 0 !important; color: var(--kitchen-good) !important; font-size: 11px !important; font-weight: 700; }
+  .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--kitchen-line); border-radius: 8px; background: transparent; color: var(--kitchen-text); font-size: 11px; font-weight: 800; }
+  .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--kitchen-accent); background: rgba(103,232,249,.1); }
+  .why-text { margin: 6px 0 0 !important; color: var(--kitchen-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--kitchen-line); font-size: 11px !important; }
+  .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--kitchen-line); border-radius: 12px; background: var(--kitchen-panel); color: var(--kitchen-text); }
+  .scene-fallback strong { display: block; margin-bottom: 5px; }
+  .scene-fallback p { color: var(--kitchen-muted); font-size: 12px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 840px) {
+    .kitchen-layout { grid-template-columns: 1fr; }
+    .scene-panel { min-height: 500px; }
+    .scene-panel a-scene { min-height: 500px; }
+  }
+  @media (max-width: 520px) {
+    .kitchen-header { padding: 12px; }
+    .kitchen-header h1 { font-size: 17px; }
+    .header-mark { display: none; }
+    .kitchen-layout { padding: 8px; gap: 8px; }
+    .scene-panel { min-height: 430px; }
+    .scene-panel a-scene { min-height: 430px; }
+    .coach-panel { padding: 11px; }
+    .coach-top { display: grid; }
+    .mode-wrap { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="kitchen-app" id="kitchenApp">
+  <header class="kitchen-header">
+    <div>
+      <h1>Kitchen &amp; Food Safety Lab</h1>
+      <p>Practice clean preparation, separation, temperature checks, appliance awareness, safe storage, and when to get help.</p>
+    </div>
+    <div class="header-mark">Life Skills Lab · 3D practice</div>
+  </header>
+
+  <div class="kitchen-layout">
+    <section class="scene-panel" aria-labelledby="sceneTitle">
+      <h2 class="sr-only" id="sceneTitle">Interactive 3D kitchen scene</h2>
+      <a-scene id="kitchenScene" embedded renderer="antialias: true; colorManagement: true" background="color: #111827" fog="type: linear; color: #111827; near: 10; far: 32" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #d8e8ff; intensity: 1.5"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.6" position="-4 8 5"></a-entity>
+        <a-entity light="type: point; color: #67e8f9; intensity: .7; distance: 14" position="3 4 2"></a-entity>
+
+        <a-box position="0 -0.12 0" width="12" height=".2" depth="10" material="color: #263a4d; roughness: 1"></a-box>
+        <a-box position="0 3 -4.8" width="12" height="6" depth=".18" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="-5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="5.9 3 0" width=".18" height="6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+
+        <a-plane position="-3.8 .012 -1.8" rotation="-90 0 0" width="3.3" height="4.6" material="color: #245064; opacity: .55; transparent: true"></a-plane>
+        <a-plane position="-.2 .014 -1.8" rotation="-90 0 0" width="3.5" height="4.6" material="color: #33405e; opacity: .55; transparent: true"></a-plane>
+        <a-plane position="3.5 .016 -1.8" rotation="-90 0 0" width="3.3" height="4.6" material="color: #4b4264; opacity: .55; transparent: true"></a-plane>
+        <a-text value="WASH + PREP" position="-3.8 .035 -.15" rotation="-90 0 0" align="center" width="2.8" color="#b7f0f8" opacity=".85"></a-text>
+        <a-text value="SEPARATE + CHECK" position="-.2 .035 -.15" rotation="-90 0 0" align="center" width="3.1" color="#d9d6ff" opacity=".85"></a-text>
+        <a-text value="HEAT + STORE" position="3.5 .035 -.15" rotation="-90 0 0" align="center" width="2.8" color="#f0d7ff" opacity=".85"></a-text>
+
+        <!-- Wash and prep station. -->
+        <a-box position="-3.8 1.02 -2.75" width="2.9" height="1.65" depth=".9" material="color: #285066; roughness: .9"></a-box>
+        <a-box position="-3.8 1.9 -2.75" width="3.05" height=".12" depth="1.05" material="color: #b8c4cf; roughness: .4"></a-box>
+        <a-box position="-3.8 1.96 -2.75" width="1.25" height=".08" depth=".6" material="color: #e8f7fb; roughness: .35"></a-box>
+        <a-cylinder position="-3.8 2.2 -2.75" radius=".1" height=".38" material="color: #94a3b8; roughness: .35"></a-cylinder>
+        <a-box id="obj-hands" kitchen-interactive="task: hands" position="-2.95 2.08 -2.32" width=".34" height=".28" depth=".22" material="color: #38bdf8; roughness: .35"></a-box>
+        <a-text id="label-hands" value="SOAP + WATER\nWASH FIRST" position="-2.95 2.62 -2.28" align="center" width="2.2" color="#cffafe" side="double"></a-text>
+        <a-box position="-4.8 1.1 -2.28" width=".55" height=".7" depth=".48" material="color: #e0f2fe; roughness: .4"></a-box>
+        <a-cylinder position="-4.8 1.48 -2.28" radius=".09" height=".18" material="color: #22c55e; roughness: .3"></a-cylinder>
+
+        <!-- Separate raw and ready-to-eat foods. -->
+        <a-box position="-.2 1.02 -2.75" width="3.25" height="1.65" depth=".9" material="color: #5a4350; roughness: .9"></a-box>
+        <a-box position="-.2 1.9 -2.75" width="3.4" height=".12" depth="1.05" material="color: #d5c4b6; roughness: .45"></a-box>
+        <a-box position="-.92 2.03 -2.75" width="1.15" height=".07" depth=".72" material="color: #ef4444; roughness: .45"></a-box>
+        <a-box position=".65 2.03 -2.75" width="1.15" height=".07" depth=".72" material="color: #22c55e; roughness: .45"></a-box>
+        <a-box id="obj-separate" kitchen-interactive="task: separate" position="-.92 2.1 -2.75" width=".82" height=".12" depth=".45" material="color: #f97316; roughness: .4"></a-box>
+        <a-sphere position="-.92 2.25 -2.75" radius=".2" material="color: #fca5a5; roughness: .55"></a-sphere>
+        <a-sphere position=".65 2.2 -2.75" radius=".15" material="color: #86efac; roughness: .55"></a-sphere>
+        <a-text id="label-separate" value="RAW BOARD\nKEEP APART" position="-.92 2.8 -2.7" align="center" width="2.4" color="#ffedd5" side="double"></a-text>
+
+        <!-- Temperature check station. -->
+        <a-box id="obj-thermometer" kitchen-interactive="task: thermometer" position=".62 2.18 -2.38" width=".12" height=".72" depth=".1" rotation="0 0 -18" material="color: #a855f7; roughness: .38"></a-box>
+        <a-sphere position=".62 2.58 -2.38" radius=".14" material="color: #f8fafc; roughness: .3"></a-sphere>
+        <a-text id="label-thermometer" value="CHECK THE\nTHICKEST PART" position=".62 3.02 -2.28" align="center" width="2.45" color="#f3e8ff" side="double"></a-text>
+
+        <!-- Heat and storage station. -->
+        <a-box position="3.55 1.02 -2.75" width="3.1" height="1.65" depth=".92" material="color: #4b4264; roughness: .9"></a-box>
+        <a-box position="3.55 1.9 -2.75" width="3.25" height=".12" depth="1.06" material="color: #b8c4cf; roughness: .4"></a-box>
+        <a-cylinder position="3.05 2.02 -2.75" radius=".42" height=".05" material="color: #111827; roughness: .8"></a-cylinder>
+        <a-cylinder position="4.0 2.02 -2.75" radius=".42" height=".05" material="color: #111827; roughness: .8"></a-cylinder>
+        <a-cylinder position="3.05 2.1 -2.75" radius=".22" height=".12" material="color: #ef4444; emissive: #7f1d1d; emissiveIntensity: .45"></a-cylinder>
+        <a-box id="obj-stove" kitchen-interactive="task: stove" position="3.92 2.12 -2.34" width=".22" height=".22" depth=".14" material="color: #ef4444; roughness: .38"></a-box>
+        <a-text id="label-stove" value="TURN HEAT OFF\nBEFORE LEAVING" position="3.92 2.72 -2.28" align="center" width="2.7" color="#ffe4e6" side="double"></a-text>
+        <a-box position="3.05 2.28 -2.76" width=".75" height=".12" depth=".75" material="color: #374151; roughness: .55"></a-box>
+        <a-cylinder position="3.05 2.39 -2.76" radius=".27" height=".08" material="color: #f59e0b; emissive: #92400e; emissiveIntensity: .35"></a-cylinder>
+
+        <a-box position="4.75 2.05 -3.45" width="1.05" height="3.1" depth=".18" material="color: #cbd5e1; roughness: .65"></a-box>
+        <a-box position="4.18 2.05 -3.33" width=".1" height="2.8" depth=".08" material="color: #94a3b8; roughness: .5"></a-box>
+        <a-box id="obj-leftovers" kitchen-interactive="task: leftovers" position="4.7 1.25 -3.28" width=".72" height=".32" depth=".5" material="color: #22c55e; opacity: .9; transparent: true; roughness: .35"></a-box>
+        <a-text id="label-leftovers" value="COOL + COVER\nSTORE PROMPTLY" position="4.7 3.1 -3.24" align="center" width="2.45" color="#dcfce7" side="double"></a-text>
+
+        <!-- Safe escalation sign near the heat source. -->
+        <a-box id="obj-fire" kitchen-interactive="task: fire" position="2.35 1.45 -.65" width="1.48" height="1.3" depth=".12" material="color: #be123c; roughness: .7"></a-box>
+        <a-text id="label-fire" value="GREASE FIRE?\nNO WATER\nGET HELP" position="2.35 1.46 -.56" align="center" width="2.2" color="#fff1f2" side="double"></a-text>
+
+        <a-ring id="marker-hands" position="-2.95 2.08 -2.18" radius-inner=".27" radius-outer=".38" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-separate" position="-.92 2.1 -2.5" radius-inner=".45" radius-outer=".58" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-thermometer" position=".62 2.18 -2.2" radius-inner=".27" radius-outer=".38" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-stove" position="3.92 2.12 -2.18" radius-inner=".25" radius-outer=".38" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-leftovers" position="4.7 1.25 -3.02" radius-inner=".42" radius-outer=".56" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-fire" position="2.35 1.45 -.45" radius-inner=".8" radius-outer=".94" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-text id="sceneNote" value="Select a highlighted station or use the checklist." position="0 4.45 -3.95" align="center" width="5.8" color="#e7f2ff" side="double"></a-text>
+        <a-camera id="kitchenCamera" position="0 3.45 9.4" rotation="-12 0 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+          <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30; interval: 100"></a-entity>
+        </a-camera>
+        <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 30"></a-entity>
+      </a-scene>
+      <div class="scene-help">Mouse: drag to look · WASD: move · click a station. Keyboard users can use the checklist.</div>
+      <div class="scene-fallback" id="sceneFallback" role="status">
+        <strong>The 3D view is unavailable.</strong>
+        <p>Use the accessible kitchen checklist on the right to complete the same practice sequence.</p>
+      </div>
+      <p class="sr-only" id="sceneDescription">The scene shows a sink and soap station, separate raw and ready-to-eat food boards, a temperature-check tool, a stove, a refrigerator, and a grease-fire escalation sign.</p>
+    </section>
+
+    <aside class="coach-panel" aria-labelledby="coachTitle">
+      <div class="coach-top">
+        <div>
+          <h2 id="coachTitle">Kitchen coach</h2>
+          <p>Practice preparation and safe decisions before cooking in a real kitchen.</p>
+        </div>
+        <div class="mode-wrap">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect">
+            <option value="guided">Guided</option>
+            <option value="practice">Practice</option>
+            <option value="challenge">Challenge</option>
+          </select>
+        </div>
+      </div>
+      <div class="progress-line" aria-label="Kitchen walkthrough progress">
+        <strong id="progressValue">0 / 6</strong>
+        <span id="progressMode">Guided · start with the first target</span>
+      </div>
+      <div class="view-controls" role="group" aria-label="3D scene view">
+        <span>Scene view</span>
+        <button class="view-button" type="button" data-view="left" aria-pressed="false">Left side</button>
+        <button class="view-button" type="button" data-view="center" aria-pressed="true">Center</button>
+        <button class="view-button" type="button" data-view="right" aria-pressed="false">Right side</button>
+      </div>
+      <p class="prompt" id="prompt" role="status">Start by washing hands before cooking.</p>
+      <p class="feedback" id="feedback" role="status" aria-live="polite">Select a highlighted station or use a checklist button.</p>
+
+      <section class="scenario-panel" aria-labelledby="scenarioTitle">
+        <div class="scenario-kicker">Decision practice</div>
+        <strong id="scenarioTitle"></strong>
+        <span class="scenario-step" id="scenarioStep"></span>
+        <p class="scenario-situation" id="scenarioSituation"></p>
+        <div class="scenario-choices" id="scenarioChoices" role="group" aria-label="Scenario responses"></div>
+        <button class="scenario-hint" id="scenarioHint" type="button" aria-expanded="false">Show a hint</button>
+        <p class="scenario-hint-text" id="scenarioHintText" role="status" aria-live="polite" hidden></p>
+        <button class="scenario-next" id="scenarioNext" type="button" hidden>Try another scenario</button>
+        <p class="scenario-feedback" id="scenarioFeedback" role="status" aria-live="polite"></p>
+        <p class="practice-summary" id="practiceSummary" role="status" aria-live="polite"></p>
+      </section>
+      <h3>Accessible kitchen checklist</h3>
+      <div class="task-list" id="taskList" role="list" aria-label="Kitchen safety targets"></div>
+      <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
+      <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
+      <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
+      <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+      <button class="reset-button" id="resetButton" type="button">Start over</button>
+      <p class="note">Practice only. Keep knives, heat, and raw food away from unsafe situations. Never use water on a grease fire; leave the area and get emergency help. Follow trusted local food-safety guidance for allergies, recalls, and uncertain food.</p>
+      <p class="sr-only" id="srStatus" aria-live="polite"></p>
+    </aside>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var TASKS = [
+    { id: 'hands', icon: '🧼', room: 'Prep', label: 'Wash hands before cooking', short: 'Use soap and running water before touching food.', why: 'Handwashing lowers the chance of spreading germs to food.', base: '#0ea5e9' },
+    { id: 'separate', icon: '🥕', room: 'Prep', label: 'Separate raw and ready-to-eat foods', short: 'Keep raw poultry on its own board and away from produce.', why: 'Separate tools help prevent cross-contamination.', base: '#f97316' },
+    { id: 'thermometer', icon: '🌡️', room: 'Check', label: 'Check poultry reaches 165°F', short: 'Use the thermometer in the thickest part; color is not a reliable test.', why: 'A thermometer gives a safer doneness check than appearance.', base: '#a855f7' },
+    { id: 'stove', icon: '🔥', room: 'Heat', label: 'Turn the burner off before leaving', short: 'Check the knob and keep handles turned inward.', why: 'Stopping heat and reducing handle bumps lowers burn and fire risk.', base: '#ef4444' },
+    { id: 'leftovers', icon: '🧊', room: 'Store', label: 'Cool, cover, and refrigerate leftovers', short: 'Store promptly and label the container so it is not a mystery.', why: 'Prompt refrigeration slows bacterial growth and supports a plan.', base: '#22c55e' },
+    { id: 'fire', icon: '🛑', room: 'Escalate', label: 'Get help for a grease fire', short: 'Never use water on a grease fire; leave and call for help.', why: 'Escalating a dangerous fire is the safe choice.', base: '#be123c' }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var SCENARIO = {"title":"A grease fire starts","situation":"A small grease fire appears in a pan. Which response keeps people safest?","instruction":"Choose the emergency response you would practice.","safeTask":"fire","choices":[{"id":"safe","label":"Turn off heat if safe, cover the pan, leave, and call for help; never use water.","safe":true,"feedback":"Covering the pan when safe, leaving, and getting emergency help avoids spreading a grease fire."},{"id":"water","label":"Pour water onto the fire.","feedback":"Water can spread burning grease. Never use water on a grease fire; leave and get help."},{"id":"carry","label":"Carry the pan outside while it is burning.","feedback":"Moving a burning pan can spill flames and grease. Leave the area and call for help."}],"hint":"A grease fire can spread with water or movement. Protect people first, use a lid only if it is safe, leave, and call for emergency help.","next":{"title":"Raw food and salad share a cutting board","situation":"You are preparing raw chicken and salad, but there is only one cutting board. What is the safer response?","instruction":"Choose the response that prevents cross-contamination.","safeTask":"separate","choices":[{"id":"safe","label":"Use separate clean tools or wash and sanitize the board before ready-to-eat food.","safe":true,"feedback":"Separating tools and cleaning between foods reduces cross-contamination risk."},{"id":"rinse","label":"Rinse the raw chicken and use the same board for the salad.","feedback":"Rinsing does not make raw chicken safer and can spread germs. Separate tools and surfaces."},{"id":"order","label":"Cut the salad first, then raw chicken on the same board.","feedback":"Changing the order is not enough. Clean and separate the board before ready-to-eat food."}],"hint":"Ready-to-eat food should not touch tools or surfaces used for raw poultry until they are properly cleaned and sanitized.","next":{"title":"The thermometer reading is unclear","situation":"The thickest part of the chicken looks done, but the thermometer reading is unclear. What should you do?","instruction":"Choose the response that uses a reliable food-safety check.","safeTask":"thermometer","choices":[{"id":"safe","label":"Recheck with a clean thermometer in the thickest part and keep cooking until the safe temperature is reached.","safe":true,"feedback":"A clear thermometer reading in the thickest part is more reliable than color or guesswork."},{"id":"color","label":"Use the outside color as the final test.","feedback":"Color is not a reliable safety check. Recheck the thickest part with a thermometer."},{"id":"taste","label":"Taste a piece to decide whether it is safe.","feedback":"Do not taste food to test safety. Use a clean thermometer and the safe temperature guidance."}],"hint":"When appearance and the reading disagree, pause and recheck the thickest part with a clean thermometer."}}};
+  var activeScenario = SCENARIO;
+  var params = new URLSearchParams(window.location.search);
+  var storageKey = 'alloflow-life-kitchen-3d-progress-v1';
+  function loadDone() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
+    } catch (_) { return {}; }
+  }
+  function saveProgress() {
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+  }
+  var state = {
+    mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
+    done: loadDone(),
+    focused: null,
+    feedback: 'Select a highlighted station or use a checklist button.',
+    feedbackTone: '',
+    missteps: 0,
+    scenarioChoice: null,
+    scenarioComplete: false,
+    scenarioMessage: '',
+    scenarioTone: '',
+    hintShown: false,
+    scenarioStep: 0,
+    scenarioMissteps: 0,
+    scenarioHintsUsed: 0
+  };
+  var modeSelect = document.getElementById('modeSelect');
+  var progressValue = document.getElementById('progressValue');
+  var progressMode = document.getElementById('progressMode');
+  var prompt = document.getElementById('prompt');
+  var feedback = document.getElementById('feedback');
+  var scenarioTitle = document.getElementById('scenarioTitle');
+  var scenarioSituation = document.getElementById('scenarioSituation');
+  var scenarioChoices = document.getElementById('scenarioChoices');
+  var scenarioFeedback = document.getElementById('scenarioFeedback');
+  var scenarioHint = document.getElementById('scenarioHint');
+  var scenarioHintText = document.getElementById('scenarioHintText');
+  var scenarioNext = document.getElementById('scenarioNext');
+  var scenarioStep = document.getElementById('scenarioStep');
+  var practiceSummary = document.getElementById('practiceSummary');
+  var taskList = document.getElementById('taskList');
+  var resetButton = document.getElementById('resetButton');
+  var helpPauseButton = document.getElementById('helpPauseButton');
+  var helpPauseText = document.getElementById('helpPauseText');
+  var whyButton = document.getElementById('whyButton');
+  var whyText = document.getElementById('whyText');
+  function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
+  function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-kitchen-3d-why-reveal', task: target.id }); }
+  var srStatus = document.getElementById('srStatus');
+  var sceneFallback = document.getElementById('sceneFallback');
+  var scene = document.getElementById('kitchenScene');
+  var camera = document.querySelector('a-camera');
+  var VIEW_PRESETS = {
+    left: { position: '-3.5 3.25 8.8', rotation: '-12 0 0', label: 'Left side' },
+    center: { position: '0 3.45 9.4', rotation: '-12 0 0', label: 'Center' },
+    right: { position: '3.5 3.25 8.8', rotation: '-12 0 0', label: 'Right side' }
+  };
+  function setView(view) {
+    var preset = VIEW_PRESETS[view] || VIEW_PRESETS.center;
+    var selectedView = VIEW_PRESETS[view] ? view : 'center';
+    if (camera) {
+      camera.setAttribute('position', preset.position);
+      camera.setAttribute('rotation', preset.rotation);
+    }
+    document.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === selectedView));
+    });
+    say('Scene view: ' + preset.label + '.');
+  }
+  document.querySelectorAll('[data-view]').forEach(function(button) {
+    button.addEventListener('click', function() { setView(button.getAttribute('data-view')); });
+  });
+  scenarioNext.addEventListener('click', loadNextScenario);
+  helpPauseButton.addEventListener('click', pauseForHelp);
+  whyButton.addEventListener('click', revealWhy);
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
+  }
+  setTheme(params.get('theme'));
+  function postToOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-kitchen-3d' }, payload), '*');
+    } catch (ignore) {}
+  }
+  function say(message) {
+    srStatus.textContent = '';
+    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+  }
+  scenarioHint.addEventListener('click', function () {
+    if (!state.hintShown) state.scenarioHintsUsed += 1;
+    state.hintShown = true;
+    renderScenario();
+    say('Hint: ' + activeScenario.hint);
+  });
+  function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function guidedTarget() { return TASKS.find(function (task) { return !state.done[task.id]; }) || null; }
+  function setFeedback(message, tone) { state.feedback = message; state.feedbackTone = tone || ''; }
+  function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-kitchen-3d-help-pause' }); }
+  function focusTask(id, announce) {
+    if (!BY_ID[id]) return;
+    state.focused = id;
+    clearWhy();
+    renderScene();
+    if (announce) say(BY_ID[id].label + '. ' + BY_ID[id].short);
+  }
+  function activateTask(id, source) {
+    var task = BY_ID[id];
+    if (!task) return;
+    var target = guidedTarget();
+    state.focused = id;
+    clearWhy();
+    if (state.done[id]) {
+      setFeedback('Already complete: ' + task.label + '.', 'good');
+      render();
+      say('Already complete: ' + task.label);
+      return;
+    }
+    if (state.mode === 'guided' && target && target.id !== id) {
+      state.missteps += 1;
+      setFeedback('Guided mode: start with “' + target.label + '.”', 'error');
+      render();
+      say('Guided mode. Start with ' + target.label);
+      return;
+    }
+    state.done[id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    setFeedback('Completed: ' + task.label + '. ' + task.why, 'good');
+    if (next && state.mode === 'guided') setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
+    if (!next) {
+      setFeedback('Kitchen walkthrough complete. You practiced all six safe decisions.', 'good');
+      postToOpener({ type: 'alloflow-life-kitchen-3d-complete', score: TASKS.length, missteps: state.missteps });
+      say('Kitchen walkthrough complete. You practiced all six safe decisions.');
+    } else {
+      postToOpener({ type: 'alloflow-life-kitchen-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
+    }
+    render();
+  }
+  function renderScene() {
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var object = document.getElementById('obj-' + task.id);
+      var label = document.getElementById('label-' + task.id);
+      var marker = document.getElementById('marker-' + task.id);
+      if (!object) return;
+      var done = !!state.done[task.id];
+      var focused = state.focused === task.id || (state.mode === 'guided' && target && target.id === task.id);
+      object.setAttribute('material', 'color: ' + (done ? '#22c55e' : task.base) + '; roughness: .62; metalness: .04; emissive: ' + (done ? '#166534' : (focused ? task.base : '#000000')) + '; emissiveIntensity: ' + (done || focused ? .72 : .04));
+      if (marker) marker.setAttribute('visible', focused && !done);
+      if (label) {
+        label.setAttribute('visible', state.mode !== 'challenge' || done || focused);
+        label.setAttribute('color', done ? '#dcfce7' : '#fff7ed');
+        if (done) label.setAttribute('value', 'DONE\\n' + task.label);
+        else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\\n' + task.label);
+        else if (state.mode === 'challenge') label.setAttribute('value', 'Kitchen item');
+      }
+    });
+    var sceneNote = document.getElementById('sceneNote');
+    if (sceneNote) sceneNote.setAttribute('value', target ? (state.mode === 'guided' ? 'GUIDED TARGET\\n' + target.label : 'SELECT A KITCHEN ITEM\\nScene + checklist both work') : 'WALKTHROUGH COMPLETE\\nAll six safe decisions practiced');
+  }
+  function renderTaskList() {
+    taskList.innerHTML = '';
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var done = !!state.done[task.id];
+      var current = !!target && target.id === task.id && state.mode === 'guided';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-pressed', String(done));
+      if (current) button.setAttribute('aria-current', 'step');
+      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
+      button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span><span class="task-copy"><strong></strong><small></small></span><span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
+      button.querySelector('strong').textContent = task.label;
+      button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
+      button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
+      taskList.appendChild(button);
+    });
+  }
+  function completeScenarioTask() {
+    var task = BY_ID[activeScenario.safeTask];
+    if (!task || state.done[task.id]) return;
+    state.done[task.id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    if (!next) {
+      setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
+      postToOpener({ type: 'alloflow-life-kitchen-3d-complete', score: TASKS.length, missteps: state.missteps });
+    } else {
+      setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
+      postToOpener({ type: 'alloflow-life-kitchen-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+    }
+  }
+  function loadNextScenario() {
+    if (!activeScenario.next) return;
+    activeScenario = activeScenario.next;
+    state.scenarioStep += 1;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    setFeedback('New scenario ready. Choose a response and use a hint if you need one.', '');
+    render();
+    say('Next scenario: ' + activeScenario.title);
+  }
+  function chooseScenario(choiceId) {
+    var choice = activeScenario.choices.find(function (item) { return item.id === choiceId; });
+    if (!choice || state.scenarioComplete) return;
+    state.scenarioChoice = choiceId;
+    state.scenarioMessage = choice.feedback;
+    if (choice.safe) {
+      state.scenarioComplete = true;
+      state.scenarioTone = 'good';
+      focusTask(activeScenario.safeTask, false);
+      completeScenarioTask();
+      say('Good choice. ' + choice.feedback);
+    } else {
+      state.missteps += 1;
+      state.scenarioTone = 'error';
+      focusTask(activeScenario.safeTask, false);
+      state.scenarioMissteps += 1;
+      state.scenarioMessage += ' Try another response. The safer scene target is highlighted.';
+      setFeedback('Practice the scenario again: choose a safer first step.', 'error');
+      say('Try another response. ' + choice.feedback);
+    }
+    render();
+  }
+  function renderScenario() {
+    scenarioTitle.textContent = activeScenario.title;
+    scenarioSituation.textContent = activeScenario.situation;
+    scenarioChoices.innerHTML = '';
+    activeScenario.choices.forEach(function (choice) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'scenario-button';
+      button.textContent = choice.label;
+      button.setAttribute('aria-pressed', String(state.scenarioChoice === choice.id));
+      button.disabled = state.scenarioComplete;
+      button.addEventListener('click', function () { chooseScenario(choice.id); });
+      scenarioChoices.appendChild(button);
+    });
+    scenarioFeedback.textContent = state.scenarioChoice ? state.scenarioMessage : activeScenario.instruction;
+    scenarioFeedback.className = 'scenario-feedback' + (state.scenarioTone ? ' ' + state.scenarioTone : '');
+    scenarioHint.disabled = state.scenarioComplete;
+    scenarioHint.setAttribute('aria-expanded', String(state.hintShown));
+    scenarioHint.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    scenarioHintText.hidden = !state.hintShown;
+    scenarioHintText.textContent = state.hintShown ? activeScenario.hint : '';
+    scenarioStep.textContent = 'Scenario ' + (state.scenarioStep + 1) + ' of 3';
+    scenarioNext.hidden = !state.scenarioComplete || !activeScenario.next;
+    scenarioNext.disabled = !state.scenarioComplete || !activeScenario.next;
+    var completedScenarios = state.scenarioStep + (state.scenarioComplete ? 1 : 0);
+    var coachingText = state.scenarioMissteps === 0 ? 'no coaching moments' : state.scenarioMissteps + (state.scenarioMissteps === 1 ? ' coaching moment' : ' coaching moments');
+    var hintText = state.scenarioHintsUsed === 0 ? 'no hints used' : state.scenarioHintsUsed + (state.scenarioHintsUsed === 1 ? ' hint used' : ' hints used');
+    practiceSummary.textContent = 'Session: ' + completedScenarios + '/3 scenarios complete · ' + coachingText + ' · ' + hintText;
+  }
+  function render() {
+    var count = doneCount();
+    var target = guidedTarget();
+    var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    progressValue.textContent = count + ' / ' + TASKS.length;
+    progressMode.textContent = !target ? modeText + ' · complete' : state.mode === 'guided' ? modeText + ' · next target' : state.mode === 'practice' ? modeText + ' · choose any target' : modeText + ' · labels are reduced';
+    prompt.textContent = !target ? 'All decisions complete. Name one kitchen safety habit you will practice.' : state.mode === 'guided' ? 'Start with: ' + target.label + '.' : state.mode === 'practice' ? 'Choose any item, then explain why the preparation step matters.' : 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
+    feedback.textContent = state.feedback;
+    feedback.className = 'feedback' + (state.feedbackTone ? ' ' + state.feedbackTone : '');
+    renderScenario();
+    modeSelect.value = state.mode;
+    renderTaskList();
+    renderScene();
+  }
+  modeSelect.addEventListener('change', function () {
+    state.mode = modeSelect.value;
+    state.focused = guidedTarget() ? guidedTarget().id : null;
+    setFeedback(state.mode === 'guided' ? 'Guided mode shows one next target at a time.' : state.mode === 'practice' ? 'Practice mode lets you choose the order.' : 'Challenge mode reduces scene labels. The checklist remains available.', '');
+    render();
+    say(modeSelect.options[modeSelect.selectedIndex].text + ' mode selected.');
+  });
+  resetButton.addEventListener('click', function () {
+    helpPauseText.hidden = true;
+    helpPauseText.textContent = '';
+    clearWhy();
+    state.done = {};
+    saveProgress();
+    state.focused = null;
+    state.missteps = 0;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    activeScenario = SCENARIO;
+    state.scenarioStep = 0;
+    state.scenarioMissteps = 0;
+    state.scenarioHintsUsed = 0;
+    setFeedback('Fresh start. Select the first kitchen target.', '');
+    render();
+    say('Walkthrough reset. Select the first kitchen target.');
+    postToOpener({ type: 'alloflow-life-kitchen-3d-reset' });
+  });
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (data && data.type === 'alloflow-theme-change') setTheme(data.theme);
+  });
+  window.lifeSkillsKitchen3D = { activate: activateTask, focus: focusTask };
+  function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }
+  if (!window.AFRAME || !scene) showSceneFallback();
+  else if (scene.hasLoaded) sceneFallback.style.display = 'none';
+  else {
+    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    window.setTimeout(function () { if (!scene.canvas) showSceneFallback(); }, 1800);
+  }
+  render();
+  postToOpener({ type: 'alloflow-life-kitchen-3d-hello' });
+}());
+</script>
+</body>
+</html>

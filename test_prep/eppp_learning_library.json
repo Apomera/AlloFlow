@@ -1,7 +1,6 @@
 {
   "packId": "eppp-part-one", "version": "3.1.0", "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-31T04:59:06.842Z",
   "libraryId": "eppp-learning-library",
   "migrationSourceArchive": {
     "schemaVersion": 1,

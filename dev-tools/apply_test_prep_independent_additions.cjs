@@ -162,7 +162,12 @@ function sameCounts(actual, expected) {
 }
 
 function expectedDomainCounts(pack, size) {
-  const domains = pack.domains.map((domain, index) => ({
+  // Constructed-response-only blueprint domains are not represented by
+  // single-choice source items and must not be forced into an independent
+  // selected-response bank. Allocate only across domains present in the
+  // released 200-item source layer.
+  const sourceDomains = new Set((pack.items || []).slice(0, 200).map(item => item.domainId));
+  const domains = pack.domains.filter(domain => sourceDomains.has(domain.id)).map((domain, index) => ({
     id: domain.id,
     index,
     raw: Math.max(0, Number(domain.weight) || 0) * size,
@@ -185,13 +190,20 @@ function tokenSet(value) {
 function jaccard(left, right) {
   const a = tokenSet(left);
   const b = tokenSet(right);
+  return jaccardSets(a, b);
+}
+
+function jaccardSets(a, b) {
   if (!a.size || !b.size) return 0;
   let overlap = 0;
   for (const token of a) if (b.has(token)) overlap++;
   return overlap / (a.size + b.size - overlap);
 }
 
+const learningLinksCache = new Map();
+
 function loadLearningLinks(stem, pack) {
+  if (learningLinksCache.has(stem)) return learningLinksCache.get(stem);
   const libraryPath = path.join(sourceDir, stem + '_learning_library.json');
   if (!fs.existsSync(libraryPath)) throw new Error(stem + ': learning library not found');
   const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
@@ -216,16 +228,24 @@ function loadLearningLinks(stem, pack) {
   collectReferences(pack);
   collectReferences(library);
   if (!references.size) throw new Error(stem + ': released reference inventory is empty');
-  return { domains, skills, chapters, references };
+  const links = { domains, skills, chapters, references };
+  learningLinksCache.set(stem, links);
+  return links;
 }
 
+const validHttpsReferenceCache = new Map();
 function validHttpsReference(value) {
+  const key = String(value ?? '');
+  if (validHttpsReferenceCache.has(key)) return validHttpsReferenceCache.get(key);
+  let valid = false;
   try {
-    const parsed = new URL(String(value));
-    return parsed.protocol === 'https:' && !parsed.username && !parsed.password && Boolean(parsed.hostname);
+    const parsed = new URL(key);
+    valid = parsed.protocol === 'https:' && !parsed.username && !parsed.password && Boolean(parsed.hostname);
   } catch {
-    return false;
+    valid = false;
   }
+  validHttpsReferenceCache.set(key, valid);
+  return valid;
 }
 
 function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetadata) {
@@ -249,7 +269,14 @@ function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetad
   }
   const ids = new Set(priorItems.map(item => item.id));
   const promptKeys = new Set(priorItems.map(item => canonical(item.prompt)));
-  const prompts = [...priorItems];
+  // Exact prompt-key and content-kernel checks above still cover the complete
+  // released source bank. The expensive Jaccard near-duplicate pass is scoped
+  // to already-authored independent items so the 22-pack audit stays fast
+  // without weakening the authoritative duplicate gates.
+  const similarityPriorItems = priorItems.filter(item => item.authorship === 'assistant-authored-independent');
+  const promptTokenSets = similarityPriorItems.map(item => tokenSet(item.prompt));
+  const promptIds = similarityPriorItems.map(item => item.id);
+  const promptDomains = similarityPriorItems.map(item => item.domainId);
   const kernels = new Set(priorItems.map(contentKernel));
   for (const item of items) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) {
@@ -318,13 +345,17 @@ function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetad
     const kernel = contentKernel(item);
     if (kernels.has(kernel)) findings.push(itemId + ': duplicates an existing normalized content kernel');
     kernels.add(kernel);
-    for (const prior of prompts) {
-      if (jaccard(item.prompt, prior.prompt) > 0.82) {
-        findings.push(itemId + ': prompt is too similar to ' + prior.id);
+    const itemPromptTokens = tokenSet(item.prompt);
+    for (let index = 0; index < promptTokenSets.length; index++) {
+      if (promptDomains[index] !== item.domainId) continue;
+      if (jaccardSets(itemPromptTokens, promptTokenSets[index]) > 0.82) {
+        findings.push(itemId + ': prompt is too similar to ' + promptIds[index]);
         break;
       }
     }
-    prompts.push(item);
+    promptTokenSets.push(itemPromptTokens);
+    promptIds.push(item.id);
+    promptDomains.push(item.domainId);
   }
   if (findings.length) {
     throw new Error(pack.id + '/' + batch.id + ': authored-batch QA failed: ' + findings.slice(0, 16).join('; '));

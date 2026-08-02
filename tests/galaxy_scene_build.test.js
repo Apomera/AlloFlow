@@ -136,6 +136,23 @@ describe('galaxy 3-D scene builder', () => {
     SCENE_TIMEOUT,
   );
 
+
+  it('keeps spiral-only layers unavailable in the elliptical scene', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyType: 'elliptical', galaxyQuality: 'balanced' });
+    await React.act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    expect(canvas._layers.arms.visible).toBe(true);
+    for (const layer of ['dust', 'gas', 'nebulae']) {
+      expect(canvas._isLayerAllowed(layer), layer).toBe(false);
+      expect(canvas._layers[layer].visible, layer).toBe(false);
+      expect(canvas._setLayerVisibility(layer, true), layer).toBe(false);
+      expect(canvas._layers[layer].visible, layer).toBe(false);
+      expect(host.querySelector('[data-galaxy-toggle="' + layer + '"]').disabled, layer).toBe(true);
+    }
+    expect(host.textContent).toContain('Old warm stars');
+    expect(host.textContent).toContain('Concentrated core');
+    assertClean();
+  }, SCENE_TIMEOUT);
   it('exposes working scene handles after building', async () => {
     await mountGalaxy({ ...LIGHT, galaxyQuality: 'high' });
     const canvas = host.querySelector('[data-galaxy-canvas]');

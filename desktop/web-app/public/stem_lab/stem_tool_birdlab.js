@@ -160,6 +160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-walk-down   { animation: birdlab-walk-down 8s ease-in-out infinite alternate; }',
       '.birdlab-hidden      { animation: birdlab-hidden-rustle 3.5s ease-in-out infinite; }',
       '.birdlab-leaf-sway   { animation: birdlab-leaf-sway 4s ease-in-out infinite; transform-origin: bottom center; }',
+      '.birdlab-static      { animation: none !important; }',
       '.birdlab-pulse-ring  { animation: birdlab-pulse-ring 1.6s ease-out infinite; }',
       '.birdlab-card-lift   { transition: transform 200ms ease, box-shadow 200ms ease; }',
       '.birdlab-card-lift:hover { transform: translateY(-3px); }',
@@ -204,7 +205,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-progress-rail { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.24); overflow: hidden; box-shadow: inset 0 1px 2px rgba(15,23,42,0.24); }',
       '.birdlab-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fbbf24, #34d399); transition: width 220ms ease; }',
       '.birdlab-habitat-brief { box-shadow: 0 12px 24px rgba(4, 120, 87, 0.12); }',
-      '.birdlab-scene-card { box-shadow: 0 22px 44px rgba(15, 23, 42, 0.18); border-color: rgba(15, 23, 42, 0.2); }',
+      '.birdlab-scene-card { box-shadow: 0 22px 44px rgba(15, 23, 42, 0.18); border-color: rgba(15, 23, 42, 0.2); contain: paint; }',
+      '.birdlab-scene--motion-off .birdlab-leaf-sway { animation: none !important; }',
       '.birdlab-scene-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), inset 0 -48px 70px rgba(15,23,42,0.10); }',
       '.birdlab-scene-card { isolation: isolate; background: #0f172a; }',
       '.birdlab-scene-card::before { content: ""; position: absolute; z-index: 16; left: 0; right: 0; top: -18%; height: 18%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(186,230,253,0.16), rgba(255,255,255,0.38), transparent); transition: top 800ms ease, opacity 220ms ease; }',
@@ -7982,6 +7984,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var savedRounds = lsGet('birdLab.rounds.v1', null);
         if (savedRounds && d.blRoundCounts === undefined) upd('blRoundCounts', savedRounds);
         var savedEvidence = lsGet('birdLab.evidence.v1', null);
+        var savedReportHistory = lsGet('birdLab.reports.v1', null);
+        if (savedReportHistory && d.blReportHistory === undefined) upd('blReportHistory', savedReportHistory);
         if (savedEvidence && d.blEvidenceLog === undefined) upd('blEvidenceLog', savedEvidence);
         // Life list: per-species first-seen log, persists across habitats.
         // Window-slot mirror handles Canvas-session loss (host save/load
@@ -8022,10 +8026,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             xpLedger: d.blXpLedger || current.xpLedger || {},
             roundCounts: d.blRoundCounts || current.roundCounts || {},
             evidenceLog: d.blEvidenceLog || current.evidenceLog || {},
+            reportHistory: d.blReportHistory || current.reportHistory || {},
             _ts: Date.now()
           });
         } catch (e) {}
-      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog]);
+      }, [d.blLifeList, d.blBadges, d.blXp, d.blXpLedger, d.blRoundCounts, d.blEvidenceLog, d.blReportHistory]);
 
       // Hot-reload from a project-JSON load mid-session.
       useEffect(function () {
@@ -8038,6 +8043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             if (w.xpLedger) upd('blXpLedger', w.xpLedger);
             if (w.roundCounts) upd('blRoundCounts', w.roundCounts);
             if (w.evidenceLog) upd('blEvidenceLog', w.evidenceLog);
+            if (w.reportHistory) upd('blReportHistory', w.reportHistory);
           } catch (e) {}
         }
         window.addEventListener('alloflow-birdlab-restored', onRestore);
@@ -9724,6 +9730,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var habitatId = habitatId_state[0], setHabitatId = habitatId_state[1];
         var picked_state = useState(null);
         var picked = picked_state[0], setPicked = picked_state[1];
+        var reportCopyState_state = useState('idle');
+        var reportHistory_state = useState(d.blReportHistory || {});
+        var reportHistory = reportHistory_state[0], setReportHistory = reportHistory_state[1];
+        var reportArchiveOpen_state = useState(false);
+        var reportArchiveOpen = reportArchiveOpen_state[0], setReportArchiveOpen = reportArchiveOpen_state[1];
+        useEffect(function() { if (d.blReportHistory && d.blReportHistory !== reportHistory) setReportHistory(d.blReportHistory); }, [d.blReportHistory]);
+        var reportCopyState = reportCopyState_state[0], setReportCopyState = reportCopyState_state[1];
+        var fieldReportCelebration_state = useState(null);
+        var fieldReportCelebration = fieldReportCelebration_state[0], setFieldReportCelebration = fieldReportCelebration_state[1];
+        var expeditionCelebration_state = useState(null);
+        var expeditionCelebration = expeditionCelebration_state[0], setExpeditionCelebration = expeditionCelebration_state[1];
+        var sceneLens_state = useState(d.blSceneLens || 'wide');
+        var sceneLens = sceneLens_state[0], setSceneLens = sceneLens_state[1];
+        var sceneMotion_state = useState(d.blSceneMotion != null ? d.blSceneMotion !== false : !_prefersReducedMotion);
+        var sceneMotion = sceneMotion_state[0], setSceneMotion = sceneMotion_state[1];
+        var recordFilter_state = useState(d.blRecordFilter || 'all');
+        var recordFilter = recordFilter_state[0], setRecordFilter = recordFilter_state[1];
+        // Scene lenses turn one wide habitat into a calm, intentional scan path.
+        // The default keeps the full scene available; focused lenses reduce the
+        // active SVG bird nodes while giving learners a clearer visual target.
+        var SCENE_LENSES = [
+          { id: 'wide', icon: '\uD83C\uDF10', label: 'Wide sweep', x: 0, y: 0, w: 900, h: 500, note: 'All habitat zones in one view.' },
+          { id: 'left', icon: '\u2190', label: 'Left sweep', x: 0, y: 0, w: 450, h: 500, note: 'Scan the left side for movement and perches.' },
+          { id: 'center', icon: '\u25C9', label: 'Center sweep', x: 225, y: 0, w: 450, h: 500, note: 'Study the central canopy and open air.' },
+          { id: 'right', icon: '\u2192', label: 'Right sweep', x: 450, y: 0, w: 450, h: 500, note: 'Scan the right side for flight and ground clues.' }
+        ];
+        useEffect(function() {
+          if (d.blSceneLens && d.blSceneLens !== sceneLens) setSceneLens(d.blSceneLens);
+        }, [d.blSceneLens]);
+        useEffect(function() {
+          if (d.blSceneMotion != null && d.blSceneMotion !== sceneMotion) setSceneMotion(d.blSceneMotion !== false);
+        }, [d.blSceneMotion]);
+        function sceneLensForBird(bird) {
+          if (!bird) return 'wide';
+          return bird.x < 300 ? 'left' : bird.x > 600 ? 'right' : 'center';
+        }
+        function switchSceneLens(nextLens) {
+          for (var lensIndex = 0; lensIndex < SCENE_LENSES.length; lensIndex++) {
+            if (SCENE_LENSES[lensIndex].id !== nextLens) continue;
+            setSceneLens(nextLens);
+            upd('blSceneLens', nextLens);
+            announce(SCENE_LENSES[lensIndex].label + ' selected. ' + SCENE_LENSES[lensIndex].note);
+            return;
+          }
+        }
+        function toggleSceneMotion() {
+          var nextMotion = !sceneMotion;
+          setSceneMotion(nextMotion);
+          upd('blSceneMotion', nextMotion);
+          announce(nextMotion ? 'Scene motion on.' : 'Scene motion paused. Static bird art remains available.');
+        }
+        var revealHeadingRef = useRef(null);
+        var habitatSceneRef = useRef(null);
         var foundByHabitat_state = useState(d.foundByHabitat || {});
         var foundByHabitat = foundByHabitat_state[0], setFoundByHabitat = foundByHabitat_state[1];
         var roundCounts_state = useState(d.blRoundCounts || {});
@@ -9853,7 +9912,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             if (Object.keys(reportEntry.cues || {}).length < 2) return false;
             if (String(reportEntry.note || '').trim().length < 20) return false;
           }
-          return awardFieldXp('field-report:' + habitatId, 40, 'Habitat field report: ' + HABITATS[habitatId].name);
+          var reportAwarded = awardFieldXp('field-report:' + habitatId, 40, 'Habitat field report: ' + HABITATS[habitatId].name);
+          if (reportAwarded) {
+            var nextReportHistory = Object.assign({}, reportHistory);
+            nextReportHistory[habitatId] = { habitatName: HABITATS[habitatId].name, submittedAt: new Date().toISOString(), round: (roundCounts[habitatId] || 0) + 1, condition: conditionConfig.label };
+            setReportHistory(nextReportHistory);
+            setReportArchiveOpen(true);
+            upd('blReportHistory', nextReportHistory);
+            lsSet('birdLab.reports.v1', nextReportHistory);
+            setFieldReportCelebration({ habitatId: habitatId, habitatName: HABITATS[habitatId].name, birdCount: reportBirds.length, ts: Date.now() });
+            setTimeout(function() { setFieldReportCelebration(null); }, 4800);
+            announce(HABITATS[habitatId].name + ' habitat field report submitted. All species documented.');
+          }
+          return reportAwarded;
         }
 
         function toggleFieldEvidence(evidenceId) {
@@ -9921,8 +9992,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             if (fieldReviewQueue[reviewIndex].species === pickedSpeciesKey) { currentIndex = reviewIndex; break; }
           }
           var nextReviewBird = fieldReviewQueue[(currentIndex + 1) % fieldReviewQueue.length];
-          setPicked(BIRDS[nextReviewBird.species]);
-          announce('Opening ' + BIRDS[nextReviewBird.species].name + ' for ' + fieldReviewMode + ' review.');
+          openBirdRecord(BIRDS[nextReviewBird.species], 'Opening ' + BIRDS[nextReviewBird.species].name + ' for ' + fieldReviewMode + ' review.');
+        }
+
+        function buildHabitatFieldReportText() {
+          var reportLines = [
+            'BirdLab Habitat Field Report',
+            'Habitat: ' + habitat.name,
+            'Status: ' + (fieldReportComplete ? 'Complete' : 'In progress (' + fieldReportPct + '%)'),
+            'Observation round: #' + ((roundCounts[habitatId] || 0) + 1),
+            'Conditions: ' + conditionConfig.label,
+            'Field rank: ' + rankInfo.rank.name + ' (' + fieldXp + ' XP)',
+            'Progress: ' + foundCount + '/' + totalBirds + ' spotted; ' + evidenceMasteredCount + '/' + totalBirds + ' evidence-backed; ' + journalMasteredCount + '/' + totalBirds + ' notes',
+            '',
+            'Species records'
+          ];
+          for (var reportBirdIndex = 0; reportBirdIndex < habitat.birds.length; reportBirdIndex++) {
+            var reportBird = habitat.birds[reportBirdIndex];
+            var reportSpecies = BIRDS[reportBird.species];
+            var reportEntry = evidenceLog[reportBird.species] || {};
+            var reportCues = FIELD_EVIDENCE.filter(function(cue) { return !!(reportEntry.cues && reportEntry.cues[cue.id]); }).map(function(cue) { return cue.label; });
+            reportLines.push((reportBirdIndex + 1) + '. ' + reportSpecies.name + ' - ' + (found[reportBird.species] ? 'FOUND' : 'NOT FOUND'));
+            reportLines.push('   Evidence: ' + (reportCues.length ? reportCues.join(', ') : 'Not documented'));
+            reportLines.push('   Note: ' + (String(reportEntry.note || '').trim() || 'Not documented'));
+          }
+          reportLines.push('', 'Generated from BirdLab');
+          return reportLines.join('\n');
+        }
+
+        function finishFieldReportCopy(success) {
+          setReportCopyState(success ? 'copied' : 'error');
+          announce(success ? 'Habitat field report copied to the clipboard.' : 'Could not copy the habitat field report.');
+          if (typeof addToast === 'function') addToast(success ? '\uD83D\uDCCB Field report copied' : 'Copy failed - select and copy manually', success ? 'success' : 'error');
+          setTimeout(function() { setReportCopyState('idle'); }, 2600);
+        }
+
+        function fallbackCopyFieldReport(reportText) {
+          try {
+            if (typeof document === 'undefined') return finishFieldReportCopy(false);
+            var copyArea = document.createElement('textarea');
+            copyArea.value = reportText;
+            copyArea.setAttribute('readonly', '');
+            copyArea.style.position = 'fixed';
+            copyArea.style.opacity = '0';
+            document.body.appendChild(copyArea);
+            copyArea.select();
+            var copied = document.execCommand('copy');
+            document.body.removeChild(copyArea);
+            finishFieldReportCopy(!!copied);
+          } catch (copyError) { finishFieldReportCopy(false); }
+        }
+
+        function copyHabitatFieldReport() {
+          var reportText = buildHabitatFieldReportText();
+          if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(reportText).then(function() { finishFieldReportCopy(true); }).catch(function() { fallbackCopyFieldReport(reportText); });
+          } else fallbackCopyFieldReport(reportText);
+        }
+
+        function switchRecordFilter(nextFilter) {
+          setRecordFilter(nextFilter);
+          upd('blRecordFilter', nextFilter);
+          var nextLabel = nextFilter;
+          for (var filterLabelIndex = 0; filterLabelIndex < RECORD_FILTERS.length; filterLabelIndex++) {
+            if (RECORD_FILTERS[filterLabelIndex].id === nextFilter) { nextLabel = RECORD_FILTERS[filterLabelIndex].label; break; }
+          }
+          announce('Bird record filter: ' + nextLabel + '.');
+        }
+
+        function focusBirdLabRefSoon(targetRef) {
+          setTimeout(function() {
+            try {
+              if (targetRef && targetRef.current && typeof targetRef.current.focus === 'function') targetRef.current.focus();
+            } catch (focusError) {}
+          }, 0);
+        }
+
+        function openBirdRecord(species, message) {
+          if (!species) return;
+          setPicked(species);
+          focusBirdLabRefSoon(revealHeadingRef);
+          if (message) announce(message);
+        }
+
+        function continueHabitatScanning() {
+          setPicked(null);
+          focusBirdLabRefSoon(habitatSceneRef);
+          announce('Bird card closed. Continue scanning the habitat scene.');
         }
 
         var bestTimes = bestTimes_state[0], setBestTimes = bestTimes_state[1];
@@ -9994,6 +10150,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           announce('Daily challenge complete: ' + dailyChallenge.title);
           if (typeof addToast === 'function') addToast(dailyChallenge.icon + ' Daily Challenge complete! ' + dailyChallenge.title, 'success');
           chirpClean();
+        }
+        function maybeCompleteExpeditionRoute(nextVisited) {
+          if (!nextVisited || !expeditionRouteIds || expeditionRouteIds.length !== 3) return;
+          var routeComplete = expeditionRouteIds.every(function(routeId) { return !!nextVisited.habitats[routeId]; });
+          if (!routeComplete) return;
+          var routeAwarded = awardFieldXp(expeditionKey, 25, 'Daily expedition route');
+          if (routeAwarded) {
+            announce('Daily expedition route complete. All three habitats visited.');
+            if (typeof addToast === 'function') addToast('\uD83D\uDDFA Expedition complete! +25 XP', 'success');
+            setExpeditionCelebration({ stops: expeditionRouteIds.map(function(routeId) { return HABITATS[routeId].name; }), ts: Date.now() });
+            setTimeout(function() { setExpeditionCelebration(null); }, 4800);
+            chirpClean();
+          }
         }
         // ── Audio feedback (chirps for spot/hint/clean) ──
         // Reuses the shared getBirdAudioCtx() defined later for bird calls.
@@ -10214,11 +10383,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var fieldReportComplete = foundCount === totalBirds && evidenceMasteryComplete && journalMasteredCount === totalBirds;
         var fieldReportPct = totalBirds ? Math.round(((foundCount + evidenceMasteredCount + journalMasteredCount) / (totalBirds * 3)) * 100) : 0;
         var fieldReportRewarded = !!xpLedger['field-report:' + habitatId];
+        var reportHistoryCount = Object.keys(reportHistory).length;
+        var reportHistoryTotal = Object.keys(HABITATS).length;
         var FIELD_REPORT_STAGES = [
           { icon: '\uD83D\uDC40', label: 'Spotted', value: foundCount, done: foundCount === totalBirds },
           { icon: '\uD83D\uDD0E', label: 'Evidence', value: evidenceMasteredCount, done: evidenceMasteryComplete },
           { icon: '\uD83D\uDCDD', label: 'Field notes', value: journalMasteredCount, done: journalMasteredCount === totalBirds }
         ];
+        var fieldActionStage = foundCount < totalBirds ? 'discover' : incompleteEvidenceBirds.length ? 'evidence' : incompleteNoteBirds.length ? 'notes' : 'complete';
+        var fieldActionBird = fieldActionStage === 'evidence' ? incompleteEvidenceBirds[0] : fieldActionStage === 'notes' ? incompleteNoteBirds[0] : null;
+        var fieldActionBirdName = fieldActionBird && BIRDS[fieldActionBird.species] ? BIRDS[fieldActionBird.species].name : 'the next record';
+        var fieldActionIcon = fieldActionStage === 'discover' ? '\uD83D\uDC40' : fieldActionStage === 'evidence' ? '\uD83D\uDD0E' : fieldActionStage === 'notes' ? '\uD83D\uDCDD' : '\u2728';
+        var fieldActionDescription = fieldActionStage === 'discover'
+          ? (totalBirds - foundCount) + ' species remain to locate. Scan for movement, shape, and perch clues.'
+          : fieldActionStage === 'evidence'
+            ? 'Support ' + fieldActionBirdName + ' with two field cues before moving on.'
+            : fieldActionStage === 'notes'
+              ? 'Reflect on ' + fieldActionBirdName + ' with a 20-character observation.'
+              : 'Every species has a complete record. Keep exploring for another field pass.';
+        var fieldActionCta = fieldActionStage === 'discover' ? '\uD83D\uDC40 Scan the habitat' : fieldActionStage === 'evidence' ? '\uD83D\uDD0E Support the next ID' : fieldActionStage === 'notes' ? '\uD83D\uDCDD Write the next note' : '\u2728 Explore another pass';
+        var fieldActionHandler = fieldActionStage === 'evidence' || fieldActionStage === 'notes' ? openNextFieldRecord : continueHabitatScanning;
+        var completeFieldRecordCount = Math.max(0, foundCount - incompleteEvidenceBirds.length - incompleteNoteBirds.length);
+        var RECORD_FILTERS = [
+          { id: 'all', icon: '\uD83D\uDC26', label: 'All', count: totalBirds, match: function() { return true; } },
+          { id: 'found', icon: '\u2713', label: 'Found', count: foundCount, match: function(bird) { return !!found[bird.species]; } },
+          { id: 'evidence', icon: '\uD83D\uDD0E', label: 'Needs evidence', count: incompleteEvidenceBirds.length, match: function(bird) {
+            var entry = evidenceLog[bird.species] || {};
+            return !!found[bird.species] && Object.keys(entry.cues || {}).length < 2;
+          } },
+          { id: 'notes', icon: '\uD83D\uDCDD', label: 'Needs notes', count: incompleteNoteBirds.length, match: function(bird) {
+            var entry = evidenceLog[bird.species] || {};
+            return !!found[bird.species] && Object.keys(entry.cues || {}).length >= 2 && String(entry.note || '').trim().length < 20;
+          } },
+          { id: 'complete', icon: '\uD83C\uDF1F', label: 'Complete', count: completeFieldRecordCount, match: function(bird) {
+            var entry = evidenceLog[bird.species] || {};
+            return !!found[bird.species] && Object.keys(entry.cues || {}).length >= 2 && String(entry.note || '').trim().length >= 20;
+          } }
+        ];
+        var activeRecordFilter = RECORD_FILTERS[0];
+        for (var activeFilterIndex = 0; activeFilterIndex < RECORD_FILTERS.length; activeFilterIndex++) {
+          if (RECORD_FILTERS[activeFilterIndex].id === recordFilter) { activeRecordFilter = RECORD_FILTERS[activeFilterIndex]; break; }
+        }
+        var visibleRecordBirds = habitat.birds.filter(activeRecordFilter.match);
         // One species-specific assignment per habitat per day. This gives each
         // revisit a clear purpose without changing the authentic scene layout.
         var assignmentSeed = 0;
@@ -10233,6 +10439,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var hintsLeft = Math.max(0, HINT_BUDGET - habitatHintsUsed);
 
         function fireHint(bird) {
+          // Bring a hinted bird into the learner's current sweep so a hint
+          // never points outside the active visual lens.
+          if (sceneLens !== 'wide') setSceneLens(sceneLensForBird(bird));
           // Already used max hints AND in hint mode → block
           if (hintMode && habitatHintsUsed >= HINT_BUDGET) return;
           // Mark a hint used (only in hint mode — accessibility mode doesn't deplete)
@@ -10273,8 +10482,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
 
         function switchHabitat(newId) {
+          setSceneLens('wide');
+          upd('blSceneLens', 'wide');
           setHabitatId(newId);
           setPicked(null);
+          setRecordFilter('all');
+          upd('blRecordFilter', 'all');
+          focusBirdLabRefSoon(habitatSceneRef);
           upd('activeHabitat', newId);
           announce('Switched to ' + HABITATS[newId].name + ' habitat. ' + HABITATS[newId].birds.length + ' birds to find.');
           // Start the silent spot-time clock if not already running for this habitat
@@ -10284,14 +10498,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             setHabitatStartTs(hs);
           }
           // Track for 'visit3' daily challenge
+          var nextVisitedForRoute = visitedToday;
           if (!visitedToday.habitats[newId]) {
             var nv = { date: visitedToday.date, habitats: Object.assign({}, visitedToday.habitats) };
             nv.habitats[newId] = true;
+            nextVisitedForRoute = nv;
             setVisitedToday(nv);
             upd('blVisitedToday', nv);
             if (!dailyComplete && dailyChallenge.id === 'visit3'
               && Object.keys(nv.habitats).length >= 3) completeDailyChallenge();
           }
+          maybeCompleteExpeditionRoute(nextVisitedForRoute);
         }
         function startNewRound(nextDifficulty) {
           var roundDifficulty = nextDifficulty || difficulty;
@@ -10315,6 +10532,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           upd('blHabitatHinted', nextHinted);
           setPicked(null);
           setHintActive(null);
+          setSceneLens('wide');
+          upd('blSceneLens', 'wide');
           setCleanCelebration(null);
           var nextStarts = Object.assign({}, habitatStartTs);
           nextStarts[habitatId] = Date.now();
@@ -10416,7 +10635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }
           // Clear any active hint pulse — they got the bird, no need to keep pulsing.
           setHintActive(null);
-          setPicked(species);
+          openBirdRecord(species);
           if (!isFirstFind) {
             announce('Reviewing ' + species.name + '. Start a new round to record another sighting.');
             return;
@@ -10527,6 +10746,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var habitatAriaLabel = habitat.name + ' habitat. ' + totalBirds + ' birds visible. Found ' + foundCount + ' so far. Click any bird to identify it.';
 
         var allHabitatIds = ['forest', 'marsh', 'backyard', 'coast', 'mountain'];
+        // A deterministic three-stop route keeps each day\'s cross-habitat goal fresh.
+        var expeditionHash = 0;
+        for (var expeditionHashIndex = 0; expeditionHashIndex < dailyChallenge.date.length; expeditionHashIndex++) expeditionHash = (expeditionHash * 33 + dailyChallenge.date.charCodeAt(expeditionHashIndex)) >>> 0;
+        var expeditionRouteStart = expeditionHash % allHabitatIds.length;
+        var expeditionRouteIds = [];
+        for (var expeditionRouteIndex = 0; expeditionRouteIndex < 3; expeditionRouteIndex++) expeditionRouteIds.push(allHabitatIds[(expeditionRouteStart + expeditionRouteIndex * 2) % allHabitatIds.length]);
+        var expeditionKey = 'expedition:' + dailyChallenge.date;
+        var expeditionDoneCount = expeditionRouteIds.filter(function(stopId) { return !!visitedToday.habitats[stopId]; }).length;
+        var expeditionComplete = expeditionDoneCount === expeditionRouteIds.length;
+        var expeditionRewarded = !!xpLedger[expeditionKey];
+        var expeditionProgressPct = Math.round((expeditionDoneCount / expeditionRouteIds.length) * 100);
+        var expeditionStops = expeditionRouteIds.map(function(stopId, stopIndex) { return { id: stopId, name: HABITATS[stopId].name, order: stopIndex + 1, visited: !!visitedToday.habitats[stopId] }; });
 
         var lifeListNow = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
         var totalSpecies = Object.keys(BIRDS).length;
@@ -10538,8 +10769,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             ? __alloT('stem.birdlab.i_spy_prompt_complete', 'Habitat complete. Try another habitat or re-run on a harder hint budget.')
             : __alloT('stem.birdlab.i_spy_prompt_keep', 'Keep scanning. The remaining birds are still moving in the scene.'));
 
+        var passportHabitatStats = allHabitatIds.map(function(passportId) {
+          var passportHabitat = HABITATS[passportId];
+          var passportFound = Object.keys(foundByHabitat[passportId] || {}).length;
+          var passportTotal = passportHabitat.birds.length;
+          var passportReport = !!reportHistory[passportId];
+          var passportTier = getCleanTier(passportId);
+          return { id: passportId, name: passportHabitat.name, found: passportFound, total: passportTotal, progress: passportReport ? 100 : (passportTotal ? Math.round((passportFound / passportTotal) * 100) : 0), report: passportReport, tier: passportTier };
+        });
+        var passportDocumentedCount = passportHabitatStats.filter(function(item) { return item.report; }).length;
+        var passportVisitedCount = passportHabitatStats.filter(function(item) { return item.found > 0; }).length;
+        var passportFoundBirdCount = passportHabitatStats.reduce(function(sum, item) { return sum + item.found; }, 0);
+        var passportTotalBirdCount = passportHabitatStats.reduce(function(sum, item) { return sum + item.total; }, 0);
+        var passportNext = passportHabitatStats.filter(function(item) { return !item.report; })[0] || null;
+        var passportSummary = passportDocumentedCount === allHabitatIds.length
+          ? 'All five habitats are documented. Your field guide is complete.'
+          : passportNext ? 'Next passport stamp: ' + passportNext.name + '. Jump there when you are ready.' : 'Keep building your field guide across the habitats.';
+        var activeSceneLens = SCENE_LENSES[0];
+        for (var activeSceneLensIndex = 0; activeSceneLensIndex < SCENE_LENSES.length; activeSceneLensIndex++) {
+          if (SCENE_LENSES[activeSceneLensIndex].id === sceneLens) { activeSceneLens = SCENE_LENSES[activeSceneLensIndex]; break; }
+        }
+        var sceneScaleX = habitat.width / 900;
+        var sceneScaleY = habitat.height / 500;
+        var sceneViewBox = (activeSceneLens.x * sceneScaleX) + ' ' + (activeSceneLens.y * sceneScaleY) + ' ' + (activeSceneLens.w * sceneScaleX) + ' ' + (activeSceneLens.h * sceneScaleY);
+        function sceneBirdVisible(bird) {
+          if (activeSceneLens.id === 'wide') return true;
+          var lensLeft = activeSceneLens.x * sceneScaleX;
+          var lensRight = (activeSceneLens.x + activeSceneLens.w) * sceneScaleX;
+          var lensPadding = 48 * sceneScaleX;
+          return bird.x >= lensLeft - lensPadding && bird.x <= lensRight + lensPadding;
+        }
+        var visibleSceneBirdCount = habitat.birds.filter(sceneBirdVisible).length;
+        function renderSceneBirds(layer, keyPrefix) {
+          return habitat.birds.filter(function(bird) { return bird.layer === layer && sceneBirdVisible(bird); }).map(function(bird) {
+            var species = BIRDS[bird.species];
+            return h('g', {
+              key: keyPrefix + '-' + bird.species,
+              transform: 'translate(' + bird.x + ',' + bird.y + ') scale(' + bird.scale + ')'
+            },
+              h('g', { className: sceneMotion ? 'birdlab-' + species.movement : 'birdlab-static' }, species.svg(h))
+            );
+          });
+        }
         return h('div', { className: 'min-h-screen bg-slate-50', 'data-birdlab-ispy': 'true' },
           h(BackBar, { icon: '🔍', title: 'I-Spy Bird Spotter — ' + habitat.name }),
+          fieldReportCelebration && h('div', {
+            className: 'fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/35 px-4 pointer-events-none',
+            'data-birdlab-report-celebration': 'true'
+          },
+            h('div', { className: 'relative w-full max-w-lg overflow-hidden rounded-3xl border-4 border-white bg-gradient-to-br from-violet-800 via-fuchsia-700 to-amber-600 p-1 shadow-2xl pointer-events-auto' },
+              h('div', { className: 'rounded-[20px] bg-white/95 p-5 text-center' },
+                h('div', { className: 'text-sm tracking-[0.45em] text-amber-500', 'aria-hidden': 'true' }, '\u2726 \u2605 \u2726 \u2605 \u2726'),
+                h('div', { role: 'status', 'aria-live': 'assertive', 'aria-atomic': 'true' },
+                  h('div', { className: 'mx-auto mt-2 flex h-20 w-20 items-center justify-center rounded-full border-4 border-violet-200 bg-gradient-to-br from-violet-700 to-fuchsia-600 text-4xl text-white shadow-xl', 'aria-hidden': 'true' }, '\uD83D\uDCCB'),
+                  h('div', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-violet-700' }, 'Field report submitted'),
+                  h('h2', { className: 'mt-1 text-2xl font-black tracking-tight text-slate-900' }, fieldReportCelebration.habitatName + ' documented'),
+                  h('p', { className: 'mx-auto mt-2 max-w-sm text-sm leading-relaxed text-slate-700' }, 'Every species was spotted, supported with field evidence, and described in the journal.'),
+                  h('div', { className: 'mt-4 grid grid-cols-3 gap-2' },
+                    h('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-50 p-2' }, h('div', { className: 'text-lg', 'aria-hidden': 'true' }, '\uD83D\uDC40'), h('div', { className: 'text-[10px] font-black text-emerald-900' }, fieldReportCelebration.birdCount + ' spotted')),
+                    h('div', { className: 'rounded-xl border border-sky-300 bg-sky-50 p-2' }, h('div', { className: 'text-lg', 'aria-hidden': 'true' }, '\uD83D\uDD0E'), h('div', { className: 'text-[10px] font-black text-sky-900' }, 'Evidence complete')),
+                    h('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-2' }, h('div', { className: 'text-lg', 'aria-hidden': 'true' }, '\uD83D\uDCDD'), h('div', { className: 'text-[10px] font-black text-amber-900' }, 'Notes complete'))
+                  ),
+                  h('div', { className: 'mt-4 rounded-xl bg-violet-100 px-4 py-2 text-sm font-black text-violet-900' }, '+40 field XP \u00B7 Habitat report mastered')
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setFieldReportCelebration(null); },
+                  className: 'mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/30',
+                  'aria-label': 'Dismiss field report celebration and keep exploring'
+                }, 'Keep exploring')
+              )
+            )
+          ),
+          expeditionCelebration && h('div', {
+            className: 'fixed inset-0 z-[68] flex items-center justify-center bg-indigo-950/35 px-4 pointer-events-none',
+            'data-birdlab-expedition-celebration': 'true'
+          },
+            h('div', { className: 'relative w-full max-w-lg overflow-hidden rounded-3xl border-4 border-white bg-gradient-to-br from-indigo-800 via-fuchsia-700 to-amber-500 p-1 shadow-2xl pointer-events-auto' },
+              h('div', { className: 'rounded-[20px] bg-white/95 p-5 text-center' },
+                h('div', { className: 'text-sm tracking-[0.45em] text-indigo-500', 'aria-hidden': 'true' }, '\u2726 \u2605 \u2726 \u2605 \u2726'),
+                h('div', { role: 'status', 'aria-live': 'assertive', 'aria-atomic': 'true' },
+                  h('div', { className: 'mx-auto mt-2 flex h-20 w-20 items-center justify-center rounded-full border-4 border-indigo-200 bg-gradient-to-br from-indigo-700 to-fuchsia-600 text-4xl text-white shadow-xl', 'aria-hidden': 'true' }, '\uD83D\uDDFA'),
+                  h('div', { className: 'mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-indigo-700' }, 'Daily expedition complete'),
+                  h('h2', { className: 'mt-1 text-2xl font-black tracking-tight text-slate-900' }, 'Route logged'),
+                  h('p', { className: 'mx-auto mt-2 max-w-sm text-sm leading-relaxed text-slate-700' }, 'You opened all three stops and added a new route to your field day.'),
+                  h('div', { className: 'mt-4 grid grid-cols-3 gap-2' },
+                    expeditionCelebration.stops.map(function(stopName, stopIndex) {
+                      return h('div', { key: 'expedition-celebration-stop-' + stopIndex, className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-2' },
+                        h('div', { className: 'mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-indigo-700 text-xs font-black text-white', 'aria-hidden': 'true' }, stopIndex + 1),
+                        h('div', { className: 'mt-1 truncate text-[10px] font-black text-indigo-950' }, stopName)
+                      );
+                    })
+                  ),
+                  h('div', { className: 'mt-4 rounded-xl bg-indigo-100 px-4 py-2 text-sm font-black text-indigo-900' }, '+25 field XP \u00B7 Expedition bonus')
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setExpeditionCelebration(null); },
+                  className: 'mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-black text-white hover:bg-indigo-800 focus:outline-none focus:ring-4 ring-indigo-500/30',
+                  'aria-label': 'Dismiss expedition celebration and keep exploring'
+                }, 'Keep exploring')
+              )
+            )
+          ),
           // Rank promotion is a rarer, more prominent celebration than a lifer.
           rankCelebration && h('div', {
             role: 'status', 'aria-live': 'assertive',
@@ -10605,6 +10937,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('div', { className: 'birdlab-status-chip' },
                     h('strong', null, '#' + ((roundCounts[habitatId] || 0) + 1)),
                     h('span', null, 'Observation round')
+                  ),
+                  h('div', { className: 'birdlab-status-chip', title: 'Completed habitat field reports are archived across BirdLab.' },
+                    h('strong', null, reportHistoryCount + '/' + reportHistoryTotal),
+                    h('span', null, 'Habitats documented')
                   )
                 )
               )
@@ -10743,6 +11079,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               );
             })(),
             // Habitat picker (tab strip)
+            h('section', { className: 'rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-white to-sky-50 p-4 shadow-sm', 'aria-label': 'Field Guide Passport', 'data-birdlab-passport': 'true' },
+              h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-violet-700' }, '\uD83D\uDCD6 Field Guide Passport'),
+                  h('p', { className: 'mt-1 text-xs font-semibold text-slate-700' }, passportSummary)
+                ),
+                h('div', { className: 'rounded-full border-2 border-violet-300 bg-white px-3 py-1 text-[10px] font-black text-violet-900' }, passportDocumentedCount + '/' + allHabitatIds.length + ' documented')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2 md:grid-cols-5', role: 'list', 'aria-label': 'Field guide habitat stamps' },
+                passportHabitatStats.map(function(passportItem) {
+                  var passportCurrent = passportItem.id === habitatId;
+                  var passportStatus = passportItem.report ? 'Filed' : passportItem.found > 0 ? passportItem.progress + '%' : 'Unvisited';
+                  var passportBadge = passportItem.report ? '\uD83D\uDCCB' : passportItem.tier ? DIFFICULTY_MEDAL[passportItem.tier] : passportItem.found > 0 ? '\uD83D\uDD2D' : '\u2022';
+                  return h('div', { key: 'passport-' + passportItem.id, role: 'listitem' },
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { switchHabitat(passportItem.id); },
+                      'aria-current': passportCurrent ? 'true' : undefined,
+                      'aria-label': passportItem.name + ': ' + passportStatus + (passportItem.tier ? ', ' + DIFFICULTY_TIER_LABEL[passportItem.tier] + ' clear' : ''),
+                      className: 'group w-full rounded-xl border-2 p-2 text-left transition focus:outline-none focus:ring-4 ring-violet-500/25 ' + (passportCurrent ? 'border-emerald-500 bg-white shadow-md' : passportItem.report ? 'border-violet-300 bg-white hover:border-violet-500' : 'border-slate-200 bg-white/70 hover:border-sky-400')
+                    },
+                      h('div', { className: 'flex items-center justify-between gap-1' },
+                        h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, passportItem.id === 'forest' ? '\uD83C\uDF32' : passportItem.id === 'marsh' ? '\uD83C\uDF3E' : passportItem.id === 'backyard' ? '\uD83C\uDFE1' : passportItem.id === 'coast' ? '\uD83C\uDF0A' : '\u26F0\uFE0F'),
+                        h('span', { className: 'text-sm leading-none', 'aria-hidden': 'true' }, passportBadge)
+                      ),
+                      h('div', { className: 'mt-1 truncate text-xs font-black text-slate-900' }, passportItem.name),
+                      h('div', { className: 'mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': passportItem.progress, 'aria-label': passportItem.name + ' passport progress' },
+                        h('div', { className: 'h-full rounded-full transition-all ' + (passportItem.report ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500' : 'bg-gradient-to-r from-sky-500 to-emerald-500'), style: { width: passportItem.progress + '%' } })
+                      ),
+                      h('div', { className: 'mt-1 text-[9px] font-black uppercase tracking-wide ' + (passportItem.report ? 'text-violet-800' : passportItem.found > 0 ? 'text-sky-800' : 'text-slate-500') }, passportStatus)
+                    )
+                  );
+                })
+              ),
+              h('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] font-semibold text-slate-600' },
+                h('span', null, passportVisitedCount + '/' + allHabitatIds.length + ' habitats visited \u00B7 ' + passportFoundBirdCount + '/' + passportTotalBirdCount + ' birds spotted'),
+                passportNext && h('span', { className: 'font-black text-violet-800' }, 'Stamp target: ' + passportNext.name)
+              )
+            ),
+            h('section', { className: 'rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-fuchsia-50 p-4 shadow-sm', 'aria-label': 'Today\'s expedition route', 'data-birdlab-expedition': 'true' },
+              h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-indigo-700' }, '\uD83D\uDDFA Today\'s expedition'),
+                  h('p', { className: 'mt-1 text-xs font-semibold text-slate-700' }, 'Visit three habitats in this route to earn a bonus and keep your field guide moving.')
+                ),
+                h('span', { className: 'rounded-full border-2 border-indigo-300 bg-white px-3 py-1 text-[10px] font-black text-indigo-900' }, expeditionRewarded ? '\u2713 +25 XP' : expeditionComplete ? 'ROUTE READY' : expeditionDoneCount + '/3 stops')
+              ),
+              h('div', { className: 'mt-3 h-2.5 overflow-hidden rounded-full border border-indigo-200 bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': expeditionProgressPct, 'aria-label': 'Daily expedition route progress' },
+                h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-600 via-fuchsia-500 to-amber-400 transition-all', style: { width: expeditionProgressPct + '%' } })
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': 'Today\'s expedition stops' },
+                expeditionStops.map(function(stop) {
+                  var stopCurrent = stop.id === habitatId;
+                  return h('div', { key: 'expedition-' + stop.id, role: 'listitem' },
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { switchHabitat(stop.id); },
+                      'aria-current': stopCurrent ? 'true' : undefined,
+                      'aria-label': 'Stop ' + stop.order + ': ' + stop.name + (stop.visited ? ', visited' : stopCurrent ? ', current stop' : ', not visited'),
+                      className: 'flex w-full items-center gap-2 rounded-xl border-2 px-3 py-2 text-left transition focus:outline-none focus:ring-4 ring-indigo-500/25 ' + (stop.visited ? 'border-emerald-400 bg-emerald-50' : stopCurrent ? 'border-indigo-500 bg-white shadow-sm' : 'border-slate-200 bg-white/80 hover:border-indigo-400')
+                    },
+                      h('span', { className: 'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-black ' + (stop.visited ? 'bg-emerald-700 text-white' : 'bg-indigo-100 text-indigo-800'), 'aria-hidden': 'true' }, stop.visited ? '\u2713' : stop.order),
+                      h('span', { className: 'min-w-0 flex-1' },
+                        h('span', { className: 'block truncate text-xs font-black text-slate-900' }, stop.name),
+                        h('span', { className: 'block text-[9px] font-black uppercase tracking-wide ' + (stop.visited ? 'text-emerald-800' : stopCurrent ? 'text-indigo-800' : 'text-slate-500') }, stop.visited ? 'Visited' : stopCurrent ? 'Now' : 'Next')
+                      ),
+                      h('span', { className: 'text-xs', 'aria-hidden': 'true' }, stop.visited ? '\uD83D\uDCCD' : '\u2192')
+                    )
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-[10px] font-semibold text-slate-600' }, expeditionComplete ? 'Route complete. The next route refreshes with tomorrow\'s field assignment.' : 'Each stop counts when you open its habitat scene. Complete all three for +25 field XP.' )
+            ),
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.birdlab.pick_a_habitat', 'Pick a habitat')),
               h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.birdlab.i_spy_habitats', 'I-Spy habitats'), className: 'flex flex-wrap gap-2' },
@@ -10852,13 +11261,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               )
             ),
+            h('section', { className: 'rounded-2xl border-2 border-slate-300 bg-white p-3 shadow-sm', 'aria-label': 'Scene viewing controls', 'data-birdlab-scene-controls': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                h('div', { className: 'min-w-[220px] flex-1' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-widest text-slate-600' }, '\uD83D\uDD2D Scene lens'),
+                  h('div', { className: 'text-xs text-slate-700 mt-1' }, activeSceneLens.note + ' ' + visibleSceneBirdCount + '/' + totalBirds + ' birds in view')
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: toggleSceneMotion,
+                  'aria-pressed': sceneMotion ? 'true' : 'false',
+                  'aria-label': sceneMotion ? 'Pause scene motion' : 'Play scene motion',
+                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (sceneMotion ? 'bg-sky-100 text-sky-900 border-sky-400 hover:bg-sky-200' : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-700')
+                }, sceneMotion ? '\u23F8 Motion on' : '\u25B6 Motion paused')
+              ),
+              h('div', { className: 'mt-2 flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': 'Choose scene lens' },
+                SCENE_LENSES.map(function(lens) {
+                  var selectedLens = activeSceneLens.id === lens.id;
+                  return h('button', {
+                    key: lens.id,
+                    type: 'button',
+                    role: 'radio',
+                    'aria-checked': selectedLens ? 'true' : 'false',
+                    onClick: function() { switchSceneLens(lens.id); },
+                    className: 'px-3 py-2 rounded-xl border-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-sky-500/30 ' + (selectedLens ? 'bg-slate-900 text-white border-slate-900 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-sky-500')
+                  }, lens.icon + ' ' + lens.label);
+                })
+              )
+            ),
             // The habitat scene
-            h('div', { className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden', 'data-birdlab-scene-shell': 'true', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+            h('div', { ref: habitatSceneRef, tabIndex: -1, role: 'region', 'aria-label': 'Interactive ' + habitat.name + ' habitat scene', className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden focus:outline-none focus:ring-4 ring-sky-500/40 ' + (sceneMotion ? '' : 'birdlab-scene--motion-off'), 'data-birdlab-scene-shell': 'true', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
               h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--condition', 'aria-hidden': 'true' },
                 h('span', { className: 'text-lg' }, conditionConfig.icon),
                 h('div', null,
                   h('strong', null, conditionConfig.label),
-                  h('span', null, habitat.name + ' field view')
+                  h('span', null, activeSceneLens.label + ' \u00B7 ' + habitat.name + ' field view')
                 )
               ),
               h('div', { className: 'birdlab-scene-hud birdlab-scene-hud--assignment ' + (assignmentComplete ? 'birdlab-scene-hud--complete' : ''), 'aria-hidden': 'true' },
@@ -10942,7 +11379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // buttons rendered INSIDE this SVG (see below), so they share the
                 // same viewBox transform as the birds and stay glued to them.
                 h('svg', {
-                  viewBox: '0 0 ' + habitat.width + ' ' + habitat.height,
+                  viewBox: sceneViewBox,
                   className: 'absolute inset-0 w-full h-full',
                   preserveAspectRatio: 'xMidYMid slice'
                 },
@@ -10953,57 +11390,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   // distant layers back for a sense of depth. Behind midground.
                   h('rect', { key: 'atmo-haze', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blHaze)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
                   // Birds at layer 2 (back / hidden)
-                  habitat.birds.filter(function(b) { return b.layer === 2; }).map(function(b, i) {
-                    var sp = BIRDS[b.species];
-                    return h('g', {
-                      key: 'bird2-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
-                    },
-                      // Inner <g> carries the CSS animation class so its keyframe
-                      // transforms cannot override the outer position translate.
-                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
-                    );
-                  }),
+                  renderSceneBirds(2, 'bird2'),
                   // Habitat layer 3 (midground trees) on top of layer-2 birds
                   habitat.renderLayer(h, 3),
                   // Birds at layer 3 (mid-flight)
-                  habitat.birds.filter(function(b) { return b.layer === 3; }).map(function(b, i) {
-                    var sp = BIRDS[b.species];
-                    return h('g', {
-                      key: 'bird3-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
-                    },
-                      // Inner <g> carries the CSS animation class so its keyframe
-                      // transforms cannot override the outer position translate.
-                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
-                    );
-                  }),
+                  renderSceneBirds(3, 'bird3'),
                   // Habitat layer 4 (foreground trees / ground / foliage)
                   habitat.renderLayer(h, 4),
                   // Birds at layer 4 (foreground — robin on ground, nuthatch + woodpecker on foreground tree)
-                  habitat.birds.filter(function(b) { return b.layer === 4; }).map(function(b, i) {
-                    var sp = BIRDS[b.species];
-                    return h('g', {
-                      key: 'bird4-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
-                    },
-                      // Inner <g> carries the CSS animation class so its keyframe
-                      // transforms cannot override the outer position translate.
-                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
-                    );
-                  }),
+                  renderSceneBirds(4, 'bird4'),
                   // Birds at layer 5 (highest — soaring raptor)
-                  habitat.birds.filter(function(b) { return b.layer === 5; }).map(function(b, i) {
-                    var sp = BIRDS[b.species];
-                    return h('g', {
-                      key: 'bird5-' + i,
-                      transform: 'translate(' + b.x + ',' + b.y + ') scale(' + b.scale + ')'
-                    },
-                      // Inner <g> carries the CSS animation class so its keyframe
-                      // transforms cannot override the outer position translate.
-                      h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
-                    );
-                  }),
+                  renderSceneBirds(5, 'bird5'),
                   // ── Scene atmosphere overlays (decorative, non-interactive) ──
                   // Warm top-left sky light + gentle vignette unify the scene and
                   // draw the eye inward. Low opacity so birds stay clearly visible.
@@ -11042,7 +11439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   // matter how the container aspect ratio shifts (minHeight,
                   // narrow viewports, sliced preserveAspectRatio). Earlier the
                   // sibling-div % buttons drifted on narrow screens.
-                  habitat.birds.map(function(b, i) {
+                  habitat.birds.filter(sceneBirdVisible).map(function(b, i) {
                     var sp = BIRDS[b.species];
                     var isFound = !!found[b.species];
                     var yFrac = b.y / habitat.height;
@@ -11172,6 +11569,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   ),
                   h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 8 } },
                     h('h2', {
+                      ref: revealHeadingRef,
+                      tabIndex: -1,
+                      id: 'birdlab-revealed-species-title',
                       className: 'text-2xl font-black text-slate-800 tracking-tight',
                       style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.1 }
                     }, picked.name),
@@ -11291,7 +11691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50 p-2', 'aria-label': 'Field record navigation' },
                   h('button', {
                     type: 'button',
-                    onClick: function() { setPicked(null); announce('Bird card closed. Continue scanning the habitat scene.'); },
+                    onClick: continueHabitatScanning,
                     className: 'flex-1 min-w-[140px] rounded-lg border-2 border-slate-300 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 focus:outline-none focus:ring-4 ring-emerald-500/25'
                   }, '\uD83D\uDC40 Continue scanning'),
                   fieldReviewQueue.length > 0 && h('button', {
@@ -11361,6 +11761,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               hintMode && hintsLeft === 0 && h('div', { 'aria-live': 'polite', className: 'mb-3 p-2 bg-amber-50 border-2 border-amber-300 rounded-lg text-[11px] text-amber-900' },
                 __alloT('stem.birdlab.out_of_hints_for_this_habitat_keep_sca', 'Out of hints for this habitat. Keep scanning the scene — the birds are there. Or switch to accessibility mode if you need direct identification.')),
               h('section', {
+                className: 'mb-3 rounded-xl border-2 p-3 shadow-sm ' + (fieldActionStage === 'complete' ? 'border-emerald-300 bg-gradient-to-r from-emerald-50 to-teal-50' : fieldActionStage === 'discover' ? 'border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50' : 'border-indigo-300 bg-gradient-to-r from-indigo-50 to-violet-50'),
+                'aria-label': 'Next field action'
+              },
+                h('div', { className: 'flex items-start justify-between gap-3' },
+                  h('div', { className: 'min-w-0' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-800' }, 'Next best field move'),
+                    h('p', { className: 'mt-0.5 text-[11px] font-semibold text-slate-700' }, fieldActionDescription)
+                  ),
+                  h('span', { className: 'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white text-lg shadow-sm', 'aria-hidden': 'true' }, fieldActionIcon)
+                ),
+                h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'list', 'aria-label': 'Field report path' },
+                  h('span', { role: 'listitem', className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (foundCount === totalBirds ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700') }, (foundCount === totalBirds ? '\u2713 ' : '') + 'Spot ' + foundCount + '/' + totalBirds),
+                  h('span', { className: 'text-[10px] font-black text-slate-400', 'aria-hidden': 'true' }, '\u2192'),
+                  h('span', { role: 'listitem', className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (evidenceMasteryComplete ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700') }, (evidenceMasteryComplete ? '\u2713 ' : '') + 'Support ' + evidenceMasteredCount + '/' + totalBirds),
+                  h('span', { className: 'text-[10px] font-black text-slate-400', 'aria-hidden': 'true' }, '\u2192'),
+                  h('span', { role: 'listitem', className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (journalMasteredCount === totalBirds ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-slate-700') }, (journalMasteredCount === totalBirds ? '\u2713 ' : '') + 'Reflect ' + journalMasteredCount + '/' + totalBirds)
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: fieldActionHandler,
+                  className: 'mt-3 w-full rounded-lg border-2 px-3 py-2 text-xs font-black shadow-sm transition focus:outline-none focus:ring-4 ring-indigo-500/25 ' + (fieldActionStage === 'complete' ? 'border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800' : fieldActionStage === 'discover' ? 'border-amber-800 bg-amber-700 text-white hover:bg-amber-800' : 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'),
+                  'aria-label': fieldActionCta + '. ' + fieldActionDescription
+                }, fieldActionCta)
+              ),
+              h('section', {
                 className: 'mb-3 rounded-xl border-2 p-3 ' + (evidenceMasteryComplete ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-400' : 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-300'),
                 'aria-label': 'Habitat evidence mastery'
               },
@@ -11415,11 +11840,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'mt-2 h-2.5 overflow-hidden rounded-full bg-white border border-violet-200', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': fieldReportPct, 'aria-label': 'Overall habitat field report completion' },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-amber-400 transition-all', style: { width: fieldReportPct + '%' } })
                 ),
+                h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+                  h('button', {
+                    type: 'button',
+                    onClick: copyHabitatFieldReport,
+                    disabled: foundCount === 0,
+                    'aria-describedby': 'birdlab-report-copy-status',
+                    className: 'rounded-lg border-2 px-3 py-2 text-xs font-black transition focus:outline-none focus:ring-4 ring-violet-500/25 ' + (foundCount === 0 ? 'cursor-not-allowed border-slate-400 bg-slate-100 text-slate-600' : reportCopyState === 'copied' ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-600 bg-white text-violet-800 hover:bg-violet-700 hover:text-white')
+                  }, reportCopyState === 'copied' ? '\u2713 Report copied' : '\uD83D\uDCCB Copy field report'),
+                  h('span', { id: 'birdlab-report-copy-status', role: 'status', 'aria-live': 'polite', className: 'text-[10px] font-semibold ' + (reportCopyState === 'error' ? 'text-red-700' : 'text-slate-600') },
+                    reportCopyState === 'error' ? 'Copy failed. Try again or use your browser copy controls.' : 'Copies a plain-text report for sharing or teacher feedback.')
+                ),
+                h('div', { className: 'mt-3 rounded-xl border-2 border-violet-200 bg-white/80 p-2.5 shadow-inner' },
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { setReportArchiveOpen(!reportArchiveOpen); },
+                    'aria-expanded': reportArchiveOpen ? 'true' : 'false',
+                    'aria-controls': 'birdlab-report-archive',
+                    'aria-label': reportArchiveOpen ? 'Collapse report archive' : 'Expand report archive',
+                    className: 'w-full flex items-center justify-between gap-3 rounded-lg px-2 py-2 text-left transition focus:outline-none focus:ring-4 ring-violet-500/25 ' + (reportArchiveOpen ? 'bg-violet-100' : 'hover:bg-violet-50')
+                  },
+                    h('span', { className: 'flex items-center gap-2 text-xs font-black text-violet-950' },
+                      h('span', { className: 'text-base leading-none', 'aria-hidden': 'true' }, '\uD83D\uDCC2'),
+                      'Report archive'
+                    ),
+                    h('span', { className: 'flex-shrink-0 rounded-full border border-violet-300 bg-white px-2 py-1 text-[10px] font-black text-violet-800' }, reportHistoryCount + '/' + reportHistoryTotal + (reportArchiveOpen ? ' \u25B2' : ' \u25BC'))
+                  ),
+                  reportArchiveOpen && h('div', { id: 'birdlab-report-archive', role: 'region', 'aria-label': 'Submitted habitat report archive', className: 'mt-2 space-y-2 border-t border-violet-100 pt-2' },
+                    reportHistoryCount === 0 && h('p', { className: 'rounded-lg border border-dashed border-violet-200 bg-violet-50/60 px-3 py-2 text-[11px] font-semibold text-slate-600' }, 'No completed habitat reports yet. Finish a field report to pin it here.'),
+                    reportHistoryCount > 0 && Object.keys(reportHistory).sort().map(function(reportHabitatId) {
+                      var archiveRecord = reportHistory[reportHabitatId] || {};
+                      var archiveHabitat = HABITATS[reportHabitatId] || {};
+                      var archiveName = archiveRecord.habitatName || archiveHabitat.name || reportHabitatId;
+                      var archiveRound = archiveRecord.round || '?';
+                      var archiveCondition = archiveRecord.condition || 'Conditions not recorded';
+                      var archiveDate = archiveRecord.submittedAt ? String(archiveRecord.submittedAt).slice(0, 10) : 'Date not recorded';
+                      return h('div', { key: 'archive-' + reportHabitatId, className: 'flex items-center gap-2 rounded-lg border border-violet-100 bg-violet-50/50 px-2.5 py-2' },
+                        h('span', { className: 'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-violet-700 text-xs font-black text-white', 'aria-hidden': 'true' }, '\u2713'),
+                        h('div', { className: 'min-w-0 flex-1' },
+                          h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                            h('span', { className: 'truncate text-xs font-black text-slate-900' }, archiveName),
+                            reportHabitatId === habitatId && h('span', { className: 'rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-900' }, 'Current')
+                          ),
+                          h('div', { className: 'text-[10px] font-semibold text-slate-600' }, 'Round #' + archiveRound + ' \u00B7 ' + archiveCondition + ' \u00B7 ' + archiveDate)
+                        )
+                      );
+                    })
+                  )
+                ),
                 h('p', { className: 'mt-2 text-[11px] font-bold ' + (fieldReportComplete ? 'text-violet-900' : 'text-slate-700') },
                   fieldReportComplete ? 'Field report complete. This habitat is fully documented.' : fieldReportPct + '% compiled \u00B7 keep working through the guided review queue.')
               ),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
-                habitat.birds.map(function(b, i) {
+              h('div', { className: 'mb-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-3' },
+                h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-700' }, 'Organize field records'),
+                  h('div', { className: 'text-[10px] font-bold text-slate-600', role: 'status', 'aria-live': 'polite' }, 'Showing ' + visibleRecordBirds.length + ' of ' + totalBirds)
+                ),
+                h('div', { className: 'flex flex-wrap gap-1.5', role: 'radiogroup', 'aria-label': 'Filter habitat bird records' },
+                  RECORD_FILTERS.map(function(filterOption) {
+                    var active = activeRecordFilter.id === filterOption.id;
+                    return h('button', {
+                      key: filterOption.id,
+                      type: 'button',
+                      role: 'radio',
+                      'aria-checked': active ? 'true' : 'false',
+                      onClick: function() { switchRecordFilter(filterOption.id); },
+                      className: 'rounded-full border-2 px-2.5 py-1.5 text-[10px] font-black transition focus:outline-none focus:ring-4 ring-indigo-500/25 ' + (active ? 'border-indigo-700 bg-indigo-700 text-white shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-500 hover:text-indigo-800')
+                    }, filterOption.icon + ' ' + filterOption.label + ' ' + filterOption.count);
+                  })
+                )
+              ),
+              visibleRecordBirds.length === 0 && h('div', { className: 'mb-3 rounded-xl border-2 border-dashed border-slate-300 bg-white p-5 text-center', role: 'status' },
+                h('div', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83D\uDD2D'),
+                h('div', { className: 'mt-1 text-sm font-black text-slate-800' }, 'No records in ' + activeRecordFilter.label.toLowerCase()),
+                h('p', { className: 'mt-1 text-xs text-slate-600' }, activeRecordFilter.id === 'found' ? 'Scan the habitat and identify a bird to begin.' : 'Choose another filter or continue building field records.')
+              ),
+              visibleRecordBirds.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' },
+                visibleRecordBirds.map(function(b, i) {
                   var sp = BIRDS[b.species];
                   var isFound = !!found[b.species];
                   var btnDisabled = hintMode && !isFound && hintsLeft === 0;
@@ -11429,12 +11926,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   var speciesEvidenceReady = speciesEvidenceCount >= 2;
                   var speciesHasNote = !!(speciesEvidenceEntry && String(speciesEvidenceEntry.note || '').trim());
                   return h('button', {
-                    key: 'kbd-' + i,
+                    key: 'kbd-' + b.species,
+                    'aria-current': pickedSpeciesKey === b.species ? 'true' : undefined,
                     disabled: btnDisabled,
                     onClick: function() {
                       if (isFound) {
                         // Already found — show the info panel (no double-credit, no hint cost)
-                        setPicked(BIRDS[b.species]);
+                        openBirdRecord(BIRDS[b.species], 'Reviewing ' + BIRDS[b.species].name + ' field record.');
                         return;
                       }
                       if (hintMode) fireHint(b);
@@ -11451,6 +11949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         : btnDisabled
                           ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                           : 'transition-colors bg-white border-slate-300 hover:border-emerald-500')
+                      + (pickedSpeciesKey === b.species ? ' ring-4 ring-indigo-500 ring-offset-2' : '')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
                       isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, hintMode ? '💡' : '○'),

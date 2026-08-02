@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio پرانیستل شو.",
   "cmd.open_video_studio_hint": "لارښود ویډیوګانې ثبت کړئ، سرلیکونه ورزیات کړئ او سمې کړئ",
   "palette.ctx.videoStudio": "دلته — Video Studio",
-  "palette.close": "د امر پالیټ وتړه"
+  "palette.close": "د امر پالیټ وتړه",
+  "cmd.apply_lesson_template": "له خوندي شوي قالب څخه پیل کړئ",
+  "cmd.apply_lesson_template_done": "له دې څخه پیل شو: ",
+  "cmd.apply_lesson_template_hint": "ستاسو له خوندي شوو قالبونو څخه په یوه نوي پلان پیل کوي",
+  "cmd.apply_lesson_template_missing": "ما د دې په نوم قالب پیدا نه کړ: ",
+  "cmd.apply_lesson_template_which": "کوم قالب؟",
+  "cmd.rebuild_lesson_step": "د پلان یوه مرحله بیا جوړه کړئ",
+  "cmd.rebuild_lesson_step_done": "مرحله بیا جوړېږي: ",
+  "cmd.rebuild_lesson_step_hint": "یوازې یوه سرچینه بیا جوړوي — د مرحلې شمېره ووایاست",
+  "cmd.rebuild_lesson_step_missing": "ما هغه مرحله په پلان کې پیدا نه کړه.",
+  "cmd.rebuild_lesson_step_none": "په پلان کې لا تر اوسه مرحلې نشته.",
+  "cmd.rebuild_lesson_step_which": "کومه مرحله؟",
+  "cmd.run_lesson_blueprint": "د درس پلان جوړ کړئ",
+  "cmd.run_lesson_blueprint_done": "پلان جوړېږي — تاسو کولی شئ هره مرحله په کارت کې وګورئ.",
+  "cmd.run_lesson_blueprint_hint": "د اوسني پلان ټولې سرچینې جوړوي",
+  "cmd.cancelled": "د لغوه کولو غوښتنه وشوه. اوسنی عملیات به هغه وخت ودرېږي چې چمتوکوونکی یې ملاتړ وکړي."
 }

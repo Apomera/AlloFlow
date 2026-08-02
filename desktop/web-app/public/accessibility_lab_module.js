@@ -211,7 +211,13 @@
     var evidence = getAccessibilityEvidence();
     if (!evidence || typeof evidence.deriveProfileVerificationState !== 'function') return null;
     var summary = summarizeReviewScorecard(card);
-    return evidence.deriveProfileVerificationState({
+    var derived = evidence.deriveProfileVerificationState({
+      profile: 'accessibility-lab',
+      artifactBinding: card && card.currentBinding ? card.currentBinding : null,
+      artifactFingerprint: card && card.currentFingerprint ? card.currentFingerprint : null,
+      rendererRevision: card && card.rendererRevision ? card.rendererRevision : ACCESSIBILITY_RENDERER_REVISION,
+      capturedAt: card && (card.lastReviewedAt || card.updatedAt || card.startedAt),
+      findings: card && Array.isArray(card.findings) ? card.findings : [],
       evidence: {
         manual: {
           executed: summary.untested === 0 && !summary.stale,
@@ -226,6 +232,20 @@
         } : null,
       },
     }, 'accessibility-lab');
+    return evidence.attachEvidenceProvenance && typeof evidence.attachEvidenceProvenance === 'function'
+      ? evidence.attachEvidenceProvenance(derived, {
+        profile: 'accessibility-lab',
+        artifactBinding: card && card.currentBinding ? card.currentBinding : null,
+        artifactFingerprint: card && card.currentFingerprint ? card.currentFingerprint : null,
+        rendererRevision: card && card.rendererRevision ? card.rendererRevision : ACCESSIBILITY_RENDERER_REVISION,
+        capturedAt: card && (card.lastReviewedAt || card.updatedAt || card.startedAt),
+        findings: card && Array.isArray(card.findings) ? card.findings : [],
+        evidence: {
+          manual: card && card.checks ? { executed: true, findingCount: summary.fail, reviewCount: 0 } : null,
+          axe: card && card.automated ? { executed: true, findingCount: Number(card.automated.violationRules) || 0, reviewCount: Number(card.automated.needsReview) || 0 } : null,
+        },
+      }, 'accessibility-lab')
+      : derived;
   }
   function reviewSnapshot(raw, fallbackFingerprint) {
     if (!raw || !raw.lastReviewedAt) return null;
@@ -278,6 +298,8 @@
     history = history.slice(0, REVIEW_HISTORY_LIMIT);
     var workingOnCurrentRevision = !isStale || raw.workingFingerprint === currentFingerprint;
     var automated = raw.automated && typeof raw.automated === 'object' ? raw.automated : null;
+    var rawEvidenceProvenance = raw.evidenceProvenance || (raw.verification && raw.verification.evidenceProvenance) || null;
+    var rawEvidenceManifest = raw.evidenceManifest || (raw.verification && raw.verification.evidenceManifest) || null;
     if (automated && (!automated.artifactFingerprint || automated.artifactFingerprint !== currentFingerprint)) automated = null;
     var checks = workingOnCurrentRevision ? normalizeChecks(raw.checks) : emptyReviewChecks();
     var findings = workingOnCurrentRevision ? normalizeReviewFindings(raw.findings, checks, currentFingerprint) : [];
@@ -305,6 +327,14 @@
       reviewHistory: history,
     };
     normalizedCard.verification = deriveLabVerification(normalizedCard);
+    normalizedCard.evidenceProvenance = normalizedCard.verification && normalizedCard.verification.evidenceProvenance ? normalizedCard.verification.evidenceProvenance : null;
+    normalizedCard.evidenceManifest = normalizedCard.verification && normalizedCard.verification.evidenceManifest ? normalizedCard.verification.evidenceManifest : null;
+    normalizedCard.evidenceManifestVerification = evidence && rawEvidenceManifest && typeof evidence.verifyEvidenceManifest === 'function'
+      ? evidence.verifyEvidenceManifest(rawEvidenceManifest)
+      : null;
+    normalizedCard.provenanceDiff = evidence && typeof evidence.compareEvidenceProvenance === 'function'
+      ? evidence.compareEvidenceProvenance(rawEvidenceProvenance, normalizedCard.evidenceProvenance)
+      : null;
     return normalizedCard;
   }
 
@@ -341,6 +371,8 @@
       reviewHistory: history.slice(0, REVIEW_HISTORY_LIMIT),
     });
     completed.verification = deriveLabVerification(completed);
+    completed.evidenceProvenance = completed.verification && completed.verification.evidenceProvenance ? completed.verification.evidenceProvenance : null;
+    completed.evidenceManifest = completed.verification && completed.verification.evidenceManifest ? completed.verification.evidenceManifest : null;
     return completed;
   }
 
@@ -670,6 +702,49 @@
     );
   }
 
+
+  function AccessibilityAlloSheetReviewDialog(props) {
+    var artifact = props.artifact;
+    if (!artifact) return null;
+    useEffect(function () {
+      function onKey(ev) { if (ev.key === 'Escape') props.onClose(); }
+      document.addEventListener('keydown', onKey);
+      return function () { document.removeEventListener('keydown', onKey); };
+    }, [props.onClose]);
+    var tableSummary = (artifact.tables || []).map(function (table) { return (table.title || table.id) + ': ' + (table.rowCount || 0) + ' row(s)'; }).join(' | ');
+    return e('div', { className: 'fixed inset-0 z-[320] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4', role: 'presentation', onMouseDown: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); } },
+      e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'a11y-allosheet-title', 'aria-describedby': 'a11y-allosheet-description', tabIndex: -1, onKeyDown: function (ev) { if (ev.key === 'Escape') props.onClose(); }, className: 'bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto' },
+        e('div', { className: 'p-5 border-b border-slate-200 flex items-start justify-between gap-3' },
+          e('div', null,
+            e('h2', { id: 'a11y-allosheet-title', className: 'text-lg font-black text-slate-900' }, 'Review audit summaries in AlloSheet'),
+            e('p', { id: 'a11y-allosheet-description', className: 'text-sm text-slate-600 mt-1' }, 'Choose bounded WCAG audit summaries. Artifact content, notes, DOM details, selectors, and code excerpts stay out of the transfer.')
+          ),
+          e('button', { type: 'button', onClick: props.onClose, className: 'shrink-0 rounded-lg p-2 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500', 'aria-label': 'Close Accessibility Lab AlloSheet review' }, '×')
+        ),
+        e('div', { className: 'p-5 space-y-5' },
+          e('label', { className: 'block text-sm font-bold text-slate-800' }, 'Time window', e('select', { value: props.dateRange, onChange: function (ev) { props.onChangeDateRange(ev.target.value); }, className: 'mt-1 block w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500', 'aria-label': 'Accessibility audit time window' },
+            e('option', { value: '30d' }, 'Last 30 days'), e('option', { value: '90d' }, 'Last 90 days'), e('option', { value: 'all' }, 'All available reviews')
+          )),
+          e('fieldset', { className: 'rounded-xl border border-slate-200 p-3' },
+            e('legend', { className: 'px-1 text-sm font-bold text-slate-800' }, 'Include summaries'),
+            [['reviewSummary', 'Artifact review status and remediation counts'], ['criterionSummary', 'WCAG criterion, impact, and evidence-source counts'], ['trendSummary', 'Month-by-month audit trend']].map(function (entry) {
+              return e('label', { key: entry[0], className: 'flex items-start gap-2 py-1 text-sm text-slate-700' }, e('input', { type: 'checkbox', checked: props.datasets[entry[0]] !== false, onChange: function (ev) { props.onChangeDataset(entry[0], ev.target.checked); }, className: 'mt-0.5 h-4 w-4 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500', 'aria-label': entry[1] }), e('span', null, entry[1]));
+            })
+          ),
+          e('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3', 'aria-live': 'polite' },
+            e('div', { className: 'text-xs font-black uppercase tracking-wide text-indigo-900' }, 'Preview'),
+            e('p', { className: 'text-sm text-indigo-900 mt-1' }, artifact.metadata.auditedArtifactCount || 0, ' audited artifact(s) | ', tableSummary || 'No selected tables'),
+            e('p', { className: 'text-xs text-indigo-800 mt-2' }, 'Only audit summaries and bounded criterion codes are included; no destination write-back or AI processing is enabled.')
+          )
+        ),
+        e('div', { className: 'p-5 border-t border-slate-200 flex flex-wrap justify-end gap-2' },
+          e('button', { type: 'button', onClick: props.onClose, className: 'px-4 py-2 rounded-lg text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Cancel'),
+          e('button', { type: 'button', onClick: props.onTransfer, disabled: !(artifact.tables || []).length, className: 'px-4 py-2 rounded-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500' }, 'Open selected summaries')
+        )
+      )
+    );
+  }
+
   // ----- Phase 1: Content accommodation preview -----------------------------
 
   function PreviewTab(props) {
@@ -707,6 +782,21 @@
 
     var reviewStore$ = useState(loadReviewScorecards);
     var reviewStore = reviewStore$[0], setReviewStore = reviewStore$[1];
+    var a11yAlloOpen$ = useState(false);
+    var isA11yAlloOpen = a11yAlloOpen$[0], setIsA11yAlloOpen = a11yAlloOpen$[1];
+    var a11yDateRange$ = useState('90d');
+    var a11yDateRange = a11yDateRange$[0], setA11yDateRange = a11yDateRange$[1];
+    var a11yDatasets$ = useState({ reviewSummary: true, criterionSummary: true, trendSummary: true });
+    var a11yDatasets = a11yDatasets$[0], setA11yDatasets = a11yDatasets$[1];
+    var a11yAlloArtifact = typeof props.buildAccessibilityLabAlloSheetEnvelope === 'function'
+      ? props.buildAccessibilityLabAlloSheetEnvelope({ history: history, scorecards: reviewStore }, { dateRange: a11yDateRange, datasets: a11yDatasets })
+      : null;
+    function openA11yAlloSheet() {
+      if (!a11yAlloArtifact || typeof props.onOpenAlloSheet !== 'function') return;
+      var result = props.onOpenAlloSheet(a11yAlloArtifact);
+      if (result && typeof result.then === 'function') result.then(function (opened) { if (opened !== false) setIsA11yAlloOpen(false); });
+      else if (result !== false) setIsA11yAlloOpen(false);
+    }
 
     var reviewSessionItemId = props.reviewSession && props.reviewSession.itemId ? String(props.reviewSession.itemId) : '';
     useEffect(function () {
@@ -780,6 +870,19 @@
     var scorecard = selectedItem ? normalizeReviewScorecard(reviewStore[selectedReviewKey], selectedItem) : null;
     var scoreSummary = summarizeReviewScorecard(scorecard);
     var reviewVerification = scorecard && (scorecard.verification || deriveLabVerification(scorecard));
+    var evidenceProvenance = scorecard && (scorecard.evidenceProvenance || (scorecard.verification && scorecard.verification.evidenceProvenance));
+    var provenanceDiff = scorecard && scorecard.provenanceDiff;
+    var manifestVerification = scorecard && scorecard.evidenceManifestVerification;
+    var provenanceLanes = evidenceProvenance && evidenceProvenance.lanes ? evidenceProvenance.lanes : {};
+    var provenanceCapturedAt = evidenceProvenance && evidenceProvenance.capturedAt ? new Date(evidenceProvenance.capturedAt).toLocaleString() : tr('a11y_lab.review.provenance_not_recorded', 'Not recorded');
+    var provenanceReasonLabels = {
+      'profile-changed': tr('a11y_lab.review.provenance_profile_changed', 'Evidence profile changed'),
+      'artifact-binding-changed': tr('a11y_lab.review.provenance_artifact_changed', 'Artifact content changed'),
+      'renderer-changed': tr('a11y_lab.review.provenance_renderer_changed', 'Renderer revision changed'),
+      'engine-evidence-changed': tr('a11y_lab.review.provenance_engine_changed', 'Engine evidence changed'),
+      'findings-changed': tr('a11y_lab.review.provenance_findings_changed', 'Finding records changed'),
+      'provenance-upgraded': tr('a11y_lab.review.provenance_upgraded', 'Provenance metadata was upgraded'),
+    };
     var openFindings = scorecard && Array.isArray(scorecard.findings) ? scorecard.findings.filter(function (finding) {
       return finding && finding.status !== 'verified' && finding.status !== 'accepted-risk';
     }) : [];
@@ -791,6 +894,32 @@
       nextStore[selectedReviewKey] = stamped;
       setReviewStore(nextStore);
       persistReviewScorecards(nextStore);
+    }
+
+    function downloadEvidenceManifest() {
+      var manifest = scorecard && scorecard.evidenceManifest;
+      if (!manifest) {
+        addToast && addToast(tr('a11y_lab.review.provenance_export_unavailable', 'No evidence manifest is available for this review.'), 'warning');
+        return;
+      }
+      try {
+        var blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        var safeId = String(scorecard.artifactId || selectedReviewKey || 'artifact')
+          .replace(/[^a-z0-9_-]+/gi, '-')
+          .replace(/^-+|-+$/g, '') || 'artifact';
+        link.href = url;
+        link.download = 'accessibility-evidence-' + safeId + '.json';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+        addToast && addToast(tr('a11y_lab.review.provenance_exported', 'Evidence manifest downloaded.'), 'success');
+      } catch (err) {
+        addToast && addToast(tr('a11y_lab.review.provenance_export_error', 'Could not download the evidence manifest: ') + (err && err.message ? err.message : err), 'error');
+      }
     }
 
     function updateReviewStatus(checkId, status) {
@@ -856,6 +985,11 @@
       return e('div', { className: 'flex flex-col gap-4' },
         e('div', null,
           e('h3', { className: 'font-bold text-lg text-slate-800' }, tr('a11y_lab.preview.heading_workspace', 'Review saved content accessibility')),
+        e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
+          e('div', { className: 'flex-1 text-xs text-indigo-900' }, 'Send reduced WCAG audit summaries to AlloSheet for filtering and trend review.'),
+          e('button', { type: 'button', onClick: function () { setIsA11yAlloOpen(true); }, disabled: typeof props.onOpenAlloSheet !== 'function' || typeof props.buildAccessibilityLabAlloSheetEnvelope !== 'function', className: 'px-3 py-2 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500', 'aria-label': 'Review Accessibility Lab summaries in AlloSheet' }, 'Review in AlloSheet')
+        ),
+        isA11yAlloOpen && e(AccessibilityAlloSheetReviewDialog, { artifact: a11yAlloArtifact, dateRange: a11yDateRange, datasets: a11yDatasets, onChangeDateRange: setA11yDateRange, onChangeDataset: function (key, value) { setA11yDatasets(function (prev) { return Object.assign({}, prev, (function () { var next = {}; next[key] = value; return next; }())); }); }, onClose: function () { setIsA11yAlloOpen(false); }, onTransfer: openA11yAlloSheet }),
           e('p', { className: 'text-sm text-slate-600 mt-1' },
             tr('a11y_lab.preview.select_intro_workspace', 'Choose any saved artifact. Reading-focused content can be checked here with static accommodations; interactive and specialized artifacts open through the app\'s authentic workspace renderer.'))
         ),
@@ -1023,7 +1157,73 @@
                 e('div', { className: 'mt-1 text-slate-500' }, (finding.source || 'manual') + (finding.count > 1 ? ' · ' + finding.count + ' occurrences' : ''))
               );
             }))
-          ),          scorecard.reviewHistory.length > 0 && e('details', { className: 'rounded-lg border border-slate-200 bg-slate-50 p-3' },
+          ),
+          evidenceProvenance && e('details', {
+            className: 'rounded-lg border border-indigo-200 bg-indigo-50 p-3',
+            'data-a11y-evidence-provenance': 'true',
+          },
+            e('summary', { className: 'cursor-pointer text-sm font-semibold text-indigo-950' },
+              tr('a11y_lab.review.provenance_heading', 'Evidence provenance')),
+            e('dl', { className: 'mt-3 grid gap-2 sm:grid-cols-2 text-xs text-indigo-950' },
+              e('div', null,
+                e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_captured', 'Captured')),
+                e('dd', { className: 'mt-0.5' }, provenanceCapturedAt)
+              ),
+              e('div', null,
+                e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_profile', 'Profile')),
+                e('dd', { className: 'mt-0.5' }, evidenceProvenance.profile || 'accessibility-lab')
+              ),
+              e('div', { className: 'sm:col-span-2' },
+                e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_binding', 'Artifact binding')),
+                e('dd', { className: 'mt-0.5 break-all font-mono text-[10px]' }, evidenceProvenance.artifactFingerprint || tr('a11y_lab.review.provenance_missing', 'Not available'))
+              ),
+              e('div', { className: 'sm:col-span-2' },
+                e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_replay', 'Replay key')),
+                e('dd', { className: 'mt-0.5 break-all font-mono text-[10px]' }, evidenceProvenance.replayKey || tr('a11y_lab.review.provenance_missing', 'Not available'))
+              )
+            ),
+            e('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+              e('button', {
+                type: 'button',
+                onClick: downloadEvidenceManifest,
+                disabled: !scorecard.evidenceManifest,
+                className: 'px-2.5 py-1.5 text-xs font-semibold border border-indigo-300 text-indigo-900 rounded-lg hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50',
+                'data-a11y-evidence-export': 'true',
+              }, tr('a11y_lab.review.provenance_export', 'Download evidence manifest')),
+              e('span', { className: 'text-[10px] text-indigo-800' }, tr('a11y_lab.review.provenance_export_hint', 'JSON includes the integrity digest for archiving or sharing.'))
+            ),
+            provenanceDiff && provenanceDiff.changed && e('div', {
+              role: provenanceDiff.stale ? 'status' : 'note',
+              'data-a11y-evidence-provenance-diff': 'true',
+              className: 'mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950',
+            },
+              e('strong', null, provenanceDiff.stale
+                ? tr('a11y_lab.review.provenance_changed_heading', 'Evidence changed since this record was captured')
+                : tr('a11y_lab.review.provenance_updated_heading', 'Evidence metadata updated')),
+              provenanceDiff.stale && e('span', null, ' — ' + tr('a11y_lab.review.provenance_recheck', 're-run the affected review before treating the result as current.')),
+              e('ul', { className: 'mt-1 list-disc pl-5' }, provenanceDiff.reasons.map(function (reason) {
+                return e('li', { key: reason }, provenanceReasonLabels[reason] || reason);
+              }))
+            ),
+            manifestVerification && e('div', {
+              role: 'status',
+              className: 'mt-3 rounded border px-2 py-1.5 text-xs ' + (manifestVerification.valid ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-rose-300 bg-rose-50 text-rose-900'),
+              'data-a11y-evidence-manifest-status': manifestVerification.valid ? 'valid' : 'invalid',
+            }, manifestVerification.valid
+              ? tr('a11y_lab.review.manifest_verified', 'Manifest integrity verified')
+              : tr('a11y_lab.review.manifest_invalid', 'Manifest integrity could not be verified; do not treat this record as trusted.')),
+            Object.keys(provenanceLanes).length > 0 && e('ul', { className: 'mt-3 space-y-1.5' }, Object.keys(provenanceLanes).map(function (laneId) {
+              var lane = provenanceLanes[laneId];
+              var laneState = lane && lane.executed ? (lane.status || 'executed') : tr('a11y_lab.review.provenance_not_executed', 'not executed');
+              var laneFindings = lane && lane.findingCount !== null && lane.findingCount !== undefined ? lane.findingCount + ' ' + tr('a11y_lab.review.provenance_findings', 'findings') : tr('a11y_lab.review.provenance_unknown', 'findings unknown');
+              var laneReview = lane && lane.reviewCount !== null && lane.reviewCount !== undefined ? lane.reviewCount + ' ' + tr('a11y_lab.review.provenance_review', 'review') : null;
+              return e('li', { key: laneId, className: 'flex flex-wrap items-center justify-between gap-2 rounded border border-indigo-200 bg-white px-2 py-1.5' },
+                e('span', { className: 'font-semibold' }, laneId + (lane && lane.version ? ' · ' + lane.version : '')),
+                e('span', { className: 'text-indigo-800' }, laneState + ' · ' + laneFindings + (laneReview ? ' · ' + laneReview : ''))
+              );
+            }))
+          ),
+          scorecard.reviewHistory.length > 0 && e('details', { className: 'rounded-lg border border-slate-200 bg-slate-50 p-3' },
             e('summary', { className: 'cursor-pointer text-sm font-semibold text-slate-800' },
               tr('a11y_lab.review.history_heading', 'Review history') + ' (' + scorecard.reviewHistory.length + ')'),
             e('ol', { className: 'mt-3 space-y-2' }, scorecard.reviewHistory.map(function (entry, index) {
@@ -2637,6 +2837,238 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     );
   }
 
+
+
+  // Accessibility Lab -> AlloSheet handoff. This is an audit-summary export:
+  // artifact content, student-entered text, DOM/HTML, selectors, code excerpts,
+  // notes, fingerprints, bindings, and replay keys never enter the envelope.
+  var ACCESSIBILITY_ALLOSHEET_KIND = 'alloflow.tabular.v1';
+  var ACCESSIBILITY_ALLOSHEET_LIMITS = Object.freeze({
+    maxTables: 3,
+    maxColumns: 24,
+    maxRows: 200,
+    maxCellChars: 1200,
+    maxEnvelopeBytes: 2 * 1024 * 1024
+  });
+  function a11yAlloText(value, max) {
+    var out = value == null ? '' : String(value);
+    try { if (typeof out.normalize === 'function') out = out.normalize('NFKC'); } catch (_) {}
+    out = out.replace(/\r\n?/g, '\n').trim();
+    return out.length > (max || ACCESSIBILITY_ALLOSHEET_LIMITS.maxCellChars)
+      ? out.slice(0, max || ACCESSIBILITY_ALLOSHEET_LIMITS.maxCellChars).trim() : out;
+  }
+  function a11yAlloNumber(value) {
+    var n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  function a11yAlloInteger(value, fallback) {
+    var n = a11yAlloNumber(value);
+    return n == null ? (fallback == null ? 0 : fallback) : Math.max(0, Math.floor(n));
+  }
+  function a11yAlloDate(value) {
+    if (value == null || value === '') return null;
+    var date = value instanceof Date ? value : new Date(value);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+  function a11yAlloIso(value) {
+    var date = a11yAlloDate(value);
+    return date ? date.toISOString() : null;
+  }
+  function a11yAlloCell(value) {
+    if (value == null) return null;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'boolean') return value;
+    return a11yAlloText(value, ACCESSIBILITY_ALLOSHEET_LIMITS.maxCellChars);
+  }
+  function a11yAlloColumn(key, title, type) { return { key: key, title: title, type: type }; }
+  function a11yAlloTable(id, title, columns, rows, sourceRowCount, truncated) {
+    return {
+      id: id,
+      title: title,
+      columns: columns.slice(0, ACCESSIBILITY_ALLOSHEET_LIMITS.maxColumns),
+      rows: rows.slice(0, ACCESSIBILITY_ALLOSHEET_LIMITS.maxRows),
+      rowCount: Math.min(rows.length, ACCESSIBILITY_ALLOSHEET_LIMITS.maxRows),
+      sourceRowCount: Math.max(sourceRowCount || 0, rows.length),
+      truncated: !!truncated || rows.length > ACCESSIBILITY_ALLOSHEET_LIMITS.maxRows,
+    };
+  }
+  function a11yAlloStatus(value, fallback) {
+    var status = a11yAlloText(value || fallback || 'unknown', 40).toLowerCase();
+    return ['open', 'verified', 'accepted-risk', 'unknown'].indexOf(status) >= 0 ? status : 'unknown';
+  }
+  function a11yAlloSafeRule(value) {
+    var rule = a11yAlloText(value, 80);
+    return /^[a-z0-9:_-]+$/i.test(rule) ? rule : 'other';
+  }
+  function a11yAlloSafeWcag(value) {
+    var wcag = a11yAlloText(value, 80);
+    return /^[a-z0-9.,\-\s]+$/i.test(wcag) ? wcag : 'other';
+  }
+  function a11yAlloRecordDate(card) {
+    return a11yAlloIso(card && (card.lastReviewedAt || card.updatedAt || card.startedAt));
+  }
+  function a11yAlloWithinRange(date, rangeStart) {
+    return !rangeStart || !date || Date.parse(date) >= rangeStart;
+  }
+  function buildAccessibilityLabAlloSheetEnvelope(source, options) {
+    var input = source && typeof source === 'object' ? source : {};
+    var settings = options && typeof options === 'object' ? options : {};
+    var createdAt = a11yAlloIso(settings.createdAt || input.createdAt || Date.now()) || new Date().toISOString();
+    var dateRange = ['30d', '90d', 'all'].indexOf(settings.dateRange) >= 0 ? settings.dateRange : '90d';
+    var createdMs = Date.parse(createdAt);
+    var rangeStart = dateRange === '30d' ? createdMs - 30 * 24 * 60 * 60 * 1000
+      : dateRange === '90d' ? createdMs - 90 * 24 * 60 * 60 * 1000 : null;
+    var selected = settings.datasets && typeof settings.datasets === 'object' ? settings.datasets : {};
+    var datasets = {
+      reviewSummary: selected.reviewSummary !== false,
+      criterionSummary: selected.criterionSummary !== false,
+      trendSummary: selected.trendSummary !== false,
+    };
+    var history = Array.isArray(input.history) ? input.history : [];
+    var scorecards = input.scorecards && typeof input.scorecards === 'object' ? input.scorecards : {};
+    var records = [];
+    var criteria = {};
+    var months = {};
+    history.forEach(function (item) {
+      if (!item || !item.type) return;
+      var key = reviewItemKey(item);
+      var raw = scorecards[key];
+      if (!raw) return;
+      var card = normalizeReviewScorecard(raw, item);
+      var date = a11yAlloRecordDate(card);
+      if (!a11yAlloWithinRange(date, rangeStart)) return;
+      var summary = summarizeReviewScorecard(card);
+      var findings = Array.isArray(card.findings) ? card.findings : [];
+      var openFindings = findings.filter(function (finding) { return a11yAlloStatus(finding && finding.status, 'open') === 'open'; });
+      var findingCount = findings.reduce(function (sum, finding) { return sum + a11yAlloInteger(finding && finding.count, 1); }, 0);
+      var openCount = openFindings.reduce(function (sum, finding) { return sum + a11yAlloInteger(finding && finding.count, 1); }, 0);
+      var automated = card.automated && typeof card.automated === 'object' ? card.automated : {};
+      var reviewStatus = card.isStale ? 'stale' : summary.complete ? 'complete' : 'in-progress';
+      var remediationStatus = openCount > 0 ? 'open-findings' : summary.complete ? 'no-open-findings' : 'not-complete';
+      var record = {
+        artifactCode: 'artifact-' + (records.length + 1),
+        artifactType: a11yAlloText(card.artifactType || item.type || 'artifact', 50) || 'artifact',
+        date: date,
+        reviewStatus: reviewStatus,
+        remediationStatus: remediationStatus,
+        manualPass: summary.pass,
+        manualFail: summary.fail,
+        manualUntested: summary.untested,
+        manualNotApplicable: summary.not_applicable,
+        findingCount: findingCount,
+        openFindingCount: openCount,
+        automatedViolationRules: a11yAlloInteger(automated.violationRules, 0),
+        automatedAffectedElements: a11yAlloInteger(automated.affectedElements, 0),
+        automatedNeedsReview: a11yAlloInteger(automated.needsReview, 0),
+        reviewHistoryCount: Array.isArray(card.reviewHistory) ? card.reviewHistory.length : 0,
+      };
+      records.push(record);
+      if (date) {
+        var month = date.slice(0, 7);
+        months[month] = months[month] || { artifacts: 0, findings: 0, openFindings: 0, stale: 0 };
+        months[month].artifacts += 1;
+        months[month].findings += findingCount;
+        months[month].openFindings += openCount;
+        if (card.isStale) months[month].stale += 1;
+      }
+      findings.forEach(function (finding) {
+        var sourceName = a11yAlloText(finding && finding.source || 'manual', 40) || 'manual';
+        var severity = a11yAlloText(finding && finding.severity || 'moderate', 30).toLowerCase() || 'moderate';
+        if (['critical', 'serious', 'moderate', 'minor'].indexOf(severity) < 0) severity = 'other';
+        var status = a11yAlloStatus(finding && finding.status, 'open');
+        var ruleId = a11yAlloSafeRule(finding && finding.ruleId);
+        var wcag = a11yAlloSafeWcag(finding && finding.wcag);
+        var criterionKey = [ruleId, wcag, severity, sourceName, status].join('|');
+        if (!criteria[criterionKey]) criteria[criterionKey] = { ruleId: ruleId, wcag: wcag, severity: severity, source: sourceName, status: status, findingCount: 0, artifactCount: 0 };
+        criteria[criterionKey].findingCount += a11yAlloInteger(finding && finding.count, 1);
+        criteria[criterionKey].artifactCount += 1;
+      });
+    });
+    var wrapValues = function (values) { return { values: Object.fromEntries(Object.keys(values).map(function (key) { return [key, a11yAlloCell(values[key])]; })) }; };
+    var reviewRows = records.map(function (record) { return wrapValues({
+      artifact_code: record.artifactCode,
+      artifact_type: record.artifactType,
+      review_date: record.date,
+      audit_status: record.reviewStatus,
+      remediation_status: record.remediationStatus,
+      manual_pass_count: record.manualPass,
+      manual_finding_count: record.manualFail,
+      manual_untested_count: record.manualUntested,
+      manual_not_applicable_count: record.manualNotApplicable,
+      finding_count: record.findingCount,
+      open_finding_count: record.openFindingCount,
+      automated_violation_rule_count: record.automatedViolationRules,
+      automated_affected_element_count: record.automatedAffectedElements,
+      automated_needs_review_count: record.automatedNeedsReview,
+      review_history_count: record.reviewHistoryCount,
+      privacy_status: 'reduced-data; artifact content excluded',
+    }); });
+    var criterionRows = Object.keys(criteria).sort().map(function (key) { var item = criteria[key]; return wrapValues({
+      rule_code: item.ruleId,
+      wcag_criterion: item.wcag,
+      impact: item.severity,
+      evidence_source: item.source,
+      remediation_status: item.status,
+      finding_count: item.findingCount,
+      artifact_count: item.artifactCount,
+      privacy_status: 'bounded criterion code; descriptions excluded',
+    }); });
+    var trendRows = Object.keys(months).sort().map(function (month) { var item = months[month]; return wrapValues({
+      month: month,
+      audited_artifact_count: item.artifacts,
+      finding_count: item.findings,
+      open_finding_count: item.openFindings,
+      stale_review_count: item.stale,
+      privacy_status: 'reduced-data aggregate',
+    }); });
+    var tables = [];
+    if (datasets.reviewSummary) tables.push(a11yAlloTable('a11y-review-summary', 'Accessibility review summary', [
+      a11yAlloColumn('artifact_code', 'Artifact code', 'category'), a11yAlloColumn('artifact_type', 'Artifact type', 'category'),
+      a11yAlloColumn('review_date', 'Review date', 'datetime'), a11yAlloColumn('audit_status', 'Audit status', 'category'),
+      a11yAlloColumn('remediation_status', 'Remediation status', 'category'), a11yAlloColumn('manual_pass_count', 'Manual passes', 'integer'),
+      a11yAlloColumn('manual_finding_count', 'Manual findings', 'integer'), a11yAlloColumn('manual_untested_count', 'Manual untested', 'integer'),
+      a11yAlloColumn('manual_not_applicable_count', 'Manual N/A', 'integer'), a11yAlloColumn('finding_count', 'Finding records', 'integer'),
+      a11yAlloColumn('open_finding_count', 'Open findings', 'integer'), a11yAlloColumn('automated_violation_rule_count', 'Automated violation rules', 'integer'),
+      a11yAlloColumn('automated_affected_element_count', 'Automated affected elements', 'integer'), a11yAlloColumn('automated_needs_review_count', 'Automated needs review', 'integer'),
+      a11yAlloColumn('review_history_count', 'Prior reviews', 'integer'), a11yAlloColumn('privacy_status', 'Privacy status', 'category'),
+    ], reviewRows, records.length, history.length > ACCESSIBILITY_ALLOSHEET_LIMITS.maxRows));
+    if (datasets.criterionSummary) tables.push(a11yAlloTable('a11y-criterion-summary', 'WCAG criterion and impact summary', [
+      a11yAlloColumn('rule_code', 'Rule code', 'category'), a11yAlloColumn('wcag_criterion', 'WCAG criterion', 'category'),
+      a11yAlloColumn('impact', 'Impact', 'category'), a11yAlloColumn('evidence_source', 'Evidence source', 'category'),
+      a11yAlloColumn('remediation_status', 'Remediation status', 'category'), a11yAlloColumn('finding_count', 'Finding count', 'integer'),
+      a11yAlloColumn('artifact_count', 'Artifact count', 'integer'), a11yAlloColumn('privacy_status', 'Privacy status', 'category'),
+    ], criterionRows, criterionRows.length, false));
+    if (datasets.trendSummary) tables.push(a11yAlloTable('a11y-trend-summary', 'Accessibility audit trend', [
+      a11yAlloColumn('month', 'Month', 'category'), a11yAlloColumn('audited_artifact_count', 'Audited artifacts', 'integer'),
+      a11yAlloColumn('finding_count', 'Findings', 'integer'), a11yAlloColumn('open_finding_count', 'Open findings', 'integer'),
+      a11yAlloColumn('stale_review_count', 'Stale reviews', 'integer'), a11yAlloColumn('privacy_status', 'Privacy status', 'category'),
+    ], trendRows, trendRows.length, false));
+    var byteSize = (function () { try { return new TextEncoder().encode(JSON.stringify(tables)).length; } catch (_) { return JSON.stringify(tables).length; } }());
+    return {
+      kind: ACCESSIBILITY_ALLOSHEET_KIND,
+      version: 1,
+      source: { tool: 'accessibility-lab', label: 'Accessibility Lab', version: '1' },
+      title: 'Accessibility Lab audit summary',
+      createdAt: createdAt,
+      classification: { level: 'sensitive-education-data', identifierIncluded: false, studentIdentifierIncluded: false, freeTextNotesIncluded: false, rawResponsesIncluded: false },
+      privacy: { scope: 'educator-audit-summary', identifierIncluded: false, reducedData: true, notesIncluded: false, rawResponsesIncluded: false, transferEnablesAI: false },
+      capabilities: { writeBack: false, aiEnabled: false },
+      tables: tables.slice(0, ACCESSIBILITY_ALLOSHEET_LIMITS.maxTables),
+      provenance: {
+        sourceRecords: 'opaque local scorecards; artifact identifiers omitted',
+        dateRange: dateRange,
+        includedTables: tables.map(function (table) { return table.id; }),
+        excludedFields: ['artifact title/content/text', 'student-entered content', 'DOM/HTML', 'selectors/targets', 'code excerpts', 'finding descriptions', 'review notes', 'artifact fingerprints', 'artifact bindings', 'replay keys', 'stable history ids'],
+        suppression: { smallGroupSuppression: 'not applicable; no learner-level rows', missingWorkInferred: false },
+        limits: ACCESSIBILITY_ALLOSHEET_LIMITS,
+        reducedData: true,
+        byteSize: byteSize,
+        truncated: history.length > ACCESSIBILITY_ALLOSHEET_LIMITS.maxRows,
+      },
+      metadata: { dateRange: dateRange, auditedArtifactCount: records.length, criterionRowCount: criterionRows.length, trendRowCount: trendRows.length },
+    };
+  }
+
   // ----- Top-level component --------------------------------------------------
 
   function AccessibilityLab(props) {
@@ -2826,6 +3258,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
 
   // ----- Register -------------------------------------------------------------
 
+  window.buildAccessibilityLabAlloSheetEnvelope = buildAccessibilityLabAlloSheetEnvelope;
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AccessibilityLab = AccessibilityLab;
   // Test seam (read-only): expose the pure screen-reader-simulation helpers for
@@ -2841,6 +3274,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     normalizeReviewScorecard: normalizeReviewScorecard, completeReviewScorecard: completeReviewScorecard,
     summarizeReviewScorecard: summarizeReviewScorecard, loadReviewScorecards: loadReviewScorecards,
     persistAutomatedAuditForReview: persistAutomatedAuditForReview,
+    buildAccessibilityLabAlloSheetEnvelope: buildAccessibilityLabAlloSheetEnvelope,
   };
   console.log('[CDN] AccessibilityLab loaded');
 })();

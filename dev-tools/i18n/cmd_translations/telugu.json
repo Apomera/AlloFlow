@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio తెరవబడింది.",
   "cmd.open_video_studio_hint": "వాక్‌త్రూలను రికార్డ్ చేసి, శీర్షికలు జోడించి, సవరించండి",
   "palette.ctx.videoStudio": "ఇక్కడ — Video Studio",
-  "palette.close": "కమాండ్ పాలెట్ మూసివేయండి"
+  "palette.close": "కమాండ్ పాలెట్ మూసివేయండి",
+  "cmd.apply_lesson_template": "సేవ్ చేసిన టెంప్లేట్‌తో ప్రారంభించండి",
+  "cmd.apply_lesson_template_done": "దీని నుంచి ప్రారంభించబడింది: ",
+  "cmd.apply_lesson_template_hint": "మీరు సేవ్ చేసిన టెంప్లేట్‌లలో ఒకదాని నుంచి కొత్త ప్లాన్‌ను ప్రారంభిస్తుంది",
+  "cmd.apply_lesson_template_missing": "ఈ పేరుతో టెంప్లేట్ కనుగొనలేకపోయాను: ",
+  "cmd.apply_lesson_template_which": "ఏ టెంప్లేట్?",
+  "cmd.rebuild_lesson_step": "ప్లాన్‌లోని ఒక దశను మళ్లీ రూపొందించండి",
+  "cmd.rebuild_lesson_step_done": "దశను మళ్లీ రూపొందిస్తోంది: ",
+  "cmd.rebuild_lesson_step_hint": "ఒక వనరును మాత్రమే మళ్లీ రూపొందిస్తుంది — దశ సంఖ్యను చెప్పండి",
+  "cmd.rebuild_lesson_step_missing": "ప్లాన్‌లో ఆ దశను కనుగొనలేకపోయాను.",
+  "cmd.rebuild_lesson_step_none": "ప్లాన్‌లో ఇంకా దశలు లేవు.",
+  "cmd.rebuild_lesson_step_which": "ఏ దశ?",
+  "cmd.run_lesson_blueprint": "పాఠ్య ప్రణాళికను రూపొందించండి",
+  "cmd.run_lesson_blueprint_done": "ప్లాన్ రూపొందుతోంది — కార్డ్‌లో ప్రతి దశను చూడవచ్చు.",
+  "cmd.run_lesson_blueprint_hint": "ప్రస్తుత ప్లాన్‌లోని అన్ని వనరులను రూపొందిస్తుంది",
+  "cmd.cancelled": "రద్దు చేయమని అభ్యర్థించబడింది. ప్రొవైడర్ దీనికి మద్దతు ఇచ్చినప్పుడు ప్రస్తుత ఆపరేషన్ ఆగిపోతుంది."
 }

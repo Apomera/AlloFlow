@@ -991,7 +991,7 @@ window.StemLab = window.StemLab || {
                 }),
                 h('button', { 'aria-label': 'New',
                   onClick: function() { upd({ activeSprite: 'custom_' + Date.now(), spritePixels: {}, spriteColor: '#e74c3c' }); },
-                  className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
+                  className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all'
                 }, __alloT('stem.gamestudio.new', '\u2795 New'))
               )
             ),
@@ -1104,7 +1104,7 @@ window.StemLab = window.StemLab || {
                 // Clear
                 h('button', { 'aria-label': __alloT('stem.gamestudio.clear_canvas', 'Clear Canvas'),
                   onClick: function() { upd({ spritePixels: {} }); },
-                  className: 'w-full py-1.5 text-xs font-bold text-rose-500 border border-rose-600 rounded-lg hover:bg-rose-50 transition-all'
+                  className: 'w-full py-1.5 text-xs font-bold text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-50 transition-all'
                 }, __alloT('stem.gamestudio.clear_canvas_2', '\uD83D\uDDD1\uFE0F Clear Canvas'))
               )
             ),
@@ -1241,7 +1241,7 @@ window.StemLab = window.StemLab || {
                     arr.push({ trigger: 'onKey', param: 'ArrowUp', action: 'move', actionParam: 'up' });
                     ne[activeSprite] = arr; upd({ events: ne });
                   },
-                  className: 'w-full py-2 rounded-xl border-2 border-dashed border-rose-600 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
+                  className: 'w-full py-2 rounded-xl border-2 border-dashed border-rose-600 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all'
                 }, '\u2795 Add Rule (' + sprEvents.length + '/8)')
               );
             })()

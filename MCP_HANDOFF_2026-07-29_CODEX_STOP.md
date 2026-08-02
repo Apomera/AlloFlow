@@ -108,28 +108,41 @@ uploaded document was never transmitted or processed.
   offboarding.
 - Anthropic or OpenAI approval/listing would not by itself make AlloFlow's
   third-party processing FERPA compliant.
-- Do not claim PDF/UA conformance until an independently licensed offline
-  validator is packaged and its results are enforced.
+- The packaged validator supplies bounded evidence only; do not present its result as a legal PDF/UA or WCAG conformance certificate.
+
+## Continuation update (2026-08-01)
+
+The runner asset blocker was addressed in this continuation. The canonical
+`desktop/mcp/vendor/` bundle now contains pinned pdf.js, pdf-lib, pako,
+fontkit, axe-core, Tesseract JS/core/worker, and the English traineddata model.
+`manifest.json` records byte counts and SHA-256 hashes; staging copies the
+manifested files into `.runner-context/`, and production sets
+`ALLOFLOW_MCP_OFFLINE_ASSETS=1`. The Playwright route serves those assets from
+loopback and aborts unexpected public browser requests. Other OCR languages and
+the optional Office/export-only wrapper CDNs remain outside the remote
+`remediate` tool path and are not claims of offline coverage.
+
+The pinned veraPDF 1.30.2 CLI and its runtime notice are now staged beside the
+runner assets. The container installs Java, invokes the CLI locally with the
+ua1 profile, and publishes only bounded status/count/version evidence. A
+validator timeout or missing runtime is reported as unavailable; this does not
+authorize a conformance claim or replace institutional review.
 
 ## Known release blockers
 
 1. The current Cloudflare account can support synthetic staging, but R2 is not
    activated and Containers require Workers Paid.
 2. The account is person-owned, not demonstrably institution-owned.
-3. The canonical browser runner still loads executable dependencies from
-   `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`, and `unpkg.com`. Before any real
-   document pilot, vendor/hash-lock those assets and remove public CDN egress.
-4. Provision dedicated staging-only KV, D1, R2, Workflow, Container, rate-limit
+3. Provision dedicated staging-only KV, D1, R2, Workflow, Container, rate-limit
    binding, Worker, hostname, and path-scoped Cloudflare Access application.
-5. Run real synthetic end-to-end acceptance separately in Claude and ChatGPT.
-6. Complete institutional security/privacy/accessibility review before any
+4. Run real synthetic end-to-end acceptance separately in Claude and ChatGPT.
+5. Complete institutional security/privacy/accessibility review before any
    identifiable records.
 
 ## Best next work
 
 Do not add more remediation tools first. The highest-value next engineering
-step is **vendor the runner's executable assets and prove a no-public-CDN
-egress build**. After that:
+step is **synthetic staging and end-to-end acceptance**. After that:
 
 1. Activate R2 and Workers Paid in a staging account.
 2. Provision the isolated resources using

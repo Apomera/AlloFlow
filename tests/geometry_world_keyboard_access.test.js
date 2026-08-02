@@ -645,11 +645,23 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': 'true'");
     expect(SOURCE).toContain("className: 'gw-loading-track', role: 'progressbar', 'aria-label': 'Loading 3D engine'");
     expect(SOURCE).not.toContain("width: '60%'");
-    expect(SOURCE).toContain("role: 'alert', 'aria-live': 'assertive', className: 'gw-state-screen gw-state-screen--inline'");
+    expect(SOURCE).toContain("role: 'alert', 'aria-live': 'assertive', 'aria-labelledby': 'gw-webgl-recovery-title'");
     expect(SOURCE).toContain("className: 'gw-recovery-details'");
+    expect(SOURCE).toContain("id: 'gw-webgl-recovery'");
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-webgl-recovery-title'");
+    expect(SOURCE).toContain("'data-geometry-webgl-recovery': 'true'");
+    expect(SOURCE).toContain('function retryWebglMode(useSaverQuality)');
+    expect(SOURCE).toContain("className: 'gw-recovery-checklist'");
+    expect(SOURCE).toContain('Retry in saver mode');
+    expect(SOURCE).toContain("stopAnimationAfterError(new Error('WebGL context lost");
+    expect(SOURCE).toContain("stopAnimationAfterError(new Error('WebGL context lost. The browser may have reset the graphics device or reclaimed GPU memory.'), 'context');");
+    expect(SOURCE).toContain('#gw-webgl-recovery:focus-visible');
     expect((SOURCE.match(/className: 'gw-state-card'/g) || []).length).toBeGreaterThanOrEqual(3);
     expect((SOURCE.match(/className: 'gw-primary-cta gw-state-primary gw-focusable'/g) || []).length).toBeGreaterThanOrEqual(2);
     expect(SOURCE).toContain("type: 'button', className: 'gw-state-secondary gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Touch look settings'");
+    expect(SOURCE).toContain("'aria-label': 'Touch look sensitivity'");
+    expect(SOURCE).toContain("'aria-valuetext': 'Look speed '");
     expect(SOURCE).toContain('.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}');
   });
 
@@ -685,7 +697,8 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("isMobile ? 'Tap Talk' : 'Press E'");
     expect(SOURCE).toContain("className: 'gw-viewport-control gw-viewport-control--fullscreen gw-focusable'");
     expect(SOURCE).toContain("className: 'gw-viewport-control gw-viewport-control--vr gw-focusable'");
-    expect((SOURCE.match(/className: 'gw-viewport-control/g) || []).length).toBe(2);
+    expect(SOURCE).toContain("className: 'gw-viewport-control gw-viewport-control--touch gw-focusable'");
+    expect((SOURCE.match(/className: 'gw-viewport-control/g) || []).length).toBe(3);
     expect(SOURCE).toContain('.gw-crosshair[data-target="npc_question"]');
     expect(SOURCE).toContain('.gw-viewport-control--fullscreen{right:10px!important}');
     expect(SOURCE).toContain('.gw-viewport-control--vr{left:10px!important;border-color:');
@@ -783,6 +796,41 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain('.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}');
   });
 
+
+  it('makes the guided explore tour perceivable and keyboard operable', () => {
+    expect(SOURCE).toContain("className: 'gw-tour-button gw-focusable'");
+    expect(SOURCE).toContain("'aria-pressed': guidedTourActive");
+    expect(SOURCE).toContain("'aria-label': 'Guided explore checkpoint'");
+    expect(SOURCE).toContain("'aria-label': 'Exit guided explore tour'");
+    expect(SOURCE).toContain("role: 'region', 'aria-label': 'Guided explore checkpoint'");
+    expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(SOURCE).toContain("guidedTourReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)");
+    expect(SOURCE).toContain('if (!tour.reducedMotion)');
+    expect(SOURCE).toContain("className: 'gw-view-presets', role: 'group', 'aria-label': 'Camera views'");
+    expect(SOURCE).toContain("'aria-label': viewPresetLabels[preset] + ' camera view'");
+    expect(SOURCE).toContain("'aria-pressed': active");
+    expect(SOURCE).toContain('Camera view: ');
+    expect(SOURCE).toContain('Camera preset canceled. Free exploration restored.');
+  });
+  it('makes the Layer Explorer semantic and keyboard operable', () => {
+    expect(SOURCE).toContain("className: 'gw-layer-explorer', role: 'region', 'aria-label': 'Layer explorer'");
+    expect(SOURCE).toContain("id: 'gw-layer-focus', type: 'range'");
+    expect(SOURCE).toContain("'aria-label': 'Layer explorer depth'");
+    expect(SOURCE).toContain("'aria-valuetext': layerFocus === 0 ? 'All layers visible'");
+    expect(SOURCE).toContain("'aria-label': 'Show all layers'");
+    expect(SOURCE).toContain('Showing layers 1 through ');
+    expect(SOURCE).toContain('data-geometry-layer-explorer');
+  });
+  it('provides a named Scene Map text alternative with structure controls', () => {
+    expect(SOURCE).toContain("className: 'gw-scene-map', role: 'region', 'aria-labelledby': 'gw-scene-map-title'");
+    expect(SOURCE).toContain("id: 'gw-scene-map-title'");
+    expect(SOURCE).toContain("'aria-controls': 'gw-scene-map'");
+    expect(SOURCE).toContain("'aria-label': 'View structure: ' + structure.label");
+    expect(SOURCE).toContain("role: 'list', 'aria-label': 'Structures in scene'");
+    expect(SOURCE).toContain('engine.getSceneOverview = function()');
+    expect(SOURCE).toContain('engine.focusStructure = function(index)');
+    expect(SOURCE).toContain('Text alternative');
+  });
   it('presents lesson completion as a focused results dialog with semantic metrics', () => {
     expect(SOURCE).toContain("className: 'gw-dialog gw-dialog--compact gw-completion-dialog'");
     expect(SOURCE).toContain("'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description'");

@@ -87,6 +87,13 @@ describe("Cloudflare deployment invariants", () => {
     expect(allowedHosts).toContain('"gemini.internal"');
   });
 
+  it("keeps browser assets local to the runner", () => {
+    const source = readProjectFile("src/remediation-container.ts");
+    const allowedHosts = source.match(/(?:override\s+)?allowedHosts\s*=\s*\[([\s\S]*?)\];/u)?.[1] || "";
+    expect(allowedHosts).not.toMatch(/cdn\.jsdelivr|cdnjs\.cloudflare|unpkg/u);
+    expect(source).toContain('ALLOFLOW_MCP_OFFLINE_ASSETS: "1"');
+  });
+
   it("uses R2-verified checksums instead of trusting runner metadata", () => {
     const container = readProjectFile("src/remediation-container.ts");
     const workflow = readProjectFile("src/remediation-workflow.ts");

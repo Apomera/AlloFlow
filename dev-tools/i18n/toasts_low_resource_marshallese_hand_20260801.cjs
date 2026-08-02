@@ -1,0 +1,23 @@
+module.exports = {
+  marshallese: {
+    'toasts.building_accessible_docx': 'Kōm̧m̧an Word file eo em̧ool im em̧ōj an kõjparok…',
+    'toasts.building_accessible_pptx': 'Kōm̧m̧an PowerPoint file eo em̧ool im em̧ōj an kõjparok…',
+    'toasts.batch_tagging': '📄 Kōm̧m̧an tagged PDF ko ñan ZIP — file ko rej scan rej aikuj raan lōñ (OCR ej jerbal ilo file otemjej)…',
+    'toasts.builder_edits_preserved': '✋ Am̧ kōm̧m̧an ilo peṃ ej pād — preview ejjab bar kōm̧m̧an. Export ak kapij builder bwe en save, innām kōm̧m̧an settings.',
+    'toasts.builder_edits_synced': '✏️ Kōm̧m̧an ko an builder rej pād ilo document eo em̧m̧an — Tagged PDF / Word / PowerPoint export ko rej kōnono kake.',
+    'toasts.pptx_ai_theme': '🎨 AI ej jerbal ñan palette eo ejimwe ñan topic (legibility ej kōjparok ilo ijin)…',
+    'toasts.make_accessible_fixing': '✨ Audit em̧ōj — kōm̧m̧an bwe en em̧m̧an ilo an make (ejjelok click ej aikuj)…',
+    'toasts.tagged_pdf_saved_see_report': '📄 Tagged PDF ej pād — report eo otemjej ej bed ilōñ download buttons (✕ ñan kapij).',
+    'toasts.no_open_image_slot': 'Ejjelok image slot eo eṃ̧ōj ilo preview — jōk thumbnail ñan image eo kwōj kōm̧m̧an bwe en bōk.',
+    'toasts.extracted_image_inserted': '🖼 Kōtōk ilo image slot eo em̧ōj im jinoin — jōk thumbnail ñe kwōj kōnono bwe en pād ilo jikin juon.',
+    'toasts.html_downloaded': '🌐 HTML ej download — ej kōm̧m̧an ilo browser otemjej.',
+    'toasts.odt_downloaded': '📄 OpenDocument (.odt) ej download — ej kōm̧m̧an ilo LibreOffice, Google Docs, ak Word.',
+    'toasts.daisy_downloaded': '🔊 DAISY talking-book package (.zip) ej download — kōm̧m̧an ilo DAISY reader.',
+    'toasts.mo_no_voice': 'Voice service ejjab pād, innām read-along audio ejjab maroñ kōm̧m̧an kiiō.',
+    'toasts.mo_busy': 'Read-along export juon ej jerbal kiiō.',
+    'toasts.mo_no_text': 'Ejjelok text eo maroñ an kōnono ñan narrate.',
+    'toasts.mo_no_audio': '⚠ Read-along ebook ej pād, ak audio ejjab maroñ kōm̧m̧an (voice service ejjab pād). Text im sync structure rej pād.',
+    'toasts.mo_done': 'Read-along ebook ej download',
+    'toasts.audio_unavailable_now': 'Audio ejjab pād kiiō (job ej maroñ jerbal, ak voice service ej off).',
+  },
+};

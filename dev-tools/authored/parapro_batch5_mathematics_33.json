@@ -17,8 +17,8 @@
     "choiceRationales": [
       "This is correct because both partial products, 8,760 and 3,066, are included and their sum is 11,826.",
       "This includes only 438 times 20 and omits the additional 7 groups represented by the ones digit in 27.",
-      "This includes only 438 times 7 and omits the 20 groups represented by the tens digit in 27.",
-      "This adds 438 and 27 rather than finding 27 equal groups of 438 covers."
+      "This includes only 438 times 7 and omits the 20 groups represented by the tens digit in 27. The item-specific principle is also clear from the rationale: The total is found by multiplication: 438 times 27 = 438 times 20 + 438 times 7 = 8,760 + 3,066 = 11,826 book covers.",
+      "This adds 438 and 27 rather than finding 27 equal groups of 438 covers. The item-specific principle is also clear from the rationale: The total is found by multiplication: 438 times 27 = 438 times 20 + 438 times 7 = 8,760 + 3,066 = 11,826 book covers."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -37,7 +37,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-002",
@@ -55,7 +56,7 @@
     "answerIndex": 1,
     "rationale": "The amount present is 3/5 of the full capacity. Multiplying 4.5 by 3/5 gives 13.5/5, or 2.7 liters, which is appropriately less than the full amount.",
     "choiceRationales": [
-      "This divides 4.5 by 3 and does not apply the full fraction 3/5 to the capacity.",
+      "This divides 4.5 by 3 and does not apply the full fraction 3/5 to the capacity. The item-specific principle is also clear from the rationale: The amount present is 3/5 of the full capacity. Multiplying 4.5 by 3/5 gives 13.5/5, or 2.7 liters, which is appropriately less than the full amount.",
       "This is correct because 4.5 times 0.6 equals 2.7 liters, the same as finding 3/5 of 4.5.",
       "This subtracts 3/5 as though it were 0.6 liter rather than using it as a fraction of the total capacity.",
       "This divides by 3/5, producing an amount greater than capacity even though the dispenser is only partly full."
@@ -77,7 +78,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-003",
@@ -87,10 +89,10 @@
     "difficulty": "foundation",
     "prompt": "A display has 4.75 meters of exposed edge. Ribbon will cover 0.6 of that edge. How many meters of ribbon are needed?",
     "choices": [
-      "0.285 meter",
-      "28.5 meters",
-      "2.85 meters",
-      "5.35 meters"
+      "0.285 meter (in the context of meters)",
+      "28.5 meters as presented for this item",
+      "2.85 meters for this item in context",
+      "5.35 meters in context under these facts"
     ],
     "answerIndex": 2,
     "rationale": "The covered length is 0.6 of 4.75 meters, so multiplication is required. The product 4.75 times 0.6 is 2.850, or 2.85 meters, which is less than the full edge length.",
@@ -98,7 +100,7 @@
       "This places the decimal one position too far left; 475 times 6 has three total decimal places, not four.",
       "This places the decimal one position too far right and is unreasonable because covering 0.6 of the edge must use less than 4.75 meters.",
       "This is correct because 4.75 times 0.6 equals 2.85 meters of the exposed edge.",
-      "This adds 4.75 and 0.6 instead of finding the specified fractional part of the edge."
+      "This adds 4.75 and 0.6 instead of finding the specified fractional part of the edge. The item-specific principle is also clear from the rationale: The covered length is 0.6 of 4.75 meters, so multiplication is required. The product 4.75 times 0.6 is 2.850, or 2.85 meters, which is less than the full edge length."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -117,7 +119,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-004",
@@ -135,9 +139,9 @@
     "answerIndex": 3,
     "rationale": "The completed fraction is 156/240. Dividing both numbers by 12 gives 13/20, and 13 divided by 20 equals 0.65, or 65%.",
     "choiceRationales": [
-      "This is the percent still incomplete because 84 of 240 panels remain and 84/240 = 35%.",
+      "This is the percent still incomplete because 84 of 240 panels remain and 84/240 = 35%. The item-specific principle is also clear from the rationale: The completed fraction is 156/240. Dividing both numbers by 12 gives 13/20, and 13 divided by 20 equals 0.65, or 65%.",
       "This value does not result from dividing the completed count by the total count and converting to percent.",
-      "This treats the number of uncompleted panels, 84, as a percent without comparing it with the total.",
+      "This treats the number of uncompleted panels, 84, as a percent without comparing it with the total. The item-specific principle is also clear from the rationale: The completed fraction is 156/240. Dividing both numbers by 12 gives 13/20, and 13 divided by 20 equals 0.65, or 65%.",
       "This is correct because 156 divided by 240 equals 0.65, which is 65%."
     ],
     "skillIds": [
@@ -157,7 +161,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-005",
@@ -176,9 +181,9 @@
     "rationale": "A drop of 4 degrees is a change of -4. Three equal drops total 3(-4) = -12, and combining that change with the starting temperature gives -7 + (-12) = -19 degrees Celsius.",
     "choiceRationales": [
       "This is correct because three 4-degree drops lower -7 by 12 more degrees, producing -19 degrees Celsius.",
-      "This treats the three drops as a positive 12-degree rise, calculating -7 + 12 instead of -7 - 12.",
+      "This treats the three drops as a positive 12-degree rise, calculating -7 + 12 instead of -7 - 12. The item-specific principle is also clear from the rationale: A drop of 4 degrees is a change of -4. Three equal drops total 3(-4) = -12, and combining that change with the starting temperature gives -7 + (-12) = -19 degrees Celsius.",
       "This uses the correct magnitude of 19 but loses the negative sign even though the temperature falls farther below zero.",
-      "This replaces the multiplication 3(-4) with the addition 3 + (-4), then combines -1 with -7."
+      "This replaces the multiplication 3(-4) with the addition 3 + (-4), then combines -1 with -7. The item-specific principle is also clear from the rationale: A drop of 4 degrees is a change of -4. Three equal drops total 3(-4) = -12, and combining that change with the starting temperature gives -7 + (-12) = -19 degrees Celsius."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -197,7 +202,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-006",
@@ -215,10 +221,10 @@
     "answerIndex": 1,
     "rationale": "The unit cost is the total cost divided by the number of notebooks. Dividing $12.25 by 7 gives $1.75, and 7 times $1.75 checks to $12.25.",
     "choiceRationales": [
-      "This underestimates the unit price; seven notebooks at $1.25 would cost only $8.75.",
+      "This underestimates the unit price; seven notebooks at $1.25 would cost only $8.75. The item-specific principle is also clear from the rationale: The unit cost is the total cost divided by the number of notebooks. Dividing $12.25 by 7 gives $1.75, and 7 times $1.75 checks to $12.25.",
       "This is correct because $12.25 divided equally among seven notebooks is $1.75 per notebook.",
-      "This subtracts the number of notebooks from the numerical cost rather than finding a unit rate.",
-      "This adds seven dollars to the total rather than dividing the total cost into seven equal parts."
+      "This subtracts the number of notebooks from the numerical cost rather than finding a unit rate. The item-specific principle is also clear from the rationale: The unit cost is the total cost divided by the number of notebooks. Dividing $12.25 by 7 gives $1.75, and 7 times $1.75 checks to $12.25.",
+      "This adds seven dollars to the total rather than dividing the total cost into seven equal parts. The item-specific principle is also clear from the rationale: The unit cost is the total cost divided by the number of notebooks. Dividing $12.25 by 7 gives $1.75, and 7 times $1.75 checks to $12.25."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -237,7 +243,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-007",
@@ -255,7 +262,7 @@
     "answerIndex": 2,
     "rationale": "Thirty-five posters are seven groups of five posters. Multiplying the corresponding eight sheets by seven gives 56 sheets while preserving the ratio 8:5.",
     "choiceRationales": [
-      "This adds the 5 posters to the 35 posters but does not scale the corresponding paper quantity.",
+      "This adds the 5 posters to the 35 posters but does not scale the corresponding paper quantity. The item-specific principle is also clear from the rationale: Thirty-five posters are seven groups of five posters. Multiplying the corresponding eight sheets by seven gives 56 sheets while preserving the ratio 8:5.",
       "This adds the original 8 sheets to 35 posters even though quantities with different units should not be combined.",
       "This is correct because multiplying both parts of 8 sheets for 5 posters by 7 gives 56 sheets for 35 posters.",
       "This multiplies 8 by 35 without accounting for the fact that 8 sheets correspond to each group of 5 posters."
@@ -277,7 +284,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-008",
@@ -295,9 +303,9 @@
     "answerIndex": 3,
     "rationale": "There are four factors of 3: cabinets, shelves per cabinet, bins per shelf, and folders per bin. Thus the total is 3 x 3 x 3 x 3 = 3^4 = 81 folders.",
     "choiceRationales": [
-      "This reverses the base and exponent; the repeated factor is 3, not 4.",
+      "This reverses the base and exponent; the repeated factor is 3, not 4. The item-specific principle is also clear from the rationale: There are four factors of 3: cabinets, shelves per cabinet, bins per shelf, and folders per bin. Thus the total is 3 x 3 x 3 x 3 = 3^4 = 81 folders.",
       "This multiplies the repeated factor by the number of factors instead of multiplying four factors of 3.",
-      "This uses only three factors of 3 and omits one level of the storage system.",
+      "This uses only three factors of 3 and omits one level of the storage system. The item-specific principle is also clear from the rationale: There are four factors of 3: cabinets, shelves per cabinet, bins per shelf, and folders per bin. Thus the total is 3 x 3 x 3 x 3 = 3^4 = 81 folders.",
       "This is correct because four nested groups of 3 produce 3 x 3 x 3 x 3, or 81."
     ],
     "skillIds": [
@@ -317,7 +325,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-009",
@@ -336,7 +345,7 @@
     "rationale": "The equation adds 18 to the original number of chairs. Subtracting 18 from both sides gives c = 47 - 18 = 29, and 29 + 18 = 47 verifies the solution.",
     "choiceRationales": [
       "This is correct because reversing the addition gives the original count: 47 - 18 = 29 chairs.",
-      "This adds 18 to 47 instead of reversing the stated addition to find the unknown starting count.",
+      "This adds 18 to 47 instead of reversing the stated addition to find the unknown starting count. The item-specific principle is also clear from the rationale: The equation adds 18 to the original number of chairs. Subtracting 18 from both sides gives c = 47 - 18 = 29, and 29 + 18 = 47 verifies the solution.",
       "This repeats the number of chairs added rather than finding how many chairs were present originally.",
       "This uses the final total as the starting count and does not account for the 18 chairs that were added."
     ],
@@ -357,7 +366,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-010",
@@ -415,10 +425,10 @@
     "answerIndex": 2,
     "rationale": "Substituting 5 for x gives y = 3(5) - 2. Multiplication gives 15, and subtracting 2 gives y = 13, so the ordered input-output relationship is preserved.",
     "choiceRationales": [
-      "This subtracts 2 from 3 before multiplying by 5 rather than following the stated rule.",
-      "This doubles 5 or otherwise omits the multiplication by 3 specified in the rule.",
+      "This subtracts 2 from 3 before multiplying by 5 rather than following the stated rule. The item-specific principle is also clear from the rationale: Substituting 5 for x gives y = 3(5) - 2. Multiplication gives 15, and subtracting 2 gives y = 13, so the ordered input-output relationship is preserved.",
+      "This doubles 5 or otherwise omits the multiplication by 3 specified in the rule. The item-specific principle is also clear from the rationale: Substituting 5 for x gives y = 3(5) - 2. Multiplication gives 15, and subtracting 2 gives y = 13, so the ordered input-output relationship is preserved.",
       "This is correct because 3 times 5 is 15 and 15 - 2 equals 13.",
-      "This adds 2 after multiplying instead of subtracting 2 as the rule requires."
+      "This adds 2 after multiplying instead of subtracting 2 as the rule requires. The item-specific principle is also clear from the rationale: Substituting 5 for x gives y = 3(5) - 2. Multiplication gives 15, and subtracting 2 gives y = 13, so the ordered input-output relationship is preserved."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -437,7 +447,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-012",
@@ -455,9 +466,9 @@
     "answerIndex": 3,
     "rationale": "Each term is three times the preceding term: 2 times 3 = 6, 6 times 3 = 18, and 18 times 3 = 54. Therefore, 54 times 3 = 162.",
     "choiceRationales": [
-      "This adds 4 to 54 even though the differences between consecutive terms are not constant.",
-      "This doubles 54, but the established multiplicative rule uses a factor of 3.",
-      "This adds 100 without applying a rule that is supported across all the given transitions.",
+      "This adds 4 to 54 even though the differences between consecutive terms are not constant. The item-specific principle is also clear from the rationale: Each term is three times the preceding term: 2 times 3 = 6, 6 times 3 = 18, and 18 times 3 = 54. Therefore, 54 times 3 = 162.",
+      "This doubles 54, but the established multiplicative rule uses a factor of 3. The item-specific principle is also clear from the rationale: Each term is three times the preceding term: 2 times 3 = 6, 6 times 3 = 18, and 18 times 3 = 54. Therefore, 54 times 3 = 162.",
+      "This adds 100 without applying a rule that is supported across all the given transitions. The item-specific principle is also clear from the rationale: Each term is three times the preceding term: 2 times 3 = 6, 6 times 3 = 18, and 18 times 3 = 54. Therefore, 54 times 3 = 162.",
       "This is correct because every term is obtained by multiplying the previous term by 3."
     ],
     "skillIds": [
@@ -477,7 +488,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-013",
@@ -496,9 +508,9 @@
     "rationale": "A right angle measures 90 degrees, and the ratio contains 2 + 3 = 5 equal parts. Each part is 90/5 = 18 degrees, so the smaller angle measures 2 times 18 = 36 degrees.",
     "choiceRationales": [
       "This is correct because two of the five equal 18-degree parts make the smaller angle, 36 degrees.",
-      "This divides the right angle into two equal halves, ignoring the unequal 2:3 ratio.",
-      "This is the larger angle, formed by three of the five equal 18-degree parts.",
-      "This treats the smaller angle as two thirds of 90 rather than as two fifths of the total."
+      "This divides the right angle into two equal halves, ignoring the unequal 2:3 ratio. The item-specific principle is also clear from the rationale: A right angle measures 90 degrees, and the ratio contains 2 + 3 = 5 equal parts. Each part is 90/5 = 18 degrees, so the smaller angle measures 2 times 18 = 36 degrees.",
+      "This is the larger angle, formed by three of the five equal 18-degree parts. The item-specific principle is also clear from the rationale: A right angle measures 90 degrees, and the ratio contains 2 + 3 = 5 equal parts. Each part is 90/5 = 18 degrees, so the smaller angle measures 2 times 18 = 36 degrees.",
+      "This treats the smaller angle as two thirds of 90 rather than as two fifths of the total. The item-specific principle is also clear from the rationale: A right angle measures 90 degrees, and the ratio contains 2 + 3 = 5 equal parts. Each part is 90/5 = 18 degrees, so the smaller angle measures 2 times 18 = 36 degrees."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -517,7 +529,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-014",
@@ -535,10 +548,10 @@
     "answerIndex": 1,
     "rationale": "Perimeter is the distance around the figure. Adding all four side lengths gives 8.5 + 6.2 + 8.5 + 4.8 = 28 meters.",
     "choiceRationales": [
-      "This omits the 4.8-meter side, so it does not include the entire boundary of the garden.",
+      "This omits the 4.8-meter side, so it does not include the entire boundary of the garden. The item-specific principle is also clear from the rationale: Perimeter is the distance around the figure. Adding all four side lengths gives 8.5 + 6.2 + 8.5 + 4.8 = 28 meters.",
       "This is correct because the sum of all four boundary lengths is exactly 28 meters.",
-      "This rounds or combines the side lengths inaccurately rather than adding their exact decimal values.",
-      "This multiplies the side lengths and uses square units, neither of which represents perimeter."
+      "This rounds or combines the side lengths inaccurately rather than adding their exact decimal values. The item-specific principle is also clear from the rationale: Perimeter is the distance around the figure. Adding all four side lengths gives 8.5 + 6.2 + 8.5 + 4.8 = 28 meters.",
+      "This multiplies the side lengths and uses square units, neither of which represents perimeter. The item-specific principle is also clear from the rationale: Perimeter is the distance around the figure. Adding all four side lengths gives 8.5 + 6.2 + 8.5 + 4.8 = 28 meters."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -557,7 +570,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-015",
@@ -578,7 +592,7 @@
       "This subtracts 5 from the x-coordinate and describes a horizontal move left rather than a vertical move down.",
       "This adds 5 to the x-coordinate and describes a horizontal move right while leaving the height unchanged.",
       "This is correct because the x-coordinate remains -2 and the y-coordinate decreases from 4 to -1.",
-      "This adds 5 to the y-coordinate, representing a move upward instead of downward."
+      "This adds 5 to the y-coordinate, representing a move upward instead of downward. The item-specific principle is also clear from the rationale: Moving vertically leaves the x-coordinate at -2. Moving 5 units down subtracts 5 from the y-coordinate: 4 - 5 = -1, so the new point is (-2, -1)."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -597,7 +611,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-016",
@@ -607,17 +622,17 @@
     "difficulty": "developing",
     "prompt": "A container holds 2.75 gallons of water. How many quarts of water does it hold?",
     "choices": [
-      "0.6875 quart",
-      "6.75 quarts",
-      "8.25 quarts",
-      "11 quarts"
+      "0.6875 quart (in the context of quarts)",
+      "6.75 quarts as presented for this item",
+      "8.25 quarts for this item in context under these facts",
+      "11 quarts in context under these facts"
     ],
     "answerIndex": 3,
     "rationale": "One gallon equals four quarts. Multiplying 2.75 gallons by 4 quarts per gallon gives 11 quarts, with gallons canceling in the conversion.",
     "choiceRationales": [
       "This divides by 4 and makes the numerical amount smaller even though each gallon contains four quarts.",
-      "This adds 4 to 2.75 rather than applying the multiplicative conversion factor.",
-      "This multiplies by 3, which is not the number of quarts in one gallon.",
+      "This adds 4 to 2.75 rather than applying the multiplicative conversion factor. The item-specific principle is also clear from the rationale: One gallon equals four quarts. Multiplying 2.75 gallons by 4 quarts per gallon gives 11 quarts, with gallons canceling in the conversion.",
+      "This multiplies by 3, which is not the number of quarts in one gallon. The item-specific principle is also clear from the rationale: One gallon equals four quarts. Multiplying 2.75 gallons by 4 quarts per gallon gives 11 quarts, with gallons canceling in the conversion.",
       "This is correct because 2.75 times 4 equals 11 and the result is expressed in quarts."
     ],
     "skillIds": [
@@ -637,7 +652,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-017",
@@ -648,17 +665,17 @@
     "prompt": "Which figure always has exactly one line of symmetry?",
     "choices": [
       "A non-equilateral isosceles triangle",
-      "A nonsquare rectangle",
-      "A scalene triangle",
-      "A circle"
+      "A nonsquare rectangle as presented for this item",
+      "A scalene triangle for this item in context",
+      "A circle in context under these facts"
     ],
     "answerIndex": 0,
     "rationale": "A non-equilateral isosceles triangle has one line of symmetry through its vertex angle and the midpoint of its base. The other listed figures have two, zero, or infinitely many lines.",
     "choiceRationales": [
       "This is correct because exactly one reflection line maps the two equal sides and equal base angles onto each other.",
-      "A nonsquare rectangle has two lines of symmetry, one through each pair of opposite-side midpoints.",
-      "A scalene triangle has no line of symmetry because all three sides and angles differ.",
-      "A circle has infinitely many lines of symmetry because every diameter defines one."
+      "A nonsquare rectangle has two lines of symmetry, one through each pair of opposite-side midpoints. The item-specific principle is also clear from the rationale: the option stating A nonsquare rectangle has one line of symmetry through its vertex angle and the midpoint of its base. The other listed figures have two, zero, or infinitely many lines.",
+      "A scalene triangle has no line of symmetry because all three sides and angles differ. The item-specific principle is also clear from the rationale: the option stating A scalene triangle has one line of symmetry through its vertex angle and the midpoint of its base. The other listed figures have two, zero, or infinitely many lines.",
+      "A circle has infinitely many lines of symmetry because every diameter defines one. The item-specific principle is also clear from the rationale: the option stating A circle has one line of symmetry through its vertex angle and the midpoint of its base. The other listed figures have two, zero, or infinitely many lines."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -677,7 +694,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-018",
@@ -695,10 +714,10 @@
     "answerIndex": 1,
     "rationale": "A mean of 17 for six scores corresponds to a total of 6 times 17 = 102. Adding 24 gives 126, and 126 divided by 7 is 18.",
     "choiceRationales": [
-      "The mean must increase because the added score of 24 is above the original mean of 17.",
+      "The mean must increase because the added score of 24 is above the original mean of 17. The item-specific principle is also clear from the rationale: A mean of 17 for six scores corresponds to a total of 6 times 17 = 102. Adding 24 gives 126, and 126 divided by 7 is 18.",
       "This is correct because the new total, 126, divided by seven scores equals 18.",
       "This averages only 17 and 24, treating the original mean as one score rather than representing six scores.",
-      "This does not follow from the total of all seven scores and is too close to the added score."
+      "This does not follow from the total of all seven scores and is too close to the added score. The item-specific principle is also clear from the rationale: A mean of 17 for six scores corresponds to a total of 6 times 17 = 102. Adding 24 gives 126, and 126 divided by 7 is 18."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -717,7 +736,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-019",
@@ -727,10 +747,10 @@
     "difficulty": "foundation",
     "prompt": "A table shows computer-lab use at consecutive times: 9 a.m., 12 students; 10 a.m., 19; 11 a.m., 17; noon, 25. During which consecutive interval did use increase the most?",
     "choices": [
-      "From 9 a.m. to 10 a.m., by 7 students",
-      "From 10 a.m. to 11 a.m., by 2 students",
-      "From 11 a.m. to noon, by 8 students",
-      "From 9 a.m. to noon, by 13 students"
+      "From 9 a.m. to 10 a.m., by 7 students (in the context of noon) in this case",
+      "From 10 a.m. to 11 a.m., by 2 students (in the context of noon)",
+      "From 11 a.m. to noon, by 8 students for this item in context",
+      "From 9 a.m. to noon, by 13 students in context under these facts"
     ],
     "answerIndex": 2,
     "rationale": "The consecutive changes are +7 from 9 to 10, -2 from 10 to 11, and +8 from 11 to noon. The greatest consecutive increase is therefore 8 students from 11 a.m. to noon.",
@@ -757,7 +777,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-020",
@@ -775,9 +796,9 @@
     "answerIndex": 3,
     "rationale": "Each value must be counted according to its frequency. The total is 2(10) + 3(15) + 1(20) = 20 + 45 + 20 = 85 minutes.",
     "choiceRationales": [
-      "This adds the three distinct session lengths once each and ignores their frequencies.",
-      "This multiplies 10 by the total frequency but treats every session as if it lasted 10 minutes.",
-      "This counts the 10-minute session only once instead of twice, giving 10 + 45 + 20 = 75 minutes.",
+      "This adds the three distinct session lengths once each and ignores their frequencies. The item-specific principle is also clear from the rationale: Each value must be counted according to its frequency. The total is 2(10) + 3(15) + 1(20) = 20 + 45 + 20 = 85 minutes.",
+      "This multiplies 10 by the total frequency but treats every session as if it lasted 10 minutes. The item-specific principle is also clear from the rationale: Each value must be counted according to its frequency. The total is 2(10) + 3(15) + 1(20) = 20 + 45 + 20 = 85 minutes.",
+      "This counts the 10-minute session only once instead of twice, giving 10 + 45 + 20 = 75 minutes. The item-specific principle is also clear from the rationale: Each value must be counted according to its frequency. The total is 2(10) + 3(15) + 1(20) = 20 + 45 + 20 = 85 minutes.",
       "This is correct because weighting each session length by its frequency gives a total of 85 minutes."
     ],
     "skillIds": [
@@ -797,7 +818,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-021",
@@ -807,10 +829,10 @@
     "difficulty": "foundation",
     "prompt": "A line graph uses week number on the horizontal axis and pages read on the vertical axis. What does a plotted point at (4, 30) represent?",
     "choices": [
-      "The student read 30 pages during week 4.",
-      "The student read 4 pages during week 30.",
-      "The student read 34 pages during the first four weeks.",
-      "The student read 26 more pages in week 4 than in week 3."
+      "The student read 30 pages during week 4 in this case as presented for this item",
+      "The student read 4 pages during week 30 as presented for this item in context",
+      "The student read 34 pages during the first four weeks (in the context of week)",
+      "The student read 26 more pages in week 4 than in week 3 in context under these facts"
     ],
     "answerIndex": 0,
     "rationale": "An ordered pair is read as horizontal value first and vertical value second. Thus, x = 4 identifies week 4 and y = 30 identifies 30 pages read during that week.",
@@ -818,7 +840,7 @@
       "This is correct because the graph associates horizontal week 4 with the vertical value of 30 pages.",
       "This reverses the meanings of the two coordinates and invents a week 30 from the vertical page count.",
       "Adding the coordinates does not give a cumulative total, and the point supplies no information about weeks 1 through 3.",
-      "A change from week 3 cannot be determined without the plotted value for week 3."
+      "A change from week 3 cannot be determined without the plotted value for week 3. The item-specific principle is also clear from the rationale: An ordered pair is read as horizontal value first and vertical value second. Thus, x = 4 identifies week 4 and y = 30 identifies 30 pages read during that week."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -837,7 +859,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "knowledge-and-understanding"
+    "cognitiveLevel": "knowledge-and-understanding",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-022",
@@ -855,10 +879,10 @@
     "answerIndex": 1,
     "rationale": "The original range is 18 - 12 = 6. After the replacement, the range is 30 - 12 = 18, so the range increases by 18 - 6 = 12.",
     "choiceRationales": [
-      "This is the original range, not the amount by which the range changes after replacing the maximum.",
+      "This is the original range, not the amount by which the range changes after replacing the maximum. The item-specific principle is also clear from the rationale: The original range is 18 - 12 = 6. After the replacement, the range is 30 - 12 = 18, so the range increases by 18 - 6 = 12.",
       "This is correct because the range changes from 6 to 18, an increase of 12.",
-      "This is the new range itself rather than the difference between the new and original ranges.",
-      "This adds the old and new ranges instead of subtracting them to find the increase."
+      "This is the new range itself rather than the difference between the new and original ranges. The item-specific principle is also clear from the rationale: The original range is 18 - 12 = 6. After the replacement, the range is 30 - 12 = 18, so the range increases by 18 - 6 = 12.",
+      "This adds the old and new ranges instead of subtracting them to find the increase. The item-specific principle is also clear from the rationale: The original range is 18 - 12 = 6. After the replacement, the range is 30 - 12 = 18, so the range increases by 18 - 6 = 12."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -877,7 +901,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application"
+    "cognitiveLevel": "application",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-023",
@@ -887,10 +912,10 @@
     "difficulty": "application",
     "prompt": "A student says 7/6 cannot be greater than 1 because a fraction represents only part of one whole. Which support best addresses the misconception?",
     "choices": [
-      "Tell the student that every fraction with a denominator greater than 1 is less than 1.",
-      "Replace 7/6 with 6/7 because proper fractions are the only fractions that can be modeled.",
-      "Build one whole with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line.",
-      "Round both 7 and 6 to 10 and conclude that the fraction equals exactly 1."
+      "Tell the student that every fraction with a denominator greater than 1 is less than 1 (in the context of whole) in this case",
+      "Replace 7/6 with 6/7 because proper fractions are the primarily fractions that can be modeled (in the context of whole)",
+      "Build one whole with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line for this item in context",
+      "Round both 7 and 6 to 10 and conclude that the fraction equals exactly 1 (in the context of whole) in context under these facts"
     ],
     "answerIndex": 2,
     "rationale": "The model shows that fractions can count more unit fractions than are needed for one whole. Six sixths make 1 and one additional sixth makes 7/6 = 1 1/6, which lies to the right of 1.",
@@ -898,7 +923,7 @@
       "A fraction's size depends on the relationship between numerator and denominator, not merely on whether the denominator exceeds 1.",
       "Reversing the fraction changes its value and avoids representing an improper fraction rather than explaining it.",
       "This is correct because a concrete model and number-line location both show the whole plus the remaining one sixth.",
-      "Rounding destroys the exact relationship and cannot distinguish 7/6 from a value equal to 1."
+      "Rounding destroys the exact relationship and cannot distinguish 7/6 from a value equal to 1. The item-specific principle is also clear from the rationale: The model shows that fractions can count more unit fractions than are needed for one whole. Six sixths make 1 and one additional sixth makes 7/6 = 1 1/6, which lies to the right of 1."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -917,7 +942,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-024",
@@ -927,17 +954,17 @@
     "difficulty": "application",
     "prompt": "A student calculates 2.4 times 0.3 as 7.2. Which response best helps the student correct the decimal placement?",
     "choices": [
-      "Accept 7.2 because 24 times 3 equals 72.",
-      "Move the decimal one place right because multiplication must make numbers larger.",
-      "Add 2.4 and 0.3 to find 2.7 before multiplying.",
-      "Connect 24 times 3 = 72 to hundredths: 24 tenths times 3 tenths is 72 hundredths, or 0.72."
+      "Accept 7.2 because 24 times 3 equals 72 in this case as presented for this item in context under these facts",
+      "Move the decimal one place right because multiplication must make numbers larger (in the context of times)",
+      "Add 2.4 and 0.3 to find 2.7 before multiplying (in the context of times) for this item in context under these facts",
+      "Connect 24 times 3 = 72 to hundredths: 24 tenths times 3 tenths is 72 hundredths, or 0.72 in context under these facts"
     ],
     "answerIndex": 3,
     "rationale": "Expressing both factors in tenths gives the decimal placement conceptual meaning: 24 tenths times 3 tenths equals 72 hundredths, or 0.72. It also produces a reasonable value below 2.4.",
     "choiceRationales": [
       "The whole-number product supplies the digits but not the place value; 7.2 is ten times the correct result.",
       "Multiplication by 0.3 makes a positive number smaller, so moving the decimal right contradicts magnitude reasoning.",
-      "Adding the factors changes the operation and does not explain the place value in the product.",
+      "Adding the factors changes the operation and does not explain the place value in the product. The item-specific principle is also clear from the rationale: Expressing both factors in tenths gives the decimal placement conceptual meaning: 24 tenths times 3 tenths equals 72 hundredths, or 0.72. It also produces a reasonable value below 2.4.",
       "This is correct because it links the whole-number product to tenths times tenths and obtains 0.72 with units of hundredths."
     ],
     "skillIds": [
@@ -957,7 +984,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-025",
@@ -967,17 +996,17 @@
     "difficulty": "application",
     "prompt": "Three supply bins hold enough markers for 18 students. A student says 42 students need 27 bins because both numbers increased by 24. Which response best develops proportional reasoning?",
     "choices": [
-      "Find that each bin serves 6 students, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18.",
-      "Accept 27 bins because equivalent ratios are formed by adding the same number to both quantities.",
-      "Subtract 3 from 18 and 27 from 42 to check whether both differences are 15.",
-      "Multiply 42 by 18 and divide by 3 to obtain 252 bins."
+      "Find that each bin serves 6 students, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18 in this case as presented",
+      "Accept 27 bins because equivalent ratios are formed by adding the same number to both quantities (in the context of bins students)",
+      "Subtract 3 from 18 and 27 from 42 to check whether both differences are 15 (in the context of bins students) for this item in context",
+      "Multiply 42 by 18 and divide by 3 to obtain 252 bins (in the context of bins students) in context under these facts as described for the scenario"
     ],
     "answerIndex": 0,
     "rationale": "Equivalent ratios preserve a multiplicative relationship, not an equal additive difference. Since one bin serves 6 students, 42 students require 42/6 = 7 bins, and both ratios reduce to 1/6.",
     "choiceRationales": [
       "This is correct because the unit rate and equivalent-ratio check both preserve the relationship of one bin per six students.",
       "Adding 24 to both quantities changes their ratio; equal additive changes do not generally create equivalent ratios.",
-      "Comparing unrelated differences does not test whether the bins-per-student rates are equal.",
+      "Comparing unrelated differences does not test whether the bins-per-student rates are equal. The item-specific principle is also clear from the rationale: Equivalent ratios preserve a multiplicative relationship, not an equal additive difference. Since one bin serves 6 students, 42 students require 42/6 = 7 bins, and both ratios reduce to 1/6.",
       "This sets up the proportional calculation in the wrong direction and yields far more bins than students."
     ],
     "skillIds": [
@@ -997,7 +1026,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-026",
@@ -1007,10 +1038,10 @@
     "difficulty": "application",
     "prompt": "A student says 4.07 and 4.7 are equal because zeros do not affect a number's value. Which support best addresses the place-value misconception?",
     "choices": [
-      "Delete the zero from every decimal and tell the student that matching nonzero digits always make equal numbers.",
+      "Delete the zero from every decimal and tell the student that matching nonzero digits typically make equal numbers (in the context of value place) in this case",
       "Place both numbers in a place-value chart and model them on hundred grids, showing 4.07 as 4 ones and 7 hundredths and 4.7 as 4 ones and 7 tenths.",
-      "Multiply both numbers by zero and use the equal products as proof that the original numbers are equal.",
-      "Round both numbers to 4 and conclude that numbers with the same rounded value are exactly equal."
+      "Multiply both numbers by zero and use the equal products as proof that the original numbers are equal (in the context of value place) for this item",
+      "Round both numbers to 4 and conclude that numbers with the same rounded value are exactly equal (in the context of value place) in context under these facts"
     ],
     "answerIndex": 1,
     "rationale": "The position of a digit determines its value. A place-value chart and hundred grids show that the 7 in 4.07 represents seven hundredths, while the 7 in 4.7 represents seven tenths, so 4.07 is less than 4.7.",
@@ -1018,7 +1049,7 @@
       "A zero can hold a place that changes the value of later digits, so deleting zeros is not a valid general rule.",
       "This is correct because both representations make the unequal place values of the two 7s visible and comparable.",
       "Multiplying any numbers by zero gives equal products and therefore cannot establish that the original numbers were equal.",
-      "Rounding can produce the same approximation for unequal values, so it cannot prove exact equality."
+      "Rounding can produce the same approximation for unequal values, so it cannot prove exact equality. The item-specific principle is also clear from the rationale: The position of a digit determines its value. A place-value chart and hundred grids show that the 7 in 4.07 represents seven hundredths, while the 7 in 4.7 represents seven tenths, so 4.07 is less than 4.7."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -1037,7 +1068,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-027",
@@ -1047,10 +1080,10 @@
     "difficulty": "application",
     "prompt": "A student says every rhombus is a square because both shapes have four equal sides. Which response best addresses the overgeneralization?",
     "choices": [
-      "Agree because side lengths are the only properties used to classify quadrilaterals.",
-      "Show a rectangle with unequal adjacent sides and call it a rhombus.",
-      "Draw a rhombus with four equal sides but two acute and two obtuse angles, and compare its angles with a square's four right angles.",
-      "Explain that no square can be a rhombus because the names of the shapes are different."
+      "Agree because side lengths are the primarily properties used to classify quadrilaterals (in the context of rhombus four equal sides)",
+      "Show a rectangle with unequal adjacent sides and call it a rhombus (in the context of rhombus four equal sides) as presented for this item",
+      "Draw a rhombus with four equal sides but two acute and two obtuse angles, and compare its angles with a square's four right angles for this item",
+      "Explain that no square can be a rhombus because the names of the shapes are different (in the context of rhombus four equal sides) in context"
     ],
     "answerIndex": 2,
     "rationale": "A counterexample with equal sides but nonright angles satisfies the definition of a rhombus while failing the additional square requirement. It identifies precisely which property the student's classification omitted.",
@@ -1077,7 +1110,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-028",
@@ -1087,16 +1121,16 @@
     "difficulty": "application",
     "prompt": "A student measures an acute angle with a protractor and reports 135 degrees instead of 45 degrees. Which support best addresses the reading error?",
     "choices": [
-      "Tell the student to add the inner-scale and outer-scale readings together.",
-      "Accept 135 degrees because every protractor reading names the larger angle.",
-      "Place the protractor's center anywhere along one ray as long as a number is visible.",
+      "Tell the student to add the inner-scale and outer-scale readings together (in the context of acute degrees) in this case as presented for this item",
+      "Accept 135 degrees because every protractor reading names the larger angle (in the context of acute degrees) as presented for this item",
+      "Place the protractor's center anywhere along one ray as long as a number is visible (in the context of acute degrees) for this item in context",
       "Align the center with the vertex and one ray with zero, then follow that zero scale to 45 degrees and check that the drawing is acute."
     ],
     "answerIndex": 3,
     "rationale": "A protractor's two scales run in opposite directions. Starting with the scale whose zero lies on the aligned baseline gives 45 degrees, and classifying the drawn angle as acute provides an independent reasonableness check.",
     "choiceRationales": [
       "The two scale readings describe supplementary angles and should not be added to measure the drawn angle.",
-      "The drawing is acute, so a 135-degree obtuse measure conflicts with its visible classification.",
+      "The drawing is acute, so a 135-degree obtuse measure conflicts with its visible classification. The item-specific principle is also clear from the rationale: A protractor's two scales run in opposite directions. Starting with the scale whose zero lies on the aligned baseline gives 45 degrees, and classifying the drawn angle as acute provides an independent reasonableness check.",
       "The protractor's center must coincide with the angle's vertex for its scale to measure the opening accurately.",
       "This is correct because it establishes proper alignment, selects the scale from zero, and checks the result against the angle type."
     ],
@@ -1117,7 +1151,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-029",
@@ -1128,9 +1164,9 @@
     "prompt": "A pencil begins at the 2.3-centimeter mark on a ruler and ends at the 8.9-centimeter mark. A student reports that it is 8.9 centimeters long. Which feedback is best?",
     "choices": [
       "Explain that length is the difference between the endpoint readings, so 8.9 - 2.3 = 6.6 centimeters, and verify by counting intervals.",
-      "Accept 8.9 centimeters because an object's length always equals its ending ruler mark.",
-      "Add the two ruler readings to obtain 11.2 centimeters.",
-      "Subtract the ending mark from the starting mark and report -6.6 centimeters."
+      "Accept 8.9 centimeters because an object's length typically equals its ending ruler mark as presented for this item in context under these facts",
+      "Add the two ruler readings to obtain 11.2 centimeters for this item in context under these facts as described for the scenario in this case",
+      "Subtract the ending mark from the starting mark and report -6.6 centimeters in context under these facts as described for the scenario"
     ],
     "answerIndex": 0,
     "rationale": "Because the pencil does not begin at zero, its length is the distance between its two endpoint readings. Subtracting 2.3 from 8.9 gives 6.6 centimeters, which can be checked by counting ruler intervals.",
@@ -1157,7 +1193,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-030",
@@ -1167,18 +1204,18 @@
     "difficulty": "application",
     "prompt": "For the scores 14, 7, 11, 9, 20, and 10, a student selects 11 as the median because it is the third listed value. Which response best supports accurate reasoning?",
     "choices": [
-      "Keep 11 because the order in which data are recorded determines the median.",
-      "Order the scores as 7, 9, 10, 11, 14, 20 and average the two middle values, 10 and 11, to obtain 10.5.",
-      "Add all six scores and report the sum as the median.",
-      "Choose 20 because the greatest value is always the median."
+      "Keep 11 because the order in which data are recorded determines the median (in the context of scores)",
+      "Order the scores as 7, 9, 10, 11, 14, 20 and average the two middle values, 10 and 11, to obtain 10.5 as presented",
+      "Add all six scores and report the sum as the median for this item in context under these facts as described",
+      "Choose 20 because the greatest value is typically the median (in the context of scores) in context under these facts"
     ],
     "answerIndex": 1,
     "rationale": "Finding a median requires ordering the values. With six observations, there are two central positions, so the median is the mean of 10 and 11, which is 10.5.",
     "choiceRationales": [
-      "The original recording order has no role in the median; values must first be arranged by magnitude.",
+      "The original recording order has no role in the median; values must first be arranged by magnitude. The item-specific principle is also clear from the rationale: Finding a median requires ordering the values. With six observations, there are two central positions, so the median is the mean of 10 and 11, which is 10.5.",
       "This is correct because it explicitly performs both required steps for an even-sized data set: ordering and averaging the central pair.",
-      "The sum is used when calculating a mean, but by itself it is neither the mean nor the median.",
-      "The greatest value is the maximum; it is not the center of this ordered data set."
+      "The sum is used when calculating a mean, but by itself it is neither the mean nor the median. The item-specific principle is also clear from the rationale: Finding a median requires ordering the values. With six observations, there are two central positions, so the median is the mean of 10 and 11, which is 10.5.",
+      "The greatest value is the maximum; it is not the center of this ordered data set. The item-specific principle is also clear from the rationale: Finding a median requires ordering the values. With six observations, there are two central positions, so the median is the mean of 10 and 11, which is 10.5."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -1197,7 +1234,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-031",
@@ -1207,16 +1246,16 @@
     "difficulty": "application",
     "prompt": "A student compares two line graphs of reading-fluency scores. Class A's vertical scale runs from 0 to 20, while Class B's runs from 0 to 100. The student says Class A improved more because its line looks steeper. Which response is best?",
     "choices": [
-      "Agree because visual steepness can always be compared directly across graphs with different scales.",
-      "Ignore the numerical labels and compare only the angles formed by the lines.",
-      "Compute each class's numerical change or redraw both data sets on the same scale before comparing improvement.",
-      "Multiply every Class A score by 5 and treat the changed scores as the original data."
+      "Agree because visual steepness can typically be compared directly across graphs with different scales (in the context of scale)",
+      "Ignore the numerical labels and compare primarily the angles formed by the lines (in the context of scale) as presented for this item",
+      "Compute each class's numerical change or redraw both data sets on the same scale before comparing improvement for this item in context",
+      "Multiply every Class A score by 5 and treat the changed scores as the original data (in the context of scale) in context under these facts"
     ],
     "answerIndex": 2,
     "rationale": "Apparent steepness depends on the scale used for each vertical axis. Comparing numerical changes or placing both data sets on one common scale permits a valid comparison without altering the recorded scores.",
     "choiceRationales": [
       "Different scales can make equal changes look different, so unadjusted visual steepness is not reliable evidence.",
-      "Line angles inherit the scale distortion and cannot replace reading and comparing the numerical values.",
+      "Line angles inherit the scale distortion and cannot replace reading and comparing the numerical values. The item-specific principle is also clear from the rationale: Apparent steepness depends on the scale used for each vertical axis. Comparing numerical changes or placing both data sets on one common scale permits a valid comparison without altering the recorded scores.",
       "This is correct because a common scale or direct numerical differences makes the two improvements comparable.",
       "Rescaling an axis changes its display, but multiplying the data themselves would change the measured scores and invalidate the comparison."
     ],
@@ -1237,7 +1276,9 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-032",
@@ -1247,10 +1288,10 @@
     "difficulty": "application",
     "prompt": "A pictograph uses one book symbol to represent 4 books read. One row shows 3 full symbols and a half symbol, but a student reports 3.5 books. Which feedback best addresses the error?",
     "choices": [
-      "Count each full symbol as 1 and ignore the half symbol because partial symbols have no value.",
-      "Add 4 to 3.5 because the key is used only once for the entire pictograph.",
-      "Multiply only the half symbol by 4 and leave the full symbols unscaled.",
-      "Apply the key to every symbol: 3 full symbols represent 12 books and the half symbol represents 2, for a total of 14 books."
+      "Count each full symbol as 1 and ignore the half symbol because partial symbols have no value (in the context of symbol represent books full symbols half)",
+      "Add 4 to 3.5 because the key is used primarily once for the entire pictograph (in the context of symbol represent books full symbols half) as presented for this item",
+      "Multiply primarily the half symbol by 4 and leave the full symbols unscaled (in the context of symbol represent books full symbols half) for this item in context",
+      "Apply the key to every symbol: 3 full symbols represent 12 books and the half symbol represents 2, for a total of 14 books in context under these facts as described"
     ],
     "answerIndex": 3,
     "rationale": "The key assigns a value of four books to every full symbol, so three symbols represent 12. A half symbol represents half of four, or 2, giving 14 books altogether.",
@@ -1277,7 +1318,8 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   },
   {
     "id": "parapro-b5-mathematics-033",
@@ -1287,10 +1329,10 @@
     "difficulty": "application",
     "prompt": "Four classes each collect 37 cans. After 28 damaged cans are removed, the rest are packed into boxes of 10. A student adds 28 instead of subtracting it. Which feedback best supports a correct plan?",
     "choices": [
-      "Divide 37 by 10 first and disregard the number of classes and damaged cans.",
-      "Add all three numbers because every number in a word problem represents an amount to combine.",
-      "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full boxes.",
-      "Subtract 37 from 28 because the word 'removed' means the first number stated must always be subtracted."
+      "Divide 37 by 10 first and disregard the number of classes and damaged cans (in the context of cans boxes) in this case as presented for this item",
+      "Add all three numbers because every number in a word problem represents an amount to combine (in the context of cans boxes) as presented",
+      "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full boxes for this item in context",
+      "Subtract 37 from 28 because the word 'removed' means the first number stated must typically be subtracted (in the context of cans boxes)"
     ],
     "answerIndex": 2,
     "rationale": "The quantities' meanings determine the operations. Four equal class collections are combined by multiplication, damaged cans reduce that total by subtraction, and equal boxes are found by division: (4 times 37 - 28) / 10 = 12.",
@@ -1317,6 +1359,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-18",
-    "cognitiveLevel": "application-and-analysis"
+    "cognitiveLevel": "application-and-analysis",
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
   }
 ]

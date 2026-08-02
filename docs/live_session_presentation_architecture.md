@@ -200,6 +200,22 @@ document, Class Mailbox packs, WebRTC messages, Activity Pulse, or saved
 session summaries. This makes the visibility promise structural rather than a
 label applied to a student-visible note field.
 
+## Phase 9: Derived Class Debrief
+
+The Live Lesson path now derives a compact Class Debrief from the same sanitized
+Activity Pulse snapshots instead of creating a report owner. It distinguishes
+participation follow-up, moderation review, revision opportunity, and ready-to-
+advance evidence. It never labels a misconception or claims correctness when the
+underlying owner supplied only status metadata.
+
+Participation and revision findings retain only bounded live UIDs in teacher
+memory long enough to call the existing individual/batched resource sender with
+the currently selected student-safe Lesson path item. Review findings reopen the
+existing activity owner only while that owner is still reviewable. The debrief
+does not persist, add a transport message, or copy prompts, answers, feedback,
+drawings, scores, codenames, or real names. Closed activity owners are not
+silently revived.
+
 ## Next increments
 
 Future work should continue as refinements over this contract:

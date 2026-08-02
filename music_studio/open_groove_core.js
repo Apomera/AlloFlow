@@ -1863,6 +1863,111 @@
     return Math.max(1, Math.round(total));
   }
 
+  function ogNormalizeTuplet(tuplet) {
+    if (!tuplet) return null;
+    var actualNotes = Math.max(2, Math.min(9, ogInt(tuplet.actualNotes, 3)));
+    var normalNotes = Math.max(1, Math.min(8, ogInt(tuplet.normalNotes, 2)));
+    if (actualNotes === normalNotes) return null;
+    var baseType = ogSafeString(tuplet.baseType || tuplet.type, 'eighth').toLowerCase();
+    if (baseType === '16' || baseType === '16th' || baseType === 'sixteenth') baseType = '16th';
+    else if (baseType === 'q' || baseType === 'quarter') baseType = 'quarter';
+    else baseType = 'eighth';
+    var token = baseType === 'quarter' ? 'tq' : baseType === '16th' ? 'ts' : 'te';
+    return {
+      actualNotes: actualNotes,
+      normalNotes: normalNotes,
+      baseType: baseType,
+      token: token
+    };
+  }
+
+  function ogNotationTupletFromToken(token) {
+    var key = String(token == null ? '' : token).trim().toLowerCase().replace(/_/g, '-');
+    key = key.replace(/^(dotted|dot)-?/, '').replace(/(\.+)$/, '');
+    var map = {
+      te: { actualNotes: 3, normalNotes: 2, baseType: 'eighth' },
+      'triplet-eighth': { actualNotes: 3, normalNotes: 2, baseType: 'eighth' },
+      'eighth-triplet': { actualNotes: 3, normalNotes: 2, baseType: 'eighth' },
+      tq: { actualNotes: 3, normalNotes: 2, baseType: 'quarter' },
+      'triplet-quarter': { actualNotes: 3, normalNotes: 2, baseType: 'quarter' },
+      'quarter-triplet': { actualNotes: 3, normalNotes: 2, baseType: 'quarter' },
+      ts: { actualNotes: 3, normalNotes: 2, baseType: '16th' },
+      'triplet-sixteenth': { actualNotes: 3, normalNotes: 2, baseType: '16th' },
+      'sixteenth-triplet': { actualNotes: 3, normalNotes: 2, baseType: '16th' }
+    };
+    return map[key] ? ogNormalizeTuplet(map[key]) : null;
+  }
+  function ogNormalizeNotationArticulation(value) {
+    var key = String(value == null ? 'normal' : value).trim().toLowerCase().replace(/[_\s]+/g, '-');
+    var map = {
+      '': 'normal',
+      none: 'normal',
+      normal: 'normal',
+      accent: 'accent',
+      accented: 'accent',
+      staccato: 'staccato',
+      short: 'staccato',
+      tenuto: 'tenuto',
+      sustain: 'tenuto',
+      legato: 'tenuto',
+      marcato: 'marcato',
+      'strong-accent': 'marcato'
+    };
+    return map[key] || 'normal';
+  }
+
+  function ogMusicXmlArticulationTag(value) {
+    var articulation = ogNormalizeNotationArticulation(value);
+    return articulation === 'accent' ? 'accent' : articulation === 'staccato' ? 'staccato' : articulation === 'tenuto' ? 'tenuto' : articulation === 'marcato' ? 'strong-accent' : '';
+  }
+  function ogNormalizeNotationDynamic(value) {
+    var key = String(value == null ? 'mf' : value).trim().toLowerCase().replace(/[\s_-]+/g, '');
+    var map = {
+      '': 'mf',
+      ppp: 'ppp',
+      pp: 'pp',
+      p: 'p',
+      mp: 'mp',
+      mf: 'mf',
+      f: 'f',
+      ff: 'ff',
+      fff: 'fff',
+      fp: 'fp',
+      sfz: 'sfz',
+      sforzando: 'sfz',
+      sforzato: 'sfz',
+      mezzopiano: 'mp',
+      mezzoforte: 'mf',
+      fortepiano: 'fp'
+    };
+    return map[key] || 'mf';
+  }
+
+  function ogDynamicVelocity(value) {
+    var map = { ppp: 0.24, pp: 0.34, p: 0.44, mp: 0.56, mf: 0.68, fp: 0.76, f: 0.82, ff: 0.92, fff: 1, sfz: 1 };
+    return map[ogNormalizeNotationDynamic(value)] || map.mf;
+  }
+
+  function ogDynamicFromVelocity(value) {
+    var velocity = ogNormalizeVelocity(value == null ? 0.68 : value);
+    var labels = ['ppp', 'pp', 'p', 'mp', 'mf', 'fp', 'f', 'ff', 'fff'];
+    var best = 'mf';
+    var distance = Infinity;
+    labels.forEach(function (label) {
+      var nextDistance = Math.abs(velocity - ogDynamicVelocity(label));
+      if (nextDistance < distance) {
+        distance = nextDistance;
+        best = label;
+      }
+    });
+    return best;
+  }
+
+  function ogMusicXmlDynamicTag(value) {
+    var dynamic = ogNormalizeNotationDynamic(value);
+    return dynamic === 'sfz' ? 'sfz' : dynamic;
+  }
+
   function ogNotationDurationTicks(project, token) {
     var beat = ogTicksPerBeat(project);
     var key = String(token == null ? 'q' : token).trim().toLowerCase().replace(/_/g, '-');
@@ -1891,7 +1996,16 @@
       dq: 1.5,
       dh: 3,
       de: 0.75,
-      ds: 0.375
+      ds: 0.375,
+      te: 1 / 3,
+      'triplet-eighth': 1 / 3,
+      'eighth-triplet': 1 / 3,
+      tq: 2 / 3,
+      'triplet-quarter': 2 / 3,
+      'quarter-triplet': 2 / 3,
+      ts: 1 / 6,
+      'triplet-sixteenth': 1 / 6,
+      'sixteenth-triplet': 1 / 6
     };
     if (Object.prototype.hasOwnProperty.call(named, key)) return ogApplyDurationDots(beat * named[key], dotCount);
     var frac = /^1\/(\d+)$/.exec(key);
@@ -1956,7 +2070,8 @@
             notationDurationTicks: Math.max(1, Math.min(durationTicks, patternLength - cursor)),
             velocity: velocity,
             role: 'notation',
-            source: 'notationInput'
+            source: 'notationInput',
+            tuplet: ogNotationTupletFromToken(durationToken),
           });
         }
       });
@@ -2091,6 +2206,36 @@
     return state;
   }
 
+  function ogMusicXmlArticulationFromNote(noteEl) {
+    var notations = ogXmlDirectChildByName(noteEl, 'notations');
+    var articulations = ogXmlDirectChildByName(notations, 'articulations');
+    if (!articulations) return 'normal';
+    var names = ogXmlDirectChildren(articulations).map(function (child) { return ogMusicXmlNodeName(child); });
+    if (names.indexOf('strong-accent') >= 0) return 'marcato';
+    if (names.indexOf('accent') >= 0) return 'accent';
+    if (names.indexOf('staccato') >= 0) return 'staccato';
+    if (names.indexOf('tenuto') >= 0) return 'tenuto';
+    return 'normal';
+  }
+  function ogMusicXmlDynamicFromDirection(directionEl) {
+    var directionType = ogXmlDirectChildByName(directionEl, 'direction-type');
+    var dynamics = ogXmlDirectChildByName(directionType, 'dynamics');
+    var dynamicNode = ogXmlDirectChildren(dynamics)[0];
+    return dynamicNode ? ogNormalizeNotationDynamic(ogMusicXmlNodeName(dynamicNode)) : null;
+  }
+
+  function ogMusicXmlTupletFromNote(noteEl) {
+    var modification = ogXmlDirectChildByName(noteEl, 'time-modification');
+    if (!modification) return null;
+    var actualNotes = ogInt(ogXmlFirstText(modification, 'actual-notes', '0'), 0);
+    var normalNotes = ogInt(ogXmlFirstText(modification, 'normal-notes', '0'), 0);
+    if (actualNotes < 2 || normalNotes < 1) return null;
+    return ogNormalizeTuplet({
+      actualNotes: actualNotes,
+      normalNotes: normalNotes,
+      baseType: ogXmlFirstText(noteEl, 'type', 'eighth')
+    });
+  }
   function ogMusicXmlNodeName(node) {
     return String(node && (node.localName || node.nodeName) || '').toLowerCase();
   }
@@ -2189,6 +2334,7 @@
     var endTick = cursor;
     var activeTies = {};
     var tieMergeCount = 0;
+    var pendingDynamic = 'mf';
     measures.forEach(function (measure) {
       var measureStart = cursor;
       var measureTicksForThisMeasure = currentMeasureTicks;
@@ -2229,6 +2375,11 @@
           warnedTimeChange = attributeState.warnedTimeChange;
           return;
         }
+        if (name === 'direction') {
+          var importedDynamic = ogMusicXmlDynamicFromDirection(child);
+          if (importedDynamic) pendingDynamic = importedDynamic;
+          return;
+        }
         if (name === 'backup' || name === 'forward') {
           var moveTicks = ogMusicXmlDurationTicks(project, ogXmlFirstText(child, 'duration', '0'), divisions);
           cursor = name === 'backup' ? Math.max(measureStart, cursor - moveTicks) : cursor + moveTicks;
@@ -2248,6 +2399,9 @@
         var pitch = pitchInfo && pitchInfo.pitch;
         var midi = pitchInfo && pitchInfo.midi;
         var tieState = ogMusicXmlTieState(child);
+        var tuplet = ogMusicXmlTupletFromNote(child);
+        var articulation = ogMusicXmlArticulationFromNote(child);
+        var dynamic = pendingDynamic;
         var voice = ogXmlFirstText(child, 'voice', '1');
         var tieKey = pitch + '|' + voice;
         if (midi == null) {
@@ -2279,7 +2433,10 @@
             notationDurationTicks: durationTicks,
             velocity: velocity,
             role: 'notation',
-            source: 'musicXmlImport'
+            source: 'musicXmlImport',
+            articulation: articulation,
+            dynamic: dynamic,
+            tuplet: tuplet,
           };
           if (tieState.start || tieState.stop) noteEvent.tie = { imported: true, start: tieState.start, stop: tieState.stop, segments: 1 };
           events.push(noteEvent);
@@ -2353,7 +2510,9 @@
     return parsed.octave * 7 + (steps[parsed.step] == null ? 0 : steps[parsed.step]);
   }
 
-  function ogDurationNameFromTicks(project, ticks) {
+  function ogDurationNameFromTicks(project, ticks, tuplet) {
+    tuplet = ogNormalizeTuplet(tuplet);
+    if (tuplet) return tuplet.baseType === 'quarter' ? 'quarter' : tuplet.baseType === '16th' ? 'sixteenth' : 'eighth';
     var beat = ogTicksPerBeat(project);
     var ratio = Math.max(0.001, ogFinite(ticks, beat) / beat);
     if (ratio >= 3.75) return 'whole';
@@ -2363,7 +2522,9 @@
     return 'sixteenth';
   }
 
-  function ogMusicXmlDurationNotationFromTicks(project, ticks) {
+  function ogMusicXmlDurationNotationFromTicks(project, ticks, tuplet) {
+    tuplet = ogNormalizeTuplet(tuplet);
+    if (tuplet) return { type: tuplet.baseType, dots: 0, tuplet: tuplet };
     var beat = ogTicksPerBeat(project);
     var ratio = Math.max(0.001, ogFinite(ticks, beat) / beat);
     var candidates = [
@@ -2579,18 +2740,27 @@
           var tickInMeasure = Math.round((Math.max(1, chord.startBeat || 1) - 1) * beatTicks);
           return Object.assign({}, chord, { x: xForTick(bar, tickInMeasure), y: staffTop - 18 });
         }),
+        explicitRests: (namedMeasure.rests || []).filter(function (rest) { return !options.trackId || rest.trackId === options.trackId; }),
         notes: (namedMeasure.notes || []).filter(function (note) {
           return !options.trackId || note.trackId === options.trackId;
         }).map(function (note) {
           var parsed = ogParsePitchSpelling(note.pitch);
           var y = bottomY - (ogDiatonicIndexFromPitch(note.pitch) - bottomLineIndex) * stepY;
-          var duration = ogDurationNameFromTicks(project, Math.round((note.durationBeats || 1) * beatTicks));
+          var durationTicks = Math.max(1, ogInt(note.durationTicks, Math.round((note.durationBeats || 1) * beatTicks)));
+          var duration = ogDurationNameFromTicks(project, durationTicks, note.tuplet);
+          var durationToken = ogStaffDurationTokenFromTicks(project, durationTicks, note.tuplet);
+          var durationDotMatch = /(\.+)$/.exec(durationToken);
+          var durationDots = durationDotMatch ? durationDotMatch[1].length : 0;
           var tickInMeasure = Math.round((Math.max(1, note.startBeat || 1) - 1) * beatTicks);
           return Object.assign({}, note, {
             x: xForTick(bar, tickInMeasure),
+            localStartTick: tickInMeasure,
             y: Math.round(y * 100) / 100,
             accidental: parsed.alter === 1 ? '#' : parsed.alter === -1 ? 'b' : '',
+            durationTicks: durationTicks,
             durationName: duration,
+            durationToken: durationToken,
+            dots: durationDots,
             openHead: duration === 'whole' || duration === 'half',
             stem: duration !== 'whole',
             stemUp: y >= staffTop + 2 * lineSpacing,
@@ -2600,6 +2770,194 @@
       });
     }
 
+    measures.forEach(function (measure) {
+      var beamGroups = [];
+      var startCounts = {};
+      (measure.notes || []).forEach(function (note) {
+        var key = String(note.localStartTick);
+        startCounts[key] = (startCounts[key] || 0) + 1;
+      });
+      var beamCandidates = (measure.notes || []).filter(function (note) {
+        return (note.durationName === 'eighth' || note.durationName === 'sixteenth') && note.stem && startCounts[String(note.localStartTick)] === 1;
+      }).sort(function (a, b) {
+        return a.localStartTick - b.localStartTick || String(a.id).localeCompare(String(b.id));
+      });
+      var beamIndex = 0;
+      for (var candidateIndex = 0; candidateIndex < beamCandidates.length;) {
+        var first = beamCandidates[candidateIndex];
+        var group = [first];
+        var nextIndex = candidateIndex + 1;
+        while (nextIndex < beamCandidates.length) {
+          var previous = group[group.length - 1];
+          var next = beamCandidates[nextIndex];
+          var expectedStart = previous.localStartTick + previous.durationTicks;
+          var sameBeat = Math.floor(next.localStartTick / beatTicks) === Math.floor(first.localStartTick / beatTicks);
+          if (next.durationName !== first.durationName || next.stemUp !== first.stemUp || next.localStartTick !== expectedStart || !sameBeat) break;
+          group.push(next);
+          nextIndex += 1;
+        }
+        if (group.length >= 2) {
+          var last = group[group.length - 1];
+          var beamId = 'beam-' + measure.bar + '-' + beamIndex;
+          var stemXStart = first.stemUp ? first.x + 5 : first.x - 5;
+          var stemXEnd = last.stemUp ? last.x + 5 : last.x - 5;
+          var stemYStart = first.stemUp ? first.y - 32 : first.y + 32;
+          var stemYEnd = last.stemUp ? last.y - 32 : last.y + 32;
+          group.forEach(function (note) {
+            note.beamed = true;
+            note.beamGroupId = beamId;
+          });
+          beamGroups.push({
+            id: beamId,
+            level: first.durationName === 'sixteenth' ? 2 : 1,
+            stemUp: first.stemUp,
+            noteIds: group.map(function (note) { return note.id; }),
+            startX: stemXStart,
+            endX: stemXEnd,
+            startY: stemYStart,
+            endY: stemYEnd
+          });
+          beamIndex += 1;
+        }
+        candidateIndex = Math.max(candidateIndex + 1, nextIndex);
+      }
+      measure.beams = beamGroups;
+      var cursor = 0;
+      var rests = [];
+      var timeline = [];
+
+      function addDerivedRest(startTick, durationTicks) {
+        var safeDuration = Math.max(1, Math.min(measureTicks - startTick, durationTicks));
+        var token = ogStaffDurationTokenFromTicks(project, safeDuration);
+        rests.push({
+          startTick: startTick,
+          startBeat: Math.round((startTick / beatTicks + 1) * 1000) / 1000,
+          durationTicks: safeDuration,
+          durationName: ogDurationNameFromTicks(project, safeDuration),
+          durationToken: token,
+          x: xForTick(Math.max(0, measure.bar - 1), startTick),
+          y: staffTop + lineSpacing * 2.25
+        });
+      }
+
+      (measure.notes || []).forEach(function (note) {
+        var noteStart = Math.max(0, Math.min(measureTicks, Math.round((Math.max(1, note.startBeat || 1) - 1) * beatTicks)));
+        var noteDuration = Math.max(1, Math.min(Math.max(1, measureTicks - noteStart), ogInt(note.durationTicks, Math.round(Math.max(0.001, note.durationBeats || 1) * beatTicks))));
+        timeline.push({ type: 'note', startTick: noteStart, durationTicks: noteDuration });
+      });
+      (measure.explicitRests || []).forEach(function (rest) {
+        var restStart = Math.max(0, Math.min(measureTicks, Math.round((Math.max(1, rest.startBeat || 1) - 1) * beatTicks)));
+        var restDuration = Math.max(1, Math.min(Math.max(1, measureTicks - restStart), ogInt(rest.durationTicks, Math.round(Math.max(0.001, rest.durationBeats || 1) * beatTicks))));
+        timeline.push({ type: 'rest', source: rest, startTick: restStart, durationTicks: restDuration });
+      });
+      timeline.sort(function (a, b) {
+        return a.startTick - b.startTick || (a.type === b.type ? 0 : a.type === 'rest' ? -1 : 1);
+      });
+      timeline.forEach(function (item) {
+        var itemStart = Math.max(0, Math.min(measureTicks, item.startTick));
+        var itemEnd = Math.max(itemStart + 1, Math.min(measureTicks, itemStart + item.durationTicks));
+        if (itemStart > cursor) addDerivedRest(cursor, itemStart - cursor);
+        if (item.type === 'rest' && itemStart >= cursor) {
+          var token = ogStaffDurationTokenFromTicks(project, itemEnd - itemStart);
+          rests.push({
+            id: item.source && item.source.id || null,
+            startTick: itemStart,
+            startBeat: Math.round((itemStart / beatTicks + 1) * 1000) / 1000,
+            durationTicks: itemEnd - itemStart,
+            durationName: ogDurationNameFromTicks(project, itemEnd - itemStart),
+            durationToken: token,
+            explicit: true,
+            x: xForTick(Math.max(0, measure.bar - 1), itemStart),
+            y: staffTop + lineSpacing * 2.25
+          });
+        }
+        cursor = Math.max(cursor, itemEnd);
+      });
+      if (cursor < measureTicks) addDerivedRest(cursor, measureTicks - cursor);
+      measure.rests = rests;
+    });
+    var staffNotesById = {};
+    measures.forEach(function (measure) {
+      (measure.notes || []).forEach(function (note) {
+        note.globalStartTick = (measure.bar - 1) * measureTicks + note.localStartTick;
+        staffNotesById[note.id] = note;
+      });
+    });
+    var staffTies = [];
+    measures.forEach(function (measure) {
+      (measure.notes || []).forEach(function (note) {
+        var tie = note.tie || {};
+        if (!tie.start) return;
+        var endNote = tie.toId ? staffNotesById[tie.toId] : null;
+        if (!endNote) {
+          var expectedStart = note.globalStartTick + note.durationTicks;
+          measures.some(function (candidateMeasure) {
+            return (candidateMeasure.notes || []).some(function (candidateNote) {
+              if (candidateNote.globalStartTick !== expectedStart || candidateNote.pitch !== note.pitch) return false;
+              endNote = candidateNote;
+              return true;
+            });
+          });
+        }
+        if (!endNote) return;
+        staffTies.push({
+          id: 'tie-' + note.id + '-' + endNote.id,
+          startNoteId: note.id,
+          endNoteId: endNote.id,
+          stemUp: !!note.stemUp,
+          startX: note.x,
+          endX: endNote.x,
+          startY: note.stemUp ? note.y + 8 : note.y - 8,
+          endY: note.stemUp ? endNote.y + 8 : endNote.y - 8
+        });
+      });
+    });
+
+    var staffTuplets = [];
+    measures.forEach(function (measure) {
+      var candidates = (measure.notes || []).filter(function (note) {
+        return note.tuplet && note.tuplet.actualNotes >= 2;
+      }).sort(function (a, b) {
+        return a.localStartTick - b.localStartTick || String(a.id).localeCompare(String(b.id));
+      });
+      for (var tupletIndex = 0; tupletIndex < candidates.length;) {
+        var first = candidates[tupletIndex];
+        var group = [first];
+        var nextIndex = tupletIndex + 1;
+        while (nextIndex < candidates.length) {
+          var previous = group[group.length - 1];
+          var next = candidates[nextIndex];
+          var sameTuplet = next.tuplet.token === first.tuplet.token && next.stemUp === first.stemUp;
+          var expectedStart = previous.localStartTick + previous.durationTicks;
+          if (!sameTuplet || next.localStartTick !== expectedStart) break;
+          group.push(next);
+          nextIndex += 1;
+        }
+        if (group.length >= first.tuplet.actualNotes) {
+          var last = group[first.tuplet.actualNotes - 1] || group[group.length - 1];
+          var noteYs = group.slice(0, first.tuplet.actualNotes).map(function (note) { return note.y; });
+          var extremeY = first.stemUp ? Math.min.apply(Math, noteYs) : Math.max.apply(Math, noteYs);
+          var bracketY = first.stemUp ? Math.max(12, extremeY - 42) : Math.min(height - 12, extremeY + 42);
+          staffTuplets.push({
+            id: 'tuplet-' + measure.bar + '-' + tupletIndex,
+            bar: measure.bar,
+            actualNotes: first.tuplet.actualNotes,
+            normalNotes: first.tuplet.normalNotes,
+            label: String(first.tuplet.actualNotes),
+            stemUp: !!first.stemUp,
+            startX: first.x - 10,
+            endX: last.x + 10,
+            bracketY: bracketY,
+            labelX: (first.x + last.x) / 2,
+            labelY: first.stemUp ? bracketY - 2 : bracketY + 12,
+            noteIds: group.slice(0, first.tuplet.actualNotes).map(function (note) { return note.id; })
+          });
+          tupletIndex += first.tuplet.actualNotes;
+        } else {
+          tupletIndex += 1;
+        }
+      }
+    });
     return {
       width: width,
       height: height,
@@ -2609,13 +2967,50 @@
       timeSignature: [beatsPerMeasure, Math.max(1, ogInt(ts[1], 4))],
       slotsPerMeasure: slotsPerMeasure,
       geometry: geometry,
-      measures: measures
+      measures: measures,
+      ties: staffTies,
+      tuplets: staffTuplets,
     };
   }
 
-  function ogStaffDurationTokenFromTicks(project, ticks) {
-    var notation = ogMusicXmlDurationNotationFromTicks(project, ticks);
+  function ogBuildStaffPlaybackCursor(project, patternId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
+    if (!pattern) return { patternId: null, tick: 0, barIndex: 0, bar: 1, beat: 1, tickInBeat: 0, noteId: null, noteIds: [] };
+    var measureTicks = ogTicksPerMeasure(project);
+    var beatTicks = ogTicksPerBeat(project);
+    var lengthTicks = Math.max(1, ogPatternLengthTicks(project, pattern));
+    var tick = Math.max(0, Math.min(lengthTicks - 1, ogInt(options.tick, 0)));
+    var barIndex = Math.max(0, Math.min(Math.max(1, ogInt(pattern.bars, 1)) - 1, Math.floor(tick / measureTicks)));
+    var inMeasure = tick - barIndex * measureTicks;
+    var beat = Math.floor(inMeasure / beatTicks) + 1;
+    var tickInBeat = inMeasure - (beat - 1) * beatTicks;
+    var notes = (pattern.events || []).filter(function (event) {
+      if (!event || event.type !== 'note') return false;
+      if (options.trackId && event.trackId !== options.trackId) return false;
+      var start = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
+      var duration = event.notation && event.notation.durationTicks != null ? event.notation.durationTicks : event.durationTicks;
+      start = ogInt(start, 0);
+      duration = Math.max(1, ogInt(duration, beatTicks));
+      return start <= tick && start + duration > tick;
+    }).sort(function (a, b) {
+      return ogInt(a.startTick, 0) - ogInt(b.startTick, 0) || String(a.id).localeCompare(String(b.id));
+    });
+    return {
+      patternId: pattern.id,
+      tick: tick,
+      barIndex: barIndex,
+      bar: barIndex + 1,
+      beat: beat,
+      tickInBeat: tickInBeat,
+      noteId: notes[0] && notes[0].id || null,
+      noteIds: notes.map(function (note) { return note.id; })
+    };
+  }
+  function ogStaffDurationTokenFromTicks(project, ticks, tuplet) {
+    var notation = ogMusicXmlDurationNotationFromTicks(project, ticks, tuplet);
     var map = { whole: 'w', half: 'h', quarter: 'q', eighth: 'e', '16th': 's' };
+    if (notation && notation.tuplet) return notation.tuplet.token;
     if (!notation || !map[notation.type]) return 'q';
     return map[notation.type] + (notation.dots ? new Array(notation.dots + 1).join('.') : '');
   }
@@ -2641,9 +3036,30 @@
       removed = before - pattern.events.length;
     }
     if (options.rest || options.tool === 'rest') {
-      return { event: null, removed: removed, rest: true, startTick: startTick };
+      var restEndTick = Math.min(ogPatternLengthTicks(project, pattern), startTick + durationTicks);
+      var beforeRests = pattern.events.length;
+      pattern.events = (pattern.events || []).filter(function (event) {
+        if (!event || event.trackId !== trackId) return true;
+        var eventStart = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
+        return !(event.type === 'rest' && eventStart === startTick) && !(event.type === 'note' && eventStart >= startTick && eventStart < restEndTick);
+      });
+      removed += beforeRests - pattern.events.length;
+      var restEvent = ogAppendEvent(project, pattern.id, {
+        type: 'rest',
+        trackId: trackId,
+        startTick: startTick,
+        durationTicks: Math.max(1, restEndTick - startTick),
+        notationStartTick: startTick,
+        notationDurationTicks: Math.max(1, restEndTick - startTick),
+        tuplet: ogNotationTupletFromToken(options.duration || 'q'),
+        role: options.role || 'notationRest',
+        source: options.source || 'staffEditor'
+      });
+      return { event: restEvent, removed: removed, rest: true, startTick: startTick, durationTicks: restEvent.durationTicks };
     }
     var pitch = ogNormalizeNotationPitch(options.pitch || 'C4', options.octave || 4);
+    var staffDynamic = ogNormalizeNotationDynamic(options.dynamic == null ? 'mf' : options.dynamic);
+    var staffVelocity = options.dynamic == null ? (options.velocity == null ? 0.78 : options.velocity) : ogDynamicVelocity(staffDynamic);
     var event = ogAppendEvent(project, pattern.id, {
       type: 'note',
       trackId: trackId,
@@ -2653,9 +3069,12 @@
       durationTicks: Math.min(durationTicks, ogPatternLengthTicks(project, pattern) - startTick),
       notationStartTick: startTick,
       notationDurationTicks: Math.min(durationTicks, ogPatternLengthTicks(project, pattern) - startTick),
-      velocity: options.velocity == null ? 0.78 : options.velocity,
-      role: 'notation',
-      source: 'staffEditor'
+      tuplet: ogNotationTupletFromToken(options.duration || 'q'),
+      velocity: staffVelocity,
+      dynamic: staffDynamic,
+      articulation: ogNormalizeNotationArticulation(options.articulation),
+      role: options.role || 'notation',
+      source: options.source || 'staffEditor'
     });
     return { event: event, removed: removed, rest: false, startTick: startTick };
   }
@@ -2671,6 +3090,69 @@
     return null;
   }
 
+  function ogSetStaffTie(project, patternId, trackId, eventId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern) throw new Error('OpenGroove: pattern not found');
+    var startEvent = ogFindStaffNoteEvent(project, pattern.id, trackId, eventId);
+    if (!startEvent) return { changed: false, reason: 'not-found' };
+    startEvent.notation = startEvent.notation || {};
+    var existingStartTie = startEvent.notation.tie || {};
+    var linkedEndId = options.endEventId || existingStartTie.toId || '';
+    var endEvent = linkedEndId ? ogFindStaffNoteEvent(project, pattern.id, trackId, linkedEndId) : null;
+    function clearTieSide(event, side) {
+      if (!event || !event.notation || !event.notation.tie) return false;
+      var tie = Object.assign({}, event.notation.tie);
+      if (side === 'start') {
+        delete tie.start;
+        delete tie.toId;
+      } else {
+        delete tie.stop;
+        delete tie.fromId;
+      }
+      if (tie.start || tie.stop) event.notation.tie = tie;
+      else delete event.notation.tie;
+      return true;
+    }
+    if (options.clear) {
+      var cleared = clearTieSide(startEvent, 'start');
+      if (endEvent) cleared = clearTieSide(endEvent, 'stop') || cleared;
+      return { changed: cleared, cleared: cleared, startEvent: startEvent, endEvent: endEvent };
+    }
+    var beatTicks = ogTicksPerBeat(project);
+    var startTick = startEvent.notation.startTick != null ? ogInt(startEvent.notation.startTick, startEvent.startTick) : ogInt(startEvent.startTick, 0);
+    var durationTicks = startEvent.notation.durationTicks != null ? ogInt(startEvent.notation.durationTicks, startEvent.durationTicks) : ogInt(startEvent.durationTicks, beatTicks);
+    var expectedEndTick = startTick + Math.max(1, durationTicks);
+    if (!endEvent) {
+      var startPitch = startEvent.notation.spelling || startEvent.pitch;
+      var candidates = (pattern.events || []).filter(function (event) {
+        if (!event || event.type !== 'note' || event.trackId !== trackId || event.id === startEvent.id) return false;
+        var eventPitch = event.notation && event.notation.spelling || event.pitch;
+        var eventStart = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
+        return eventPitch === startPitch && ogInt(eventStart, 0) === expectedEndTick;
+      }).sort(function (a, b) {
+        return ogInt(a.startTick, 0) - ogInt(b.startTick, 0) || String(a.id).localeCompare(String(b.id));
+      });
+      endEvent = candidates[0] || null;
+    }
+    if (!endEvent) return { changed: false, reason: 'next-note-not-found', startEvent: startEvent };
+    startEvent.notation.tie = Object.assign({}, existingStartTie, {
+      start: true,
+      stop: !!existingStartTie.stop,
+      toId: endEvent.id,
+      segments: Math.max(2, ogInt(existingStartTie.segments, 1))
+    });
+    endEvent.notation = endEvent.notation || {};
+    var existingEndTie = endEvent.notation.tie || {};
+    endEvent.notation.tie = Object.assign({}, existingEndTie, {
+      start: !!existingEndTie.start,
+      stop: true,
+      fromId: startEvent.id,
+      segments: Math.max(2, ogInt(existingEndTie.segments, 1))
+    });
+    ogSortEvents(pattern);
+    return { changed: true, startEvent: startEvent, endEvent: endEvent, startTick: startTick, endTick: expectedEndTick };
+  }
   function ogUpdateStaffNote(project, patternId, trackId, eventId, options) {
     options = options || {};
     var pattern = ogFindPattern(project, patternId);
@@ -2690,8 +3172,14 @@
       startTick = Math.max(0, Math.min(patternTicks - 1, bar * measureTicks + Math.round((beat - 1) * beatTicks)));
     }
     var durationTicks = event.notation && event.notation.durationTicks != null ? ogInt(event.notation.durationTicks, event.durationTicks) : ogInt(event.durationTicks, beatTicks);
-    if (options.durationTicks != null) durationTicks = Math.max(1, ogInt(options.durationTicks, durationTicks));
-    else if (options.duration != null) durationTicks = ogNotationDurationTicks(project, options.duration);
+    var notationTuplet = event.notation && event.notation.tuplet || null;
+    if (options.durationTicks != null) {
+      durationTicks = Math.max(1, ogInt(options.durationTicks, durationTicks));
+      notationTuplet = null;
+    } else if (options.duration != null) {
+      durationTicks = ogNotationDurationTicks(project, options.duration);
+      notationTuplet = ogNotationTupletFromToken(options.duration);
+    }
     durationTicks = Math.max(1, Math.min(durationTicks, patternTicks - startTick));
     if (options.pitch != null) {
       var pitch = ogNormalizeNotationPitch(options.pitch, options.octave || 4);
@@ -2703,7 +3191,11 @@
     }
     event.startTick = startTick;
     event.durationTicks = durationTicks;
-    event.velocity = ogNormalizeVelocity(options.velocity != null ? options.velocity : event.velocity);
+    var staffDynamic = options.dynamic != null ? ogNormalizeNotationDynamic(options.dynamic) : options.velocity != null ? ogDynamicFromVelocity(options.velocity) : ogNormalizeNotationDynamic(event.dynamic || 'mf');
+    event.velocity = options.dynamic != null && options.velocity == null ? ogDynamicVelocity(staffDynamic) : ogNormalizeVelocity(options.velocity != null ? options.velocity : event.velocity);
+    event.dynamic = staffDynamic;
+    if (options.articulation != null) event.articulation = ogNormalizeNotationArticulation(options.articulation);
+    else event.articulation = ogNormalizeNotationArticulation(event.articulation);
     if (options.role) event.role = ogSafeString(options.role, event.role || 'notation');
     else if (!event.role) event.role = 'notation';
     if (options.source) event.source = ogSafeString(options.source, event.source || 'staffEditor');
@@ -2711,6 +3203,9 @@
     event.notation = event.notation || {};
     event.notation.startTick = startTick;
     event.notation.durationTicks = durationTicks;
+    event.notation.tuplet = notationTuplet;
+    event.notation.articulation = event.articulation;
+    event.notation.dynamic = event.dynamic;
     event.notation.spelling = event.spelling || event.pitch;
     ogSortEvents(pattern);
     return {
@@ -2718,7 +3213,9 @@
       changed: true,
       startTick: startTick,
       durationTicks: durationTicks,
-      duration: ogStaffDurationTokenFromTicks(project, durationTicks)
+      duration: ogStaffDurationTokenFromTicks(project, durationTicks, notationTuplet),
+      articulation: event.articulation,
+      dynamic: event.dynamic
     };
   }
 
@@ -3755,7 +4252,7 @@
   function ogSanitizeEvent(project, pattern, eventLike) {
     eventLike = eventLike || {};
     var length = Math.max(1, ogPatternLengthTicks(project, pattern));
-    var type = eventLike.type === 'note' || eventLike.type === 'drumHit' || eventLike.type === 'audioRegion' || eventLike.type === 'automationPoint' || eventLike.type === 'chord'
+    var type = eventLike.type === 'note' || eventLike.type === 'rest' || eventLike.type === 'drumHit' || eventLike.type === 'audioRegion' || eventLike.type === 'automationPoint' || eventLike.type === 'chord'
       ? eventLike.type
       : 'note';
     var start = Math.max(0, Math.min(length - 1, ogInt(eventLike.startTick, 0)));
@@ -3774,7 +4271,8 @@
       event.midi = Math.max(0, Math.min(127, midi));
       event.durationTicks = duration;
       event.velocity = ogNormalizeVelocity(eventLike.velocity);
-      event.articulation = ogSafeString(eventLike.articulation, 'normal');
+      event.articulation = ogNormalizeNotationArticulation(eventLike.articulation);
+      event.dynamic = ogNormalizeNotationDynamic(eventLike.dynamic != null ? eventLike.dynamic : eventLike.notation && eventLike.notation.dynamic != null ? eventLike.notation.dynamic : 'mf');
       if (eventLike.role) event.role = ogSafeString(eventLike.role, 'melody');
       if (eventLike.source) event.source = ogSafeString(eventLike.source, 'manual');
       if (eventLike.phraseId) event.phraseId = ogSafeString(eventLike.phraseId, '');
@@ -3783,7 +4281,20 @@
         durationTicks: Math.max(1, ogInt(eventLike.notationDurationTicks != null ? eventLike.notationDurationTicks : eventLike.notation && eventLike.notation.durationTicks, duration)),
         spelling: ogSafeString(eventLike.spelling || (eventLike.notation && eventLike.notation.spelling) || event.pitch, ogMidiToNoteName(midi)),
         tie: eventLike.tie || eventLike.notation && eventLike.notation.tie || null,
-        articulation: event.articulation
+        tuplet: ogNormalizeTuplet(eventLike.tuplet || eventLike.notationTuplet || eventLike.notation && eventLike.notation.tuplet),
+        articulation: event.articulation,
+        dynamic: event.dynamic
+      };
+    } else if (type === 'rest') {
+      var restDuration = Math.max(1, Math.min(length - start, ogInt(eventLike.durationTicks, ogTicksPerBeat(project))));
+      event.durationTicks = restDuration;
+      event.velocity = 0;
+      if (eventLike.role) event.role = ogSafeString(eventLike.role, 'notationRest');
+      if (eventLike.source) event.source = ogSafeString(eventLike.source, 'staffEditor');
+      event.notation = {
+        startTick: ogInt(eventLike.notationStartTick != null ? eventLike.notationStartTick : eventLike.notation && eventLike.notation.startTick, start),
+        durationTicks: Math.max(1, ogInt(eventLike.notationDurationTicks != null ? eventLike.notationDurationTicks : eventLike.notation && eventLike.notation.durationTicks, restDuration)),
+        tuplet: ogNormalizeTuplet(eventLike.tuplet || eventLike.notationTuplet || eventLike.notation && eventLike.notation.tuplet),
       };
     } else if (type === 'drumHit') {
       event.padId = ogSafeString(eventLike.padId, 'pad_1');
@@ -3990,7 +4501,7 @@
     var bars = Math.max(1, ogInt(pattern.bars, 1));
     var measures = [];
     for (var bar = 0; bar < bars; bar++) {
-      measures.push({ bar: bar + 1, notes: [], drumHits: [], chords: [] });
+      measures.push({ bar: bar + 1, notes: [], rests: [], drumHits: [], chords: [] });
     }
     (pattern.events || []).forEach(function (event) {
       var nStart = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
@@ -4010,7 +4521,22 @@
         entry.performedStartTick = event.startTick;
         entry.notationStartTick = nStart;
         if (event.role) entry.role = event.role;
+        if (event.source) entry.source = event.source;
+        entry.articulation = ogNormalizeNotationArticulation(event.articulation || event.notation && event.notation.articulation);
+        entry.dynamic = ogNormalizeNotationDynamic(event.dynamic || event.notation && event.notation.dynamic);
+        if (event.notation && event.notation.tuplet) entry.tuplet = ogClone(event.notation.tuplet);
+        if (event.tie || event.notation && event.notation.tie) entry.tie = ogClone(event.tie || event.notation.tie);
         measures[barIndex].notes.push(entry);
+      } else if (event.type === 'rest') {
+        var restDur = event.notation && event.notation.durationTicks != null ? event.notation.durationTicks : event.durationTicks;
+        entry.rest = true;
+        entry.durationBeats = Math.round((Math.max(1, ogInt(restDur, beatTicks)) / beatTicks) * 1000) / 1000;
+        entry.durationTicks = Math.max(1, ogInt(restDur, beatTicks));
+        entry.notationStartTick = nStart;
+        if (event.role) entry.role = event.role;
+        if (event.source) entry.source = event.source;
+        if (event.notation && event.notation.tuplet) entry.tuplet = ogClone(event.notation.tuplet);
+        measures[barIndex].rests.push(entry);
       } else if (event.type === 'drumHit') {
         entry.padId = event.padId;
         entry.velocity = event.velocity;
@@ -4025,11 +4551,13 @@
     });
     measures.forEach(function (measure) {
       measure.notes.sort(function (a, b) { return a.notationStartTick - b.notationStartTick || String(a.pitch).localeCompare(String(b.pitch)); });
+      measure.rests.sort(function (a, b) { return a.notationStartTick - b.notationStartTick; });
       measure.drumHits.sort(function (a, b) { return a.startBeat - b.startBeat || String(a.padId).localeCompare(String(b.padId)); });
     });
     return {
       measures: measures,
       notes: measures.reduce(function (all, measure) { return all.concat(measure.notes); }, []),
+      rests: measures.reduce(function (all, measure) { return all.concat(measure.rests); }, []),
       drumHits: measures.reduce(function (all, measure) { return all.concat(measure.drumHits); }, [])
     };
   }
@@ -4190,7 +4718,12 @@
     };
   }
 
-  function ogVexFlowDurationFromTicks(project, ticks) {
+  function ogVexFlowDurationFromTicks(project, ticks, tuplet) {
+    tuplet = ogNormalizeTuplet(tuplet);
+    if (tuplet) {
+      var tupletDuration = tuplet.baseType === 'quarter' ? 'q' : tuplet.baseType === '16th' ? '16' : '8';
+      return { duration: tupletDuration, restDuration: tupletDuration + 'r', label: tuplet.token, dots: 0, beats: tuplet.baseType === 'quarter' ? 2 / 3 : tuplet.baseType === '16th' ? 1 / 6 : 1 / 3, exact: true, tuplet: tuplet };
+    }
     var beat = ogTicksPerBeat(project);
     var ratio = Math.max(0.001, ogFinite(ticks, beat) / beat);
     var candidates = [
@@ -4223,6 +4756,90 @@
     };
   }
 
+  function ogBuildNotationMeasureTimeline(project, measure, measureIndex, trackId) {
+    var measureTicks = ogTicksPerMeasure(project);
+    var beatTicks = ogTicksPerBeat(project);
+    var measureStart = (Math.max(1, ogInt(measure && measure.bar, measureIndex + 1)) - 1) * measureTicks;
+    var sourceNotes = (measure && measure.notes || []).filter(function (note) {
+      return !trackId || note.trackId === trackId;
+    }).map(function (note) {
+      var localStart = note.notationStartTick != null
+        ? ogInt(note.notationStartTick, measureStart) - measureStart
+        : Math.round((Math.max(1, ogFinite(note.startBeat, 1)) - 1) * beatTicks);
+      localStart = Math.max(0, Math.min(measureTicks, localStart));
+      var durationTicks = note.durationTicks != null
+        ? ogInt(note.durationTicks, beatTicks)
+        : Math.round(Math.max(0.001, ogFinite(note.durationBeats, 1)) * beatTicks);
+      durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - localStart)));
+      var pitchKey = ogVexFlowPitchKey(note.pitch);
+      return {
+        id: note.id,
+        pitch: note.pitch,
+        key: pitchKey.key,
+        accidental: pitchKey.accidental,
+        localStart: localStart,
+        startBeat: Math.round((localStart / beatTicks + 1) * 1000) / 1000,
+        durationTicks: durationTicks,
+        duration: ogVexFlowDurationFromTicks(project, durationTicks, note.tuplet),
+        tuplet: ogNormalizeTuplet(note.tuplet),
+        midi: ogNoteNameToMidi(note.pitch),
+        articulation: ogNormalizeNotationArticulation(note.articulation),
+        dynamic: ogNormalizeNotationDynamic(note.dynamic),
+        tie: note.tie || null
+      };
+    }).filter(function (entry) {
+      return entry.midi != null && entry.localStart < measureTicks;
+    }).sort(function (a, b) {
+      return a.localStart - b.localStart || a.midi - b.midi || String(a.pitch).localeCompare(String(b.pitch));
+    });
+    var sourceRests = (measure && measure.rests || []).filter(function (rest) {
+      return !trackId || rest.trackId === trackId;
+    }).map(function (rest) {
+      var restStart = rest.notationStartTick != null
+        ? ogInt(rest.notationStartTick, measureStart) - measureStart
+        : Math.round((Math.max(1, ogFinite(rest.startBeat, 1)) - 1) * beatTicks);
+      restStart = Math.max(0, Math.min(measureTicks, restStart));
+      var durationTicks = rest.durationTicks != null
+        ? ogInt(rest.durationTicks, beatTicks)
+        : Math.round(Math.max(0.001, ogFinite(rest.durationBeats, 1)) * beatTicks);
+      durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - restStart)));
+      return {
+        type: 'rest',
+        id: rest.id,
+        explicit: true,
+        localStart: restStart,
+        startBeat: Math.round((restStart / beatTicks + 1) * 1000) / 1000,
+        durationTicks: durationTicks,
+        duration: ogVexFlowDurationFromTicks(project, durationTicks)
+      };
+    }).filter(function (rest) {
+      return rest.localStart < measureTicks;
+    }).sort(function (a, b) {
+      return a.localStart - b.localStart || String(a.id).localeCompare(String(b.id));
+    });
+    var timeline = [];
+    for (var noteIndex = 0; noteIndex < sourceNotes.length;) {
+      var groupStart = sourceNotes[noteIndex].localStart;
+      var group = [];
+      while (noteIndex < sourceNotes.length && sourceNotes[noteIndex].localStart === groupStart) {
+        group.push(sourceNotes[noteIndex]);
+        noteIndex += 1;
+      }
+      timeline.push({ type: 'notes', localStart: groupStart, notes: group });
+    }
+    sourceRests.forEach(function (rest) { timeline.push(rest); });
+    timeline.sort(function (a, b) {
+      return a.localStart - b.localStart || (a.type === 'rest' ? -1 : 1);
+    });
+    return {
+      measureStart: measureStart,
+      measureTicks: measureTicks,
+      beatTicks: beatTicks,
+      notes: sourceNotes,
+      rests: sourceRests,
+      timeline: timeline
+    };
+  }
   function ogBuildVexFlowNotationModel(project, patternId, options) {
     options = options || {};
     var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
@@ -4255,51 +4872,46 @@
     var chordCount = 0;
     var noteCount = 0;
     var measures = (preview.measures || []).map(function (measure, idx) {
-      var measureStart = (Math.max(1, ogInt(measure.bar, idx + 1)) - 1) * measureTicks;
-      var sourceNotes = (measure.notes || []).filter(function (note) { return !trackId || note.trackId === trackId; }).map(function (note) {
-        var localStart = note.notationStartTick != null
-          ? ogInt(note.notationStartTick, measureStart) - measureStart
-          : Math.round((Math.max(1, ogFinite(note.startBeat, 1)) - 1) * beatTicks);
-        localStart = Math.max(0, Math.min(measureTicks, localStart));
-        var durationTicks = Math.max(1, Math.round(Math.max(0.001, ogFinite(note.durationBeats, 1)) * beatTicks));
-        durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - localStart)));
-        var pitchKey = ogVexFlowPitchKey(note.pitch);
-        return {
-          id: note.id,
-          pitch: note.pitch,
-          key: pitchKey.key,
-          accidental: pitchKey.accidental,
+      var timelineModel = ogBuildNotationMeasureTimeline(project, measure, idx, trackId);
+      var measureTicks = timelineModel.measureTicks;
+      var beatTicks = timelineModel.beatTicks;
+      var sourceNotes = timelineModel.notes;
+      var cursor = 0;
+      var elements = [];
+      function pushVexRest(localStart, durationTicks, explicit, id) {
+        var restDuration = ogVexFlowDurationFromTicks(project, durationTicks);
+        restCount += 1;
+        elements.push({
+          type: 'rest',
+          id: id || null,
+          explicit: !!explicit,
           localStart: localStart,
           startBeat: Math.round((localStart / beatTicks + 1) * 1000) / 1000,
           durationTicks: durationTicks,
-          duration: ogVexFlowDurationFromTicks(project, durationTicks),
-          midi: ogNoteNameToMidi(note.pitch)
-        };
-      }).filter(function (entry) { return entry.midi != null && entry.localStart < measureTicks; }).sort(function (a, b) {
-        return a.localStart - b.localStart || a.midi - b.midi || String(a.pitch).localeCompare(String(b.pitch));
-      });
-      var cursor = 0;
-      var elements = [];
-      for (var noteIndex = 0; noteIndex < sourceNotes.length;) {
-        var groupStart = sourceNotes[noteIndex].localStart;
-        var group = [];
-        while (noteIndex < sourceNotes.length && sourceNotes[noteIndex].localStart === groupStart) {
-          group.push(sourceNotes[noteIndex]);
-          noteIndex += 1;
+          duration: restDuration,
+          vexflow: { keys: ['b/4'], duration: restDuration.restDuration, dots: restDuration.dots }
+        });
+      }
+      timelineModel.timeline.forEach(function (item) {
+        if (item.localStart > cursor) {
+          pushVexRest(cursor, item.localStart - cursor, false, null);
+          cursor = item.localStart;
+        } else if (item.localStart < cursor) {
+          warnings.push('Measure ' + measure.bar + ' contains overlapping notation events; later events were kept out of the active voice.');
+          return;
         }
-        if (groupStart > cursor) {
-          var gapTicks = groupStart - cursor;
-          var restDuration = ogVexFlowDurationFromTicks(project, gapTicks);
-          restCount += 1;
-          elements.push({ type: 'rest', localStart: cursor, startBeat: Math.round((cursor / beatTicks + 1) * 1000) / 1000, durationTicks: gapTicks, duration: restDuration, vexflow: { keys: ['b/4'], duration: restDuration.restDuration, dots: restDuration.dots } });
-          cursor = groupStart;
-        } else if (groupStart < cursor) {
-          warnings.push('Measure ' + measure.bar + ' contains overlapping notes; VexFlow should render this with multiple voices.');
+        if (item.type === 'rest') {
+          pushVexRest(item.localStart, item.durationTicks, true, item.id);
+          cursor = Math.max(cursor, item.localStart + item.durationTicks);
+          return;
         }
+        var group = item.notes || [];
+        var groupStart = item.localStart;
         var groupDurationTicks = group.reduce(function (max, entry) { return Math.max(max, entry.durationTicks); }, 1);
         var durationMismatch = group.some(function (entry) { return entry.durationTicks !== groupDurationTicks; });
         if (durationMismatch) warnings.push('Measure ' + measure.bar + ' contains a chord with mixed durations; export keeps the longest visible value.');
-        var vexDuration = ogVexFlowDurationFromTicks(project, groupDurationTicks);
+        var groupTuplet = group[0] && group[0].tuplet || null;
+        var vexDuration = ogVexFlowDurationFromTicks(project, groupDurationTicks, groupTuplet);
         chordCount += group.length > 1 ? 1 : 0;
         noteCount += group.length;
         elements.push({
@@ -4314,18 +4926,15 @@
             keys: group.map(function (entry) { return entry.key; }),
             duration: vexDuration.duration,
             dots: vexDuration.dots,
-            accidentals: group.map(function (entry) { return entry.accidental; })
+            tuplet: vexDuration.tuplet || null,
+            accidentals: group.map(function (entry) { return entry.accidental; }),
+            articulations: group.map(function (entry) { return entry.articulation; }),
+            dynamics: group.map(function (entry) { return entry.dynamic; })
           }
         });
         cursor = Math.max(cursor, groupStart + groupDurationTicks);
-      }
-      if (cursor < measureTicks) {
-        var tailTicks = measureTicks - cursor;
-        var tailDuration = ogVexFlowDurationFromTicks(project, tailTicks);
-        restCount += 1;
-        elements.push({ type: 'rest', localStart: cursor, startBeat: Math.round((cursor / beatTicks + 1) * 1000) / 1000, durationTicks: tailTicks, duration: tailDuration, vexflow: { keys: ['b/4'], duration: tailDuration.restDuration, dots: tailDuration.dots } });
-      }
-      return {
+      });
+      if (cursor < measureTicks) pushVexRest(cursor, measureTicks - cursor, false, null);      return {
         bar: measure.bar,
         clef: clef,
         keySignature: keySignature,
@@ -4447,19 +5056,22 @@
     });
   }
 
-  function ogPushMusicXmlDurationMetadata(lines, project, durationTicks) {
-    var durationNotation = ogMusicXmlDurationNotationFromTicks(project, durationTicks);
+  function ogPushMusicXmlDurationMetadata(lines, project, durationTicks, tuplet) {
+    var durationNotation = ogMusicXmlDurationNotationFromTicks(project, durationTicks, tuplet);
     if (!durationNotation) return;
+    if (durationNotation.tuplet) {
+      lines.push('        <time-modification><actual-notes>' + durationNotation.tuplet.actualNotes + '</actual-notes><normal-notes>' + durationNotation.tuplet.normalNotes + '</normal-notes></time-modification>');
+    }
     lines.push('        <type>' + durationNotation.type + '</type>');
     for (var dot = 0; dot < durationNotation.dots; dot += 1) lines.push('        <dot/>');
   }
 
-  function ogPushMusicXmlRest(lines, project, durationTicks) {
+  function ogPushMusicXmlRest(lines, project, durationTicks, tuplet) {
     durationTicks = Math.max(1, Math.round(durationTicks));
     lines.push('      <note>');
     lines.push('        <rest/>');
     lines.push('        <duration>' + durationTicks + '</duration>');
-    ogPushMusicXmlDurationMetadata(lines, project, durationTicks);
+    ogPushMusicXmlDurationMetadata(lines, project, durationTicks, tuplet);
     lines.push('      </note>');
   }
 
@@ -4468,14 +5080,34 @@
     lines.push('      <' + tagName + '><duration>' + durationTicks + '</duration></' + tagName + '>');
   }
 
+  function ogPushMusicXmlDynamicDirection(lines, dynamic) {
+    var tag = ogMusicXmlDynamicTag(dynamic);
+    if (!tag || tag === 'mf') return;
+    lines.push('      <direction placement="below">');
+    lines.push('        <direction-type><dynamics><' + tag + '/></dynamics></direction-type>');
+    lines.push('      </direction>');
+  }
+
   function ogPushMusicXmlPitchNote(lines, project, note, durationTicks, asChord) {
     var p = ogParsePitchSpelling(note.pitch);
     durationTicks = Math.max(1, Math.round(durationTicks));
     lines.push('      <note>');
     if (asChord) lines.push('        <chord/>');
     lines.push('        <pitch><step>' + p.step + '</step>' + (p.alter ? '<alter>' + p.alter + '</alter>' : '') + '<octave>' + p.octave + '</octave></pitch>');
+    var tie = note && (note.tie || note.notation && note.notation.tie) || null;
+    var tieTypes = [];
+    if (tie && tie.stop) tieTypes.push('stop');
+    if (tie && tie.start) tieTypes.push('start');
+    tieTypes.forEach(function (type) { lines.push('        <tie type="' + type + '"/>'); });
     lines.push('        <duration>' + durationTicks + '</duration>');
-    ogPushMusicXmlDurationMetadata(lines, project, durationTicks);
+    ogPushMusicXmlDurationMetadata(lines, project, durationTicks, note && note.tuplet);
+    var articulationTag = ogMusicXmlArticulationTag(note && (note.articulation || note.notation && note.notation.articulation));
+    if (tieTypes.length || articulationTag) {
+      lines.push('        <notations>');
+      tieTypes.forEach(function (type) { lines.push('          <tied type="' + type + '"/>'); });
+      if (articulationTag) lines.push('          <articulations><' + articulationTag + '/></articulations>');
+      lines.push('        </notations>');
+    }
     lines.push('      </note>');
   }
   function ogBuildMusicXmlSketch(project, patternId, trackId, options) {
@@ -4509,51 +5141,40 @@
         lines.push('        <clef><sign>' + clefSign + '</sign><line>' + clefLine + '</line></clef>');
         lines.push('      </attributes>');
       }
-      var beatTicks = ogTicksPerBeat(project);
-      var measureTicks = ogTicksPerMeasure(project);
-      var measureStart = (Math.max(1, ogInt(measure.bar, idx + 1)) - 1) * measureTicks;
-      var notes = measure.notes.filter(function (note) { return !trackId || note.trackId === trackId; }).map(function (note) {
-        var localStart = note.notationStartTick != null
-          ? ogInt(note.notationStartTick, measureStart) - measureStart
-          : Math.round((Math.max(1, ogFinite(note.startBeat, 1)) - 1) * beatTicks);
-        localStart = Math.max(0, Math.min(measureTicks, localStart));
-        var durationTicks = Math.max(1, Math.round(Math.max(0.001, ogFinite(note.durationBeats, 1)) * beatTicks));
-        durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - localStart)));
-        return {
-          note: note,
-          localStart: localStart,
-          durationTicks: durationTicks,
-          midi: ogNoteNameToMidi(note.pitch)
-        };
-      }).filter(function (entry) {
-        return entry.localStart < measureTicks && entry.midi != null;
-      }).sort(function (a, b) {
-        return a.localStart - b.localStart || a.midi - b.midi || String(a.note.pitch).localeCompare(String(b.note.pitch));
-      });
-      if (!notes.length) {
+      var timelineModel = ogBuildNotationMeasureTimeline(project, measure, idx, trackId);
+      var beatTicks = timelineModel.beatTicks;
+      var measureTicks = timelineModel.measureTicks;
+      var timeline = timelineModel.timeline;
+      if (!timeline.length) {
         ogPushMusicXmlRest(lines, project, measureTicks);
       } else {
         var cursor = 0;
-        for (var noteIndex = 0; noteIndex < notes.length;) {
-          var localStartForGroup = notes[noteIndex].localStart;
-          var group = [];
-          while (noteIndex < notes.length && notes[noteIndex].localStart === localStartForGroup) {
-            group.push(notes[noteIndex]);
-            noteIndex += 1;
+        timeline.forEach(function (item) {
+          var localStart = item.localStart;
+          if (localStart > cursor) {
+            ogPushMusicXmlRest(lines, project, localStart - cursor);
+            cursor = localStart;
           }
-          group.sort(function (a, b) { return b.durationTicks - a.durationTicks || a.midi - b.midi; });
+          if (item.type === 'rest') {
+            if (localStart < cursor) return;
+            ogPushMusicXmlRest(lines, project, item.durationTicks);
+            cursor = Math.max(cursor, localStart + item.durationTicks);
+            return;
+          }
+          var group = item.notes || [];
+          var groupDynamic = group.map(function (entry) { return entry.dynamic; }).filter(function (value) { return value && value !== 'mf'; })[0];
+          if (groupDynamic) ogPushMusicXmlDynamicDirection(lines, groupDynamic);
+          var localStartForGroup = localStart;
           var resumeTick = null;
-          if (localStartForGroup > cursor) {
-            ogPushMusicXmlRest(lines, project, localStartForGroup - cursor);
-            cursor = localStartForGroup;
-          } else if (localStartForGroup < cursor) {
+          if (localStartForGroup < cursor) {
             resumeTick = cursor;
             ogPushMusicXmlMove(lines, 'backup', cursor - localStartForGroup);
             cursor = localStartForGroup;
           }
+          group.sort(function (a, b) { return b.durationTicks - a.durationTicks || a.midi - b.midi; });
           var groupEnd = localStartForGroup;
           group.forEach(function (entry, groupIndex) {
-            ogPushMusicXmlPitchNote(lines, project, entry.note, entry.durationTicks, groupIndex > 0);
+            ogPushMusicXmlPitchNote(lines, project, entry, entry.durationTicks, groupIndex > 0);
             groupEnd = Math.max(groupEnd, localStartForGroup + entry.durationTicks);
           });
           cursor = groupEnd;
@@ -4561,10 +5182,9 @@
             ogPushMusicXmlMove(lines, 'forward', resumeTick - cursor);
             cursor = resumeTick;
           }
-        }
+        });
         if (cursor < measureTicks) ogPushMusicXmlRest(lines, project, measureTicks - cursor);
-      }
-      lines.push('    </measure>');
+      }      lines.push('    </measure>');
     });
     lines.push('  </part>');
     lines.push('</score-partwise>');
@@ -4659,6 +5279,15 @@
         if (end <= 0) return;
         ctx.add(offset + Math.max(0, start), 4, [0x90, midi, ogMidiVelocity(event.velocity)]);
         ctx.add(offset + Math.max(1, end), 2, [0x80, midi, 0]);
+      } else if (event.type === 'rest') {
+        var restDur = event.notation && event.notation.durationTicks != null ? event.notation.durationTicks : event.durationTicks;
+        entry.rest = true;
+        entry.durationBeats = Math.round((Math.max(1, ogInt(restDur, beatTicks)) / beatTicks) * 1000) / 1000;
+        entry.durationTicks = Math.max(1, ogInt(restDur, beatTicks));
+        entry.notationStartTick = nStart;
+        if (event.role) entry.role = event.role;
+        if (event.source) entry.source = event.source;
+        measures[barIndex].rests.push(entry);
       } else if (event.type === 'drumHit') {
         var drum = ogPadToMidiDrum(event.padId);
         var drumStart = ogInt(event.startTick, 0) + ogInt(event.microtimingTicks, 0);
@@ -6647,6 +7276,12 @@
     ogBuildVexFlowNotationModel: ogBuildVexFlowNotationModel,
     ogBuildMuseScoreBridgePlan: ogBuildMuseScoreBridgePlan,
     ogBuildAudioToScoreAgentPlan: ogBuildAudioToScoreAgentPlan,
+    ogNormalizeNotationArticulation: ogNormalizeNotationArticulation,
+    ogNormalizeNotationDynamic: ogNormalizeNotationDynamic,
+    ogDynamicVelocity: ogDynamicVelocity,
+    ogDynamicFromVelocity: ogDynamicFromVelocity,
+    ogNormalizeTuplet: ogNormalizeTuplet,
+    ogNotationTupletFromToken: ogNotationTupletFromToken,
     ogNotationDurationTicks: ogNotationDurationTicks,
     ogParseNotationInput: ogParseNotationInput,
     ogWriteNotationInput: ogWriteNotationInput,
@@ -6655,10 +7290,12 @@
     ogNormalizeStaffClef: ogNormalizeStaffClef,
     ogInferStaffClef: ogInferStaffClef,
     ogBuildStaffEngraving: ogBuildStaffEngraving,
+    ogBuildStaffPlaybackCursor: ogBuildStaffPlaybackCursor,
     ogPitchForStaffY: ogPitchForStaffY,
     ogResolveStaffPoint: ogResolveStaffPoint,
     ogStaffDurationTokenFromTicks: ogStaffDurationTokenFromTicks,
     ogSetStaffNote: ogSetStaffNote,
+    ogSetStaffTie: ogSetStaffTie,
     ogUpdateStaffNote: ogUpdateStaffNote,
     ogDeleteStaffNote: ogDeleteStaffNote,
     ogListNotationPhrasePresets: ogListNotationPhrasePresets,

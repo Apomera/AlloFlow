@@ -1,0 +1,95 @@
+const keys = [
+  'phase_access', 'phase_access_description', 'phase_assess', 'phase_assess_description',
+  'phase_assign', 'phase_assign_description', 'phase_deliver', 'phase_deliver_description',
+  'phase_finish', 'phase_finish_description', 'phase_organize', 'phase_organize_description',
+  'phase_participate', 'phase_participate_description', 'phase_plan', 'phase_plan_description',
+  'phase_understand', 'phase_understand_description', 'phase_context', 'phase_progress', 'phase_of',
+];
+const make = (values) => Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+
+module.exports = {
+  amharic: make([
+    'ተደራሽ አድርግ', 'ይዘቱን ለመገንዘብና ለመረዳት ብዙ መንገዶችን ፍጠር።', 'ትምህርትን ፈትሽ', 'ማስረጃ ሰብስብና ተጣጣሚነቱን አረጋግጥ።',
+    'መድብ', 'ለተማሪዎች የሚሆኑ መመሪያዎችን፣ ግቦችንና የስኬት መስፈርቶችን ጻፍ።', 'ቅድመ ዕይታና ማድረስ', 'ትክክለኛውን የማውጣት፣ የማጋራት ወይም የቀጥታ ክፍለ ጊዜ መንገድ ምረጥ።',
+    'ገምግምና ጨርስ', 'ትምህርቱን ገምግምና የማጠናቀቂያ ማጠቃለያውን አስቀምጥ።', 'አደራጅ', 'ሀብቶቹን ለማስተማር በሚመች ቅደም ተከተል አገናኝ።',
+    'ተሳትፎን ገንባ', 'ለመለማመድ፣ ለመወያየት፣ ለመመርመርና ለመፍጠር መንገዶችን ጨምር።', 'አቅድ', 'ምንጩንና የታሰበውን ውጤት ምረጥ።',
+    'ተረዳ', 'መሰናክሎችን፣ ጽንሰ ሐሳቦችንና የማስተማር ቅድሚያዎችን ፈልግ።', 'የተመራ ደረጃ', 'የተመራ ደረጃ ሂደት', 'ደረጃ {current} ከ {total}',
+  ]),
+  bengali: make([
+    'অ্যাক্সেসযোগ্য করুন', 'বিষয়বস্তু উপলব্ধি ও বোঝার একাধিক উপায় তৈরি করুন।', 'শেখা যাচাই করুন', 'প্রমাণ সংগ্রহ করুন এবং সামঞ্জস্য যাচাই করুন।',
+    'অ্যাসাইন করুন', 'শিক্ষার্থীদের জন্য নির্দেশনা, লক্ষ্য ও সাফল্যের মানদণ্ড লিখুন।', 'প্রিভিউ ও বিতরণ', 'উপযুক্ত রপ্তানি, শেয়ারিং বা লাইভ সেশনের পথ বেছে নিন।',
+    'পর্যালোচনা ও শেষ করুন', 'পাঠ পর্যালোচনা করে সমাপ্তির সারাংশ সংরক্ষণ করুন।', 'সাজান', 'সম্পদগুলোকে শেখানোর উপযোগী ক্রমে যুক্ত করুন।',
+    'অংশগ্রহণ তৈরি করুন', 'অনুশীলন, আলোচনা, অনুসন্ধান ও সৃষ্টির উপায় যোগ করুন।', 'পরিকল্পনা করুন', 'উৎস ও কাঙ্ক্ষিত ফলাফল বেছে নিন।',
+    'বুঝুন', 'বাধা, ধারণা ও শিক্ষাদানের অগ্রাধিকার খুঁজে নিন।', 'নির্দেশিত ধাপ', 'নির্দেশিত ধাপের অগ্রগতি', '{total}-এর মধ্যে ধাপ {current}',
+  ]),
+  burmese: make([
+    'လက်လှမ်းမီအောင် ပြုလုပ်ပါ', 'အကြောင်းအရာကို သိမြင်နားလည်ရန် နည်းလမ်းများစွာ ဖန်တီးပါ။', 'သင်ယူမှုကို စစ်ဆေးပါ', 'အထောက်အထား စုဆောင်းပြီး ကိုက်ညီမှုကို အတည်ပြုပါ။',
+    'တာဝန်ပေးပါ', 'ကျောင်းသားများအတွက် ညွှန်ကြားချက်၊ ရည်မှန်းချက်နှင့် အောင်မြင်မှုစံနှုန်းများ ရေးပါ။', 'ကြိုတင်ကြည့်ရှု၍ ပေးပို့ပါ', 'သင့်လျော်သော ထုတ်ယူမှု၊ မျှဝေမှု သို့မဟုတ် တိုက်ရိုက်အစည်းအဝေး လမ်းကြောင်းကို ရွေးပါ။',
+    'ပြန်လည်သုံးသပ်ပြီး ပြီးစီးပါ', 'သင်ခန်းစာကို ပြန်လည်သုံးသပ်ပြီး ပြီးစီးမှုအနှစ်ချုပ်ကို သိမ်းပါ။', 'စီစဉ်ပါ', 'အရင်းအမြစ်များကို သင်ကြားနိုင်သော အစီအစဉ်အဖြစ် ချိတ်ဆက်ပါ။',
+    'ပါဝင်မှုကို တည်ဆောက်ပါ', 'လေ့ကျင့်ရန်၊ ဆွေးနွေးရန်၊ စူးစမ်းရန်နှင့် ဖန်တီးရန် နည်းလမ်းများ ထည့်ပါ။', 'စီမံပါ', 'ရင်းမြစ်နှင့် ရည်ရွယ်ထားသော ရလဒ်ကို ရွေးပါ။',
+    'နားလည်ပါ', 'အတားအဆီးများ၊ အယူအဆများနှင့် သင်ကြားရေး ဦးစားပေးများကို ရှာပါ။', 'လမ်းညွှန်အဆင့်', 'လမ်းညွှန်အဆင့် တိုးတက်မှု', 'စုစုပေါင်း {total} တွင် အဆင့် {current}',
+  ]),
+  dutch: make([
+    'Toegankelijk maken', 'Meerdere manieren creëren om de inhoud waar te nemen en te begrijpen.', 'Leren controleren', 'Bewijs verzamelen en de afstemming controleren.',
+    'Toewijzen', 'Instructies, doelen en succescriteria voor leerlingen schrijven.', 'Voorbeeld en levering', 'De juiste route voor exporteren, delen of een livesessie kiezen.',
+    'Controleren en afronden', 'De les nalopen en de samenvatting van de voltooiing opslaan.', 'Organiseren', 'Bronnen verbinden tot een onderwijsbare volgorde.',
+    'Deelname opbouwen', 'Manieren toevoegen om te oefenen, bespreken, verkennen en creëren.', 'Plannen', 'De bron en het beoogde resultaat kiezen.',
+    'Begrijpen', 'Barrières, concepten en onderwijsprioriteiten vinden.', 'Begeleide fase', 'Voortgang van de begeleide fase', 'Fase {current} van {total}',
+  ]),
+  greek: make([
+    'Κάντε προσβάσιμο', 'Δημιουργήστε πολλούς τρόπους αντίληψης και κατανόησης του περιεχομένου.', 'Ελέγξτε τη μάθηση', 'Συλλέξτε τεκμήρια και επαληθεύστε την ευθυγράμμιση.',
+    'Ανάθεση', 'Γράψτε οδηγίες, στόχους και κριτήρια επιτυχίας για τους μαθητές.', 'Προεπισκόπηση και παράδοση', 'Επιλέξτε τη σωστή διαδρομή εξαγωγής, κοινής χρήσης ή ζωντανής συνεδρίας.',
+    'Επανεξέταση και ολοκλήρωση', 'Ελέγξτε το μάθημα και αποθηκεύστε την περίληψη ολοκλήρωσης.', 'Οργάνωση', 'Συνδέστε τους πόρους σε διδακτική ακολουθία.',
+    'Χτίστε συμμετοχή', 'Προσθέστε τρόπους εξάσκησης, συζήτησης, εξερεύνησης και δημιουργίας.', 'Σχεδιασμός', 'Επιλέξτε την πηγή και το επιθυμητό αποτέλεσμα.',
+    'Κατανόηση', 'Εντοπίστε εμπόδια, έννοιες και διδακτικές προτεραιότητες.', 'Καθοδηγούμενη φάση', 'Πρόοδος καθοδηγούμενης φάσης', 'Φάση {current} από {total}',
+  ]),
+  haitian_creole: make([
+    'Fè li aksesib', 'Kreye plizyè fason pou moun wè epi konprann kontni an.', 'Tcheke aprantisaj la', 'Rasanble prèv epi verifye aliyman an.',
+    'Bay kòm travay', 'Ekri enstriksyon, objektif ak kritè siksè pou elèv yo.', 'Aperçu ak livrezon', 'Chwazi bon chemen pou ekspòte, pataje oswa fè yon sesyon an dirèk.',
+    'Revize epi fini', 'Revize leson an epi sove rezime fini an.', 'Òganize', 'Konekte resous yo nan yon lòd ki ka anseye.',
+    'Bati patisipasyon', 'Ajoute fason pou pratike, diskite, eksplore epi kreye.', 'Planifye', 'Chwazi sous la ak rezilta ou vize a.',
+    'Konprann', 'Jwenn baryè, konsèp ak priyorite ansèyman.', 'Etap gide', 'Pwogrè etap gide a', 'Etap {current} sou {total}',
+  ]),
+  hausa: make([
+    'Sanya a samu dama', 'Ƙirƙiri hanyoyi da yawa na fahimta da gane abin da ke ciki.', 'Duba koyo', 'Tattara shaida kuma tabbatar da daidaito.',
+    'Sanya aiki', 'Rubuta umarni, manufofi da ma’aunin nasara ga ɗalibai.', 'Duba kafin bayarwa', 'Zaɓi hanyar fitarwa, rabawa ko zaman kai tsaye da ta dace.',
+    'Duba kuma kammala', 'Duba darasin sannan ka adana taƙaitaccen kammalawa.', 'Tsara', 'Haɗa albarkatu cikin jerin da za a iya koyarwa.',
+    'Gina sa hannu', 'Ƙara hanyoyin yin atisaye, tattaunawa, bincike da ƙirƙira.', 'Shirya', 'Zaɓi tushen da sakamakon da ake so.',
+    'Fahimta', 'Nemo shinge, ra’ayoyi da abubuwan da suka fi muhimmanci wajen koyarwa.', 'Mataki mai jagora', 'Ci gaban mataki mai jagora', 'Mataki {current} cikin {total}',
+  ]),
+  indonesian: make([
+    'Buat aksesibel', 'Buat berbagai cara untuk memahami dan menangkap isi.', 'Periksa pembelajaran', 'Kumpulkan bukti dan verifikasi keselarasan.',
+    'Tetapkan', 'Tulis petunjuk, tujuan, dan kriteria keberhasilan untuk siswa.', 'Pratinjau dan kirimkan', 'Pilih jalur ekspor, berbagi, atau sesi langsung yang tepat.',
+    'Tinjau dan selesaikan', 'Tinjau pelajaran dan simpan ringkasan penyelesaian.', 'Atur', 'Hubungkan sumber daya menjadi urutan yang dapat diajarkan.',
+    'Bangun partisipasi', 'Tambahkan cara untuk berlatih, berdiskusi, mengeksplorasi, dan mencipta.', 'Rencanakan', 'Pilih sumber dan hasil yang diinginkan.',
+    'Pahami', 'Temukan hambatan, konsep, dan prioritas pengajaran.', 'Tahap terpandu', 'Kemajuan tahap terpandu', 'Tahap {current} dari {total}',
+  ]),
+  korean: make([
+    '접근 가능하게 만들기', '콘텐츠를 인식하고 이해하는 여러 방법을 만듭니다.', '학습 확인', '근거를 수집하고 정렬을 확인합니다.',
+    '과제 할당', '학습자를 위한 안내, 목표, 성공 기준을 작성합니다.', '미리 보기 및 전달', '적절한 내보내기, 공유 또는 라이브 세션 경로를 선택합니다.',
+    '검토 및 완료', '수업을 검토하고 완료 요약을 저장합니다.', '구성', '리소스를 가르칠 수 있는 순서로 연결합니다.',
+    '참여 만들기', '연습, 토론, 탐구, 창작 방법을 추가합니다.', '계획', '소스와 의도한 결과를 선택합니다.',
+    '이해', '장벽, 개념, 교수 우선순위를 찾습니다.', '가이드 단계', '가이드 단계 진행률', '{total}단계 중 {current}단계',
+  ]),
+  nepali: make([
+    'पहुँचयोग्य बनाउनुहोस्', 'सामग्री बुझ्न र महसुस गर्न धेरै तरिकाहरू बनाउनुहोस्।', 'सिकाइ जाँच्नुहोस्', 'प्रमाण सङ्कलन गरी मिलान पुष्टि गर्नुहोस्।',
+    'काम दिनुहोस्', 'विद्यार्थीका लागि निर्देशन, लक्ष्य र सफलताका मापदण्ड लेख्नुहोस्।', 'पूर्वावलोकन र वितरण', 'उपयुक्त निर्यात, साझेदारी वा प्रत्यक्ष सत्रको बाटो छान्नुहोस्।',
+    'समीक्षा गरी पूरा गर्नुहोस्', 'पाठ समीक्षा गरी पूरा भएको सारांश बचत गर्नुहोस्।', 'व्यवस्थित गर्नुहोस्', 'स्रोतहरूलाई पढाउन मिल्ने क्रमसँग जोड्नुहोस्।',
+    'सहभागिता बनाउनुहोस्', 'अभ्यास, छलफल, खोज र सिर्जनाका तरिकाहरू थप्नुहोस्।', 'योजना बनाउनुहोस्', 'स्रोत र चाहेको परिणाम छान्नुहोस्।',
+    'बुझ्नुहोस्', 'बाधा, अवधारणा र शिक्षण प्राथमिकता पत्ता लगाउनुहोस्।', 'निर्देशित चरण', 'निर्देशित चरणको प्रगति', '{total} मध्ये चरण {current}',
+  ]),
+  polish: make([
+    'Ułatw dostęp', 'Utwórz wiele sposobów postrzegania i rozumienia treści.', 'Sprawdź naukę', 'Zbierz dowody i sprawdź zgodność.',
+    'Przypisz', 'Napisz instrukcje, cele i kryteria sukcesu dla uczniów.', 'Podgląd i dostarczenie', 'Wybierz właściwą ścieżkę eksportu, udostępniania lub sesji na żywo.',
+    'Przejrzyj i zakończ', 'Przejrzyj lekcję i zapisz podsumowanie ukończenia.', 'Organizuj', 'Połącz zasoby w sekwencję możliwą do nauczania.',
+    'Buduj udział', 'Dodaj sposoby ćwiczenia, dyskusji, odkrywania i tworzenia.', 'Planuj', 'Wybierz źródło i zamierzony rezultat.',
+    'Zrozum', 'Znajdź bariery, pojęcia i priorytety dydaktyczne.', 'Etap prowadzony', 'Postęp etapu prowadzonego', 'Etap {current} z {total}',
+  ]),
+  russian: make([
+    'Сделать доступным', 'Создать несколько способов воспринимать и понимать содержание.', 'Проверить обучение', 'Собрать доказательства и проверить соответствие.',
+    'Назначить', 'Написать инструкции, цели и критерии успеха для учащихся.', 'Предпросмотр и выдача', 'Выбрать подходящий способ экспорта, общего доступа или прямого занятия.',
+    'Проверить и завершить', 'Проверить урок и сохранить итоговый отчёт.', 'Организовать', 'Связать ресурсы в последовательность для преподавания.',
+    'Создать участие', 'Добавить способы практиковаться, обсуждать, исследовать и создавать.', 'Планировать', 'Выбрать источник и предполагаемый результат.',
+    'Понять', 'Найти препятствия, понятия и учебные приоритеты.', 'Управляемый этап', 'Прогресс управляемого этапа', 'Этап {current} из {total}',
+  ]),
+};

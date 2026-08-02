@@ -20,6 +20,11 @@ describe('Geology Explorer reduced-motion accessibility', () => {
     expect(source).toContain('E.setFirstPerson(fpOn, { reduced: reduced })');
   });
 
+  it('gates long history and eruption playback when reduced motion is requested', () => {
+    expect(source).toContain('function motionReduced()');
+    expect((source.match(/if \(motionReduced\(\)/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('keeps the source and deploy copies identical', () => {
     expect(fs.readFileSync(deployPath, 'utf8')).toBe(source);
   });

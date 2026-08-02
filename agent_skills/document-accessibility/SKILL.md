@@ -50,8 +50,10 @@ Never tell a user a document is compliant because axe was quiet.
 | `transcribe_media` | yes | Audio/video → transcript (speech, visual, dual, synthesis) |
 | `translate_accessible_html` | yes | Translate, structure preserved, images protected |
 
-Ten of these need no key at all (every row marked **no** above, plus the three
-`remediation_job_*` tools). When a user has no key, say what still works rather than stopping.
+The connector now reports the authoritative, derived list as
+`remediation_capabilities.keylessToolNames` (currently seventeen tools). Use that field
+instead of counting this table: when a user has no key, say what still works rather than
+stopping. `fullAiPipelineReady: false` disables the Gemini path, not the keyless mode.
 
 ## Order of operations
 

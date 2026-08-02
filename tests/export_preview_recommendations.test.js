@@ -10,7 +10,7 @@ const exportSource = readFileSync('export_source.jsx', 'utf8');
 
 const helperStart = source.indexOf('function _builderWordCount');
 const helperEnd = source.indexOf('function ExportPreviewView');
-const helpers = new Function(source.slice(helperStart, helperEnd) + '\nreturn { _builderWordCount, _builderHeadingOutline, _builderExportPreflight, _builderH5PCompatibility };')();
+const helpers = new Function(source.slice(helperStart, helperEnd) + '\nreturn { _builderWordCount, _builderDocumentStatistics, _builderSelectionStatistics, _builderHeadingOutline, _builderExportPreflight, _builderH5PCompatibility, _builderInsertReviewComment, _builderCommentEntries, _builderSetCommentThread, _builderStripReviewComments };')();
 
 describe('Document Builder export recommendations', () => {
   it('runs deterministic preflight checks and reports blocking document defects', () => {
@@ -32,7 +32,39 @@ describe('Document Builder export recommendations', () => {
     const result = helpers._builderExportPreflight(document, 'html');
     expect(result.errors).toBe(0);
     expect(helpers._builderWordCount(document)).toBe(7);
+    expect(helpers._builderDocumentStatistics(document)).toMatchObject({ words: 7, readingMinutes: 1, speakingMinutes: 1 });
+    const range = document.createRange();
+    range.selectNodeContents(document.querySelector('p'));
+    document.getSelection().removeAllRanges();
+    document.getSelection().addRange(range);
+    expect(helpers._builderSelectionStatistics(document)).toMatchObject({ active: true, words: 3, charactersWithoutSpaces: 16 });
+    document.getSelection().removeAllRanges();
     expect(helpers._builderHeadingOutline(document).map((item) => item.level)).toEqual([1]);
+  });
+
+  it('anchors threaded comments to a selection and strips review markup without losing text', () => {
+    document.body.innerHTML = '<p>Alpha beta gamma.</p>';
+    const text = document.querySelector('p').firstChild;
+    const range = document.createRange();
+    range.setStart(text, 6);
+    range.setEnd(text, 10);
+    document.getSelection().removeAllRanges();
+    document.getSelection().addRange(range);
+
+    const inserted = helpers._builderInsertReviewComment(document, range, 'Clarify this word.');
+    expect(inserted.ok).toBe(true);
+    const marker = document.querySelector('mark[data-allo-comment-id]');
+    expect(marker?.textContent).toBe('beta');
+    expect(helpers._builderCommentEntries(document)[0].thread).toHaveLength(1);
+
+    const thread = helpers._builderCommentEntries(document)[0].thread;
+    helpers._builderSetCommentThread(marker, [...thread, { text: 'Added context.', at: new Date().toISOString() }]);
+    expect(helpers._builderCommentEntries(document)[0].thread).toHaveLength(2);
+
+    const clone = document.body.cloneNode(true);
+    helpers._builderStripReviewComments(clone);
+    expect(clone.querySelector('mark[data-allo-comment-id]')).toBeNull();
+    expect(clone.textContent).toBe('Alpha beta gamma.');
   });
 
   it('preflights H5P compatibility and embedded media before export', () => {

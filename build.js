@@ -215,6 +215,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'StandardsContext',
+        filename: 'standards_context_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StandardsProvider',
+        filename: 'standards_provider_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AgentCoreContracts',
         filename: 'agent_core_contracts_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1050,6 +1060,7 @@ const PLUGIN_FILES = [
     'liblouis_braille_loader.js',
     'sre_loader.js',
     'mathlive_loader.js',
+    'data_kernel_loader.js',
     'phonics_g2p_loader.js',
     'translate_loader.js',
     'dictionary_loader.js',
@@ -1273,6 +1284,12 @@ const COMPANION_ASSET_DIRS = [
     'molecule_shelf',
     'sre-assets',
     'sim_shelf',
+    'immersive_geometry',
+    'life_skills_safety',
+    'life_skills_repair',
+    'life_skills_kitchen',
+    'life_skills_laundry',
+    'life_skills_transit',
     'timeline_studio',
     'verapdf',
     'zoom_gallery'
@@ -1903,6 +1920,27 @@ if (dryRun) {
 
     // ── Auto-copy module files to desktop/web-app/public/ ──
     const PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public');
+    // OneDrive can intermittently reject an overwrite of an unchanged file
+    // with ERROR_UNKNOWN. Avoid needless writes (and hundreds of opportunities
+    // for that race) while still copying every generated artifact that differs.
+    const copyFileIfChanged = (src, dest) => {
+        if (fs.existsSync(dest)) {
+            try {
+                const srcStat = fs.statSync(src);
+                const destStat = fs.statSync(dest);
+                if (srcStat.size === destStat.size) {
+                    const srcBytes = fs.readFileSync(src);
+                    const destBytes = fs.readFileSync(dest);
+                    if (srcBytes.equals(destBytes)) return false;
+                }
+            } catch (_) {
+                // Fall through to the canonical copy so a real read error is
+                // surfaced with the source and destination paths.
+            }
+        }
+        fs.copyFileSync(src, dest);
+        return true;
+    };
     // Accessibility Lab uses a same-origin axe-core build first so audits work
     // offline and under restrictive content-security policies.
     const axeCoreSource = path.join(ROOT, 'node_modules', 'axe-core', 'axe.min.js');
@@ -1951,7 +1989,7 @@ if (dryRun) {
         if (fs.existsSync(src)) {
             finalDests.forEach((finalDest) => {
                 if (!fs.existsSync(path.dirname(finalDest))) fs.mkdirSync(path.dirname(finalDest), { recursive: true });
-                fs.copyFileSync(src, finalDest);
+                copyFileIfChanged(src, finalDest);
             });
             copyCount++;
         }

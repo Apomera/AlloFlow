@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0", "visibility": "public",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:42.294Z",
   "libraryId": "praxis-teaching-reading-5205-learning-library",
   "packId": "praxis-teaching-reading-5205",
   "standard": {
@@ -46,8 +46,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
-    "learningLibrarySha256": "2a7ec9e68bdefb1a7c4c5784ab012979c1d07f0010cb823e8ddde832977c58c6",
+    "sourceItemsSha256": "6929867c5fa802ba6c6ec6372f183416fd3a8185c291f5be441877704efea523",
+    "learningLibrarySha256": "ab83e6d309c32a7e8b68813910e0f587180bd2bf2a44af9a1c7baec43d4b8d63",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

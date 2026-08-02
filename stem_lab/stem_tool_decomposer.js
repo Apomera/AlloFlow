@@ -1622,7 +1622,7 @@
                 h('div', { className: 'flex items-center gap-2 mb-3' },
                   h('span', { className: 'text-sm font-bold text-indigo-800' }, '\u2696 Compare: ' + sel.name + ' vs'),
                   h('select', {
-                    'aria-label': t('stem.decomposer.compare_material', 'Compare with material'),
+                    'aria-label': __alloT('stem.decomposer.compare_material', 'Compare with material'),
                     value: d.compareTo || cmpMat.name,
                     onChange: function(e) {
                       upd('compareTo', e.target.value);

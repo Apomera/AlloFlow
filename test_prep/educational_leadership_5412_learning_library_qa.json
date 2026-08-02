@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0", "visibility": "public",
+  "version": "1.0.0",
+  "visibility": "public",
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:24:36.302Z",
   "libraryId": "praxis-educational-leadership-5412-learning-library",
   "packId": "praxis-educational-leadership-5412",
   "standard": {
@@ -29,8 +29,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "6f247aa0dd616926115d9e2db1d92895cb4cec963df621c04858ca3f5aee7d23",
-    "learningLibrarySha256": "d84cdd3bcba7858e8aaf003ce9d56e393e2fe37c3997d0cd7dcb36e4e5579063",
+    "sourceItemsSha256": "1a2ca1fc60915cc8a07e460fcd60a23c00adf8804b5b265c31ff1210b19a1847",
+    "learningLibrarySha256": "294f1cbc34b1d07b7a70644c0c12bd703ddd69e103ee24db6a51a31535b42f77",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

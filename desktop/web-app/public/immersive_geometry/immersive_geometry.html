@@ -92,6 +92,12 @@
   .missiontoggle input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .sessionnote { color: var(--muted); font-size: 10.5px; line-height: 1.35; margin-top: 5px; }
   .invariantnote { color: var(--text); background: rgba(96,165,250,0.1); border-left: 3px solid var(--p1); border-radius: 6px; padding: 7px 8px; font-size: 11px; font-weight: 700; line-height: 1.4; margin: -3px 0 8px; }
+  .sliceexplainer { margin: -2px 0 9px; padding: 7px 8px; border: 1px solid #7b6bb5; border-radius: 8px; background: rgba(86,70,150,0.14); }
+  .slicehead { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 4px; }
+  .slicehead strong { color: var(--text); font-size: 11.5px; }
+  .slicehead button { min-height: 26px; padding: 4px 7px; font-size: 10px; }
+  .sliceformula { color: #fef08a; font-size: 11px; font-weight: 800; line-height: 1.35; min-height: 29px; font-variant-numeric: tabular-nums; }
+  .slicedetail { color: var(--dim); font-size: 10.5px; line-height: 1.35; margin-top: 3px; }
   .scenelegend { display: flex; flex-wrap: wrap; gap: 5px 10px; color: var(--dim); font-size: 10.5px; line-height: 1.3; margin: -2px 0 8px; }
   .scenelegend span { display: inline-flex; align-items: center; gap: 5px; }
   .legendmark { display: inline-block; width: 13px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
@@ -100,7 +106,64 @@
   .legendmark.ruler { width: 15px; height: 3px; background: var(--focus); border-radius: 0; }
   .legendmark.projection { background: rgba(167,139,250,0.14); border: 1px dashed var(--p3); }
   .legendmark.section { background: rgba(250,204,21,0.14); border: 1px solid var(--focus); }
+  .legendmark.lattice { background: repeating-linear-gradient(90deg, rgba(196,181,253,0.32) 0 1px, transparent 1px 4px); border: 1px solid #c4b5fd; }
+  .legendmark.connector { width: 15px; height: 0; border-top: 2px dotted var(--focus); border-radius: 0; }
   .viewscalehelp { color: var(--dim); font-size: 10.5px; line-height: 1.35; margin: -3px 0 9px; }
+  .tooloptions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 0 0 9px; }
+  .tooloption { display: grid; gap: 3px; color: var(--dim); font-size: 10.5px; font-weight: 700; }
+  .tooloption select { width: 100%; min-height: 30px; border: 1px solid var(--line); border-radius: 7px; background: var(--control); color: var(--text); font: inherit; font-size: 11px; padding: 4px 6px; }
+  .tooloption select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .tooloptions button { min-height: 30px; padding: 5px 7px; font-size: 11px; }
+  .historynote { color: var(--muted); font-size: 10.5px; line-height: 1.3; margin: -3px 0 8px; }
+  .instructorbar { display: flex; align-items: center; gap: 6px; margin: 0 0 7px; }
+  .instructorbar .measuretoggle { flex: 1 1 auto; margin: 0; }
+  .instructorbar button { flex: 0 0 auto; min-height: 28px; padding: 5px 7px; font-size: 10.5px; }
+  .lessonurl { width: 100%; min-height: 28px; margin: 0 0 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--control); color: var(--text); font: inherit; font-size: 10px; padding: 5px 6px; }
+  .lessonurl:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  body.instructor-mode #hud { border-color: var(--p1); box-shadow: 0 18px 50px rgba(34,211,238,0.2); }
+  body.instructor-mode #missionBox { border-color: var(--p1); }
+  .showcasebox { margin: 0 0 11px; padding: 8px 9px; border: 1px solid #315f78; border-radius: 9px; background: linear-gradient(135deg, rgba(14,52,76,0.92), rgba(8,20,38,0.88)); transition: border-color 180ms ease, box-shadow 180ms ease; }
+  .showcasebox.playing { border-color: var(--focus); box-shadow: 0 0 0 1px rgba(250,204,21,0.24), 0 8px 24px rgba(250,204,21,0.1); }
+  .showcasehead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+  .showcasehead strong { color: var(--text); font-size: 12px; }
+  .showcaseprogress { color: var(--accent2); font-size: 10.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .showcasecaption { color: var(--text); font-size: 11px; line-height: 1.35; min-height: 29px; margin-bottom: 6px; }
+  .showcaseactions { display: flex; gap: 5px; }
+  .showcaseactions button { flex: 1 1 auto; min-height: 28px; padding: 5px 7px; font-size: 10.5px; }
+  .guidebox { margin: 0 0 11px; padding: 8px 9px; border: 1px solid #47639c; border-radius: 9px; background: linear-gradient(135deg, rgba(24,39,76,0.9), rgba(10,18,39,0.86)); }
+  @media (prefers-reduced-motion: reduce) { .showcasebox { transition: none; } }  .guidehead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .guidehead strong { color: var(--text); font-size: 12px; }
+  .guideprogress { color: var(--accent2); font-size: 10.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .guidetrack { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-bottom: 7px; }
+  .guidetrack > span { min-width: 0; }
+  .guidetrack > span .guidestep { width: 100%; }
+  .guidestep { appearance: none; padding: 5px 2px; border: 1px solid #47639c; border-radius: 6px; background: rgba(17,27,51,0.62); color: var(--dim); font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; }
+  .guidestep:hover { border-color: var(--accent2); color: var(--text); }
+  .guidestep.current { border-color: var(--focus); color: var(--focus); background: rgba(250,204,21,0.12); }
+  .guidestep.complete { border-color: var(--p2); color: var(--p2); background: rgba(74,222,128,0.1); }
+  .guidestep:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .guideprompt { color: var(--text); font-size: 11px; line-height: 1.35; min-height: 29px; margin-bottom: 6px; }
+  .guideactions { display: flex; gap: 5px; }
+  .guideactions button { flex: 1 1 auto; min-height: 28px; padding: 5px 7px; font-size: 10.5px; }
+  .guidewhy { color: var(--accent2); font-size: 10.5px; line-height: 1.35; margin: 6px 0 0; }
+  .storytimeline { margin: 0 0 9px; padding: 7px 8px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .storyhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--dim); font-size: 10.5px; font-weight: 700; }
+  .storyhead output { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .storytimeline input { width: 100%; min-height: 24px; margin: 3px 0 3px; accent-color: var(--focus); cursor: pointer; }
+  .storytimeline input:disabled { cursor: not-allowed; opacity: 0.55; }
+  .storytimeline input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .storytimeline button { width: 100%; min-height: 27px; padding: 4px 7px; font-size: 10.5px; }
+  @media (max-width: 420px) {
+    #hud { left: 8px; top: 8px; width: calc(100vw - 16px); max-height: calc(100vh - 16px); padding: 12px; }
+    .missionhead, .instructorbar { align-items: flex-start; flex-wrap: wrap; }
+    .missionhead strong, .instructorbar .measuretoggle { flex: 1 1 100%; }
+    .missionactions, .instructorbar button { width: 100%; }
+    .missionactions button { flex: 1 1 0; }
+    .tooloptions { grid-template-columns: 1fr; }
+    .tooloptions button { grid-column: 1; width: 100%; }
+    .showcasehead, .guidehead { align-items: flex-start; flex-wrap: wrap; }
+    .showcasehead strong, .guidehead strong { flex: 1 1 100%; }
+  }
   .btnrow { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
   button.act { flex: 1 1 auto; background: var(--accent); color: #fff; border: 1px solid transparent; border-radius: 9px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-width: 120px; }
   button.act:hover { background: var(--accent-hover); }
@@ -148,25 +211,101 @@
   </section>
 
 
+  <section class="guidebox" id="guideBox" aria-labelledby="guideTitle">
+    <div class="guidehead"><strong id="guideTitle">Guided exploration</strong><span class="guideprogress" id="guideProgress">Step 1 of 4</span></div>
+    <div class="guidetrack" id="guideTrack" role="list" aria-label="Dimension learning path">
+      <span role="listitem"><button class="guidestep current" id="guideStep0" type="button">Point</button></span>
+      <span role="listitem"><button class="guidestep" id="guideStep1" type="button">Segment</button></span>
+      <span role="listitem"><button class="guidestep" id="guideStep2" type="button">Rectangle</button></span>
+      <span role="listitem"><button class="guidestep" id="guideStep3" type="button">Box</button></span>
+    </div>
+    <div class="guideprompt" id="guidePrompt">Begin with a point. Stretch once to create length.</div>
+    <div class="guideactions">
+      <button class="q" id="uiGuideAction" type="button">Stretch to a line</button>
+      <button class="q" id="uiGuideWhy" type="button" aria-expanded="false" aria-controls="guideWhy">Why?</button>
+    </div>
+    <div class="guidewhy" id="guideWhy" hidden></div>
+    <div id="guideStatus" class="sr-only" role="status" aria-live="polite"></div>
+  </section>
+  <section class="showcasebox" id="showcaseBox" aria-labelledby="showcaseTitle">
+    <div class="showcasehead"><strong id="showcaseTitle">Dimension story</strong><span class="showcaseprogress" id="showcaseProgress">Ready</span></div>
+    <div class="showcasecaption" id="showcaseCaption" aria-live="polite">Play a short, non-destructive tour from point to solid.</div>
+    <div class="showcaseactions">
+      <button class="q" id="uiShowcase" type="button" aria-describedby="showcaseHelp">Play story</button>
+      <button class="q" id="uiShowcaseStop" type="button" hidden>Stop</button>
+    </div>
+    <div id="showcaseHelp" class="historynote">The story previews the dimension ladder without changing your geometry or undo history.</div>
+  </section>
   <p class="stateline" id="stateline">A point.</p>
   <div id="measure">Zero dimensions. Press <b>Stretch ▲</b> to pull it into a line.</div>
   <div id="boundaryMeasure" hidden></div>
   <label class="measuretoggle"><input id="uiBoundary" type="checkbox"> Show perimeter / surface area</label>
   <div id="axisline">No editable axis yet.</div>
   <div id="invariantNotice" class="invariantnote" role="status" aria-live="polite">Notice: change one dimension and watch what stays invariant.</div>
-  <div class="scenelegend" aria-label="Scene key: solid is now, blue outline is before, yellow marks the selected dimension and cross-sections, and the dashed floor footprint is the plan projection.">
+  <section id="sliceExplainer" class="sliceexplainer" aria-labelledby="sliceExplainerTitle" hidden>
+    <div class="slicehead"><strong id="sliceExplainerTitle">Slice microscope</strong><button class="q" id="uiExplainSlice" type="button" aria-describedby="sliceExplainHelp" disabled>Explain selected slice</button></div>
+    <div id="sliceFormula" class="sliceformula" aria-live="polite">Stretch to a rectangle or box to inspect a slice.</div>
+    <div id="sliceDetail" class="slicedetail">The highlighted lattice shows how a held cross-section builds the measure.</div>
+    <div id="sliceExplainHelp" class="historynote">Click the highlighted section or use this button to connect the lattice to the formula.</div>
+  </section>
+  <div class="scenelegend" role="group" aria-label="Scene key: solid is now, blue outline is before, yellow marks the selected dimension and cross-sections, the dashed floor footprint is the plan projection, the fine lattice shows unit structure, and the dotted gold link connects the selected handle to its formula.">
     <span><i class="legendmark now" aria-hidden="true"></i>Now</span>
     <span><i class="legendmark before" aria-hidden="true"></i>Before</span>
     <span><i class="legendmark ruler" aria-hidden="true"></i>Selected axis</span>
     <span><i class="legendmark projection" aria-hidden="true"></i>Plan projection</span>
     <span><i class="legendmark section" aria-hidden="true"></i>Cross-sections</span>
+    <span><i class="legendmark lattice" aria-hidden="true"></i>Unit lattice</span>
+    <span><i class="legendmark connector" aria-hidden="true"></i>Math link</span>
   </div>
   <div class="btnrow"><button class="q" id="uiViewScale" type="button" aria-describedby="viewScaleHelp">View scale: Body 1×</button></div>
   <div id="viewScaleHelp" class="viewscalehelp">Presentation only. Length, area, and volume do not change.</div>
+  <div class="tooloptions" role="group" aria-label="Scene presentation controls">
+    <label class="tooloption" for="uiFocusMode">Scene focus
+      <select id="uiFocusMode" aria-describedby="focusModeHelp">
+        <option value="explore">Explore: shape + scale</option>
+        <option value="explain" selected>Explain: plan + slices</option>
+        <option value="compare">Compare: before + now</option>
+      </select>
+    </label>
+    <label class="tooloption" for="uiPrecision">Math precision
+      <select id="uiPrecision" aria-label="Math display precision">
+        <option value="1">1 decimal</option>
+        <option value="2" selected>2 decimals</option>
+        <option value="3">3 decimals</option>
+      </select>
+    </label>
+    <label class="tooloption" for="uiStickMode">XR stick mode
+      <select id="uiStickMode" aria-label="XR thumbstick mode">
+        <option value="geometry" selected>Resize + axis</option>
+        <option value="navigate">Snap-turn + walk</option>
+      </select>
+    </label>
+    <label class="tooloption" for="uiRenderQuality">Render quality
+      <select id="uiRenderQuality" aria-label="Render quality">
+        <option value="auto" selected>Auto</option>
+        <option value="high">High detail</option>
+        <option value="battery">Battery saver</option>
+      </select>
+    </label>
+    <button class="q" id="uiReplay" type="button" aria-describedby="historyHelp">Replay history</button>
+  </div>
+  <div id="focusModeHelp" class="historynote">Choose how much construction guidance stays visible.</div>
+  <div class="instructorbar">
+    <label class="measuretoggle"><input id="uiInstructor" type="checkbox"> Instructor mode</label>
+    <button class="q" id="uiLessonLink" type="button" aria-describedby="instructorHelp">Copy lesson link</button>
+  </div>
+  <div id="instructorHelp" class="historynote" hidden>Instructor mode highlights the demo state. Copy the lesson link to share this exact geometry and presentation setup.</div>
+  <input id="uiLessonUrl" class="lessonurl" type="text" readonly hidden aria-label="Shareable lesson link">
+  <div id="historyHelp" class="historynote">Replays the saved geometry path without changing your undo history.</div>
+  <div class="storytimeline" role="group" aria-label="Geometry story timeline">
+    <div class="storyhead"><label for="uiHistoryScrub">Geometry story</label><output id="historyValue" for="uiHistoryScrub">Current shape</output></div>
+    <input id="uiHistoryScrub" type="range" min="0" max="0" value="0" step="1" disabled aria-describedby="historyValue historyHelp" aria-valuetext="No saved geometry steps">
+    <button class="q" id="uiHistoryRestore" type="button" disabled>Return to current shape</button>
+  </div>
   <label class="axisrange" for="uiAxisValue">
     <span id="axisSliderLabel">Selected axis size</span><output id="axisValueOut" for="uiAxisValue">0</output>
     <span class="axistarget" id="axisTargetOut">Mission target: —</span>
-    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" disabled>
+    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" aria-describedby="axisValueOut axisTargetOut" disabled>
     <datalist id="axisTargetTicks"><option id="axisTargetTick" value="2.1"></option></datalist>
   </label>
 
@@ -189,7 +328,7 @@
 
 
   <div class="kbd">
-    Shape: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>V</kbd> view scale · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Move &amp; look: <kbd>W</kbd>/<kbd>S</kbd> walk forward &amp; back · <kbd>Q</kbd>/<kbd>E</kbd> step left &amp; right · <kbd>J</kbd>/<kbd>L</kbd> turn · <kbd>I</kbd>/<kbd>K</kbd> look up &amp; down · <kbd>H</kbd> back to the start · drag with the mouse to look<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
+    Shape: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>V</kbd> view scale · <kbd>T</kbd> play dimension story · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Move &amp; look: <kbd>W</kbd>/<kbd>S</kbd> walk forward &amp; back · <kbd>Q</kbd>/<kbd>E</kbd> step left &amp; right · <kbd>J</kbd>/<kbd>L</kbd> turn · <kbd>I</kbd>/<kbd>K</kbd> look up &amp; down · <kbd>H</kbd> back to the start · drag with the mouse to look<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
   </div>
 
   <div class="credit">
@@ -200,8 +339,9 @@
 
 <!-- Screen-reader live narration of every state change (the accessibility path through the paradigm). -->
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+<div id="sceneDescription" class="sr-only">Interactive 3D stretch lab. Use the desktop controls or enter immersive mode to pull labeled X, Z, and Y handles. The formula card explains how length, area, and volume change. Click the highlighted plan or cross-section to hear its slice formula. Press T or Play story for a non-destructive dimension tour.</div>
 
-<a-scene
+<a-scene aria-label="Interactive 3D stretch lab" aria-describedby="sceneDescription"
   background="color: #0b1020"
   fog="type: linear; color: #0b1020; near: 8; far: 34"
   renderer="colorManagement: true; antialias: true; physicallyCorrectLights: true"
@@ -240,54 +380,54 @@
   </a-entity>
 
   <!-- In-scene control panel (used in VR; also clickable with the mouse on desktop) -->
-  <a-entity id="panel" position="0 0.95 -1.35" rotation="-22 0 0" visible="false">
+  <a-entity id="panel" role="group" aria-label="Immersive geometry controls" aria-hidden="true" position="0 0.95 -1.35" rotation="-22 0 0" visible="false">
     <a-plane width="2.24" height="1.78" position="0 -0.33 -0.035"
              material="color: #050816; opacity: 0.9; transparent: true; side: double"></a-plane>
     <a-text id="vrTransformText" value="MATH STRETCH | measures change"
             align="center" position="0 0.42 0.02" width="2.05" wrap-count="38" color="#a7f3d0"></a-text>
     <a-text id="vrLiveMathText" value="Point | 0 dimensions"
             align="center" position="0 0.29 0.02" width="2.05" wrap-count="42" color="#f7faff"></a-text>
-    <a-entity class="clickable vrbtn" id="vrStretch"
+    <a-entity role="button" aria-label="Stretch up one dimension" class="clickable vrbtn" id="vrStretch"
               geometry="primitive: box; width: 0.52; height: 0.17; depth: 0.04"
               material="color: #665cf5; emissive: #665cf5; emissiveIntensity: 0.18" position="-0.58 0 0">
       <a-text value="Stretch ^" align="center" position="0 0 0.03" width="1.7" color="#fff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrCollapse"
+    <a-entity role="button" aria-label="Collapse down one dimension" class="clickable vrbtn" id="vrCollapse"
               geometry="primitive: box; width: 0.32; height: 0.17; depth: 0.04"
               material="color: #4a6094" position="0 0 0">
       <a-text value="v" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrReset"
+    <a-entity role="button" aria-label="Reset geometry to a point" class="clickable vrbtn" id="vrReset"
               geometry="primitive: box; width: 0.42; height: 0.17; depth: 0.04"
               material="color: #4a6094" position="0.5 0 0">
       <a-text value="reset" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrAxis"
+    <a-entity role="button" aria-label="Cycle selected axis" class="clickable vrbtn" id="vrAxis"
               geometry="primitive: box; width: 0.62; height: 0.17; depth: 0.04"
               material="color: #315f78" position="-0.5 -0.22 0">
       <a-text id="vrAxisText" value="axis" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrUndo"
+    <a-entity role="button" aria-label="Undo geometry change" class="clickable vrbtn" id="vrUndo"
               geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
               material="color: #4a6094" position="0.08 -0.22 0">
       <a-text value="undo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrRedo"
+    <a-entity role="button" aria-label="Redo geometry change" class="clickable vrbtn" id="vrRedo"
               geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
               material="color: #4a6094" position="0.52 -0.22 0">
       <a-text value="redo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrMission"
+    <a-entity role="button" aria-label="Choose next stretch mission" class="clickable vrbtn" id="vrMission"
               geometry="primitive: box; width: 0.94; height: 0.16; depth: 0.04"
               material="color: #3b4d7a" position="-0.25 -0.43 0">
       <a-text id="vrMissionText" value="target: segment L 2.1" align="center" position="0 0 0.03" width="1.5" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrMeasure"
+    <a-entity role="button" aria-label="Toggle perimeter and surface area" class="clickable vrbtn" id="vrMeasure"
               geometry="primitive: box; width: 0.48; height: 0.16; depth: 0.04"
               material="color: #315f78" position="0.54 -0.43 0">
       <a-text id="vrMeasureText" value="P/SA off" align="center" position="0 0 0.03" width="1.25" color="#f7faff"></a-text>
     </a-entity>
-    <a-entity class="clickable vrbtn" id="vrView"
+    <a-entity role="button" aria-label="Cycle presentation scale" class="clickable vrbtn" id="vrView"
               geometry="primitive: box; width: 0.82; height: 0.16; depth: 0.04"
               material="color: #315f78" position="-0.62 -0.65 0">
       <a-text id="vrViewText" value="View: Body 1×" align="center" position="0 0 0.03" width="1.35" color="#f7faff"></a-text>
@@ -340,6 +480,22 @@ var MISSIONS = [
 ];
 
 var STORAGE_KEY = 'alloflow_stretch_lab_v1';
+var FOCUS_MODES = ['explore', 'explain', 'compare'];
+var STICK_MODES = ['geometry', 'navigate'];
+var QUALITY_MODES = ['auto', 'high', 'battery'];
+var GUIDE_STEPS = [
+  { label: 'Point', prompt: 'Begin with a point. Stretch once to create length.', why: 'A point has zero dimensions. The first stretch introduces one independent length.', action: 'Stretch to a line' },
+  { label: 'Segment', prompt: 'Now you have length. Stretch sideways to create a rectangle.', why: 'A second independent dimension turns length into area: A = L × W.', action: 'Stretch to a plane' },
+  { label: 'Rectangle', prompt: 'Add height to turn the plane into a solid.', why: 'A third dimension multiplies the base area into volume: V = L × W × H.', action: 'Stretch to a solid' },
+  { label: 'Box', prompt: 'You made a solid. Resize one edge and watch the volume respond.', why: 'Changing one edge changes volume in proportion to the cross-sectional slice held perpendicular to that edge.', action: 'Review the volume rule' }
+];
+var SHOWCASE_STEPS = [
+  { d: 0, L: 1.6, W: 1.1, H: 1.1, axis: 0, label: '0D | POINT', caption: 'A point has position, but no length.' },
+  { d: 1, L: 2.1, W: 1.1, H: 1.1, axis: 0, label: '1D | SEGMENT', caption: 'Stretch once. Length appears along X.' },
+  { d: 2, L: 2.1, W: 1.6, H: 1.1, axis: 1, label: '2D | RECTANGLE', caption: 'Stretch sideways. Area is L \u00d7 W.' },
+  { d: 3, L: 2.1, W: 1.6, H: 1.35, axis: 2, label: '3D | BOX', caption: 'Stretch upward. Volume is base area \u00d7 height.' }
+];function normalizeChoice(value, choices, fallback) { return choices.indexOf(value) >= 0 ? value : fallback; }
+function normalizePrecision(value) { value = Number(value); return value === 1 || value === 2 || value === 3 ? value : 2; }
 function loadSavedState() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
@@ -353,7 +509,7 @@ function loadSavedState() {
     var missionIndex = Number.isInteger(saved.missionIndex) ? Math.max(0, Math.min(saved.missionIndex, MISSIONS.length - 1)) : 0;
     var completedMask = Number.isInteger(saved.completedMask) ? Math.max(0, Math.min(saved.completedMask, 15)) : 0;
     var viewScaleIndex = Number.isInteger(saved.viewScaleIndex) ? Math.max(0, Math.min(saved.viewScaleIndex, VIEW_SCALES.length - 1)) : 1;
-    return { d: saved.d, L: L, W: W, H: H, axis: axis, missionIndex: missionIndex, showTarget: saved.showTarget !== false, showBoundary: saved.showBoundary === true, completedMask: completedMask, viewScaleIndex: viewScaleIndex };
+    return { d: saved.d, L: L, W: W, H: H, axis: axis, missionIndex: missionIndex, showTarget: saved.showTarget !== false, showBoundary: saved.showBoundary === true, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain'), precision: normalizePrecision(saved.precision), stickMode: normalizeChoice(saved.stickMode, STICK_MODES, 'geometry'), quality: normalizeChoice(saved.quality, QUALITY_MODES, 'auto'), instructorMode: saved.instructorMode === true };
   } catch (ignore) { return null; }
 }
 function loadLaunchState() {
@@ -371,7 +527,12 @@ function loadLaunchState() {
       showTarget: query.get('target') !== '0',
       showBoundary: query.get('boundary') === '1',
       completedMask: 0,
-      viewScaleIndex: query.has('view') ? Number(query.get('view')) : 1
+      viewScaleIndex: query.has('view') ? Number(query.get('view')) : 1,
+      focusMode: normalizeChoice(query.get('focus'), FOCUS_MODES, 'explain'),
+      precision: normalizePrecision(query.get('precision')),
+      stickMode: normalizeChoice(query.get('stick'), STICK_MODES, 'geometry'),
+      quality: normalizeChoice(query.get('quality'), QUALITY_MODES, 'auto'),
+      instructorMode: query.get('instructor') === '1'
     };
     if (!Number.isInteger(launched.d) || launched.d < 0 || launched.d > 3) return null;
     if (![launched.L, launched.W, launched.H].every(function (value) { return isFinite(value) && value >= MINV && value <= MAXV; })) return null;
@@ -383,8 +544,10 @@ function loadLaunchState() {
 }
 var LAUNCH_STATE = loadLaunchState();
 var SAVED_STATE = LAUNCH_STATE || loadSavedState();
+var MATH_PRECISION = SAVED_STATE && SAVED_STATE.precision ? SAVED_STATE.precision : 2;
 
-function r1(n) { return Math.round(n * 100) / 100; }
+function r1(n) { var factor = Math.pow(10, MATH_PRECISION); return Math.round(n * factor) / factor; /* legacy: Math.round(n * 100) / 100 */ }
+function rState(n) { return Math.round(n * 100) / 100; }
 function metricValue(d, dimensions) {
   if (!dimensions) return NaN;
   if (d === 1) return Number(dimensions.L);
@@ -447,8 +610,27 @@ AFRAME.registerComponent('stretch-lab', {
     this.d = saved ? saved.d : 0;
     this.L = saved ? saved.L : 1.6; this.W = saved ? saved.W : 1.1; this.H = saved ? saved.H : 1.1;
     this.axis = saved ? saved.axis : 0; this.history = []; this.future = [];
+    this.replayTimer = null; this.replayActive = false; this.previewActive = false; this.previewOrigin = null; this.previewIndex = null; this.showcaseTimer = null; this.showcaseActive = false; this.showcaseOrigin = null; this.showcaseIndex = -1;
     this.cx = THIN; this.cy = THIN; this.cz = THIN;
-    this.reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.targetDimensions = { x: THIN, y: THIN, z: THIN };
+    this.motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    this.reduceMotion = !!(this.motionQuery && this.motionQuery.matches);
+    this.motionPreferenceHandler = function (event) {
+      this.reduceMotion = !!(event && event.matches);
+      if (!this.reduceMotion) return;
+      var target = this.targets();
+      this.cx = target.x; this.cy = target.y; this.cz = target.z;
+      this.causalPulse = null;
+      if (this.causalSlice) this.causalSlice.object3D.visible = false;
+      if (this.causalLabel) this.causalLabel.object3D.visible = false;
+      this.sliceInsight = null;
+      if (this.sliceInsightLabel) this.sliceInsightLabel.object3D.visible = false;
+    }.bind(this);
+    if (this.motionQuery) {
+      if (this.motionQuery.addEventListener) this.motionQuery.addEventListener('change', this.motionPreferenceHandler);
+      else if (this.motionQuery.addListener) this.motionQuery.addListener('change', this.motionPreferenceHandler);
+    }
+    this.focusMode = saved ? normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain') : 'explain';
     this.presentationScale = saved ? VIEW_SCALES[saved.viewScaleIndex].scale : VIEW_SCALES[1].scale;
 
     this.box = document.createElement('a-entity');
@@ -470,11 +652,17 @@ AFRAME.registerComponent('stretch-lab', {
     this.targetGhost.setAttribute('geometry', 'primitive: box; width: 1; height: 1; depth: 1');
     this.targetGhost.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.35; wireframe: true; opacity: 0.55; transparent: true; depthWrite: false');
     this.targetGhost.setAttribute('visible', 'false');
+    this.targetGhost.setAttribute('role', 'img');
+    this.targetGhost.setAttribute('aria-hidden', 'true');
+    this.targetGhost.setAttribute('aria-label', 'Mission target shape');
     this.el.appendChild(this.targetGhost);
     this.gestureGhost = document.createElement('a-entity');
     this.gestureGhost.setAttribute('geometry', 'primitive: box; width: 1; height: 1; depth: 1');
     this.gestureGhost.setAttribute('material', 'color: #ffffff; emissive: #93c5fd; emissiveIntensity: 0.18; wireframe: true; opacity: 0.42; transparent: true; depthWrite: false');
     this.gestureGhost.setAttribute('visible', 'false');
+    this.gestureGhost.setAttribute('role', 'img');
+    this.gestureGhost.setAttribute('aria-hidden', 'true');
+    this.gestureGhost.setAttribute('aria-label', 'Starting geometry preview');
     this.el.appendChild(this.gestureGhost);
 
     this.comparisonFrame = document.createElement('a-entity');
@@ -483,12 +671,16 @@ AFRAME.registerComponent('stretch-lab', {
     var comparisonLines = new THREE.LineSegments(comparisonGeometry, this.comparisonMaterial);
     comparisonLines.renderOrder = 5;
     this.comparisonFrame.setObject3D('mesh', comparisonLines);
+    this.comparisonFrame.setAttribute('role', 'img');
+    this.comparisonFrame.setAttribute('aria-hidden', 'true');
+    this.comparisonFrame.setAttribute('aria-label', 'Before geometry comparison');
     this.comparisonFrame.setAttribute('visible', 'false');
     this.el.appendChild(this.comparisonFrame);
     this.comparisonLabel = document.createElement('a-text');
     this.comparisonLabel.setAttribute('value', 'BEFORE');
     this.comparisonLabel.setAttribute('align', 'center');
     this.comparisonLabel.setAttribute('width', '1.35');
+    this.comparisonLabel.setAttribute('aria-hidden', 'true');
     this.comparisonLabel.setAttribute('color', '#bfdbfe');
     this.comparisonLabel.setAttribute('side', 'double');
     this.comparisonLabel.setAttribute('visible', 'false');
@@ -503,8 +695,10 @@ AFRAME.registerComponent('stretch-lab', {
 
     this.targetLabel = document.createElement('a-text');
     this.targetLabel.setAttribute('value', 'TARGET'); this.targetLabel.setAttribute('align', 'center');
-    this.targetLabel.setAttribute('width', '1.05'); this.targetLabel.setAttribute('color', '#facc15');
+    this.targetLabel.setAttribute('width', '1.35'); this.targetLabel.setAttribute('color', '#facc15');
+    this.targetLabel.setAttribute('wrap-count', '32');
     this.targetLabel.setAttribute('visible', 'false'); this.targetLabel.setAttribute('side', 'double');
+    this.targetLabel.setAttribute('aria-hidden', 'true');
     this.el.appendChild(this.targetLabel);
 
     this.projectionFill = document.createElement('a-plane');
@@ -513,6 +707,15 @@ AFRAME.registerComponent('stretch-lab', {
     this.projectionFill.setAttribute('rotation', '-90 0 0');
     this.projectionFill.setAttribute('material', 'color: #a78bfa; emissive: #a78bfa; emissiveIntensity: 0.18; opacity: 0.075; transparent: true; depthWrite: false; side: double');
     this.projectionFill.setAttribute('visible', 'false');
+    this.projectionFill.setAttribute('class', 'clickable slice-surface');
+    this.projectionFill.setAttribute('role', 'button');
+    this.projectionFill.setAttribute('aria-label', 'Explain the plan slice');
+    this.projectionFill.setAttribute('aria-keyshortcuts', 'Enter Space');
+    this.projectionFill.setAttribute('tabindex', '-1');
+    this.projectionFill.addEventListener('click', function () { this.explainSlice('plan projection'); }.bind(this));
+    this.projectionFill.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.explainSlice('plan projection'); } }.bind(this));
+    this.projectionFill.addEventListener('focus', function () { this.setSliceSurfaceFocus(this.projectionFill, true); }.bind(this));
+    this.projectionFill.addEventListener('blur', function () { this.setSliceSurfaceFocus(this.projectionFill, false); }.bind(this));
     this.el.appendChild(this.projectionFill);
 
     this.projectionFrame = document.createElement('a-entity');
@@ -555,11 +758,30 @@ AFRAME.registerComponent('stretch-lab', {
     this.projectionLabel.setAttribute('visible', 'false');
     this.el.appendChild(this.projectionLabel);
 
+    this.projectionGridGeometry = new THREE.BufferGeometry();
+    this.projectionGridGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(60), 3));
+    this.projectionGridMaterial = new THREE.LineBasicMaterial({ color: '#c4b5fd', transparent: true, opacity: 0.42, depthWrite: false, depthTest: false });
+    this.projectionGridLine = new THREE.LineSegments(this.projectionGridGeometry, this.projectionGridMaterial);
+    this.projectionGridLine.renderOrder = 3;
+    this.projectionGrid = document.createElement('a-entity');
+    this.projectionGrid.setObject3D('mesh', this.projectionGridLine);
+    this.projectionGrid.setAttribute('rotation', '-90 0 0');
+    this.projectionGrid.setAttribute('visible', 'false');
+    this.el.appendChild(this.projectionGrid);
     this.sectionPlane = document.createElement('a-plane');
     this.sectionPlane.setAttribute('width', '1');
     this.sectionPlane.setAttribute('height', '1');
     this.sectionPlane.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.3; opacity: 0.095; transparent: true; depthWrite: false; depthTest: false; side: double');
     this.sectionPlane.setAttribute('visible', 'false');
+    this.sectionPlane.setAttribute('class', 'clickable slice-surface');
+    this.sectionPlane.setAttribute('role', 'button');
+    this.sectionPlane.setAttribute('aria-label', 'Explain the active cross-section');
+    this.sectionPlane.setAttribute('aria-keyshortcuts', 'Enter Space');
+    this.sectionPlane.setAttribute('tabindex', '-1');
+    this.sectionPlane.addEventListener('click', function () { this.explainSlice('active cross-section'); }.bind(this));
+    this.sectionPlane.addEventListener('keydown', function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.explainSlice('active cross-section'); } }.bind(this));
+    this.sectionPlane.addEventListener('focus', function () { this.setSliceSurfaceFocus(this.sectionPlane, true); }.bind(this));
+    this.sectionPlane.addEventListener('blur', function () { this.setSliceSurfaceFocus(this.sectionPlane, false); }.bind(this));
     this.el.appendChild(this.sectionPlane);
     this.sectionSliceGeometry = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-0.5, -0.5, 0), new THREE.Vector3(0.5, -0.5, 0),
@@ -577,6 +799,68 @@ AFRAME.registerComponent('stretch-lab', {
       this.sectionSlices.push(sectionSlice);
     }
 
+    this.sectionGridGeometry = new THREE.BufferGeometry();
+    this.sectionGridGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(60), 3));
+    this.sectionGridMaterial = new THREE.LineBasicMaterial({ color: '#fef08a', transparent: true, opacity: 0.48, depthWrite: false, depthTest: false });
+    this.sectionGridLine = new THREE.LineSegments(this.sectionGridGeometry, this.sectionGridMaterial);
+    this.sectionGridLine.renderOrder = 5;
+    this.sectionGrid = document.createElement('a-entity');
+    this.sectionGrid.setObject3D('mesh', this.sectionGridLine);
+    this.sectionGrid.setAttribute('visible', 'false');
+    this.el.appendChild(this.sectionGrid);
+    this.sliceInsight = null;
+    this.sliceInsightLabel = document.createElement('a-text');
+    this.sliceInsightLabel.setAttribute('value', 'SLICE MICROSCOPE');
+    this.sliceInsightLabel.setAttribute('align', 'center');
+    this.sliceInsightLabel.setAttribute('width', '1.08');
+    this.sliceInsightLabel.setAttribute('wrap-count', '32');
+    this.sliceInsightLabel.setAttribute('color', '#fef08a');
+    this.sliceInsightLabel.setAttribute('side', 'double');
+    this.sliceInsightLabel.setAttribute('visible', 'false');
+    this.el.appendChild(this.sliceInsightLabel);
+    this.mathConnector = document.createElement('a-entity');
+    this.mathConnectorGeometry = new THREE.BufferGeometry();
+    this.mathConnectorGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
+    this.mathConnectorMaterial = new THREE.LineDashedMaterial({ color: '#fde68a', transparent: true, opacity: 0.58, depthWrite: false, depthTest: false, dashSize: 0.1, gapSize: 0.07 });
+    this.mathConnectorLine = new THREE.Line(this.mathConnectorGeometry, this.mathConnectorMaterial);
+    this.mathConnectorLine.renderOrder = 6;
+    this.mathConnector.setObject3D('mesh', this.mathConnectorLine);
+    this.mathConnector.setAttribute('visible', 'false');
+    this.mathConnectorParent = null;
+    this.mathConnectorStart = new THREE.Vector3();
+    this.mathConnectorEnd = new THREE.Vector3();
+    this.mathConnectorMid = new THREE.Vector3();
+    this.axisDragWorld = new THREE.Vector3();
+    this.axisDragDelta = new THREE.Vector3();
+    this.axisDragLabelPosition = new THREE.Vector3();
+    this.sliceInsightPosition = new THREE.Vector3();
+    this.rulerSignature = null;
+    this.bodyTransformSignature = null;
+    if (this.el.sceneEl) {
+      this.el.sceneEl.appendChild(this.mathConnector);
+      this.mathConnectorParent = this.el.sceneEl;
+    }
+    this.dragTrail = document.createElement('a-entity');
+    this.dragTrailGeometry = new THREE.BufferGeometry();
+    this.dragTrailGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    this.dragTrailMaterial = new THREE.LineBasicMaterial({ color: '#facc15', transparent: true, opacity: 0.86, depthWrite: false, depthTest: false });
+    this.dragTrailLine = new THREE.Line(this.dragTrailGeometry, this.dragTrailMaterial);
+    this.dragTrailLine.renderOrder = 7;
+    this.dragTrail.setObject3D('mesh', this.dragTrailLine);
+    this.dragTrail.setAttribute('visible', 'false');
+    this.dragTrailParent = null;
+    if (this.el.sceneEl) {
+      this.el.sceneEl.appendChild(this.dragTrail);
+      this.dragTrailParent = this.el.sceneEl;
+    }
+    this.dragDeltaLabel = document.createElement('a-text');
+    this.dragDeltaLabel.setAttribute('value', 'ΔX +0 units');
+    this.dragDeltaLabel.setAttribute('align', 'center');
+    this.dragDeltaLabel.setAttribute('width', '1.1');
+    this.dragDeltaLabel.setAttribute('color', '#fde68a');
+    this.dragDeltaLabel.setAttribute('side', 'double');
+    this.dragDeltaLabel.setAttribute('visible', 'false');
+    this.el.appendChild(this.dragDeltaLabel);
     this.guides = ['#38bdf8', '#4ade80', '#f472b6'].map(function (color) {
       var guide = document.createElement('a-entity');
       guide.setAttribute('geometry', 'primitive: box; width: 1; height: 1; depth: 1');
@@ -621,11 +905,45 @@ AFRAME.registerComponent('stretch-lab', {
       return face;
     }, this);
 
+    this.causalSlice = document.createElement('a-plane');
+    this.causalSlice.setAttribute('width', '1');
+    this.causalSlice.setAttribute('height', '1');
+    this.causalSlice.setAttribute('material', 'color: #fde047; emissive: #fde047; emissiveIntensity: 0.5; opacity: 0.22; transparent: true; depthWrite: false; depthTest: false; side: double');
+    this.causalSlice.setAttribute('visible', 'false');
+    this.el.appendChild(this.causalSlice);
+    this.causalLabel = document.createElement('a-text');
+    this.causalLabel.setAttribute('value', 'AREA SLICE');
+    this.causalLabel.setAttribute('align', 'center');
+    this.causalLabel.setAttribute('width', '0.92');
+    this.causalLabel.setAttribute('color', '#fef08a');
+    this.causalLabel.setAttribute('side', 'double');
+    this.causalLabel.setAttribute('visible', 'false');
+    this.el.appendChild(this.causalLabel);
+    this.causalPulse = null;
+    this.showcaseHalo = document.createElement('a-ring');
+    this.showcaseHalo.setAttribute('geometry', 'primitive: ring; radius-inner: 0.68; radius-outer: 0.75; segments-theta: 64');
+    this.showcaseHalo.setAttribute('rotation', '-90 0 0');
+    this.showcaseHalo.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.72; opacity: 0.44; transparent: true; side: double; depthWrite: false');
+    this.showcaseHalo.setAttribute('visible', 'false');
+    this.el.appendChild(this.showcaseHalo);
+    this.showcaseBadge = document.createElement('a-text');
+    this.showcaseBadge.setAttribute('value', 'DIMENSION STORY');
+    this.showcaseBadge.setAttribute('align', 'center');
+    this.showcaseBadge.setAttribute('width', '1.18');
+    this.showcaseBadge.setAttribute('color', '#fef08a');
+    this.showcaseBadge.setAttribute('side', 'double');
+    this.showcaseBadge.setAttribute('visible', 'false');
+    this.el.appendChild(this.showcaseBadge);
+
     this.handleTags = [];
     this.handles = ['X', 'Z', 'Y'].map(function (axisName, i) {
       var handle = document.createElement('a-entity');
       handle.setAttribute('class', 'clickable axis-handle');
       handle.setAttribute('data-axis-index', String(i));
+      handle.setAttribute('role', 'button');
+      handle.setAttribute('aria-label', axisName + ' dimension handle. Enter selects or grows; Shift plus Enter shrinks.');
+      handle.setAttribute('aria-keyshortcuts', 'Enter Space Shift+Enter Shift+Space');
+      handle.setAttribute('tabindex', '-1');
       handle.setAttribute('geometry', 'primitive: sphere; radius: 0.075; segmentsWidth: 16; segmentsHeight: 12');
       handle.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.8; roughness: 0.3');
       handle.setAttribute('visible', 'false');
@@ -663,6 +981,21 @@ AFRAME.registerComponent('stretch-lab', {
         var shrink = !!((event && event.shiftKey) || (nativeEvent && nativeEvent.shiftKey));
         this.grow(shrink ? -1 : 1);
       }.bind(this));
+      handle.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        if (this.ignoreClickUntil && performance.now() < this.ignoreClickUntil) return;
+        if (i >= this.d || this.replayActive || this.previewActive || this.showcaseActive) return;
+        if (this.axis !== i) {
+          this.endNudge(true);
+          this.axis = i;
+          this.emitState('Editing the ' + ['length X', 'width Z', 'height Y'][i] + ' axis. Trigger again to grow it.');
+          return;
+        }
+        this.grow(event.shiftKey ? -1 : 1);
+      }.bind(this));
+      handle.addEventListener('focus', function () { this.setHandleFocus(handle, true); }.bind(this));
+      handle.addEventListener('blur', function () { this.setHandleFocus(handle, false); }.bind(this));
       handle.addEventListener('mouseenter', function () {
         if (i < this.d) handle.object3D.scale.setScalar(i === this.axis ? 1.48 : 1.08);
       }.bind(this));
@@ -681,12 +1014,16 @@ AFRAME.registerComponent('stretch-lab', {
   },
 
   targets: function () {
-    return { x: this.d >= 1 ? this.L : THIN, z: this.d >= 2 ? this.W : THIN, y: this.d >= 3 ? this.H : THIN };
+    var target = this.targetDimensions;
+    target.x = this.d >= 1 ? this.L : THIN;
+    target.z = this.d >= 2 ? this.W : THIN;
+    target.y = this.d >= 3 ? this.H : THIN;
+    return target;
   },
-
   clearComparison: function () {
     this.comparisonState = null;
     if (this.comparisonFrame) this.comparisonFrame.setAttribute('visible', 'false');
+    if (this.comparisonFrame) this.comparisonFrame.setAttribute('aria-hidden', 'true');
     if (this.comparisonLabel) this.comparisonLabel.setAttribute('visible', 'false');
     if (this.comparisonBadge) this.comparisonBadge.setAttribute('visible', 'false');
   },
@@ -702,8 +1039,16 @@ AFRAME.registerComponent('stretch-lab', {
     this.comparisonState = { d: snapshot.d, L: snapshot.L, W: snapshot.W, H: snapshot.H, axis: snapshot.axis };
     this.comparisonFrame.object3D.scale.set(x, y, z);
     this.comparisonFrame.object3D.position.set(x / 2, y / 2, z / 2);
-    this.comparisonFrame.setAttribute('visible', true);
     var axisSymbols = ['X', 'Z', 'Y'], axisKeys = ['L', 'W', 'H'];
+    var comparisonDimensions = ['Length X', 'Width Z', 'Height Y'].slice(0, snapshot.d).map(function (label, index) {
+      return label + ' ' + r1(snapshot[axisKeys[index]]) + ' units';
+    });
+    var comparisonMetric = snapshot.d === 1 ? 'length' : snapshot.d === 2 ? 'area' : 'volume';
+    var comparisonUnits = snapshot.d === 1 ? 'unit' : snapshot.d === 2 ? 'square units' : 'cubic units';
+    var comparisonVisible = this.focusMode !== 'explore';
+    this.comparisonFrame.setAttribute('aria-label', 'Before geometry: ' + comparisonDimensions.join(', ') + '. Before ' + comparisonMetric + ' ' + r1(metricValue(snapshot.d, snapshot)) + ' ' + comparisonUnits + '.');
+    this.comparisonFrame.setAttribute('aria-hidden', comparisonVisible ? 'false' : 'true');
+    this.comparisonFrame.setAttribute('visible', comparisonVisible);
     var comparisonAxis = Math.max(0, Math.min(snapshot.axis, snapshot.d - 1));
     this.comparisonLabel.setAttribute('value', 'BEFORE\n' + axisSymbols[comparisonAxis] + ' ' + r1(snapshot[axisKeys[comparisonAxis]]));
     if (comparisonAxis === 0) this.comparisonLabel.object3D.position.set(x, y / 2, z + 0.08);
@@ -711,14 +1056,73 @@ AFRAME.registerComponent('stretch-lab', {
     else this.comparisonLabel.object3D.position.set(x / 2, y, z + 0.08);
     this.comparisonBadge.object3D.position.copy(this.comparisonLabel.object3D.position);
     this.comparisonBadge.object3D.position.z -= 0.014;
-    this.comparisonBadge.setAttribute('visible', true);
-    this.comparisonLabel.setAttribute('visible', true);
+    this.comparisonBadge.setAttribute('visible', this.focusMode !== 'explore');
+    this.comparisonLabel.setAttribute('visible', this.focusMode !== 'explore');
   },
 
+  setHandleFocus: function (handle, focused) {
+    if (!handle) return;
+    var index = Number(handle.getAttribute('data-axis-index'));
+    handle._keyboardFocused = focused;
+    if (handle.object3D) handle.object3D.scale.setScalar(focused ? (index === this.axis ? 1.58 : 1.18) : (index === this.axis ? 1.3 : 0.85));
+    if (handle._selectionGlow) {
+      handle._selectionGlow.setAttribute('visible', focused || (index === this.axis && index < this.d));
+      handle._selectionGlow.setAttribute('material', 'opacity', focused ? 0.32 : 0.16);
+      handle._selectionGlow.setAttribute('material', 'emissiveIntensity', focused ? 1.05 : 0.75);
+    }
+  },
+
+  setSliceSurfaceFocus: function (surface, focused) {
+    if (!surface) return;
+    var isPlan = surface === this.projectionFill;
+    surface.setAttribute('material', 'opacity', focused ? (isPlan ? 0.18 : 0.22) : (isPlan ? 0.075 : 0.095));
+    surface.setAttribute('material', 'emissiveIntensity', focused ? (isPlan ? 0.46 : 0.62) : (isPlan ? 0.18 : 0.3));
+  },
+
+  explainSlice: function (source) {
+    if (this.replayActive || this.previewActive || this.showcaseActive) return false;
+    var axisKeys = ['L', 'W', 'H'], axisLabels = ['Length X', 'Width Z', 'Height Y'];
+    if (this.d < 2) {
+      this.el.emit('sliceexplain', {
+        available: false,
+        title: 'Slice microscope',
+        formula: 'Stretch to a rectangle or box to inspect a slice.',
+        detail: 'A slice needs at least two dimensions.'
+      }, false);
+      return false;
+    }
+    var axisKey = axisKeys[this.axis], axisValue = Number(this[axisKey]);
+    var sliceArea = this.d === 2 ? this.L * this.W : this.axis === 0 ? this.W * this.H : this.axis === 1 ? this.L * this.H : this.L * this.W;
+    var metric = this.d === 2 ? sliceArea : sliceArea * axisValue;
+    var units = this.d === 2 ? 'units²' : 'units³';
+    var formula = this.d === 2
+      ? 'A = L × W = ' + r1(this.L) + ' × ' + r1(this.W) + ' = ' + r1(metric) + ' ' + units
+      : 'V = slice × ' + axisKey + ' = ' + r1(sliceArea) + ' × ' + r1(axisValue) + ' = ' + r1(metric) + ' ' + units;
+    var detail = this.d === 2
+      ? 'The floor lattice shows two independent lengths tiling a plane. Change either edge and the base area changes.'
+      : 'The highlighted slice is perpendicular to ' + axisLabels[this.axis] + '. Its area stays held while that edge supplies the third factor.';
+    this.sliceInsight = { until: performance.now() + (this.reduceMotion ? 1800 : 4800), axis: this.axis };
+    if (this.sliceInsightLabel) {
+      this.sliceInsightLabel.setAttribute('value', (this.d === 2 ? 'PLAN SLICE' : 'CROSS-SECTION') + '\n' + formula);
+      this.sliceInsightLabel.object3D.visible = this.focusMode === 'explain';
+    }
+    this.el.emit('sliceexplain', {
+      available: true,
+      title: this.d === 2 ? 'Plan slice' : 'Cross-section',
+      formula: formula,
+      detail: detail,
+      axis: axisLabels[this.axis],
+      source: source || 'control'
+    }, false);
+    return true;
+  },
   updateRuler: function () {
     if (!this.rulerTicks || !this.rulerLabels) return;
     var keys = ['L', 'W', 'H'];
     var activeValue = this.d > 0 ? Number(this[keys[this.axis]]) : 0;
+    var signature = [this.d, this.axis, activeValue.toFixed(3)].join('|');
+    if (signature === this.rulerSignature) return;
+    this.rulerSignature = signature;
     this.rulerTicks.forEach(function (tick, index) {
       var value = Number(tick.getAttribute('data-ruler-value'));
       var visible = this.d > 0 && this.axis < this.d && value <= activeValue + 0.001;
@@ -747,13 +1151,33 @@ AFRAME.registerComponent('stretch-lab', {
     }, this);
   },
 
+  writeUnitGrid: function (geometry, width, height) {
+    if (!geometry || !geometry.attributes || !geometry.attributes.position) return;
+    var array = geometry.attributes.position.array, offset = 0;
+    array.fill(0);
+    var widthLines = Math.max(0, Math.min(3, Math.floor(width - 0.001)));
+    var heightLines = Math.max(0, Math.min(3, Math.floor(height - 0.001)));
+    for (var i = 1; i <= widthLines; i++) {
+      var x = i / width - 0.5;
+      array[offset++] = x; array[offset++] = -0.5; array[offset++] = 0;
+      array[offset++] = x; array[offset++] = 0.5; array[offset++] = 0;
+    }
+    for (var j = 1; j <= heightLines; j++) {
+      var z = j / height - 0.5;
+      array[offset++] = -0.5; array[offset++] = z; array[offset++] = 0;
+      array[offset++] = 0.5; array[offset++] = z; array[offset++] = 0;
+    }
+    geometry.setDrawRange(0, offset / 3);
+    geometry.attributes.position.needsUpdate = true;
+  },
   updateProjection: function () {
-    var visible = this.d >= 2;
-    if (this.projectionFill) this.projectionFill.object3D.visible = visible;
+    var visible = this.d >= 2 && this.focusMode !== 'compare';
+    if (this.projectionFill) { this.projectionFill.object3D.visible = visible; this.projectionFill.setAttribute('tabindex', visible ? '0' : '-1'); this.projectionFill.setAttribute('aria-hidden', visible ? 'false' : 'true'); if (!visible && document.activeElement === this.projectionFill) this.projectionFill.blur(); }
     if (this.projectionFrame) this.projectionFrame.object3D.visible = visible;
     if (this.projectionAxis) this.projectionAxis.object3D.visible = visible && this.axis < this.d;
     if (this.projectionDrops) this.projectionDrops.object3D.visible = visible;
     if (this.projectionLabel) this.projectionLabel.object3D.visible = visible;
+    if (this.projectionGrid) this.projectionGrid.object3D.visible = visible && this.focusMode === 'explain';
     if (!visible) { this.projectionSignature = 'hidden'; return; }
     var presentationScale = Math.abs(this.el.object3D.scale.y) || 1;
     var floorY = (0.022 - this.el.object3D.position.y) / presentationScale;
@@ -761,8 +1185,10 @@ AFRAME.registerComponent('stretch-lab', {
     var signature = [x.toFixed(3), z.toFixed(3), floorY.toFixed(3), r1(this.L * this.W), this.axis].join('|');
     if (signature === this.projectionSignature) return;
     this.projectionSignature = signature;
+    this.writeUnitGrid(this.projectionGridGeometry, x, z);
     this.projectionFill.object3D.scale.set(x, z, 1);
     this.projectionFill.object3D.position.set(x / 2, floorY, z / 2);
+    if (this.projectionGrid) { this.projectionGrid.object3D.scale.set(x, z, 1); this.projectionGrid.object3D.position.set(x / 2, floorY + 0.006, z / 2); }
     var frame = this.projectionFrameGeometry.attributes.position.array;
     frame.set([0, floorY, 0, x, floorY, 0, x, floorY, z, 0, floorY, z, 0, floorY, 0]);
     this.projectionFrameGeometry.attributes.position.needsUpdate = true;
@@ -786,13 +1212,16 @@ AFRAME.registerComponent('stretch-lab', {
     this.projectionDropLines.computeLineDistances();
     this.projectionLabel.object3D.position.set(x / 2, floorY + 0.012, z + 0.18);
     this.projectionLabel.setAttribute('value', 'PLAN | A = L × W = ' + r1(this.L * this.W) + ' units²');
+    if (this.sliceInsightLabel && this.d === 2) this.sliceInsightLabel.object3D.position.set(x / 2, 0.24, z / 2);
   },
 
   updateSections: function () {
-    var visible = this.d === 3;
-    if (this.sectionPlane) this.sectionPlane.object3D.visible = visible;
+    var visible = this.d === 3 && this.focusMode === 'explain';
+    if (this.sectionPlane) { this.sectionPlane.object3D.visible = visible; this.sectionPlane.setAttribute('tabindex', visible ? '0' : '-1'); this.sectionPlane.setAttribute('aria-hidden', visible ? 'false' : 'true'); if (!visible && document.activeElement === this.sectionPlane) this.sectionPlane.blur(); }
+    if (this.sectionGrid) this.sectionGrid.object3D.visible = visible;
     if (!visible) {
       (this.sectionSlices || []).forEach(function (slice) { slice.object3D.visible = false; });
+      if (this.sectionGrid) this.sectionGrid.object3D.visible = false;
       this.sectionSignature = 'hidden';
       return;
     }
@@ -801,6 +1230,9 @@ AFRAME.registerComponent('stretch-lab', {
     if (signature === this.sectionSignature) return;
     this.sectionSignature = signature;
     var axisValue = [x, z, y][this.axis];
+    var gridWidth = this.axis === 0 ? z : x;
+    var gridHeight = this.axis === 0 ? y : this.axis === 1 ? y : z;
+    this.writeUnitGrid(this.sectionGridGeometry, gridWidth, gridHeight);
     var orient = function (entity, value) {
       entity.object3D.rotation.set(0, 0, 0);
       if (this.axis === 0) {
@@ -817,13 +1249,71 @@ AFRAME.registerComponent('stretch-lab', {
       }
     }.bind(this);
     orient(this.sectionPlane, axisValue / 2);
-    this.sectionSlices.forEach(function (slice, index) {
+    orient(this.sectionGrid, axisValue / 2);
+    if (this.sliceInsightLabel && this.d === 3) {
+      var insightPosition = this.sliceInsightPosition;
+      insightPosition.set(x / 2, y / 2, z / 2);
+      if (this.axis === 0) insightPosition.x = axisValue / 2 + 0.12;
+      else if (this.axis === 1) insightPosition.z = axisValue / 2 + 0.12;
+      else insightPosition.y = axisValue / 2 + 0.16;
+      this.sliceInsightLabel.object3D.position.copy(insightPosition);
+    }    this.sectionSlices.forEach(function (slice, index) {
       var value = (index + 1) * 0.5;
       slice.object3D.visible = value < axisValue - 0.04;
       if (slice.object3D.visible) orient(slice, value);
     });
   },
 
+  updateMathConnector: function () {
+    if (!this.mathConnectorParent && this.el.sceneEl) {
+      this.el.sceneEl.appendChild(this.mathConnector);
+      this.mathConnectorParent = this.el.sceneEl;
+    }
+    var wrap = document.getElementById('labelWrap');
+    var back = document.getElementById('labelBack');
+    var handle = this.handles && this.handles[this.axis];
+    var wrapVisible = !!wrap && wrap.getAttribute('visible') !== false && (!wrap.object3D || wrap.object3D.visible !== false);
+    var visible = this.d > 0 && this.axis < this.d && this.focusMode !== 'explore' && !!this.mathConnectorParent && !!wrap && !!back && !!handle && wrapVisible;
+    if (this.mathConnector) this.mathConnector.object3D.visible = visible;
+    if (!visible) {
+      this.mathConnectorSignature = 'hidden';
+      return;
+    }
+    var start = this.mathConnectorStart;
+    var end = this.mathConnectorEnd;
+    end.set(0, -Number(back.getAttribute('height')) / 2 - 0.035, 0.02);
+    handle.object3D.getWorldPosition(start);
+    wrap.object3D.localToWorld(end);
+    var mid = this.mathConnectorMid;
+    mid.copy(start).lerp(end, 0.55);
+    mid.y = Math.max(start.y, end.y) + 0.18;
+    var signature = [
+      start.x.toFixed(3), start.y.toFixed(3), start.z.toFixed(3),
+      mid.x.toFixed(3), mid.y.toFixed(3), mid.z.toFixed(3),
+      end.x.toFixed(3), end.y.toFixed(3), end.z.toFixed(3)
+    ].join('|');
+    if (signature === this.mathConnectorSignature) return;
+    this.mathConnectorSignature = signature;
+    var points = this.mathConnectorGeometry.attributes.position.array;
+    points.set([start.x, start.y, start.z, mid.x, mid.y, mid.z, end.x, end.y, end.z]);
+    this.mathConnectorGeometry.attributes.position.needsUpdate = true;
+    this.mathConnectorLine.computeLineDistances();
+  },
+  setFocusMode: function (mode) {
+    this.focusMode = normalizeChoice(mode, FOCUS_MODES, 'explain');
+    this.projectionSignature = null;
+    this.sectionSignature = null;
+    this.mathConnectorSignature = null;
+    this.rulerSignature = null;
+    this.bodyTransformSignature = null;
+    this.updateProjection();
+    this.updateSections();
+    this.updateMathConnector();
+    var comparisonVisible = this.focusMode !== 'explore' && !!this.comparisonState;
+    if (this.comparisonFrame) { this.comparisonFrame.object3D.visible = comparisonVisible; this.comparisonFrame.setAttribute('aria-hidden', comparisonVisible ? 'false' : 'true'); }
+    if (this.comparisonLabel) this.comparisonLabel.object3D.visible = comparisonVisible;
+    if (this.comparisonBadge) this.comparisonBadge.object3D.visible = comparisonVisible;
+  },
   setTarget: function (mission, complete, visible) {
     if (!this.targetGhost || !mission) return;
     this.activeMission = mission;
@@ -832,8 +1322,15 @@ AFRAME.registerComponent('stretch-lab', {
     this.targetGhost.object3D.scale.set(x, y, z);
     this.targetGhost.object3D.position.set(x / 2, y / 2, z / 2);
     this.targetGhost.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: 0.35; wireframe: true; opacity: 0.55; transparent: true; depthWrite: false');
+    var targetDimensions = ['Length X', 'Width Z', 'Height Y'].slice(0, mission.d).map(function (label, index) {
+      return label + ' ' + r1(mission[['L', 'W', 'H'][index]]) + ' units';
+    });
+    var targetMetric = mission.d === 1 ? 'length' : mission.d === 2 ? 'area' : 'volume';
+    var targetUnits = mission.d === 1 ? 'unit' : mission.d === 2 ? 'square units' : 'cubic units';
+    this.targetGhost.setAttribute('aria-label', (complete ? 'Completed ' : '') + 'Mission target: ' + targetDimensions.join(', ') + '. Target ' + targetMetric + ' ' + r1(metricValue(mission.d, mission)) + ' ' + targetUnits + '.');
+    this.targetGhost.setAttribute('aria-hidden', visible ? 'false' : 'true');
     this.targetGhost.setAttribute('visible', !!visible);
-    this.targetLabel.object3D.position.set(x / 2, y + 0.18, z / 2);
+    this.targetLabel.object3D.position.set(x / 2, y + 0.24, z / 2);
     this.targetLabel.setAttribute('color', color);
     this.targetLabel.setAttribute('visible', !!visible);
   },
@@ -841,8 +1338,10 @@ AFRAME.registerComponent('stretch-lab', {
   setMissionHint: function (axisIndex, direction, complete, mission, dimensions) {
     var axisNames = ['X', 'Z', 'Y'], keys = ['L', 'W', 'H'], axisColors = ['#38bdf8', '#4ade80', '#f472b6'];
     if (this.targetLabel) {
+      var targetAxes = mission ? keys.slice(0, mission.d).map(function (key, index) { return axisNames[index] + ' ' + r1(mission[key]) + 'u'; }).join(' | ') : '';
+      var targetMetricUnit = mission ? (mission.d === 1 ? 'u' : mission.d === 2 ? 'u2' : 'u3') : '';
       var targetMetric = mission ? ['', 'L', 'A', 'V'][mission.d] + ' ' + r1(metricValue(mission.d, mission)) : '';
-      var targetValue = 'TARGET' + (targetMetric ? '\n' + targetMetric : '');
+      var targetValue = 'TARGET' + (targetAxes ? '\n' + targetAxes : '') + (targetMetric ? '\n' + targetMetric + targetMetricUnit : '');
       if (complete) targetValue += '\nDONE';
       else if (axisIndex >= 0) targetValue += '\n' + (direction > 0 ? 'GROW ' : 'SHRINK ') + axisNames[axisIndex];
       this.targetLabel.setAttribute('value', targetValue);
@@ -850,6 +1349,7 @@ AFRAME.registerComponent('stretch-lab', {
     if (this.handleTags) this.handleTags.forEach(function (tag, i) {
       var current = dimensions && isFinite(dimensions[keys[i]]) ? r1(dimensions[keys[i]]) : '';
       var matched = !!(mission && i < mission.d && current !== '' && Math.abs(current - mission[keys[i]]) <= 0.03);
+      var guided = !complete && i === axisIndex && i < this.d;
       var value = axisNames[i] + (current !== '' ? ' ' + current : '');
       if (matched) value += '\nMATCHED';
       else if (i === axisIndex && mission) value += ' → ' + r1(mission[keys[i]]) + '\n' + (direction > 0 ? 'GROW' : 'SHRINK');
@@ -857,40 +1357,148 @@ AFRAME.registerComponent('stretch-lab', {
       tag.setAttribute('color', matched ? '#4ade80' : i === axisIndex ? '#facc15' : '#ffffff');
       tag.setAttribute('width', matched || i === axisIndex ? '0.95' : '0.7');
       if (this.handles && this.handles[i]) {
+        var handle = this.handles[i];
+        handle._missionHint = guided;
+        if (guided) handle.setAttribute('aria-describedby', 'missionHint'); else handle.removeAttribute('aria-describedby');
+        if (handle._selectionGlow) {
+          handle._selectionGlow.setAttribute('visible', guided || handle._keyboardFocused === true || (i < this.d && i === this.axis));
+          handle._selectionGlow.setAttribute('material', 'opacity', handle._keyboardFocused === true ? 0.32 : guided ? 0.26 : 0.16);
+          handle._selectionGlow.setAttribute('material', 'emissiveIntensity', handle._keyboardFocused === true ? 1.05 : guided ? 0.92 : 0.75);
+        }
         var handleColor = matched ? '#4ade80' : i === this.axis ? '#facc15' : axisColors[i];
-        this.handles[i].setAttribute('material', 'color: ' + handleColor + '; emissive: ' + handleColor + '; emissiveIntensity: ' + (matched ? '0.75' : i === this.axis ? '0.85' : '0.35') + '; roughness: 0.3');
+        var missionIntensity = guided ? '0.62' : (matched ? '0.75' : i === this.axis ? '0.85' : '0.35');
+        this.handles[i].setAttribute('material', 'color: ' + handleColor + '; emissive: ' + handleColor + '; emissiveIntensity: ' + missionIntensity + '; roughness: 0.3');
       }
     }, this);
   },
 
+  triggerCausalPulse: function (before, after) {
+    if (!this.causalSlice || !after || after.d < 2) return;
+    var keys = ['L', 'W', 'H'], changedAxis = -1;
+    for (var i = 0; i < after.d; i++) {
+      if (!before || before.d !== after.d || Number(before[keys[i]]) !== Number(after[keys[i]])) { changedAxis = i; break; }
+    }
+    if (changedAxis < 0) return;
+    var x = after.d >= 1 ? after.L : THIN, z = after.d >= 2 ? after.W : THIN, y = after.d >= 3 ? after.H : THIN;
+    this.causalSlice.object3D.rotation.set(0, 0, 0);
+    this.causalSlice.object3D.scale.set(x, z, 1);
+    if (changedAxis === 0) {
+      this.causalSlice.object3D.rotation.y = Math.PI / 2;
+      this.causalSlice.object3D.scale.set(z, y, 1);
+    } else if (changedAxis === 1) {
+      this.causalSlice.object3D.scale.set(x, y, 1);
+    } else {
+      this.causalSlice.object3D.rotation.x = -Math.PI / 2;
+      this.causalSlice.object3D.scale.set(x, z, 1);
+    }
+    this.causalSlice.object3D.position.set(x / 2, y / 2, z / 2);
+    var beforeMetric = before && before.d === after.d ? metricValue(after.d, before) : 0;
+    var afterMetric = metricValue(after.d, after), delta = beforeMetric ? afterMetric - beforeMetric : afterMetric;
+    var units = after.d === 2 ? 'units²' : 'units³';
+    var symbol = after.d === 2 ? 'ΔA' : 'ΔV';
+    this.causalLabel.setAttribute('value', (after.d === 2 ? 'AREA SLICE' : 'VOLUME SLICE') + '\n' + symbol + ' ' + (delta > 0 ? '+' : '') + r1(delta) + ' ' + units);
+    var labelPosition = this.causalSlice.object3D.position.clone();
+    if (changedAxis === 0) labelPosition.x += 0.12;
+    else if (changedAxis === 1) labelPosition.z += 0.12;
+    else labelPosition.y += 0.12;
+    this.causalLabel.object3D.position.copy(labelPosition);
+    this.causalPulse = {
+      start: performance.now(),
+      duration: this.reduceMotion ? 1 : 780,
+      baseScale: this.causalSlice.object3D.scale.clone()
+    };
+    this.causalSlice.object3D.visible = true;
+    this.causalLabel.object3D.visible = true;
+  },
+  updateCausalPulse: function (t) {
+    if (!this.causalPulse || !this.causalSlice) return;
+    var progress = Math.max(0, Math.min(1, ((t || performance.now()) - this.causalPulse.start) / this.causalPulse.duration));
+    var envelope = this.reduceMotion ? 1 : Math.sin(Math.PI * progress);
+    var scale = 1 + envelope * 0.08;
+    var base = this.causalPulse.baseScale;
+    this.causalSlice.object3D.scale.set(base.x * scale, base.y * scale, base.z);
+    var mesh = this.causalSlice.getObject3D('mesh'), material = mesh && mesh.material;
+    if (material) {
+      material.opacity = 0.16 + envelope * 0.28;
+      material.emissiveIntensity = 0.36 + envelope * 0.42;
+    }
+    if (progress >= 1) {
+      this.causalPulse = null;
+      this.causalSlice.object3D.visible = false;
+      this.causalLabel.object3D.visible = false;
+    }
+  },
+
   tick: function (t, dt) {
+    var now = performance.now();
     this.updateAxisDrag();
-    var k = this.reduceMotion ? 1 : Math.min(1, (dt || 16) / 130);
+    this.updateCausalPulse(t);
+    if (this.showcaseHalo) {
+      this.showcaseHalo.object3D.visible = !!this.showcaseActive;
+      if (this.showcaseActive) {
+        var haloScaleX = Math.max(0.92, this.cx * 0.62 + 0.42);
+        var haloScaleZ = Math.max(0.92, this.cz * 0.62 + 0.42);
+        this.showcaseHalo.object3D.position.set(this.cx / 2, 0.026, this.cz / 2);
+        this.showcaseHalo.object3D.scale.set(haloScaleX, haloScaleZ, 1);
+        this.showcaseHalo.object3D.rotation.z = this.reduceMotion ? 0 : (t || 0) / 1800;
+        var haloMesh = this.showcaseHalo.getObject3D('mesh'), haloMaterial = haloMesh && haloMesh.material;
+        if (haloMaterial) {
+          var haloPulse = this.reduceMotion ? 0.44 : 0.34 + 0.1 * Math.sin((t || 0) / 260);
+          haloMaterial.opacity = haloPulse;
+        }
+      }
+    }
+    if (this.showcaseBadge) {
+      this.showcaseBadge.object3D.visible = !!this.showcaseActive;
+      if (this.showcaseActive) this.showcaseBadge.object3D.position.set(this.cx / 2, this.cy + 0.34, this.cz / 2);
+    }
+    if (this.targetGhost && this.targetGhost.object3D.visible) {
+      var targetMesh = this.targetGhost.getObject3D('mesh'), targetMaterial = targetMesh && targetMesh.material;
+      if (targetMaterial) {
+        var targetPulse = Math.sin((t || 0) / 560);
+        targetMaterial.opacity = this.reduceMotion ? 0.55 : 0.55 + targetPulse * 0.04;
+        targetMaterial.emissiveIntensity = this.reduceMotion ? 0.35 : 0.35 + targetPulse * 0.08;
+      }
+    }
     var tg = this.targets();
     this.cx += (tg.x - this.cx) * k; this.cy += (tg.y - this.cy) * k; this.cz += (tg.z - this.cz) * k;
-    this.box.object3D.scale.set(this.cx, this.cy, this.cz);
-    this.box.object3D.position.set(this.cx / 2, this.cy / 2, this.cz / 2);
-    this.edgeFrame.object3D.scale.set(this.cx, this.cy, this.cz);
-    this.edgeFrame.object3D.position.set(this.cx / 2, this.cy / 2, this.cz / 2);
+    var bodySignature = [this.cx.toFixed(4), this.cy.toFixed(4), this.cz.toFixed(4)].join('|');
+    var bodyChanged = bodySignature !== this.bodyTransformSignature;
+    this.bodyTransformSignature = bodySignature;
+    if (bodyChanged) {
+      this.box.object3D.scale.set(this.cx, this.cy, this.cz);
+      this.box.object3D.position.set(this.cx / 2, this.cy / 2, this.cz / 2);
+      this.edgeFrame.object3D.scale.set(this.cx, this.cy, this.cz);
+      this.edgeFrame.object3D.position.set(this.cx / 2, this.cy / 2, this.cz / 2);
+    }
     var g = this.guides;
-    if (g && g.length === 3) {
+    if (bodyChanged && g && g.length === 3) {
       g[0].object3D.scale.set(this.cx, 0.035, 0.035); g[0].object3D.position.set(this.cx / 2, -0.045, -0.045);
       g[1].object3D.scale.set(0.035, 0.035, this.cz); g[1].object3D.position.set(-0.045, -0.045, this.cz / 2);
       g[2].object3D.scale.set(0.035, this.cy, 0.035); g[2].object3D.position.set(-0.045, this.cy / 2, -0.045);
     }
     var h = this.handles;
     if (h && h.length === 3) {
-      h[0].object3D.position.set(this.cx + 0.1, this.cy / 2, this.cz / 2);
-      h[1].object3D.position.set(this.cx / 2, this.cy / 2, this.cz + 0.1);
-      h[2].object3D.position.set(this.cx / 2, this.cy + 0.1, this.cz / 2);
+      if (bodyChanged) {
+        h[0].object3D.position.set(this.cx + 0.1, this.cy / 2, this.cz / 2);
+        h[1].object3D.position.set(this.cx / 2, this.cy / 2, this.cz + 0.1);
+        h[2].object3D.position.set(this.cx / 2, this.cy + 0.1, this.cz / 2);
+      }
       h.forEach(function (handle, i) {
-        if (!handle._selectionGlow || i !== this.axis || i >= this.d) return;
-        var pulse = this.reduceMotion ? 1 : 1 + 0.1 * Math.sin((t || 0) / 230);
+        var guidedHandle = handle._missionHint === true, focusedHandle = handle._keyboardFocused === true;
+        if (!handle._selectionGlow || i >= this.d || (!guidedHandle && !focusedHandle && i !== this.axis)) return;
+        var pulse = this.reduceMotion ? 1 : focusedHandle ? 1.04 : i === this.axis ? 1 + 0.1 * Math.sin((t || 0) / 230) : 1 + 0.07 * Math.sin((t || 0) / 260);
         handle._selectionGlow.object3D.scale.setScalar(pulse);
       }, this);
     }
+    if (bodyChanged && this.axisDrag && this.dragDeltaLabel && h && h[this.axisDrag.axis]) {
+      var deltaLabelPosition = this.axisDragLabelPosition;
+      deltaLabelPosition.copy(h[this.axisDrag.axis].object3D.position);
+      deltaLabelPosition.y += 0.18;
+      this.dragDeltaLabel.object3D.position.copy(deltaLabelPosition);
+    }
     var faces = this.faceHighlights;
-    if (faces && faces.length === 3) {
+    if (bodyChanged && faces && faces.length === 3) {
       faces[0].object3D.scale.set(this.cz, this.cy, 1);
       faces[0].object3D.position.set(this.cx + 0.006, this.cy / 2, this.cz / 2);
       faces[1].object3D.scale.set(this.cx, this.cy, 1);
@@ -901,9 +1509,11 @@ AFRAME.registerComponent('stretch-lab', {
     this.updateRuler();
     this.updateProjection();
     this.updateSections();
+    if (this.sliceInsightLabel) { var insightActive = !!(this.sliceInsight && this.d >= 2 && this.focusMode === 'explain' && now < this.sliceInsight.until); this.sliceInsightLabel.object3D.visible = insightActive; if (this.sliceInsight && now >= this.sliceInsight.until) this.sliceInsight = null; }
+    this.updateMathConnector();
   },
 
-  apply: function (instant, message) {
+  apply: function (instant, message, silent) {
     var colr = DIM_COLORS[this.d];
     this.dot.setAttribute('visible', this.d === 0);
     this.box.setAttribute('visible', this.d >= 1);
@@ -917,15 +1527,20 @@ AFRAME.registerComponent('stretch-lab', {
     if (this.projectionDropMaterial) this.projectionDropMaterial.color.set(colr);
     this.projectionSignature = null;
     this.sectionSignature = null;
+    this.mathConnectorSignature = null;
+    this.rulerSignature = null;
+    this.bodyTransformSignature = null;
     if (this.projectionLabel) this.projectionLabel.setAttribute('color', this.d === 2 ? '#bbf7d0' : '#ddd6fe');
     if (instant || this.reduceMotion) { var tg = this.targets(); this.cx = tg.x; this.cy = tg.y; this.cz = tg.z; }
-    this.emitState(message);
+    this.sliceInsight = null; if (this.sliceInsightLabel) this.sliceInsightLabel.object3D.visible = false;
+    this.emitState(message, silent);
   },
 
   capture: function () { return { d: this.d, L: this.L, W: this.W, H: this.H, axis: this.axis }; },
   remember: function () { this.endNudge(true); this.clearComparison(); this.future = []; this.history.push(this.capture()); if (this.history.length > 50) this.history.shift(); },
   rememberSnapshot: function (snapshot) { this.future = []; this.history.push(snapshot); if (this.history.length > 50) this.history.shift(); },
   beginNudge: function () {
+    if (this.previewActive) this.restorePreview(true);
     if (!this.nudgeStart) { this.clearComparison(); this.nudgeStart = this.capture(); }
     if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
   },
@@ -964,10 +1579,11 @@ AFRAME.registerComponent('stretch-lab', {
   },
   emitChangeNotice: function (before, after) {
     var text = this.changeNotice(before, after);
-    if (text) this.el.emit('geometrynotice', { text: text }, false);
+    if (text) { this.triggerCausalPulse(before, after); this.el.emit('geometrynotice', { text: text }, false); }
   },
-  beginResize: function () { this.endNudge(true); if (!this.resizeStart && this.d > 0) { this.clearComparison(); this.resizeStart = this.capture(); } },
+  beginResize: function () { if (this.previewActive) this.restorePreview(true); this.endNudge(true); if (!this.resizeStart && this.d > 0) { this.clearComparison(); this.resizeStart = this.capture(); } },
   beginAxisDrag: function (hand, index) {
+    if (this.previewActive) this.restorePreview(true);
     if (!hand || !window.THREE || this.d <= 0 || index < 0 || index >= this.d) return false;
     this.endNudge(true);
     this.axis = index;
@@ -993,28 +1609,53 @@ AFRAME.registerComponent('stretch-lab', {
       lastValue: this[key],
       lastDetent: Math.round(this[key] / STEP)
     };
+    if (this.dragTrail && this.dragTrailParent) {
+      this.dragTrail.object3D.visible = true;
+      var trailStart = this.dragTrailGeometry.attributes.position.array;
+      trailStart.set([startPosition.x, startPosition.y, startPosition.z, startPosition.x, startPosition.y, startPosition.z]);
+      this.dragTrailGeometry.attributes.position.needsUpdate = true;
+    }
+    if (this.dragDeltaLabel) {
+      this.dragDeltaLabel.setAttribute('value', '\u0394' + ['X', 'Z', 'Y'][index] + ' +0 units');
+      this.dragDeltaLabel.setAttribute('visible', true);
+    }
     var tg = this.targets();
     this.gestureGhost.object3D.scale.set(tg.x, tg.y, tg.z);
     this.gestureGhost.object3D.position.set(tg.x / 2, tg.y / 2, tg.z / 2);
+    var startDimensions = ['Length X', 'Width Z', 'Height Y'].slice(0, this.d).map(function (label, axisIndex) {
+      return label + ' ' + r1(this[['L', 'W', 'H'][axisIndex]]) + ' units';
+    }, this).join(', ');
+    this.gestureGhost.setAttribute('aria-label', 'Starting geometry: ' + startDimensions + '. Pulling ' + ['length X', 'width Z', 'height Y'][index] + '.');
+    this.gestureGhost.setAttribute('aria-hidden', 'false');
     this.gestureGhost.setAttribute('visible', true);
-    this.emitState('Direct stretch started on the ' + ['length X', 'width Z', 'height Y'][index] + ' axis.', true);
+    this.emitState('Direct stretch started on the ' + ['length X', 'width Z', 'height Y'][index] + ' axis.', false);
     return true;
   },
   updateAxisDrag: function () {
     var drag = this.axisDrag;
     if (!drag || !drag.hand || !drag.hand.object3D || !window.THREE) return;
-    var currentPosition = new THREE.Vector3();
-    drag.hand.object3D.getWorldPosition(currentPosition);
-    var distance = currentPosition.sub(drag.startPosition).dot(drag.axisVector);
+    var currentWorld = this.axisDragWorld;
+    var deltaVector = this.axisDragDelta;
+    drag.hand.object3D.getWorldPosition(currentWorld);
+    var distance = deltaVector.copy(currentWorld).sub(drag.startPosition).dot(drag.axisVector);
     var presentationScale = this.presentationScale > 0 ? this.presentationScale : 1;
     var value = Math.max(MINV, Math.min(MAXV, drag.startValue + distance / presentationScale));
     var target = this.activeMission && drag.axis < this.activeMission.d ? Number(this.activeMission[drag.key]) : NaN;
     var snapped = isFinite(target) && Math.abs(value - target) <= 0.035;
     if (snapped) value = target;
-    value = r1(value);
+    value = rState(value);
     if (value === drag.lastValue) return;
     this[drag.key] = value;
     drag.lastValue = value;
+    if (this.dragTrail && this.dragTrailParent) {
+      var trail = this.dragTrailGeometry.attributes.position.array;
+      trail.set([drag.startPosition.x, drag.startPosition.y, drag.startPosition.z, currentWorld.x, currentWorld.y, currentWorld.z]);
+      this.dragTrailGeometry.attributes.position.needsUpdate = true;
+    }
+    if (this.dragDeltaLabel) {
+      var delta = r1(value - drag.startValue);
+      this.dragDeltaLabel.setAttribute('value', '\u0394' + ['X', 'Z', 'Y'][drag.axis] + ' ' + (delta > 0 ? '+' : '') + delta + ' units');
+    }
     var detent = Math.round(value / STEP);
     if (detent !== drag.lastDetent || snapped) {
       drag.lastDetent = detent;
@@ -1026,7 +1667,10 @@ AFRAME.registerComponent('stretch-lab', {
     if (!this.axisDrag) return false;
     var drag = this.axisDrag;
     this.axisDrag = null;
+    this.gestureGhost.setAttribute('aria-hidden', 'true');
     this.gestureGhost.setAttribute('visible', false);
+    if (this.dragTrail) this.dragTrail.object3D.visible = false;
+    if (this.dragDeltaLabel) this.dragDeltaLabel.setAttribute('visible', false);
     this.ignoreClickUntil = performance.now() + 250;
     if (cancel && this.resizeStart) {
       var before = this.resizeStart;
@@ -1058,6 +1702,96 @@ AFRAME.registerComponent('stretch-lab', {
     if (changed) this.emitChangeNotice(before, after);
   },
 
+  previewSnapshot: function (snapshot, index, total) {
+    if (!snapshot || this.replayActive || this.showcaseActive) return false;
+    if (!this.previewActive) this.previewOrigin = this.capture();
+    this.previewActive = true; this.previewIndex = Number(index);
+    this.clearComparison();
+    this.d = snapshot.d; this.L = snapshot.L; this.W = snapshot.W; this.H = snapshot.H; this.axis = snapshot.axis;
+    this.apply(true, null, true);
+    this.emitState('Previewing geometry story step ' + (Number(index) + 1) + ' of ' + total + '.', true);
+    return true;
+  },
+  restorePreview: function (announce) {
+    if (!this.previewActive || !this.previewOrigin) return false;
+    var origin = this.previewOrigin;
+    this.previewActive = false;
+    this.previewOrigin = null; this.previewIndex = null;
+    this.d = origin.d; this.L = origin.L; this.W = origin.W; this.H = origin.H; this.axis = origin.axis;
+    this.apply(true, announce ? 'Returned to the current geometry.' : null, !announce);
+    return true;
+  },
+
+  startShowcase: function () {
+    if (this.replayActive || this.previewActive || this.showcaseActive) return false;
+    this.showcaseOrigin = this.capture();
+    this.showcaseActive = true;
+    this.showcaseIndex = -1;
+    this.clearComparison();
+    if (this.showcaseHalo) this.showcaseHalo.object3D.visible = true;
+    var advance = function () {
+      if (!this.showcaseActive) return;
+      this.showcaseIndex++;
+      if (this.showcaseIndex >= SHOWCASE_STEPS.length) {
+        this.stopShowcase(true, 'Dimension story complete. Your geometry is restored.');
+        return;
+      }
+      var step = SHOWCASE_STEPS[this.showcaseIndex];
+      this.d = step.d; this.L = step.L; this.W = step.W; this.H = step.H; this.axis = step.axis;
+      this.apply(false, null, true);
+      if (this.showcaseBadge) {
+        this.showcaseBadge.setAttribute('value', step.label + '\n' + step.caption);
+        this.showcaseBadge.object3D.visible = true;
+      }
+      this.el.emit('showcasestep', { index: this.showcaseIndex, total: SHOWCASE_STEPS.length, label: step.label, caption: step.caption }, false);
+      // Reduced motion keeps each snapped step on-screen long enough to read its caption.
+      this.showcaseTimer = setTimeout(advance, this.reduceMotion ? 1200 : 1450);
+    }.bind(this);
+    advance();
+    return true;
+  },
+  stopShowcase: function (announce, message) {
+    if (!this.showcaseActive && !this.showcaseOrigin) return false;
+    if (this.showcaseTimer) clearTimeout(this.showcaseTimer);
+    this.showcaseTimer = null;
+    var origin = this.showcaseOrigin || this.capture();
+    this.showcaseActive = false;
+    this.showcaseOrigin = null;
+    this.showcaseIndex = -1;
+    if (this.showcaseHalo) this.showcaseHalo.object3D.visible = false;
+    if (this.showcaseBadge) this.showcaseBadge.object3D.visible = false;
+    this.d = origin.d; this.L = origin.L; this.W = origin.W; this.H = origin.H; this.axis = origin.axis;
+    this.apply(true, announce ? (message || 'Dimension story complete. Your geometry is restored.') : null);
+    this.el.emit('showcasestop', { message: message || 'Dimension story complete. Your geometry is restored.' }, false);
+    return true;
+  },
+  replayHistory: function () {
+    if (this.replayActive || this.previewActive || this.showcaseActive) return false;
+    var snapshots = (this.history || []).slice();
+    snapshots.push(this.capture());
+    if (snapshots.length < 2) {
+      this.emitState('Make at least one geometry change before replaying history.');
+      return false;
+    }
+    var original = this.capture(), index = 0;
+    this.replayActive = true;
+    this.clearComparison();
+    var play = function () {
+      if (index >= snapshots.length) {
+        this.d = original.d; this.L = original.L; this.W = original.W; this.H = original.H; this.axis = original.axis;
+        this.replayActive = false;
+        this.apply(true);
+        this.emitState('History replay complete. Your current geometry is restored.');
+        return;
+      }
+      var snapshot = snapshots[index++];
+      this.d = snapshot.d; this.L = snapshot.L; this.W = snapshot.W; this.H = snapshot.H; this.axis = snapshot.axis;
+      this.apply(true);
+      this.replayTimer = setTimeout(play, this.reduceMotion ? 0 : 520);
+    }.bind(this);
+    play();
+    return true;
+  },
   stretch: function () {
     if (this.d >= 3) { this.emitState('Already a solid. Resize an axis or collapse first.'); return; }
     this.remember(); this.d++; this.axis = this.d - 1; this.apply(false);
@@ -1132,7 +1866,17 @@ AFRAME.registerComponent('stretch-lab', {
   },
 
   remove: function () {
+    if (this.motionQuery) {
+      if (this.motionQuery.removeEventListener) this.motionQuery.removeEventListener('change', this.motionPreferenceHandler);
+      else if (this.motionQuery.removeListener) this.motionQuery.removeListener('change', this.motionPreferenceHandler);
+    }
+    if (this.replayTimer) clearTimeout(this.replayTimer);
+    if (this.showcaseTimer) clearTimeout(this.showcaseTimer); this.showcaseTimer = null; this.showcaseActive = false; this.showcaseOrigin = null;
     if (this.nudgeTimer) clearTimeout(this.nudgeTimer);
+    this.previewActive = false; this.previewOrigin = null; this.previewIndex = null;
+    if (this.causalPulse) this.causalPulse = null;
+    if (this.causalSlice) this.causalSlice.object3D.visible = false;
+    if (this.causalLabel) this.causalLabel.object3D.visible = false;
     if (this.axisDrag) this.endAxisDrag(true);
     var edgeLines = this.edgeFrame && this.edgeFrame.getObject3D('mesh');
     if (edgeLines) {
@@ -1146,12 +1890,22 @@ AFRAME.registerComponent('stretch-lab', {
     }
     if (this.projectionFrameGeometry) this.projectionFrameGeometry.dispose();
     if (this.projectionFrameMaterial) this.projectionFrameMaterial.dispose();
+    if (this.projectionGridGeometry) this.projectionGridGeometry.dispose();
+    if (this.projectionGridMaterial) this.projectionGridMaterial.dispose();
     if (this.projectionAxisGeometry) this.projectionAxisGeometry.dispose();
     if (this.projectionAxisMaterial) this.projectionAxisMaterial.dispose();
     if (this.projectionDropGeometry) this.projectionDropGeometry.dispose();
     if (this.projectionDropMaterial) this.projectionDropMaterial.dispose();
     if (this.sectionSliceGeometry) this.sectionSliceGeometry.dispose();
     if (this.sectionSliceMaterial) this.sectionSliceMaterial.dispose();
+    if (this.sectionGridGeometry) this.sectionGridGeometry.dispose();
+    if (this.sectionGridMaterial) this.sectionGridMaterial.dispose();
+    if (this.mathConnector && this.mathConnector.parentNode) this.mathConnector.parentNode.removeChild(this.mathConnector);
+    if (this.mathConnectorGeometry) this.mathConnectorGeometry.dispose();
+    if (this.mathConnectorMaterial) this.mathConnectorMaterial.dispose();
+    if (this.dragTrail && this.dragTrail.parentNode) this.dragTrail.parentNode.removeChild(this.dragTrail);
+    if (this.dragTrailGeometry) this.dragTrailGeometry.dispose();
+    if (this.dragTrailMaterial) this.dragTrailMaterial.dispose();
   },
 
   emitState: function (message, silent) {
@@ -1170,11 +1924,25 @@ AFRAME.registerComponent('stretch-lab', {
       guide.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + (i === this.axis ? '0.9' : '0.35') + '; opacity: ' + (i === this.axis ? '1' : '0.65') + '; transparent: true');
     }, this);
     if (this.handles) this.handles.forEach(function (handle, i) {
-      handle.setAttribute('visible', i < this.d);
-      handle.object3D.scale.setScalar(i === this.axis ? 1.3 : 0.85);
-      if (handle._selectionGlow) handle._selectionGlow.setAttribute('visible', i < this.d && i === this.axis);
+      var visibleHandle = i < this.d, focusedHandle = handle._keyboardFocused === true;
+      var guidedHandle = handle._missionHint === true;
+      handle.setAttribute('visible', visibleHandle);
+      handle.setAttribute('tabindex', visibleHandle ? '0' : '-1');
+      handle.setAttribute('aria-hidden', visibleHandle ? 'false' : 'true');
+      handle.setAttribute('aria-pressed', i === this.axis ? 'true' : 'false');
+      var handleValue = visibleHandle ? r1(Number(this[['L', 'W', 'H'][i]])) + ' units' : 'inactive';
+      var handleSelection = visibleHandle && i === this.axis ? ', selected axis' : '';
+      handle.setAttribute('aria-label', ['Length X', 'Width Z', 'Height Y'][i] + ' dimension handle, ' + handleValue + handleSelection + '. Enter selects or grows; Shift plus Enter shrinks.');
+      if (!visibleHandle && document.activeElement === handle) handle.blur();
+      handle.object3D.scale.setScalar(focusedHandle ? (i === this.axis ? 1.58 : 1.18) : (i === this.axis ? 1.3 : 0.85));
+      if (handle._selectionGlow) {
+        handle._selectionGlow.setAttribute('visible', focusedHandle || guidedHandle || (visibleHandle && i === this.axis));
+        handle._selectionGlow.setAttribute('material', 'opacity', focusedHandle ? 0.32 : guidedHandle ? 0.26 : 0.16);
+        handle._selectionGlow.setAttribute('material', 'emissiveIntensity', focusedHandle ? 1.05 : guidedHandle ? 0.92 : 0.75);
+      }
       var color = i === this.axis ? '#facc15' : ['#38bdf8', '#4ade80', '#f472b6'][i];
-      handle.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + (i === this.axis ? '0.85' : '0.35') + '; roughness: 0.3');
+      var intensity = focusedHandle ? '1.05' : (guidedHandle ? '0.62' : (i === this.axis ? '0.85' : '0.35'));
+      handle.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + intensity + '; roughness: 0.3');
     }, this);
     if (this.faceHighlights) this.faceHighlights.forEach(function (face, i) {
       face.setAttribute('visible', i < this.d && i === this.axis);
@@ -1209,13 +1977,186 @@ window.addEventListener('load', function () {
   var uiFresh = document.getElementById('uiFresh'), sessionNote = document.getElementById('sessionNote');
   var uiGhost = document.getElementById('uiGhost'), uiBoundary = document.getElementById('uiBoundary');
   var invariantNotice = document.getElementById('invariantNotice'), uiViewScale = document.getElementById('uiViewScale');
+  var sliceExplainer = document.getElementById('sliceExplainer'), uiExplainSlice = document.getElementById('uiExplainSlice'), sliceFormula = document.getElementById('sliceFormula'), sliceDetail = document.getElementById('sliceDetail');
+  var uiFocusMode = document.getElementById('uiFocusMode'), uiPrecision = document.getElementById('uiPrecision'), uiStickMode = document.getElementById('uiStickMode'), uiRenderQuality = document.getElementById('uiRenderQuality'), uiReplay = document.getElementById('uiReplay');
+  var focusModeHelp = document.getElementById('focusModeHelp');
+  var uiShowcase = document.getElementById('uiShowcase'), uiShowcaseStop = document.getElementById('uiShowcaseStop'), showcaseBox = document.getElementById('showcaseBox'), showcaseProgress = document.getElementById('showcaseProgress'), showcaseCaption = document.getElementById('showcaseCaption');
+  var uiInstructor = document.getElementById('uiInstructor'), uiLessonLink = document.getElementById('uiLessonLink'), uiLessonUrl = document.getElementById('uiLessonUrl'), instructorHelp = document.getElementById('instructorHelp');
+  var guideProgress = document.getElementById('guideProgress'), guidePrompt = document.getElementById('guidePrompt'), guideWhy = document.getElementById('guideWhy'), guideStatus = document.getElementById('guideStatus'), uiGuideAction = document.getElementById('uiGuideAction'), uiGuideWhy = document.getElementById('uiGuideWhy');
+  var guideStepButtons = [0, 1, 2, 3].map(function (index) { return document.getElementById('guideStep' + index); });
+  var uiHistoryScrub = document.getElementById('uiHistoryScrub'), historyValue = document.getElementById('historyValue'), uiHistoryRestore = document.getElementById('uiHistoryRestore');
+  var guideWhyOpen = false;
   var vrNoticeText = document.getElementById('vrNoticeText'), vrViewText = document.getElementById('vrViewText');
   var missionIndex = SAVED_STATE ? SAVED_STATE.missionIndex : 0, missionComplete = false, showTarget = SAVED_STATE ? SAVED_STATE.showTarget : true, lastMissionState = null;
   var showBoundary = SAVED_STATE ? SAVED_STATE.showBoundary : false, completedMask = SAVED_STATE ? SAVED_STATE.completedMask : 0, suppressNextSave = false, currentMissionAction = null;
   var viewScaleIndex = SAVED_STATE ? SAVED_STATE.viewScaleIndex : 1, immersiveActive = false;
+  var focusMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.focusMode, FOCUS_MODES, 'explain') : 'explain';
+  var stickMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.stickMode, STICK_MODES, 'geometry') : 'geometry';
+  var renderQuality = SAVED_STATE ? normalizeChoice(SAVED_STATE.quality, QUALITY_MODES, 'auto') : 'auto';
+  var instructorMode = SAVED_STATE ? SAVED_STATE.instructorMode === true : false;
+  var FOCUS_MODE_HELP = {
+    explore: 'Explore keeps the shape, scale, and selected ruler prominent while hiding extra construction overlays.',
+    explain: 'Explain shows the floor plan, unit lattice, active slices, and the math link from the selected handle.',
+    compare: 'Compare keeps the blue before outline and change explanation visible while simplifying the construction view.'
+  };
   var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 };
   if (uiGhost) uiGhost.checked = showTarget;
   if (uiBoundary) uiBoundary.checked = showBoundary;
+  if (uiFocusMode) uiFocusMode.value = focusMode;
+  if (uiInstructor) uiInstructor.checked = instructorMode;
+  if (uiPrecision) uiPrecision.value = String(MATH_PRECISION);
+  function updateFocusModeHelp() {
+    var help = FOCUS_MODE_HELP[focusMode] || FOCUS_MODE_HELP.explain;
+    if (focusModeHelp) focusModeHelp.textContent = help;
+    if (uiFocusMode) uiFocusMode.setAttribute('aria-label', 'Scene focus. ' + help);
+  }
+  updateFocusModeHelp();
+
+  function applyInstructorMode(value, announce) {
+    instructorMode = !!value;
+    if (uiInstructor) uiInstructor.checked = instructorMode;
+    document.body.classList.toggle('instructor-mode', instructorMode);
+    if (instructorHelp) {
+      instructorHelp.hidden = !instructorMode;
+      instructorHelp.textContent = instructorMode ? 'Instructor mode highlights the demo state. Copy the lesson link to share this exact geometry and presentation setup.' : '';
+    }
+    if (!instructorMode && uiLessonUrl) uiLessonUrl.hidden = true;
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = instructorMode ? 'Instructor mode enabled. The demo state is ready to share.' : 'Instructor mode disabled.';
+  }
+
+  function lessonShareUrl() {
+    var component = comp(), snapshot = component ? component.capture() : null;
+    if (!snapshot) return window.location.href;
+    var url = new URL(window.location.href), params = new URLSearchParams();
+    params.set('d', snapshot.d); params.set('L', snapshot.L); params.set('W', snapshot.W); params.set('H', snapshot.H); params.set('axis', snapshot.axis);
+    params.set('mission', missionIndex); params.set('target', showTarget ? '1' : '0'); params.set('boundary', showBoundary ? '1' : '0');
+    params.set('view', viewScaleIndex); params.set('focus', focusMode); params.set('precision', MATH_PRECISION); params.set('stick', stickMode); params.set('quality', renderQuality); params.set('instructor', instructorMode ? '1' : '0');
+    url.search = params.toString(); url.hash = '';
+    return url.toString();
+  }
+
+  function fallbackLessonCopy(text) {
+    if (!uiLessonUrl) return false;
+    uiLessonUrl.hidden = false;
+    uiLessonUrl.value = text;
+    uiLessonUrl.focus();
+    uiLessonUrl.select();
+    try { return document.execCommand('copy'); } catch (ignore) { return false; }
+  }
+
+  function copyLessonLink() {
+    var text = lessonShareUrl();
+    var announce = function (copied) {
+      if (live) live.textContent = copied ? 'Lesson link copied to the clipboard.' : 'Lesson link ready below. Copy it to share this demo.';
+    };
+    if (uiLessonUrl) { uiLessonUrl.hidden = false; uiLessonUrl.value = text; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { announce(true); }).catch(function () { announce(fallbackLessonCopy(text)); });
+    } else announce(fallbackLessonCopy(text));
+  }
+  function guideState(s) {
+    var d = s && Number.isInteger(s.d) ? Math.max(0, Math.min(3, s.d)) : 0;
+    var step = GUIDE_STEPS[d];
+    var priorStep = guideStatus ? guideStatus.getAttribute('data-step') : null;
+    if (guideProgress) guideProgress.textContent = 'Step ' + (d + 1) + ' of ' + GUIDE_STEPS.length;
+    if (guideStatus && priorStep !== String(d)) {
+      guideStatus.setAttribute('data-step', String(d));
+      guideStatus.textContent = 'Guided exploration step ' + (d + 1) + ' of ' + GUIDE_STEPS.length + ': ' + step.label + '. ' + step.prompt;
+    }
+    if (guidePrompt) guidePrompt.textContent = step.prompt;
+    if (uiGuideAction) {
+      uiGuideAction.textContent = step.action;
+      uiGuideAction.disabled = d >= 3;
+      uiGuideAction.setAttribute('aria-label', d >= 3 ? 'Review why volume changes with one edge' : step.action);
+    }
+    if (uiGuideWhy) uiGuideWhy.setAttribute('aria-expanded', guideWhyOpen ? 'true' : 'false');
+    if (guideWhy) {
+      guideWhy.textContent = step.why;
+      guideWhy.hidden = !guideWhyOpen;
+    }
+    guideStepButtons.forEach(function (button, index) {
+      if (!button) return;
+      var complete = index < d, current = index === d;
+      button.className = 'guidestep' + (complete ? ' complete' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-label', GUIDE_STEPS[index].label + (complete ? ', completed' : current ? ', current step' : ', upcoming step'));
+      if (current) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
+    });
+  }
+
+  function storySnapshots(component) {
+    if (!component) return [];
+    var snapshots = (component.history || []).slice();
+    snapshots.push(component.previewActive && component.previewOrigin ? component.previewOrigin : component.showcaseActive && component.showcaseOrigin ? component.showcaseOrigin : component.capture());
+    return snapshots;
+  }
+
+  function storyLabel(snapshot, index, total) {
+    var label = GUIDE_STEPS[snapshot && Number.isInteger(snapshot.d) ? snapshot.d : 0].label;
+    return index === total - 1 ? 'Current · ' + label : 'Step ' + (index + 1) + ' · ' + label;
+  }
+
+  function updateHistoryTimeline() {
+    var component = comp(), snapshots = storySnapshots(component);
+    if (!uiHistoryScrub || !component) return;
+    var max = Math.max(0, snapshots.length - 1), previewing = !!component.previewActive;
+    uiHistoryScrub.max = String(max);
+    uiHistoryScrub.disabled = max < 1 || !!component.replayActive;
+    if (!previewing) uiHistoryScrub.value = String(max);
+    var index = previewing && Number.isFinite(component.previewIndex) ? component.previewIndex : max;
+    var snapshot = snapshots[index] || snapshots[max] || component.capture();
+    if (historyValue) historyValue.textContent = storyLabel(snapshot, index, snapshots.length);
+    uiHistoryScrub.setAttribute('aria-valuetext', storyLabel(snapshot, index, snapshots.length) + (previewing ? '. Preview only.' : '.'));
+    if (uiHistoryRestore) uiHistoryRestore.disabled = !previewing;
+  }
+
+  function previewHistoryAt(value) {
+    var component = comp(), snapshots = storySnapshots(component);
+    if (!component || snapshots.length < 2) return;
+    var index = Math.max(0, Math.min(snapshots.length - 1, Number(value) || 0));
+    if (index === snapshots.length - 1) {
+      if (component.previewActive) component.restorePreview(false);
+    } else component.previewSnapshot(snapshots[index], index, snapshots.length);
+    updateHistoryTimeline();
+  }
+
+  function restoreHistoryPreview() {
+    var component = comp();
+    if (component && component.restorePreview(true)) updateHistoryTimeline();
+  }
+
+  function explainActiveSlice() {
+    var c = comp();
+    if (c && c.explainSlice) c.explainSlice('control');
+  }
+  function toggleShowcase() {
+    var c = comp();
+    if (!c) return;
+    if (c.showcaseActive) c.stopShowcase(true, 'Dimension story stopped. Your geometry is restored.');
+    else if (!c.startShowcase()) live.textContent = 'Dimension story is unavailable while another preview is active.';
+  }
+  function toggleGuideWhy() {
+    guideWhyOpen = !guideWhyOpen;
+    guideState(lastMissionState);
+    if (live) live.textContent = guideWhyOpen ? 'Showing why this dimension matters.' : 'Guided explanation hidden.';
+  }
+
+  function runGuideAction() {
+    var component = comp();
+    if (!component) return;
+    if (component.showcaseActive) component.stopShowcase(true, 'Dimension story stopped. Your geometry is restored.');
+    if (component.previewActive) component.restorePreview(false);
+    if (component.d < 3) {
+      applyFocusMode('explain', false);
+      component.stretch();
+    } else {
+      guideWhyOpen = true;
+      guideState(lastMissionState);
+      if (live) live.textContent = GUIDE_STEPS[3].why;
+    }
+  }
+  if (uiStickMode) uiStickMode.value = stickMode;
+  if (uiRenderQuality) uiRenderQuality.value = renderQuality;
 
   function setChips(d) {
     for (var i = 0; i < 4; i++) {
@@ -1235,6 +2176,46 @@ window.addEventListener('load', function () {
     if (announce && live) live.textContent = message;
   }
 
+  function applyFocusMode(mode, announce) {
+    focusMode = normalizeChoice(mode, FOCUS_MODES, 'explain');
+    if (uiFocusMode) uiFocusMode.value = focusMode;
+    updateFocusModeHelp();
+    var component = comp();
+    if (component && component.setFocusMode) component.setFocusMode(focusMode);
+    renderMeasureLabels(lastMissionState);
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = 'Scene focus set to ' + focusMode + '.';
+  }
+  function applyPrecision(value, announce) {
+    MATH_PRECISION = normalizePrecision(value);
+    if (uiPrecision) uiPrecision.value = String(MATH_PRECISION);
+    var component = comp();
+    if (component) component.emitState(announce ? 'Math display precision set to ' + MATH_PRECISION + ' decimals.' : null, !announce);
+    else renderMeasureLabels(lastMissionState);
+    saveLabState(lastMissionState);
+  }
+
+  function applyRenderQuality(mode, announce) {
+    renderQuality = normalizeChoice(mode, QUALITY_MODES, 'auto');
+    if (uiRenderQuality) uiRenderQuality.value = renderQuality;
+    var renderer = scene && scene.renderer;
+    if (renderer) {
+      var deviceRatio = window.devicePixelRatio || 1;
+      var maxRatio = renderQuality === 'high' ? 2 : renderQuality === 'battery' ? 1 : Math.min(1.5, deviceRatio);
+      renderer.setPixelRatio(Math.min(deviceRatio, maxRatio));
+      renderer.shadowMap.enabled = renderQuality !== 'battery';
+      renderer.shadowMap.autoUpdate = renderQuality !== 'battery';
+    }
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = 'Render quality set to ' + renderQuality + '.';
+  }
+
+  function applyStickMode(mode, announce) {
+    stickMode = normalizeChoice(mode, STICK_MODES, 'geometry');
+    if (uiStickMode) uiStickMode.value = stickMode;
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = stickMode === 'navigate' ? 'XR stick set to snap-turn and walk.' : 'XR stick set to resize and axis selection.';
+  }
   function updateViewScaleLabels() {
     var definition = viewScaleDef();
     var label = 'View scale: ' + definition.label + ' ' + definition.scale + '×';
@@ -1337,7 +2318,7 @@ window.addEventListener('load', function () {
   function renderMeasureLabels(s) {
     if (!s) return;
     var component = comp();
-    var comparing = !!(component && component.comparisonState);
+    var comparing = focusMode !== 'explore' && !!(component && component.comparisonState);
     var boundaryText = boundaryComparison(s, MISSIONS[missionIndex]);
     var boundaryLines = boundaryText ? boundaryText.split('\n').length : 0;
     var mathLine = liveMathLine(s);
@@ -1400,11 +2381,22 @@ window.addEventListener('load', function () {
   }
 
   figure.addEventListener('statechange', function (e) {
-    var s = e.detail;
+    var s = e.detail, stateComponent = comp();
     stateline.textContent = s.title;
     measure.innerHTML = s.measure.replace(/(-?\d+(\.\d+)?)/g, '<b>$1</b>');
     renderMeasureLabels(s);
-    if (!s.silent) live.textContent = s.say;
+    if (sliceExplainer) sliceExplainer.hidden = s.d < 2;
+    if (uiExplainSlice) uiExplainSlice.disabled = s.d < 2 || !!(stateComponent && stateComponent.showcaseActive);
+    if (!s.silent) {
+      var narration = s.say + ' Formula: ' + liveMathLine(s);
+      var spokenSection = crossSectionLine(s);
+      if (spokenSection) narration += ' ' + spokenSection;
+      var spokenDelta = comparisonDeltaLine(s, stateComponent);
+      if (spokenDelta) narration += ' ' + spokenDelta;
+      var spokenReason = comparisonReasonLine(s, stateComponent);
+      if (spokenReason) narration += ' ' + spokenReason;
+      live.textContent = narration;
+    }
     setChips(s.d);
     if (uiStretch) uiStretch.disabled = (s.d >= 3);
     if (uiCollapse) uiCollapse.disabled = (s.d <= 0);
@@ -1412,12 +2404,14 @@ window.addEventListener('load', function () {
     if (uiAxis) { uiAxis.disabled = (s.d <= 0); uiAxis.textContent = s.d ? 'Axis: ' + s.axisLabel : 'Axis'; }
     if (uiUndo) uiUndo.disabled = !s.canUndo;
     if (uiRedo) uiRedo.disabled = !s.canRedo;
+    if (uiReplay) { uiReplay.disabled = !s.canUndo || !!(stateComponent && (stateComponent.replayActive || stateComponent.previewActive || stateComponent.showcaseActive)); uiReplay.textContent = stateComponent && stateComponent.replayActive ? 'Replaying...' : 'Replay history'; }
     if (uiGrow) { uiGrow.disabled = (s.d <= 0 || s.activeValue >= MAXV); uiGrow.setAttribute('aria-label', 'Grow ' + s.axisLabel); }
     if (uiShrink) { uiShrink.disabled = (s.d <= 0 || s.activeValue <= MINV); uiShrink.setAttribute('aria-label', 'Shrink ' + s.axisLabel); }
     var activeKey = ['L', 'W', 'H'][s.axis], activeMission = MISSIONS[missionIndex];
     var missionTarget = s.d > 0 && activeMission && s.axis < activeMission.d ? Number(activeMission[activeKey]) : null;
     var targetMatched = missionTarget !== null && Math.abs(s.activeValue - missionTarget) <= 0.03;
-    if (uiAxisValue) {
+
+  if (uiAxisValue) {
       uiAxisValue.disabled = (s.d <= 0); uiAxisValue.value = s.activeValue;
       uiAxisValue.setAttribute('aria-valuetext', s.d ? r1(s.activeValue) + ' units' + (missionTarget !== null ? '; mission target ' + r1(missionTarget) + ' units' : '') : 'No editable axis');
     }
@@ -1446,33 +2440,72 @@ window.addEventListener('load', function () {
       else if (s.axis !== lastHapticState.axis || s.activeValue !== lastHapticState.activeValue) pulseControllers(0.28, 35);
     }
     if (!s.silent) lastHapticState = { d: s.d, axis: s.axis, activeValue: s.activeValue };
-    updateMission(s);
-    saveLabState(s);
+    var visualPreview = !!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive)); if (visualPreview) { lastMissionState = s; if (immersiveActive) positionMeasurePanel(s, MISSIONS[missionIndex]); else positionDesktopWorkspace(s); } else updateMission(s);
+    if (!(stateComponent && stateComponent.showcaseActive)) updateGuide(s);
+    updateHistoryTimeline();
+    if (!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive))) saveLabState(s);
   });
 
   figure.addEventListener('geometrynotice', function (e) {
     setNotice(e.detail && e.detail.text, true);
   });
 
+  figure.addEventListener('sliceexplain', function (e) {
+    var detail = e.detail || {};
+    if (sliceExplainer && detail.available !== false) sliceExplainer.hidden = false;
+    if (sliceFormula) sliceFormula.textContent = detail.formula || 'Stretch to a rectangle or box to inspect a slice.';
+    if (sliceDetail) sliceDetail.textContent = detail.detail || 'The highlighted lattice shows how a held cross-section builds the measure.';
+    if (live && detail.formula) live.textContent = (detail.title || 'Slice explanation') + '. ' + detail.formula + ' ' + (detail.detail || '');
+  });
+  figure.addEventListener('showcasestep', function (e) {
+    var detail = e.detail || {}, index = Number(detail.index) || 0, total = Number(detail.total) || SHOWCASE_STEPS.length;
+    if (showcaseBox) showcaseBox.classList.add('playing');
+    if (showcaseProgress) showcaseProgress.textContent = 'Step ' + (index + 1) + ' of ' + total;
+    if (showcaseCaption) showcaseCaption.textContent = detail.caption || 'Dimension story in progress.';
+    if (uiShowcase) { uiShowcase.disabled = true; uiShowcase.textContent = 'Playing...'; }
+    if (uiShowcaseStop) uiShowcaseStop.hidden = false;
+    if (live) live.textContent = 'Dimension story, ' + (detail.label || 'next step') + '. ' + (detail.caption || '');
+  });
+  figure.addEventListener('showcasestop', function (e) {
+    if (showcaseBox) showcaseBox.classList.remove('playing');
+    if (showcaseProgress) showcaseProgress.textContent = 'Ready';
+    if (showcaseCaption) showcaseCaption.textContent = 'Play a short, non-destructive tour from point to solid.';
+    if (uiShowcase) { uiShowcase.disabled = false; uiShowcase.textContent = 'Play story'; }
+    if (uiShowcaseStop) uiShowcaseStop.hidden = true;
+    if (live && e.detail && e.detail.message) live.textContent = e.detail.message;
+  });
   figure.addEventListener('targetsnap', function (e) {
     var detail = e.detail || {}, axisName = ['Length X', 'Width Z', 'Height Y'][detail.axis] || 'Axis';
     live.textContent = axisName + ' snapped to mission target ' + r1(detail.target) + ' units.';
     pulseControllers(0.5, 55);
   });
 
-  function doStretch()  { var c = comp(); if (c) c.stretch(); }
-  function doCollapse() { var c = comp(); if (c) c.collapse(); }
-  function doGrow()     { var c = comp(); if (c) c.grow(1); }
-  function doShrink()   { var c = comp(); if (c) c.grow(-1); }
-  function doReset()    { var c = comp(); if (c) c.reset(); }
-  function doUndo()     { var c = comp(); if (c) c.undo(); }
-  function doRedo()     { var c = comp(); if (c) c.redo(); }
-  function doAxis(sign) { var c = comp(); if (c) c.cycleAxis(sign || 1); }
+  function leaveHistoryPreview() {
+    var c = comp();
+    if (c && c.showcaseActive) c.stopShowcase(true, 'Dimension story stopped. Your geometry is restored.');
+    if (c && c.previewActive) c.restorePreview(true);
+  }
+  function doStretch()  { leaveHistoryPreview(); var c = comp(); if (c) c.stretch(); }
+  function doCollapse() { leaveHistoryPreview(); var c = comp(); if (c) c.collapse(); }
+  function doGrow()     { leaveHistoryPreview(); var c = comp(); if (c) c.grow(1); }
+  function doShrink()   { leaveHistoryPreview(); var c = comp(); if (c) c.grow(-1); }
+  function doReset()    { leaveHistoryPreview(); var c = comp(); if (c) c.reset(); }
+  function doUndo()     { leaveHistoryPreview(); var c = comp(); if (c) c.undo(); }
+  function doRedo()     { leaveHistoryPreview(); var c = comp(); if (c) c.redo(); }
+  function doAxis(sign) { leaveHistoryPreview(); var c = comp(); if (c) c.cycleAxis(sign || 1); }
   function startOver() {
     if (!window.confirm('Start over? This clears the saved geometry, mission, preferences, and undo history.')) return;
-    missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; LAUNCH_STATE = null; SAVED_STATE = null;
+    var activeShowcase = comp(); if (activeShowcase && activeShowcase.showcaseActive) activeShowcase.stopShowcase(false, 'Dimension story stopped.');
+    missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null;
     if (uiGhost) uiGhost.checked = true;
     if (uiBoundary) uiBoundary.checked = false;
+    if (uiFocusMode) uiFocusMode.value = focusMode;
+    if (uiPrecision) uiPrecision.value = String(MATH_PRECISION);
+    if (uiStickMode) uiStickMode.value = stickMode;
+    if (uiRenderQuality) uiRenderQuality.value = renderQuality;
+    if (uiInstructor) uiInstructor.checked = false;
+    if (uiLessonUrl) uiLessonUrl.hidden = true;
+    document.body.classList.remove('instructor-mode'); if (instructorHelp) instructorHelp.hidden = true;
     suppressNextSave = true;
     try { localStorage.removeItem(STORAGE_KEY); } catch (ignore) { /* Storage may be unavailable. */ }
     var c = comp();
@@ -1499,11 +2532,13 @@ window.addEventListener('load', function () {
 
   function saveLabState(s) {
     if (!s || s.silent) return;
+    var replayComponent = comp();
+    if (replayComponent && (replayComponent.replayActive || replayComponent.showcaseActive)) return;
     if (suppressNextSave) { suppressNextSave = false; return; }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         v: 1, d: s.d, L: s.dimensions.L, W: s.dimensions.W, H: s.dimensions.H,
-        axis: s.axis, missionIndex: missionIndex, showTarget: showTarget, showBoundary: showBoundary, completedMask: completedMask, viewScaleIndex: viewScaleIndex
+        axis: s.axis, missionIndex: missionIndex, showTarget: showTarget, showBoundary: showBoundary, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: focusMode, precision: MATH_PRECISION, stickMode: stickMode, quality: renderQuality, instructorMode: instructorMode
       }));
       if (sessionNote) sessionNote.textContent = 'Progress saved on this device.';
     } catch (ignore) {
@@ -1543,6 +2578,17 @@ window.addEventListener('load', function () {
     labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0);
   }
 
+  function faceMeasurePanelToCamera() {
+    if (!labelWrap || !cameraEl || !window.THREE || labelWrap.object3D.visible === false) return;
+    var cameraObject = cameraEl.getObject3D('camera') || cameraEl.object3D;
+    var eye = new THREE.Vector3();
+    var card = new THREE.Vector3();
+    cameraObject.getWorldPosition(eye);
+    labelWrap.object3D.getWorldPosition(card);
+    var dx = eye.x - card.x, dz = eye.z - card.z;
+    if (dx * dx + dz * dz < 0.0001) return;
+    labelWrap.object3D.rotation.set(0, Math.atan2(dx, dz), 0);
+  }
   function completedCount() {
     var count = 0;
     for (var i = 0; i < MISSIONS.length; i++) if (completedMask & (1 << i)) count++;
@@ -1627,6 +2673,7 @@ window.addEventListener('load', function () {
   }
 
   function selectMission(index) {
+    leaveHistoryPreview();
     if (!Number.isInteger(index) || index < 0 || index >= MISSIONS.length) return;
     if (index === missionIndex) { live.textContent = 'Already viewing the ' + MISSIONS[index].name + ' mission.'; return; }
     missionIndex = index; missionComplete = false;
@@ -1699,6 +2746,30 @@ window.addEventListener('load', function () {
   if (uiGhost) uiGhost.addEventListener('change', function () { toggleTargetOutline(uiGhost.checked, true); });
   if (uiBoundary) uiBoundary.addEventListener('change', function () { toggleBoundaryMeasures(uiBoundary.checked, true); });
   if (uiViewScale) uiViewScale.addEventListener('click', cycleViewScale);
+  if (uiFocusMode) uiFocusMode.addEventListener('change', function () { applyFocusMode(uiFocusMode.value, true); });
+  if (uiPrecision) uiPrecision.addEventListener('change', function () { applyPrecision(uiPrecision.value, true); });
+  if (uiStickMode) uiStickMode.addEventListener('change', function () { applyStickMode(uiStickMode.value, true); });
+  if (uiRenderQuality) uiRenderQuality.addEventListener('change', function () { applyRenderQuality(uiRenderQuality.value, true); });
+  if (uiInstructor) uiInstructor.addEventListener('change', function () { applyInstructorMode(uiInstructor.checked, true); });
+  if (uiLessonLink) uiLessonLink.addEventListener('click', copyLessonLink);
+  if (uiReplay) uiReplay.addEventListener('click', function () { var c = comp(); if (c) c.replayHistory(); });
+  if (uiShowcase) uiShowcase.addEventListener('click', toggleShowcase);
+  if (uiShowcaseStop) uiShowcaseStop.addEventListener('click', function () { var c = comp(); if (c) c.stopShowcase(true, 'Dimension story stopped. Your geometry is restored.'); });
+  if (uiExplainSlice) uiExplainSlice.addEventListener('click', explainActiveSlice);
+  if (uiGuideAction) uiGuideAction.addEventListener('click', runGuideAction);
+  if (uiGuideWhy) uiGuideWhy.addEventListener('click', toggleGuideWhy);
+  guideStepButtons.forEach(function (button, index) {
+    if (!button) return;
+    button.addEventListener('click', function () {
+      guideWhyOpen = true;
+      if (guideWhy) { guideWhy.textContent = GUIDE_STEPS[index].why; guideWhy.hidden = false; }
+      if (uiGuideWhy) uiGuideWhy.setAttribute('aria-expanded', 'true');
+      if (live) live.textContent = GUIDE_STEPS[index].why;
+    });
+  });
+  if (uiHistoryScrub) uiHistoryScrub.addEventListener('input', function () { previewHistoryAt(uiHistoryScrub.value); });
+  if (uiHistoryRestore) uiHistoryRestore.addEventListener('click', restoreHistoryPreview);
+  setTimeout(function () { applyRenderQuality(renderQuality, false); }, 0);
   if (uiAxisValue) {
     uiAxisValue.addEventListener('pointerdown', function () { var c = comp(); if (c) c.beginResize(); });
     uiAxisValue.addEventListener('input', function () { var c = comp(); if (c) c.setAxisValue(Number(uiAxisValue.value)); });
@@ -1708,6 +2779,7 @@ window.addEventListener('load', function () {
 
   function commitPendingGesture() {
     var c = comp(); if (!c) return;
+    if (c.previewActive) c.restorePreview(false);
     if (c.nudgeStart) c.endNudge(false);
     if (c.resizeStart) c.endResize();
   }
@@ -1722,8 +2794,22 @@ window.addEventListener('load', function () {
   var vrReset = document.getElementById('vrReset');
   var vrAxis = document.getElementById('vrAxis'), vrUndo = document.getElementById('vrUndo'), vrRedo = document.getElementById('vrRedo');
   var vrMission = document.getElementById('vrMission'), vrMeasure = document.getElementById('vrMeasure'), vrView = document.getElementById('vrView');
+  var spatialButtons = [vrStretch, vrCollapse, vrReset, vrAxis, vrUndo, vrRedo, vrMission, vrMeasure, vrView];
+  function setSpatialAccessibility(active) {
+    if (spatialPanel) spatialPanel.setAttribute('aria-hidden', active ? 'false' : 'true');
+    spatialButtons.forEach(function (button) {
+      if (!button) return;
+      button.setAttribute('tabindex', active ? '0' : '-1');
+      button.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+  }
   function wireSpatialButton(button, action, unavailableMessage) {
     if (!button) return;
+    button.setAttribute('tabindex', '-1');
+    button.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault(); e.stopPropagation(); button.click();
+    });
     button.addEventListener('click', function () {
       if (button.getAttribute('data-disabled') === 'true') {
         live.textContent = unavailableMessage;
@@ -1748,6 +2834,7 @@ window.addEventListener('load', function () {
   wireSpatialButton(vrMission, nextMission, 'Mission navigation is unavailable.');
   wireSpatialButton(vrMeasure, function () { toggleBoundaryMeasures(!showBoundary, true); }, 'Boundary measures are unavailable.');
   wireSpatialButton(vrView, cycleViewScale, 'View scale is unavailable.');
+  setSpatialAccessibility(false);
 
   // ── Camera: move and look without a mouse or a headset ──
   //
@@ -1816,13 +2903,13 @@ window.addEventListener('load', function () {
 
   // Keyboard path (no mouse or headset required — the accessibility route)
   window.addEventListener('keydown', function (e) {
-    var textEntry = e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range';
-    if ((e.ctrlKey || e.metaKey) && !e.altKey && !textEntry) {
+    var interactiveControl = e.target && (/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName) || e.target.isContentEditable);
+    if (interactiveControl) return;
+    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
       var shortcut = String(e.key).toLowerCase();
       if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); e.stopPropagation(); return; }
       if (shortcut === 'y') { doRedo(); e.preventDefault(); e.stopPropagation(); return; }
     }
-    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
     var handled = true;
     switch (e.key) {
       case 'ArrowUp':    doStretch();  break;
@@ -1847,6 +2934,7 @@ window.addEventListener('load', function () {
       case 'c': case 'C': recenterSpatialPanel(true); break;
       case 'm': case 'M': toggleBoundaryMeasures(!showBoundary, true); break;
       case 'v': case 'V': cycleViewScale(); break;
+      case 't': case 'T': toggleShowcase(); break;
       case 'f': case 'F': focusMissionStep(); break;
       case '1': case '2': case '3': case '4': selectMission(Number(e.key) - 1); break;
       default: handled = false;
@@ -1859,6 +2947,13 @@ window.addEventListener('load', function () {
   function onStick(e) {
     var y = e.detail && e.detail.y, x = e.detail && e.detail.x;
     var now = (e.timeStamp || 0);
+    if (stickMode === 'navigate') {
+      if (typeof x === 'number' && Math.abs(x) >= 0.7 && now - lastAxisStick >= 360) { lastAxisStick = now; turnRig(x > 0 ? 1 : -1); return; }
+      if (typeof y !== 'number' || Math.abs(y) < 0.6 || now - lastStick < 260) return;
+      lastStick = now;
+      moveRig(y < 0 ? 1 : -1, 0);
+      return;
+    }
     if (typeof x === 'number' && Math.abs(x) >= 0.7 && now - lastAxisStick >= 300) { lastAxisStick = now; doAxis(x > 0 ? 1 : -1); return; }
     if (typeof y !== 'number' || Math.abs(y) < 0.6) return;
     if (now - lastStick < 220) return;
@@ -1954,6 +3049,7 @@ window.addEventListener('load', function () {
     commitPendingGesture();
     immersiveActive = !!active;
     if (spatialPanel) spatialPanel.setAttribute('visible', immersiveActive);
+    setSpatialAccessibility(immersiveActive);
     if (active) {
       recenterSpatialPanel(false);
       if (labelWrap) labelWrap.setAttribute('visible', false);
@@ -1961,7 +3057,7 @@ window.addEventListener('load', function () {
       hud.style.display = 'none';
       hud.setAttribute('aria-hidden', 'true');
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-      live.textContent = 'Immersive mode entered. Aim at a handle, hold trigger or grip, and pull continuously. The formula updates while you move. Thumbstick resizes or changes axis.';
+      live.textContent = 'Immersive mode entered. Aim at a handle, hold trigger or grip, and pull continuously. The formula updates while you move. ' + (stickMode === 'navigate' ? 'Thumbstick snap-turns and walks.' : 'Thumbstick resizes or changes axis.');
       return;
     }
     hud.style.display = '';
@@ -1975,10 +3071,13 @@ window.addEventListener('load', function () {
   }
   scene.addEventListener('enter-vr', function () { setImmersiveMode(true); });
   scene.addEventListener('exit-vr', function () { setImmersiveMode(false); });
+  var panelFaceTimer = window.setInterval(faceMeasurePanelToCamera, 120);
+  window.addEventListener('pagehide', function () { window.clearInterval(panelFaceTimer); });
 
   // Boot the figure now that the component is registered and the statechange
   // listener above is ready to catch its first emit.
   figure.setAttribute('stretch-lab', '');
+  applyInstructorMode(instructorMode, false);
   applyViewScale(viewScaleIndex, false);
 });
 </script>

@@ -58,13 +58,13 @@ describe('anti-drift: the mini-audit is shared (no drift between Workbench + dir
     // superseded cannot publish its score over the newer one's.
     expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity, operationTicket\) => \{/);
     expect(src).toContain('const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);');
-    expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml)),');
-    expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml)),');
-    expect(src).toContain("? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml)) : Promise.resolve(null),");
+    expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal })),');
+    expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml, { signal: _reauditSignal })),');
+    expect(src).toContain("? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null),");
     expect(src).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');
     expect(src).toContain("issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(_curFix.issueResolution, _wv) || _curFix.issueResolution) : _curFix.issueResolution,");
     expect(src).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
-    expect(src).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
+    expect(src).toContain('_applied = _commitAsyncHtmlIfCurrent(_reauditHtmlToken, (prev) => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
     expect(src).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((_curFix.verificationCoverage && _curFix.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
   });
   it('the Expert Workbench now delegates to _reauditAndScore (the old inline copy is gone)', () => {

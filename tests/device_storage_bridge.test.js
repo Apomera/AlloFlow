@@ -165,15 +165,20 @@ describe('device storage bridge — file contracts', () => {
   // 2026-07-20: slots 3 → 8 with a size budget. The eviction rule lives in
   // THREE independent copies (app monolith, this adapter, the bridge page);
   // drift means the bridge silently discards workspaces the app still shows.
-  it('all three copies of the recovery cap agree (8 slots + size budget)', () => {
+  it('all three copies agree on Standard, Compact, and pin-aware caps', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     expect(anti).toContain('const MAX_SNAPSHOTS = 8;');
     expect(anti).toContain('const MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
+    expect(anti).toContain('const COMPACT_MAX_SNAPSHOTS = 4;');
+    expect(anti).toContain('const COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;');
     for (const src of [moduleSrc, bridgeSrc]) {
       expect(src).toContain('var RECOVERY_MAX_SNAPSHOTS = 8;');
       expect(src).toContain('var RECOVERY_MAX_TOTAL_BYTES = 150 * 1024 * 1024;');
-      expect(src).toContain('snapshots: capRecoverySnapshots(snapshots)');
-      expect(src).toContain('function capRecoverySnapshots(snapshots)');
+      expect(src).toContain('var RECOVERY_COMPACT_MAX_SNAPSHOTS = 4;');
+      expect(src).toContain('var RECOVERY_COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;');
+      expect(src).toContain('snapshots: capRecoverySnapshots(snapshots, policy, options.nowMs)');
+      expect(src).toContain('function capRecoverySnapshots(snapshots, policy, nowMs)');
+      expect(src).toContain('snapshot.pinned || index === 0');
       // the incoming record is weighed once, at write time
       expect(src).toContain('snapshot.approximateBytes = JSON.stringify(snapshot).length;');
     }
@@ -182,24 +187,56 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).not.toContain('snapshots.slice(0, RECOVERY_MAX_SNAPSHOTS)');
   });
 
-  it('the bridge cache-buster was bumped so caches refetch the new rule', () => {
+  it('the bridge cache-buster was bumped so caches refetch the manager protocol', () => {
     // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
-    // the OLD 3-slot cap for anyone whose browser cached the page.
-    expect(moduleSrc).toContain('storage_bridge.html?v=ds2-slots8');
-    expect(moduleSrc).not.toContain('ds1-recovery-atomic1');
+    // the prior fixed-only policy for anyone whose browser cached the page.
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds3-storage-manager');
+    expect(moduleSrc).not.toContain('ds2-slots8');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('allo_device_storage_module.js?v=ds2-slots8');
-    expect(anti).not.toContain('ds1-recovery-atomic1');
+    expect(anti).toContain('allo_device_storage_module.js?v=ds3-storage-manager');
+    expect(anti).not.toContain('ds2-slots8');
+    const sharedLoaders = [
+      'utils_pure_source.jsx',
+      'utils_pure_module.js',
+      'desktop/web-app/public/utils_pure_module.js',
+      'view_persona_chat_source.jsx',
+      'view_persona_chat_module.js',
+      'desktop/web-app/public/view_persona_chat_module.js',
+      'export_handlers_module.js',
+      'desktop/web-app/public/export_handlers_module.js'
+    ];
+    for (const file of sharedLoaders) {
+      const loaderSource = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds3-storage-manager');
+      expect(loaderSource).not.toContain('allo_device_storage_module.js?v=ds1');
+    }
   });
 
-  it('teacher-facing copy states the real number instead of a hardcoded 3', () => {
+  it('preserves media-only drafts in both durable recovery implementations', () => {
+    for (const src of [moduleSrc, bridgeSrc]) {
+      expect(src).toContain('var normalizedStripped = normalizeRecoverySnapshot(stripped, false);');
+      expect(src).toContain("reason: 'would-empty-workspace'");
+    }
+  });
+
+  it('teacher-facing copy explains named policies without a raw MB slider', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     expect(anti).not.toContain('AlloFlow keeps the 3 most recent device workspaces');
-    expect(anti).toContain('AlloFlow keeps the {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS} most recent device workspaces');
-    expect(anti).toContain('Manage saved work ({canvasRecoveryStore.snapshots.length} of {ALLO_WORKSPACE_RECOVERY.MAX_SNAPSHOTS})');
-    // and it explains WHY an old workspace disappears, in teacher language
-    expect(anti).toContain('erases the oldest workspace rather than dropping the newest one');
+    expect(anti).toContain('Storage and recovery manager');
+    expect(anti).toContain("id: 'automatic'");
+    expect(anti).toContain("id: 'compact'");
+    expect(anti).toContain("id: 'standard'");
+    expect(anti).toContain('Choose a tested policy instead of a manual MB limit.');
+    expect(anti).not.toMatch(/type="range"[^>]+(?:storage|retention|quota)/i);
+    expect(anti).toContain('Pinned work and the newest workspace are never automatically removed.');
     expect(anti).toContain('const _alloFormatWorkspaceBytes = (bytes) => {');
+  });
+
+  it('reports persistence without requesting it merely by opening status', () => {
+    expect(moduleSrc).toContain("estimate: function () { return guarded('estimate', {}); }");
+    expect(bridgeSrc).toContain('navigator.storage.persisted()');
+    expect(bridgeSrc).not.toContain('navigator.storage.persist()');
+    expect(bridgeSrc).toContain("case 'estimate': return storageFacts()");
   });
 });
 
@@ -314,6 +351,138 @@ describe('device storage adapter — behavior', () => {
     }, { queue: false });
     expect(equalTimestamp).toMatchObject({ applied: false, reason: 'stale-snapshot' });
     expect(equalTimestamp.store.snapshots.find(item => item.id === 'workspace-d').marker).toBe('workspace-d');
+  });
+
+  it('atomically applies named policies and preserves pinned work', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    await api.set(ns, key, { version: 1, snapshots: [] });
+    const make = (id, day) => ({
+      version: 1,
+      id,
+      savedAt: `2026-07-${day}T12:00:00.000Z`,
+      workspace: { history: [{ id: id + '-resource' }] }
+    });
+    for (const [index, id] of ['a', 'b', 'c', 'd', 'e', 'f'].entries()) {
+      await api.mutateRecovery(ns, key, {
+        version: 1,
+        action: 'upsert',
+        snapshot: make('workspace-' + id, String(index + 1).padStart(2, '0'))
+      }, { queue: false });
+    }
+    const pinned = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'setPinned',
+      snapshotId: 'workspace-a',
+      pinned: true
+    }, { queue: false });
+    expect(pinned).toMatchObject({ applied: true, reason: 'pinned' });
+
+    const compact = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'setPolicy',
+      policyId: 'compact',
+      effectivePolicyId: 'compact'
+    }, { queue: false });
+    expect(compact.store).toMatchObject({
+      retentionPolicy: 'compact',
+      effectiveRetentionPolicy: 'compact'
+    });
+    expect(compact.store.snapshots).toHaveLength(4);
+    expect(compact.store.snapshots.some(item => item.id === 'workspace-a' && item.pinned)).toBe(true);
+
+    await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'setPinned',
+      snapshotId: 'workspace-a',
+      pinned: false
+    }, { queue: false });
+    const afterNewSave = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: make('workspace-g', '07')
+    }, { queue: false });
+    expect(afterNewSave.store.snapshots).toHaveLength(4);
+    expect(afterNewSave.store.snapshots.some(item => item.id === 'workspace-a')).toBe(false);
+  });
+
+  it('keeps pin state atomic across same-ID autosaves until setPinned changes it', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    await api.set(ns, key, { version: 1, snapshots: [] });
+    const make = (savedAt, pinned, marker) => ({ version: 1, id: 'workspace-pin', savedAt, pinned, marker, workspace: { history: [{}] } });
+
+    await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: make('2026-07-01T00:00:00.000Z', false, 'first') }, { queue: false });
+    await api.mutateRecovery(ns, key, { version: 1, action: 'setPinned', snapshotId: 'workspace-pin', pinned: true }, { queue: false });
+    const pinnedAutosave = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'upsert', snapshot: make('2026-07-02T00:00:00.000Z', false, 'later')
+    }, { queue: false });
+    expect(pinnedAutosave.store.snapshots[0]).toMatchObject({ pinned: true, marker: 'later' });
+
+    await api.mutateRecovery(ns, key, { version: 1, action: 'setPinned', snapshotId: 'workspace-pin', pinned: false }, { queue: false });
+    const unpinnedAutosave = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'upsert', snapshot: make('2026-07-03T00:00:00.000Z', true, 'latest')
+    }, { queue: false });
+    expect(unpinnedAutosave.store.snapshots[0]).toMatchObject({ pinned: false, marker: 'latest' });
+  });
+
+  it('atomically removes media, preserves remote content, and rejects empty drafts', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    await api.set(ns, key, { version: 1, snapshots: [] });
+    const media = {
+      version: 1,
+      id: 'workspace-media',
+      savedAt: '2026-07-20T12:00:00.000Z',
+      pinned: true,
+      workspace: { history: [{ data: {
+        imageUrl: 'data:image/png;base64,AAAA',
+        remoteImage: 'https://example.edu/keep.png',
+        prompt: 'Keep this text'
+      } }] }
+    };
+    await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: media }, { queue: false });
+    const removed = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'removeMedia', snapshotId: 'workspace-media'
+    }, { queue: false });
+    expect(removed).toMatchObject({ applied: true, reason: 'media-removed' });
+    const saved = removed.store.snapshots[0];
+    expect(saved.pinned).toBe(true);
+    expect(saved.workspace.history[0].data.imageUrl).toBeNull();
+    expect(saved.workspace.history[0].data.remoteImage).toBe('https://example.edu/keep.png');
+    expect(saved.workspace.history[0].data.prompt).toBe('Keep this text');
+    expect(saved.omittedAssetManifest.some(item => item.reason === 'user-remove-media')).toBe(true);
+
+    const repeated = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'removeMedia', snapshotId: 'workspace-media'
+    }, { queue: false });
+    expect(repeated).toMatchObject({ applied: false, reason: 'no-media' });
+    expect(repeated.store.snapshots[0].omittedAssetManifest).toEqual(saved.omittedAssetManifest);
+
+
+    const noMediaUpsert = await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: {
+      version: 1, id: 'workspace-no-media', savedAt: '2026-07-21T00:00:00.000Z', workspace: { history: [{ data: { prompt: 'text only' } }] }
+    } }, { queue: false });
+    const noMedia = await api.mutateRecovery(ns, key, { version: 1, action: 'removeMedia', snapshotId: 'workspace-no-media' }, { queue: false });
+    expect(noMedia).toMatchObject({ applied: false, reason: 'no-media' });
+    expect(noMedia.store).toEqual(noMediaUpsert.store);
+    const mediaOnlyUpsert = await api.mutateRecovery(ns, key, { version: 1, action: 'upsert', snapshot: {
+      version: 1,
+      id: 'workspace-media-only',
+      savedAt: '2026-07-22T00:00:00.000Z',
+      workspace: { history: [], builderDraft: { imageUrl: 'data:image/png;base64,AAAA' } }
+    } }, { queue: false });
+    const mediaOnly = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'removeMedia', snapshotId: 'workspace-media-only'
+    }, { queue: false });
+    expect(mediaOnly).toMatchObject({ applied: false, reason: 'would-empty-workspace' });
+    expect(mediaOnly.store).toEqual(mediaOnlyUpsert.store);
+
+    await expect(api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: { version: 1, id: 'empty', savedAt: '2026-07-21T00:00:00.000Z', workspace: { history: [], inputText: ' ', builderDraft: { html: ' ' } } }
+    }, { queue: false })).rejects.toMatchObject({ code: 'allo/recovery-mutation-invalid' });
   });
 
   it('persists removal tombstones so another tab cannot resurrect a snapshot', async () => {

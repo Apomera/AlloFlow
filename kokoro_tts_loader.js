@@ -13,10 +13,12 @@
  * - **Streaming playback** — first sentence plays immediately while rest generates
  * - Warm-up inference after init to eliminate cold-start stutter
  * - Transferable ArrayBuffers for zero-copy audio transfer
- * - LRU audio cache (100 entries)
- * - Quality toggle: q4 (fast, default) or q8 (high quality)
+ * - Exact-text fingerprinted LRU audio cache (100 entries)
+ * - AbortSignal cancellation and loader-owned Blob URL lifecycle
+ * - q8 model (the retired quality names remain API-compatible)
  *
- * Exposes: window._kokoroTTS = { init(), speak(), speakStreaming(), setQuality(), ... }
+ * Exposes: window._kokoroTTS = { init(), speak(text, voice, speed, options),
+ *   speakStreaming(text, voice, speed, options), stop(), dispose(), ... }
  *
  * License: Apache 2.0 (Kokoro model + kokoro-js library)
  */
@@ -236,29 +238,26 @@
                     const text = data.text;
                     const voice = data.voice;
                     const speed = data.speed;
-                    let wavBuffers = [];
+                    const chunks = text.length > CHUNK_THRESHOLD ? splitSentences(text) : [text];
+                    const wavBuffers = [];
 
-                    if (text.length > CHUNK_THRESHOLD) {
-                        const sentences = splitSentences(text);
-                        for (const chunk of sentences) {
-                            const buf = await generateOne(chunk, voice, speed);
-                            if (buf) wavBuffers.push(buf);
-                        }
-                    } else {
-                        const buf = await generateOne(text, voice, speed);
-                        if (buf) wavBuffers.push(buf);
+                    for (let i = 0; i < chunks.length; i++) {
+                        const buf = await generateOne(chunks[i], voice, speed);
+                        // Never return a deceptively successful partial clip. A
+                        // missing middle sentence is worse than a clean fallback.
+                        if (!buf) throw new Error('Incomplete batch: no audio for chunk ' + (i + 1) + ' of ' + chunks.length);
+                        wavBuffers.push(buf);
                     }
 
-                    if (wavBuffers.length === 0) {
-                        self.postMessage({ type: 'error', id: data.id, error: 'No audio generated' });
-                        return;
+                    if (wavBuffers.length !== chunks.length || wavBuffers.length === 0) {
+                        throw new Error('Incomplete batch: generated ' + wavBuffers.length + ' of ' + chunks.length + ' chunks');
                     }
 
                     const finalBuf = concatWavBuffers(wavBuffers);
                     const elapsed = performance.now() - t0;
                     self.postMessage({
                         type: 'audio', id: data.id, buffer: finalBuf,
-                        elapsed, chunks: wavBuffers.length
+                        elapsed, chunks: wavBuffers.length, expectedChunks: chunks.length
                     }, [finalBuf]);
                 }
 
@@ -282,23 +281,26 @@
 
                     for (let i = 0; i < sentences.length; i++) {
                         const buf = await generateOne(sentences[i], voice, speed);
-                        if (buf) {
-                            generated++;
-                            self.postMessage({
-                                type: 'stream_chunk',
-                                id: data.id,
-                                buffer: buf,
-                                index: i,
-                                total,
-                                elapsed: performance.now() - t0
-                            }, [buf]);
-                        }
+                        if (!buf) throw new Error('Incomplete stream: no audio for chunk ' + (i + 1) + ' of ' + total);
+                        generated++;
+                        self.postMessage({
+                            type: 'stream_chunk',
+                            id: data.id,
+                            buffer: buf,
+                            index: i,
+                            total,
+                            elapsed: performance.now() - t0
+                        }, [buf]);
                     }
 
+                    if (generated !== total || generated === 0) {
+                        throw new Error('Incomplete stream: generated ' + generated + ' of ' + total + ' chunks');
+                    }
                     self.postMessage({
                         type: 'stream_done',
                         id: data.id,
                         total: generated,
+                        expectedTotal: total,
                         elapsed: performance.now() - t0
                     });
                 }
@@ -319,25 +321,296 @@
     let _loadProgress = 0;
     let _onProgress = null;
     let _msgId = 0;
-    const _pendingMessages = new Map(); // id → { resolve, reject }
-    const _audioCache = new Map();
+    const _pendingMessages = new Map(); // id -> { resolve, reject }
+    const _audioCache = new Map(); // exact request key -> { url, text, voice }
+    const _ownedUrls = new Map(); // blob URL -> { kind, key?, stream? }
+    const SYNTHESIS_SPEED = 1.0;
 
-    // ─── Streaming State ────────────────────────────────────────────────
-    let _streamResolveFirst = null;  // resolve() for first chunk promise
-    let _streamRejectFirst = null;   // reject() for first chunk promise
-    let _streamQueue = [];           // Array of blob URLs for subsequent chunks
-    let _streamBuffer = [];          // Preload buffer — collects chunks before playback starts
-    let _streamBufferFlushed = false;// true once preload buffer has been flushed to queue
-    let _streamDoneResolve = null;   // resolve() when all chunks generated
-    let _streamActive = false;       // true while streaming is in progress
-    let _streamId = null;            // current stream ID (to ignore stale messages)
-    const STREAM_PRELOAD = 3;        // Wait for this many chunks before starting playback
+    // Streaming is request-scoped. The public queue helpers still address the
+    // current stream for backwards compatibility, but a new request explicitly
+    // supersedes and rejects a pending older request.
+    let _activeStream = null;
+    let _activeChain = null;
+    const STREAM_PRELOAD = 3;
+
+    function _abortError(reason) {
+        const message = reason || 'Kokoro TTS operation was cancelled';
+        try { return new DOMException(message, 'AbortError'); }
+        catch (_) {
+            const error = new Error(message);
+            error.name = 'AbortError';
+            return error;
+        }
+    }
+
+    function _safeRevoke(url) {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+    }
+
+    // Hash every case-preserving UTF-16 code unit, then validate the exact text
+    // stored in the entry on every hit. Even a theoretical hash collision can
+    // only become a cache miss; it can never return another sentence's audio.
+    function _textFingerprint(text) {
+        let h1 = 0x811c9dc5;
+        let h2 = 0x9e3779b9;
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i);
+            h1 = Math.imul(h1 ^ (code & 0xff), 0x01000193);
+            h1 = Math.imul(h1 ^ (code >>> 8), 0x01000193);
+            h2 = Math.imul(h2 ^ code, 0x85ebca6b);
+            h2 = (h2 << 13) | (h2 >>> 19);
+        }
+        return text.length.toString(36) + ':' +
+            (h1 >>> 0).toString(36) + ':' + (h2 >>> 0).toString(36);
+    }
+
+    function _cacheKey(text, voice) {
+        return JSON.stringify(['kokoro-v2', _textFingerprint(text), voice, SYNTHESIS_SPEED, _currentDtype]);
+    }
+
+    function ownsUrl(url) {
+        return typeof url === 'string' && _ownedUrls.has(url);
+    }
+
+    function invalidateUrl(url) {
+        const meta = _ownedUrls.get(url);
+        if (!meta) return false;
+        _ownedUrls.delete(url);
+
+        if (meta.kind === 'cache') {
+            const entry = _audioCache.get(meta.key);
+            if (entry && entry.url === url) _audioCache.delete(meta.key);
+        } else if (meta.kind === 'stream' && meta.stream) {
+            const stream = meta.stream;
+            stream.urls.delete(url);
+            stream.queue = stream.queue.filter((item) => item !== url);
+            stream.buffer = stream.buffer.filter((item) => item !== url);
+            if (stream.firstUrl === url) stream.firstUrl = null;
+        }
+
+        _safeRevoke(url);
+        return true;
+    }
+
+    function _clearAudioCache() {
+        const urls = Array.from(_audioCache.values(), (entry) => entry.url);
+        for (const url of urls) invalidateUrl(url);
+        _audioCache.clear();
+    }
+
+    function _cacheGet(key, text, voice) {
+        const entry = _audioCache.get(key);
+        if (!entry || !ownsUrl(entry.url)) {
+            if (entry) _audioCache.delete(key);
+            return null;
+        }
+        if (entry.text !== text || entry.voice !== voice) return null;
+        // Map insertion order is our LRU order.
+        _audioCache.delete(key);
+        _audioCache.set(key, entry);
+        return entry.url;
+    }
+
+    function _cacheSet(key, text, voice, url) {
+        const replaced = _audioCache.get(key);
+        if (replaced && replaced.url !== url) invalidateUrl(replaced.url);
+
+        const entry = { url, text, voice };
+        _audioCache.set(key, entry);
+        _ownedUrls.set(url, { kind: 'cache', key });
+
+        while (_audioCache.size > CACHE_MAX) {
+            const oldestKey = _audioCache.keys().next().value;
+            const oldest = _audioCache.get(oldestKey);
+            if (oldest) invalidateUrl(oldest.url);
+            else _audioCache.delete(oldestKey);
+        }
+    }
+
+    function _newStream(id) {
+        const stream = {
+            id,
+            active: true,
+            cancelled: false,
+            queue: [],
+            buffer: [],
+            bufferFlushed: false,
+            urls: new Set(),
+            firstUrl: null,
+            firstSettled: false,
+            expectedTotal: null,
+            nextIndex: 0,
+            resolveFirst: null,
+            rejectFirst: null,
+        };
+        stream.firstPromise = new Promise((resolve, reject) => {
+            stream.resolveFirst = resolve;
+            stream.rejectFirst = reject;
+        });
+        return stream;
+    }
+
+    function _resolveStreamFirst(stream, url) {
+        if (stream.firstSettled) return;
+        stream.firstSettled = true;
+        stream.firstUrl = url;
+        const resolve = stream.resolveFirst;
+        stream.resolveFirst = null;
+        stream.rejectFirst = null;
+        if (resolve) resolve(url);
+    }
+
+    function _rejectStreamFirst(stream, error) {
+        if (stream.firstSettled) return;
+        stream.firstSettled = true;
+        const reject = stream.rejectFirst;
+        stream.resolveFirst = null;
+        stream.rejectFirst = null;
+        if (reject) reject(error);
+    }
+
+    function _registerStreamUrl(stream, url) {
+        stream.urls.add(url);
+        _ownedUrls.set(url, { kind: 'stream', stream });
+    }
+
+    function _flushStreamBuffer(stream) {
+        if (stream.bufferFlushed || stream.buffer.length === 0) return;
+        stream.bufferFlushed = true;
+        const first = stream.buffer.shift();
+        stream.queue.push(...stream.buffer);
+        stream.buffer = [];
+        _resolveStreamFirst(stream, first);
+    }
+
+    function _cancelStream(stream, reason, notifyDone) {
+        if (!stream || stream.cancelled) return false;
+        const error = reason instanceof Error ? reason : _abortError(reason);
+        stream.active = false;
+        stream.cancelled = true;
+        if (stream.signalCleanup) {
+            stream.signalCleanup();
+            stream.signalCleanup = null;
+        }
+        _rejectStreamFirst(stream, error);
+
+        if (_activeChain && _activeChain.stream === stream) {
+            _stopChain(Boolean(notifyDone));
+        }
+
+        for (const url of Array.from(stream.urls)) invalidateUrl(url);
+        stream.queue = [];
+        stream.buffer = [];
+        if (_activeStream === stream) _activeStream = null;
+        return true;
+    }
+
+    function _takePending(id) {
+        const pending = _pendingMessages.get(id);
+        if (!pending) return null;
+        _pendingMessages.delete(id);
+        if (pending.cleanup) pending.cleanup();
+        return pending;
+    }
+
+    function _signalAbortError(signal) {
+        const reason = signal && signal.reason;
+        return _abortError(reason && reason.message ? reason.message : (reason || 'Kokoro TTS request was cancelled'));
+    }
+
+    function _awaitWithSignal(promise, signal, onAbort) {
+        if (!signal) return promise;
+        if (signal.aborted) {
+            if (onAbort) onAbort();
+            return Promise.reject(_signalAbortError(signal));
+        }
+
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            const cleanup = () => signal.removeEventListener('abort', abort);
+            const abort = () => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                if (onAbort) onAbort();
+                reject(_signalAbortError(signal));
+            };
+            signal.addEventListener('abort', abort, { once: true });
+            Promise.resolve(promise).then(
+                (value) => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    resolve(value);
+                },
+                (error) => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    function _rejectAllPending(error) {
+        for (const id of Array.from(_pendingMessages.keys())) {
+            const pending = _takePending(id);
+            if (pending) {
+                try { pending.reject(error); } catch (_) {}
+            }
+        }
+    }
+
+    function _cancelPendingGeneration(reason) {
+        const error = reason instanceof Error ? reason : _abortError(reason);
+        let cancelled = 0;
+        for (const [id, pending] of Array.from(_pendingMessages.entries())) {
+            if (pending.type !== 'generate_batch') continue;
+            const taken = _takePending(id);
+            if (taken) {
+                cancelled++;
+                taken.reject(error);
+            }
+        }
+        return cancelled;
+    }
+
+    function _terminateWorker(reason) {
+        const error = reason instanceof Error ? reason : _abortError(reason || 'Kokoro TTS worker terminated');
+        const worker = _worker;
+        _worker = null;
+        _ready = false;
+        _initPromise = null;
+        _rejectAllPending(error);
+        if (_activeStream) _cancelStream(_activeStream, error, true);
+
+        if (worker) {
+            worker.onmessage = null;
+            worker.onerror = null;
+            worker.onmessageerror = null;
+            try { worker.terminate(); } catch (_) {}
+        }
+    }
+
+    function _handleWorkerFailure(worker, error) {
+        if (_worker !== worker) return;
+        console.warn('[Kokoro TTS] Worker failed:', error.message);
+        _terminateWorker(error);
+    }
 
     // ─── Worker Setup ───────────────────────────────────────────────────
     function _createWorker() {
         const blob = new Blob([WORKER_SOURCE], { type: 'application/javascript' });
         const url = URL.createObjectURL(blob);
-        const w = new Worker(url, { type: 'module' });
+        let w;
+        try {
+            w = new Worker(url, { type: 'module' });
+        } finally {
+            // Worker() captures the script URL synchronously; retaining it leaks
+            // one Blob URL on every quality switch/retry.
+            _safeRevoke(url);
+        }
 
         w.onmessage = ({ data }) => {
             switch (data.type) {
@@ -351,108 +624,143 @@
 
                 case 'ready': {
                     _ready = true;
-                    console.log('[Kokoro TTS] ✅ Worker initialized (dtype: ' + _currentDtype + ')');
-                    const p = _pendingMessages.get('__init__');
-                    if (p) { p.resolve(true); _pendingMessages.delete('__init__'); }
+                    console.log('[Kokoro TTS] Worker initialized (dtype: ' + _currentDtype + ')');
+                    const p = _takePending('__init__');
+                    if (p) p.resolve(true);
                     _purgeStaleModelCache();
                     break;
                 }
 
                 case 'init_error': {
-                    console.warn('[Kokoro TTS] ❌ Worker init failed:', data.error);
-                    const p = _pendingMessages.get('__init__');
-                    if (p) { p.reject(new Error(data.error)); _pendingMessages.delete('__init__'); }
+                    const error = new Error(data.error || 'Kokoro worker initialization failed');
+                    console.warn('[Kokoro TTS] Worker init failed:', error.message);
+                    const p = _takePending('__init__');
+                    if (p) p.reject(error);
                     break;
                 }
 
                 case 'audio': {
-                    const p = _pendingMessages.get(data.id);
+                    const p = _takePending(data.id);
                     if (p) {
-                        p.resolve({ buffer: data.buffer, elapsed: data.elapsed, chunks: data.chunks || 1 });
-                        _pendingMessages.delete(data.id);
+                        p.resolve({
+                            buffer: data.buffer,
+                            elapsed: data.elapsed,
+                            chunks: data.chunks,
+                            expectedChunks: data.expectedChunks,
+                        });
                     }
                     break;
                 }
 
                 case 'error': {
-                    const p = _pendingMessages.get(data.id);
-                    if (p) { p.reject(new Error(data.error)); _pendingMessages.delete(data.id); }
-                    // Also reject streaming if active
-                    if (_streamRejectFirst && data.id === _streamId) {
-                        _streamRejectFirst(new Error(data.error));
-                        _streamResolveFirst = null;
-                        _streamRejectFirst = null;
-                    }
+                    const error = new Error(data.error || 'Kokoro worker generation failed');
+                    const p = _takePending(data.id);
+                    if (p) p.reject(error);
+
+                    const stream = _activeStream;
+                    if (stream && data.id === stream.id) _cancelStream(stream, error, true);
                     break;
                 }
 
-                // ── Streaming: individual chunk arrived ──
                 case 'stream_chunk': {
-                    if (data.id !== _streamId) break; // Ignore stale streams
+                    const stream = _activeStream;
+                    if (!stream || stream.cancelled || data.id !== stream.id) break;
+
+                    const total = Number(data.total);
+                    const index = Number(data.index);
+                    if (!Number.isInteger(total) || total < 1 ||
+                        !Number.isInteger(index) || index !== stream.nextIndex ||
+                        (stream.expectedTotal !== null && stream.expectedTotal !== total)) {
+                        _cancelStream(stream, new Error('Incomplete stream: out-of-order or inconsistent chunk metadata'), true);
+                        break;
+                    }
+                    stream.expectedTotal = total;
+                    stream.nextIndex++;
+
                     const chunkBlob = new Blob([data.buffer], { type: 'audio/wav' });
                     const chunkUrl = URL.createObjectURL(chunkBlob);
-                    // Silenced per-chunk log to reduce console noise
+                    _registerStreamUrl(stream, chunkUrl);
 
-                    if (_streamBufferFlushed) {
-                        // Buffer already flushed — go straight to queue
-                        _streamQueue.push(chunkUrl);
+                    if (stream.bufferFlushed) {
+                        stream.queue.push(chunkUrl);
                     } else {
-                        // Accumulate in preload buffer
-                        _streamBuffer.push(chunkUrl);
-                        // Flush when we have enough chunks (or this is the only chunk)
-                        if (_streamBuffer.length >= STREAM_PRELOAD || data.total === 1) {
-                            _streamBufferFlushed = true;
-                            const [first, ...rest] = _streamBuffer;
-                            _streamQueue.push(...rest);
-                            // Silenced preload buffer log
-                            if (_streamResolveFirst) {
-                                _streamResolveFirst(first);
-                                _streamResolveFirst = null;
-                                _streamRejectFirst = null;
-                            }
+                        stream.buffer.push(chunkUrl);
+                        if (stream.buffer.length >= STREAM_PRELOAD || total === 1) {
+                            _flushStreamBuffer(stream);
                         }
                     }
                     break;
                 }
 
-                // ── Streaming: all chunks complete ──
                 case 'stream_done': {
-                    if (data.id !== _streamId) break;
-                    console.log(`[Kokoro TTS] ✅ Stream complete: ${data.total} chunks in ${Math.round(data.elapsed)}ms`);
-                    _streamActive = false;
-                    // Flush preload buffer if stream ended before buffer was full
-                    if (!_streamBufferFlushed && _streamBuffer.length > 0) {
-                        _streamBufferFlushed = true;
-                        const [first, ...rest] = _streamBuffer;
-                        _streamQueue.push(...rest);
-                        // Silenced buffer flush log
-                        if (_streamResolveFirst) {
-                            _streamResolveFirst(first);
-                            _streamResolveFirst = null;
-                            _streamRejectFirst = null;
-                        }
+                    const stream = _activeStream;
+                    if (!stream || stream.cancelled || data.id !== stream.id) break;
+
+                    const total = Number(data.total);
+                    const expected = Number(data.expectedTotal);
+                    if (!Number.isInteger(total) || total < 1 ||
+                        !Number.isInteger(expected) || total !== expected ||
+                        expected !== stream.expectedTotal ||
+                        stream.nextIndex !== expected) {
+                        _cancelStream(stream, new Error('Incomplete stream: worker ended before every chunk arrived'), true);
+                        break;
                     }
-                    if (_streamDoneResolve) {
-                        _streamDoneResolve();
-                        _streamDoneResolve = null;
+
+                    stream.active = false;
+                    _flushStreamBuffer(stream);
+                    if (!stream.firstSettled) {
+                        _cancelStream(stream, new Error('Incomplete stream: no playable audio was generated'), true);
                     }
                     break;
                 }
             }
         };
 
-        w.onerror = (e) => {
-            console.warn('[Kokoro TTS] Worker error:', e.message);
+        w.onerror = (event) => {
+            if (event && typeof event.preventDefault === 'function') event.preventDefault();
+            _handleWorkerFailure(w, new Error((event && event.message) || 'Kokoro worker crashed'));
+        };
+        w.onmessageerror = () => {
+            _handleWorkerFailure(w, new Error('Kokoro worker returned an unreadable message'));
         };
 
         return w;
     }
 
-    function _sendToWorker(type, payload) {
+    function _sendToWorker(type, payload, options) {
         return new Promise((resolve, reject) => {
-            const id = payload.id || `msg_${++_msgId}`;
-            _pendingMessages.set(id, { resolve, reject });
-            _worker.postMessage({ type, ...payload, id });
+            if (!_worker) {
+                reject(new Error('Kokoro TTS worker is not available'));
+                return;
+            }
+
+            const signal = options && options.signal;
+            if (signal && signal.aborted) {
+                reject(_signalAbortError(signal));
+                return;
+            }
+
+            const id = payload.id || ('msg_' + (++_msgId));
+            const previous = _takePending(id);
+            if (previous) previous.reject(_abortError('Kokoro TTS request was superseded'));
+
+            let cleanup = null;
+            if (signal) {
+                const abort = () => {
+                    const pending = _takePending(id);
+                    if (pending) pending.reject(_signalAbortError(signal));
+                };
+                signal.addEventListener('abort', abort, { once: true });
+                cleanup = () => signal.removeEventListener('abort', abort);
+            }
+            _pendingMessages.set(id, { resolve, reject, cleanup, type });
+
+            try {
+                _worker.postMessage({ type, ...payload, id });
+            } catch (error) {
+                const pending = _takePending(id);
+                if (pending) pending.reject(error);
+            }
         });
     }
 
@@ -516,14 +824,14 @@
                     });
                     console.log('[Kokoro TTS] 🔥 Warm-up complete');
                 } catch (warmupErr) {
+                    if (!_worker || !_ready) throw warmupErr;
                     console.warn('[Kokoro TTS] Warm-up failed (non-fatal):', warmupErr.message);
                 }
 
                 return true;
             } catch (e) {
                 console.error('[Kokoro TTS] ❌ Initialization failed:', e);
-                _initPromise = null;
-                _ready = false;
+                _terminateWorker(e);
                 throw e;
             }
         })();
@@ -532,47 +840,59 @@
     }
 
     // ─── Generate Speech (batch — waits for all chunks) ─────────────────
-    async function speak(text, voice, speed) {
+    async function speak(text, voice, speed, options) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
 
+        options = options || {};
+        const signal = options.signal;
+        if (signal && signal.aborted) throw _signalAbortError(signal);
         voice = resolveVoice(voice);
-        speed = speed || 1.0;
 
         if (!_ready) {
-            try { await init(); } catch (e) {
-                console.warn('[Kokoro TTS] Init failed in speak(), returning null:', e?.message);
+            try {
+                await _awaitWithSignal(init(), signal);
+            } catch (e) {
+                if (e && e.name === 'AbortError') throw e;
+                console.warn('[Kokoro TTS] Init failed in speak(), returning null:', e && e.message);
                 return null;
             }
         }
+        if (signal && signal.aborted) throw _signalAbortError(signal);
 
-        const cacheKey = `kokoro__${text.toLowerCase().trim().substring(0, 200)}__${voice}__${speed}`;
-        if (_audioCache.has(cacheKey)) {
-            // Silenced cache hit log
-            return _audioCache.get(cacheKey);
-        }
+        const cacheKey = _cacheKey(text, voice);
+        const cached = _cacheGet(cacheKey, text, voice);
+        if (cached) return cached;
 
         try {
-            const result = await _sendToWorker('generate_batch', { text, voice, speed });
-            if (!result.buffer) {
-                console.warn('[Kokoro TTS] No audio generated');
+            // Speed is deliberately applied by the Audio element, not baked
+            // into reusable bytes. Callers already set playbackRate.
+            const result = await _sendToWorker(
+                'generate_batch',
+                { text, voice, speed: SYNTHESIS_SPEED },
+                { signal }
+            );
+            if (signal && signal.aborted) throw _signalAbortError(signal);
+            if (!result.buffer ||
+                !Number.isInteger(result.chunks) ||
+                !Number.isInteger(result.expectedChunks) ||
+                result.chunks < 1 ||
+                result.chunks !== result.expectedChunks) {
+                console.warn('[Kokoro TTS] Incomplete batch; refusing partial audio');
                 return null;
             }
+
+            // Another identical request may have completed while this worker
+            // request was queued. Reuse it instead of replacing a live URL.
+            const raced = _cacheGet(cacheKey, text, voice);
+            if (raced) return raced;
 
             const audioBlob = new Blob([result.buffer], { type: 'audio/wav' });
             const audioUrl = URL.createObjectURL(audioBlob);
-            const elapsed = Math.round(result.elapsed);
-            // Silenced per-generation log
-
-            _audioCache.set(cacheKey, audioUrl);
-            if (_audioCache.size > CACHE_MAX) {
-                const oldest = _audioCache.keys().next().value;
-                URL.revokeObjectURL(_audioCache.get(oldest));
-                _audioCache.delete(oldest);
-            }
-
+            _cacheSet(cacheKey, text, voice, audioUrl);
             return audioUrl;
         } catch (e) {
-            console.warn('[Kokoro TTS] ❌ Generation failed:', e);
+            if (e && e.name === 'AbortError') throw e;
+            console.warn('[Kokoro TTS] Generation failed:', e);
             return null;
         }
     }
@@ -588,90 +908,108 @@
     //   //   const nextUrl = _kokoroTTS.shiftStreamChunk();
     //   //   if (nextUrl) playNextAudio(nextUrl);
     //   //   else done();
-    async function speakStreaming(text, voice, speed) {
+    async function speakStreaming(text, voice, speed, options) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
 
+        options = options || {};
+        const signal = options.signal;
+        if (signal && signal.aborted) throw _signalAbortError(signal);
         voice = resolveVoice(voice);
-        speed = speed || 1.0;
 
         if (!_ready) {
-            try { await init(); } catch (e) {
-                console.warn('[Kokoro TTS] Init failed in speakStreaming(), returning null:', e?.message);
+            try {
+                await _awaitWithSignal(init(), signal);
+            } catch (e) {
+                if (e && e.name === 'AbortError') throw e;
+                console.warn('[Kokoro TTS] Init failed in speakStreaming(), returning null:', e && e.message);
                 return null;
             }
         }
+        if (signal && signal.aborted) throw _signalAbortError(signal);
 
-        // Cache check — for cached text, no need to stream
-        const cacheKey = `kokoro__${text.toLowerCase().trim().substring(0, 200)}__${voice}__${speed}`;
-        if (_audioCache.has(cacheKey)) {
-            // Silenced streaming cache hit log
-            _streamQueue = [];
-            _streamActive = false;
-            return _audioCache.get(cacheKey);
+        if (_activeStream) {
+            _cancelStream(_activeStream, _abortError('Kokoro stream was superseded'), false);
         }
 
-        // For short text, just use regular speak (no benefit to streaming)
+        // Cached and short requests need no stream state.
+        const cacheKey = _cacheKey(text, voice);
+        const cached = _cacheGet(cacheKey, text, voice);
+        if (cached) return cached;
         if (text.length <= CHUNK_THRESHOLD) {
-            _streamQueue = [];
-            _streamActive = false;
-            return speak(text, voice, speed);
+            return speak(text, voice, speed, options);
         }
 
-        // Reset streaming state
-        _streamQueue = [];
-        _streamBuffer = [];
-        _streamBufferFlushed = false;
-        _streamActive = true;
-        _streamId = `stream_${++_msgId}`;
+        const stream = _newStream('stream_' + (++_msgId));
+        _activeStream = stream;
 
-        // Promise for first chunk
-        const firstChunkPromise = new Promise((resolve, reject) => {
-            _streamResolveFirst = resolve;
-            _streamRejectFirst = reject;
-        });
-
-        // Promise for all-done (used internally)
-        new Promise((resolve) => { _streamDoneResolve = resolve; });
-
-        // Send to worker — it will post stream_chunk messages as each sentence finishes
-        _worker.postMessage({
-            type: 'generate_stream',
-            text,
-            voice,
-            speed,
-            id: _streamId,
-        });
+        if (signal) {
+            const abort = () => {
+                if (_activeStream === stream && !stream.cancelled) {
+                    _cancelStream(stream, _signalAbortError(signal), true);
+                }
+            };
+            signal.addEventListener('abort', abort, { once: true });
+            stream.signalCleanup = () => signal.removeEventListener('abort', abort);
+        }
 
         try {
-            // Block until preload buffer is full (STREAM_PRELOAD chunks) or stream ends
-            const firstUrl = await firstChunkPromise;
-            return firstUrl;
+            // As with speak(), generate neutral 1x bytes. chainPlay applies
+            // requested playback speed exactly once to every streamed chunk.
+            _worker.postMessage({
+                type: 'generate_stream',
+                text,
+                voice,
+                speed: SYNTHESIS_SPEED,
+                id: stream.id,
+            });
+            return await stream.firstPromise;
         } catch (e) {
-            console.warn('[Kokoro TTS] ❌ Streaming failed:', e);
-            _streamActive = false;
+            if (!stream.cancelled) _cancelStream(stream, e, true);
+            if (e && e.name === 'AbortError') throw e;
+            console.warn('[Kokoro TTS] Streaming failed:', e);
             return null;
         }
     }
 
-    // ─── Stream Queue Helpers ───────────────────────────────────────────
-    // Called by the audio player (AlloBot) when current chunk ends,
-    // to get the next chunk URL (or null if no more).
+    // Called by an existing audio player when the current chunk ends.
     function shiftStreamChunk() {
-        if (_streamQueue.length > 0) {
-            return _streamQueue.shift();
-        }
-        return null;
+        const stream = _activeStream;
+        if (!stream || stream.cancelled || stream.queue.length === 0) return null;
+        return stream.queue.shift();
     }
 
     function hasStreamChunks() {
-        return _streamQueue.length > 0 || _streamActive;
+        const stream = _activeStream;
+        return Boolean(stream && !stream.cancelled && (stream.queue.length > 0 || stream.active));
     }
 
-    // ─── Quality Toggle (API compat) ────────────────────────────────────
-    // q4 retired 2026-07-06: its file is 291MB (3.3x q8), audio is worse,
-    // and same-machine benching showed no speed win on wasm CPU. Every mode
-    // resolves to q8 so old callers keep working without re-downloading
-    // anything they shouldn't.
+    function stop(reason) {
+        const error = _abortError(reason || 'Kokoro TTS playback stopped');
+        let stopped = _cancelPendingGeneration(error) > 0;
+        if (_activeStream) {
+            stopped = _cancelStream(_activeStream, error, true) || stopped;
+        } else if (_activeChain) {
+            _stopChain(true);
+            stopped = true;
+        }
+        return stopped;
+    }
+
+    function clearCache() {
+        _clearAudioCache();
+    }
+
+    function dispose(reason) {
+        stop(reason || 'Kokoro TTS disposed');
+        _terminateWorker(_abortError(reason || 'Kokoro TTS disposed'));
+        _clearAudioCache();
+        _loadProgress = 0;
+        _onProgress = null;
+    }
+
+    // Quality Toggle (API compatibility)
+    // q4 is retired: every legacy mode resolves to q8 so callers do not
+    // download a larger, slower, lower-quality model.
     async function setQuality(mode, onProgress) {
         const newDtype = 'q8';
         if (newDtype === _currentDtype && _ready) {
@@ -682,15 +1020,9 @@
         console.log(`[Kokoro TTS] 🔄 Switching quality: ${_currentDtype} → ${newDtype}`);
         _currentDtype = newDtype;
 
-        // Tear down current worker
-        if (_worker) { _worker.terminate(); _worker = null; }
-        _ready = false;
-        _initPromise = null;
-        _audioCache.clear();
-        _streamQueue = [];
-        _streamBuffer = [];
-        _streamBufferFlushed = false;
-        _streamActive = false;
+        // Tear down current worker and every URL it owns.
+        _terminateWorker(_abortError('Kokoro TTS quality changed'));
+        _clearAudioCache();
 
         // Re-initialize with new dtype
         try {
@@ -715,47 +1047,125 @@
     // streaming chunk, wires up onended to automatically play subsequent
     // chunks from the queue. Caller just needs:
     //   window._kokoroTTS.chainPlay(audio, speed, volume, onAllDone);
-    function chainPlay(audio, speed, volume, onDone) {
-        const playNext = () => {
-            if (!window._kokoroTTS) { if (onDone) onDone(); return; }
+    function _audioUrl(audio) {
+        if (!audio) return '';
+        return audio.currentSrc || audio.src ||
+            (typeof audio.getAttribute === 'function' ? audio.getAttribute('src') : '') || '';
+    }
 
-            const nextUrl = shiftStreamChunk();
+    function _finishChain(chain, notifyDone, stopAudio) {
+        if (!chain || chain.finished) return;
+        chain.finished = true;
+        if (chain.timer) clearTimeout(chain.timer);
+
+        if (stopAudio && chain.audio && typeof chain.audio.pause === 'function') {
+            try { chain.audio.pause(); } catch (_) {}
+        }
+        if (chain.currentUrl && ownsUrl(chain.currentUrl)) {
+            invalidateUrl(chain.currentUrl);
+        }
+
+        const stream = chain.stream;
+        if (stream && !stream.active && stream.queue.length === 0) {
+            if (stream.signalCleanup) {
+                stream.signalCleanup();
+                stream.signalCleanup = null;
+            }
+            for (const url of Array.from(stream.urls)) invalidateUrl(url);
+            if (_activeStream === stream) _activeStream = null;
+        }
+
+        if (_activeChain === chain) _activeChain = null;
+        if (notifyDone && !chain.doneNotified && typeof chain.onDone === 'function') {
+            chain.doneNotified = true;
+            chain.onDone();
+        }
+    }
+
+    function _stopChain(notifyDone) {
+        const chain = _activeChain;
+        if (!chain) return false;
+        _finishChain(chain, notifyDone, true);
+        return true;
+    }
+
+    function chainPlay(audio, speed, volume, onDone) {
+        const initialUrl = _audioUrl(audio);
+        const ownership = _ownedUrls.get(initialUrl);
+        const stream = ownership && ownership.kind === 'stream' ? ownership.stream : null;
+
+        // AlloBot calls this helper for cloud and cached clips too. Only a URL
+        // owned by the current stream may consume that stream's queue.
+        if (!stream || stream !== _activeStream || stream.cancelled) {
+            audio.onended = () => { if (onDone) onDone(); };
+            return { stop: () => false };
+        }
+
+        _stopChain(false);
+        const playbackRate = Number.isFinite(Number(speed)) && Number(speed) > 0 ? Number(speed) : 1;
+        const playbackVolume = volume === undefined || volume === null
+            ? 1
+            : Math.max(0, Math.min(1, Number(volume)));
+
+        const chain = {
+            stream,
+            audio,
+            currentUrl: initialUrl,
+            timer: null,
+            onDone,
+            doneNotified: false,
+            finished: false,
+        };
+        _activeChain = chain;
+        audio.playbackRate = playbackRate;
+        audio.volume = Number.isFinite(playbackVolume) ? playbackVolume : 1;
+
+        const failChain = (error) => {
+            if (!stream.cancelled) {
+                _cancelStream(stream, error || new Error('Kokoro stream playback failed'), true);
+            } else {
+                _finishChain(chain, true, false);
+            }
+        };
+
+        const playNext = () => {
+            if (chain.finished) return;
+            if (chain.currentUrl && ownsUrl(chain.currentUrl)) invalidateUrl(chain.currentUrl);
+            chain.currentUrl = null;
+
+            if (!window._kokoroTTS || stream.cancelled || stream !== _activeStream) {
+                _finishChain(chain, false, false);
+                return;
+            }
+
+            const nextUrl = stream.queue.length > 0 ? stream.queue.shift() : null;
             if (nextUrl) {
                 const next = new Audio(nextUrl);
-                next.playbackRate = speed || 1;
-                next.volume = volume || 1;
-                next.onended = playNext; // recursive chain
-                next.onerror = () => { URL.revokeObjectURL(nextUrl); if (onDone) onDone(); };
-                next.play().catch(() => { if (onDone) onDone(); });
+                chain.audio = next;
+                chain.currentUrl = nextUrl;
+                next.playbackRate = playbackRate;
+                next.volume = Number.isFinite(playbackVolume) ? playbackVolume : 1;
+                next.onended = playNext;
+                next.onerror = () => failChain(new Error('Kokoro stream audio failed to play'));
+                next.play().catch((error) => failChain(error));
                 return;
             }
 
-            // No chunk ready yet but stream still generating — poll briefly
-            if (_streamActive) {
-                const poll = () => {
-                    const url = shiftStreamChunk();
-                    if (url) {
-                        const a = new Audio(url);
-                        a.playbackRate = speed || 1;
-                        a.volume = volume || 1;
-                        a.onended = playNext;
-                        a.onerror = () => { URL.revokeObjectURL(url); if (onDone) onDone(); };
-                        a.play().catch(() => { if (onDone) onDone(); });
-                    } else if (_streamActive) {
-                        setTimeout(poll, 200);
-                    } else {
-                        if (onDone) onDone();
-                    }
-                };
-                setTimeout(poll, 200);
+            if (stream.active) {
+                chain.timer = setTimeout(playNext, 200);
                 return;
             }
-
-            // Stream complete, no more chunks
-            if (onDone) onDone();
+            _finishChain(chain, true, false);
         };
 
         audio.onended = playNext;
+        return {
+            stop: () => _cancelStream(
+                stream,
+                _abortError('Kokoro stream playback stopped'),
+                true
+            )
+        };
     }
 
     // ─── Expose Global API ──────────────────────────────────────────────
@@ -766,6 +1176,11 @@
         shiftStreamChunk: shiftStreamChunk,
         hasStreamChunks: hasStreamChunks,
         chainPlay: chainPlay,
+        stop: stop,
+        dispose: dispose,
+        ownsUrl: ownsUrl,
+        invalidateUrl: invalidateUrl,
+        clearCache: clearCache,
         setQuality: setQuality,
         resolveVoice: resolveVoice,
         supportsLanguage: supportsLanguage,
@@ -773,8 +1188,13 @@
         get ready() { return _ready; },
         get progress() { return _loadProgress; },
         get quality() { return _currentDtype === 'q8' ? 'high' : 'fast'; },
-        get streamActive() { return _streamActive; },
-        get streamQueueLength() { return _streamQueue.length; },
+        get synthesisRate() { return SYNTHESIS_SPEED; },
+        get streamActive() {
+            return Boolean(_activeStream && !_activeStream.cancelled && _activeStream.active);
+        },
+        get streamQueueLength() {
+            return _activeStream && !_activeStream.cancelled ? _activeStream.queue.length : 0;
+        },
     };
 
     console.log('[Kokoro TTS] 📦 Worker-based loader registered (default: q4 fast mode). Call init() or speak() to start.');

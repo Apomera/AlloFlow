@@ -178,10 +178,10 @@
   var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
   var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), tourRect.top));
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    role: "presentation",
-    "aria-hidden": "true",
     "data-help-ignore": "true",
     className: "fixed inset-0 z-[10998] pointer-events-none bg-black/5",
+    role: "presentation",
+    "aria-hidden": "true",
     onPointerDown: e => e.stopPropagation(),
     onMouseDown: e => e.stopPropagation(),
     onClick: e => {

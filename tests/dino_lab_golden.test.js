@@ -124,6 +124,25 @@ describe('Dino Lab — render per tab (golden master)', () => {
     });
   });
 
+  it('surfaces a saved investigation with resume and clear actions', () => {
+    const data = baseData('explore');
+    data.field3dProgress = {
+      version: 1,
+      speciesId: 'tyrannosaurus',
+      hasProgress: true,
+      workflowStarted: true,
+      scanTargetIdx: 1,
+      scanLogged: { skull: true },
+      assemblyPlaced: { skull: true },
+      claimFocus: 'posture',
+      claimBone: 'spine'
+    };
+    const html = renderTab(data);
+    expect(html).toMatch(/aria-label="Saved Dino Lab investigation"/);
+    expect(html).toMatch(/Resume investigation/);
+    expect(html).toMatch(/Clear saved progress/);
+    expect(html).toContain('T. rex · 1/3 evidence logged · 1/6 assembled');
+  });
   it('every tab renders deterministically (identical output twice)', () => {
     TABS.forEach(tab => {
       expect(renderTab(tab), tab).toBe(renderTab(tab));
@@ -195,6 +214,9 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Visual key/);
     expect(html).toMatch(/Current 3D camera view/);
     expect(html).toMatch(/Camera view loading/);
+    expect(html).toMatch(/New to the field station\?/);
+    expect(html).toMatch(/Dismiss 3D viewer orientation tips/);
+    expect(html).toMatch(/Start with the amber Skull target/);
     expect(html).toMatch(/Pause spin/);
     expect(html).toMatch(/Front/);
     expect(html).toMatch(/Side/);
@@ -309,6 +331,10 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/class="dinolab-field-stage"/);
     expect(html).toMatch(/height:clamp\(520px, 62vh, 760px\)/);
     expect(html).toMatch(/aria-label="Field Station workflow"/);
+    expect(html).toMatch(/class="dinolab-3d-evidence-route" role="list" aria-label="Evidence route"/);
+    expect(html).toMatch(/aria-label="Focus Skull evidence anchor, current focus"/);
+    expect(html).toMatch(/aria-label="Focus Shoulder evidence anchor, next focus"/);
+    expect(html).toMatch(/Start the field scan to log observations/);
     expect(html).toMatch(/aria-label="Step 1 Explore, Current"/);
     expect(html).toMatch(/aria-label="Step 2 Scan, Ready"/);
     expect(html).toMatch(/aria-label="Step 3 Assemble, Locked"/);
@@ -318,12 +344,19 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Start field scan/);
     expect(html).toMatch(/aria-controls="dinolab-field-drawer"/);
     expect(html).toMatch(/class="dinolab-field-toolbar-actions" role="group" aria-label="3D model view controls"/);
+    expect(html).toMatch(/id="dinolab-3d-canvas-tyrannosaurus"/);
+    expect(html).toMatch(/<details class="dinolab-3d-controls-disclosure"/);
+    expect(html).toMatch(/View controls &amp; layers/);
+    expect(html).toMatch(/Free orbit \| drag \+ wheel/);
+    expect(html).toMatch(/aria-label="Front camera view" aria-pressed="false"/);
+    expect(html).toMatch(/aria-label="Reset view camera view" aria-pressed="false"/);
     expect(html).toMatch(/background:#15803d;color:#fff[^>]*>Focus model<\/button>/);
     expect(html).not.toMatch(/>Open species file<\/button>/);
     expect(html).toMatch(/id="dinolab-field-species-file"[^>]*>Open full species file<\/button>/);
     expect(html).toMatch(/grid-template-columns:repeat\(auto-fit,minmax\(108px,1fr\)\)/);
     expect(html).toMatch(/aria-expanded="false"/);
     expect(html).toMatch(/<aside[^>]*id="dinolab-field-drawer"[^>]*hidden=""/);
+    expect(html).toMatch(/class="dinolab-field-drawer-handle"/);
     expect(html).toMatch(/aria-labelledby="dinolab-field-drawer-title"/);
     expect(html).toMatch(/id="dinolab-field-drawer-title"[^>]*>Field tools: Evidence/);
     expect(html).toMatch(/id="dinolab-field-drawer-close"/);
@@ -363,6 +396,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/height:clamp\(620px, 76vh, 920px\)/);
     expect(html).toMatch(/Exit focus view/);
     expect(html).toMatch(/aria-keyshortcuts="Escape"/);
+    expect(html).toMatch(/<details class="dinolab-3d-controls-disclosure" open=""/);
     expect(html).toMatch(/aria-label="Focused species: T\. rex"/);
     expect(html).toMatch(/aria-label="3D Field Station focused workspace"/);
     expect(html).toMatch(/class="dinolab-field-focus-label"[\s\S]*?>3D Field Station<\/span>[\s\S]*?>T\. rex<\/span>/);
@@ -639,6 +673,28 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab(data);
     expect(html).toMatch(/Target: Shoulder anchor/);
     expect(html).toMatch(/Compare shoulder position/);
+  });
+  it('the 3D field station explains evidence and offers a shareable summary after scanning starts', () => {
+    const data = baseData('field3d');
+    data.field3dWorkflowStarted = true;
+    data.field3dScanTargetIdx = 1;
+    data.field3dScanLogged = { skull: true, shoulder: true, hip: true };
+    data.field3dScanSpecies = 'tyrannosaurus';
+    data.field3dAssemblyPlaced = { skull: true, spine: true };
+    data.field3dAssemblySpecies = 'tyrannosaurus';
+    data.field3dClaimFocus = 'posture';
+    data.field3dClaimBone = 'spine';
+    data.field3dClaimBoneSpecies = 'tyrannosaurus';
+    const html = renderTab(data);
+    expect(html).toMatch(/Why this matters/);
+    expect(html).toMatch(/The shoulder connects the forelimbs to the rib cage and spine/);
+    expect(html).toMatch(/Why this fossil matters/);
+    expect(html).toMatch(/Why this inference is cautious/);
+    expect(html).toMatch(/Share investigation summary/);
+    expect(html).toMatch(/Copy summary/);
+    expect(html).toMatch(/Download summary/);
+    expect(html).toMatch(/Copy Dino Lab investigation summary to clipboard/);
+    expect(html).toMatch(/Download Dino Lab investigation summary/);
   });
   it('the 3D field station can render with auto spin paused', () => {
     const data = baseData('field3d');

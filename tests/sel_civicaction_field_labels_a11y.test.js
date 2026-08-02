@@ -44,5 +44,22 @@ describe('Civic Action field label accessibility', () => {
     ]) {
       expect(text).toContain(`'aria-describedby': '${id}'`);
     }
+  });it('surfaces planner and service-learning progress states', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Civic action plan progress'");
+    expect(text).toContain("'aria-label': 'Service learning phase progress'");
+    expect(text).toContain("'aria-current': isActive ? 'step' : undefined");
+    expect(text).toContain("'aria-labelledby': 'cv-planner-step-label'");
+    expect(text).toContain("'aria-labelledby': 'cv-service-phase-label'");
+  });
+
+  it('names the next and completion transitions in both project paths', () => {
+    const text = source();
+    expect(text).toContain("'aria-label': 'Next civic action plan step'");
+    expect(text).toContain("'aria-label': 'Complete civic action plan'");
+    expect(text).toContain("'aria-label': 'Next service-learning phase'");
+    expect(text).toContain("'aria-label': 'Complete service-learning project plan'");
+    expect(text).toContain("announceToSR('Civic action plan complete')");
+    expect(text).toContain("announceToSR('Service-learning project plan complete')");
   });
 });

@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio açıldı.",
   "cmd.open_video_studio_hint": "Anlatım videoları kaydedin, altyazı ekleyin ve düzenleyin",
   "palette.ctx.videoStudio": "Burada — Video Studio",
-  "palette.close": "Komut paletini kapat"
+  "palette.close": "Komut paletini kapat",
+  "cmd.apply_lesson_template": "Kayıtlı bir şablondan başla",
+  "cmd.apply_lesson_template_done": "Şundan başlatıldı: ",
+  "cmd.apply_lesson_template_hint": "Kayıtlı şablonlarından biriyle yeni bir plan başlatır",
+  "cmd.apply_lesson_template_missing": " adlı bir şablon bulamadım: ",
+  "cmd.apply_lesson_template_which": "Hangi şablon?",
+  "cmd.rebuild_lesson_step": "Planın bir adımını yeniden oluştur",
+  "cmd.rebuild_lesson_step_done": "Adım yeniden oluşturuluyor: ",
+  "cmd.rebuild_lesson_step_hint": "Tek bir kaynağı yeniden oluşturur — adım numarasını söyle",
+  "cmd.rebuild_lesson_step_missing": "Bu adımı planda bulamadım.",
+  "cmd.rebuild_lesson_step_none": "planda henüz hiç adım yok.",
+  "cmd.rebuild_lesson_step_which": "Hangi adım?",
+  "cmd.run_lesson_blueprint": "Ders planını oluştur",
+  "cmd.run_lesson_blueprint_done": "Plan oluşturuluyor — kartta her adımı izleyebilirsin.",
+  "cmd.run_lesson_blueprint_hint": "Geçerli plandaki tüm kaynakları oluşturur",
+  "cmd.cancelled": "İptal istendi. Sağlayıcısı desteklediğinde mevcut işlem duracak."
 }

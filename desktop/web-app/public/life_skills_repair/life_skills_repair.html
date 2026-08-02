@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Skills 3D — Home Repair &amp; Systems Lab</title>
+<script src="../immersive_geometry/vendor/aframe.min.js"></script>
+<script>
+  if (window.AFRAME) {
+    AFRAME.registerComponent('repair-interactive', {
+      schema: { task: { type: 'string' } },
+      init: function () {
+        this.el.classList.add('clickable');
+        this.el.addEventListener('click', function () {
+          if (window.lifeSkillsRepair3D) window.lifeSkillsRepair3D.activate(this.data.task, 'scene');
+        }.bind(this));
+        this.el.addEventListener('mouseenter', function () {
+          if (window.lifeSkillsRepair3D) window.lifeSkillsRepair3D.focus(this.data.task, false);
+        }.bind(this));
+      }
+    });
+  }
+</script>
+<style>
+  :root {
+    --repair-bg: #111827;
+    --repair-panel: #182337;
+    --repair-panel-2: #21324b;
+    --repair-line: #557095;
+    --repair-text: #f8fbff;
+    --repair-muted: #c8d6eb;
+    --repair-accent: #67e8f9;
+    --repair-good: #4ade80;
+    --repair-warn: #facc15;
+    --repair-danger: #fb7185;
+  }
+  :root[data-theme="light"] {
+    --repair-bg: #eef4f8;
+    --repair-panel: #ffffff;
+    --repair-panel-2: #e5eef5;
+    --repair-line: #7894af;
+    --repair-text: #122236;
+    --repair-muted: #3b526a;
+    --repair-accent: #075985;
+    --repair-good: #166534;
+    --repair-warn: #854d0e;
+    --repair-danger: #9f1239;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--repair-bg); color: var(--repair-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--repair-warn); outline-offset: 2px; }
+  .repair-app { min-height: 100vh; display: flex; flex-direction: column; }
+  .repair-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 18px; background: linear-gradient(115deg, #3b2f63, #0e7490 58%, #166534); border-bottom: 1px solid rgba(255,255,255,.24); }
+  .repair-header h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+  .repair-header p { margin: 4px 0 0; color: #effbff; font-size: 12px; line-height: 1.45; max-width: 700px; }
+  .header-mark { flex: 0 0 auto; padding: 6px 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .repair-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 12px; padding: 12px; }
+  .scene-panel, .coach-panel { min-width: 0; border: 1px solid var(--repair-line); background: var(--repair-panel); box-shadow: 0 16px 42px rgba(0,0,0,.2); }
+  .scene-panel { position: relative; min-height: 590px; overflow: hidden; border-radius: 14px; }
+  .scene-panel a-scene { display: block; width: 100%; height: 100%; min-height: 590px; }
+  .scene-help { position: absolute; left: 12px; bottom: 10px; z-index: 4; max-width: min(440px, calc(100% - 24px)); padding: 7px 9px; border: 1px solid rgba(255,255,255,.28); border-radius: 8px; background: rgba(17,24,39,.88); color: #eef8ff; font-size: 11px; line-height: 1.35; pointer-events: none; }
+  .coach-panel { border-radius: 14px; padding: 14px; overflow: auto; }
+  .coach-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .coach-panel h2 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .coach-panel h3 { margin: 16px 0 7px; color: var(--repair-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .coach-panel p { margin: 0; color: var(--repair-muted); font-size: 12px; line-height: 1.5; }
+  .mode-wrap { display: grid; gap: 4px; min-width: 132px; }
+  .mode-wrap label { color: var(--repair-muted); font-size: 10px; font-weight: 800; }
+  .mode-wrap select { min-height: 32px; padding: 4px 7px; border: 1px solid var(--repair-line); border-radius: 7px; background: var(--repair-panel-2); color: var(--repair-text); font-size: 11px; font-weight: 750; }
+  .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 9px; padding: 9px 10px; border-left: 4px solid var(--repair-accent); background: var(--repair-panel-2); }
+  .progress-line strong { font-size: 14px; }
+  .progress-line span { color: var(--repair-muted); font-size: 11px; font-weight: 700; text-align: right; }
+  .view-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .view-controls span { color: var(--repair-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .view-button { padding: 5px 8px; border: 1px solid var(--repair-line); border-radius: 7px; background: transparent; color: var(--repair-text); font-size: 10px; font-weight: 800; }
+  .view-button[aria-pressed="true"] { border-color: var(--repair-accent); background: rgba(103,232,249,.12); }
+  .prompt { margin: 0 0 10px !important; padding: 9px 10px; border: 1px solid var(--repair-line); border-radius: 9px; background: rgba(103,232,249,.08); color: var(--repair-text) !important; }
+  .feedback { min-height: 42px; margin: 0 0 11px !important; padding: 8px 10px; border-radius: 8px; background: rgba(250,204,21,.12); color: var(--repair-warn) !important; font-weight: 700; }
+  .feedback.good { background: rgba(74,222,128,.13); color: var(--repair-good) !important; }
+  .feedback.error { background: rgba(251,113,133,.13); color: var(--repair-danger) !important; }
+  .scenario-panel { margin: 0 0 12px; padding: 10px; border: 1px solid var(--repair-line); border-left: 4px solid var(--repair-accent); border-radius: 9px; background: rgba(103,232,249,.06); }
+  .scenario-kicker { color: var(--repair-accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .scenario-panel strong { display: block; margin-top: 3px; font-size: 13px; line-height: 1.3; }
+  .scenario-situation { margin: 5px 0 8px !important; }
+  .scenario-choices { display: grid; gap: 6px; }
+  .scenario-button { width: 100%; padding: 7px 8px; border: 1px solid var(--repair-line); border-radius: 7px; background: transparent; color: var(--repair-text); font-size: 11px; line-height: 1.35; text-align: left; }
+  .scenario-button:hover, .scenario-button:focus-visible, .scenario-button[aria-pressed="true"] { border-color: var(--repair-accent); background: rgba(103,232,249,.12); }
+  .scenario-button:disabled { cursor: default; opacity: .76; }
+  .scenario-feedback { min-height: 30px; margin: 7px 0 0 !important; font-size: 11px !important; font-weight: 700; }
+  .scenario-feedback.good { color: var(--repair-good) !important; }
+  .scenario-feedback.error { color: var(--repair-danger) !important; }
+  .scenario-hint { margin-top: 7px; padding: 6px 8px; border: 1px solid var(--repair-line); border-radius: 7px; background: transparent; color: var(--repair-text); font-size: 10px; font-weight: 800; }
+  .scenario-hint[aria-expanded="true"] { border-color: var(--repair-accent); background: rgba(103,232,249,.1); }
+  .scenario-hint-text { margin: 6px 0 0 !important; color: var(--repair-muted) !important; font-size: 11px !important; }
+  .scenario-step { display: block; margin-top: 2px; color: var(--repair-muted); font-size: 10px; font-weight: 700; }
+  .scenario-next { width: 100%; margin-top: 7px; padding: 7px 8px; border: 1px solid var(--repair-accent); border-radius: 7px; background: rgba(103,232,249,.12); color: var(--repair-text); font-size: 10px; font-weight: 800; }
+  .scenario-next:disabled { cursor: default; opacity: .7; }
+  .practice-summary { margin: 6px 0 0 !important; color: var(--repair-muted) !important; font-size: 10px !important; font-weight: 700; }
+  .task-list { display: grid; gap: 7px; }
+  .task-button { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; width: 100%; padding: 9px 10px; border: 1px solid var(--repair-line); border-radius: 9px; background: transparent; color: var(--repair-text); text-align: left; }
+  .task-button:hover, .task-button.current { border-color: var(--repair-accent); background: rgba(103,232,249,.09); }
+  .task-button.done { border-color: rgba(74,222,128,.75); background: rgba(74,222,128,.1); }
+  .task-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--repair-panel-2); font-size: 15px; }
+  .task-button.done .task-icon { background: rgba(74,222,128,.2); }
+  .task-copy { min-width: 0; }
+  .task-copy strong { display: block; font-size: 11px; line-height: 1.25; }
+  .task-copy small { display: block; margin-top: 2px; color: var(--repair-muted); font-size: 10px; line-height: 1.3; }
+  .task-room { align-self: start; color: var(--repair-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .reset-button { width: 100%; margin-top: 11px; padding: 9px 10px; border: 1px solid var(--repair-line); border-radius: 8px; background: var(--repair-panel-2); color: var(--repair-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button { width: 100%; margin-top: 7px; padding: 9px 10px; border: 1px solid var(--repair-warn); border-radius: 8px; background: rgba(250,204,21,.1); color: var(--repair-text); font-size: 11px; font-weight: 800; }
+  .help-pause-button:hover { border-color: var(--repair-accent); background: rgba(103,232,249,.12); }
+  .help-pause-text { margin: 6px 0 0 !important; color: var(--repair-good) !important; font-size: 11px !important; font-weight: 700; }
+  .why-button { width: 100%; margin-top: 7px; padding: 8px 10px; border: 1px solid var(--repair-line); border-radius: 8px; background: transparent; color: var(--repair-text); font-size: 11px; font-weight: 800; }
+  .why-button:hover, .why-button[aria-expanded="true"] { border-color: var(--repair-accent); background: rgba(103,232,249,.1); }
+  .why-text { margin: 6px 0 0 !important; color: var(--repair-muted) !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .note { margin-top: 14px !important; padding-top: 10px; border-top: 1px solid var(--repair-line); font-size: 11px !important; }
+  .scene-fallback { display: none; position: absolute; inset: 14px; z-index: 5; padding: 14px; border: 1px solid var(--repair-line); border-radius: 12px; background: var(--repair-panel); color: var(--repair-text); }
+  .scene-fallback strong { display: block; margin-bottom: 5px; }
+  .scene-fallback p { color: var(--repair-muted); font-size: 12px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 840px) {
+    .repair-layout { grid-template-columns: 1fr; }
+    .scene-panel { min-height: 500px; }
+    .scene-panel a-scene { min-height: 500px; }
+  }
+  @media (max-width: 520px) {
+    .repair-header { padding: 12px; }
+    .repair-header h1 { font-size: 17px; }
+    .header-mark { display: none; }
+    .repair-layout { padding: 8px; gap: 8px; }
+    .scene-panel { min-height: 430px; }
+    .scene-panel a-scene { min-height: 430px; }
+    .coach-panel { padding: 11px; }
+    .coach-top { display: grid; }
+    .mode-wrap { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="repair-app" id="repairApp">
+  <header class="repair-header">
+    <div>
+      <h1>🔧 Home Repair &amp; Systems Lab</h1>
+      <p>Identify parts, prepare safely, reset low-risk devices once, and recognize when a repair should stop and move to a professional.</p>
+    </div>
+    <div class="header-mark">Life Skills Lab · 3D practice</div>
+  </header>
+
+  <div class="repair-layout">
+    <section class="scene-panel" aria-labelledby="sceneTitle">
+      <h2 class="sr-only" id="sceneTitle">Interactive 3D home repair scene</h2>
+      <a-scene id="repairScene" embedded renderer="antialias: true; colorManagement: true" background="color: #111827" fog="type: linear; color: #111827; near: 10; far: 30" vr-mode-ui="enabled: true" webxr="optionalFeatures: local-floor">
+        <a-entity light="type: ambient; color: #d8e8ff; intensity: 1.5"></a-entity>
+        <a-entity light="type: directional; color: #fff1d6; intensity: 1.6" position="-4 8 5"></a-entity>
+        <a-entity light="type: point; color: #67e8f9; intensity: .7; distance: 12" position="3 3 2"></a-entity>
+
+        <a-box position="0 -0.12 0" width="12" height=".2" depth="10" material="color: #263a4d; roughness: 1"></a-box>
+        <a-box position="0 2.8 -4.8" width="12" height="5.6" depth=".18" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="-5.9 2.8 0" width=".18" height="5.6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="5.9 2.8 0" width=".18" height="5.6" depth="10" material="color: #23354b; roughness: 1"></a-box>
+        <a-box position="0 3 4.8" width="12" height="6" depth=".18" material="color: #23354b; roughness: 1"></a-box>
+
+        <a-plane position="-3.3 .012 -1.8" rotation="-90 0 0" width="4.4" height="4.6" material="color: #33405e; opacity: .5; transparent: true"></a-plane>
+        <a-plane position=".2 .014 -1.8" rotation="-90 0 0" width="3.7" height="4.6" material="color: #245064; opacity: .5; transparent: true"></a-plane>
+        <a-plane position="3.55 .016 -1.8" rotation="-90 0 0" width="3.1" height="4.6" material="color: #4b4264; opacity: .5; transparent: true"></a-plane>
+        <a-text value="BATHROOM" position="-3.3 .035 -.2" rotation="-90 0 0" align="center" width="3" color="#d9d6ff" opacity=".85"></a-text>
+        <a-text value="SINK + PLUMBING" position=".2 .035 -.2" rotation="-90 0 0" align="center" width="3.4" color="#b7f0f8" opacity=".85"></a-text>
+        <a-text value="ELECTRICAL" position="3.55 .035 -.2" rotation="-90 0 0" align="center" width="2.8" color="#f0d7ff" opacity=".85"></a-text>
+
+        <!-- Toilet cutaway. -->
+        <a-box position="-3.25 .72 -2.65" width="1.8" height="1.35" depth="1.2" material="color: #d7e5ed; roughness: .5"></a-box>
+        <a-box position="-3.25 1.62 -2.82" width="1.65" height="1.35" depth=".75" material="color: #e9f7fb; roughness: .4"></a-box>
+        <a-box position="-3.25 2.34 -2.82" width="1.8" height=".12" depth=".9" material="color: #b9d7e0; roughness: .45"></a-box>
+        <a-cylinder position="-3.25 1.96 -2.36" radius=".26" height=".1" rotation="90 0 0" material="color: #b91c1c; emissive: #7f1d1d; emissiveIntensity: .4"></a-cylinder>
+        <a-cylinder position="-3.25 1.84 -2.36" radius=".07" height=".35" rotation="90 0 0" material="color: #475569; roughness: .6"></a-cylinder>
+        <a-text id="label-flapper" value="Find the flapper" position="-3.25 2.78 -2.32" align="center" width="2.8" color="#ffe4e6" side="double"></a-text>
+
+        <!-- Sink and P-trap. -->
+        <a-box position=".1 1.05 -2.65" width="3.1" height="1.7" depth=".85" material="color: #5a4350; roughness: .9"></a-box>
+        <a-box position=".1 1.95 -2.65" width="3.2" height=".12" depth=".95" material="color: #b8c4cf; roughness: .45"></a-box>
+        <a-box position=".1 2.04 -2.65" width="1.15" height=".08" depth=".52" material="color: #e8f7fb; roughness: .35"></a-box>
+        <a-cylinder position=".1 2.22 -2.65" radius=".11" height=".35" material="color: #94a3b8; roughness: .35"></a-cylinder>
+        <a-torus position=".1 .45 -2.3" radius=".42" radius-tubular=".07" rotation="90 0 0" material="color: #8aa0ae; roughness: .45"></a-torus>
+        <a-cylinder position="-1.15 .68 -2.3" radius=".13" height=".15" rotation="90 0 0" material="color: #2563eb; roughness: .42"></a-cylinder>
+        <a-box position=".65 .28 -2.18" width="1.15" height=".45" depth=".75" material="color: #d6a15c; opacity: .9; transparent: true; roughness: .55"></a-box>
+        <a-text id="label-shutoff" value="Shut water off\\nbefore opening a leak" position="-1.15 1.12 -2.22" align="center" width="3.2" color="#dbeafe" side="double"></a-text>
+        <a-text id="label-bucket" value="Place a bucket\\nfirst" position=".65 .86 -2.16" align="center" width="2.1" color="#fef3c7" side="double"></a-text>
+
+        <!-- Electrical safety station. -->
+        <a-box position="3.45 2.05 -3.2" width="2.25" height="3.15" depth=".2" material="color: #5b4b71; roughness: .8"></a-box>
+        <a-box position="3.05 2.48 -3.04" width=".65" height=".85" depth=".08" material="color: #dbeafe; roughness: .35"></a-box>
+        <a-box id="obj-gfci" repair-interactive="task: gfci" position="3.05 2.43 -2.9" width=".25" height=".18" depth=".09" material="color: #22c55e; roughness: .4"></a-box>
+        <a-text id="label-gfci" value="GFCI\\nRESET once" position="3.05 3.18 -2.88" align="center" width="2.2" color="#dcfce7" side="double"></a-text>
+        <a-box position="4.05 2.45 -3.04" width=".7" height="1.25" depth=".08" material="color: #334155; roughness: .6"></a-box>
+        <a-box id="obj-breaker" repair-interactive="task: breaker" position="4.05 2.55 -2.9" width=".18" height=".5" depth=".1" material="color: #f59e0b; roughness: .42"></a-box>
+        <a-text id="label-breaker" value="Breaker\\ntrips again? STOP" position="4.05 3.42 -2.88" align="center" width="2.7" color="#fef3c7" side="double"></a-text>
+
+        <!-- Stop-and-escalate sign. -->
+        <a-box id="obj-pro" repair-interactive="task: pro" position="4.25 1.35 -.65" width="1.5" height="1.4" depth=".12" material="color: #be123c; roughness: .7"></a-box>
+        <a-text id="label-pro" value="GAS SMELL\\nSPARKS\\nCALL A PRO" position="4.25 1.36 -.56" align="center" width="2.2" color="#fff1f2" side="double"></a-text>
+
+        <a-cylinder id="obj-flapper" repair-interactive="task: flapper" position="-3.25 1.96 -2.35" radius=".3" height=".1" rotation="90 0 0" material="color: #b91c1c; roughness: .45"></a-cylinder>
+        <a-ring id="marker-flapper" position="-3.25 1.96 -2.18" radius-inner=".4" radius-outer=".5" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-cylinder id="obj-shutoff" repair-interactive="task: shutoff" position="-1.15 .68 -2.25" radius=".18" height=".14" rotation="90 0 0" material="color: #2563eb; roughness: .42"></a-cylinder>
+        <a-ring id="marker-shutoff" position="-1.15 .68 -2.05" radius-inner=".28" radius-outer=".38" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-box id="obj-bucket" repair-interactive="task: bucket" position=".65 .28 -2.18" width="1.2" height=".46" depth=".78" material="color: #d6a15c; opacity: .9; transparent: true; roughness: .55"></a-box>
+        <a-ring id="marker-bucket" position=".65 .05 -2.18" radius-inner=".58" radius-outer=".7" rotation="0 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-gfci" position="3.05 2.43 -2.76" radius-inner=".23" radius-outer=".33" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-breaker" position="4.05 2.55 -2.76" radius-inner=".22" radius-outer=".32" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+        <a-ring id="marker-pro" position="4.25 1.35 -.45" radius-inner=".85" radius-outer=".98" rotation="90 0 0" material="color: #facc15; shader: flat; side: double; opacity: .95; transparent: true" visible="false"></a-ring>
+
+        <a-text id="sceneNote" value="Select a part or use the checklist." position="0 4.45 -3.95" align="center" width="5.6" color="#e7f2ff" side="double"></a-text>
+        <a-camera id="repairCamera" position="0 3.45 9.4" rotation="-12 0 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 18">
+          <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30; interval: 100"></a-entity>
+        </a-camera>
+        <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 30"></a-entity>
+      </a-scene>
+      <div class="scene-help">Mouse: drag to look · WASD: move · click a part. Keyboard users can use the checklist.</div>
+      <div class="scene-fallback" id="sceneFallback" role="status">
+        <strong>The 3D view is unavailable.</strong>
+        <p>Use the accessible repair checklist on the right to complete the same practice sequence.</p>
+      </div>
+      <p class="sr-only" id="sceneDescription">The scene shows a toilet cutaway, a sink with plumbing underneath, an electrical safety station, and a stop-and-escalate sign. Six repair and home-system targets can be selected.</p>
+    </section>
+
+    <aside class="coach-panel" aria-labelledby="coachTitle">
+      <div class="coach-top">
+        <div>
+          <h2 id="coachTitle">Repair coach</h2>
+          <p>Practice preparation and safe decisions before touching a real system.</p>
+        </div>
+        <div class="mode-wrap">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect">
+            <option value="guided">Guided</option>
+            <option value="practice">Practice</option>
+            <option value="challenge">Challenge</option>
+          </select>
+        </div>
+      </div>
+      <div class="progress-line" aria-label="Repair walkthrough progress">
+        <strong id="progressValue">0 / 6</strong>
+        <span id="progressMode">Guided · start with the first target</span>
+      </div>
+      <div class="view-controls" role="group" aria-label="3D scene view">
+        <span>Scene view</span>
+        <button class="view-button" type="button" data-view="left" aria-pressed="false">Left side</button>
+        <button class="view-button" type="button" data-view="center" aria-pressed="true">Center</button>
+        <button class="view-button" type="button" data-view="right" aria-pressed="false">Right side</button>
+      </div>
+      <p class="prompt" id="prompt" role="status">Start by identifying the toilet flapper.</p>
+      <p class="feedback" id="feedback" role="status" aria-live="polite">Select a highlighted part or use a checklist button.</p>
+
+      <section class="scenario-panel" aria-labelledby="scenarioTitle">
+        <div class="scenario-kicker">Decision practice</div>
+        <strong id="scenarioTitle"></strong>
+        <span class="scenario-step" id="scenarioStep"></span>
+        <p class="scenario-situation" id="scenarioSituation"></p>
+        <div class="scenario-choices" id="scenarioChoices" role="group" aria-label="Scenario responses"></div>
+        <button class="scenario-hint" id="scenarioHint" type="button" aria-expanded="false">Show a hint</button>
+        <p class="scenario-hint-text" id="scenarioHintText" role="status" aria-live="polite" hidden></p>
+        <button class="scenario-next" id="scenarioNext" type="button" hidden>Try another scenario</button>
+        <p class="scenario-feedback" id="scenarioFeedback" role="status" aria-live="polite"></p>
+        <p class="practice-summary" id="practiceSummary" role="status" aria-live="polite"></p>
+      </section>
+      <h3>Accessible repair checklist</h3>
+      <div class="task-list" id="taskList" role="list" aria-label="Home repair targets"></div>
+      <button class="why-button" id="whyButton" type="button" aria-expanded="false">Why this matters</button>
+      <p class="why-text" id="whyText" role="status" aria-live="polite" hidden></p>
+      <button class="help-pause-button" id="helpPauseButton" type="button">Pause &amp; ask for help</button>
+      <p class="help-pause-text" id="helpPauseText" role="status" aria-live="polite" hidden>Pause: stop before guessing, move to a safer place, and contact a trusted person, official help, or qualified professional.</p>
+      <button class="reset-button" id="resetButton" type="button">Start over</button>
+      <p class="note">Practice only. Do not open gas lines, exposed electrical wiring, or sealed equipment. Stop when a repair is unsafe, unclear, or repeats the same failure; ask a qualified professional.</p>
+      <p class="sr-only" id="srStatus" aria-live="polite"></p>
+    </aside>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var TASKS = [
+    { id: 'flapper', icon: '🚽', room: 'Bathroom', label: 'Identify the toilet flapper', short: 'Find the rubber seal inside the tank.', why: 'A worn flapper is a common cause of a toilet that keeps running.', base: '#ef4444' },
+    { id: 'shutoff', icon: '💧', room: 'Plumbing', label: 'Shut water off first', short: 'Locate the small valve before opening a leak.', why: 'Stopping water first protects the room and gives you control.', base: '#2563eb' },
+    { id: 'bucket', icon: '🪣', room: 'Plumbing', label: 'Place a bucket under a leak', short: 'Catch drips before checking the trap or fitting.', why: 'Containing water reduces damage while you decide what to do next.', base: '#d6a15c' },
+    { id: 'gfci', icon: '⚡', room: 'Electrical', label: 'Reset a GFCI once', short: 'Press reset once; stop if it will not hold.', why: 'A GFCI protects people near water. A repeated trip needs investigation.', base: '#22c55e' },
+    { id: 'breaker', icon: '🔌', room: 'Electrical', label: 'Stop after a repeated breaker trip', short: 'Do not keep flipping a breaker that trips again.', why: 'Repeated trips can signal an overload, fault, or wiring problem.', base: '#f59e0b' },
+    { id: 'pro', icon: '🛑', room: 'Escalate', label: 'Call a professional for danger signs', short: 'Gas smell, sparks, exposed wiring, or uncertainty means stop.', why: 'Leaving a hazardous repair to a qualified professional is a safe decision.', base: '#be123c' }
+  ];
+  var BY_ID = {};
+  TASKS.forEach(function (task) { BY_ID[task.id] = task; });
+  var SCENARIO = {"title":"Water is pooling under a sink","situation":"A leak is spreading across the cabinet floor. What should happen before you inspect the fitting?","instruction":"Choose the first safer repair step.","safeTask":"shutoff","choices":[{"id":"safe","label":"Close the small water shutoff, place a bucket, and ask for help if needed.","safe":true,"feedback":"Stopping water first gives you control and limits damage while you decide what to do next."},{"id":"open","label":"Open the fitting immediately to see where the leak starts.","feedback":"Opening the fitting before stopping water can make the leak worse. Shut off the water first."},{"id":"wait","label":"Leave the water running while you search for a tool.","feedback":"Contain the water and close the shutoff before gathering tools."}],"hint":"Control the source before using tools: stop the water, contain drips, then decide whether the repair is safe to continue.","next":{"title":"The breaker trips twice","situation":"A breaker trips again after one reset. What should you do next?","instruction":"Choose the response that respects a warning sign.","safeTask":"breaker","choices":[{"id":"safe","label":"Stop resetting it and ask a qualified professional to investigate.","safe":true,"feedback":"A repeated trip is a warning sign. Stopping protects people and the electrical system."},{"id":"repeat","label":"Keep flipping it until the power stays on.","feedback":"Repeated resets can increase risk. Stop after a repeated trip and get qualified help."},{"id":"fuse","label":"Use a larger fuse or breaker so it will not trip.","feedback":"Changing protection can create a serious hazard. Leave the rating alone and ask a professional."}],"hint":"A repeated trip is information, not an inconvenience. Stop, keep clear of exposed parts, and get qualified help.","next":{"title":"You smell gas near a repair","situation":"You notice a strong gas smell while looking for a repair. What should you do?","instruction":"Choose the response that respects a serious danger sign.","safeTask":"pro","choices":[{"id":"safe","label":"Do not use switches or flames; leave the area and contact emergency or qualified help from a safe place.","safe":true,"feedback":"Leaving without creating a spark and calling qualified help is the safer repair decision."},{"id":"switch","label":"Turn on lights so you can inspect the pipe.","feedback":"A switch can create a spark. Leave the area and contact emergency or qualified help instead."},{"id":"open","label":"Take the fitting apart to find the leak.","feedback":"Do not investigate a gas smell with tools. Leave and get qualified help."}],"hint":"A gas smell is a stop signal: avoid flames and switches, leave the area, and contact emergency or qualified help safely."}}};
+  var activeScenario = SCENARIO;
+  var params = new URLSearchParams(window.location.search);
+  var storageKey = 'alloflow-life-repair-3d-progress-v1';
+  function loadDone() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+      return parsed && parsed.done && typeof parsed.done === 'object' ? parsed.done : {};
+    } catch (_) { return {}; }
+  }
+  function saveProgress() {
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ done: state.done, updatedAt: Date.now() })); } catch (_) {}
+  }
+  var state = {
+    mode: ['guided', 'practice', 'challenge'].indexOf(params.get('mode')) >= 0 ? params.get('mode') : 'guided',
+    done: loadDone(),
+    focused: null,
+    feedback: 'Select a highlighted part or use a checklist button.',
+    feedbackTone: '',
+    missteps: 0,
+    scenarioChoice: null,
+    scenarioComplete: false,
+    scenarioMessage: '',
+    scenarioTone: '',
+    hintShown: false,
+    scenarioStep: 0,
+    scenarioMissteps: 0,
+    scenarioHintsUsed: 0
+  };
+  var modeSelect = document.getElementById('modeSelect');
+  var progressValue = document.getElementById('progressValue');
+  var progressMode = document.getElementById('progressMode');
+  var prompt = document.getElementById('prompt');
+  var feedback = document.getElementById('feedback');
+  var scenarioTitle = document.getElementById('scenarioTitle');
+  var scenarioSituation = document.getElementById('scenarioSituation');
+  var scenarioChoices = document.getElementById('scenarioChoices');
+  var scenarioFeedback = document.getElementById('scenarioFeedback');
+  var scenarioHint = document.getElementById('scenarioHint');
+  var scenarioHintText = document.getElementById('scenarioHintText');
+  var scenarioNext = document.getElementById('scenarioNext');
+  var scenarioStep = document.getElementById('scenarioStep');
+  var practiceSummary = document.getElementById('practiceSummary');
+  var taskList = document.getElementById('taskList');
+  var resetButton = document.getElementById('resetButton');
+  var helpPauseButton = document.getElementById('helpPauseButton');
+  var helpPauseText = document.getElementById('helpPauseText');
+  var whyButton = document.getElementById('whyButton');
+  var whyText = document.getElementById('whyText');
+  function clearWhy() { whyText.hidden = true; whyText.textContent = ''; whyButton.setAttribute('aria-expanded', 'false'); }
+  function revealWhy() { var target = BY_ID[state.focused] || guidedTarget() || TASKS[0]; whyText.hidden = false; whyText.textContent = 'Why it matters: ' + target.why; whyButton.setAttribute('aria-expanded', 'true'); say(target.label + '. Why it matters: ' + target.why); postToOpener({ type: 'alloflow-life-repair-3d-why-reveal', task: target.id }); }
+  var srStatus = document.getElementById('srStatus');
+  var sceneFallback = document.getElementById('sceneFallback');
+  var scene = document.getElementById('repairScene');
+  var camera = document.querySelector('a-camera');
+  var VIEW_PRESETS = {
+    left: { position: '-3.5 3.25 8.8', rotation: '-12 0 0', label: 'Left side' },
+    center: { position: '0 3.45 9.4', rotation: '-12 0 0', label: 'Center' },
+    right: { position: '3.5 3.25 8.8', rotation: '-12 0 0', label: 'Right side' }
+  };
+  function setView(view) {
+    var preset = VIEW_PRESETS[view] || VIEW_PRESETS.center;
+    var selectedView = VIEW_PRESETS[view] ? view : 'center';
+    if (camera) {
+      camera.setAttribute('position', preset.position);
+      camera.setAttribute('rotation', preset.rotation);
+    }
+    document.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === selectedView));
+    });
+    say('Scene view: ' + preset.label + '.');
+  }
+  document.querySelectorAll('[data-view]').forEach(function(button) {
+    button.addEventListener('click', function() { setView(button.getAttribute('data-view')); });
+  });
+  scenarioNext.addEventListener('click', loadNextScenario);
+  helpPauseButton.addEventListener('click', pauseForHelp);
+  whyButton.addEventListener('click', revealWhy);
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
+  }
+  setTheme(params.get('theme'));
+  function postToOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-repair-3d' }, payload), '*');
+    } catch (ignore) {}
+  }
+  function say(message) {
+    srStatus.textContent = '';
+    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+  }
+  scenarioHint.addEventListener('click', function () {
+    if (!state.hintShown) state.scenarioHintsUsed += 1;
+    state.hintShown = true;
+    renderScenario();
+    say('Hint: ' + activeScenario.hint);
+  });
+  function doneCount() { return TASKS.filter(function (task) { return !!state.done[task.id]; }).length; }
+  function guidedTarget() { return TASKS.find(function (task) { return !state.done[task.id]; }) || null; }
+  function setFeedback(message, tone) { state.feedback = message; state.feedbackTone = tone || ''; }
+  function pauseForHelp() { setFeedback('Pause: stop before guessing, move to a safer place, and contact trusted or official help.', 'good'); helpPauseText.hidden = false; helpPauseText.textContent = 'Plan: stop · move to safety · contact a trusted person, official help, or a qualified professional.'; render(); say('Pause. Stop before guessing and ask for trusted or official help.'); postToOpener({ type: 'alloflow-life-repair-3d-help-pause' }); }
+  function focusTask(id, announce) {
+    if (!BY_ID[id]) return;
+    state.focused = id;
+    clearWhy();
+    renderScene();
+    if (announce) say(BY_ID[id].label + '. ' + BY_ID[id].short);
+  }
+  function activateTask(id, source) {
+    var task = BY_ID[id];
+    if (!task) return;
+    var target = guidedTarget();
+    state.focused = id;
+    clearWhy();
+    if (state.done[id]) {
+      setFeedback('Already complete: ' + task.label + '.', 'good');
+      render();
+      say('Already complete: ' + task.label);
+      return;
+    }
+    if (state.mode === 'guided' && target && target.id !== id) {
+      state.missteps += 1;
+      setFeedback('Guided mode: start with “' + target.label + '.”', 'error');
+      render();
+      say('Guided mode. Start with ' + target.label);
+      return;
+    }
+    state.done[id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    setFeedback('Completed: ' + task.label + '. ' + task.why, 'good');
+    if (next && state.mode === 'guided') setFeedback('Completed: ' + task.label + '. Next: ' + next.label + '. ' + task.why, 'good');
+    if (!next) {
+      setFeedback('Repair walkthrough complete. You practiced all six safe decisions.', 'good');
+      postToOpener({ type: 'alloflow-life-repair-3d-complete', score: TASKS.length, missteps: state.missteps });
+      say('Repair walkthrough complete. You practiced all six safe decisions.');
+    } else {
+      postToOpener({ type: 'alloflow-life-repair-3d-task-complete', task: id, completed: doneCount(), total: TASKS.length, source: source || 'unknown' });
+      say('Completed ' + task.label + '. ' + (next && state.mode === 'guided' ? 'Next: ' + next.label : task.why));
+    }
+    render();
+  }
+  function renderScene() {
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var object = document.getElementById('obj-' + task.id);
+      var label = document.getElementById('label-' + task.id);
+      var marker = document.getElementById('marker-' + task.id);
+      if (!object) return;
+      var done = !!state.done[task.id];
+      var focused = state.focused === task.id || (state.mode === 'guided' && target && target.id === task.id);
+      object.setAttribute('material', 'color: ' + (done ? '#22c55e' : task.base) + '; roughness: .62; metalness: .04; emissive: ' + (done ? '#166534' : (focused ? task.base : '#000000')) + '; emissiveIntensity: ' + (done || focused ? .72 : .04));
+      if (marker) marker.setAttribute('visible', focused && !done);
+      if (label) {
+        label.setAttribute('visible', state.mode !== 'challenge' || done || focused);
+        label.setAttribute('color', done ? '#dcfce7' : '#fff7ed');
+        if (done) label.setAttribute('value', 'DONE\\n' + task.label);
+        else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\\n' + task.label);
+        else if (state.mode === 'challenge') label.setAttribute('value', 'Repair item');
+      }
+    });
+    var sceneNote = document.getElementById('sceneNote');
+    if (sceneNote) sceneNote.setAttribute('value', target ? (state.mode === 'guided' ? 'GUIDED TARGET\\n' + target.label : 'SELECT A REPAIR ITEM\\nScene + checklist both work') : 'WALKTHROUGH COMPLETE\\nAll six safe decisions practiced');
+  }
+  function renderTaskList() {
+    taskList.innerHTML = '';
+    var target = guidedTarget();
+    TASKS.forEach(function (task) {
+      var done = !!state.done[task.id];
+      var current = !!target && target.id === task.id && state.mode === 'guided';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'task-button' + (done ? ' done' : '') + (current ? ' current' : '');
+      button.setAttribute('aria-pressed', String(done));
+      if (current) button.setAttribute('aria-current', 'step');
+      button.setAttribute('aria-label', task.room + ': ' + task.label + (done ? ' — complete' : ''));
+      button.innerHTML = '<span class="task-icon" aria-hidden="true">' + task.icon + '</span><span class="task-copy"><strong></strong><small></small></span><span class="task-room">' + (done ? 'DONE' : task.room) + '</span>';
+      button.querySelector('strong').textContent = task.label;
+      button.querySelector('small').textContent = state.mode === 'challenge' && !done ? 'Use the scene or choose this item.' : task.short;
+      button.addEventListener('click', function () { activateTask(task.id, 'checklist'); });
+      taskList.appendChild(button);
+    });
+  }
+  function completeScenarioTask() {
+    var task = BY_ID[activeScenario.safeTask];
+    if (!task || state.done[task.id]) return;
+    state.done[task.id] = true;
+    saveProgress();
+    var next = guidedTarget();
+    if (!next) {
+      setFeedback('Scenario complete. ' + task.label + ' practiced safely.', 'good');
+      postToOpener({ type: 'alloflow-life-repair-3d-complete', score: TASKS.length, missteps: state.missteps });
+    } else {
+      setFeedback('Scenario completed: ' + task.label + '. Next: ' + next.label + '.', 'good');
+      postToOpener({ type: 'alloflow-life-repair-3d-task-complete', task: task.id, completed: doneCount(), total: TASKS.length, source: 'scenario' });
+    }
+  }
+  function loadNextScenario() {
+    if (!activeScenario.next) return;
+    activeScenario = activeScenario.next;
+    state.scenarioStep += 1;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    setFeedback('New scenario ready. Choose a response and use a hint if you need one.', '');
+    render();
+    say('Next scenario: ' + activeScenario.title);
+  }
+  function chooseScenario(choiceId) {
+    var choice = activeScenario.choices.find(function (item) { return item.id === choiceId; });
+    if (!choice || state.scenarioComplete) return;
+    state.scenarioChoice = choiceId;
+    state.scenarioMessage = choice.feedback;
+    if (choice.safe) {
+      state.scenarioComplete = true;
+      state.scenarioTone = 'good';
+      focusTask(activeScenario.safeTask, false);
+      completeScenarioTask();
+      say('Good choice. ' + choice.feedback);
+    } else {
+      state.missteps += 1;
+      state.scenarioTone = 'error';
+      focusTask(activeScenario.safeTask, false);
+      state.scenarioMissteps += 1;
+      state.scenarioMessage += ' Try another response. The safer scene target is highlighted.';
+      setFeedback('Practice the scenario again: choose a safer first step.', 'error');
+      say('Try another response. ' + choice.feedback);
+    }
+    render();
+  }
+  function renderScenario() {
+    scenarioTitle.textContent = activeScenario.title;
+    scenarioSituation.textContent = activeScenario.situation;
+    scenarioChoices.innerHTML = '';
+    activeScenario.choices.forEach(function (choice) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'scenario-button';
+      button.textContent = choice.label;
+      button.setAttribute('aria-pressed', String(state.scenarioChoice === choice.id));
+      button.disabled = state.scenarioComplete;
+      button.addEventListener('click', function () { chooseScenario(choice.id); });
+      scenarioChoices.appendChild(button);
+    });
+    scenarioFeedback.textContent = state.scenarioChoice ? state.scenarioMessage : activeScenario.instruction;
+    scenarioFeedback.className = 'scenario-feedback' + (state.scenarioTone ? ' ' + state.scenarioTone : '');
+    scenarioHint.disabled = state.scenarioComplete;
+    scenarioHint.setAttribute('aria-expanded', String(state.hintShown));
+    scenarioHint.textContent = state.hintShown ? 'Hint shown' : 'Show a hint';
+    scenarioHintText.hidden = !state.hintShown;
+    scenarioHintText.textContent = state.hintShown ? activeScenario.hint : '';
+    scenarioStep.textContent = 'Scenario ' + (state.scenarioStep + 1) + ' of 3';
+    scenarioNext.hidden = !state.scenarioComplete || !activeScenario.next;
+    scenarioNext.disabled = !state.scenarioComplete || !activeScenario.next;
+    var completedScenarios = state.scenarioStep + (state.scenarioComplete ? 1 : 0);
+    var coachingText = state.scenarioMissteps === 0 ? 'no coaching moments' : state.scenarioMissteps + (state.scenarioMissteps === 1 ? ' coaching moment' : ' coaching moments');
+    var hintText = state.scenarioHintsUsed === 0 ? 'no hints used' : state.scenarioHintsUsed + (state.scenarioHintsUsed === 1 ? ' hint used' : ' hints used');
+    practiceSummary.textContent = 'Session: ' + completedScenarios + '/3 scenarios complete · ' + coachingText + ' · ' + hintText;
+  }
+  function render() {
+    var count = doneCount();
+    var target = guidedTarget();
+    var modeText = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    progressValue.textContent = count + ' / ' + TASKS.length;
+    progressMode.textContent = !target ? modeText + ' · complete' : state.mode === 'guided' ? modeText + ' · next target' : state.mode === 'practice' ? modeText + ' · choose any target' : modeText + ' · labels are reduced';
+    prompt.textContent = !target ? 'All decisions complete. Name one repair you would ask for help with.' : state.mode === 'guided' ? 'Start with: ' + target.label + '.' : state.mode === 'practice' ? 'Choose any item, then explain why the preparation step matters.' : 'Challenge: find all six items. Use the checklist if the scene is difficult to scan.';
+    feedback.textContent = state.feedback;
+    feedback.className = 'feedback' + (state.feedbackTone ? ' ' + state.feedbackTone : '');
+    renderScenario();
+    modeSelect.value = state.mode;
+    renderTaskList();
+    renderScene();
+  }
+  modeSelect.addEventListener('change', function () {
+    state.mode = modeSelect.value;
+    state.focused = guidedTarget() ? guidedTarget().id : null;
+    setFeedback(state.mode === 'guided' ? 'Guided mode shows one next target at a time.' : state.mode === 'practice' ? 'Practice mode lets you choose the order.' : 'Challenge mode reduces scene labels. The checklist remains available.', '');
+    render();
+    say(modeSelect.options[modeSelect.selectedIndex].text + ' mode selected.');
+  });
+  resetButton.addEventListener('click', function () {
+    helpPauseText.hidden = true;
+    helpPauseText.textContent = '';
+    clearWhy();
+    state.done = {};
+    saveProgress();
+    state.focused = null;
+    state.missteps = 0;
+    state.scenarioChoice = null;
+    state.scenarioComplete = false;
+    state.scenarioMessage = '';
+    state.scenarioTone = '';
+    state.hintShown = false;
+    activeScenario = SCENARIO;
+    state.scenarioStep = 0;
+    state.scenarioMissteps = 0;
+    state.scenarioHintsUsed = 0;
+    setFeedback('Fresh start. Select the first repair target.', '');
+    render();
+    say('Walkthrough reset. Select the first repair target.');
+    postToOpener({ type: 'alloflow-life-repair-3d-reset' });
+  });
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (data && data.type === 'alloflow-theme-change') setTheme(data.theme);
+  });
+  window.lifeSkillsRepair3D = { activate: activateTask, focus: focusTask };
+  function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }
+  if (!window.AFRAME || !scene) showSceneFallback();
+  else if (scene.hasLoaded) sceneFallback.style.display = 'none';
+  else {
+    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    window.setTimeout(function () { if (!scene.canvas) showSceneFallback(); }, 1800);
+  }
+  render();
+  postToOpener({ type: 'alloflow-life-repair-3d-hello' });
+}());
+</script>
+</body>
+</html>

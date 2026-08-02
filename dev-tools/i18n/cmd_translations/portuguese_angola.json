@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Video Studio aberto.",
   "cmd.open_video_studio_hint": "Grave, legende e edite demonstrações",
   "palette.ctx.videoStudio": "Aqui — Video Studio",
-  "palette.close": "Fechar a paleta de comandos"
+  "palette.close": "Fechar a paleta de comandos",
+  "cmd.apply_lesson_template": "Começar a partir de um modelo guardado",
+  "cmd.apply_lesson_template_done": "Começado a partir de ",
+  "cmd.apply_lesson_template_hint": "Inicia um novo plano a partir de um dos teus modelos guardados",
+  "cmd.apply_lesson_template_missing": "Não encontrei um modelo chamado ",
+  "cmd.apply_lesson_template_which": "Que modelo?",
+  "cmd.rebuild_lesson_step": "Refazer um passo do plano",
+  "cmd.rebuild_lesson_step_done": "A refazer o passo ",
+  "cmd.rebuild_lesson_step_hint": "Regenera um único recurso — diga o número do passo",
+  "cmd.rebuild_lesson_step_missing": "Não encontrei esse passo no plano.",
+  "cmd.rebuild_lesson_step_none": "o plano ainda não tem passos.",
+  "cmd.rebuild_lesson_step_which": "Que passo?",
+  "cmd.run_lesson_blueprint": "Gerar o plano da aula",
+  "cmd.run_lesson_blueprint_done": "A gerar o plano — pode acompanhar cada passo no cartão.",
+  "cmd.run_lesson_blueprint_hint": "Gera todos os recursos do plano atual",
+  "cmd.cancelled": "Foi pedida a cancelamento. A operação atual vai parar quando o fornecedor a suportar."
 }

@@ -147,6 +147,179 @@ function bindingFingerprint(binding) {
     : '';
 }
 
+function _provenanceFinite(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function _provenanceCount(value) {
+  return _provenanceFinite(value) ? Math.max(0, Math.floor(value)) : null;
+}
+
+function _provenanceTimestamp(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!text) return null;
+  var parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+}
+
+function _latestProvenanceTimestamp(values) {
+  var normalized = (values || []).map(_provenanceTimestamp).filter(Boolean).sort();
+  return normalized.length ? normalized[normalized.length - 1] : null;
+}
+
+function createEvidenceProvenance(input) {
+  input = input && typeof input === 'object' ? input : {};
+  var selectedProfile = normalizeProfile(input.profile || input.evidenceProfile);
+  var binding = input.artifactBinding && typeof input.artifactBinding === 'object'
+    ? Object.assign({}, input.artifactBinding)
+    : null;
+  var artifactFingerprint = String(input.artifactFingerprint || bindingFingerprint(binding) || '') || null;
+  var rawEvidence = input.evidence && typeof input.evidence === 'object' ? input.evidence : {};
+  var lanes = {};
+  var timestamps = [input.capturedAt, input.auditAt, input.runAt, input.completedAt, input.updatedAt, input.lastReviewedAt];
+  selectedProfile.requiredEvidence.forEach(function (lane) {
+    var raw = rawEvidence[lane] || input[lane] || null;
+    raw = raw && typeof raw === 'object' ? raw : null;
+    if (!raw) {
+      lanes[lane] = null;
+      return;
+    }
+    var capturedAt = _latestProvenanceTimestamp([raw.capturedAt, raw.auditAt, raw.runAt, raw.completedAt, raw.updatedAt, raw.lastReviewedAt]);
+    if (capturedAt) timestamps.push(capturedAt);
+    lanes[lane] = {
+      executed: raw.executed === true || _provenanceFinite(raw.score) || !!raw.runAt || !!raw.completedAt,
+      status: String(raw.status || raw.verificationStatus || raw.execution || '') || null,
+      findingCount: Array.isArray(raw.issues) ? raw.issues.length : _provenanceCount(raw.findingCount !== undefined ? raw.findingCount : (raw.violationRules !== undefined ? raw.violationRules : (raw.totalViolations !== undefined ? raw.totalViolations : (raw.issueCount !== undefined ? raw.issueCount : raw.failViolations)))),
+      reviewCount: Array.isArray(raw.issues) ? raw.issues.filter(function (issue) { return issue && issue.requiresManualReview === true; }).length : _provenanceCount(raw.reviewCount !== undefined ? raw.reviewCount : (raw.needsReview !== undefined ? raw.needsReview : (raw.totalIncomplete !== undefined ? raw.totalIncomplete : raw.reviewFindingCount))),
+      engine: String(raw.engine || lane) || lane,
+      version: String(raw.version || raw.engineVersion || '') || null,
+      capturedAt: capturedAt,
+    };
+  });
+  var findings = Array.isArray(input.findings) ? input.findings : [];
+  var findingDigest = findings.length
+    ? 'sha256:' + sha256Hex(stableSerializeEvidence(findings.map(function (finding) { return canonicalizeFinding(finding); })))
+    : null;
+  var evidenceDigest = 'sha256:' + sha256Hex(stableSerializeEvidence(lanes));
+  return {
+    provenanceVersion: 1,
+    schemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    profile: selectedProfile.id,
+    standard: selectedProfile.standard,
+    scope: selectedProfile.scope,
+    artifactBinding: binding,
+    artifactFingerprint: artifactFingerprint,
+    rendererRevision: input.rendererRevision || (binding && binding.rendererRevision) || null,
+    capturedAt: _latestProvenanceTimestamp(timestamps),
+    lanes: lanes,
+    findingDigest: findingDigest,
+    evidenceDigest: evidenceDigest,
+    replayKey: artifactFingerprint ? selectedProfile.id + ':' + artifactFingerprint + ':' + evidenceDigest : null,
+  };
+}
+
+function attachEvidenceProvenance(result, input, profile) {
+  result = result && typeof result === 'object' ? result : {};
+  input = input && typeof input === 'object' ? input : {};
+  var provenance = createEvidenceProvenance(Object.assign({}, input, {
+    profile: profile || result.evidenceProfile || input.profile,
+    findings: input.findings || result.findings || [],
+  }));
+  var enriched = Object.assign({}, result, {
+    evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    evidenceProfile: provenance.profile,
+    evidenceProvenance: provenance,
+  });
+  enriched.evidenceManifest = createEvidenceManifest({
+    profile: provenance.profile,
+    provenance: provenance,
+    findings: input.findings || result.findings || [],
+    verification: enriched,
+  });
+  return enriched;
+}
+function _manifestVerificationProjection(result) {
+  result = result && typeof result === 'object' ? result : {};
+  return {
+    verificationState: result.verificationState || 'unavailable',
+    executionState: result.executionState || 'unavailable',
+    outcomeState: result.outcomeState || 'unknown',
+    fullyVerifiedSuccess: result.fullyVerifiedSuccess === true,
+    requiresManualReview: result.requiresManualReview !== false,
+    knownFindingCount: _provenanceCount(result.knownFindingCount),
+    reviewCount: _provenanceCount(result.reviewCount),
+    reasons: Array.isArray(result.reasons) ? result.reasons.slice(0, 100) : [],
+  };
+}
+
+function createEvidenceManifest(input) {
+  input = input && typeof input === 'object' ? input : {};
+  var profile = normalizeProfile(input.profile || input.evidenceProfile);
+  var provenance = input.provenance && typeof input.provenance === 'object'
+    ? input.provenance
+    : createEvidenceProvenance(Object.assign({}, input, { profile: profile.id }));
+  var findings = Array.isArray(input.findings)
+    ? input.findings.slice(0, 500).map(function (finding) { return canonicalizeFinding(finding); })
+    : [];
+  var body = {
+    manifestVersion: 1,
+    evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    evidenceProfile: profile.id,
+    standard: profile.standard,
+    scope: profile.scope,
+    artifactBinding: provenance.artifactBinding || input.artifactBinding || null,
+    artifactFingerprint: provenance.artifactFingerprint || input.artifactFingerprint || null,
+    provenance: provenance,
+    findings: findings,
+    verification: _manifestVerificationProjection(input.verification),
+  };
+  var manifestDigest = 'sha256:' + sha256Hex(stableSerializeEvidence(body));
+  return Object.assign({}, body, {
+    manifestDigest: manifestDigest,
+    manifestId: profile.id + ':' + manifestDigest,
+  });
+}
+
+function verifyEvidenceManifest(manifest) {
+  if (!manifest || typeof manifest !== 'object') return { valid: false, reason: 'manifest-missing', expectedDigest: null, actualDigest: null };
+  if (manifest.manifestVersion !== 1) return { valid: false, reason: 'manifest-version-unsupported', expectedDigest: null, actualDigest: manifest.manifestDigest || null };
+  var body = Object.assign({}, manifest);
+  delete body.manifestDigest;
+  delete body.manifestId;
+  var expectedDigest = 'sha256:' + sha256Hex(stableSerializeEvidence(body));
+  var actualDigest = String(manifest.manifestDigest || '');
+  var valid = actualDigest === expectedDigest;
+  return {
+    valid: valid,
+    reason: valid ? null : 'manifest-digest-mismatch',
+    expectedDigest: expectedDigest,
+    actualDigest: actualDigest || null,
+    manifestId: manifest.manifestId || null,
+  };
+}
+function compareEvidenceProvenance(previous, current) {
+  previous = previous && typeof previous === 'object' ? previous : null;
+  current = current && typeof current === 'object' ? current : null;
+  if (!previous || !current) return { changed: false, stale: false, reasons: [], previousReplayKey: previous && previous.replayKey || null, currentReplayKey: current && current.replayKey || null };
+  var reasons = [];
+  if (previous.profile !== current.profile) reasons.push('profile-changed');
+  if (previous.artifactFingerprint !== current.artifactFingerprint) reasons.push('artifact-binding-changed');
+  if (previous.rendererRevision !== current.rendererRevision) reasons.push('renderer-changed');
+  if (previous.evidenceDigest && current.evidenceDigest && previous.evidenceDigest !== current.evidenceDigest) reasons.push('engine-evidence-changed');
+  if (previous.findingDigest && current.findingDigest && previous.findingDigest !== current.findingDigest) reasons.push('findings-changed');
+  if (!previous.evidenceDigest && current.evidenceDigest) reasons.push('provenance-upgraded');
+  var staleReasons = reasons.filter(function (reason) {
+    return ['profile-changed', 'artifact-binding-changed', 'renderer-changed', 'engine-evidence-changed', 'findings-changed'].indexOf(reason) >= 0;
+  });
+  return {
+    changed: reasons.length > 0,
+    stale: staleReasons.length > 0,
+    reasons: reasons,
+    staleReasons: staleReasons,
+    previousReplayKey: previous.replayKey || null,
+    currentReplayKey: current.replayKey || null,
+  };
+}
 function normalizeSeverity(value, fallback) {
   var severity = String(value || fallback || 'moderate').toLowerCase();
   if (severity === 'high') severity = 'serious';
@@ -330,7 +503,10 @@ function deriveProfileVerificationState(input, profile) {
     if ((lane.findings || 0) > 0) reasons.push(lane.id + '-confirmed-findings:' + lane.findings);
     if ((lane.review || 0) > 0) reasons.push(lane.id + '-manual-review:' + lane.review);
   });
-  return {
+  return attachEvidenceProvenance({
+    evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    evidenceProfile: selectedProfile.id,
+    evidenceProvenance: createEvidenceProvenance(Object.assign({}, input, { profile: selectedProfile.id })),
     profile: selectedProfile.id,
     standard: selectedProfile.standard,
     verificationScope: selectedProfile.scope,
@@ -344,6 +520,240 @@ function deriveProfileVerificationState(input, profile) {
     reviewCount: reviewCount,
     coverage: lanes,
     reasons: reasons,
+  }, input, selectedProfile.id);
+}
+
+// Document remediation uses this same policy as the compatibility VerificationPolicy facade.
+// deriveDocumentVerificationState is the canonical three-engine contract.
+
+function deriveDocumentVerificationState(input) {
+  input = input || {};
+  var ai = input.ai || input.verificationAudit || null;
+  var axe = input.axe || input.axeAudit || null;
+  var ea = input.equalAccess || input.secondEngineAudit || null;
+  var reasons = [];
+  var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };
+  var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
+  var extraReasons = Array.isArray(input.extraReasons)
+    ? input.extraReasons
+    : (input.extraReasons == null || input.extraReasons === '' ? [] : [input.extraReasons]);
+  var _reasonText = extraReasons.map(function (reason) {
+    return String(reason == null ? '' : reason).trim();
+  }).filter(Boolean);
+  // Static source checks can completely execute while still excluding runtime
+  // scripts, external CSS, responsive states, and interaction behavior. Accept
+  // an explicit scope for new callers and recognize the existing caveat text so
+  // older callers fail closed without a lock-step deployment.
+  var staticSourceScope = input.staticSourceScope === true
+    || input.verificationScope === 'static-source'
+    || input.scope === 'static-source'
+    || _reasonText.some(function (reason) {
+      return /static(?:[\s-]+html\/?)?[\s-]*source(?:[\s-]+audit)?|excludes live scripts|interaction behavior/i.test(reason);
+    });
+
+  var aiStatus = 'unavailable';
+  var aiIssues = Array.isArray(ai && ai.issues)
+    ? ai.issues.filter(function (issue) { return issue != null && issue !== ''; })
+    : null;
+  var aiFindingCount = aiIssues
+    ? aiIssues.length
+    : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues));
+  var aiReviewCount = aiIssues
+    ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
+    : 0;
+  if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
+  if (!_finite(ai && ai.score)) {
+    reasons.push('ai-unavailable');
+  } else {
+    var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
+    if (_aiPartial) {
+      aiStatus = 'partial';
+      if (input.aiIncomplete || input.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
+      if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
+      if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
+      if (ai.synthesized) reasons.push('ai-synthesized');
+    } else if (aiFindingCount === null) {
+      aiStatus = 'partial';
+      reasons.push('ai-finding-count-unknown');
+    } else if (aiReviewCount > 0) {
+      aiStatus = 'complete-with-review';
+    } else {
+      aiStatus = 'complete';
+    }
+  }
+
+  var axeStatus = 'unavailable';
+  var axeReviewCount = 0;
+  var axeFindingCount = _count(axe && axe.totalViolations);
+  if (!_finite(axe && axe.score)) {
+    reasons.push('axe-unavailable');
+  } else {
+    var _axeIncomplete = _count(axe.totalIncomplete);
+    if (axeFindingCount === null || _axeIncomplete === null) {
+      axeStatus = 'partial';
+      if (axeFindingCount === null) reasons.push('axe-violation-count-unknown');
+      if (_axeIncomplete === null) reasons.push('axe-review-count-unknown');
+      if ((_axeIncomplete || 0) > 0) {
+        axeReviewCount = _axeIncomplete;
+        reasons.push('axe-incomplete:' + _axeIncomplete);
+      }
+    } else if (_axeIncomplete > 0) {
+      axeStatus = 'complete-with-review';
+      axeReviewCount = _axeIncomplete;
+      reasons.push('axe-incomplete:' + _axeIncomplete);
+    } else {
+      axeStatus = 'complete';
+    }
+  }
+
+  var eaStatus = 'unavailable';
+  var eaReviewCount = 0;
+  var eaFindingCount = _count(ea && ea.failViolations);
+  if (!_finite(ea && ea.score)) {
+    reasons.push('equal-access-unavailable');
+  } else {
+    var _eaPotential = _count(ea.potentialViolations);
+    var _eaManual = _count(ea.manualViolations);
+    var _eaAggregate = _count(ea.reviewFindingCount);
+    var _eaReviewKnown = !((_eaPotential === null || _eaManual === null) && _eaAggregate === null);
+    if (_eaReviewKnown) {
+      eaReviewCount = _eaAggregate !== null ? Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0)) : ((_eaPotential || 0) + (_eaManual || 0));
+      if ((_eaPotential || 0) > 0) reasons.push('equal-access-potential:' + _eaPotential);
+      if ((_eaManual || 0) > 0) reasons.push('equal-access-manual:' + _eaManual);
+      if ((_eaPotential === null || _eaManual === null) && _eaAggregate > 0) reasons.push('equal-access-review-findings:' + _eaAggregate);
+    }
+    if (eaFindingCount === null || !_eaReviewKnown) {
+      eaStatus = 'partial';
+      if (eaFindingCount === null) reasons.push('equal-access-failure-count-unknown');
+      if (!_eaReviewKnown) reasons.push('equal-access-review-count-unknown');
+    } else if (eaReviewCount > 0) {
+      eaStatus = 'complete-with-review';
+    } else {
+      eaStatus = 'complete';
+    }
+  }
+
+  if ((aiFindingCount || 0) > 0) reasons.push('ai-confirmed-issues:' + aiFindingCount);
+  if ((axeFindingCount || 0) > 0) reasons.push('axe-confirmed-violations:' + axeFindingCount);
+  if ((eaFindingCount || 0) > 0) reasons.push('equal-access-confirmed-failures:' + eaFindingCount);
+  _reasonText.forEach(function (reason) {
+    reasons.push(reason);
+  });
+  if (input.languageReviewRequired) reasons.push(String(input.languageReviewReason || 'document-language-needs-review'));
+
+  // B3 (2026-07-13): extraReasons are CONTEXT (e.g. the static-web scope caveat) —
+  // they ride in `reasons` so "Why this status?" names them, but they no longer
+  // count as review findings. Counting them made 'complete' unreachable for every
+  // web audit (the ==='complete' success branches were dead code) and let a
+  // zero-engines-ran result claim 'review-required' over 'unavailable'.
+  // languageReviewRequired stays a genuine gate (a human confirms the language).
+  var reviewCount = aiReviewCount + axeReviewCount + eaReviewCount + (input.languageReviewRequired ? 1 : 0);
+  var allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
+  var engineExecutionComplete = [aiStatus, axeStatus, eaStatus].every(function (status) {
+    return status === 'complete' || status === 'complete-with-review';
+  });
+  var executionState = allUnavailable ? 'unavailable' : (engineExecutionComplete ? 'complete' : 'partial');
+  var knownFindingCount = (aiFindingCount || 0) + (axeFindingCount || 0) + (eaFindingCount || 0);
+  var hasKnownFailures = knownFindingCount > 0;
+  var hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
+  // Execution coverage and outcome are deliberately separate. An engine can
+  // finish successfully and report barriers; that is a complete execution, not
+  // a fully verified success.
+  var outcomeState = hasKnownFailures
+    ? 'fail'
+    : (hasReviewEvidence ? 'review-required' : (engineExecutionComplete ? 'pass' : 'unknown'));
+  var testedScopeComplete = engineExecutionComplete && !hasKnownFailures && !hasReviewEvidence;
+  var verificationState = allUnavailable
+    ? 'unavailable'
+    : (!engineExecutionComplete
+      ? 'partial'
+      : (hasKnownFailures || hasReviewEvidence
+        ? 'review-required'
+        : (staticSourceScope ? 'complete-for-tested-scope' : 'complete')));
+  var coverage = {
+    standard: 'WCAG 2.2 AA',
+    ai: aiStatus,
+    axe: axeStatus,
+    equalAccess: eaStatus,
+    pdfUaSelfCheck: input.pdfUaSelfCheck || 'not-run'
+  };
+  var scoreEvidence = {
+    ai: _finite(ai && ai.score) ? ai.score : null,
+    axe: _finite(axe && axe.score) ? axe.score : null,
+    equalAccess: _finite(ea && ea.score) ? ea.score : null
+  };
+  var knownFindings = {
+    aiIssues: aiFindingCount,
+    axeViolations: axeFindingCount,
+    equalAccessFailures: eaFindingCount,
+    total: knownFindingCount
+  };
+  var fullyVerifiedSuccess = verificationState === 'complete'
+    && executionState === 'complete'
+    && outcomeState === 'pass';
+  // Build the result in a var (rather than a two-space `return {`) because the
+  // pipeline-integrity checker locates the factory export through that token.
+  var result = {
+    evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    evidenceProfile: 'document-remediation',
+    evidenceProvenance: createEvidenceProvenance(Object.assign({}, input, { profile: 'document-remediation' })),
+    verificationCoverage: coverage,
+    coverage: coverage,
+    verificationState: verificationState,
+    executionState: executionState,
+    outcomeState: outcomeState,
+    verificationScope: staticSourceScope ? 'static-source' : 'full-output',
+    testedScopeComplete: testedScopeComplete,
+    engineExecutionComplete: engineExecutionComplete,
+    fullyVerifiedSuccess: fullyVerifiedSuccess,
+    success: fullyVerifiedSuccess,
+    afterScoreVerified: fullyVerifiedSuccess,
+    requiresManualReview: !fullyVerifiedSuccess,
+    reviewCount: reviewCount,
+    knownFindingCount: knownFindingCount,
+    knownFindings: knownFindings,
+    scoreEvidence: scoreEvidence,
+    reasons: reasons
+  };
+  return attachEvidenceProvenance(result, input, 'document-remediation');
+}
+
+
+function unavailableDocumentVerificationState(reason) {
+  var why = String(reason || 'verification-policy-module-unavailable');
+  var coverage = {
+    standard: 'WCAG 2.2 AA',
+    ai: 'unavailable',
+    axe: 'unavailable',
+    equalAccess: 'unavailable',
+    pdfUaSelfCheck: 'not-run'
+  };
+  return {
+    evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    evidenceProfile: 'document-remediation',
+    evidenceProvenance: createEvidenceProvenance({ profile: 'document-remediation' }),
+    verificationCoverage: coverage,
+    coverage: coverage,
+    verificationState: 'unavailable',
+    executionState: 'unavailable',
+    outcomeState: 'unknown',
+    verificationScope: 'full-output',
+    testedScopeComplete: false,
+    engineExecutionComplete: false,
+    fullyVerifiedSuccess: false,
+    success: false,
+    afterScoreVerified: false,
+    requiresManualReview: true,
+    reviewCount: 1,
+    knownFindingCount: 0,
+    knownFindings: {
+      aiIssues: null,
+      axeViolations: null,
+      equalAccessFailures: null,
+      total: 0
+    },
+    scoreEvidence: { ai: null, axe: null, equalAccess: null },
+    reasons: [why]
   };
 }
 
@@ -359,5 +769,12 @@ window.AlloModules.AccessibilityEvidence = {
   diffFindings: diffFindings,
   normalizeProfile: normalizeProfile,
   deriveProfileVerificationState: deriveProfileVerificationState,
+  createEvidenceProvenance: createEvidenceProvenance,
+  attachEvidenceProvenance: attachEvidenceProvenance,
+  compareEvidenceProvenance: compareEvidenceProvenance,
+  createEvidenceManifest: createEvidenceManifest,
+  verifyEvidenceManifest: verifyEvidenceManifest,
+  deriveVerificationState: deriveDocumentVerificationState,
+  unavailableVerificationState: unavailableDocumentVerificationState,
 };
 window.AlloModules.AccessibilityEvidenceModule = true;

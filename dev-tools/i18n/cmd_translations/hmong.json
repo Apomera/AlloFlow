@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Twb qhib Video Studio lawm.",
   "cmd.open_video_studio_hint": "Kaw, ntxiv lus thiab kho cov yeeb yaj kiab qhia",
   "palette.ctx.videoStudio": "Ntawm no — Video Studio",
-  "palette.close": "Kaw lub khob qhia haujlwm"
+  "palette.close": "Kaw lub khob qhia haujlwm",
+  "cmd.apply_lesson_template": "Pib ntawm tus qauv khaws tseg",
+  "cmd.apply_lesson_template_done": "Pib ntawm ",
+  "cmd.apply_lesson_template_hint": "Pib ib txoj kev npaj tshiab los ntawm ib qho ntawm koj cov qauv khaws tseg",
+  "cmd.apply_lesson_template_missing": "Kuv nrhiav tsis tau tus qauv hu ua ",
+  "cmd.apply_lesson_template_which": "Tus qauv twg?",
+  "cmd.rebuild_lesson_step": "Rov tsim ib kauj ruam ntawm txoj kev npaj",
+  "cmd.rebuild_lesson_step_done": "Rov tsim kauj ruam ",
+  "cmd.rebuild_lesson_step_hint": "Rov tsim ib qho peev txheej — hais tus lej kauj ruam",
+  "cmd.rebuild_lesson_step_missing": "Kuv nrhiav tsis tau kauj ruam ntawd hauv txoj kev npaj.",
+  "cmd.rebuild_lesson_step_none": "txoj kev npaj tseem tsis muaj kauj ruam.",
+  "cmd.rebuild_lesson_step_which": "Kauj ruam twg?",
+  "cmd.run_lesson_blueprint": "Tsim txoj kev npaj qhia",
+  "cmd.run_lesson_blueprint_done": "Tab tom tsim txoj kev npaj — koj tuaj yeem saib txhua kauj ruam ntawm daim npav.",
+  "cmd.run_lesson_blueprint_hint": "Tsim txhua yam peev txheej hauv txoj kev npaj tam sim no",
+  "cmd.cancelled": "Tau thov tso tseg. Txoj haujlwm tam sim no yuav nres thaum nws tus neeg muab kev pab txhawb nqa qhov no."
 }

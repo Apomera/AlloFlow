@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "Το Video Studio άνοιξε.",
   "cmd.open_video_studio_hint": "Καταγράψτε, υποτιτλίστε και επεξεργαστείτε βίντεο καθοδήγησης",
   "palette.ctx.videoStudio": "Εδώ — Video Studio",
-  "palette.close": "Κλείσιμο της παλέτας εντολών"
+  "palette.close": "Κλείσιμο της παλέτας εντολών",
+  "cmd.apply_lesson_template": "Έναρξη από αποθηκευμένο πρότυπο",
+  "cmd.apply_lesson_template_done": "Έναρξη από ",
+  "cmd.apply_lesson_template_hint": "Ξεκινά νέο σχέδιο από ένα από τα αποθηκευμένα πρότυπά σου",
+  "cmd.apply_lesson_template_missing": "Δεν βρήκα πρότυπο με το όνομα ",
+  "cmd.apply_lesson_template_which": "Ποιο πρότυπο;",
+  "cmd.rebuild_lesson_step": "Αναδημιούργησε ένα βήμα του σχεδίου",
+  "cmd.rebuild_lesson_step_done": "Αναδημιουργία βήματος ",
+  "cmd.rebuild_lesson_step_hint": "Αναδημιουργεί έναν πόρο — πες τον αριθμό του βήματος",
+  "cmd.rebuild_lesson_step_missing": "Δεν βρήκα αυτό το βήμα στο σχέδιο.",
+  "cmd.rebuild_lesson_step_none": "το σχέδιο δεν έχει ακόμη βήματα.",
+  "cmd.rebuild_lesson_step_which": "Ποιο βήμα;",
+  "cmd.run_lesson_blueprint": "Δημιούργησε το σχέδιο μαθήματος",
+  "cmd.run_lesson_blueprint_done": "Δημιουργείται το σχέδιο — μπορείς να παρακολουθείς κάθε βήμα στην κάρτα.",
+  "cmd.run_lesson_blueprint_hint": "Δημιουργεί όλους τους πόρους του τρέχοντος σχεδίου",
+  "cmd.cancelled": "Ζητήθηκε ακύρωση. Η τρέχουσα λειτουργία θα σταματήσει όταν το υποστηρίξει ο πάροχός της."
 }

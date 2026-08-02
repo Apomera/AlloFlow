@@ -12,7 +12,7 @@ const {
 const serviceRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(serviceRoot, '..', '..');
 const destination = path.join(serviceRoot, '.runner-context');
-const sourceFiles = [
+const baseSourceFiles = [
   'desktop/mcp/remediation_headless_driver.cjs',
   'desktop/mcp/zip_writer.cjs',
   'verification_policy_module.js',
@@ -20,6 +20,25 @@ const sourceFiles = [
   'view_pdf_validator_module.js',
   'doc_pipeline_module.js',
 ];
+const validatorSourceFiles = [
+  'verapdf/verapdf-cli.jar',
+  'verapdf/THIRD_PARTY_NOTICES.md',
+];
+const vendorManifestSource = 'desktop/mcp/vendor/manifest.json';
+let vendorManifest;
+try { vendorManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, vendorManifestSource), 'utf8')); } catch (error) {
+  throw new Error(`Unable to read ${vendorManifestSource}: ${error.message}`);
+}
+if (!vendorManifest || vendorManifest.schema !== 1 || !Array.isArray(vendorManifest.files) || !vendorManifest.files.length) {
+  throw new Error(`${vendorManifestSource} must contain a non-empty schema-1 files array`);
+}
+const vendorFiles = vendorManifest.files.map((entry) => {
+  if (!entry || typeof entry.path !== 'string' || entry.path.startsWith('/') || entry.path.includes('..') || !/^[A-Za-z0-9._/-]+$/u.test(entry.path)) {
+    throw new Error(`${vendorManifestSource} contains an unsafe path: ${JSON.stringify(entry)}`);
+  }
+  return path.join('desktop/mcp/vendor', entry.path);
+});
+const sourceFiles = [...baseSourceFiles, ...validatorSourceFiles, vendorManifestSource, ...vendorFiles];
 
 const args = process.argv.slice(2);
 if (args.some((arg) => arg !== '--check') || args.filter((arg) => arg === '--check').length > 1) {

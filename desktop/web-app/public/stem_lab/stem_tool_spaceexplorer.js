@@ -449,6 +449,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     return protocol;
   }
 
+  function reviseMissionProtocol(protocol, justification, dossier, dest) {
+    var clean = (justification || '').trim().slice(0, 220);
+    if (!protocol) return { accepted: false, changed: false, protocol: null, reason: 'Launch a hypothesis before revising the mission rule.' };
+    if (clean.length < 20) return { accepted: false, changed: false, protocol: protocol, reason: 'Write at least 20 characters explaining what the evidence changed.' };
+    var candidate = buildMissionProtocol(clean, dossier, dest);
+    if (!candidate) return { accepted: false, changed: false, protocol: protocol, reason: 'The revision needs a clear evidence or survival claim.' };
+    var changed = candidate.id !== protocol.id;
+    candidate.revision = {
+      fromId: protocol.id,
+      fromLabel: protocol.label,
+      toId: candidate.id,
+      toLabel: candidate.label,
+      changed: changed,
+      turn: null,
+      justification: clean,
+      summary: changed ? 'Evidence changed the mission rule from ' + protocol.label + ' to ' + candidate.label + '.' : 'The mission rule stayed ' + protocol.label + ', but the justification sharpened its focus.'
+    };
+    return { accepted: true, changed: changed, protocol: candidate, reason: candidate.revision.summary };
+  }
   function applyMissionProtocol(protocol, resources, choice, event) {
     var res = Object.assign({}, resources || {});
     if (!protocol || !protocol.effects) return { resources: res, applied: false, effects: {}, note: '' };
@@ -583,7 +602,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     var concepts = (event && event.stemConcepts) || [];
     var mentionsConcept = concepts.some(function(c) { return lower.indexOf(String(c).toLowerCase()) >= 0; });
     var mentionsTradeoff = /because|therefore|if|risk|trade|cost|evidence|data|resource|oxygen|o2|hull|power|fuel|morale|science/.test(lower);
+    var mentionsPrediction = /predict|expect|likely|will|should|if/.test(lower);
     var hasReasoning = clean.length >= 20;
+    var qualityScore = (hasReasoning ? 1 : 0) + (mentionsConcept ? 1 : 0) + (mentionsTradeoff ? 1 : 0) + (mentionsPrediction ? 1 : 0);
     var tag = !hasReasoning ? 'not written' : (mentionsConcept && mentionsTradeoff ? 'evidence + tradeoff' : mentionsConcept ? 'science-linked' : mentionsTradeoff ? 'tradeoff-linked' : 'claim only');
     return {
       text: clean,
@@ -591,21 +612,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       tag: tag,
       mentionsConcept: mentionsConcept,
       mentionsTradeoff: mentionsTradeoff,
-      feedback: !hasReasoning ? 'Try writing why this choice fits the evidence before deciding.' : tag === 'evidence + tradeoff' ? 'Strong reasoning: you connected science evidence to mission tradeoffs.' : tag === 'science-linked' ? 'Good science link. Add the resource tradeoff next time.' : tag === 'tradeoff-linked' ? 'Good systems tradeoff. Add the science evidence next time.' : 'You made a claim. Strengthen it with evidence or a resource tradeoff.'
+      mentionsPrediction: mentionsPrediction,
+      qualityScore: qualityScore,
+      feedback: !hasReasoning ? 'Try writing why this choice fits the evidence before deciding.' : qualityScore >= 4 ? 'Excellent reasoning: you named evidence, a tradeoff, and a prediction.' : tag === 'evidence + tradeoff' ? 'Strong reasoning: you connected science evidence to mission tradeoffs.' : tag === 'science-linked' ? 'Good science link. Add the resource tradeoff next time.' : tag === 'tradeoff-linked' ? 'Good systems tradeoff. Add the science evidence next time.' : 'You made a claim. Strengthen it with evidence or a resource tradeoff.'
     };
   }
 
+  function buildReasoningScaffold(event, protocol) {
+    var category = (event && event.category) || 'mission';
+    var concepts = (event && event.stemConcepts) || [];
+    var lead = concepts[0] || 'the evidence';
+    var focus = category === 'science' ? 'Which observation would make this claim stronger?' : category === 'systems' ? 'Which resource margin is worth protecting first?' : category === 'environment' ? 'What hazard signal changes the safe path?' : category === 'crew' ? 'Which crew perspective changes the decision?' : category === 'navigation' ? 'What return constraint changes the timing?' : 'What evidence and tradeoff matter most here?';
+    var protocolLabel = protocol && protocol.label ? protocol.label : 'your mission plan';
+    return {
+      category: category,
+      lead: lead,
+      focus: focus,
+      protocolLabel: protocolLabel,
+      stems: [
+        { label: 'Evidence', text: 'The strongest evidence is ' + lead + ' because ' },
+        { label: 'Tradeoff', text: 'I will trade ... to protect ... because ' },
+        { label: 'Prediction', text: 'I predict this choice will ... because ' }
+      ],
+      guidance: 'Name the evidence, the resource or safety tradeoff, and what you predict will happen.'
+    };
+  }
+
+  function evaluateReasoningProgress(decisionLog) {
+    var decisions = decisionLog || [];
+    var written = decisions.filter(function(dec) { return dec.reasoningSummary && dec.reasoningSummary.hasReasoning; });
+    var complete = written.filter(function(dec) { return (dec.reasoningSummary.qualityScore || 0) >= 4; });
+    var percent = decisions.length ? Math.round(written.length / decisions.length * 100) : 0;
+    return {
+      total: decisions.length,
+      written: written.length,
+      complete: complete.length,
+      percent: percent,
+      status: !decisions.length ? 'awaiting decisions' : complete.length >= Math.max(1, Math.ceil(decisions.length / 2)) ? 'clear evidence + tradeoff practice' : written.length ? 'developing explanation practice' : 'add a why to your next decision',
+      nextStep: complete.length >= written.length && written.length > 0 ? 'Keep testing whether your prediction matches the next observation.' : 'Use the Evidence, Tradeoff, and Prediction starters before your next choice.'
+    };
+  }
+
+  function buildCrewConsultReport(crew, consultLog) {
+    var roster = crew || [];
+    var log = consultLog || [];
+    var members = roster.map(function(member) {
+      var name = member.name || member.role || 'Crew specialist';
+      var entries = log.filter(function(item) { return item.name === name; });
+      var helpful = entries.filter(function(item) { return item.matchesRelevant || item.unlocks; });
+      var last = entries.length ? entries[entries.length - 1] : null;
+      return {
+        name: name,
+        role: member.role || '',
+        specialty: member.specialty || '',
+        emoji: member.emoji || '👤',
+        consulted: entries.length,
+        helpful: helpful.length,
+        unlocks: entries.filter(function(item) { return item.unlocks; }).length,
+        lastLine: last ? last.line : ''
+      };
+    });
+    log.forEach(function(item) {
+      if (!members.some(function(member) { return member.name === item.name; })) {
+        members.push({ name: item.name || 'Crew specialist', role: item.role || '', specialty: item.specialty || '', emoji: item.emoji || '👤', consulted: 1, helpful: item.matchesRelevant || item.unlocks ? 1 : 0, unlocks: item.unlocks ? 1 : 0, lastLine: item.line || '' });
+      }
+    });
+    var helpfulCount = log.filter(function(item) { return item.matchesRelevant || item.unlocks; }).length;
+    var unlockCount = log.filter(function(item) { return item.unlocks; }).length;
+    return {
+      members: members,
+      consultedCount: log.length,
+      uniqueCount: members.filter(function(member) { return member.consulted > 0; }).length,
+      helpfulCount: helpfulCount,
+      unlockCount: unlockCount,
+      summary: !log.length ? 'No specialist consultation logged yet.' : log.length + ' consultation' + (log.length === 1 ? '' : 's') + ' across ' + members.filter(function(member) { return member.consulted > 0; }).length + ' crew perspective' + (members.filter(function(member) { return member.consulted > 0; }).length === 1 ? '' : 's') + '; ' + helpfulCount + ' matched the event.'
+    };
+  }
+  function buildDecisionCausalSummary(decisionLog) {
+    var decisions = decisionLog || [];
+    var net = {};
+    var rows = decisions.map(function(decision) {
+      var delta = decision.resourceDelta || {};
+      Object.keys(delta).forEach(function(key) { net[key] = (net[key] || 0) + (delta[key] || 0); });
+      return {
+        turn: decision.turn || null,
+        title: decision.title || 'Mission decision',
+        chosen: decision.chosen || '',
+        quality: decision.quality || 'unknown',
+        effects: Object.keys(delta).filter(function(key) { return delta[key] !== 0; }).map(function(key) { return { key: key, value: delta[key] }; }),
+        protocol: decision.protocolEffect || null,
+        consultedCrew: decision.consultedCrew || null,
+        reasoningTag: decision.reasoningSummary ? decision.reasoningSummary.tag : 'not written'
+      };
+    });
+    return {
+      total: decisions.length,
+      mapped: rows.filter(function(row) { return row.effects.length > 0; }).length,
+      rows: rows,
+      netResourceDelta: net,
+      scienceDelta: net.science || 0,
+      survivalDelta: (net.o2 || 0) + (net.hull || 0) + (net.morale || 0),
+      summary: !decisions.length ? 'No decisions mapped yet.' : rows.filter(function(row) { return row.effects.length > 0; }).length + '/' + decisions.length + ' decisions mapped to resource consequences.'
+    };
+  }
+  function buildNextMissionBlueprint(dossier, assessment, protocol, causal, crewReport, reflection) {
+    var goals = (dossier && dossier.evidenceGoals) || [];
+    var firstGoal = goals[0] ? goals[0].label : 'the next evidence goal';
+    var missing = assessment && assessment.missingGoals && assessment.missingGoals.length ? assessment.missingGoals[0] : firstGoal;
+    var carryForward = protocol ? (protocol.revision ? protocol.revision.summary : protocol.ruleText) : 'Keep a clear hypothesis visible before the next launch.';
+    var changeNext = assessment && assessment.revisionPrompt ? assessment.revisionPrompt : 'Write a sharper claim before the next mission.';
+    var scienceMove = causal && causal.scienceDelta > 0 ? 'Protect the evidence-first move that produced science.' : 'Reserve one decision for a controlled measurement.';
+    var survivalMove = causal && causal.survivalDelta < 0 ? 'Protect O2, hull, and morale before taking another science risk.' : 'Keep a return margin while testing the next claim.';
+    var collaborationMove = crewReport && crewReport.helpfulCount > 0 ? 'Consult the specialist who matched the event before committing.' : 'Ask a specialist when the next event crosses disciplines.';
+    var nextTest = 'Test ' + missing + ' with a written prediction before choosing.';
+    var reflectionText = (reflection || '').trim();
+    var reflectionSeed = (reflectionText ? 'Revisit: ' + reflectionText + ' ' : '') + 'Next test: ' + nextTest + ' ' + survivalMove;
+    return {
+      title: 'Next Expedition Blueprint',
+      carryForward: carryForward,
+      changeNext: changeNext,
+      nextTest: nextTest,
+      scienceMove: scienceMove,
+      survivalMove: survivalMove,
+      collaborationMove: collaborationMove,
+      reflectionSeed: reflectionSeed.slice(0, 420),
+      summary: scienceMove + ' ' + survivalMove + ' ' + collaborationMove
+    };
+  }
   window.StemLab.spaceExplorerPure = {
     buildMissionDossier: buildMissionDossier,
     buildLocalMissionEvent: buildLocalMissionEvent,
     assessMissionIntent: assessMissionIntent,
     buildMissionProtocol: buildMissionProtocol,
+    reviseMissionProtocol: reviseMissionProtocol,
     applyMissionProtocol: applyMissionProtocol,
     buildProtocolEventLens: buildProtocolEventLens,
     buildMissionForecast: buildMissionForecast,
     buildMissionObjectives: buildMissionObjectives,
     evaluateMissionObjectives: evaluateMissionObjectives,
     summarizeDecisionReasoning: summarizeDecisionReasoning,
+    buildReasoningScaffold: buildReasoningScaffold,
+    evaluateReasoningProgress: evaluateReasoningProgress,
+    buildCrewConsultReport: buildCrewConsultReport,
+    buildDecisionCausalSummary: buildDecisionCausalSummary,
+    buildNextMissionBlueprint: buildNextMissionBlueprint,
     normalizeAllocation: normalizeAllocation,
     applyTurnDrain: applyTurnDrain
   };
@@ -920,15 +1070,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var missionDossier = d.missionDossier || (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
       var missionEvidence = d.missionEvidence || [];
       var currentDecisionReason = d.currentDecisionReason || '';
-      // Read like its siblings. The turn resolver writes protocolLog back but
-      // never had a local to read it from — see the note where it is written.
+      // Keep the bounded protocol log in the render model so forecast, objectives, and debrief stay in sync.
       var protocolLog = d.protocolLog || [];
       var missionIntent = d.missionIntent || '';
       var missionReflection = d.missionReflection || '';
       var missionIntentAssessment = missionDossier ? assessMissionIntent(missionIntent, missionEvidence, missionDossier) : null;
-      var missionProtocol = missionDossier ? buildMissionProtocol(missionIntent, missionDossier, destination) : null;
+      var missionProtocolBase = missionDossier ? buildMissionProtocol(missionIntent, missionDossier, destination) : null;
+      var protocolRevisionDraft = d.protocolRevisionDraft || '';
+      var protocolRevisionApplied = !!d.protocolRevisionApplied;
+      var missionProtocol = d.missionProtocolOverride || missionProtocolBase;
       var missionObjectives = missionDossier ? buildMissionObjectives(destination, missionDossier, missionProtocol) : [];
       var missionObjectiveReport = evaluateMissionObjectives(missionObjectives, missionEvidence, decisionLog, resources, d.protocolLog || []);
+      var crewConsultLog = d.crewConsultLog || [];
+      var crewConsultReport = buildCrewConsultReport(crew, crewConsultLog);
+      var missionCausalSummary = buildDecisionCausalSummary(decisionLog);
+      var missionBlueprint = missionDossier ? buildNextMissionBlueprint(missionDossier, missionIntentAssessment, missionProtocol, missionCausalSummary, crewConsultReport, missionReflection) : null;
+      var missionReasoningProgress = evaluateReasoningProgress(decisionLog);
+      var reasoningScaffold = activeEvent ? buildReasoningScaffold(activeEvent, missionProtocol) : null;
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
 
@@ -958,9 +1116,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           missionLog: [{ text: '\uD83D\uDE80 Mission to ' + dest.name + ' initiated! Crew: ' + missionCrew.map(function(c) { return c.name; }).join(', '), time: new Date().toLocaleTimeString() }],
           missionDossier: dossier,
           missionEvidence: [],
+          crewConsultLog: [],
           missionIntent: '',
           missionReflection: '',
           protocolLog: [],
+          protocolRevisionDraft: '',
+          protocolRevisionApplied: false,
+          missionProtocolOverride: null,
           currentDecisionReason: '',
           activeEvent: null,
           eventOutcome: null,
@@ -974,6 +1136,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         announceToSR('Mission to ' + dest.name + ' selected. Crew of ' + missionCrew.length + ' assembled. Review the briefing.');
       }
 
+      // ── One-time Protocol Checkpoint ──
+      function applyProtocolRevision() {
+        if (!missionProtocol || protocolRevisionApplied || turn < 3) return;
+        var result = reviseMissionProtocol(missionProtocol, protocolRevisionDraft, missionDossier, destination);
+        if (!result.accepted) {
+          if (addToast) addToast('⚠️ ' + result.reason, 'info');
+          announceToSR(result.reason);
+          return;
+        }
+        var revised = Object.assign({}, result.protocol, { revision: Object.assign({}, result.protocol.revision, { turn: turn }) });
+        updAll({ missionProtocolOverride: revised, protocolRevisionApplied: true, protocolRevisionDraft: '' });
+        log('🔄 Protocol checkpoint: ' + result.reason);
+        if (addToast) addToast('🔄 ' + result.reason, 'success');
+        announceToSR('Protocol checkpoint applied. ' + result.reason);
+      }
       // ── Generate AI event for current turn ──
       function generateEvent() {
         if (!destination || isGenerating) return;
@@ -1143,8 +1320,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         if (morDelta !== 0 && newRes.morale !== undefined) {
           newRes.morale = Math.max(0, Math.min(RESOURCES.morale.max, newRes.morale + morDelta));
         }
+        var newConsultLog = crewConsultLog.slice();
+        newConsultLog.push({
+          turn: turn + 1,
+          event: event.title,
+          name: member.name,
+          role: member.role,
+          specialty: member.specialty,
+          emoji: member.emoji,
+          matchesRelevant: matchesRelevant,
+          unlocks: unlocks,
+          moraleDelta: morDelta,
+          commsWaive: commsWaive,
+          line: line
+        });
+        if (newConsultLog.length > 24) newConsultLog = newConsultLog.slice(-24);
         updAll({
           consultUsed: true,
+          crewConsultLog: newConsultLog,
           revealedHiddenOption: unlocks,
           resources: newRes,
           eventOutcome: null,
@@ -1192,19 +1385,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           optimal: optimalLabel, scienceReward: choice.scienceReward,
           category: event.category || null,
           reasoning: reasoningSummary.text,
-          reasoningSummary: reasoningSummary
+          reasoningSummary: reasoningSummary,
+          consultedCrew: d._consultLine ? { name: d._consultLine.name, specialty: d._consultLine.specialty, unlocks: !!d._consultLine.unlocks } : null
         });
         var newTurn = turn + 1;
-        // newProtocolLog and protocolResult were referenced below but never
-        // computed, so resolving ANY event threw "newProtocolLog is not
-        // defined" — the turn never advanced. Deciding what counts as
-        // satisfying the mission protocol is a curriculum question, not one to
-        // guess at, so this carries the log forward unchanged and records no
-        // result. Net effect matches what students see today (the protocol
-        // objective, which scores on protocolLog.length, stays where it is),
-        // except the turn now resolves. Wire the real rule in here.
-        var protocolResult = null;
+        // Apply the student's bounded protocol after the choice and power-allocation effects.
+        // The protocol remains transparent: only its whitelisted, clamped deltas can fire.
+        var protocolResult = applyMissionProtocol(missionProtocol, newRes, choice, event);
+        newRes = protocolResult.resources;
         var newProtocolLog = protocolLog.slice();
+        if (protocolResult.applied) {
+          newProtocolLog.push({
+            turn: newTurn,
+            protocol: missionProtocol.label,
+            protocolId: missionProtocol.id,
+            event: event.title,
+            effects: protocolResult.effects,
+            note: protocolResult.note
+          });
+          if (newProtocolLog.length > 12) newProtocolLog = newProtocolLog.slice(-12);
+        }
+        var decisionDelta = {};
+        Object.keys(RESOURCES).forEach(function(key) {
+          var before = resources[key];
+          var after = newRes[key];
+          if (before !== undefined && after !== undefined && after !== before) decisionDelta[key] = after - before;
+        });
+        if (newDecLog.length > 0) {
+          newDecLog[newDecLog.length - 1].turn = newTurn;
+          newDecLog[newDecLog.length - 1].resourceDelta = decisionDelta;
+          newDecLog[newDecLog.length - 1].protocolEffect = protocolResult.applied ? Object.assign({}, protocolResult.effects) : null;
+        }
         updAll({
           resources: newRes,
           decisionLog: newDecLog,
@@ -1707,6 +1918,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             ),
             missionForecast.lens && h('p', { className: 'mt-2 text-[11px] text-cyan-100 leading-snug' }, missionForecast.lens.playerFacing)
           ),
+          missionProtocol && turn >= 3 && h('div', { 'data-spaceexplorer-protocol-checkpoint': 'true', className: 'rounded-xl border border-fuchsia-700/40 bg-fuchsia-950/15 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-fuchsia-200' }, '🔄 Protocol Checkpoint'),
+              h('span', { className: 'text-[10px] font-bold ' + (protocolRevisionApplied ? 'text-green-300' : 'text-amber-200') }, protocolRevisionApplied ? 'revision applied' : 'one revision available')
+            ),
+            protocolRevisionApplied && missionProtocol.revision ? h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionProtocol.revision.summary + ' Justification: ' + missionProtocol.revision.justification) : h('div', null,
+              h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-1.5' }, 'After three turns, use evidence to decide whether the rule still fits. Write what changed; the revision can only choose a bounded protocol family.'),
+              h('textarea', {
+                value: protocolRevisionDraft,
+                onChange: function(e) { upd('protocolRevisionDraft', (e.target.value || '').slice(0, 220)); },
+                rows: 2, maxLength: 220,
+                placeholder: 'The oxygen margin is falling faster than predicted, so I will prioritize life support because ...',
+                'aria-label': 'Protocol revision justification',
+                className: 'w-full rounded-md bg-slate-950/70 border border-fuchsia-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-400 focus:outline-none'
+              }),
+              h('div', { className: 'flex items-center justify-between gap-2 mt-1' },
+                h('span', { className: 'text-[10px] text-slate-400' }, protocolRevisionDraft.length + '/220; 20+ chars suggested'),
+                h('button', {
+                  type: 'button',
+                  onClick: applyProtocolRevision,
+                  disabled: protocolRevisionDraft.trim().length < 20,
+                  className: 'px-2.5 py-1.5 rounded-md text-[10px] font-bold text-white bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-fuchsia-400 focus:outline-none'
+                }, 'Apply revision')
+              )
+            )
+          ),
           // Projected drain preview
           h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10', role: 'status' },
             h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, t('stem.spaceexplorer.projected_next_turn', 'Projected next turn')),
@@ -1829,6 +2066,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             missionEvidence.length > 0 && h('div', { className: 'mt-2 rounded-lg bg-slate-950/50 border border-slate-700 p-2' },
               h('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' }, 'Latest observation'),
               h('p', { className: 'text-[11px] text-slate-200 leading-snug' }, missionEvidence[missionEvidence.length - 1].title + ': ' + missionEvidence[missionEvidence.length - 1].note)
+            )
+          ),
+          crewConsultReport && h('div', { 'data-spaceexplorer-crew-ledger': 'true', className: 'rounded-xl border border-amber-700/40 bg-amber-950/15 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-amber-200' }, '💬 Crew perspectives'),
+              h('span', { className: 'text-[10px] font-bold text-slate-300' }, crewConsultReport.uniqueCount + '/' + crew.length + ' specialists consulted')
+            ),
+            h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, crewConsultReport.summary),
+            crewConsultLog.length > 0 && h('div', { className: 'mt-2 space-y-1' },
+              crewConsultLog.slice(-2).map(function(item, i) {
+                return h('div', { key: i, className: 'rounded-md bg-slate-950/40 border border-amber-500/20 p-2 text-[11px] text-slate-300' },
+                  h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-0.5' },
+                    h('span', { className: 'font-bold text-amber-100' }, item.emoji + ' ' + item.name),
+                    h('span', { className: 'text-[10px] text-slate-400' }, '· ' + (item.specialty || item.role || 'specialist')),
+                    item.unlocks && h('span', { className: 'text-[10px] font-bold text-green-300' }, '• new option unlocked')
+                  ),
+                  h('span', null, item.line)
+                );
+              })
             )
           ),
           missionObjectiveReport && missionObjectiveReport.items.length > 0 && h('div', { 'data-spaceexplorer-objectives-live': 'true', className: 'rounded-xl border border-emerald-700/45 bg-emerald-950/15 p-3' },
@@ -2088,7 +2344,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-sky-200' }, '\u270D\uFE0F Commander reasoning'),
                 h('span', { className: 'text-[10px] font-bold ' + ((currentDecisionReason || '').trim().length >= 20 ? 'text-green-300' : 'text-slate-400') }, (currentDecisionReason || '').length + '/220')
               ),
-              h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-1.5' }, 'Optional: explain the evidence or tradeoff before choosing. Your debrief will preserve this reasoning.'),
+              h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-1.5' }, reasoningScaffold ? reasoningScaffold.guidance + ' ' + reasoningScaffold.focus : 'Optional: explain the evidence or tradeoff before choosing. Your debrief will preserve this reasoning.'),
+              reasoningScaffold && h('div', { className: 'flex flex-wrap gap-1.5 mb-2', 'aria-label': 'Reasoning starters' },
+                reasoningScaffold.stems.map(function(stem) {
+                  return h('button', {
+                    key: stem.label,
+                    type: 'button',
+                    onClick: function() {
+                      var prior = (currentDecisionReason || '').trim();
+                      upd('currentDecisionReason', ((prior ? prior + ' ' : '') + stem.text).slice(0, 220));
+                    },
+                    className: 'px-2 py-1 rounded-md border border-sky-500/30 bg-sky-500/10 text-[10px] font-bold text-sky-100 hover:bg-sky-500/20 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+                  }, stem.label);
+                })
+              ),
               h('textarea', {
                 value: currentDecisionReason,
                 onChange: function(e) { upd('currentDecisionReason', (e.target.value || '').slice(0, 220)); },
@@ -2248,6 +2517,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               })
             )
           ),
+          crewConsultReport && h('div', { 'data-spaceexplorer-crew-review': 'true', className: 'bg-amber-500/5 rounded-xl p-3 border border-amber-500/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('h3', { className: 'text-[11px] text-amber-200 font-bold' }, '💬 CREW EXPERTISE USED'),
+              h('span', { className: 'text-[10px] font-bold text-cyan-200' }, crewConsultReport.uniqueCount + '/' + crewConsultReport.members.length + ' perspectives')
+            ),
+            h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-2' }, crewConsultReport.summary + ' Ask: whose expertise changed what you noticed?'),
+            h('div', { className: 'grid gap-1 md:grid-cols-2' },
+              crewConsultReport.members.map(function(member) {
+                var used = member.consulted > 0;
+                return h('div', { key: member.name, className: 'rounded-lg border p-2 ' + (used ? 'bg-amber-500/10 border-amber-500/25' : 'bg-white/5 border-white/10') },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-bold ' + (used ? 'text-amber-100' : 'text-slate-400') }, member.emoji + ' ' + member.name),
+                    h('span', { className: 'text-[10px] ' + (used ? 'text-green-300' : 'text-slate-500') }, used ? member.consulted + ' consult' + (member.consulted === 1 ? '' : 's') : 'not consulted')
+                  ),
+                  h('p', { className: 'text-[10px] text-slate-400' }, (member.role || 'Crew') + (member.specialty ? ' · ' + member.specialty : '')),
+                  used && h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, member.lastLine),
+                  used && member.unlocks > 0 && h('p', { className: 'text-[10px] text-green-300 mt-1' }, '✓ ' + member.unlocks + ' hidden option' + (member.unlocks === 1 ? '' : 's') + ' unlocked')
+                );
+              })
+            )
+          ),
           missionIntentAssessment && h('div', { 'data-spaceexplorer-intent-review': 'true', className: 'bg-purple-500/5 rounded-xl p-3 border border-purple-500/20' },
             h('h3', { className: 'text-[11px] text-purple-200 font-bold mb-2' }, '\uD83E\uDDED COMMANDER\'S HYPOTHESIS REVIEW'),
             h('div', { className: 'rounded-lg bg-slate-950/40 border border-slate-700 p-2 mb-2' },
@@ -2277,6 +2567,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             }),
             h('div', { className: 'mt-1 text-[10px] text-slate-400 text-right' }, (missionReflection || '').length + '/260')
           ),
+          missionProtocol && missionProtocol.revision && h('div', { 'data-spaceexplorer-protocol-revision': 'true', className: 'bg-fuchsia-500/5 rounded-xl p-3 border border-fuchsia-500/20' },
+            h('h3', { className: 'text-[11px] text-fuchsia-200 font-bold mb-1' }, '🔄 PROTOCOL REVISION REVIEW'),
+            h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionProtocol.revision.summary),
+            h('p', { className: 'text-[10px] text-fuchsia-100 leading-snug mt-1' }, 'Justification: ' + missionProtocol.revision.justification)
+          ),
+          missionBlueprint && h('div', { 'data-spaceexplorer-next-blueprint': 'true', className: 'bg-violet-500/5 rounded-xl p-3 border border-violet-500/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('h3', { className: 'text-[11px] text-violet-200 font-bold' }, '📋 NEXT EXPEDITION BLUEPRINT'),
+              h('span', { className: 'text-[10px] font-bold text-cyan-200' }, 'carry forward → change → test')
+            ),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-green-200' }, 'Carry forward'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, missionBlueprint.carryForward)
+              ),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-amber-200' }, 'Change next'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, missionBlueprint.changeNext)
+              ),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-cyan-200' }, 'Test next'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, missionBlueprint.nextTest)
+              )
+            ),
+            h('p', { className: 'text-[11px] text-violet-100 leading-snug mt-2' }, missionBlueprint.summary),
+            h('p', { className: 'text-[10px] text-slate-400 leading-snug mt-1' }, 'Reflection seed: ' + missionBlueprint.reflectionSeed)
+          ),
           missionObjectiveReport && missionObjectiveReport.items.length > 0 && h('div', { 'data-spaceexplorer-objectives-review': 'true', className: 'bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/20' },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
               h('h3', { className: 'text-[11px] text-emerald-200 font-bold' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
@@ -2290,6 +2607,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     h('span', { className: 'text-[10px] ' + (obj.completed ? 'text-green-300' : 'text-slate-400') }, obj.completed ? 'complete' : obj.progressText)
                   ),
                   h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, obj.completed ? '+' + obj.reward + ' science earned.' : obj.prompt)
+                );
+              })
+            )
+          ),
+          missionReasoningProgress.total > 0 && h('div', { 'data-spaceexplorer-reasoning-progress': 'true', className: 'bg-sky-500/5 rounded-xl p-3 border border-sky-500/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('h3', { className: 'text-[11px] text-sky-200 font-bold' }, '✍️ REASONING PRACTICE'),
+              h('span', { className: 'text-[10px] font-bold text-cyan-200' }, missionReasoningProgress.written + '/' + missionReasoningProgress.total + ' explained')
+            ),
+            h('div', { className: 'h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2', 'aria-label': missionReasoningProgress.percent + '% of decisions explained' },
+              h('div', { className: 'h-full bg-gradient-to-r from-sky-400 to-cyan-300', style: { width: missionReasoningProgress.percent + '%' } })
+            ),
+            h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionReasoningProgress.status + '. ' + missionReasoningProgress.complete + ' decision' + (missionReasoningProgress.complete === 1 ? '' : 's') + ' named evidence, tradeoff, and prediction.'),
+            h('p', { className: 'text-[10px] text-sky-100 mt-1' }, missionReasoningProgress.nextStep)
+          ),
+          missionCausalSummary.total > 0 && h('div', { 'data-spaceexplorer-causal-map': 'true', className: 'bg-cyan-500/5 rounded-xl p-3 border border-cyan-500/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+              h('h3', { className: 'text-[11px] text-cyan-200 font-bold' }, '🔗 CAUSAL MAP'),
+              h('span', { className: 'text-[10px] font-bold text-slate-300' }, missionCausalSummary.mapped + '/' + missionCausalSummary.total + ' turns mapped')
+            ),
+            h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-2' }, 'Trace what each choice changed: survival margins, science yield, protocol effects, and crew collaboration.'),
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+              h('span', { className: 'px-2 py-0.5 rounded bg-purple-500/10 text-purple-200 border border-purple-500/20 text-[10px]' }, '🔬 Science ' + (missionCausalSummary.scienceDelta >= 0 ? '+' : '') + missionCausalSummary.scienceDelta),
+              h('span', { className: 'px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-200 border border-emerald-500/20 text-[10px]' }, '🛡️ Survival ' + (missionCausalSummary.survivalDelta >= 0 ? '+' : '') + missionCausalSummary.survivalDelta)
+            ),
+            h('div', { className: 'space-y-1.5' },
+              missionCausalSummary.rows.slice(-5).map(function(row, i) {
+                return h('div', { key: i, className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-bold text-white' }, (row.turn ? 'Turn ' + row.turn + ' · ' : '') + row.title),
+                    h('span', { className: 'text-[10px] ' + (row.quality === 'optimal' ? 'text-green-300' : row.quality === 'adequate' ? 'text-yellow-300' : 'text-orange-300') }, row.quality)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-0.5' }, 'You chose: ' + row.chosen),
+                  row.effects.length > 0 ? h('div', { className: 'flex flex-wrap gap-1 mt-1' }, row.effects.map(function(effect) {
+                    var resource = RESOURCES[effect.key];
+                    return h('span', { key: effect.key, className: effect.value >= 0 ? 'text-green-300 text-[10px]' : 'text-red-300 text-[10px]' }, resource ? resource.emoji + ' ' + (effect.value > 0 ? '+' : '') + effect.value + ' ' + resource.label : effect.key + ' ' + effect.value);
+                  })) : h('p', { className: 'text-[10px] text-slate-500 mt-1' }, 'No direct resource delta recorded.'),
+                  h('div', { className: 'flex flex-wrap gap-1.5 mt-1 text-[10px] text-slate-400' },
+                    row.protocol && h('span', null, '⚖️ protocol payoff'),
+                    row.consultedCrew && h('span', null, '💬 consulted ' + row.consultedCrew.name),
+                    h('span', null, '✍️ ' + row.reasoningTag)
+                  )
                 );
               })
             )
@@ -2378,7 +2737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Action buttons
           h('div', { className: 'flex gap-2' },
             h('button', {
-              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], protocolLog: [], currentDecisionReason: '' }); },
+              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], crewConsultLog: [], protocolRevisionDraft: '', protocolRevisionApplied: false, missionProtocolOverride: null, protocolLog: [], currentDecisionReason: '' }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),

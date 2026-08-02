@@ -1259,7 +1259,10 @@ def pantoum_findings(lines):
     """Pantoum: lines 2 & 4 of each quatrain become lines 1 & 3 of the next.
     Light heuristic — only flag if lines look obviously wrong (different lengths)."""
     findings = []
-    if len(lines) < 8 or len(lines) % 4 != 0:
+    if len(lines) < 8:
+        return findings
+    if len(lines) % 4 != 0:
+        findings.append("Pantoum: lines should be grouped into four-line stanzas.")
         return findings
     for q in range(1, len(lines) // 4):
         prev_q = (q - 1) * 4
@@ -1276,6 +1279,50 @@ def pantoum_findings(lines):
 
 
 # ─── Main verify entry point ───────────────────────────────────────────
+def diamante_findings(lines):
+    """Check the seven-line word-count skeleton of a diamante."""
+    if len(lines) != 7:
+        return []
+    expected = [1, 2, 3, 4, 3, 2, 1]
+    findings = []
+    for idx, (line, count) in enumerate(zip(lines, expected)):
+        actual = len(re.findall(r"\S+", line or ""))
+        if actual != count:
+            findings.append(f"Diamante: line {idx + 1} has {actual} words; expected {count}.")
+    return findings
+
+
+def couplet_findings(lines):
+    """Check the end-rhyme relationship when the couplet has two lines."""
+    if len(lines) != 2 or not _PRONOUNCING_OK:
+        return []
+    first = rhyme_class(_last_word(lines[0])) if _last_word(lines[0]) else None
+    second = rhyme_class(_last_word(lines[1])) if _last_word(lines[1]) else None
+    if first and second and first != second:
+        return ["Couplet: the two line endings do not rhyme according to the CMU dictionary."]
+    return []
+
+
+def ballad_findings(lines):
+    """Check quatrain boundaries and line 2/4 end-rhyme pairs."""
+    if len(lines) < 4:
+        return []
+    findings = []
+    if len(lines) % 4 != 0:
+        findings.append("Ballad: lines should be grouped into four-line stanzas.")
+        return findings
+    if not _PRONOUNCING_OK:
+        return findings
+    for start in range(0, len(lines), 4):
+        second = _last_word(lines[start + 1])
+        fourth = _last_word(lines[start + 3])
+        first_class = rhyme_class(second) if second else None
+        second_class = rhyme_class(fourth) if fourth else None
+        if first_class and second_class and first_class != second_class:
+            findings.append(f"Ballad: lines {start + 2} and {start + 4} should rhyme.")
+    return findings
+
+
 def verify_form(form_json, poem_text, target_word=None):
     """Verify a poem against a form spec.
 
@@ -1326,7 +1373,7 @@ def verify_form(form_json, poem_text, target_word=None):
     # Rhyme scheme
     rhyme = None
     expected_scheme = form.get("rhymeScheme")
-    if expected_scheme and form.get("id") != "free":
+    if expected_scheme and form.get("id") not in ("free", "ballad", "pantoum"):
         # Strip whitespace from expected scheme for comparison (e.g. "ABAB CDCD EFEF GG")
         expected_normalized = re.sub(r"\s+", "", expected_scheme).upper()
         detected = detect_rhyme_scheme(lines)
@@ -1346,6 +1393,12 @@ def verify_form(form_json, poem_text, target_word=None):
         extra.extend(acrostic_findings(lines, target_word))
     elif form_id == "pantoum":
         extra.extend(pantoum_findings(lines))
+    elif form_id == "diamante":
+        extra.extend(diamante_findings(lines))
+    elif form_id == "couplet":
+        extra.extend(couplet_findings(lines))
+    elif form_id == "ballad":
+        extra.extend(ballad_findings(lines))
 
     # Build the flat findings list for display
     findings = []

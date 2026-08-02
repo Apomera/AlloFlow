@@ -53,14 +53,34 @@ function mountWithSeed(cfg, seed) {
   }
 }
 
+function mountLive(cfg, seed) {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = ReactDOMClient.createRoot(host);
+  function Harness() {
+    const [toolData, setToolData] = React.useState(seed ? { magnetism: seed } : {});
+    return cfg.render(mountCtx(toolData, setToolData));
+  }
+  act(() => { root.render(React.createElement(Harness)); });
+  return {
+    host,
+    unmount() {
+      try { act(() => root.unmount()); } catch (_) {}
+      host.remove();
+    },
+  };
+}
+
 const BASE = {
   tab: 'field',
   magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }],
   compass: { x: 90, y: 90 }, filings: false, compassMoved: false,
   sawAttract: false, sawRepel: false,
+  fieldView: '2d', fieldMapProbe: { x: 90, y: 0 }, fieldMapPath: 'axial', fieldMapStrength: 1, fieldMapNoise: 0, fieldMapSamples: [], fieldMapUsed: false,
   turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false,
   motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false, motorMode: 'forces',
   motorView: '2d', motor3dStatus: 'loading', motor3dAttempt: 0, motor3dUsed: false, motor3dForces: true, motor3dCurrent: true,
+  forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5, forceLabSpeed: 300, forceLabCurrentDir: 1, forceLabFieldDir: 1, forceLabUsed: false,
   analyzerE: 6, analyzerSelectorB: 3, analyzerSpeed: 2, analyzerB: 4, analyzerSpecies: 'deuteron', analyzerShowAll: true, analyzerUsed: false,
   chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4, chargeView: '2d',
   chargeTilt: 45, chargeMass: 1, chargeFieldModel: 'uniform', chargeMirrorRatio: 3, charge3dStatus: 'loading', charge3dAttempt: 0, charge3dUsed: false, charge3dProgress: 0, charge3dRunning: false, charge3dTrail: true, charge3dReference: null,
@@ -68,7 +88,7 @@ const BASE = {
   benchView: 'steady', benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
   benchTrace: [], benchTrials: [], benchTrialCount: 0, benchMissionStatus: 'ready', benchCompareTrialId: null,
   induceMode: 'hand', genAngle: 0, genTurns: 60, genField: 4, genRPM: 60,
-  learningMode: 'guided', notebookOpen: false, notebookPrediction: '', notebookClaim: '', notebookTrials: [],
+  learningMode: 'guided', missionId: 'power_path', missionStarted: false, missionSeen: false, notebookOpen: false, notebookPrediction: '', notebookClaim: '', notebookTrials: [],
   earthSeen: false, declination: 12, earthSolarWind: 5,
   earthView: '2d', earth3dStatus: 'loading', earth3dAttempt: 0, earth3dUsed: false,
   earth3dFieldLines: true, earth3dBoundary: true, earth3dBelts: true, earth3dWind: true, earth3dReference: true, earth3dMotion: false,
@@ -198,6 +218,32 @@ describe('magnetism tool — real physics', () => {
     expect(reversed.torqueDirection).toBe(-1);
   });
 
+  it('makes wire force vanish when parallel and peak when perpendicular', () => {
+    const parallel = physics.wireForceVectorState(3, 4, 0, 5, 1, 1);
+    const mid = physics.wireForceVectorState(3, 4, 30, 5, 1, 1);
+    const maximum = physics.wireForceVectorState(3, 4, 90, 5, 1, 1);
+    const reversedCurrent = physics.wireForceVectorState(3, 4, 90, 5, -1, 1);
+    const reversedField = physics.wireForceVectorState(3, 4, 90, 5, 1, -1);
+    expect(parallel).toMatchObject({ magnitude: 0, deadSpot: true, forceDirection: '+z' });
+    expect(mid.magnitude).toBeCloseTo(maximum.magnitude * 0.5, 9);
+    expect(maximum.magnitude).toBeCloseTo(3 * 4 * 5, 9);
+    expect(maximum.perpendicularFraction).toBeCloseTo(1, 9);
+    expect(maximum.parallelFraction).toBeCloseTo(0, 9);
+    expect(reversedCurrent.signedForce).toBe(-maximum.signedForce);
+    expect(reversedField.signedForce).toBe(-maximum.signedForce);
+  });
+
+  it('connects magnetic force to torque, speed, and mechanical power', () => {
+    const stopped = physics.motorPowerBridgeState(3, 4, 45, 5, 0, 1, 1);
+    const moving = physics.motorPowerBridgeState(3, 4, 45, 5, 300, 1, 1);
+    const fast = physics.motorPowerBridgeState(3, 4, 45, 5, 600, 1, 1);
+    const parallel = physics.motorPowerBridgeState(3, 4, 0, 5, 300, 1, 1);
+    expect(stopped).toMatchObject({ speedRpm: 0, moving: false, mechanicalPower: 0, powerActive: false });
+    expect(moving.torque).toBeCloseTo(moving.magnitude * moving.radius, 9);
+    expect(moving.mechanicalPower).toBeCloseTo(moving.torque * moving.omega, 9);
+    expect(fast.mechanicalPower).toBeCloseTo(moving.mechanicalPower * 2, 9);
+    expect(parallel).toMatchObject({ magnitude: 0, torque: 0, mechanicalPower: 0, powerActive: false });
+  });
   it('selects one beam speed and separates transmitted ions by mass-to-charge ratio', () => {
     const matched = physics.velocitySelectorState(6, 3, 2, 4, 2, 1);
     const fast = physics.velocitySelectorState(6, 3, 4, 4, 2, 1);
@@ -316,6 +362,28 @@ describe('magnetism tool — real physics', () => {
     expect(line[0].length).toBe(2);
   });
 
+  it('maps Hall-probe vectors and recovers the dipole inverse-cube distance law', () => {
+    const magnet = { x: 0, y: 0, angle: 0, polarity: 1, strength: 1 };
+    const near = physics.fieldProbeReading(60, 0, [magnet], 0);
+    const far = physics.fieldProbeReading(120, 0, [magnet], 0);
+    expect(near.magnitude / far.magnitude).toBeCloseTo(8, 9);
+    expect(near.bx).toBeGreaterThan(0);
+    expect(near.by).toBeCloseTo(0, 12);
+
+    const axial = physics.fieldScanSeries([magnet], 'axial', [50, 65, 80, 100, 125, 150, 175], 0, 0);
+    const equatorial = physics.fieldScanSeries([magnet], 'equatorial', [50, 65, 80, 100, 125, 150, 175], 0, 0);
+    const axialFit = physics.fieldPowerLawFit(axial);
+    const equatorialFit = physics.fieldPowerLawFit(equatorial);
+    expect(axialFit.exponent).toBeCloseTo(-3, 9);
+    expect(equatorialFit.exponent).toBeCloseTo(-3, 9);
+    expect(axialFit.rSquared).toBeCloseTo(1, 9);
+
+    const noisyA = physics.fieldProbeReading(90, 15, [magnet], 12);
+    const noisyB = physics.fieldProbeReading(90, 15, [magnet], 12);
+    expect(noisyA).toEqual(noisyB);
+    expect(Math.abs(noisyA.measuredMagnitude - noisyA.magnitude)).toBeLessThanOrEqual(noisyA.uncertainty + 1e-12);
+    expect(physics.fieldPowerLawFit([near])).toMatchObject({ count: 0, exponent: null });
+  });
   it('the quiz bank is 22 questions with valid answer indices', () => {
     expect(physics.QUIZ.length).toBe(22);
     physics.QUIZ.forEach((q) => {
@@ -368,6 +436,98 @@ describe('magnetism tool — expanded interactive simulation models', () => {
     expect(physics.rotatingEMF(90, 60, 8)).toBeCloseTo(480, 10);
     expect(physics.rotatingEMF(90, 60, 4, 2)).toBeCloseTo(480, 10);
     expect(physics.rotatingEMF(90, 60, 4, 0)).toBeCloseTo(0, 10);
+  });
+
+  it('keeps the phase wheel normalized and quarter-cycle linked', () => {
+    const fluxPeak = physics.rotatingPhaseState(0, 60, 4, 60);
+    const voltagePeak = physics.rotatingPhaseState(90, 60, 4, 60);
+    const fluxMinimum = physics.rotatingPhaseState(180, 60, 4, 60);
+    const voltageMinimum = physics.rotatingPhaseState(270, 60, 4, 60);
+    const stopped = physics.rotatingPhaseState(90, 60, 4, 0);
+    expect(fluxPeak).toMatchObject({ fluxNorm: 1, emfNorm: 0, phaseGapDeg: 90, fluxPeak: true, emfPeak: false });
+    expect(voltagePeak.emfNorm).toBeCloseTo(1, 10);
+    expect(voltagePeak.fluxNorm).toBeCloseTo(0, 10);
+    expect(voltagePeak).toMatchObject({ fluxPeak: false, emfPeak: true, frequencyHz: 1 });
+    expect(fluxMinimum.fluxNorm).toBeCloseTo(-1, 10);
+    expect(voltageMinimum.emfNorm).toBeCloseTo(-1, 10);
+    expect(stopped).toMatchObject({ stopped: true, frequencyHz: 0, emf: 0, emfNorm: 0, emfPeak: false });
+  });
+  it('maps real quest evidence into cross-station mission progress', () => {
+    const fresh = physics.missionProgressState('power_path', { magnetism: {} });
+    expect(fresh).toMatchObject({ doneCount: 0, total: 4, nextStepIndex: 0, completed: false });
+    expect(fresh.steps.map((step) => step.tab)).toEqual(['electro', 'induce', 'induce', 'field']);
+    const partial = physics.missionProgressState('power_path', { magnetism: { coilTouched: true, peakEMF: 0.8 } });
+    expect(partial).toMatchObject({ doneCount: 2, nextStepIndex: 2, completed: false });
+    const complete = physics.missionProgressState('power_path', { magnetism: { coilTouched: true, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true, notebookUsed: true } });
+    expect(complete).toMatchObject({ doneCount: 4, nextStepIndex: 3, completed: true });
+    const motor = physics.missionProgressState('motor_path', { magnetism: { coilTouched: true, motorRan: true, motorDirectionSeen: true, lorentzUsed: true } });
+    expect(motor.completed).toBe(true);
+  });
+
+  it('turns mission progress into concrete evidence and a defensible synthesis', () => {
+    const review = physics.missionEvidenceReviewState('power_path', { magnetism: {
+      coilTouched: true, current: 3, turns: 80, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true,
+      genRPM: 120, genTurns: 60, notebookTrials: [{ station: 'Hand generator' }],
+    } });
+    expect(review.completed).toBe(false);
+    expect(review.steps[0].evidence).toContain('Field test:');
+    expect(review.steps[1].evidence).toContain('0.80 V');
+    expect(review.steps[2].evidence).toContain('120 RPM');
+    expect(review.steps[3].evidence).toContain('Pending · Write a claim');
+    expect(review.synthesis).toContain('Changing flux becomes voltage');
+    expect(review.claimStatus).toContain('Add a notebook claim');
+    const claimed = physics.missionEvidenceReviewState('power_path', { magnetism: { notebookClaim: 'Changing flux creates voltage.' } });
+    expect(claimed.claimStatus).toBe('Notebook claim recorded.');
+  });
+  it('builds a selectable replay timeline from notebook evidence', () => {
+    const replay = physics.missionReplayState('power_path', { magnetism: {
+      replaySelectedIndex: 0,
+      notebookTrials: [
+        { station: 'Electromagnet', setup: '20 turns', result: '4 mT', prediction: 'More turns should strengthen the field.' },
+        { station: 'Hand generator', setup: '60 turns', result: '0.80 V', prediction: 'Faster motion should raise voltage.' },
+      ],
+    }});
+    expect(replay.count).toBe(2);
+    expect(replay.coverage).toContain('2 recorded trials');
+    expect(replay.selected.ordinal).toBe(1);
+    expect(replay.selected.station).toBe('Electromagnet');
+    expect(replay.latest.result).toBe('0.80 V');
+    const latestByDefault = physics.missionReplayState('power_path', { magnetism: { notebookTrials: replay.trials } });
+    expect(latestByDefault.selected.ordinal).toBe(2);
+    const clamped = physics.missionReplayState('power_path', { magnetism: { replaySelectedIndex: 99, notebookTrials: replay.trials } });
+    expect(clamped.selected.ordinal).toBe(2);
+  });
+  it('captures structured station metrics for replay comparison', () => {
+    const electro = physics.notebookMetricSnapshot({ magnetism: { tab: 'electro', turns: 200, current: 4, core: false } });
+    expect(electro.map((metric) => metric.key)).toEqual(['field_mT', 'turns', 'current_A']);
+    expect(electro[0].value).toBeGreaterThan(0);
+    expect(electro[0].display).toContain('mT');
+    const earth = physics.notebookMetricSnapshot({ magnetism: { tab: 'earth', earthSolarWind: 8 } });
+    expect(earth.map((metric) => metric.key)).toEqual(['solar_wind', 'dayside_RE']);
+    const replay = physics.missionReplayState('motor_path', { magnetism: {
+      replaySelectedIndex: 0,
+      notebookTrials: [{ station: 'Electromagnet', setup: '200 turns', result: 'field', prediction: 'More turns', metrics: electro }],
+    } });
+    expect(replay.selected.metrics[0]).toMatchObject({ key: 'field_mT', unit: 'mT' });
+  });
+  it('builds a portable mission report from claims, evidence, and metrics', () => {
+    const report = physics.missionReportState('power_path', { magnetism: {
+      coilTouched: true, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true, notebookUsed: true,
+      notebookClaim: 'Changing flux creates voltage.',
+      notebookTrials: [{ station: 'Hand generator', setup: '60 turns', result: '0.80 V', prediction: 'Faster motion raises voltage.', metrics: [{ key: 'peak_V', label: 'Peak voltage', value: 0.8, unit: 'V', digits: 2, display: '0.80 V' }] }],
+    } });
+    expect(report).toMatchObject({ missionId: 'power_path', title: 'Power a remote sensor', completed: true, trialCount: 1, metricCount: 1 });
+    expect(report.claim).toContain('Changing flux');
+    expect(report.steps.every((step) => step.done)).toBe(true);
+    expect(report.trials[0].metrics[0]).toMatchObject({ key: 'peak_V', display: '0.80 V' });
+  });
+  it('tracks the CER checklist as evidence accumulates', () => {
+    const fresh = physics.missionCERState('power_path', { magnetism: {} });
+    expect(fresh).toMatchObject({ doneCount: 0, complete: false, next: { key: 'claim' } });
+    const evidenceOnly = physics.missionCERState('power_path', { magnetism: { notebookTrials: [{ station: 'Field', setup: 'probe', result: 'reading', prediction: 'field' }] } });
+    expect(evidenceOnly.items).toMatchObject([{ key: 'claim', done: false }, { key: 'evidence', done: true }, { key: 'reasoning', done: false }]);
+    const complete = physics.missionCERState('power_path', { magnetism: { notebookClaim: 'Changing flux creates voltage.', notebookTrials: [{ station: 'Hand generator', setup: 'moving magnet', result: '0.80 V', prediction: 'faster' }] } });
+    expect(complete).toMatchObject({ doneCount: 3, complete: true, next: null });
   });
 });
 describe('magnetism tool - advanced investigations', () => {
@@ -710,6 +870,68 @@ describe('magnetism tool — jsdom mount smoke', () => {
     });
   }, 30000);
 
+  it('renders accessible cross-station Mission Control with live quest progress', async () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field' }));
+    expect(html).toContain('Mission Control');
+    expect(html).toContain('Choose a design target');
+    expect(html).toContain('Power a remote sensor');
+    expect(html).toContain('MISSION TIMELINE · COLLECT → CONNECT → DEFEND');
+    expect(html).toContain('0/4 steps');
+    expect(html).toContain('Start mission');
+    expect(html).toContain('mag-mission-select');
+    expect(html).toContain('Design review · what the evidence proves');
+    expect(html).toContain('Evidence proves:');
+    expect(html).toContain('Pending · Change turns or current.');
+
+    const partial = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, missionStarted: true }));
+    expect(partial).toContain('2/4 steps');
+    expect(partial).toContain('Open next: Tune phase');
+    expect(partial).toContain('Done · ');
+    expect(partial).toContain('Build field:');
+    expect(partial).toContain('Peak induced voltage: 0.80 V.');
+    const complete = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true, notebookUsed: true, notebookClaim: 'Changing flux creates voltage.', missionStarted: true }));
+    expect(complete).toContain('Mission complete');
+    expect(complete).toContain('Mission evidence complete');
+    expect(complete).toContain('Notebook claim recorded.');    expect(complete).toContain('Lab report');
+    expect(complete).toContain('Save JSON report');
+    expect(complete).toContain('Save CSV data');
+    expect(complete).toContain('Claim Evidence Reasoning checklist');
+    expect(complete).toContain('Evidence chain');
+    expect(complete).toContain('Claim:');
+    expect(complete).toContain('Synthesis:');    const replay = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'field', missionStarted: true, replaySelectedIndex: 1,
+      notebookTrials: [
+        { station: 'Electromagnet', setup: '20 turns, 2 A', result: '4 mT interior field', prediction: 'More turns strengthen the field.' },
+        { station: 'Hand generator', setup: '60 turns, magnet moving', result: '0.80 V induced', prediction: 'Faster motion raises voltage.' },
+      ],
+    }));
+    expect(replay).toContain('Replay &amp; compare trials');
+    expect(replay).toContain('Trial 2');
+    expect(replay).toContain('Hand generator');
+    expect(replay).toContain('Live comparison:');    const metricReplay = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'electro', turns: 200, current: 4, missionStarted: true, replaySelectedIndex: 1,
+      notebookTrials: [
+        { station: 'Electromagnet', setup: '100 turns, 2 A', result: 'field', prediction: 'More turns', metrics: [{ key: 'field_mT', label: 'Center field', value: 5, unit: 'mT', digits: 2, display: '5.00 mT' }] },
+        { station: 'Electromagnet', setup: '200 turns, 4 A', result: 'field', prediction: 'More turns', metrics: [{ key: 'field_mT', label: 'Center field', value: 10, unit: 'mT', digits: 2, display: '10.00 mT' }] },
+      ],
+    }));
+    expect(metricReplay).toContain('Quantitative comparison');
+    expect(metricReplay).toContain('Recorded 10.00 mT');
+    expect(metricReplay).toContain('Live 10.05 mT');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const results = await axe.run(auditHost, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+      });
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
+  }, 30000);
   it('makes electromagnet turn count visible and exposes the live setup to assistive tech', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'electro', turns: 200, current: 4 }));
     expect(html).toContain('14 visible loops represent 200 turns');
@@ -724,6 +946,69 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('battery → moving charges → opposite magnetic forces → rotation');
   });
 
+  it('renders an accessible force-to-power bridge with linked speed and work controls', async () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5, forceLabSpeed: 300,
+    }));
+    expect(html).toContain('Force → torque → mechanical power');
+    expect(html).toContain('MAGNETIC WORK BRIDGE · P = F·v');
+    expect(html).toContain('Tangential speed');
+    expect(html).toContain('Work per turn');
+    expect(html).toContain('Shaft speed (RPM)');
+    expect(html).toContain('0 RPM · stop');
+    expect(html).toContain('300 RPM · steady');
+    expect(html).toContain('P = F·v');
+    expect(html).toContain('The moving wire carries the magnetic push through a distance');
+
+    const stopped = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', forceLabSpeed: 0 }));
+    expect(stopped).toContain('Force is ready, but the shaft is stopped. Add motion to see power.');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const results = await axe.run(auditHost, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+      });
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
+  }, 30000);
+  it('renders an accessible right-hand-rule force lab with linked vectors and curve', async () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5,
+    }));
+    expect(html).toContain('Right-hand-rule force lab');
+    expect(html).toContain('F = I L × B');
+    expect(html).toContain('FORCE CURVE · |F| ∝ sin θ');
+    expect(html).toContain('Force magnitude');
+    expect(html).toContain('Perpendicular fraction');
+    expect(html).toContain('0° · parallel');
+    expect(html).toContain('90° · maximum');
+    expect(html).toContain('Current in wire (I)');
+    expect(html).toContain('Wire angle from field (θ)');
+    expect(html).toContain('Reverse current');
+    expect(html).toContain('Reverse field');
+    expect(html).toContain('Force is active.');
+
+    const dead = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', forceLabAngle: 0 }));
+    expect(dead).toContain('No magnetic push at this angle.');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const results = await axe.run(auditHost, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+      });
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
+  }, 30000);
   it('keeps Motor investigations visually focused in four persistent submodes', () => {
     const forces = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces' }));
     expect(forces).toContain('Motor forces');
@@ -752,6 +1037,41 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(analyzer).not.toContain('How a motor spins');
     expect(analyzer).not.toContain('Coupled motor–generator engineering bench');
     expect(analyzer).not.toContain('Charged-particle beam — Lorentz force');
+  });
+
+  it('advances the 2D motor torque engine after Run motor is pressed', () => {
+    const previousRAF = window.requestAnimationFrame;
+    const previousCancel = window.cancelAnimationFrame;
+    const frames = [];
+    window.requestAnimationFrame = (callback) => { frames.push(callback); return frames.length; };
+    window.cancelAnimationFrame = () => {};
+    const live = mountLive(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '2d', motorRunning: false, motorAngle: 90,
+    }));
+    try {
+      const run = Array.from(live.host.querySelectorAll('button')).find((button) => button.textContent.includes('Run motor'));
+      expect(run).toBeTruthy();
+      const motorSvg = () => Array.from(live.host.querySelectorAll('svg[role="img"]')).find((element) => (element.getAttribute('aria-label') || '').startsWith('Motor model'));
+      const before = motorSvg().getAttribute('aria-label');
+      act(() => { run.click(); });
+      expect(live.host.textContent).toContain('Torque run active.');
+      expect(run.textContent).toContain('Stop');
+      expect(frames.length).toBeGreaterThan(0);
+      const firstFrame = frames.shift();
+      act(() => { firstFrame(0); });
+      const secondFrame = frames.shift();
+      expect(secondFrame).toBeTruthy();
+      act(() => { secondFrame(16); });
+      expect(motorSvg().getAttribute('aria-label')).not.toBe(before);
+      act(() => { run.click(); });
+      expect(live.host.textContent).toContain('Torque engine paused.');
+    } finally {
+      live.unmount();
+      if (previousRAF) window.requestAnimationFrame = previousRAF;
+      else delete window.requestAnimationFrame;
+      if (previousCancel) window.cancelAnimationFrame = previousCancel;
+      else delete window.cancelAnimationFrame;
+    }
   });
 
   it('renders an accessible selector-and-analyzer investigation with notebook evidence', async () => {
@@ -1056,6 +1376,46 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('Equal ampere-turn engineering comparison');
     expect(html).toContain('Field lines: on');
   });
+  it('renders an accessible quantitative field-mapping investigation with controlled data and notebook evidence', async () => {
+    const magnet = { x: 0, y: 0, angle: 0, polarity: 1, strength: 1 };
+    const scan = physics.fieldScanSeries([magnet], 'axial', [50, 65, 80, 100, 125, 150, 175], 0, 0)
+      .map((row, index) => Object.assign({}, row, { id: index + 1, strength: 1 }));
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'field', fieldView: 'map', fieldMapSamples: scan, fieldMapUsed: true, notebookOpen: true,
+    }));
+    expect(html).toContain('Quantitative Field Mapping Lab');
+    expect(html).toContain('Measurement lab');
+    expect(html).toContain('HALL-PROBE FIELD MAP');
+    expect(html).toContain('FIELD VS DISTANCE');
+    expect(html).toContain('B ∝ 1/r³');
+    expect(html).toContain('Measured |B|');
+    expect(html).toContain('Components Bx · By');
+    expect(html).toContain('Power-law exponent');
+    expect(html).toContain('-3.00');
+    expect(html).toContain('Controlled scan.');
+    expect(html).toContain('Run 7-point scan');
+    expect(html).toContain('Record current probe');
+    expect(html).toContain('Measurement table · 7 recorded readings');
+    expect(html).toContain('aria-label="Hall-probe field measurements"');
+    expect(html).toContain('Current setup:');
+    expect(html).toContain('7 recorded points');
+    expect(html).toContain('fitted exponent -3.00');
+    expect(html).not.toContain('Trace the invisible field');
+    expect(html).not.toContain('3D Magnetic Field Studio');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const results = await axe.run(auditHost, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+      });
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
+  }, 30000);
   it('renders an accessible 3D field studio with multiple linked visual layers', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }));
     expect(html).toContain('3D Magnetic Field Studio');
@@ -1475,6 +1835,7 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
   it('associates every rendered range with a visible label and dynamic value text', () => {
     [
       Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }),
+      Object.assign({}, BASE, { tab: 'field', fieldView: 'map' }),
       Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }),
       Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }),
       Object.assign({}, BASE, { tab: 'earth', earthView: '3d' }),
@@ -1638,6 +1999,31 @@ describe('magnetism tool — energy and space-weather visual refinement', () => 
     expect(source).toContain('rotationArc');
   });
 
+  it('renders an accessible rotating-generator phase wheel with signed readings', async () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'induce', induceMode: 'coil', genAngle: 90, genRPM: 120,
+    }));
+    expect(html).toContain('PHASE WHEEL · Φ = cos θ  /  ε = sin θ');
+    expect(html).toContain('90° phase gap · voltage peaks when flux crosses zero');
+    expect(html).toContain('Flux minimum · 180°');
+    expect(html).toContain('Voltage minimum · 270°');
+    expect(html).toContain('Phase wheel at 90 degrees');
+    expect(html).toContain('Flux is 0.00 of its amplitude');
+    expect(html).toContain('voltage is 1.00 of its amplitude');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const results = await axe.run(auditHost, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+        rules: { 'color-contrast': { enabled: false } },
+      });
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
+  }, 30000);
   it('pairs rotating-generator phase curves with solid/dashed labels and distinct point shapes', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'induce', induceMode: 'coil', genAngle: 90, genRPM: 120,

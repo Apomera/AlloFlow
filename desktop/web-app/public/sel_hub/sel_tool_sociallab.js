@@ -23,7 +23,7 @@ window.SelHub = window.SelHub || {
     if (document.getElementById('allo-live-sociallab')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-sociallab';
-    liveRegion.setAttribute('aria-live', 'assertive');
+    liveRegion.setAttribute('aria-live', 'polite');
     liveRegion.setAttribute('aria-atomic', 'true');
     liveRegion.setAttribute('role', 'status');
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
@@ -295,6 +295,8 @@ window.SelHub = window.SelHub || {
       var _skill = useState(null); var skill = _skill[0]; var setSkill = _skill[1];
       var _scenarioIdx = useState(0); var scenarioIdx = _scenarioIdx[0]; var setScenarioIdx = _scenarioIdx[1];
       var _feedback = useState(null); var feedback = _feedback[0]; var setFeedback = _feedback[1];
+      var _transferDraft = useState(''); var transferDraft = _transferDraft[0]; var setTransferDraft = _transferDraft[1];
+      var _transferSaved = useState(false); var transferSaved = _transferSaved[0]; var setTransferSaved = _transferSaved[1];
       var _showSkillCard = useState(true); var showSkillCard = _showSkillCard[0]; var setShowSkillCard = _showSkillCard[1];
       var _score = useState(0); var score = _score[0]; var setScore = _score[1];
       var _total = useState(0); var total = _total[0]; var setTotal = _total[1];
@@ -451,7 +453,8 @@ window.SelHub = window.SelHub || {
               SKILL_CATEGORIES.map(function(cat) {
                 var scenarios = scenarioBank[cat.id];
                 if (!scenarios || scenarios.length === 0) return null;
-                return h('button', { key: cat.id, onClick: function() { setSkill(cat.id); setScenarioIdx(0); setFeedback(null); setScore(0); setTotal(0); setMode('scenario'); },
+                return h('button', { key: cat.id, onClick: function() { setSkill(cat.id); setScenarioIdx(0); setFeedback(null); setTransferDraft(''); setTransferSaved(false); setScore(0); setTotal(0); setMode('scenario'); announceToSR(cat.label + ' practice selected. Scenario 1 of ' + scenarios.length + '.'); },
+                  'aria-label': cat.label + ': ' + cat.desc + '. ' + scenarios.length + ' scenario' + (scenarios.length > 1 ? 's' : ''),
                   style: { padding: '10px', borderRadius: '10px', border: '1px solid #e5e7eb', background: _slC('#fff'), cursor: 'pointer', textAlign: 'left', fontSize: '11px', transition: 'all 0.15s' }
                 },
                   h('div', { style: { fontSize: '20px', marginBottom: '4px' } }, cat.icon),
@@ -468,7 +471,7 @@ window.SelHub = window.SelHub || {
             hasAI && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               aiScenarioBank.map(function(sc) {
                 return h('button', { key: sc.id, onClick: function() {
-                    setAiScenario(sc); setChatHistory([{ role: 'peer', text: '' }]); setChatInput(''); setChatFeedback(null); setChatTurns(0); setRapport(50); setPeerMood('neutral'); setPeerGesture(''); setPeerPortrait(null); setMode('roleplay');
+                    setAiScenario(sc); setChatHistory([{ role: 'peer', text: '' }]); setChatInput(''); setChatFeedback(null); setChatTurns(0); setRapport(50); setPeerMood('neutral'); setPeerGesture(''); setPeerPortrait(null); setMode('roleplay'); announceToSR(sc.title + ' selected. Starting a conversation with ' + sc.peerName + '.');
                     // Generate opening line
                     if (callGemini) {
                       callGemini('You are ' + sc.peerName + ', ' + sc.peerDesc + '. Scenario: ' + sc.setup + '. Say your opening line as ' + sc.peerName + ' — 1 sentence, natural, in-character as a ' + gradeBand + ' school student. Return ONLY the dialogue.', false).then(function(line) {
@@ -509,7 +512,7 @@ window.SelHub = window.SelHub || {
           // Header
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
             h('button', { onClick: function() { setMode('menu'); }, style: btn(_slC('#f1f5f9'), _slC('#374151'), false) }, '← Back'),
-            h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#16a34a' } }, '✅ ' + score + '/' + total),
+            h('span', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length + '. ' + score + ' of ' + total + ' great responses.', style: { fontSize: '13px', fontWeight: 700, color: '#16a34a' } }, '✅ ' + score + '/' + total),
             h('span', { style: { fontSize: '12px', color: _slC('#94a3b8') } }, cat ? cat.icon + ' ' + cat.label : skill)
           ),
           // Skill Teaching Card (collapsible — always available)
@@ -599,11 +602,44 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '16px' } },
             h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: _slC('#e0e7ff'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 } }, '🗣️'),
             h('div', { style: { background: _slC('#e0e7ff'), borderRadius: '12px 12px 12px 0', padding: '12px 16px', fontSize: '14px', color: _slC('#1e293b'), lineHeight: 1.5, flex: 1 } },
-              callTTS && h('button', { onClick: function() { callTTS(current.peer, ctx.selectedVoice || 'Puck', 1); }, style: { float: 'right', fontSize: '10px', background: 'none', border: '1px solid #a5b4fc', borderRadius: '6px', padding: '2px 6px', cursor: 'pointer', color: _slC('#4338ca') } }, '🔊'),
+              callTTS && h('button', { onClick: function() { callTTS(current.peer, ctx.selectedVoice || 'Puck', 1); }, 'aria-label': 'Read peer message aloud', title: 'Read peer message aloud', style: { float: 'right', fontSize: '10px', background: 'none', border: '1px solid #a5b4fc', borderRadius: '6px', padding: '2px 6px', cursor: 'pointer', color: _slC('#4338ca') } }, '🔊'),
               current.peer
             )
           ),
-          feedback && h('div', { style: { padding: '14px', borderRadius: '12px', marginBottom: '16px', background: feedback.ok ? _slC('#dcfce7') : feedback.rating === 'ok' ? _slC('#fef3c7') : _slC('#fee2e2'), border: '1px solid ' + (feedback.ok ? '#86efac' : feedback.rating === 'ok' ? '#fde68a' : '#fca5a5'), color: feedback.ok ? _slC('#166534') : feedback.rating === 'ok' ? _slC('#92400e') : _slC('#991b1b'), fontSize: '13px', fontWeight: 600 } }, feedback.msg),
+          feedback && h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: '14px', borderRadius: '12px', marginBottom: '16px', background: feedback.ok ? _slC('#dcfce7') : feedback.rating === 'ok' ? _slC('#fef3c7') : _slC('#fee2e2'), border: '1px solid ' + (feedback.ok ? '#86efac' : feedback.rating === 'ok' ? '#fde68a' : '#fca5a5'), color: feedback.ok ? _slC('#166534') : feedback.rating === 'ok' ? _slC('#92400e') : _slC('#991b1b'), fontSize: '13px', fontWeight: 600 } }, feedback.msg),
+          // Own-words transfer: move from recognizing a skill to rehearsing it.
+          feedback && h('div', {
+            role: 'region',
+            'aria-label': 'Make the response your own',
+            style: { padding: '14px', borderRadius: '12px', marginBottom: '16px', background: _slC('#faf5ff'), border: '2px solid #c4b5fd' }
+          },
+            h('h3', { style: { margin: '0 0 5px', fontSize: '14px', fontWeight: 800, color: PURPLE } }, 'Make it yours'),
+            h('p', { style: { margin: '0 0 9px', fontSize: '12px', color: _slC('#4338ca'), lineHeight: 1.5 } },
+              'Try saying the skillful response in your own words. It does not need to sound perfect; this is a rehearsal, not another test.'
+            ),
+            h('textarea', {
+              value: transferDraft,
+              onChange: function(event) { setTransferDraft(event.target.value); setTransferSaved(false); },
+              'aria-label': 'Your own words rehearsal',
+              placeholder: 'What could you say in this situation?',
+              rows: 3,
+              style: { width: '100%', boxSizing: 'border-box', padding: '10px', borderRadius: '9px', border: '1px solid #c4b5fd', background: _slC('#fff'), color: _slC('#1e293b'), fontSize: '13px', lineHeight: 1.5, resize: 'vertical' }
+            }),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '9px', flexWrap: 'wrap', marginTop: '9px' } },
+              h('button', {
+                onClick: function() {
+                  if (!transferDraft.trim() || transferSaved) return;
+                  setTransferSaved(true);
+                  announceToSR('Your own-words rehearsal was marked for this practice round.');
+                  if (awardXP) awardXP('sociallab', 3);
+                },
+                disabled: transferSaved || !transferDraft.trim(),
+                'aria-label': transferSaved ? 'Own-words rehearsal marked' : 'Mark own-words rehearsal as practiced',
+                style: btn(PURPLE, '#fff', transferSaved || !transferDraft.trim())
+              }, transferSaved ? 'Practice marked' : 'Mark as practiced'),
+              transferSaved && h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'Own-words rehearsal status', style: { fontSize: '11px', color: _slC('#166534'), fontWeight: 700 } }, 'Captured for this practice round.')
+            )
+          ),
           // Response options
           !feedback && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' }, role: 'group', 'aria-label': 'Choose your response' },
             current.options.map(function(opt, oi) {
@@ -633,9 +669,9 @@ window.SelHub = window.SelHub || {
           feedback && h('div', { style: { textAlign: 'center', marginTop: '12px' } },
             h('button', { onClick: function() {
               if (scenarioIdx + 1 < scenarios.length) {
-                setScenarioIdx(scenarioIdx + 1); setFeedback(null);
+                setScenarioIdx(scenarioIdx + 1); setFeedback(null); setTransferDraft(''); setTransferSaved(false); announceToSR('Scenario ' + (scenarioIdx + 2) + ' of ' + scenarios.length + '. Choose your response.');
               } else {
-                addToast && addToast('Skill complete! ' + score + '/' + total + ' great responses.', 'success');
+                addToast && addToast('Skill complete! ' + score + '/' + total + ' great responses.', 'success'); announceToSR((cat ? cat.label : 'Skill') + ' complete. ' + score + ' of ' + total + ' great responses.');
                 setMode('menu');
               }
             }, style: btn(PURPLE, '#fff', false) }, scenarioIdx + 1 < scenarios.length ? 'Next Scenario →' : '✓ Finish')
@@ -722,14 +758,14 @@ window.SelHub = window.SelHub || {
                 !isPeer && h('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: _slC('#dcfce7'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }, 'aria-hidden': 'true' }, '😊')
               );
             }),
-            chatLoading && h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+            chatLoading && h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': aiScenario.peerName + ' is typing', style: { display: 'flex', gap: '8px', alignItems: 'center' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: _slC('#e0e7ff'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } }, '🗣️'),
               h('div', { style: { background: _slC('#e0e7ff'), borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: _slC('#475569') } }, aiScenario.peerName + ' is typing...')
             ),
             h('div', { ref: chatEndRef })
           ),
           // Conversation feedback
-          chatFeedback && typeof chatFeedback === 'object' && !chatFeedback.error && h('div', { style: { background: _slC('#f0fdf4'), border: '2px solid #86efac', borderRadius: '14px', padding: '16px', marginBottom: '12px', flexShrink: 0 } },
+          chatFeedback && typeof chatFeedback === 'object' && !chatFeedback.error && h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Conversation feedback', style: { background: _slC('#f0fdf4'), border: '2px solid #86efac', borderRadius: '14px', padding: '16px', marginBottom: '12px', flexShrink: 0 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
               h('strong', { style: { color: _slC('#166534'), fontSize: '14px' } }, '📝 Conversation Feedback'),
               h('span', { style: { fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '12px', background: chatFeedback.rating === 'exemplary' ? _slC('#dcfce7') : chatFeedback.rating === 'proficient' ? _slC('#dbeafe') : _slC('#fef3c7'), color: chatFeedback.rating === 'exemplary' ? _slC('#166534') : chatFeedback.rating === 'proficient' ? _slC('#1e40af') : _slC('#92400e') } },
@@ -740,8 +776,8 @@ window.SelHub = window.SelHub || {
             chatFeedback.improvements && h('div', { style: { marginBottom: '6px' } }, h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#d97706' } }, '🤔 Try Next Time'), h('ul', { style: { margin: '4px 0 0 16px', fontSize: '12px', color: _slC('#92400e') } }, chatFeedback.improvements.map(function(s, i) { return h('li', { key: i }, s); }))),
             chatFeedback.skillTip && h('div', { style: { background: _slC('#eff6ff'), borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: _slC('#1e40af'), border: '1px solid #bfdbfe' } }, h('strong', null, '💡 Skill Tip: '), chatFeedback.skillTip)
           ),
-          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: _slC('#94a3b8') } }, '⏳ Analyzing your conversation...'),
-          chatFeedback && chatFeedback.error && h('p', { style: { color: _slC('#dc2626'), fontSize: '12px' } }, chatFeedback.error),
+          chatFeedback === 'loading' && h('p', { role: 'status', 'aria-live': 'polite', style: { textAlign: 'center', fontSize: '12px', color: _slC('#94a3b8') } }, '⏳ Analyzing your conversation...'),
+          chatFeedback && chatFeedback.error && h('p', { role: 'alert', style: { color: _slC('#dc2626'), fontSize: '12px' } }, chatFeedback.error),
           // Input bar
           !chatFeedback && h('div', { style: { display: 'flex', gap: '8px', flexShrink: 0 } },
             h('input', { type: 'text', 'aria-label': 'Your response', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },

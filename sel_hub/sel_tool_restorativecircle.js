@@ -1096,7 +1096,7 @@ window.SelHub = window.SelHub || {
       // ═══════════════════════════════════════
 
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
@@ -1132,10 +1132,10 @@ window.SelHub = window.SelHub || {
               'badges': '\uD83C\uDFC5 Badges',
               'print': '\uD83D\uDDA8 Print',
             };
-            return h('button', { 'aria-label': 'Choose the type of circle you want to facilitate today.',
+            return h('button', { 'aria-label': labels[t],
               key: t,
-              role: 'tab', 'aria-selected': tab === t,
-              onClick: function() { upd('tab', t); },
+              role: 'tab', 'aria-selected': tab === t, 'tabIndex': tab === t ? 0 : -1,
+              onClick: function() { upd('tab', t); if (announceToSR) announceToSR(labels[t] + ' tab selected'); },
               className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
                 (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700')
             }, labels[t]);
@@ -1177,7 +1177,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ ACTIVE CIRCLE ═══
-        tab === 'circle' && selectedCircleType && h('div', { className: 'space-y-4' },
+        tab === 'circle' && selectedCircleType && h('div', { role: 'region', 'aria-labelledby': 'rc-circle-title', className: 'space-y-4' },
 
           // Circle type badge
           h('div', { className: 'text-center' },
@@ -1187,7 +1187,7 @@ window.SelHub = window.SelHub || {
                 if (CIRCLE_TYPES[fi].id === selectedCircleType) { found = CIRCLE_TYPES[fi]; break; }
               }
               var ct = found || {};
-              return h('span', { className: 'inline-block px-4 py-1.5 rounded-full text-xs font-bold text-white', style: { background: ct.color || '#eab308' } },
+              return h('span', { id: 'rc-circle-title', className: 'inline-block px-4 py-1.5 rounded-full text-xs font-bold text-white', style: { background: ct.color || '#eab308' } },
                 ct.emoji + ' ' + ct.label + ' Circle'
               );
             })()
@@ -1210,8 +1210,8 @@ window.SelHub = window.SelHub || {
 
           // Current prompt
           h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
-            h('div', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
-            h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
+            h('div', { id: 'rc-circle-round-status', role: 'status', 'aria-live': 'polite', className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
+            h('p', { id: 'rc-circle-prompt', className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
 
             // Navigation
             h('div', { className: 'flex gap-2 justify-center mt-4' },
@@ -1224,6 +1224,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   if (currentPromptIdx < prompts.length - 1) {
                     upd('promptIdx', currentPromptIdx + 1);
+                    if (announceToSR) announceToSR('Round ' + (currentPromptIdx + 2) + ' of ' + prompts.length);
                   } else {
                     updMulti({ circleActive: false, tab: 'home' });
                     addToast('Circle complete \u2014 well done! \uD83E\uDEB6', 'success');
@@ -1245,12 +1246,13 @@ window.SelHub = window.SelHub || {
 
           // Reflection journal
           h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
-            h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCDD Your Reflection (private)'),
+            h('label', { id: 'rc-circle-reflection-label', className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCDD Your Reflection (private)'),
             h('textarea', {
               value: d.currentReflection || '',
               onChange: function(e) { upd('currentReflection', e.target.value); },
               placeholder: 'What came up for you during this round? What did you notice?',
               className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+              'aria-labelledby': 'rc-circle-reflection-label',
               'aria-label': 'Circle reflection'
             }),
             d.currentReflection && h('button', { 'aria-label': 'Save Reflection',
@@ -1258,6 +1260,7 @@ window.SelHub = window.SelHub || {
                 var newReflections = reflections.concat([{ text: d.currentReflection, prompt: prompts[currentPromptIdx], time: new Date().toLocaleTimeString() }]);
                 updMulti({ reflections: newReflections, currentReflection: '' });
                 addToast('Reflection saved', 'success');
+                if (announceToSR) announceToSR('Reflection saved for round ' + (currentPromptIdx + 1));
                 incrementBadgeStat('reflectionsWritten', 1);
               },
               className: 'mt-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
@@ -1285,7 +1288,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
             ['opening', 'checkIn', 'discussion', 'closing'].map(function(sec) {
               var secLabels = { opening: '\uD83C\uDF1F Opening', checkIn: '\u2600\uFE0F Check-In', discussion: '\uD83D\uDCAC Discussion', closing: '\uD83C\uDF19 Closing' };
-              return h('button', { 'aria-label': 'Grade band: discussion prompts available',
+              return h('button', { 'aria-label': secLabels[sec], 'aria-pressed': scriptSection === sec,
                 key: sec,
                 onClick: function() { updMulti({ scriptSection: sec, activeScriptIdx: undefined }); },
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -1309,13 +1312,13 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
                     h('span', { className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
-                    callTTS && h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
+                    callTTS && h('button', { 'aria-label': 'Read discussion prompt aloud',
                       onClick: function() { callTTS(prompt); },
                       className: 'text-[10px] text-amber-400 hover:text-amber-600 shrink-0'
                     }, '\uD83D\uDD0A')
                   );
                 }),
-                h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
+                h('button', { 'aria-label': 'Mark discussion prompts as used',
                   onClick: function() { incrementBadgeStat('scriptsUsed', 1); addToast('Discussion prompts reviewed!', 'success'); ctx.awardXP(5); },
                   className: 'w-full px-4 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors mt-2'
                 }, '\u2705 Mark Discussion Prompts as Used')
@@ -1372,7 +1375,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Progress indicator
-          h('div', { className: 'flex items-center gap-1 justify-center' },
+          h('div', { role: 'progressbar', 'aria-label': 'Harm repair progress', 'aria-valuemin': 1, 'aria-valuemax': HARM_REPAIR_STEPS.length, 'aria-valuenow': harmStep + 1, 'aria-valuetext': 'Step ' + (harmStep + 1) + ' of ' + HARM_REPAIR_STEPS.length, className: 'flex items-center gap-1 justify-center' },
             HARM_REPAIR_STEPS.map(function(step, i) {
               var isComplete = i < harmStep;
               var isCurrent = i === harmStep;
@@ -1396,7 +1399,7 @@ window.SelHub = window.SelHub || {
             return h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 shadow-lg' },
               h('div', { className: 'text-center mb-4' },
                 h('span', { className: 'text-3xl' }, step.icon),
-                h('h4', { id: 'rc-harm-step-title', className: 'text-lg font-bold text-slate-800 mt-2' }, 'Step ' + (harmStep + 1) + ': ' + step.title),
+                h('h4', { id: 'rc-harm-step-title', 'aria-live': 'polite', className: 'text-lg font-bold text-slate-800 mt-2' }, 'Step ' + (harmStep + 1) + ': ' + step.title),
                 h('p', { id: 'rc-harm-step-subtitle', className: 'text-xs text-amber-600 font-medium' }, step.subtitle)
               ),
               h('div', { className: 'bg-amber-50 rounded-lg p-3 mb-4 border border-amber-100' },
@@ -1422,7 +1425,8 @@ window.SelHub = window.SelHub || {
               // Navigation
               h('div', { className: 'flex gap-2 justify-center mt-4' },
                 h('button', { 'aria-label': 'Previous Step',
-                  onClick: function() { upd('harmStep', Math.max(0, harmStep - 1)); },
+                  onClick: function() { upd('harmStep', Math.max(0, harmStep - 1));
+                  if (announceToSR) announceToSR('Step ' + harmStep + ' of ' + HARM_REPAIR_STEPS.length); },
                   disabled: harmStep === 0,
                   className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-30 transition-colors'
                 }, '\u2190 Previous Step'),
@@ -1430,9 +1434,11 @@ window.SelHub = window.SelHub || {
                   onClick: function() {
                     if (harmStep < HARM_REPAIR_STEPS.length - 1) {
                       upd('harmStep', harmStep + 1);
+                      if (announceToSR) announceToSR('Step ' + (harmStep + 2) + ' of ' + HARM_REPAIR_STEPS.length);
                       ctx.awardXP(5);
                     } else {
                       addToast('Harm repair process complete \u2014 thank you for this brave work. \uD83E\uDE79', 'success');
+                      if (announceToSR) announceToSR('Harm repair process complete');
                       ctx.awardXP(25);
                       if (ctx.celebrate) ctx.celebrate();
                       incrementBadgeStat('harmRepairsCompleted', 1);
@@ -1477,7 +1483,7 @@ window.SelHub = window.SelHub || {
               // Scenario selector
               h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
                 scenarios.map(function(sc, i) {
-                  return h('button', { 'aria-label': sc.emoji + ' ' + sc.title,
+                  return h('button', { 'aria-label': sc.emoji + ' ' + sc.title, 'aria-current': scenarioIdx === i ? 'step' : undefined, 'aria-pressed': scenarioIdx === i,
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
                     className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
@@ -1498,9 +1504,9 @@ window.SelHub = window.SelHub || {
 
                 // Choices
                 !scenarioOutcome && h('div', { className: 'space-y-2' },
-                  h('p', { className: 'text-xs font-bold text-slate-600 mb-1' }, 'What would you do?'),
+                  h('p', { id: 'rc-scenario-choice-prompt', className: 'text-xs font-bold text-slate-600 mb-1' }, 'What would you do?'),
                   scenario.choices.map(function(choice, i) {
-                    return h('button', { 'aria-label': choice.text,
+                    return h('button', { 'aria-label': choice.text, 'aria-describedby': 'rc-scenario-choice-prompt', 'aria-pressed': scenarioChoice === i,
                       key: i,
                       onClick: function() {
                         updMulti({ scenarioChoice: i, scenarioOutcome: choice.next });
@@ -1517,7 +1523,7 @@ window.SelHub = window.SelHub || {
 
                 // Outcome
                 scenarioOutcome && h('div', { className: 'space-y-3' },
-                  h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
+                  h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
                     h('h5', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2' }, '\u2728 What Happens Next'),
                     h('p', { className: 'text-sm text-emerald-800 leading-relaxed' }, scenarioOutcome)
                   ),
@@ -1639,6 +1645,8 @@ window.SelHub = window.SelHub || {
                   var cfg = rolesCfg[roleKey];
                   return h('button', {
                     key: roleKey,
+                    'aria-label': cfg.label,
+                    'aria-describedby': 'rc-rp-role-desc-' + roleKey,
                     onClick: function() { rcStartRolePlay(roleKey); },
                     disabled: !callGemini || rcRpStarting,
                     style: {
@@ -1652,16 +1660,16 @@ window.SelHub = window.SelHub || {
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
-                      h('div', { style: { fontSize: 12, color: _rcFg('#64748b'), lineHeight: 1.45 } }, cfg.desc)
+                      h('div', { id: 'rc-rp-role-desc-' + roleKey, style: { fontSize: 12, color: _rcFg('#64748b'), lineHeight: 1.45 } }, cfg.desc)
                     )
                   );
                 })
               ),
-              rcRpStarting && h('p', { 'aria-live': 'polite', className: 'text-xs italic text-amber-700' }, 'Generating a fresh scene…'),
+              rcRpStarting && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-xs italic text-amber-700' }, 'Generating a fresh scene…'),
               !callGemini && h('p', { className: 'text-xs text-amber-700 italic' }, 'AI features need a connection. Try the Scenarios tab while offline.')
             ),
             // STEP 2: conversation in progress
-            rcRpRole && charCfg && h('div', { className: 'space-y-3' },
+            rcRpRole && charCfg && h('div', { role: 'region', 'aria-label': charCfg.label, className: 'space-y-3' },
               h('div', { style: { padding: '8px 12px', background: _rcBg('#fef3c7'), borderRadius: 8, fontSize: 12, color: _rcFg('#92400e'), display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
                 h('button', {
@@ -1670,12 +1678,12 @@ window.SelHub = window.SelHub || {
                 }, '← Different role')
               ),
               // Scene
-              rcRpScene && h('div', { style: { padding: '10px 12px', background: _rcBg('#fafafa'), borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: _rcFg('#475569'), fontStyle: 'italic' } },
+              rcRpScene && h('div', { role: 'region', 'aria-label': 'Role-play scene', style: { padding: '10px 12px', background: _rcBg('#fafafa'), borderTop: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: _rcFg('#475569'), fontStyle: 'italic' } },
                 h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: _rcFg('#92400e'), fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
                 rcRpScene
               ),
               // Conversation log
-              h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+              h('div', { role: 'log', 'aria-label': 'Restorative role-play conversation', 'aria-live': 'polite', 'aria-relevant': 'additions', 'aria-busy': rcRpLoading ? 'true' : 'false', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
                 rcRpHistory.map(function(turn, ti) {
                   if (turn.speaker === '_crisis') {
                     return h('div', { key: 'rc-rp-' + ti, style: { alignSelf: 'stretch' } },
@@ -1686,6 +1694,8 @@ window.SelHub = window.SelHub || {
                   var isCoach = turn.speaker === 'coach';
                   return h('div', {
                     key: 'rc-rp-' + ti,
+                    role: 'article',
+                    'aria-label': isStudent ? 'Your response' : (isCoach ? 'Coach feedback' : 'Other participant response'),
                     style: {
                       alignSelf: isStudent ? 'flex-end' : 'flex-start',
                       maxWidth: '85%',
@@ -1705,7 +1715,7 @@ window.SelHub = window.SelHub || {
               ),
               // Input + actions
               !rcRpEnded && h('div', null,
-                h('textarea', { id: 'rc-rp-input', value: rcRpInput,
+                h('textarea', { id: 'rc-rp-input', 'aria-label': 'Your next response', value: rcRpInput,
                   onChange: function(e) { upd('rcRpInput', e.target.value); },
                   placeholder: 'What would you actually say next? Keep it short — restorative work is more about listening than fixing.',
                   rows: 2,
@@ -1714,9 +1724,11 @@ window.SelHub = window.SelHub || {
                   style: { boxSizing: 'border-box', marginBottom: 8 }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs text-amber-700 min-h-[1.25rem] mb-1' }, rcRpLoading ? 'The other participant is thinking…' : ''),
                   // Send
                   h('button', {
                     disabled: rcRpLoading || !rcRpInput.trim() || !callGemini,
+                    'aria-label': rcRpLoading ? 'Waiting for response' : 'Send your response',
                     'aria-busy': rcRpLoading ? 'true' : 'false',
                     onClick: function() {
                       if (!callGemini || !rcRpInput.trim()) return;
@@ -1726,6 +1738,7 @@ window.SelHub = window.SelHub || {
                         ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
                         : { action: 'continue' };
                       if (safety.action === 'block') {
+                        if (announceToSR) announceToSR('This rehearsal is paused. Support resources are available.');
                         updMulti({
                           rcRpHistory: rcRpHistory.concat([
                             { speaker: 'student', text: studentTurn },
@@ -1800,6 +1813,7 @@ window.SelHub = window.SelHub || {
                       callGemini(prompt, false).then(function(r) {
                         var coachText = (r || 'Take a breath and notice what just happened. What would you say if you were not trying to fix it?').trim();
                         updMulti({ rcRpHistory: rcRpHistory.concat([{ speaker: 'coach', text: coachText }]), rcRpLoading: false });
+                        if (announceToSR) announceToSR('Coach feedback added');
                       }).catch(function() {
                         upd('rcRpLoading', false);
                       });
@@ -1830,6 +1844,7 @@ window.SelHub = window.SelHub || {
                       callGemini(prompt, false).then(function(r) {
                         var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — restorative work is often more about the silence between sentences than the sentences themselves.').trim();
                         updMulti({ rcRpEnded: true, rcRpReflection: reflectText, rcRpLoading: false });
+                        if (announceToSR) announceToSR('Practice reflection ready');
                         incrementBadgeStat('roleplayed', 1);
                       }).catch(function() {
                         updMulti({ rcRpEnded: true, rcRpReflection: 'Practice complete. Next time, try one sentence shorter — restorative work lives in the silence between sentences.', rcRpLoading: false });
@@ -1880,7 +1895,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex flex-wrap gap-2' },
               (AGREEMENT_SUGGESTIONS[gradeBand] || AGREEMENT_SUGGESTIONS.elementary).map(function(sug, i) {
                 var isAdded = agreements.indexOf(sug) !== -1;
-                return h('button', { 'aria-label': 'Next',
+                return h('button', { 'aria-label': (isAdded ? 'Added agreement: ' : 'Add agreement: ') + sug, 'aria-pressed': isAdded,
                   key: i,
                   onClick: function() {
                     if (!isAdded) {

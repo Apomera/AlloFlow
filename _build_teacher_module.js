@@ -75,7 +75,8 @@ const compiled = fs.readFileSync(TMP_COMPILED, 'utf-8')
 try { fs.unlinkSync(TMP); } catch (_) {}
 try { fs.unlinkSync(TMP_COMPILED); } catch (_) {}
 
-const outputCode = header + compiled + tail;
+const identitySeam = `\nwindow.AlloModules.RosterIdentityInternals = {\n  ensureRosterIdentity: alloEnsureTeacherRosterIdentity\n};\n`;
+const outputCode = header + compiled + tail.replace("window.AlloModules.TeacherModule = true;", identitySeam + "window.AlloModules.TeacherModule = true;");
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
 try {

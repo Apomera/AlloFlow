@@ -56,6 +56,20 @@
             link.setAttribute('rel', Array.from(values).join(' '));
         });
     }
+    function syncReleaseVersion() {
+        var nodes = document.querySelectorAll('[data-release-version]');
+        if (!nodes.length || typeof window.fetch !== 'function') return;
+        fetch('release.json?site-version=' + Date.now(), { cache: 'no-store' })
+            .then(function (response) {
+                if (!response.ok) throw new Error('release metadata unavailable');
+                return response.json();
+            })
+            .then(function (release) {
+                if (!release || typeof release.version !== 'string' || !release.version) return;
+                nodes.forEach(function (node) { node.textContent = 'v' + release.version; });
+            })
+            .catch(function () { /* Keep the bundled fallback version when offline. */ });
+    }
     function trackStickyCallToAction() {
         var sticky = document.getElementById('stickyCta');
         if (!sticky || typeof MutationObserver === 'undefined') return;
@@ -63,5 +77,5 @@
         new MutationObserver(sync).observe(sticky, { attributes: true, attributeFilter: ['class'] });
         sync();
     }
-    document.addEventListener('DOMContentLoaded', function () { initMobileNavigation(); hardenExternalLinks(); trackStickyCallToAction(); });
+    document.addEventListener('DOMContentLoaded', function () { initMobileNavigation(); hardenExternalLinks(); syncReleaseVersion(); trackStickyCallToAction(); });
 })();

@@ -267,7 +267,7 @@ window.SelHub = window.SelHub || {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
-              key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
+              key: t.id, id: 'friendship-tab-' + t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'friendship-panel-' + t.id,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
               style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? _frC('#78350f') : _frC('#94a3b8'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
@@ -399,7 +399,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'What Kind of Friend Am I?'),
             h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, 'Everyone has a friendship style \u2014 the way they naturally show they care. Which one sounds most like you?')
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' } },
+          h('div', { role: 'radiogroup', 'aria-label': 'Friendship styles', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' } },
             FRIEND_STYLES.map(function(fs) {
               var selected = myStyle === fs.id;
               return h('button', {
@@ -532,6 +532,7 @@ window.SelHub = window.SelHub || {
               return h('button', {
                 key: i,
                 'aria-label': 'Step ' + (i + 1) + ': ' + s.step + (isCurrent ? ' (current)' : ''),
+                'aria-current': isCurrent ? 'step' : undefined,
                 onClick: function() { upd('repairIdx', i); if (soundEnabled) sfxClick(); },
                 style: { width: '36px', height: '36px', borderRadius: '50%', border: isCurrent ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: isCurrent ? AMBER : _frC('#fff'), color: isCurrent ? '#fff' : _frC('#374151'), fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }
               }, i + 1);
@@ -814,6 +815,7 @@ window.SelHub = window.SelHub || {
         function fStartRp(sid) {
           var cfg = FRIEND_SCENARIOS[sid];
           if (!cfg) return;
+          if (announceToSR) announceToSR(cfg.label + ' selected. Setting the scene.');
           if (!callGemini) {
             upd({ fRpScenarioId: sid, fRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], fRpInput: '', fRpEnded: false, fRpReflection: '', fRpStarting: false });
             return;
@@ -951,6 +953,7 @@ window.SelHub = window.SelHub || {
                 var cfg = FRIEND_SCENARIOS[sid];
                 return h('button', {
                   key: sid,
+                  'aria-label': cfg.label + ': ' + cfg.blurb,
                   onClick: function() { fStartRp(sid); },
                   disabled: !callGemini || fRpStarting,
                   style: {
@@ -969,7 +972,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            fRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: AMBER_DARK, fontStyle: 'italic' } }, 'Setting the scene…'),
+            fRpStarting && h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: AMBER_DARK, fontStyle: 'italic' } }, 'Setting the scene…'),
             !callGemini && h('p', { style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: AMBER_DARK, fontStyle: 'italic' } }, 'AI features need a connection.')
           ),
           fRpScenarioId && fCfg && h('div', null,
@@ -981,7 +984,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: AMBER_DARK, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
               sceneTxt
             ),
-            h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+            h('div', { role: 'log', 'aria-label': 'Friendship role-play conversation', 'aria-live': 'polite', 'aria-busy': fRpLoading ? 'true' : 'false', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
               fRpHistory.map(function(turn, ti) {
                 if (turn.speaker === '_crisis') {
                   return h('div', { key: 'f-rp-' + ti, style: { alignSelf: 'stretch' } },
@@ -1017,7 +1020,7 @@ window.SelHub = window.SelHub || {
               }),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', {
-                  onClick: fSendTurn, disabled: fRpLoading || !fRpInput.trim() || !callGemini, 'aria-busy': fRpLoading ? 'true' : 'false',
+                  onClick: fSendTurn, disabled: fRpLoading || !fRpInput.trim() || !callGemini, 'aria-label': fRpLoading ? 'Friendship role-play is responding' : 'Send role-play response', 'aria-busy': fRpLoading ? 'true' : 'false',
                   style: { padding: '10px 16px', background: (fRpLoading || !fRpInput.trim() || !callGemini) ? _frC('#cbd5e1') : '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: (fRpLoading || !fRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
                 }, fRpLoading ? 'Thinking…' : 'Send →'),
                 h('button', {
@@ -1030,7 +1033,7 @@ window.SelHub = window.SelHub || {
                 }, 'End & reflect')
               )
             ),
-            fRpEnded && fRpReflection && h('div', { style: { marginTop: 12, padding: 14, background: _frC('#f0fdf4'), border: '1px solid #bbf7d0', borderRadius: 10 } },
+            fRpEnded && fRpReflection && h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Role-play reflection', style: { marginTop: 12, padding: 14, background: _frC('#f0fdf4'), border: '1px solid #bbf7d0', borderRadius: 10 } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: _frC('#166534'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
               h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: _frC('#0f172a'), whiteSpace: 'pre-wrap' } }, fRpReflection),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -1048,7 +1051,7 @@ window.SelHub = window.SelHub || {
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h, ctx) : null),
         tabBar,
         heroBand,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        h('div', { id: 'friendship-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'friendship-tab-' + activeTab, tabIndex: 0, style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }

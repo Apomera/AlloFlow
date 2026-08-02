@@ -305,5 +305,20 @@
   "cmd.open_video_studio_done": "تم فتح Video Studio.",
   "cmd.open_video_studio_hint": "سجّل شروحات وأضف تسميات توضيحية وحرّرها",
   "palette.ctx.videoStudio": "هنا — Video Studio",
-  "palette.close": "إغلاق لوحة الأوامر"
+  "palette.close": "إغلاق لوحة الأوامر",
+  "cmd.apply_lesson_template": "ابدأ من قالب محفوظ",
+  "cmd.apply_lesson_template_done": "بدأ من ",
+  "cmd.apply_lesson_template_hint": "يبدأ خطة جديدة من أحد القوالب المحفوظة لديك",
+  "cmd.apply_lesson_template_missing": "تعذر العثور على قالب باسم ",
+  "cmd.apply_lesson_template_which": "أي قالب؟",
+  "cmd.rebuild_lesson_step": "إعادة إنشاء خطوة من الخطة",
+  "cmd.rebuild_lesson_step_done": "جارٍ إعادة إنشاء الخطوة ",
+  "cmd.rebuild_lesson_step_hint": "يعيد إنشاء مورد واحد — اذكر رقم الخطوة",
+  "cmd.rebuild_lesson_step_missing": "تعذر العثور على تلك الخطوة في الخطة.",
+  "cmd.rebuild_lesson_step_none": "لا تحتوي الخطة على خطوات بعد.",
+  "cmd.rebuild_lesson_step_which": "أي خطوة؟",
+  "cmd.run_lesson_blueprint": "إنشاء خطة الدرس",
+  "cmd.run_lesson_blueprint_done": "جارٍ إنشاء الخطة — يمكنك متابعة كل خطوة على البطاقة.",
+  "cmd.run_lesson_blueprint_hint": "ينشئ جميع موارد الخطة الحالية",
+  "cmd.cancelled": "تم طلب الإلغاء. ستتوقف العملية الحالية عندما يدعمها موفّرها."
 }

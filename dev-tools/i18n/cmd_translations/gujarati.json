@@ -27,5 +27,20 @@
   "cmd.open_video_studio_done": "Video Studio ખૂલ્યું.",
   "cmd.open_video_studio_hint": "વૉકથ્રૂ રેકોર્ડ કરો, કૅપ્શન ઉમેરો અને સંપાદિત કરો",
   "palette.ctx.videoStudio": "અહીં — Video Studio",
-  "palette.close": "આદેશ પેલેટ બંધ કરો"
+  "palette.close": "આદેશ પેલેટ બંધ કરો",
+  "cmd.apply_lesson_template": "સાચવેલા નમૂનાથી શરૂ કરો",
+  "cmd.apply_lesson_template_done": "આ પરથી શરૂ થયું: ",
+  "cmd.apply_lesson_template_hint": "તમારા સાચવેલા નમૂનાઓમાંથી એકથી નવી યોજના શરૂ કરે છે",
+  "cmd.apply_lesson_template_missing": "મને આ નામનો નમૂનો મળ્યો નથી: ",
+  "cmd.apply_lesson_template_which": "કયો નમૂનો?",
+  "cmd.rebuild_lesson_step": "યોજનાનું એક પગલું ફરી બનાવો",
+  "cmd.rebuild_lesson_step_done": "પગલું ફરી બનાવાઈ રહ્યું છે: ",
+  "cmd.rebuild_lesson_step_hint": "એક સંસાધન ફરી બનાવે છે — પગલાનો નંબર કહો",
+  "cmd.rebuild_lesson_step_missing": "યોજનામાં તે પગલું મળ્યું નથી.",
+  "cmd.rebuild_lesson_step_none": "યોજનામાં હજી કોઈ પગલાં નથી.",
+  "cmd.rebuild_lesson_step_which": "કયું પગલું?",
+  "cmd.run_lesson_blueprint": "પાઠ યોજના બનાવો",
+  "cmd.run_lesson_blueprint_done": "યોજના બની રહી છે — તમે કાર્ડ પર દરેક પગલું જોઈ શકો છો.",
+  "cmd.run_lesson_blueprint_hint": "વર્તમાન યોજનાના બધા સંસાધનો બનાવે છે",
+  "cmd.cancelled": "રદ કરવાની વિનંતી કરવામાં આવી છે. પ્રદાતા તેને સમર્થન આપે ત્યારે વર્તમાન કામગીરી અટકી જશે."
 }

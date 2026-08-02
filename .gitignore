@@ -208,3 +208,8 @@ dist/portable-remediation/
 deploy_run*.log
 skatelab-*.log
 desktop/web-app/firestore-debug.log
+
+# DuckDB-Wasm monoliths are reproducible but exceed Cloudflare's 25 MiB file limit.
+# Commit the generated manifest + .partNN files instead (see build_data_kernel_assets.cjs).
+/duckdb-assets/duckdb-mvp.wasm
+/desktop/web-app/public/duckdb-assets/duckdb-mvp.wasm

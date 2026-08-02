@@ -150,6 +150,78 @@
   };
   function typeIcon(t) { return TYPE_ICONS[t] || '📄'; }
   function typeLabel(t) { return String(t || 'lesson').replace(/[-_]/g, ' '); }
+  // Read-only fallback for the alignment-export panel when the shared engine has
+  // not loaded yet. It deliberately uses only explicit node/edge fields; it never
+  // guesses an artifact relationship from prose or graph proximity.
+  var ALIGNMENT_VIEW_TYPES = ['audit', 'standard', 'standardsContext', 'auditArtifact', 'auditEvidence', 'auditFinding', 'auditRecommendation'];
+  var ALIGNMENT_VIEW_SOURCES = ['audit-model', 'teacher', 'deterministic-check', 'unknown'];
+  function alignmentViewText(value) { return value == null ? '' : String(value).trim(); }
+  function alignmentViewSearchText(node) {
+    return [node && node.id, node && node.label, node && node.type, node && node.category, node && node.dimension,
+      node && node.evidence, node && node.notes, node && node.finding, node && node.recommendation,
+      node && node.artifactId, node && node.artifactType, node && node.code, node && node.framework,
+      node && node.contextId, node && node.text, node && node.status].map(alignmentViewText).join(' ').toLowerCase();
+  }
+  function fallbackAlignmentGraphView(payload, filters) {
+    filters = filters || {};
+    var graph = payload && payload.graph && typeof payload.graph === 'object' ? payload.graph : null;
+    if (!payload || payload.schema !== 'alloflow-alignment-graph-export/v1' || !graph || graph.version !== 'acg/v1'
+        || !graph.meta || !graph.meta.alignmentMap || graph.meta.alignmentMap.version !== 'alloflow-alignment-map/v2') {
+      return { ok: false, error: 'invalid-alignment-export', graph: { nodes: [], edges: [] }, counts: { nodes: 0, edges: 0 }, outline: { order: [] } };
+    }
+    var type = alignmentViewText(filters.nodeType).toLowerCase();
+    var source = alignmentViewText(filters.attributionSource).toLowerCase();
+    var query = alignmentViewText(filters.query).toLowerCase();
+    var nodeById = {}, incidentSources = {}, visible = {}, nodes = [];
+    (Array.isArray(graph.nodes) ? graph.nodes : []).forEach(function (node) { if (node && node.id) nodeById[node.id] = node; });
+    (Array.isArray(graph.edges) ? graph.edges : []).forEach(function (edge) {
+      var edgeSource = alignmentViewText(edge && edge.attributionSource).toLowerCase();
+      if (!edge || !edgeSource) return;
+      [edge.fromId, edge.toId].forEach(function (id) { if (id) { incidentSources[id] = incidentSources[id] || {}; incidentSources[id][edgeSource] = true; } });
+    });
+    Object.keys(nodeById).forEach(function (id) {
+      var node = nodeById[id];
+      var nodeType = alignmentViewText(node.type).toLowerCase();
+      var structural = nodeType === 'audit' || nodeType === 'standard';
+      var typeMatch = !type || nodeType === type || structural;
+      var nodeSource = alignmentViewText(node.attributionSource).toLowerCase();
+      var sourceMatch = !source || nodeSource === source || (incidentSources[id] && incidentSources[id][source]) || structural;
+      var searchMatch = !query || alignmentViewSearchText(node).indexOf(query) >= 0;
+      if (typeMatch && sourceMatch && searchMatch) { visible[id] = true; nodes.push(node); }
+    });
+    var edges = (Array.isArray(graph.edges) ? graph.edges : []).filter(function (edge) {
+      if (!edge || !visible[edge.fromId] || !visible[edge.toId]) return false;
+      if (!source) return true;
+      var edgeSource = alignmentViewText(edge.attributionSource).toLowerCase();
+      var from = nodeById[edge.fromId], to = nodeById[edge.toId];
+      var structural = (from && (from.type === 'audit' || from.type === 'standard')) || (to && (to.type === 'audit' || to.type === 'standard'));
+      return edgeSource === source || structural;
+    });
+    nodes = nodes.slice(0, 240); var ids = {}; nodes.forEach(function (node) { ids[node.id] = true; });
+    edges = edges.filter(function (edge) { return ids[edge.fromId] && ids[edge.toId]; }).slice(0, 480);
+    nodes.sort(function (a, b) { return (Number(a.x) || 0) - (Number(b.x) || 0) || (Number(a.y) || 0) - (Number(b.y) || 0); });
+    return {
+      ok: true,
+      schema: payload.schema,
+      graph: Object.assign({}, graph, { nodes: nodes, edges: edges }),
+      originalGraph: payload.originalGraph || null,
+      audit: payload.audit || null,
+      filters: { nodeType: type, attributionSource: source, query: query },
+      counts: { nodes: nodes.length, edges: edges.length },
+      outline: { order: nodes.map(function (node) { return node.id; }), hasCycle: false },
+      available: { nodeTypes: ALIGNMENT_VIEW_TYPES.slice(), attributionSources: ALIGNMENT_VIEW_SOURCES.slice() }
+    };
+  }
+  function alignmentNodeSource(view, node) {
+    var direct = alignmentViewText(node && node.attributionSource).toLowerCase();
+    if (direct) return direct;
+    var edges = view && view.graph && Array.isArray(view.graph.edges) ? view.graph.edges : [];
+    for (var i = 0; i < edges.length; i++) {
+      var edge = edges[i];
+      if (edge && (edge.fromId === node.id || edge.toId === node.id) && alignmentViewText(edge.attributionSource)) return alignmentViewText(edge.attributionSource).toLowerCase();
+    }
+    return '';
+  }
 
   // Types whose default handleRestoreView path (setActiveView(type)) renders a
   // resource view. Conservative allowlist: types NOT here still open (the host
@@ -301,10 +373,29 @@
     }
   }
 
+  // Shared graph bridge: the canonical ACG engine owns graph semantics when loaded.
+  // Throughline keeps persistence and its existing 2D UI; the local algorithms below
+  // remain the compatibility fallback for older/manual hosts without the engine.
+  function sharedGraphForUnit(unit) {
+    try {
+      var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!E || typeof E.fromThroughlineUnit !== 'function') return null;
+      return { engine: E, graph: E.fromThroughlineUnit(unit) };
+    } catch (e) {
+      return null;
+    }
+  }
   // ── Topological sort for the derived linear outline (cycle-safe) ────
   // Returns { order: [nodeId...], hasCycle: bool }. Ties + disconnected nodes
   // broken by x then y. On a cycle, falls back to pure x-order for the whole set.
   function deriveOutline(unit) {
+    var shared = sharedGraphForUnit(unit);
+    if (shared && typeof shared.engine.deriveOutline === 'function') {
+      var sharedOutline = shared.engine.deriveOutline(shared.graph);
+      if (sharedOutline && Array.isArray(sharedOutline.order)) {
+        return { order: sharedOutline.order, hasCycle: !!sharedOutline.hasCycle };
+      }
+    }
     var nodes = unit.nodes.slice();
     var byX = nodes.slice().sort(function (a, b) { return (a.x - b.x) || (a.y - b.y); });
     var indeg = {}, adj = {};
@@ -340,6 +431,12 @@
   // single trailing "Ungrouped" lane. The returned index is the band position AND
   // the depth plane a 3D view would stack on.
   function deriveLanes(unit) {
+    var shared = sharedGraphForUnit(unit);
+    if (shared && typeof shared.engine.deriveLanes === 'function') {
+      return shared.engine.deriveLanes(shared.graph).map(function (lane) {
+        return { key: lane.key == null ? null : lane.key, index: lane.index };
+      });
+    }
     var order = [], seen = {}, hasUngrouped = false;
     (unit.nodes || []).forEach(function (n) {
       var c = (n && typeof n.category === 'string' && n.category) ? n.category : null;
@@ -405,6 +502,12 @@
     var currentLesson = props.currentLesson || null;
     var inLiveSession = !!props.inLiveSession;
     var onOpenLesson = typeof props.onOpenLesson === 'function' ? props.onOpenLesson : null;
+    var savedAlignmentGraphExport = props.alignmentGraphExport && typeof props.alignmentGraphExport === 'object' ? props.alignmentGraphExport : null;
+    var importedAlignmentGraphExport = props.importedAlignmentGraphExport && typeof props.importedAlignmentGraphExport === 'object' ? props.importedAlignmentGraphExport : null;
+    var alignmentGraphExport = importedAlignmentGraphExport || savedAlignmentGraphExport;
+    var alignmentGraphIsImported = !!importedAlignmentGraphExport;
+    var onImportAlignmentGraph = typeof props.onImportAlignmentGraph === 'function' ? props.onImportAlignmentGraph : null;
+    var onClearImportedAlignmentGraph = typeof props.onClearImportedAlignmentGraph === 'function' ? props.onClearImportedAlignmentGraph : null;
     // v1.1 units integration: the existing AlloFlow units feature (item.unitId
     // folders). `units` = [{id,name}]; `seedUnitId` opens the tool pre-built
     // from a chosen unit. One system, two altitudes — Throughline visualizes
@@ -433,6 +536,10 @@
     var headerHook = useState(false); var editingHeader = headerHook[0]; var setEditingHeader = headerHook[1];
     var quotaHook = useState(false); var quotaFailed = quotaHook[0]; var setQuotaFailed = quotaHook[1];
     var lanesHook = useState(false); var showLanes = lanesHook[0]; var setShowLanes = lanesHook[1];
+    var alignmentPanelHook = useState(false); var showAlignmentGraph = alignmentPanelHook[0]; var setShowAlignmentGraph = alignmentPanelHook[1];
+    var alignmentTypeHook = useState('all'); var alignmentNodeType = alignmentTypeHook[0]; var setAlignmentNodeType = alignmentTypeHook[1];
+    var alignmentSourceHook = useState('all'); var alignmentSource = alignmentSourceHook[0]; var setAlignmentSource = alignmentSourceHook[1];
+    var alignmentQueryHook = useState(''); var alignmentQuery = alignmentQueryHook[0]; var setAlignmentQuery = alignmentQueryHook[1];
     // pendingEdge holds the two endpoints awaiting an accessible sequence-vs-prereq
     // choice (replaces the SR-hostile window.confirm in connect mode).
     var pendingEdgeHook = useState(null); var pendingEdge = pendingEdgeHook[0]; var setPendingEdge = pendingEdgeHook[1];
@@ -442,6 +549,24 @@
     var cg3dHook = useState('idle'); var cg3dState = cg3dHook[0]; var setCg3dState = cg3dHook[1];
     var graph3dHook = useState(null); var graph3d = graph3dHook[0]; var setGraph3d = graph3dHook[1];
     var aiBusyHook = useState(false); var aiBusy = aiBusyHook[0]; var setAiBusy = aiBusyHook[1];
+    var alignmentView = useMemo(function () {
+      if (!alignmentGraphExport) return null;
+      var filters = {
+        nodeTypes: alignmentNodeType === 'all' ? [] : [alignmentNodeType],
+        attributionSources: alignmentSource === 'all' ? [] : [alignmentSource],
+        query: alignmentQuery,
+        keepStructure: true
+      };
+      var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (E && typeof E.filterAlignmentGraph === 'function') {
+        try { return E.filterAlignmentGraph(alignmentGraphExport, filters); } catch (e) {}
+      }
+      return fallbackAlignmentGraphView(alignmentGraphExport, {
+        nodeType: alignmentNodeType === 'all' ? '' : alignmentNodeType,
+        attributionSource: alignmentSource === 'all' ? '' : alignmentSource,
+        query: alignmentQuery
+      });
+    }, [alignmentGraphExport, alignmentNodeType, alignmentSource, alignmentQuery]);
 
     // ── Generate Unit machine. `gen` null = closed. When set, holds the whole
     //    flow (setup → proposing → review → generating → done). The async driver
@@ -453,6 +578,7 @@
 
     var svgRef = useRef(null);
     var fileInputRef = useRef(null);
+    var alignmentGraphFileInputRef = useRef(null);
     var cardRefs = useRef({});            // nodeId -> card DOM, for arrow-key roving focus
     var genRef = useRef(null);            // latest `gen` for the async loop
     var mountedRef = useRef(true);        // false after unmount → loop bails
@@ -874,9 +1000,9 @@
     // Build an acg graph from the current unit, with each node labelled by its
     // resolved lesson title (so the 3D scene + the a11y outline read meaningfully).
     function buildGraphForView() {
-      var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
-      if (!E) return null;
-      var g = E.fromThroughlineUnit(unit);
+      var shared = sharedGraphForUnit(unit);
+      if (!shared) return null;
+      var g = shared.graph;
       g.nodes.forEach(function (n) {
         var item = resolveLesson(n.lessonId);
         n.label = item ? (item.title || typeLabel(item.type)) : (n.description || (t('throughline.planned') || 'Planned lesson'));
@@ -1385,6 +1511,40 @@
     var outline = deriveOutline(unit);
     var lanes = deriveLanes(unit);
 
+    function importAlignmentGraphFile(file) {
+      if (!file || !onImportAlignmentGraph) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        try {
+          var parsed = JSON.parse(String(ev.target && ev.target.result || ''));
+          var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+          var normalized = E && typeof E.normalizeAlignmentGraphExport === 'function'
+            ? E.normalizeAlignmentGraphExport(parsed)
+            : fallbackAlignmentGraphView(parsed, {});
+          if (!normalized || !normalized.ok || !normalized.graph) throw new Error('Invalid alignment graph export');
+          var graph = normalized.graph;
+          var originalGraph = normalized.originalGraph && normalized.originalGraph.version === 'acg/v1'
+            ? normalized.originalGraph
+            : null;
+          onImportAlignmentGraph({
+            schema: 'alloflow-alignment-graph-export/v1',
+            graph: graph,
+            originalGraph: originalGraph,
+            audit: normalized.audit && typeof normalized.audit === 'object' ? normalized.audit : null,
+            importedAt: new Date().toISOString(),
+            sourceFileName: String(file.name || '').slice(0, 160)
+          });
+          setShowAlignmentGraph(true);
+          setShowOutline(false);
+          addToast('Alignment graph opened read-only.', 'success');
+        } catch (e) {
+          addToast('Could not open that alignment graph. Export a valid AlloFlow graph JSON file.', 'error');
+        }
+      };
+      reader.onerror = function () { addToast('Could not read that alignment graph file.', 'error'); };
+      reader.readAsText(file);
+    }
+
     // header bar
     var topBar = h('div', { style: { background: '#fff', borderBottom: '1px solid #cbd5e1', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 12 } },
       h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🧭'),
@@ -1402,7 +1562,11 @@
         style: { padding: 8, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#475569' } }, '✕')
     );
 
-    function tbBtn(label, active, onClick, title) {
+    function toggleAlignmentGraph() {
+      var next = !showAlignmentGraph;
+      setShowAlignmentGraph(next);
+      if (next) setShowOutline(false);
+    }    function tbBtn(label, active, onClick, title) {
       return h('button', {
         onClick: onClick, title: title || label, 'aria-pressed': !!active,
         style: {
@@ -1433,6 +1597,10 @@
       (hostHistory.length > 0) && tbBtn('📥 ' + (t('throughline.add_lessons') || 'Add my lessons'), false, function () { setPickerForNode('BULK'); }, t('throughline.add_lessons_title') || 'Add lessons from your history into this unit'),
       tbBtn('🧾 ' + (t('throughline.outline') || 'Outline'), showOutline, function () { setShowOutline(!showOutline); }, t('throughline.outline_title') || 'Printable scope & sequence'),
       tbBtn('🛤 ' + (t('throughline.lanes') || 'Lanes'), showLanes, function () { setShowLanes(!showLanes); }, t('throughline.lanes_title') || 'Group lessons into strands / phases (swim-lanes)'),
+      alignmentGraphExport && tbBtn('Graph: ' + (t('throughline.alignment_graph') || 'Standards graph'), showAlignmentGraph, toggleAlignmentGraph, t('throughline.alignment_graph_title') || 'Read the exported standards and audit graph with provenance filters'),
+      onImportAlignmentGraph && tbBtn('Open graph', false, function () { if (alignmentGraphFileInputRef.current) alignmentGraphFileInputRef.current.click(); }, 'Open a saved AlloFlow alignment graph export'),
+      onImportAlignmentGraph && h('input', { ref: alignmentGraphFileInputRef, type: 'file', accept: 'application/json,.json', style: { display: 'none' }, 'aria-label': 'Open saved alignment graph export', onChange: function (e) { var f = e.target && e.target.files && e.target.files[0]; if (f) importAlignmentGraphFile(f); if (e.target) e.target.value = ''; } }),
+      alignmentGraphIsImported && onClearImportedAlignmentGraph && tbBtn('Close imported', false, function () { onClearImportedAlignmentGraph(); setShowAlignmentGraph(false); }, 'Return to the current resource graph'),
       showLanes && tbBtn('↕ ' + (t('throughline.arrange_lanes') || 'Arrange into lanes'), false, arrangeIntoLanes, t('throughline.arrange_lanes_title') || 'Tidy each lesson into its lane band (keeps left-to-right teaching order)'),
       (unit.nodes.length > 0) && tbBtn('🧊 ' + (t('throughline.view_3d') || 'View in 3D'), show3D, open3D, t('throughline.view_3d_title') || 'See this unit as an orbitable 3D concept map (strands become depth)'),
       h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
@@ -1562,6 +1730,85 @@
       )
     );
 
+    // -- Read-only alignment graph panel -------------------------------------
+    var alignmentPanel = showAlignmentGraph && alignmentGraphExport && h('aside', {
+      id: 'throughline-alignment-panel',
+      role: 'region',
+      'aria-label': t('throughline.alignment_graph_panel') || 'Standards knowledge graph',
+      style: { position: 'absolute', top: 0, right: 0, bottom: 0, width: 430, maxWidth: '92vw', background: '#fff', borderLeft: '1px solid #cbd5e1', boxShadow: '-4px 0 12px rgba(15,23,42,0.08)', display: 'flex', flexDirection: 'column', zIndex: 6 }
+    },
+      h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+        h('div', { style: { fontWeight: 800, fontSize: 13, color: '#1e293b' } }, t('throughline.alignment_graph') || 'Standards graph'),
+        h('button', { onClick: function () { setShowAlignmentGraph(false); }, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#64748b' } }, '×')
+      ),
+      h('div', { style: { padding: '10px 16px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' } },
+        h('p', { style: { margin: 0, fontSize: 11, lineHeight: 1.45, color: '#475569' } }, t('throughline.alignment_graph_intro') || 'Read-only context from the exported audit graph. Only explicitly stored relationships are shown; filters do not create alignment claims.'),
+        h('div', { style: { marginTop: 7, fontSize: 10, color: '#64748b' } }, 'Policy: ' + (((alignmentView && alignmentView.graph && alignmentView.graph.meta && alignmentView.graph.meta.alignmentMap && alignmentView.graph.meta.alignmentMap.provenancePolicy) || 'explicit-attribution-only'))),
+        h('div', { style: { marginTop: 4, fontSize: 10, color: '#64748b' } }, alignmentGraphIsImported ? ('Opened from saved graph' + (alignmentGraphExport.sourceFileName ? ': ' + alignmentGraphExport.sourceFileName : '') + ' · read-only') : 'Current resource graph · read-only'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 } },
+          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Node type',
+            h('select', { value: alignmentNodeType, onChange: function (e) { setAlignmentNodeType(e.target.value); }, 'aria-label': 'Alignment graph node type', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
+              h('option', { value: 'all' }, 'All graph items'),
+              h('option', { value: 'standard' }, 'Standards'),
+              h('option', { value: 'standardsContext' }, 'Standards context'),
+              h('option', { value: 'auditArtifact' }, 'Audited artifacts'),
+              h('option', { value: 'auditEvidence' }, 'Evidence'),
+              h('option', { value: 'auditFinding' }, 'Findings'),
+              h('option', { value: 'auditRecommendation' }, 'Recommendations')
+            )
+          ),
+          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Attribution source',
+            h('select', { value: alignmentSource, onChange: function (e) { setAlignmentSource(e.target.value); }, 'aria-label': 'Alignment graph attribution source', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
+              h('option', { value: 'all' }, 'All sources'),
+              h('option', { value: 'audit-model' }, 'Audit model'),
+              h('option', { value: 'teacher' }, 'Teacher confirmed'),
+              h('option', { value: 'deterministic-check' }, 'Deterministic check'),
+              h('option', { value: 'unknown' }, 'Unknown')
+            )
+          )
+        ),
+        h('label', { style: { display: 'block', marginTop: 8, fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Search graph text',
+          h('input', { value: alignmentQuery, onChange: function (e) { setAlignmentQuery(e.target.value); }, placeholder: 'Standard, evidence, artifact, or finding…', 'aria-label': 'Search alignment graph', style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: 6, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } })
+        )
+      ),
+      alignmentView && alignmentView.ok
+        ? h('div', { style: { flex: 1, overflow: 'auto' } },
+            h('div', { role: 'status', style: { padding: '8px 16px', borderBottom: '1px solid #f1f5f9', fontSize: 10, color: '#64748b' } },
+              String(alignmentView.counts ? alignmentView.counts.nodes : 0) + ' nodes · ' + String(alignmentView.counts ? alignmentView.counts.edges : 0) + ' relationships · explicit graph projection'),
+            (function () {
+              var graph = alignmentView.graph || { nodes: [] };
+              var byId = {}; (graph.nodes || []).forEach(function (node) { if (node && node.id) byId[node.id] = node; });
+              var order = alignmentView.outline && Array.isArray(alignmentView.outline.order) ? alignmentView.outline.order.slice() : [];
+              (graph.nodes || []).forEach(function (node) { if (order.indexOf(node.id) < 0) order.push(node.id); });
+              if (!order.length) return h('div', { style: { padding: 24, textAlign: 'center', color: '#64748b', fontSize: 12 } }, 'No graph items match these filters.');
+              return h('ol', { 'aria-label': 'Alignment graph reading order', style: { padding: '6px 0 16px', margin: 0, listStyle: 'none' } },
+                order.map(function (id, index) {
+                  var node = byId[id]; if (!node) return null;
+                  var sources = []; var directSource = alignmentViewText(node.attributionSource).toLowerCase();
+                  if (directSource) sources.push(directSource);
+                  (graph.edges || []).forEach(function (edge) {
+                    if (edge && (edge.fromId === node.id || edge.toId === node.id) && edge.attributionSource && sources.indexOf(edge.attributionSource) < 0) sources.push(edge.attributionSource);
+                  });
+                  var body = node.evidence || node.finding || node.recommendation || node.text || '';
+                  var context = node.code || node.framework || node.artifactType || node.dimension || '';
+                  var linkedResource = node.artifactId ? hostHistory.filter(function (item) { return item && String(item.id) === String(node.artifactId); })[0] : null;
+                  return h('li', { key: node.id, style: { padding: '9px 16px', borderBottom: '1px solid #f1f5f9' } },
+                    h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline' } },
+                      h('span', { style: { minWidth: 22, color: '#6366f1', fontSize: 10, fontWeight: 800 } }, (index + 1) + '.'),
+                      h('strong', { style: { color: '#1e293b', fontSize: 12 } }, node.label || node.id)
+                    ),
+                    h('div', { style: { marginLeft: 30, marginTop: 2, color: '#64748b', fontSize: 10 } }, typeLabel(node.type) + (context ? ' · ' + context : '')),
+                    body && h('div', { style: { marginLeft: 30, marginTop: 4, color: '#334155', fontSize: 11, lineHeight: 1.4 } }, String(body).slice(0, 500)),
+                    h('div', { style: { marginLeft: 30, marginTop: 4, color: '#64748b', fontSize: 10 } }, sources.length ? 'Attribution: ' + sources.join(', ') : 'Attribution source: not labeled on this node'),
+                    node.sourceUrl && h('a', { href: node.sourceUrl, target: '_blank', rel: 'noreferrer', style: { display: 'inline-block', marginLeft: 30, marginTop: 4, color: '#4338ca', fontSize: 10 } }, 'Open standards source'),
+                    linkedResource && onOpenLesson && h('button', { type: 'button', 'data-graph-resource-id': String(linkedResource.id), onClick: function () { onOpenLesson(linkedResource); }, style: { display: 'block', marginLeft: 30, marginTop: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid #a5b4fc', background: '#eef2ff', color: '#3730a3', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'Open linked resource')
+                  );
+                })
+              );
+            })()
+          )
+        : h('div', { role: 'status', style: { padding: 20, color: '#92400e', fontSize: 12 } }, 'The alignment export could not be read. Export a fresh acg/v1 graph.')
+    );
     // ── Picker modal (pick-from-history for a node, or BULK add) ───
     var pickerModal = pickerForNode && h('div', {
       style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -1956,7 +2203,7 @@
 
     return h('div', { style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 100, display: 'flex', flexDirection: 'column' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': TOOL_NAME },
       topBar, toolbar, quotaNudge, hint, connectChoice,
-      h('div', { style: { flex: 1, position: 'relative', display: 'flex' } }, canvas, outlinePanel),
+      h('div', { style: { flex: 1, position: 'relative', display: 'flex' } }, canvas, outlinePanel, alignmentPanel),
       pickerModal, editModal, headerModal, genModal, threeDModal
     );
   }

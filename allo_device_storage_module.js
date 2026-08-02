@@ -32,7 +32,7 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds2-slots8';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds3-storage-manager';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -71,11 +71,34 @@
   var RECOVERY_KEY = 'store_v1';
   var RECOVERY_VERSION = 1;
   var RECOVERY_MAX_SNAPSHOTS = 8;
+  var RECOVERY_COMPACT_MAX_SNAPSHOTS = 4;
   // Paired size budget: snapshots embed karaoke base64 audio, so a pure count
   // cap lets a tight device force the app to strip the NEWEST workspace's
   // read-aloud. Evict the oldest instead. Mirrors ALLO_WORKSPACE_RECOVERY.
   var RECOVERY_MAX_TOTAL_BYTES = 150 * 1024 * 1024;
+  var RECOVERY_COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;
+  var RECOVERY_COMPACT_DRAFT_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
   var RECOVERY_EPOCH = '1970-01-01T00:00:00.000Z';
+  function normalizeRecoveryPolicyId(value, fallback) {
+    var id = typeof value === 'string' ? value.toLowerCase() : '';
+    if (id === 'automatic' || id === 'compact' || id === 'standard') return id;
+    return fallback !== undefined ? fallback : 'standard';
+  }
+  function resolveRecoveryPolicy(requested, effectiveOverride) {
+    var id = normalizeRecoveryPolicyId(requested, 'standard');
+    var effectiveId = id === 'automatic'
+      ? normalizeRecoveryPolicyId(effectiveOverride, 'standard')
+      : id;
+    if (effectiveId === 'automatic') effectiveId = 'standard';
+    var compact = effectiveId === 'compact';
+    return {
+      id: id,
+      effectiveId: effectiveId,
+      maxSnapshots: compact ? RECOVERY_COMPACT_MAX_SNAPSHOTS : RECOVERY_MAX_SNAPSHOTS,
+      maxTotalBytes: compact ? RECOVERY_COMPACT_MAX_TOTAL_BYTES : RECOVERY_MAX_TOTAL_BYTES,
+      draftMaxAgeMs: compact ? RECOVERY_COMPACT_DRAFT_MAX_AGE_MS : null
+    };
+  }
   function recoveryError(code, message) {
     return storageError(code, message);
   }
@@ -99,6 +122,19 @@
     if (strict) throw recoveryError('allo/recovery-mutation-invalid', (label || 'Snapshot') + ' requires a valid savedAt.');
     return null;
   }
+  function hasMeaningfulRecoveryDraft(value, depth) {
+    depth = depth || 0;
+    if (depth > 5 || value == null) return false;
+    if (typeof value === 'string') return !!value.trim();
+    if (typeof value === 'number') return isFinite(value) && value > 0;
+    if (typeof value === 'boolean') return value;
+    if (Array.isArray(value)) return value.some(function (item) { return hasMeaningfulRecoveryDraft(item, depth + 1); });
+    if (typeof value !== 'object') return false;
+    return Object.keys(value).some(function (key) {
+      if (/^(?:version|savedAt|createdAt|updatedAt|source|historySignature)$/i.test(key)) return false;
+      return hasMeaningfulRecoveryDraft(value[key], depth + 1);
+    });
+  }
   function normalizeRecoverySnapshot(candidate, strict) {
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
       if (strict) throw recoveryError('allo/recovery-mutation-invalid', 'Recovery snapshot must be an object.');
@@ -108,11 +144,27 @@
     var id = recoveryId(candidate.id, 'Recovery snapshot', strict);
     var savedAt = recoverySavedAt(candidate.savedAt, 'Recovery snapshot', strict);
     if (!id || !savedAt) return null;
+    var workspace = candidate.workspace && typeof candidate.workspace === 'object' ? candidate.workspace : null;
+    var history = workspace && Array.isArray(workspace.history)
+      ? workspace.history.filter(function (item) { return item && typeof item === 'object'; })
+      : null;
+    var meaningfulDraft = !!(workspace && (
+      (typeof workspace.inputText === 'string' && workspace.inputText.trim())
+      || (typeof workspace.sourceTopic === 'string' && workspace.sourceTopic.trim())
+      || hasMeaningfulRecoveryDraft(workspace.builderDraft)
+    ));
+    if (!workspace || !history || (!history.length && !meaningfulDraft)) {
+      if (strict) throw recoveryError('allo/recovery-mutation-invalid', 'Recovery snapshot is empty.');
+      return null;
+    }
     var snapshot = {};
     Object.keys(candidate).forEach(function (key) { snapshot[key] = candidate[key]; });
     snapshot.version = RECOVERY_VERSION;
     snapshot.id = id;
     snapshot.savedAt = savedAt;
+    snapshot.pinned = candidate.pinned === true;
+    snapshot.resourceCount = history.length;
+    snapshot.workspace = Object.assign({}, workspace, { history: history });
     return snapshot;
   }
   function putRecoveryTombstone(target, id, removedAt) {
@@ -144,23 +196,48 @@
   // Newest-first, stop at the first workspace that does not fit so the kept
   // set stays contiguous. The newest is always kept even when it alone
   // exceeds the budget — never drop the save the teacher just made.
-  function capRecoverySnapshots(snapshots) {
-    var kept = [];
-    var keptBytes = 0;
-    for (var i = 0; i < snapshots.length && i < RECOVERY_MAX_SNAPSHOTS; i++) {
-      var size = Math.max(0, Number(snapshots[i] && snapshots[i].approximateBytes) || 0);
-      if (i > 0 && keptBytes + size > RECOVERY_MAX_TOTAL_BYTES) break;
-      keptBytes += size;
-      kept.push(snapshots[i]);
+  function capRecoverySnapshots(snapshots, policy, nowMs) {
+    policy = policy || resolveRecoveryPolicy('standard');
+    nowMs = isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+    if (policy.draftMaxAgeMs && snapshots.length > 1) {
+      var newestId = snapshots[0] && snapshots[0].id;
+      snapshots = snapshots.filter(function (snapshot) {
+        var draftOnly = Number(snapshot.resourceCount) === 0;
+        var ageMs = Math.max(0, nowMs - Date.parse(snapshot.savedAt));
+        return !draftOnly || snapshot.pinned || snapshot.id === newestId || ageMs <= policy.draftMaxAgeMs;
+      });
     }
+    var protectedIds = Object.create(null);
+    snapshots.forEach(function (snapshot, index) {
+      if (snapshot.pinned || index === 0) protectedIds[snapshot.id] = true;
+    });
+    var kept = snapshots.filter(function (snapshot) { return own(protectedIds, snapshot.id); });
+    var keptBytes = kept.reduce(function (sum, snapshot) {
+      return sum + Math.max(0, Number(snapshot && snapshot.approximateBytes) || 0);
+    }, 0);
+    for (var i = 0; i < snapshots.length; i++) {
+      var candidate = snapshots[i];
+      if (own(protectedIds, candidate.id)) continue;
+      if (kept.length >= policy.maxSnapshots) break;
+      var size = Math.max(0, Number(candidate.approximateBytes) || 0);
+      if (keptBytes + size > policy.maxTotalBytes) break;
+      keptBytes += size;
+      kept.push(candidate);
+    }
+    kept.sort(function (a, b) { return Date.parse(b.savedAt) - Date.parse(a.savedAt); });
     return kept;
   }
-  function normalizeRecoveryStore(candidate) {
+  function normalizeRecoveryStore(candidate, options) {
     if (candidate != null && (typeof candidate !== 'object' || Array.isArray(candidate))) {
       throw recoveryError('allo/recovery-store-invalid', 'Recovery store must be an object.');
     }
+    options = options || {};
     candidate = candidate || {};
     assertRecoveryVersion(candidate.version, 'Recovery store');
+    var policy = resolveRecoveryPolicy(
+      candidate.retentionPolicy,
+      options.effectivePolicyId || candidate.effectiveRetentionPolicy
+    );
     var source = Array.isArray(candidate.snapshots)
       ? candidate.snapshots
       : (candidate.workspace ? [candidate] : []);
@@ -180,9 +257,11 @@
     });
     return {
       version: RECOVERY_VERSION,
+      retentionPolicy: policy.id,
+      effectiveRetentionPolicy: policy.effectiveId,
       legacyMigrationComplete: !!candidate.legacyMigrationComplete,
       removedSnapshotIds: tombstones,
-      snapshots: capRecoverySnapshots(snapshots)
+      snapshots: capRecoverySnapshots(snapshots, policy, options.nowMs)
     };
   }
   function applyRecoveryUpsert(store, snapshot) {
@@ -199,9 +278,70 @@
     if (existing && Date.parse(snapshot.savedAt) <= Date.parse(existing.savedAt)) {
       return { store: store, applied: false, reason: 'stale-snapshot' };
     }
+    if (existing) snapshot.pinned = existing.pinned === true;
     store.snapshots = [snapshot].concat(store.snapshots.filter(function (entry) { return entry.id !== snapshot.id; }));
     store = normalizeRecoveryStore(store);
     return { store: store, applied: true, reason: 'upserted' };
+  }
+  function stripRecoveryMedia(snapshot, reason) {
+    reason = reason || 'user-remove-media';
+    var manifest = Array.isArray(snapshot.omittedAssetManifest)
+      ? snapshot.omittedAssetManifest.slice(0, 500)
+      : [];
+    var seen = Object.create(null);
+    manifest.forEach(function (entry) {
+      seen[String(entry && entry.path || '') + '\u0000' + String(entry && entry.kind || '') + '\u0000' + String(entry && entry.reason || '')] = true;
+    });
+    var omitted = Math.max(manifest.length, Number(snapshot.omittedAssets) || 0);
+    function record(entry) {
+      var key = String(entry.path || '') + '\u0000' + String(entry.kind || '') + '\u0000' + String(entry.reason || '');
+      if (own(seen, key)) return;
+      seen[key] = true;
+      omitted += 1;
+      if (manifest.length < 500) manifest.push(entry);
+    }
+    function visit(value, path) {
+      if (typeof value === 'string') {
+        var dataMatch = value.match(/^data:((?:image|audio|video)[/][^;,]+|application[/]pdf)[;,]/i);
+        var mediaKey = /(?:image|audio|video|media|attachment|avatar|scene|thumbnail|karaoke|recording)/i.test(path);
+        var unprefixedBase64 = mediaKey && value.length > 4096 && !/[^a-z0-9+=/]/i.test(value);
+        if (dataMatch || /^blob:/i.test(value) || unprefixedBase64) {
+          record({
+            path: path,
+            kind: dataMatch ? dataMatch[1].toLowerCase() : (/^blob:/i.test(value) ? 'blob-url' : 'base64-media'),
+            approximateBytes: Math.round(value.length * (dataMatch || unprefixedBase64 ? 0.75 : 1)),
+            reason: reason
+          });
+          return null;
+        }
+        return value;
+      }
+      if (typeof Blob !== 'undefined' && value instanceof Blob) {
+        record({ path: path, kind: value.type || 'blob', approximateBytes: value.size || 0, reason: reason });
+        return null;
+      }
+      if (typeof ArrayBuffer !== 'undefined' && (value instanceof ArrayBuffer || ArrayBuffer.isView(value))) {
+        record({ path: path, kind: 'binary-media', approximateBytes: value.byteLength || 0, reason: reason });
+        return null;
+      }
+      if (Array.isArray(value)) {
+        return value.map(function (item, index) { return visit(item, path + '[' + index + ']'); });
+      }
+      if (!value || typeof value !== 'object') return value;
+      var prototype = Object.getPrototypeOf(value);
+      if (prototype !== Object.prototype && prototype !== null) return value;
+      var out = {};
+      Object.keys(value).forEach(function (key) {
+        out[key] = visit(value[key], path ? path + '.' + key : key);
+      });
+      return out;
+    }
+    var stripped = visit(snapshot, 'snapshot');
+    stripped.assetPolicy = 'text-only';
+    stripped.omittedAssets = omitted;
+    stripped.omittedAssetManifest = manifest;
+    try { stripped.approximateBytes = JSON.stringify(stripped).length; } catch (_e) { stripped.approximateBytes = 0; }
+    return stripped;
   }
   function applyRecoveryMutation(current, mutation) {
     if (!mutation || typeof mutation !== 'object' || Array.isArray(mutation)) {
@@ -210,7 +350,8 @@
     assertRecoveryVersion(mutation.version, 'Recovery mutation');
     assertRecoveryVersion(mutation.schemaVersion, 'Recovery mutation');
     var action = mutation.action;
-    if (action !== 'upsert' && action !== 'remove' && action !== 'markLegacyMigrated') {
+    if (action !== 'upsert' && action !== 'remove' && action !== 'markLegacyMigrated' &&
+        action !== 'setPolicy' && action !== 'setPinned' && action !== 'removeMedia') {
       throw recoveryError('allo/recovery-mutation-invalid', 'Unknown recovery mutation action: ' + String(action));
     }
     var snapshot = null;
@@ -218,9 +359,53 @@
       snapshot = normalizeRecoverySnapshot(mutation.snapshot, true);
     }
     var snapshotId = null;
-    if (action === 'remove') snapshotId = recoveryId(mutation.snapshotId, 'Recovery remove mutation', true);
+    if (action === 'remove' || action === 'setPinned' || action === 'removeMedia') {
+      snapshotId = recoveryId(mutation.snapshotId, 'Recovery snapshot mutation', true);
+    }
     var store = normalizeRecoveryStore(current);
     if (action === 'upsert') return applyRecoveryUpsert(store, snapshot);
+    if (action === 'setPolicy') {
+      var policyId = normalizeRecoveryPolicyId(mutation.policyId, '');
+      if (!policyId) throw recoveryError('allo/recovery-mutation-invalid', 'Recovery policy must be automatic, compact, or standard.');
+      var effectiveId = policyId === 'automatic'
+        ? normalizeRecoveryPolicyId(mutation.effectivePolicyId, 'standard')
+        : policyId;
+      if (effectiveId === 'automatic') effectiveId = 'standard';
+      store.retentionPolicy = policyId;
+      store.effectiveRetentionPolicy = effectiveId;
+      return { store: normalizeRecoveryStore(store), applied: true, reason: 'policy-updated' };
+    }
+    if (action === 'setPinned') {
+      var pinTarget = null;
+      store.snapshots.forEach(function (entry) { if (entry.id === snapshotId) pinTarget = entry; });
+      if (!pinTarget) return { store: store, applied: false, reason: 'snapshot-not-found' };
+      var shouldPin = mutation.pinned === true;
+      if (pinTarget.pinned === shouldPin) return { store: store, applied: false, reason: shouldPin ? 'already-pinned' : 'already-unpinned' };
+      pinTarget.pinned = shouldPin;
+      return {
+        store: normalizeRecoveryStore(store),
+        applied: true,
+        reason: shouldPin ? 'pinned' : 'unpinned'
+      };
+    }
+    if (action === 'removeMedia') {
+      var mediaTarget = null;
+      store.snapshots.forEach(function (entry) { if (entry.id === snapshotId) mediaTarget = entry; });
+      if (!mediaTarget) return { store: store, applied: false, reason: 'snapshot-not-found' };
+      var previousOmitted = Math.max(0, Number(mediaTarget.omittedAssets) || 0);
+      var stripped = stripRecoveryMedia(mediaTarget, 'user-remove-media');
+      var removedMedia = Math.max(0, Number(stripped.omittedAssets) || 0) > previousOmitted;
+      if (!removedMedia) return { store: store, applied: false, reason: 'no-media' };
+      var normalizedStripped = normalizeRecoverySnapshot(stripped, false);
+      if (!normalizedStripped) return { store: store, applied: false, reason: 'would-empty-workspace' };
+      store.snapshots = store.snapshots.map(function (entry) { return entry.id === snapshotId ? normalizedStripped : entry; });
+      store = normalizeRecoveryStore(store);
+      return {
+        store: store,
+        applied: true,
+        reason: 'media-removed'
+      };
+    }
     if (action === 'markLegacyMigrated') {
       if (store.legacyMigrationComplete) return { store: store, applied: false, reason: 'already-migrated' };
       if (snapshot) store = applyRecoveryUpsert(store, snapshot).store;
@@ -404,8 +589,26 @@
     });
     return _directDb;
   }
+  function readOriginStorageFacts() {
+    var facts = { persisted: null, usage: null, quota: null };
+    if (!navigator.storage) return Promise.resolve(facts);
+    var tasks = [];
+    if (typeof navigator.storage.persisted === 'function') {
+      tasks.push(Promise.resolve(navigator.storage.persisted()).then(function (value) {
+        facts.persisted = !!value;
+      }).catch(function () {}));
+    }
+    if (typeof navigator.storage.estimate === 'function') {
+      tasks.push(Promise.resolve(navigator.storage.estimate()).then(function (estimate) {
+        facts.usage = Math.max(0, Number(estimate && estimate.usage) || 0);
+        facts.quota = Math.max(0, Number(estimate && estimate.quota) || 0);
+      }).catch(function () {}));
+    }
+    return Promise.all(tasks).then(function () { return facts; });
+  }
   var directBackend = {
     request: function (op, params) {
+      if (op === 'estimate') return readOriginStorageFacts();
       return directDb().then(function (db) {
         return new Promise(function (resolve, reject) {
           var mode = (op === 'get' || op === 'list' || op === 'getAll' || op === 'namespaces') ? 'readonly' : 'readwrite';
@@ -497,6 +700,7 @@
         case 'namespaces': return Promise.resolve(Object.keys(_mem).sort().map(function (k) {
           return { ns: k, count: Object.keys(_mem[k]).length, bytes: 0 };
         }));
+        case 'estimate': return Promise.resolve({ persisted: null, usage: null, quota: null });
         case 'ping': return Promise.resolve({ pong: true, proto: PROTO });
         default: return Promise.reject(storageError('allo/bad-op', 'Unknown op: ' + op));
       }
@@ -630,6 +834,7 @@
     getAll: function (ns) { return guarded('getAll', { ns: ns }); },
     clearNamespace: function (ns, opts) { return guarded('clearNamespace', { ns: ns }, opts); },
     namespaces: function () { return guarded('namespaces', {}); },
+    estimate: function () { return guarded('estimate', {}); },
     status: function () {
       return {
         backend: state.backendName,
@@ -687,6 +892,9 @@
       validateKey: validateKey,
       applyRecoveryMutation: applyRecoveryMutation,
       normalizeRecoveryStore: normalizeRecoveryStore,
+      normalizeRecoverySnapshot: normalizeRecoverySnapshot,
+      resolveRecoveryPolicy: resolveRecoveryPolicy,
+      stripRecoveryMedia: stripRecoveryMedia,
       PROTO: PROTO,
       DEFAULT_BRIDGE_URL: DEFAULT_BRIDGE_URL
     }

@@ -10,7 +10,7 @@
 // quality, rope culture, lease tiers, climate stress, economics).
 //
 // Maine-default (Bagaduce + Damariscotta) with region toggle
-// (Chesapeake / PNW / Great Lakes are v1 placeholders).
+// (Chesapeake is transfer-ready; PNW / Great Lakes remain v1 previews).
 //
 // Sources cited inline:
 //  - Maine Department of Marine Resources (DMR) Aquaculture Division
@@ -80,11 +80,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       portCoords: 'Bagaduce River, Penobscot Bay · 44.4° N, 68.8° W',
       famousLeases: ['Bagaduce River', 'Damariscotta River', 'Casco Bay'],
       dmrAuthority: 'Maine Department of Marine Resources — Aquaculture Division',
-      complete: true
+      complete: true,
+      portCoords: 'Bagaduce River, Penobscot Bay · 44.4° N, 68.8° W',
+      authority: 'Maine Department of Marine Resources · Aquaculture Division',
+      focusSpecies: ['Eastern oyster', 'Blue mussel', 'Sugar kelp', 'Sea scallop'],
+      operatingSignals: ['Cold-water temperature and salinity', 'Dissolved oxygen, exchange, and tides', 'Storm, ice, and working-waterfront access'],
+      marketContext: 'Diversified Maine shellfish and seaweed operations with strong working-waterfront and local-market connections.',
+      sources: [{ label: 'Maine DMR · Aquaculture laws and regulations', url: 'https://www.maine.gov/dmr/aquaculture/laws-and-regulations' }, { label: 'Maine DMR · Grower FAQ', url: 'https://www.maine.gov/dmr/aquaculture/resources-for-growers/faq' }]
     },
     chesapeake: {
       id: 'chesapeake', label: 'Chesapeake Bay',
-      buoyage: 'IALA-B', portName: 'Tilghman Island', complete: false
+      buoyage: 'IALA-B', portName: 'Tilghman Island', complete: true,
+      portCoords: 'Chesapeake Bay · Tilghman Island, Maryland',
+      famousLeases: ['Maryland Chesapeake Bay shellfish leases', 'Chesapeake Bay tributaries'],
+      authority: 'Maryland Department of Natural Resources · Aquaculture and Industry Enhancement Division',
+      focusSpecies: ['Eastern oyster', 'Soft-shell clam', 'Blue crab habitat context'],
+      operatingSignals: ['Brackish salinity and freshwater inflow', 'Summer heat, oxygen, and turbidity', 'Storm access and lease navigation'],
+      marketContext: 'Oyster aquaculture, restoration partnerships, local shellfish markets, and ecosystem-service questions.',
+      sources: [{ label: 'Maryland DNR · Aquaculture and Industry Enhancement', url: 'https://dnr.maryland.gov/fisheries/Pages/aquaculture/index.aspx' }, { label: 'NOAA Fisheries · Eastern oyster aquaculture', url: 'https://www.fisheries.noaa.gov/species/eastern-oyster/aquaculture' }]
     },
     pnw: {
       id: 'pnw', label: 'Pacific Northwest',
@@ -7239,7 +7252,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   ];
 
   function aqEcoClamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
-  function aqDefaultEcosystemWorkspace() { var base = ECOSYSTEM_ENVIRONMENTS.longline; return { environmentId: base.id, organisms: { oyster: 2, mussel: 2, kelp: 2, phytoplankton: 1 }, water: Object.assign({}, base.defaults), disturbanceId: 'none', observation: '', experiments: [], baselineScenario: null }; }
+  function aqSanitizeEvidence(raw) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    return { claim: String(source.claim || '').slice(0, 500), evidence: String(source.evidence || '').slice(0, 500), reasoning: String(source.reasoning || '').slice(0, 500), nextTest: String(source.nextTest || '').slice(0, 500) };
+  }
+  function aqEvidenceHasContent(evidence) { var clean = aqSanitizeEvidence(evidence); return !!(clean.claim.trim() || clean.evidence.trim() || clean.reasoning.trim() || clean.nextTest.trim()); }
+  function aqEvidenceQuality(raw) {
+    var clean = aqSanitizeEvidence(raw);
+    var fields = [
+      { key: 'claim', label: 'Claim', prompt: 'State one testable explanation.' },
+      { key: 'evidence', label: 'Evidence', prompt: 'Name a measurement, warning, timeline change, or probe reading.' },
+      { key: 'reasoning', label: 'Reasoning', prompt: 'Connect the evidence to the system response.' },
+      { key: 'nextTest', label: 'Next test', prompt: 'Change one factor and predict what should move.' }
+    ];
+    fields.forEach(function(field) { field.done = !!clean[field.key].trim(); });
+    var missing = fields.filter(function(field) { return !field.done; });
+    return { score: fields.filter(function(field) { return field.done; }).length, total: fields.length, fields: fields, nextPrompt: missing.length ? missing[0].prompt : 'All four moves are present. Name one uncertainty your next run could reduce.' };
+  }
+  function aqInvestigationPrompt(regionId, model, workspace) {
+    var selected = REGIONS[regionId] || REGIONS[DEFAULT_REGION];
+    var warnings = model && Array.isArray(model.warnings) ? model.warnings : [];
+    var critical = warnings.find(function(item) { return item.level === 'critical'; });
+    if (critical) return 'The model flags ' + critical.text.toLowerCase() + ' Which measurement would you check first at ' + selected.label + ', and what would you change before adding stock?';
+    if (warnings.length) return 'The model is on watch because ' + warnings[0].text.toLowerCase() + ' What observation would confirm that signal before you redesign the system?';
+    if (workspace && Array.isArray(workspace.experiments) && workspace.experiments.length) return 'Compare your latest saved run with its baseline: which metric moved most, and what single variable would you change next?';
+    if (selected.id === 'chesapeake') return 'How might brackish salinity, freshwater inflow, and summer oxygen shape an oyster or clam decision in the Chesapeake Bay?';
+    return 'What relationship do you predict between stocking, water exchange, and oxygen in this system?';
+  }
+  function aqDefaultEcosystemWorkspace() { var base = ECOSYSTEM_ENVIRONMENTS.longline; return { environmentId: base.id, organisms: { oyster: 2, mussel: 2, kelp: 2, phytoplankton: 1 }, water: Object.assign({}, base.defaults), disturbanceId: 'none', observation: '', evidence: aqSanitizeEvidence(null), experiments: [], baselineScenario: null }; }
   function aqSanitizeLearnerProfile(raw) { var source = raw && typeof raw === 'object' ? raw : {}; var roles = LEARNER_PROFILE_OPTIONS.roles.map(function(item) { return item.id; }); var goals = LEARNER_PROFILE_OPTIONS.goals.map(function(item) { return item.id; }); var sessions = LEARNER_PROFILE_OPTIONS.sessions.map(function(item) { return item.id; }); return { role: roles.indexOf(source.role) >= 0 ? source.role : 'learner', goal: goals.indexOf(source.goal) >= 0 ? source.goal : 'experiment', session: sessions.indexOf(String(source.session)) >= 0 ? String(source.session) : '30', configured: !!source.configured }; }
 
   function aqSanitizeTeacherPlan(raw) {
@@ -7265,8 +7305,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   function aqSanitizeEcosystemWorkspace(raw) {
     var fallback = aqDefaultEcosystemWorkspace(), source = raw && typeof raw === 'object' ? raw : {}, scenario = aqSanitizeEcosystemScenario(source, fallback.environmentId);
     var environmentId = scenario.environmentId, organisms = scenario.organisms;
-    var experiments = (Array.isArray(source.experiments) ? source.experiments : []).slice(0, 12).map(function(item, index) { var experiment = item && typeof item === 'object' ? item : {}, experimentOrganisms = {}; ECOSYSTEM_ORGANISMS.forEach(function(organism) { var count = Math.round(Number((experiment.organisms || {})[organism.id]) || 0); if (count > 0) experimentOrganisms[organism.id] = aqEcoClamp(count, 1, 5); }); return { id: String(experiment.id || ('experiment-' + index)).slice(0, 80), savedAt: Math.max(0, Number(experiment.savedAt) || 0), environmentId: ECOSYSTEM_ENVIRONMENTS[experiment.environmentId] ? experiment.environmentId : environmentId, organisms: experimentOrganisms, status: ['Stable', 'Watch', 'Critical', 'Empty'].indexOf(experiment.status) >= 0 ? experiment.status : 'Watch', carryingPressure: aqEcoClamp(experiment.carryingPressure, 0, 250), oxygen: aqEcoClamp(experiment.oxygen, 0, 20), ammonia: aqEcoClamp(experiment.ammonia, 0, 5), resilience: aqEcoClamp(experiment.resilience, 0, 100), observation: String(experiment.observation || '').slice(0, 600), kind: experiment.kind === 'comparison' ? 'comparison' : 'snapshot', baselineSummary: experiment.baselineSummary && typeof experiment.baselineSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.baselineSummary) : null, currentSummary: experiment.currentSummary && typeof experiment.currentSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.currentSummary) : null }; });
-    return { environmentId: environmentId, organisms: organisms, water: Object.assign({}, scenario.water), disturbanceId: scenario.disturbanceId, observation: String(source.observation || '').slice(0, 600), experiments: experiments, baselineScenario: source.baselineScenario && typeof source.baselineScenario === 'object' ? aqSanitizeEcosystemScenario(source.baselineScenario, environmentId) : null };
+    var experiments = (Array.isArray(source.experiments) ? source.experiments : []).slice(0, 12).map(function(item, index) { var experiment = item && typeof item === 'object' ? item : {}, experimentOrganisms = {}; ECOSYSTEM_ORGANISMS.forEach(function(organism) { var count = Math.round(Number((experiment.organisms || {})[organism.id]) || 0); if (count > 0) experimentOrganisms[organism.id] = aqEcoClamp(count, 1, 5); }); return { id: String(experiment.id || ('experiment-' + index)).slice(0, 80), savedAt: Math.max(0, Number(experiment.savedAt) || 0), environmentId: ECOSYSTEM_ENVIRONMENTS[experiment.environmentId] ? experiment.environmentId : environmentId, organisms: experimentOrganisms, status: ['Stable', 'Watch', 'Critical', 'Empty'].indexOf(experiment.status) >= 0 ? experiment.status : 'Watch', carryingPressure: aqEcoClamp(experiment.carryingPressure, 0, 250), oxygen: aqEcoClamp(experiment.oxygen, 0, 20), ammonia: aqEcoClamp(experiment.ammonia, 0, 5), resilience: aqEcoClamp(experiment.resilience, 0, 100), observation: String(experiment.observation || '').slice(0, 600), evidence: aqSanitizeEvidence(experiment.evidence), kind: experiment.kind === 'comparison' ? 'comparison' : 'snapshot', baselineSummary: experiment.baselineSummary && typeof experiment.baselineSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.baselineSummary) : null, currentSummary: experiment.currentSummary && typeof experiment.currentSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.currentSummary) : null }; });
+    return { environmentId: environmentId, organisms: organisms, water: Object.assign({}, scenario.water), disturbanceId: scenario.disturbanceId, observation: String(source.observation || '').slice(0, 600), evidence: aqSanitizeEvidence(source.evidence), experiments: experiments, baselineScenario: source.baselineScenario && typeof source.baselineScenario === 'object' ? aqSanitizeEcosystemScenario(source.baselineScenario, environmentId) : null };
   }
 
   function aqCalculateEcosystem(workspace) {
@@ -7932,7 +7972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     var sim = simHook[0], setSim = simHook[1];
-    var guidedMissionHook = useState({ active: false, step: 0, droppers: 0, probed: false, feedback: 'Choose guided 2D to complete the same mission without WebGL.', reflection: '' });
+    var guidedMissionHook = useState({ active: false, step: 0, droppers: 0, probed: false, feedback: 'Choose guided 2D to complete the same mission without WebGL.', reflection: '', evidence: aqSanitizeEvidence(null) });
     var guidedMission = guidedMissionHook[0], setGuidedMission = guidedMissionHook[1];
     var hudHook = useState({});
     var hud = hudHook[0], setHud = hudHook[1];
@@ -8453,7 +8493,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           mode: String(record.mode || '').slice(0, 30),
           choiceIndex: typeof record.choiceIndex === 'number' ? record.choiceIndex : undefined,
           choice: String(record.choice || '').slice(0, 160),
-          reflection: String(record.reflection || '').slice(0, 600)
+          reflection: String(record.reflection || '').slice(0, 600),
+          evidence: aqSanitizeEvidence(record.evidence)
         };
       });
       var quizCheckpointResults = {};
@@ -8620,10 +8661,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var completedMarkup = portfolio.completed.length ? '<ul>' + portfolio.completed.map(function(item) {
         return '<li><strong>' + aqEscapeHtml(item.label) + '</strong> <span>' + aqEscapeHtml(item.area) + '</span></li>';
       }).join('') + '</ul>' : '<p>No lessons marked complete yet.</p>';
+      function structuredEvidenceMarkup(rawEvidence) {
+        var evidence = aqSanitizeEvidence(rawEvidence);
+        if (!aqEvidenceHasContent(evidence)) return '';
+        return '<div class="structured-evidence"><p><strong>Claim:</strong> ' + aqEscapeHtml(evidence.claim).replace(/\n/g, '<br>') + '</p>' +
+          '<p><strong>Evidence:</strong> ' + aqEscapeHtml(evidence.evidence).replace(/\n/g, '<br>') + '</p>' +
+          '<p><strong>Reasoning:</strong> ' + aqEscapeHtml(evidence.reasoning).replace(/\n/g, '<br>') + '</p>' +
+          '<p><strong>Next test:</strong> ' + aqEscapeHtml(evidence.nextTest).replace(/\n/g, '<br>') + '</p></div>';
+      }
       var missionMarkup = portfolio.missions.length ? portfolio.missions.map(function(item) {
         return '<article><h3>' + aqEscapeHtml(item.id.replace('mission-', 'Mission ')) + '</h3>' +
           (item.choice ? '<p><strong>Decision:</strong> ' + aqEscapeHtml(item.choice) + '</p>' : '') +
-          (item.reflection ? '<p><strong>Evidence:</strong> ' + aqEscapeHtml(item.reflection).replace(/\n/g, '<br>') + '</p>' : '') + '</article>';
+          (item.reflection ? '<p><strong>Evidence:</strong> ' + aqEscapeHtml(item.reflection).replace(/\n/g, '<br>') + '</p>' : '') +
+          structuredEvidenceMarkup(item.evidence) + '</article>';
       }).join('') : '<p>No missions completed yet.</p>';
       var ecosystemMarkup = portfolio.ecosystemExperiments.length ? portfolio.ecosystemExperiments.map(function(item) {
         var environment = ECOSYSTEM_ENVIRONMENTS[item.environmentId] || { name: item.environmentId };
@@ -8631,8 +8681,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           var organism = ECOSYSTEM_ORGANISMS.find(function(candidate) { return candidate.id === organismId; });
           return (organism ? organism.name : organismId) + ' × ' + item.organisms[organismId];
         }).join(', ');
-        if (item.kind === 'comparison' && item.baselineSummary && item.currentSummary) return '<article><h3>A/B seasonal comparison · ' + aqEscapeHtml(environment.name) + '</h3><p><strong>Scenario A:</strong> survival ' + item.baselineSummary.survival + '%, risk months ' + item.baselineSummary.riskMonths + ', ending biomass index ' + item.baselineSummary.endingBiomass + '</p><p><strong>Scenario B:</strong> survival ' + item.currentSummary.survival + '%, risk months ' + item.currentSummary.riskMonths + ', ending biomass index ' + item.currentSummary.endingBiomass + '</p><p><strong>Evidence:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
-        return '<article><h3>' + aqEscapeHtml(environment.name) + ' · ' + aqEscapeHtml(item.status) + '</h3><p><strong>Community:</strong> ' + aqEscapeHtml(community || 'No organisms') + '</p><p><strong>Snapshot:</strong> carrying pressure ' + item.carryingPressure + '%, oxygen ' + item.oxygen + ' mg/L, ammonia ' + item.ammonia + ' mg/L, resilience ' + item.resilience + '/100</p><p><strong>Observation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
+        var evidenceMarkup = structuredEvidenceMarkup(item.evidence);
+        if (item.kind === 'comparison' && item.baselineSummary && item.currentSummary) return '<article><h3>A/B seasonal comparison · ' + aqEscapeHtml(environment.name) + '</h3><p><strong>Scenario A:</strong> survival ' + item.baselineSummary.survival + '%, risk months ' + item.baselineSummary.riskMonths + ', ending biomass index ' + item.baselineSummary.endingBiomass + '</p><p><strong>Scenario B:</strong> survival ' + item.currentSummary.survival + '%, risk months ' + item.currentSummary.riskMonths + ', ending biomass index ' + item.currentSummary.endingBiomass + '</p><p><strong>Evidence:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p>' + evidenceMarkup + '</article>';
+        return '<article><h3>' + aqEscapeHtml(environment.name) + ' · ' + aqEscapeHtml(item.status) + '</h3><p><strong>Community:</strong> ' + aqEscapeHtml(community || 'No organisms') + '</p><p><strong>Snapshot:</strong> carrying pressure ' + item.carryingPressure + '%, oxygen ' + item.oxygen + ' mg/L, ammonia ' + item.ammonia + ' mg/L, resilience ' + item.resilience + '/100</p><p><strong>Observation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p>' + evidenceMarkup + '</article>';
       }).join('') : '<p>No ecosystem experiments saved yet.</p>';
       var profileMarkup = '<p><strong>Role:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.role) + ' · <strong>Goal:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.goal) + ' · <strong>Session:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.session) + ' minutes</p>';
       var pathMarkup = '<ul>' + portfolio.paths.map(function(path) {
@@ -8806,7 +8857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function startGuidedMission() {
-      setGuidedMission({ active: true, step: 0, droppers: 0, probed: false, feedback: 'At the landing: review the mission, then depart when ready.', reflection: '' });
+      setGuidedMission({ active: true, step: 0, droppers: 0, probed: false, feedback: 'At the landing: review the mission, then depart when ready.', reflection: '', evidence: aqSanitizeEvidence(null) });
       aqAnnounce('Guided 2D boat mission opened at the town landing.');
     }
 
@@ -8831,11 +8882,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       });
     }
 
+    function updateGuidedEvidenceField(key, value) {
+      setGuidedMission(function(previous) { var nextEvidence = aqSanitizeEvidence(Object.assign({}, previous.evidence || {}, (function() { var patch = {}; patch[key] = value; return patch; })())); return Object.assign({}, previous, { evidence: nextEvidence }); });
+    }
     function completeGuidedMission() {
       var reflection = String(guidedMission.reflection || '').trim();
       if (guidedMission.step !== 6 || reflection.length < 20) { aqAnnounce('Finish the route and add at least 20 characters of evidence.'); return; }
       var saved = loadState(), nextCompleted = Object.assign({}, saved.completedMissions || {});
-      nextCompleted['mission-1'] = { completedAt: Date.now(), mode: 'guided-2d', choice: 'Red nun to starboard; marked channel; five droppers; probe; return', reflection: reflection.slice(0, 600) };
+      nextCompleted['mission-1'] = { completedAt: Date.now(), mode: 'guided-2d', choice: 'Red nun to starboard; marked channel; five droppers; probe; return', reflection: reflection.slice(0, 600), evidence: aqSanitizeEvidence(guidedMission.evidence) };
       saved.completedMissions = nextCompleted; saved.droppersDeployed = Math.max(Number(saved.droppersDeployed) || 0, 5);
       var stored = saveState(saved); setCompletedMissions(nextCompleted);
       setLearningNotice(stored ? { kind: 'success', message: 'Guided boat mission evidence saved to your portfolio.' } : { kind: 'error', message: 'The mission is complete, but this browser could not store the evidence.' });
@@ -8871,6 +8925,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return { route: route, label: label, location: getTopicLocation(route) };
     }
 
+    function adaptiveNextAction(profile, model, workspace, missions, progress) {
+      if (profile.role === 'teacher' || profile.goal === 'teach') return { route: 'teacherstudio', label: 'Open Teacher Studio', reason: 'You chose a teaching goal; shape the next investigation into an assignment.', tone: '#c4b5fd' };
+      if (profile.role === 'career' || profile.goal === 'career') return { route: 'careers', label: 'Explore aquaculture careers', reason: 'Connect the system decisions you have made with real roles and training pathways.', tone: '#c4b5fd' };
+      if (model.status === 'Critical') return { route: 'water', label: 'Investigate water quality', reason: 'Your current ecosystem has a critical signal. Diagnose oxygen, ammonia, or compatibility before adding complexity.', tone: '#fda4af' };
+      if (!missions['mission-1']) return { route: 'sim', label: 'Open the boat mission', reason: 'Practice buoyage, lease navigation, deployment, and probe evidence in the field workflow.', tone: '#5eead4' };
+      if (!(workspace.experiments || []).length) return { route: 'ecosystem', label: 'Run your first ecosystem experiment', reason: 'You completed the mission; now compare organisms and water conditions in the systems workspace.', tone: '#2dd4bf' };
+      if (profile.goal === 'plan' || profile.role === 'grower') return { route: 'lease', label: 'Build the farm case', reason: 'Transfer the biological design into site, lease, safety, and market decisions.', tone: '#fbbf24' };
+      var nextJourney = (LEARNING_JOURNEYS || []).find(function(journey) { return journey.topics.some(function(topicId) { return !((progress.completedTopics || {})[topicId]); }); });
+      var nextTopic = nextJourney ? nextJourney.topics.find(function(topicId) { return !((progress.completedTopics || {})[topicId]); }) : 'ecosystem';
+      var location = getTopicLocation(nextTopic);
+      return { route: nextTopic, label: 'Continue with ' + location.topic.label, reason: 'Keep building a connected path through the lab and save one more piece of evidence.', tone: '#99f6e4' };
+    }
     function persistEcosystemWorkspace(nextWorkspace, notice) {
       var clean = aqSanitizeEcosystemWorkspace(nextWorkspace), savedState = loadState();
       savedState.ecosystemWorkspace = clean; var stored = saveState(savedState);
@@ -8887,7 +8953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function applyEcosystemPreset(preset) {
       if (!preset || !ECOSYSTEM_ENVIRONMENTS[preset.environmentId]) return;
-      var next = { environmentId: preset.environmentId, organisms: Object.assign({}, preset.organisms), water: Object.assign({}, ECOSYSTEM_ENVIRONMENTS[preset.environmentId].defaults), disturbanceId: 'none', observation: '', experiments: ecosystemWorkspace.experiments || [], baselineScenario: ecosystemWorkspace.baselineScenario || null };
+      var next = { environmentId: preset.environmentId, organisms: Object.assign({}, preset.organisms), water: Object.assign({}, ECOSYSTEM_ENVIRONMENTS[preset.environmentId].defaults), disturbanceId: 'none', observation: '', evidence: aqSanitizeEvidence(ecosystemWorkspace.evidence), experiments: ecosystemWorkspace.experiments || [], baselineScenario: ecosystemWorkspace.baselineScenario || null };
       persistEcosystemWorkspace(next, preset.prompt); aqAnnounce(preset.name + ' loaded.');
     }
 
@@ -8914,13 +8980,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { observation: String(value || '').slice(0, 600) }), 'Observation draft saved on this device.');
     }
 
+    function updateEcosystemEvidenceField(key, value) {
+      var nextEvidence = aqSanitizeEvidence(Object.assign({}, ecosystemWorkspace.evidence || {}, (function() { var patch = {}; patch[key] = value; return patch; })()));
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { evidence: nextEvidence }), 'Structured evidence draft saved on this device.');
+    }
+
     function saveEcosystemExperiment() {
       var observation = String(ecosystemWorkspace.observation || '').trim();
       if (observation.length < 20) { setEcosystemNotice('Add an observation of at least 20 characters before saving evidence.'); aqAnnounce('More observation evidence is needed.'); return; }
       var model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
-      var record = { id: 'ecosystem-' + now, savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, observation: observation };
+      var record = { id: 'ecosystem-' + now, savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, observation: observation, evidence: aqSanitizeEvidence(ecosystemWorkspace.evidence) };
       var experiments = [record].concat(ecosystemWorkspace.experiments || []).slice(0, 12);
-      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '' }), 'Experiment saved as portfolio evidence.');
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '', evidence: aqSanitizeEvidence(null) }), 'Experiment saved as portfolio evidence.');
       setLearningNotice({ kind: 'success', message: 'Ecosystem experiment saved to your learning portfolio.' }); aqAnnounce('Ecosystem experiment saved.');
     }
 
@@ -8940,9 +9011,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (!ecosystemWorkspace.baselineScenario) { setEcosystemNotice('Save scenario A before creating a comparison report.'); aqAnnounce('A baseline scenario is needed.'); return; }
       if (observation.length < 20) { setEcosystemNotice('Add an evidence reflection of at least 20 characters before saving the comparison.'); aqAnnounce('More comparison evidence is needed.'); return; }
       var baselineRun = aqSimulateEcosystemYear(ecosystemWorkspace.baselineScenario), currentRun = aqSimulateEcosystemYear(ecosystemWorkspace), model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
-      var record = { id: 'comparison-' + now, kind: 'comparison', savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, baselineSummary: baselineRun.summary, currentSummary: currentRun.summary, observation: observation };
+      var record = { id: 'comparison-' + now, kind: 'comparison', savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, baselineSummary: baselineRun.summary, currentSummary: currentRun.summary, observation: observation, evidence: aqSanitizeEvidence(ecosystemWorkspace.evidence) };
       var experiments = [record].concat(ecosystemWorkspace.experiments || []).slice(0, 12);
-      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '' }), 'A/B comparison saved as portfolio evidence.');
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '', evidence: aqSanitizeEvidence(null) }), 'A/B comparison saved as portfolio evidence.');
       setLearningNotice({ kind: 'success', message: 'Seasonal comparison saved to your learning portfolio.' }); aqAnnounce('Seasonal comparison report saved.');
     }
     function deleteEcosystemExperiment(experimentId) {
@@ -9316,17 +9387,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function regionBar() {
-      return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12, flexWrap: 'wrap' } },
-        h('label', { htmlFor: 'aq-region-select', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Region:'),
-        h('select', { id: 'aq-region-select', value: region,
-          onChange: function(e) { setRegion(e.target.value); aqAnnounce('Region set to ' + REGIONS[e.target.value].label); },
-          style: { background: '#0f1c2f', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(20,184,166,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12 } },
-          Object.keys(REGIONS).map(function(rk) {
-            return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)'));
-          })),
-        !REGIONS[region].complete ? h('span', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — full data in v1.1. Maine shown.') : null);
+      var selected = REGIONS[region] || REGIONS[DEFAULT_REGION];
+      var sourceLinks = selected.sources || [];
+      return h('div', { className: 'aq-region-bar', style: { padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+          h('label', { htmlFor: 'aq-region-select', style: { fontSize: 11, fontWeight: 800, color: '#dbeafe' } }, 'Region:'),
+          h('select', { id: 'aq-region-select', value: region, onChange: function(e) { setRegion(e.target.value); aqAnnounce('Region set to ' + REGIONS[e.target.value].label); }, style: { background: '#0f1c2f', color: '#f8fafc', border: '1px solid #789b97', borderRadius: 7, padding: '7px 9px', fontSize: 12 } }, Object.keys(REGIONS).map(function(rk) { return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)')); })),
+          selected.complete ? h('span', { style: { color: '#bbf7d0', fontSize: 11, fontWeight: 800 } }, 'Transfer pack ready') : h('span', { style: { color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, 'Preview region · Maine content remains the reference')),
+        selected.complete ? h('details', { className: 'aq-region-context', style: { marginTop: 9, borderRadius: 8, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
+          h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900, listStylePosition: 'inside' } }, selected.label + ' learning context'),
+          h('div', { className: 'aq-region-context-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 9, padding: '0 10px 10px' } },
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Place and authority'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.portCoords), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, selected.authority)),
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Focus species and signals'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.focusSpecies.join(' · ')), h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, selected.operatingSignals.join(' · '))),
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Farm and market context'), h('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.45 } }, selected.marketContext), h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, color: '#bfdbfe', fontSize: 10.5, lineHeight: 1.45 } }, selected.sources.map(function(source) { return h('li', { key: source.url }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null);
     }
 
+    function evidenceCoachCard(rawEvidence, prompt, onUsePrompt) {
+      var quality = aqEvidenceQuality(rawEvidence);
+      var tone = quality.score === quality.total ? '#86efac' : quality.score > 0 ? '#fde68a' : '#cbd5e1';
+      return h('div', { className: 'aq-evidence-coach', role: 'status', 'aria-label': 'Evidence coach', style: { marginTop: 9, padding: 9, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+          h('span', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Evidence coach'),
+          h('span', { style: { color: tone, fontSize: 11, fontWeight: 950 } }, quality.score + '/' + quality.total + ' moves')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 4, marginTop: 7 } }, quality.fields.map(function(field) {
+          return h('div', { key: field.key, title: field.done ? field.label + ' captured' : field.prompt, style: { height: 5, borderRadius: 999, background: field.done ? '#5eead4' : '#28443f' } });
+        })),
+        h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 10.8, lineHeight: 1.45 } }, h('b', null, 'Next move: '), quality.nextPrompt),
+        prompt ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(148,163,184,.18)' } },
+          h('div', { style: { color: '#c4b5fd', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Investigation prompt'),
+          h('p', { style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 11, lineHeight: 1.45 } }, prompt),
+          onUsePrompt ? h('button', { type: 'button', className: 'aq-btn', onClick: onUsePrompt, style: { minHeight: 34, marginTop: 6, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 10.5, fontWeight: 900 } }, 'Use as claim') : null) : null);
+    }
+    function labPulse() {
+      var model = aqCalculateEcosystem(ecosystemWorkspace);
+      var selected = REGIONS[region] || REGIONS[DEFAULT_REGION];
+      var missionRecord = completedMissions['mission-1'];
+      var missionDone = !!missionRecord;
+      var experiments = ecosystemWorkspace.experiments || [];
+      var latestEvidence = ecosystemWorkspace.evidence;
+      if (!aqEvidenceHasContent(latestEvidence) && experiments.length) latestEvidence = experiments[0].evidence;
+      if (!aqEvidenceHasContent(latestEvidence) && missionRecord) latestEvidence = missionRecord.evidence;
+      var evidenceQuality = aqEvidenceQuality(latestEvidence);
+      var investigationPrompt = aqInvestigationPrompt(region, model, ecosystemWorkspace);
+      var hasMissionEvidence = !!(missionRecord && (String(missionRecord.reflection || '').trim() || aqEvidenceHasContent(missionRecord.evidence)));
+      var hasExperimentEvidence = experiments.some(function(item) { return !!(String(item.observation || '').trim() || aqEvidenceHasContent(item.evidence)); });
+      var stages = [
+        { key: 'orient', label: 'Orient', detail: selected.label, done: !!selected.complete, current: !selected.complete },
+        { key: 'navigate', label: 'Navigate', detail: missionDone ? 'Boat decisions logged' : 'Complete the boat mission', done: missionDone, current: !!selected.complete && !missionDone },
+        { key: 'model', label: 'Model', detail: experiments.length ? experiments.length + ' experiment' + (experiments.length === 1 ? '' : 's') + ' saved' : model.status + ' system ready', done: experiments.length > 0, current: missionDone && experiments.length === 0 },
+        { key: 'explain', label: 'Explain', detail: evidenceQuality.score + '/4 evidence moves' + (evidenceQuality.score === 4 ? ' · portfolio-ready' : ' · ' + evidenceQuality.nextPrompt), done: evidenceQuality.score === 4, current: !evidenceQuality.score || evidenceQuality.score < 4 }
+      ];
+      var doneCount = stages.filter(function(stage) { return stage.done; }).length;
+      var next = adaptiveNextAction(learnerProfile, model, ecosystemWorkspace, completedMissions || {}, learningProgress);
+      function stageCard(stage) {
+        var tone = stage.done ? '#86efac' : stage.current ? '#fde68a' : '#cbd5e1';
+        var badge = stage.done ? 'DONE' : stage.current ? 'NOW' : 'NEXT';
+        return h('div', { key: stage.key, className: 'aq-lab-pulse-stage', style: { minWidth: 0, padding: 9, borderRadius: 9, background: stage.current ? 'rgba(253,230,138,.10)' : '#061a18', border: '1px solid ' + (stage.current ? '#b6a35d' : '#416c67') } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 6, alignItems: 'center' } },
+            h('span', { style: { color: '#f8fafc', fontSize: 11.5, fontWeight: 950 } }, stage.label),
+            h('span', { style: { color: tone, fontSize: 9.5, fontWeight: 950, letterSpacing: '.06em' } }, badge)),
+          h('div', { style: { marginTop: 4, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.35 } }, stage.detail));
+      }
+      return h('section', { className: 'aq-lab-pulse', role: 'region', 'aria-labelledby': 'aq-lab-pulse-heading', style: { marginBottom: 12, padding: 11, borderRadius: 11, background: 'linear-gradient(105deg,rgba(4,31,29,.98),rgba(15,23,42,.92))', border: '1px solid #527a75' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+          h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Field brief'),
+            h('h2', { id: 'aq-lab-pulse-heading', style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 17 } }, 'From place to proof')),
+          h('span', { style: { color: doneCount === 4 ? '#86efac' : '#fde68a', fontSize: 11, fontWeight: 900 } }, doneCount + '/4 milestones logged')),
+        h('p', { style: { margin: '5px 0 10px', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.45 } }, selected.complete ? 'Use this rail to carry one investigation from regional context through a modeled decision and portfolio-ready evidence.' : 'This region is still a preview. Treat the Maine context as your reference while you explore the controls.'),
+        h('div', { className: 'aq-lab-pulse-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 7 } }, stages.map(stageCard)),
+        evidenceCoachCard(latestEvidence, investigationPrompt, null),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 9, flexWrap: 'wrap', marginTop: 9, paddingTop: 8, borderTop: '1px solid rgba(148,163,184,.18)' } },
+          h('span', { style: { color: '#cbd5e1', fontSize: 10.5 } }, 'Recommended handoff: ', h('b', { style: { color: '#f8fafc' } }, next.reason)),
+          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(next.route, next.label); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', background: next.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 10.5, fontWeight: 950 } }, next.label + ' →')));
+    }
+    function labNotebookCard() {
+      var entries = [];
+      Object.keys(completedMissions || {}).forEach(function(missionId) {
+        var record = completedMissions[missionId] || {};
+        var mission = MISSIONS.find(function(item) { return item.id === missionId; });
+        var quality = aqEvidenceQuality(record.evidence);
+        entries.push({ id: missionId, when: Number(record.completedAt) || 0, kind: 'Boat mission', title: mission ? mission.title : 'Field mission', status: 'Mission complete', detail: String(record.reflection || record.choice || 'Navigation and farm-work decisions recorded.').slice(0, 180), quality: quality, route: 'sim', action: 'Review boat evidence' });
+      });
+      (ecosystemWorkspace.experiments || []).forEach(function(record) {
+        var environment = ECOSYSTEM_ENVIRONMENTS[record.environmentId] || { name: record.environmentId };
+        var quality = aqEvidenceQuality(record.evidence);
+        entries.push({ id: record.id, when: Number(record.savedAt) || 0, kind: record.kind === 'comparison' ? 'A/B comparison' : 'Ecosystem snapshot', title: record.kind === 'comparison' ? 'Seasonal comparison' : environment.name, status: record.status || 'Saved', detail: String(record.observation || 'Experiment evidence recorded.').slice(0, 180), quality: quality, route: 'ecosystem', action: 'Review ecosystem evidence' });
+      });
+      entries.sort(function(a, b) { return b.when - a.when; });
+      entries = entries.slice(0, 4);
+      return h('section', { className: 'aq-notebook-card', role: 'region', 'aria-labelledby': 'aq-notebook-heading', style: { marginBottom: 12, padding: 13, borderRadius: 13, background: 'linear-gradient(135deg,rgba(6,26,24,.98),rgba(15,23,42,.94))', border: '1px solid #527a75' } },
+        h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+          h('div', null, h('div', { style: { color: '#fbbf24', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Lab notebook'),
+            h('h2', { id: 'aq-notebook-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18 } }, 'What you have already proven'),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45, maxWidth: 700 } }, 'Keep the investigation alive: revisit a saved result, compare it with a new run, or strengthen the evidence moves before moving on.')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, color: entries.length ? '#fde68a' : '#cbd5e1', background: entries.length ? 'rgba(251,191,36,.12)' : 'rgba(148,163,184,.12)', border: '1px solid ' + (entries.length ? '#b6a35d' : '#527a75'), fontSize: 10.5, fontWeight: 900 } }, entries.length ? entries.length + ' recent record' + (entries.length === 1 ? '' : 's') : 'No records yet')),
+        entries.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 8, marginTop: 11 } }, entries.map(function(entry) {
+          var tone = entry.quality.score === entry.quality.total ? '#86efac' : entry.quality.score > 0 ? '#fde68a' : '#bfdbfe';
+          return h('article', { key: entry.id, style: { minWidth: 0, padding: 10, borderRadius: 9, background: '#031714', border: '1px solid #416c67' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'center' } },
+              h('span', { style: { color: '#99f6e4', fontSize: 9.8, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, entry.kind),
+              h('span', { style: { color: tone, fontSize: 10, fontWeight: 900 } }, entry.quality.score ? entry.quality.score + '/4 evidence moves' : entry.status)),
+            h('h3', { style: { margin: '5px 0 3px', color: '#f8fafc', fontSize: 13, lineHeight: 1.25 } }, entry.title),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 10.8, lineHeight: 1.45 } }, entry.detail + (entry.quality.score < entry.quality.total ? ' ' + entry.quality.nextPrompt : '')),
+            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(entry.route, entry.action); }, style: { minHeight: 36, marginTop: 8, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 900 } }, entry.action + ' →'));
+        })) : h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 9, flexWrap: 'wrap', marginTop: 10, padding: 10, borderRadius: 9, background: '#031714', border: '1px dashed #527a75' } },
+          h('span', { style: { color: '#dbeafe', fontSize: 11 } }, 'Save your first mission reflection or ecosystem snapshot and it will appear here.'),
+          h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('ecosystem', 'Start your first ecosystem experiment'); }, style: { minHeight: 38, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 10.5, fontWeight: 900 } }, 'Start an experiment →')));
+    }
     function homeTab() {
       var st = loadState();
       var completedCount = Object.keys(completedMissions || {}).filter(function(missionId) {
@@ -9361,6 +9528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var recommendedJourney = journeySummaries.find(function(summary) { return !summary.complete; }) || journeySummaries[0];
       var recommendedLocation = getTopicLocation(recommendedJourney.nextTopic);
       var profileNext = profileRecommendation(learnerProfile);
+      var adaptiveNext = adaptiveNextAction(learnerProfile, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace, completedMissions || {}, learningProgress);
       var ecosystemExperimentCount = (ecosystemWorkspace.experiments || []).length;
       var opsRoutes = [
         { id: 'launch', label: 'Run the skiff mission', detail: 'Cast off, reach the lease, deploy droppers, and probe water quality.', tab: 'sim', tone: '#5eead4' },
@@ -9370,6 +9538,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
       ];
       return h('div', null,
+        regionBar(),
+        labPulse(),
         lastContentLocation && h('section', { className: 'aq-resume-card', role: 'status', 'aria-label': 'Resume aquaculture learning',
           style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '11px 13px', marginBottom: 12, borderRadius: 12, background: 'linear-gradient(110deg, rgba(11,43,40,0.98), rgba(7,31,29,0.96))', border: '1px solid #5c8580' } },
           h('div', null,
@@ -9395,7 +9565,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('select', { id: 'aq-profile-session', value: learnerProfile.session, onChange: function(event) { persistLearnerProfile({ session: event.target.value }); }, style: { display: 'block', width: '100%', minHeight: 44, marginTop: 5, padding: '8px 9px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #789b97' } }, LEARNER_PROFILE_OPTIONS.sessions.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })))),
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 11, paddingTop: 10, borderTop: '1px solid rgba(196,181,253,.28)' } },
             h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, (LEARNER_PROFILE_OPTIONS.roles.find(function(item) { return item.id === learnerProfile.role; }) || LEARNER_PROFILE_OPTIONS.roles[0]).detail),
-            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(profileNext.route, profileNext.label); }, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12.5, fontWeight: 900 } }, profileNext.label + ' →'))),        h('section', { className: 'aq-home-card aq-learning-card', 'aria-labelledby': 'aq-my-learning-heading',
+            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(profileNext.route, profileNext.label); }, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12.5, fontWeight: 900 } }, profileNext.label + ' →'))),        h('section', { className: 'aq-home-card aq-next-action-card', 'aria-labelledby': 'aq-next-action-heading', role: 'region', style: { marginBottom: 12, padding: 13, borderRadius: 12, background: 'linear-gradient(110deg,rgba(7,31,29,.98),rgba(30,27,75,.9))', border: '1px solid #789b97' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            h('div', null, h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Adaptive guidance'), h('h2', { id: 'aq-next-action-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 18 } }, 'Your next best action'), h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.5, maxWidth: 720 } }, adaptiveNext.reason)),
+            h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(adaptiveNext.route, adaptiveNext.label); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: adaptiveNext.tone, color: '#032522', border: '1px solid #f8fafc', fontSize: 12, fontWeight: 900 } }, adaptiveNext.label + ' →'))),        labNotebookCard(),
+        h('section', { className: 'aq-home-card aq-learning-card', 'aria-labelledby': 'aq-my-learning-heading',
           style: { marginBottom: 12, padding: 13, borderRadius: 12, background: 'linear-gradient(145deg, rgba(11,43,40,0.98), rgba(6,26,24,0.96))', border: '1px solid #5c8580' } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
@@ -9532,7 +9706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'You own a 1-acre Limited Purpose Aquaculture (LPA) lease on the Bagaduce River. Pilot your skiff out, deploy seeded longlines, monitor water quality (temp, salinity, DO, pH, chlorophyll-a), harvest at 18-24 months, navigate weather and tides. Learn boating navigation (IALA-B, COLREGS, charts) alongside the full shellfish farming cycle.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
-            'Built for Maine\'s expanding aquaculture industry. Pairs with FisherLab for marine-trades curriculum. Maine DMR rules default; region toggle lets you preview Chesapeake, PNW, or Great Lakes (v1.1).'),
+            'Built for Maine\'s expanding aquaculture industry. Pairs with FisherLab for marine-trades curriculum. Maine DMR rules default; Chesapeake is transfer-ready, while PNW and Great Lakes remain clearly marked previews.'),
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(20,184,166,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
@@ -9641,6 +9815,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var baselineYearRun = ecosystemWorkspace.baselineScenario ? aqSimulateEcosystemYear(ecosystemWorkspace.baselineScenario) : null;
       var yearComparison = aqCompareEcosystemRuns(baselineYearRun, currentYearRun);
       var statusColor = model.status === 'Stable' ? '#86efac' : model.status === 'Critical' ? '#fda4af' : model.status === 'Empty' ? '#cbd5e1' : '#fde68a';
+      var evidenceQuality = aqEvidenceQuality(ecosystemWorkspace.evidence);
+      var investigationPrompt = aqInvestigationPrompt(region, model, ecosystemWorkspace);
       var organismGroups = ['all'].concat(ECOSYSTEM_ORGANISMS.map(function(item) { return item.group; }).filter(function(group, index, list) { return list.indexOf(group) === index; }));
       var visibleOrganisms = ECOSYSTEM_ORGANISMS.filter(function(item) { return organismFilter === 'all' || item.group === organismFilter; });
       function metricCard(label, value, tone, explanation) {
@@ -9655,7 +9831,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } }, label, h('output', { htmlFor: 'aq-eco-' + key, style: { color: '#5eead4', fontWeight: 950 } }, value + unit)),
           h('input', { id: 'aq-eco-' + key, type: 'range', min: min, max: max, step: step, value: value, onChange: function(event) { updateEcosystemWater(key, event.target.value); }, style: { width: '100%', marginTop: 8 } }));
       }
-      return h('div', { className: 'aq-ecosystem-builder' },
+      function evidenceField(key, label, placeholder) {
+        var evidence = ecosystemWorkspace.evidence || {};
+        return h('label', { key: key, htmlFor: 'aq-eco-evidence-' + key, style: { display: 'block', color: '#dbeafe', fontSize: 11, fontWeight: 850 } }, label,
+          h('textarea', { id: 'aq-eco-evidence-' + key, rows: 3, maxLength: 500, value: evidence[key] || '', onChange: function(event) { updateEcosystemEvidenceField(key, event.target.value); }, placeholder: placeholder, style: { boxSizing: 'border-box', width: '100%', minHeight: 74, marginTop: 5, padding: 8, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, lineHeight: 1.45 } }));
+      }      return h('div', { className: 'aq-ecosystem-builder' },
+        regionBar(),
+        labPulse(),
         h('section', { className: 'aq-content-card aq-ecosystem-card aq-eco-intro', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(4,47,46,.96),rgba(30,27,75,.88))' }) },
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, 'Ecosystem Builder'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.35fr) minmax(230px,.65fr)', gap: 14, alignItems: 'start' } },
@@ -9756,7 +9938,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '6 · Save evidence'),
           h('h2', { id: 'aq-eco-evidence-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 18 } }, 'Experiment log'),
           h('label', { htmlFor: 'aq-eco-observation', style: { display: 'block', color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'What changed, what evidence supports your explanation, and what would you test next?'),
-          h('textarea', { id: 'aq-eco-observation', rows: 4, maxLength: 600, value: ecosystemWorkspace.observation, onChange: function(event) { updateEcosystemObservation(event.target.value); }, placeholder: 'Example: When I added a third salmon unit, carrying pressure and ammonia rose. The biofilter reduced ammonia but oxygen became the limiting factor…', style: { boxSizing: 'border-box', width: '100%', minHeight: 100, marginTop: 6, padding: 10, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
+          h('textarea', { id: 'aq-eco-observation', rows: 4, maxLength: 600, value: ecosystemWorkspace.observation, onChange: function(event) { updateEcosystemObservation(event.target.value); }, placeholder: 'Example: When I added a third salmon unit, carrying pressure and ammonia rose. The biofilter reduced ammonia but oxygen became the limiting factor…', style: { boxSizing: 'border-box', width: '100%', minHeight: 100, marginTop: 6, padding: 10, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),          h('details', { className: 'aq-structured-evidence', style: { marginTop: 10, borderRadius: 9, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
+            h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '9px 10px', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900, listStylePosition: 'inside' } }, 'Structure the explanation · optional but useful'),
+            evidenceCoachCard(ecosystemWorkspace.evidence, investigationPrompt, function() { updateEcosystemEvidenceField('claim', investigationPrompt); }),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, padding: '0 10px 10px' } },
+              evidenceField('claim', 'Claim · What do you think happened?', 'Example: The added finfish pushed oxygen toward the limiting factor.'),
+              evidenceField('evidence', 'Evidence · Which measurements or observations support it?', 'Name a modeled metric, warning, timeline change, or probe reading.'),
+              evidenceField('reasoning', 'Reasoning · Why does that evidence support your claim?', 'Connect the organism role, water condition, and system response.'),
+              evidenceField('nextTest', 'Next test · What would you change or measure next?', 'Change one factor and predict what should move.'))),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: ecosystemWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, ecosystemWorkspace.observation.length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: ecosystemWorkspace.observation.trim().length < 20 || !model.selected.length, onClick: saveEcosystemExperiment, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 'pointer' : 'not-allowed', opacity: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 950 } }, 'Save snapshot evidence'), h('button', { type: 'button', className: 'aq-btn', disabled: ecosystemWorkspace.observation.trim().length < 20 || !ecosystemWorkspace.baselineScenario, onClick: saveEcosystemComparison, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: ecosystemWorkspace.observation.trim().length >= 20 && ecosystemWorkspace.baselineScenario ? 'pointer' : 'not-allowed', opacity: ecosystemWorkspace.observation.trim().length >= 20 && ecosystemWorkspace.baselineScenario ? 1 : .55, background: '#bfdbfe', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Save A/B comparison')),
           (ecosystemWorkspace.experiments || []).length ? h('div', { style: { display: 'grid', gap: 8, marginTop: 13 } }, h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, 'Saved experiments · ' + ecosystemWorkspace.experiments.length + '/12'), ecosystemWorkspace.experiments.map(function(experiment) { var environment = ECOSYSTEM_ENVIRONMENTS[experiment.environmentId]; return h('article', { key: experiment.id, style: { padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #527a75' } }, h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, h('div', { style: { color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, (experiment.kind === 'comparison' ? 'A/B seasonal comparison' : (environment ? environment.name : experiment.environmentId)) + ' · ' + experiment.status), h('button', { type: 'button', className: 'aq-btn', onClick: function() { deleteEcosystemExperiment(experiment.id); }, style: { minHeight: 36, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 10.5, fontWeight: 850 } }, 'Remove')), h('div', { style: { marginTop: 4, color: '#bfdbfe', fontSize: 10.5 } }, experiment.kind === 'comparison' && experiment.baselineSummary && experiment.currentSummary ? 'A: survival ' + experiment.baselineSummary.survival + '%, risk ' + experiment.baselineSummary.riskMonths + ' months → B: survival ' + experiment.currentSummary.survival + '%, risk ' + experiment.currentSummary.riskMonths + ' months' : 'Pressure ' + experiment.carryingPressure + '% · oxygen ' + experiment.oxygen + ' mg/L · ammonia ' + experiment.ammonia + ' mg/L · resilience ' + experiment.resilience + '/100'), h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, experiment.observation)); })) : h('p', { style: { margin: '10px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'No experiment evidence saved yet.')));
     }
@@ -9778,6 +9967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function guided2DMissionPanel() {
       var steps = ['Leave the town landing', 'Pass the red nun correctly', 'Follow the marked channel to the lease', 'Deploy five seeded droppers', 'Take a water-quality probe', 'Return to the landing'];
       var complete = guidedMission.step >= 6;
+      var guidedInvestigationPrompt = aqInvestigationPrompt(region, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace);
       function actionButton(label, action, tone) {
         return h('button', { key: action, type: 'button', className: 'aq-btn', onClick: function() { guidedMissionAction(action); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: tone || '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 11.5, fontWeight: 900 } }, label);
       }
@@ -9804,13 +9994,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('div', { style: { marginTop: 9 } }, actions),
             complete ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #4ade80' } },
               h('label', { htmlFor: 'aq-guided-reflection', style: { display: 'block', color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'What navigation or farm-work evidence shows that you completed the mission safely?'),
-              h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, probe result, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
+              h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, probe result, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),              h('details', { className: 'aq-structured-evidence', style: { marginTop: 9, borderRadius: 8, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
+                h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 9px', cursor: 'pointer', color: '#f8fafc', fontSize: 11, fontWeight: 900, listStylePosition: 'inside' } }, 'Organize your mission evidence · optional'),
+                evidenceCoachCard(guidedMission.evidence, guidedInvestigationPrompt, function() { updateGuidedEvidenceField('claim', guidedInvestigationPrompt); }),
+                h('div', { style: { display: 'grid', gap: 8, padding: '0 9px 9px' } },
+                  h('label', { htmlFor: 'aq-guided-claim', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Claim', h('textarea', { id: 'aq-guided-claim', rows: 2, maxLength: 500, value: guidedMission.evidence.claim, onChange: function(event) { updateGuidedEvidenceField('claim', event.target.value); }, placeholder: 'What did you do safely?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-evidence', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Evidence', h('textarea', { id: 'aq-guided-evidence', rows: 2, maxLength: 500, value: guidedMission.evidence.evidence, onChange: function(event) { updateGuidedEvidenceField('evidence', event.target.value); }, placeholder: 'Which buoy, route, probe, or deployment record shows it?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-reasoning', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Reasoning', h('textarea', { id: 'aq-guided-reasoning', rows: 2, maxLength: 500, value: guidedMission.evidence.reasoning, onChange: function(event) { updateGuidedEvidenceField('reasoning', event.target.value); }, placeholder: 'Why did those choices reduce risk?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
+                  h('label', { htmlFor: 'aq-guided-next-test', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Next test', h('textarea', { id: 'aq-guided-next-test', rows: 2, maxLength: 500, value: guidedMission.evidence.nextTest, onChange: function(event) { updateGuidedEvidenceField('nextTest', event.target.value); }, placeholder: 'What would you practice or measure next?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })))),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: guidedMission.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, guidedMission.reflection.trim().length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.reflection.trim().length < 20, onClick: completeGuidedMission, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: guidedMission.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: guidedMission.reflection.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } }, 'Save mission evidence'))) : null,
             h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, marginTop: 9, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 850 } }, 'Restart guided route')));
     }
     function simTab() {
       return h('div', null,
         regionBar(),
+        labPulse(),
         guided2DMissionPanel(),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Boat Mission · 3D Mode'),
