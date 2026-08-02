@@ -2562,12 +2562,12 @@ window.StemLab = window.StemLab || {
             h("div", { className: "relative w-full", style: { height: 240 } },
               h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240, display: 'block', visibility: dnaGlLive ? 'hidden' : 'visible' }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
               dnaShowGl && h("canvas", {
+                role: 'img',
+                'aria-label': dnaGlAlt,
+                'aria-describedby': 'dna-gl-description',
                 ref: dnaGlRef,
                 'data-dna-gl': 'true',
-                role: 'img',
                 'data-a11y-static': 'true',
-                'aria-describedby': 'dna-gl-description',
-                'aria-label': dnaGlAlt,
                 style: { position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: dnaGlLive ? 'visible' : 'hidden' }
               }),
               dnaShowGl && !dnaGlLive && h("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-bold text-violet-300" }, 'Loading 3D helix…')
@@ -3858,7 +3858,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Codon(s)', 'AA', 'Name', 'Note'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -3980,7 +3980,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Feature', 'DNA', 'RNA'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4392,7 +4392,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Organism', 'Genome size', 'Genes', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4419,7 +4419,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Feature', 'Mitosis', 'Meiosis'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4458,7 +4458,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Cross', 'Phenotype ratio', 'Genotype', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4502,7 +4502,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['1-letter', '3-letter', 'Name', 'Side chain', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -4665,7 +4665,11 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', {
+            width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img',
+            'aria-label': t('stem.dna.population_mutation_chart', 'Population size and mutation rate chart comparing genetic drift and selection regimes.'),
+            style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 }
+          },
             h('line', { x1: 30, y1: 130, x2: 300, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 20, x2: 30, y2: 130, stroke: '#1e293b' }),
             [1, 1000, 1e6, 1e9].map(function(p, i) { return h('text', { key: 'nx' + i, x: logX(p), y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, '10^' + Math.log10(p).toFixed(0)); }),
@@ -4959,7 +4963,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Mineral', 'Daily intake', 'Role', 'Sources'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5053,7 +5057,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Hormone', 'Source', 'Target', 'Effect'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5161,7 +5165,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Element', '% by mass', 'Role'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5187,7 +5191,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Pathway', 'Input', 'Output', 'Location', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5216,7 +5220,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Species', 'When extinct', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5354,7 +5358,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Animal', 'Lifespan', 'Genome', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5395,7 +5399,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Gene', 'Location', 'Function', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
@@ -5675,7 +5679,7 @@ window.StemLab = window.StemLab || {
               h('thead', null,
                 h('tr', { className: 'bg-slate-100' },
                   ['Family', 'Genome', 'Envelope', 'Examples', 'Notes'].map(function(hh, i) {
-                    return h('th', { key: 'h'+i, className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
+                    return h('th', { key: 'h'+i, scope: 'col', className: 'px-2 py-1 text-left font-bold text-slate-700 border-b border-slate-300' }, hh);
                   })
                 )
               ),
