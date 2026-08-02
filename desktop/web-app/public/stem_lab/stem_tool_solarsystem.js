@@ -3575,7 +3575,7 @@ const d = labToolData.solarSystem || {};
       maxScale: 300,
       redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion"),
       viewPresetKey: zoomMode,
-      ariaDescribedBy: "orrery-canvas-help",
+      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note",
       ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card or click it again to follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },
@@ -5241,6 +5241,17 @@ const d = labToolData.solarSystem || {};
     var timelineMarkIsActive = function(mark) {
       return timelineMarkIsActiveAt(mark, scrubPhase);
     };
+    var playbackBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
+    var playbackSeconds = playbackBody ? playbackBody.T / Math.max(speed, 0.001) : 0;
+    var formatPlaybackDuration = function(seconds) {
+      if (seconds < 0.01) return "<0.01 s";
+      if (seconds < 60) return fmt(seconds, seconds < 1 ? 2 : 1) + " s";
+      if (seconds < 3600) return fmt(seconds / 60, 1) + " min";
+      return fmt(seconds / 3600, 1) + " h";
+    };
+    var playbackContext = playbackBody
+      ? playbackBody.name + " completes one orbit in about " + formatPlaybackDuration(playbackSeconds) + " at " + fmt(speed, 1) + " Earth yr/s."
+      : "Simulation speed: " + fmt(speed, 1) + " Earth yr/s. Select a world to see its real-time orbit length.";
     var playbackControls = h("div", {
       key: "playback-controls",
       role: "group",
@@ -5258,6 +5269,7 @@ const d = labToolData.solarSystem || {};
         style: { width: "120px" }
       }),
       h("span", { style: { fontSize: "12px", color: mutedFg } }, fmt(speed, 1) + " yr/s"),
+      h("span", { id: "orrery-playback-context", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { flex: "1 1 230px", minWidth: "180px", color: mutedFg, fontSize: "11px", lineHeight: "1.3" } }, playbackContext),
       reduceMotion ? h("span", { role: "status", "aria-live": "polite", style: { fontSize: "10px", color: mutedFg, padding: "3px 6px", borderRadius: "6px", background: isDark ? "rgba(148,163,184,0.14)" : "rgba(100,116,139,0.10)" } }, "Reduced motion on · pulses and camera glides off") : null
     );
     var phaseControls = h("div", {
@@ -5365,6 +5377,9 @@ const d = labToolData.solarSystem || {};
     var followStageTarget = followBodyId ? OB.filter(function(b) { return b.id === followBodyId; })[0] : null;
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
     var stageTitle = stageBody ? stageBody.name + " in focus" : "Solar system in motion";
+    var modelScaleNote = scaleMode === "relative"
+      ? "Model note: body-size ratios are preserved; distances use the zoom scale, so this is not one literal scale."
+      : "Model note: bodies are enlarged for visibility; distances use the zoom scale, so this is not one literal scale.";
     var orbitStage = h("div", { className: "orr-orbit-stage", "data-orrery-stage": true },
       h("div", { className: "orr-stage-hud", "aria-live": "polite" },
         h("div", null,
@@ -5474,6 +5489,7 @@ const d = labToolData.solarSystem || {};
       filterRow,
       bodyNavigator,
       orbitStage,
+      h("p", { id: "orrery-model-scale-note", role: "note", style: { margin: "-4px 2px 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, modelScaleNote),
       bodyInfoCard
     );
   }
