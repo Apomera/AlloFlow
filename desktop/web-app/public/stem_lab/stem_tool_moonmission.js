@@ -783,13 +783,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── Mission Timer ──
       var missionStartTime = d.missionStartTime || 0;
+      var missionPausedAt = d.missionPausedAt || 0;
+      var missionPausedTotal = d.missionPausedTotal || 0;
       function getMissionElapsed() {
         if (!missionStartTime) return '00:00:00';
-        var elapsed = Math.floor((Date.now() - missionStartTime) / 1000);
+        var missionClockNow = missionPausedAt || Date.now();
+        var elapsed = Math.max(0, Math.floor((missionClockNow - missionStartTime) / 1000) - missionPausedTotal);
         var hh = Math.floor(elapsed / 3600).toString().padStart(2, '0');
         var mm = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
         var ss = (elapsed % 60).toString().padStart(2, '0');
         return hh + ':' + mm + ':' + ss;
+      }
+      function toggleMissionClock() {
+        if (!missionStartTime) return;
+        if (missionPausedAt) {
+          upd('missionPausedTotal', missionPausedTotal + Math.floor((Date.now() - missionPausedAt) / 1000));
+          upd('missionPausedAt', 0);
+          if (typeof announceToSR === 'function') announceToSR('Mission clock resumed');
+        } else {
+          upd('missionPausedAt', Date.now());
+          if (typeof announceToSR === 'function') announceToSR('Mission clock paused');
+        }
       }
 
       var activePhase = PHASES[Math.min(phase, PHASES.length - 1)] || { name: t('stem.moonmission.complete', 'Complete'), icon: '\uD83C\uDF0A', desc: t('stem.moonmission.splashdown_debrief', 'Splashdown and debrief') };
@@ -831,6 +845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ),
           h('div', { className: 'text-right' },
             h('div', { className: 'text-[11px] text-slate-600 font-mono' }, 'MET ' + getMissionElapsed()),
+            missionStartTime && h('button', { type: 'button', 'aria-label': missionPausedAt ? t('stem.moonmission.resume_mission_clock', 'Resume mission clock') : t('stem.moonmission.pause_mission_clock', 'Pause mission clock'), onClick: toggleMissionClock, className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' }, missionPausedAt ? t('stem.moonmission.resume', '\\u25B6 Resume') : t('stem.moonmission.pause', '\\u23F8 Pause')),
             h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
@@ -1042,7 +1057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               return h('div', {
                 key: i,
                 className: 'flex-1 h-1.5 rounded-full transition-all ' +
-                  (status === 'completed' ? 'bg-green-400' : status === 'active' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200'),
+                  (status === 'completed' ? 'bg-green-400' : status === 'active' ? 'bg-indigo-500 animate-pulse motion-reduce:animate-none' : 'bg-slate-200'),
                 title: p.name
               });
             })
@@ -1326,6 +1341,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             onClick: function() {
               setPhase(1);
               upd('missionStartTime', Date.now());
+              upd('missionPausedAt', 0);
+              upd('missionPausedTotal', 0);
               log('\uD83D\uDCCB Mission briefing complete (' + DIFFICULTIES[difficulty].label + ' difficulty)' + (d.aiBriefing ? ' \u2014 AI customized' : ''));
               addXP(10);
               if (addToast) addToast('\uD83D\uDE80 Mission authorized! Difficulty: ' + DIFFICULTIES[difficulty].label, 'success');
@@ -2432,7 +2449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
               onClick: function() { upd('descentStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse motion-reduce:animate-none'
             }, t('stem.moonmission.begin_descent_take_the_controls', '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!'))
           ),
           // Game canvas (after onboarding)
@@ -2845,7 +2862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_eva_on_the_lunar_surface', 'Begin EVA on the lunar surface'),
               onClick: function() { upd('evaStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse motion-reduce:animate-none'
             }, t('stem.moonmission.step_onto_the_moon_begin_eva', '👨‍🚀 Step Onto the Moon · Begin EVA'))
           ),
           d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
@@ -2866,15 +2883,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ) : h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
+                'aria-label': t('stem.moonmission.interactive_3d_lunar_surface_eva_use_w', 'Interactive 3D lunar surface EVA. Use WASD to walk, Q and E to turn, Space to jump in one-sixth gravity, F to collect rock samples, and the mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.'),
                 // A <canvas> is NOT focusable without this, and every EVA key handler
                 // is bound to the canvas element — so without it `canvasEl.focus()`
                 // below was a silent no-op and a keyboard-only student could never
                 // walk, jump or collect a sample. Mouse users were unaffected because
                 // clicking requests pointer lock, which routes keystrokes to the
-                // locked element and hid the gap. The aria-label right below has been
-                // promising "Use WASD to walk" to exactly the students who could not.
+                // locked element and hid the gap. The descriptive aria-label above keeps
+                // the keyboard instructions available to assistive-technology users.
                 tabIndex: 0,
-                'aria-label': t('stem.moonmission.interactive_3d_lunar_surface_eva_use_w', 'Interactive 3D lunar surface EVA. Use WASD to walk, Q and E to turn, Space to jump in one-sixth gravity, F to collect rock samples, and the mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.'),
+
                 style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' },
                 ref: function(canvasEl) {
                   if (!canvasEl || canvasEl._evaInit) return;
@@ -2945,7 +2963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // that turned the marble into a teardrop). Stars are tiny
                     // dots so the projection stretching is invisible at that scale.
                     var skyGeo = new THREE.SphereGeometry(200, 32, 16);
-                    var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
+                    var skyCv = document.createElement('canvas'); skyCv.setAttribute('aria-hidden', 'true'); skyCv.width = 512; skyCv.height = 256;
                     var sCtx = skyCv.getContext('2d');
                     sCtx.fillStyle = '#000000'; sCtx.fillRect(0, 0, 512, 256);
                     // Dense starfield
@@ -2965,7 +2983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Position high in the sky and off to one side, matching the
                     // actual Apollo EVA view (Earth was a fixed point in the
                     // lunar sky throughout the surface ops).
-                    var earthCv = document.createElement('canvas'); earthCv.width = 256; earthCv.height = 256;
+                    var earthCv = document.createElement('canvas'); earthCv.setAttribute('aria-hidden', 'true'); earthCv.width = 256; earthCv.height = 256;
                     var eCtx = earthCv.getContext('2d');
                     eCtx.clearRect(0, 0, 256, 256);
                     drawDetailedEarth(eCtx, 128, 128, 86, 500); // r86: halo (r*1.45=125) now fits the 256px texture instead of square-clipping
@@ -2997,7 +3015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Regolith texture via ImageData (the old per-pixel fillRect loop made 65k
                     // canvas calls at init AND its sin() term printed visible diagonal stripes
                     // that tiled 8× across the plain). Isotropic value noise, no banding.
-                    var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
+                    var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 256; tCv.height = 256;
                     var tCx = tCv.getContext('2d');
                     (function paintRegolith() {
                       var img = tCx.createImageData(256, 256);
@@ -3071,7 +3089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
                     var _sunSprite = null;
                     (function addSunDisc() {
-                      var sc = document.createElement('canvas'); sc.width = 128; sc.height = 128;
+                      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 128; sc.height = 128;
                       var sg = sc.getContext('2d');
                       var grad = sg.createRadialGradient(64, 64, 4, 64, 64, 64);
                       grad.addColorStop(0, 'rgba(255,255,250,1)');
@@ -3118,7 +3136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 2.5, 8), new THREE.MeshStandardMaterial({ color: 0xb9bcc2, metalness: 0.6, roughness: 0.35 }));
                     flagPole.position.y = 1.25;
                     flagGroup.add(flagPole);
-                    var flagCv = document.createElement('canvas'); flagCv.width = 192; flagCv.height = 112;
+                    var flagCv = document.createElement('canvas'); flagCv.setAttribute('aria-hidden', 'true'); flagCv.width = 192; flagCv.height = 112;
                     var fCtx = flagCv.getContext('2d');
                     for (var fsi = 0; fsi < 13; fsi++) {                       // 13 stripes
                       fCtx.fillStyle = fsi % 2 === 0 ? '#b22234' : '#f5f2ec';
@@ -4869,7 +4887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF89 MISSION COMPLETE! Welcome home, Commander!', 'success');
               if (typeof announceToSR === 'function') announceToSR('Mission complete! Splashdown in the Pacific Ocean. Welcome home, Commander.');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse motion-reduce:animate-none'
           }, t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!'))
         ),
 
@@ -5038,6 +5056,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('missionXP', 0);
                 upd('lunarSamples', []);
                 upd('missionStartTime', 0);
+                upd('missionPausedAt', 0);
+                upd('missionPausedTotal', 0);
                 upd('earnedBadges', {});
                 upd('quizCorrect', 0);
                 upd('quizIdx', 0);
@@ -5120,7 +5140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
               h('thead', null, h('tr', { className: 'bg-slate-100' },
-                ['mass ratio', 'burn s', 'Isp s', 'Δv m/s', 'outcome'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                ['mass ratio', 'burn s', 'Isp s', 'Δv m/s', 'outcome'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
               h('tbody', null, iq.log.map(function(o, idx) {
                 return h('tr', { key: 'lr' + idx },
                   h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.mr),
