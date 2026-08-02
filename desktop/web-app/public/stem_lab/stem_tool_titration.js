@@ -703,6 +703,9 @@ if (!safetyChecked) {
   var drillStartTime = d.drillStartTime || 0;
   var drillAnswer = d.drillAnswer || null;
   var drillResult = d.drillResult || null;
+  var drillPaused = !!d.drillPaused;
+  var drillPausedTimeLeft = d.drillPausedTimeLeft;
+  var drillExtraSeconds = Math.max(0, Number(d.drillExtraSeconds) || 0);
   var mapTooltip = d.mapTooltip || null;
   var enterAnim = d.enterAnim || false;
 
@@ -723,21 +726,48 @@ if (!safetyChecked) {
   var drillScenario = incidentScenarios[drillIdx];
   var drillComplete = drillResult !== null;
 
-  var drillDuration = 15;
-  var drillTimeLeft = drillDuration;
-  if (drillActive && drillStartTime) {
+  var drillDuration = 15 + drillExtraSeconds;
+  var drillTimeLeft = drillPaused && drillPausedTimeLeft != null
+    ? Math.max(0, Math.min(drillDuration, Number(drillPausedTimeLeft) || 0))
+    : drillDuration;
+  if (drillActive && drillStartTime && !drillPaused) {
     drillTimeLeft = Math.max(0, Math.ceil(drillDuration - (Date.now() - drillStartTime) / 1000));
     if (drillTimeLeft <= 0 && !drillResult) {
-      setTimeout(function() { updMulti({ drillResult: 'timeout', drillActive: false }); }, 0);
+      setTimeout(function() { updMulti({ drillResult: 'timeout', drillActive: false, drillPaused: false }); }, 0);
     }
     if (!window._titrationDrillTimer && drillTimeLeft > 0) {
       window._titrationDrillTimer = setInterval(function() { upd('_drillTick', Date.now()); }, 200);
     }
   }
-  if ((!drillActive || drillTimeLeft <= 0) && window._titrationDrillTimer) {
+  if ((!drillActive || drillTimeLeft <= 0 || drillPaused) && window._titrationDrillTimer) {
     clearInterval(window._titrationDrillTimer);
     window._titrationDrillTimer = null;
   }
+
+  var toggleDrillPause = function() {
+    if (!drillActive || drillResult) return;
+    if (drillPaused) {
+      var resumeTimeLeft = drillPausedTimeLeft == null ? drillTimeLeft : Number(drillPausedTimeLeft);
+      updMulti({
+        drillPaused: false,
+        drillPausedTimeLeft: null,
+        drillStartTime: Date.now() - Math.max(0, drillDuration - resumeTimeLeft) * 1000
+      });
+    } else {
+      updMulti({ drillPaused: true, drillPausedTimeLeft: drillTimeLeft });
+      if (window._titrationDrillTimer) {
+        clearInterval(window._titrationDrillTimer);
+        window._titrationDrillTimer = null;
+      }
+    }
+  };
+  var extendDrill = function() {
+    if (!drillActive || drillResult) return;
+    updMulti({
+      drillExtraSeconds: drillExtraSeconds + 15,
+      drillPausedTimeLeft: drillPaused ? drillTimeLeft + 15 : drillPausedTimeLeft
+    });
+  };
 
   var allStationsComplete = ppeComplete && mapComplete && chemsComplete && drillComplete;
   var ppeCount = ppeItems.filter(function(it) { return safetyChecks[it.id]; }).length;
@@ -1014,7 +1044,11 @@ if (!safetyChecked) {
         React.createElement("div", {
           style: { position:'relative', borderRadius:'12px', border:'2px solid rgba(56,189,248,0.25)', overflow:'hidden', background:'rgba(0,0,0,0.4)' }
         },
-          React.createElement("svg", { viewBox: "0 0 400 280", className: "w-full", style: { display:'block' } },
+          React.createElement("svg", {
+            viewBox: "0 0 400 280", className: "w-full", role: "img",
+            "aria-label": __alloT('stem.titration.safety_equipment_map', "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."),
+            style: { display:'block' }
+          },
             // Floor
             React.createElement("rect", { x:0, y:0, width:400, height:280, fill:'#0a1929', rx:8 }),
 
@@ -1351,8 +1385,15 @@ if (!safetyChecked) {
 
         // Countdown timer (circular SVG)
         drillActive && !drillResult && React.createElement("div", { style: { display:'flex', justifyContent:'center' } },
-          React.createElement("div", { style: { position:'relative', width:'80px', height:'80px' } },
-            React.createElement("svg", { viewBox:"0 0 100 100", style: { transform:'rotate(-90deg)', width:'100%', height:'100%' } },
+          React.createElement("div", {
+            role: "status", "aria-live": "polite", "aria-atomic": "true",
+            style: { position:'relative', width:'80px', height:'80px' }
+          },
+            React.createElement("svg", {
+              viewBox:"0 0 100 100", role:"img",
+              "aria-label": __alloT('stem.titration.safety_drill_countdown', "Safety drill countdown") + ': ' + drillTimeLeft + ' seconds remaining',
+              style: { transform:'rotate(-90deg)', width:'100%', height:'100%' }
+            },
               React.createElement("circle", { cx:50, cy:50, r:45, fill:'none', stroke:'rgba(255,255,255,0.1)', strokeWidth:6 }),
               React.createElement("circle", { cx:50, cy:50, r:45, fill:'none',
                 stroke: drillTimeLeft <= 5 ? '#ef4444' : drillTimeLeft <= 10 ? '#f59e0b' : '#22c55e',
@@ -1368,13 +1409,28 @@ if (!safetyChecked) {
                 color: drillTimeLeft <= 5 ? '#ef4444' : drillTimeLeft <= 10 ? '#f59e0b' : '#22c55e',
                 animation: drillTimeLeft <= 5 ? 'safetyHeartbeat 0.5s ease infinite' : 'none' }
             }, drillTimeLeft)
+          ),
+          React.createElement("div", { className: "flex gap-2 mt-2 justify-center flex-wrap" },
+            React.createElement("button", {
+              type: "button", "aria-label": drillPaused
+                ? __alloT('stem.titration.resume_safety_drill', "Resume safety drill")
+                : __alloT('stem.titration.pause_safety_drill', "Pause safety drill"),
+              "aria-pressed": drillPaused,
+              onClick: toggleDrillPause,
+              className: "px-3 py-1 rounded-lg text-[11px] font-bold text-white bg-slate-700 border border-slate-500"
+            }, drillPaused ? __alloT('stem.titration.resume', "Resume") : __alloT('stem.titration.pause', "Pause")),
+            React.createElement("button", {
+              type: "button", "aria-label": __alloT('stem.titration.add_fifteen_seconds', "Add 15 seconds to safety drill"),
+              onClick: extendDrill,
+              className: "px-3 py-1 rounded-lg text-[11px] font-bold text-amber-200 bg-amber-900/40 border border-amber-600"
+            }, "+15s")
           )
         ),
 
         // Scenario
         !drillActive && !drillResult && React.createElement("button", {
           "aria-label": __alloT('stem.titration.begin_safety_drill', "Begin safety drill"),
-          onClick: function() { updMulti({ drillActive: true, drillStartTime: Date.now(), drillAnswer: null, drillResult: null }); },
+          onClick: function() { updMulti({ drillActive: true, drillStartTime: Date.now(), drillAnswer: null, drillResult: null, drillPaused: false, drillPausedTimeLeft: null, drillExtraSeconds: 0 }); },
           className: "w-full py-4 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02]",
           style: { background:'linear-gradient(90deg, #f97316, #ea580c)', boxShadow:'0 0 25px rgba(249,115,22,0.4)', animation:'safetyUrgencyPulse 2s ease infinite' }
         }, __alloT('stem.titration.begin_emergency_drill', "\uD83D\uDEA8 Begin Emergency Drill")),
@@ -1476,7 +1532,7 @@ if (!safetyChecked) {
           }, __alloT('stem.titration.chemicals_2', "\u2190 Chemicals")),
           drillResult && !allStationsComplete && React.createElement("button", {
             "aria-label": __alloT('stem.titration.retry_drill', "Retry drill"),
-            onClick: function() { updMulti({ drillActive: false, drillStartTime: 0, drillAnswer: null, drillResult: null }); },
+            onClick: function() { updMulti({ drillActive: false, drillStartTime: 0, drillAnswer: null, drillResult: null, drillPaused: false, drillPausedTimeLeft: null, drillExtraSeconds: 0 }); },
             className: "px-4 py-2 rounded-xl text-[11px] font-bold text-amber-400 bg-amber-900/30 border border-amber-700 hover:border-amber-500 transition-all"
           }, __alloT('stem.titration.retry_drill_2', "\u21BA Retry Drill"))
         ),
@@ -2025,7 +2081,8 @@ return React.createElement("div", {
 
         // Flask (Erlenmeyer shape via SVG) — Enhanced
         React.createElement("svg", {
-          width: buretteW + 40, height: 90,
+          width: buretteW + 40, height: 90, role: "img",
+          "aria-label": __alloT('stem.titration.flask_diagram', "Titration flask diagram showing the current pH and indicator state."),
           style: { position: 'absolute', left: '0px', top: buretteH + 30 + 'px' }
         },
           // Flask glow when near equivalence
@@ -3264,7 +3321,7 @@ return React.createElement("div", {
         React.createElement('table', { className: 'text-[10px] w-full border-collapse text-slate-300' },
           React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-800' },
             ['pKa', '[A⁻]/[HA]', 'starting pH', 'pH shift', 'outcome'].map(function(c, i) {
-              return React.createElement('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-700 text-left' }, c);
+              return React.createElement('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-700 text-left' }, c);
             }))),
           React.createElement('tbody', null, bf.log.map(function(o, idx) {
             var rowBg = o.good ? 'rgba(16,185,129,0.10)' : 'rgba(220,38,38,0.10)';
