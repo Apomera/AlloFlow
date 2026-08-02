@@ -2018,7 +2018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           function renderCanvas() {
             var burning = s.eventLog && s.eventLog.length > 0 && s.eventLog[s.eventLog.length - 1].event && s.eventLog[s.eventLog.length - 1].event.indexOf('CATASTROPHIC') >= 0;
             return h('div', { style: { marginBottom: 16 } },
-              h('canvas', { 'aria-label': t('stem.fireecology.fireecology_visualization', 'Fireecology visualization'),
+              h('canvas', { role: 'img', 'aria-label': t('stem.fireecology.fireecology_visualization', 'Fireecology visualization'),
                 ref: forestCanvasRef,
                 'data-fuel': s.fuelLoad,
                 'data-canopy': s.canopyCover,
