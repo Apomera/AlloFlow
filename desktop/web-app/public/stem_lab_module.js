@@ -5182,6 +5182,29 @@
             ];
             // ── Tool search filter ──
             var _searchAliasMap = {
+              // The search haystack is built from the TILE (id/label/desc/aliases) and never
+              // from the tool's own registerTool description, so a feature that exists only
+              // inside the tool is unfindable. Before this block, "periodic table" returned
+              // 0 results even though molecule ships a full 118-element table; likewise
+              // "international space station", "skinner", "transpiration", "virtual
+              // microscope" and "food safety". Every keyword below was taken from the
+              // tool's own description — do not add features a tool does not have.
+              // See STEM_LAB_CATEGORY_AUDIT.md F5.
+              molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
+              rockCycle: 'rock cycle earth science igneous sedimentary metamorphic shale slate limestone marble granite gneiss metamorphism weathering erosion melting cooling cross section specimen transformation',
+              behaviorLab: 'operant conditioning skinner box skinner reinforcement schedules fixed ratio variable ratio fixed interval variable interval chaining chained sequences dro classical conditioning pavlov aba applied behavior analysis fba functional behavior assessment attention escape tangible sensory cumulative record',
+              microbiology: 'microbiology bacteria virus viruses microscope virtual microscope microscopy phase contrast fluorescent electron microscope e coli streptococcus paramecium plasmodium phage antibiotic resistance petri dish microbiome immune system vaccines fermentation sourdough yogurt kimchi sauerkraut kombucha cheese cholera snow penicillin fleming mrsa covid mrna',
+              moonMission: 'apollo moon landing lunar module kennedy splashdown eva orbital mechanics oxygen leak abort rock samples nasa space race',
+              autoRepair: 'auto repair car mechanic obd obd2 diagnostic codes oil change brakes alternator tires air filter timing belt jack stands ase certification automotive vocational engine maintenance',
+              weldLab: 'welding weld mig tig stick oxy fuel arc welding heat input bead geometry weld defects aws welding symbols osha ppe skilled trades vocational metal joining fabrication',
+              schoolBehaviorToolkit: 'pbis positive behavior interventions supports three tier replacement behaviors fba functions setting events acting out cycle de escalation crisis behavior intervention plan bip restraint seclusion maine chapter 33 classroom management school psychology',
+              nutritionLab: 'nutrition macronutrients micronutrients protein carbohydrates fats vitamins minerals food label nutrition facts metabolism digestion eating disorder awareness food and mental health dietitian usda nih health',
+              evoLab: 'evolution natural selection galapagos beak darwin finches phylogenetic tree common ancestry hardy weinberg genetic drift adaptation misconceptions snowshoe hare moose tick maine wildlife',
+              magnetism: 'magnetism magnet magnetic field field lines compass electromagnet dc motor generator faraday induction electromagnetism magnetic materials earth magnetic field electricity',
+              echoTrainer: 'echolocation echo navigation spatial audio binaural hrtf headphones blind low vision orientation and mobility clicks reflections first person accessibility',
+              waterCycle: 'water cycle evaporation condensation precipitation collection transpiration infiltration runoff groundwater droplet journey hydrologic cycle',
+              spaceStation: 'international space station iss orbit microgravity low gravity life support crew shift astronaut eva orbital mechanics space engineering',
+              kitchenLab: 'food safety usda safe temperatures bacteria danger zone cooking culinary science kitchen knife skills recipe',
               chemBalance: 'chemistry lab chemistry chemical equation balancer equation balancing stoichiometry reaction reactions molecule molecules',
               opticsLab: 'optics lab light lab geometric optics wave optics lens lenses mirror mirrors reflection refraction snell diffraction interference polarization ap physics',
               fractionViz: 'fraction lab fractions compare numerator denominator pizza visualizer',
