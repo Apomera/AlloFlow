@@ -3708,7 +3708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyCharterProposal', proposal);
                           if (addToast) addToast('📜 Bounded amendment ready for public review', 'success');
                         }).catch(function () { upd('charterForgeBusy', false); if (addToast) addToast('The Charter Lab could not translate this proposal.', 'error'); });
-                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.charterForgeBusy && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 ? 'bg-cyan-700 text-white hover:bg-cyan-600' : 'bg-slate-800 text-slate-300') }, d.charterForgeBusy ? 'Translating into bounded JSON...' : '✨ Translate proposal')
+                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.charterForgeBusy && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 ? 'bg-cyan-700 text-white hover:bg-cyan-800' : 'bg-slate-800 text-slate-300') }, d.charterForgeBusy ? 'Translating into bounded JSON...' : '✨ Translate proposal')
                     ),
                     React.createElement('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Translation unlocks after 15 characters of proposal and 30 characters of your own reasoning. The no-AI compact uses the identical evaluator.')
                   ),
@@ -3767,7 +3767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             var charterJournal = scienceJournal.slice(); charterJournal.push({ turn: turn, source: 'Charter Lab: ' + approved.name, fact: studentReasoning + ' Public response: ' + studentResponse + ' Testable civic rule: ' + charterTriggerLabels[approved.rule.trigger] + '; +' + approved.rule.benefitAmount + ' ' + approved.rule.benefitResource + ', -' + approved.rule.costAmount + ' ' + approved.rule.costResource + ', ' + (approved.rule.socialDelta > 0 ? '+' : '') + approved.rule.socialDelta + ' ' + approved.rule.socialAxis + '.' }); upd('scienceJournal', charterJournal);
                             if (addToast) addToast('📜 ' + approved.name + ' enacted for ' + approved.rule.duration + ' sols', 'success');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Justified civic amendment');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 && charterResponseReady ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, charterResponseReady ? 'Enact trial rule' : 'Answer council first')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 && charterResponseReady ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-800 text-slate-300') }, charterResponseReady ? 'Enact trial rule' : 'Answer council first')
                         )
                       )
                     );
@@ -3841,7 +3841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             upd('colonyCharterReviewId', null); upd('colonyCharterConclusion', '');
                             if (addToast) addToast('📜 Civic conclusion added to the Evidence Board', 'success');
                             if (typeof addXP === 'function') addXP(20, 'Kepler Colony: Evaluated civic trial');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyCharterConclusion || '').trim().length >= 35 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Publish civic finding')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyCharterConclusion || '').trim().length >= 35 ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-800 text-slate-300') }, 'Publish civic finding')
                         )
                       )
                     );
@@ -4235,7 +4235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyArtifactReviewId', null); upd('colonyArtifactConclusion', '');
                           if (addToast) addToast('📊 Trial conclusion added to the Evidence Board', 'success');
                           if (typeof addXP === 'function') addXP(20, 'Kepler Colony: Evaluated field trial');
-                        }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyArtifactConclusion || '').trim().length >= 30 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Publish finding')
+                        }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyArtifactConclusion || '').trim().length >= 30 ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-800 text-slate-300') }, 'Publish finding')
                       )
                     )
                   )
@@ -4326,7 +4326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             var forgeJournal = scienceJournal.slice(); forgeJournal.push({ turn: turn, source: 'Founder Forge: ' + approved.name, fact: playerReasoning + ' Founded at ' + foundedSite.name + ' (' + foundedSite.type + '). Testable rule: ' + approved.rule.title + '.' }); upd('scienceJournal', forgeJournal);
                             if (addToast) addToast('🗿 ' + approved.name + ' founded at ' + foundedSite.name + ' for ' + approved.rule.duration + ' sols', 'success');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Justified artifact');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (forgeSite && resources.materials >= artifactProposal.foundCost.materials && resources.science >= artifactProposal.foundCost.science && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Found this module')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (forgeSite && resources.materials >= artifactProposal.foundCost.materials && resources.science >= artifactProposal.foundCost.science && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-800 text-slate-300') }, 'Found this module')
                         )
                       )
                     );
@@ -4576,7 +4576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 // SVG: 5 circular gauges side by side
                 React.createElement('div', { style: { padding: 10, background: 'rgba(15,23,42,0.6)', borderRadius: 8, marginBottom: 12 } },
-                  React.createElement('svg', { viewBox: '0 0 360 100', style: { width: '100%', height: 100 } },
+                  React.createElement('svg', { viewBox: '0 0 360 100', role: 'img', 'aria-label': 'Life-support subsystem balance gauges', style: { width: '100%', height: 100 } },
                     systems.map(function(sys, i) {
                       var cx = 36 + i * 72;
                       var cy = 50;
@@ -4620,7 +4620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 (iq.log || []).length > 0 && React.createElement('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 10 } },
                   React.createElement('thead', null, React.createElement('tr', { style: { background: '#1e293b' } },
-                    ['O\u2082', 'H\u2082O', 'CO\u2082', 'Hum', 'Rad', 'avg', 'state'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+                    ['O\u2082', 'H\u2082O', 'CO\u2082', 'Hum', 'Rad', 'avg', 'state'].map(function(c, i) { return React.createElement('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
                   React.createElement('tbody', null, iq.log.map(function(o, idx) {
                     return React.createElement('tr', { key: 'lr' + idx },
                       React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)', fontFamily: 'monospace' } }, o.o),
@@ -4632,7 +4632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('td', { style: { padding: '4px 6px', border: '1px solid rgba(100,116,139,0.4)' } }, o.st));
                   }))
                 ),
-                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.spacecolony.hypothesis_free_text_which_subsystem_i', 'Hypothesis (free text): Which subsystem is the bottleneck for thriving? Can you sacrifice one and still thrive?'),
+                React.createElement('textarea', { 'aria-label': 'Space colony subsystem hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.spacecolony.hypothesis_free_text_which_subsystem_i', 'Hypothesis (free text): Which subsystem is the bottleneck for thriving? Can you sacrifice one and still thrive?'),
                   style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 3 }),
                 !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, t('stem.spacecolony.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
