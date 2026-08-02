@@ -37,6 +37,7 @@ function PausableImage(props) {
       const w = img.naturalWidth || img.width || 100;
       const h = img.naturalHeight || img.height || 100;
       const canvas = document.createElement("canvas");
+      canvas.setAttribute("aria-hidden", "true");
       canvas.width = w;
       canvas.height = h;
       canvas.getContext("2d").drawImage(img, 0, 0);
@@ -367,7 +368,7 @@ function VisualSupportsModal(props) {
     } catch (e) {
     }
   }, [pauseAnim]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "visual-supports-title", tabIndex: -1, className: "bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "visual-supports-title", className: "text-white font-bold text-lg" }, "\u{1F5BC}\uFE0F Visual Supports"), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, "Your saved boards & schedules")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3", onClick: () => setShowVisualSupports(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "visual-supports-title", tabIndex: -1, className: "bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)" }, className: "p-4 flex items-center justify-between flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "visual-supports-title", className: "text-white font-bold text-lg" }, "\u{1F5BC}\uFE0F Visual Supports"), /* @__PURE__ */ React.createElement("p", { className: "text-purple-200 text-xs mt-0.5" }, "Your saved boards & schedules")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

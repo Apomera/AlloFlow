@@ -50,6 +50,7 @@ function PausableImage(props) {
       const w = img.naturalWidth || img.width || 100;
       const h = img.naturalHeight || img.height || 100;
       const canvas = document.createElement('canvas');
+      canvas.setAttribute('aria-hidden', 'true');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0);
       setFrozenFrame(canvas.toDataURL('image/png'));
@@ -419,7 +420,7 @@ function VisualSupportsModal(props) {
 
   return (
           <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3" onClick={() => setShowVisualSupports(false)}>
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="visual-supports-title" tabIndex={-1} className="bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none" onClick={e => e.stopPropagation()}>
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="visual-supports-title" tabIndex={-1} className="bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={e => e.stopPropagation()}>
               <div style={{background: 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)'}} className="p-4 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h2 id="visual-supports-title" className="text-white font-bold text-lg">🖼️ Visual Supports</h2>
