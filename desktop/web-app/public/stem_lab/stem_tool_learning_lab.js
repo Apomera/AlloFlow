@@ -3743,7 +3743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             padding: '14px', textAlign: 'center',
             fontSize: 32, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800,
             color: '#c084fc', background: 'rgba(2,6,23,0.7)',
-            border: '2px solid #9333ea', borderRadius: 10, outline: 'none',
+            border: '2px solid #9333ea', borderRadius: 10,
             letterSpacing: '0.4em'
           }
         }),
@@ -4093,7 +4093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
                 background: 'rgba(15,23,42,0.7)',
                 border: '1px solid ' + (sc > 0 ? scoreColor + '40' : 'rgba(100,116,139,0.30)'),
-                borderRadius: 6, outline: 'none',
+                borderRadius: 6,
                 boxSizing: 'border-box'
               }
             }),
@@ -4555,13 +4555,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var options = tkFieldOptions(extra);
     return hh('input', Object.assign({
       type: 'text', value: value || '', placeholder: placeholder || '', 'data-ll-focusable': true,
+      'aria-label': (extra && extra['aria-label']) || placeholder || 'Learning Lab input',
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
         width: '100%', minHeight: 44, padding: '10px 12px',
         fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box'
+        borderRadius: 6,  boxSizing: 'border-box'
       }, options.style)
     }, options.props));
   }
@@ -4569,13 +4570,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var options = tkFieldOptions(extra);
     return hh('textarea', Object.assign({
       value: value || '', placeholder: placeholder || '', rows: rows || 3, 'data-ll-focusable': true,
+      'aria-label': (extra && extra['aria-label']) || placeholder || 'Learning Lab response',
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
         width: '100%', minHeight: 44, padding: '10px 12px',
         fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
-        borderRadius: 6, outline: 'none', boxSizing: 'border-box',
+        borderRadius: 6,  boxSizing: 'border-box',
         fontFamily: 'inherit', resize: 'vertical'
       }, options.style)
     }, options.props));
@@ -21510,7 +21512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var currentViewLabel = String(d.viewLabel || friendlyViewName(view));
       function focusCurrentView(nextView) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(nextView === 'menu' ? 'learning-lab-menu-heading' : 'learning-lab-current-view'); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
       var setView = function(value, label) { var nextLabel = String(label || friendlyViewName(value)); updMulti({ view: value, viewLabel: nextLabel }); llAnnounce('Opening ' + nextLabel + '.'); focusCurrentView(value); };
-      function wrapShellView(content) { return h('main', { id: 'learning-lab-current-view', tabIndex: -1, 'aria-label': currentViewLabel, style: { outline: 'none' } }, content); }
+      function wrapShellView(content) { return h('main', { id: 'learning-lab-current-view', tabIndex: -1, 'aria-label': currentViewLabel, style: {  } }, content); }
 
       var badges = d.badges || {};
       var awardBadge = function(id, label) {
