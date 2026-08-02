@@ -3186,7 +3186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Decision
               challengeLoading && h('div', { className: 'text-center py-4 ' + textMuted, role: 'status', 'aria-live': 'polite' },
-                h('span', { className: 'animate-spin inline-block text-xl' }, '\uD83C\uDF00'),
+                h('span', { className: 'motion-reduce:animate-none animate-spin inline-block text-xl' }, '\uD83C\uDF00'),
                 h('p', { className: 'text-xs mt-2' }, t('stem.migration.scouting_ahead', 'Scouting ahead...'))
               ),
 
