@@ -48,7 +48,7 @@ function SentenceFramesView(props) {
                                 <div className={`flex items-center gap-1.5 text-xs font-bold transition-all duration-500 ${studentWorkStatus === 'saving' ? 'text-rose-400' : 'text-green-600'}`}>
                                     {studentWorkStatus === 'saving' ? (
                                         <>
-                                            <RefreshCw size={12} className="animate-spin"/> {t('status.saving')}
+                                            <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> {t('status.saving')}
                                         </>
                                     ) : (
                                         <>
@@ -71,7 +71,7 @@ function SentenceFramesView(props) {
                                 <button
                                     onClick={launchGradingSession}
                                     data-help-key="scaffolds_grading"
-                                    className={`flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`}
+                                    className={`flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`}
                                     title={t('mastery.start_tooltip')}
                                     aria-label={t('mastery.start_tooltip')}
                                 >
@@ -212,7 +212,7 @@ function SentenceFramesView(props) {
                                         disabled={isGeneratingRubric}
                                         className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                         >
-                                        {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin"/> : <Sparkles size={12}/>}
+                                        {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12}/>}
                                         {generatedContent?.data.rubric
                                             ? "Regenerate Rubric"
                                             : (isIndependentMode ? "Generate Self-Checklist" : "Generate Rubric")}
@@ -283,7 +283,7 @@ function SentenceFramesView(props) {
                                             disabled={!studentWorkInput.trim() || isGrading}
                                             className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            {isGrading ? <RefreshCw size={16} className="animate-spin"/> : <Sparkles size={16} className="text-yellow-700 fill-current"/>}
+                                            {isGrading ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={16} className="text-yellow-700 fill-current"/>}
                                             {isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn')}
                                         </button>
                                     </div>

@@ -99,7 +99,7 @@
   }), " Reset"), /*#__PURE__*/React.createElement("button", {
     onClick: launchGradingSession,
     "data-help-key": "scaffolds_grading",
-    className: `flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`,
+    className: `flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`,
     title: t('mastery.start_tooltip'),
     "aria-label": t('mastery.start_tooltip')
   }, /*#__PURE__*/React.createElement(Sparkles, {
