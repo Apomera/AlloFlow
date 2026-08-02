@@ -820,7 +820,7 @@ function HeaderBar(props) {
                           aria-label={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}
                         >
                           <Unplug size={14} aria-hidden="true" />
-                          <span className="hidden lg:inline">AI</span>
+                          <span className="hidden lg:inline">{t('header.nav_ai') || 'AI'}</span>
                         </button>
                         )}
                         {isTeacherMode && (
@@ -839,7 +839,7 @@ function HeaderBar(props) {
                           aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🎓</span>
-                          <span className="hidden lg:inline">Tools</span>
+                          <span className="hidden lg:inline">{t('header.nav_tools') || 'Tools'}</span>
                         </button>
                         )}
                         {isTeacherMode && setShowLearningHub && (
@@ -851,7 +851,7 @@ function HeaderBar(props) {
                           aria-label={t('header.learning_tools_aria') || 'Learning Tools'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🧠</span>
-                          <span className="hidden lg:inline">Learn</span>
+                          <span className="hidden lg:inline">{t('header.nav_learn') || 'Learn'}</span>
                         </button>
                         )}
                         {isTeacherMode && !isIndependentMode && setBridgeSendOpen && (
@@ -863,7 +863,7 @@ function HeaderBar(props) {
                           aria-label={t('header.bridge_aria') || 'Family Bridge translation'}
                         >
                           <span style={{fontSize:'14px',lineHeight:1}}>🌐</span>
-                          <span className="hidden lg:inline">Bridge</span>
+                          <span className="hidden lg:inline">{t('header.nav_bridge') || 'Bridge'}</span>
                         </button>
                         )}
                         <div className="w-px h-5 bg-white/10 mx-0.5"></div>
@@ -985,7 +985,7 @@ function HeaderBar(props) {
                                 data-help-key="header_export"
                                 title={t('header.export_tooltip')}
                             >
-                                <FileText size={14} /> <span className="hidden lg:inline">Documents</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+                                <FileText size={14} /> <span className="hidden lg:inline">{t('header.nav_documents') || 'Documents'}</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
                             {showExportMenu && (
                                 <div role="menu" aria-label={t('header.documents_menu_aria') || 'Documents menu'} onKeyDown={(e) => {

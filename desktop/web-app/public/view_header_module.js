@@ -756,7 +756,7 @@ function HeaderBar(props) {
       "aria-label": _isCanvasEnv ? t("header.ai_diagnostics_canvas") || "AI Settings & Model Diagnostics" : t("header.ai_backend_config") || "AI Backend Configuration"
     },
     /* @__PURE__ */ React.createElement(Unplug, { size: 14, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "AI")
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_ai") || "AI")
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -775,7 +775,7 @@ function HeaderBar(props) {
       "aria-label": t("header.educator_tools_aria") || "Educator Tools"
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F393}"),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Tools")
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_tools") || "Tools")
   ), isTeacherMode && setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -787,7 +787,7 @@ function HeaderBar(props) {
       "aria-label": t("header.learning_tools_aria") || "Learning Tools"
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Learn")
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_learn") || "Learn")
   ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -799,7 +799,7 @@ function HeaderBar(props) {
       "aria-label": t("header.bridge_aria") || "Family Bridge translation"
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Bridge")
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_bridge") || "Bridge")
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -902,7 +902,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(FileText, { size: 14 }),
     " ",
-    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Documents"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_documents") || "Documents"),
     " ",
     showExportMenu ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "menu", "aria-label": t("header.documents_menu_aria") || "Documents menu", onKeyDown: (e) => {
