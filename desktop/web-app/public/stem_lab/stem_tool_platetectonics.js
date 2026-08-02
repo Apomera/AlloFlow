@@ -870,6 +870,7 @@
     function makeLabel(text, hex, scaleUnits) {
       var pad = 8, fs = 40;
       var cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
       c2.font = 'bold ' + fs + 'px sans-serif';
       cv.width = Math.ceil(c2.measureText(text).width) + pad * 2;
