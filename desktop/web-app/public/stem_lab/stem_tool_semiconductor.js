@@ -494,7 +494,7 @@ window.StemLab = window.StemLab || {
       function aiBox() {
         if (!d.aiExplain && !d.aiLoading) return null;
         return h('div', { className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
-          d.aiLoading ? h('span', { className: 'animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : h(React.Fragment, null,
+          d.aiLoading ? h('span', { className: 'motion-reduce:animate-none animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : h(React.Fragment, null,
             h('span', null, d.aiExplain),
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
@@ -2661,11 +2661,6 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-moore-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            // Carries the DATA, not just the title. This was a fixed string, so a
-            // screen-reader user got "a graph exists" and nothing about the trend,
-            // the selected year, or how the real chip compares to the prediction --
-            // which is the entire point of the module. Everything named here is
-            // already on screen for a sighted user.
             role: 'img', 'aria-label': 'Moore\'s Law graph, log scale, 1965 to 2030. '
               + 'Selected year ' + year + '. '
               + 'Nearest milestone: ' + nearest.name + ' in ' + nearest.year + ', '
@@ -2673,6 +2668,11 @@ window.StemLab = window.StemLab || {
               + (nearest.node ? ' on a ' + nearest.node + ' process' : '') + '. '
               + 'Moore\'s doubling prediction for ' + year + ' is '
               + formatTransistorCount(moorePred) + '.'
+            // Carries the DATA, not just the title. This was a fixed string, so a
+            // screen-reader user got "a graph exists" and nothing about the trend,
+            // the selected year, or how the real chip compares to the prediction --
+            // which is the entire point of the module. Everything named here is
+            // already on screen for a sighted user.
           }),
           sliderRow('Year', year, 1965, 2030, 1, function(v) { upd('mooreYear', v); }, ''),
           h('div', { className: 'flex items-center gap-3 mt-2' },
