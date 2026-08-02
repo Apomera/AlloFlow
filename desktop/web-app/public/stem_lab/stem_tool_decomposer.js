@@ -1992,7 +1992,7 @@
                 // Scene visual — all objects always visible
                 h('div', { className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
                   // Canvas background
-                  h('canvas', { 'aria-label': 'Decomposer visualization', 
+                  h('canvas', { role: 'img', 'aria-label': 'Decomposer visualization', 
                     ref: function(canvas) {
                       if (!canvas) return;
                       if (canvas._sceneDrawn === scene.id) return;
@@ -2572,7 +2572,7 @@
 
             // Particle canvas
             h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
-              h('canvas', { 'aria-label': 'Decomposer interactive visualization',
+              h('canvas', { role: 'img', 'aria-label': 'Decomposer interactive visualization',
                 ref: function(canvas) {
                   if (!canvas) return;
                   var c2 = canvas.getContext('2d');
@@ -2752,7 +2752,7 @@
 
             /* Canvas */
             h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
-              h('canvas', { 'aria-label': 'Decomposer visualization',
+              h('canvas', { role: 'img', 'aria-label': 'Decomposer visualization',
                 ref: canvasRef,
                 className: 'w-full cursor-pointer',
                 style: { height: '280px', display: 'block' },
@@ -3026,7 +3026,7 @@
                 );
               }),
               aiLoading && h('div', { className: 'flex justify-start' },
-                h('div', { className: 'bg-white border border-slate-400 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse' },
+                h('div', { className: 'bg-white border border-slate-400 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse motion-reduce:animate-none' },
                   'Thinking...'
                 )
               )
@@ -3036,6 +3036,7 @@
             h('div', { className: 'flex gap-2 mb-3' },
               h('input', {
                 type: 'text',
+                'aria-label': 'Ask the Decomposer tutor',
                 value: aiInput,
                 onChange: function(e) { upd('aiInput', e.target.value); },
                 onKeyDown: function(e) {
@@ -3044,7 +3045,6 @@
                   }
                 },
                 placeholder: 'Ask about ' + sel.name + '...',
-                'aria-label': 'Ask the Decomposer tutor',
                 className: 'flex-1 px-3 py-2 rounded-xl border border-slate-400 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
               h('button', { onClick: function() {
