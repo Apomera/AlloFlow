@@ -4547,7 +4547,7 @@
             className: "text-[10px] text-slate-500 mt-1"
           }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && (() => {
             var _allStemTools = [
-              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
+              { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', chip: 'math', category: true },
               {
                 id: 'volume',
                 icon: '📦',
@@ -4660,7 +4660,7 @@
                 color: 'pink',
                 ready: true
               },
-              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', category: true },
+              { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', chip: 'math', category: true },
               {
                 // @tool funcGrapher
                 id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher'),
@@ -4698,7 +4698,7 @@
                 desc: 'Convert between metric and imperial units for length, mass, volume, and more.',
                 color: 'teal', ready: true
               },
-              { id: '_cat_Life&EarthScience', icon: '', label: t('stem.tools_menu.life_earth_science'), desc: '', color: 'slate', category: true },
+              { id: '_cat_Life&EarthScience', icon: '', label: t('stem.tools_menu.life_earth_science'), desc: '', color: 'slate', chip: 'science', category: true },
               { id: 'dinoLab', icon: '🦕', label: 'Dino Lab', desc: 'Explore 360+ dinosaurs across deep time: search, compare, dig fossils, build food webs, and meet the bird connection — with how-we-know notes on every species.', color: 'emerald', ready: true },
               {
                 // @tool cell
@@ -4853,7 +4853,7 @@
                 desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
                 color: 'stone', ready: true
               },
-              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', category: true },
+              { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', chip: 'science', category: true },
               {
                 // @tool wave
                 id: 'wave', icon: '🌊', label: t('stem.tools_menu.wave_simulator'),
@@ -4920,7 +4920,7 @@
                 color: 'sky', ready: true
               },
 
-              { id: '_cat_ComputerScience', icon: '', label: 'Computer Science', desc: '', color: 'slate', category: true },
+              { id: '_cat_ComputerScience', icon: '', label: 'Computer Science', desc: '', color: 'slate', chip: 'engineering', category: true },
               {
                 id: 'codingPlayground', icon: '🖥️', label: 'Coding Playground',
                 desc: 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
@@ -4937,7 +4937,7 @@
                 color: 'teal', ready: true
               },
 
-              { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', category: true },
+              { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', chip: 'creative', category: true },
 
               {
 
@@ -4966,7 +4966,7 @@
                 color: 'violet', ready: true
               },
 
-              { id: '_cat_BehavioralScience', icon: '', label: '\uD83E\uDDE0 Behavioral Science', desc: '', color: 'slate', category: true },
+              { id: '_cat_BehavioralScience', icon: '', label: '\uD83E\uDDE0 Behavioral Science', desc: '', color: 'slate', chip: 'science', category: true },
               {
                 id: 'behaviorLab', icon: '\uD83D\uDC2D', label: 'Behavior Shaping Lab',
                 desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
@@ -4978,7 +4978,7 @@
                 color: 'teal', ready: true
               },
 
-              { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
+              { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', chip: 'applied', category: true },
               {
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
                 desc: 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
@@ -5101,19 +5101,19 @@
                 color: 'fuchsia', ready: true
               },
 
-              { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
+              { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', chip: 'strategy', category: true },
               { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true },
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
 
-              { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
+              { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', chip: 'science', category: true },
               { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
               { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
               { id: 'microbiology', icon: '\uD83E\uDD7C', label: 'Microbiology Lab', desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
 
-              { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
+              { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', chip: 'science', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
               { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
@@ -5127,27 +5127,27 @@
               // tracks quote state as it scans and an unpaired one blinds it.
               { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
 
-              { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
+              { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', chip: 'math', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
               { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
               { id: 'cellularLab', icon: '\uD83E\uDDEB', label: 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
 
-              { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', category: true },
+              { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', chip: 'creative', category: true },
               { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
               { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
               { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
 
-              { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', category: true },
+              { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', chip: 'engineering', category: true },
               { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
               { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
 
-              { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
+              { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', chip: 'science', category: true },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'raptorHunt', icon: '\uD83E\uDD85', label: 'Raptor Hunt: Predator Physics + Biology', desc: 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
-              { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
+              { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', chip: 'engineering', category: true },
               { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
               {
                 id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
@@ -5264,22 +5264,28 @@
             }
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
-              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
-              var _catKeys = _catMap[_catFilter] || [_catFilter];
+              // Each { category: true } header declares its own `chip`. This used to
+              // lowercase the header's DISPLAY LABEL and indexOf-match English keywords,
+              // which broke two ways:
+              //   1. Substrings collided inside unrelated words — "physiCS" matched the
+              //      'cs' engineering key (so the Science chip showed ZERO physics and
+              //      chemistry tools), "eARTh" matched 'Art' (so 31 earth/life science
+              //      tools showed under Creative), "economiCS" matched 'cs' too. Two
+              //      sections ("Sound, Speech & Music", "Ecology & Migration") matched no
+              //      key at all and vanished from every chip.
+              //   2. It tested ENGLISH keywords against a TRANSLATED label, so the chips
+              //      filtered to near-nothing in every localized UI.
+              // Comparing a declared field fixes both and can't drift when a label is
+              // reworded or translated. See STEM_LAB_CATEGORY_AUDIT.md.
               _filteredTools = _filteredTools.filter(function(tool) {
-                if (tool.category) {
-                  // Check if this category header matches
-                  var catLabel = (tool.label || '').toLowerCase();
-                  return _catKeys.some(function(ck) { return catLabel.indexOf(ck.toLowerCase()) !== -1; });
-                }
-                // Check tool's own category
-                var toolCat = '';
-                // Find the preceding category header
+                if (tool.category) return tool.chip === _catFilter;
+                // A tile inherits the chip of the nearest preceding header.
+                var toolChip = '';
                 var toolIdx = _allStemTools.indexOf(tool);
                 for (var ci3 = toolIdx - 1; ci3 >= 0; ci3--) {
-                  if (_allStemTools[ci3].category) { toolCat = (_allStemTools[ci3].label || '').toLowerCase(); break; }
+                  if (_allStemTools[ci3].category) { toolChip = _allStemTools[ci3].chip || ''; break; }
                 }
-                return _catKeys.some(function(ck) { return toolCat.indexOf(ck.toLowerCase()) !== -1; });
+                return toolChip === _catFilter;
               });
               // Remove orphan categories
               _filteredTools = _filteredTools.filter(function(tool, i, arr) {
