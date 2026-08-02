@@ -139,7 +139,7 @@
     className: "flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingGuide[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin",
+    className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ListChecks, {
     size: 14,
@@ -173,7 +173,7 @@
     title: idea.coverImage ? t('brainstorm.regenerate_cover') || 'Regenerate cover image' : t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet'
   }, isGeneratingWorksheetCover[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 11,
-    className: "animate-spin",
+    className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ImageIcon, {
     size: 11,
@@ -196,7 +196,7 @@
     className: "mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingWorksheet[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin",
+    className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(FileText, {
     size: 14,
@@ -262,7 +262,7 @@
     className: "mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingBrainstormRubric[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin",
+    className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(ListChecks, {
     size: 14,

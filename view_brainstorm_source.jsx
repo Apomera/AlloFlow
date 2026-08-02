@@ -108,7 +108,7 @@ function BrainstormView(props) {
                                             aria-busy={!!isGeneratingGuide[idx]}
                                             className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
-                                             {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
+                                             {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
                                              {isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}
                                          </button>
                                      )}
@@ -138,7 +138,7 @@ function BrainstormView(props) {
                                                              className="text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                                              title={idea.coverImage ? (t('brainstorm.regenerate_cover') || 'Regenerate cover image') : (t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet')}
                                                          >
-                                                             {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin" aria-hidden="true"/> : <ImageIcon size={11} aria-hidden="true"/>}
+                                                             {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ImageIcon size={11} aria-hidden="true"/>}
                                                              {isGeneratingWorksheetCover[idx]
                                                                  ? (t('brainstorm.creating_cover') || 'Creating cover…')
                                                                  : idea.coverImage
@@ -171,7 +171,7 @@ function BrainstormView(props) {
                                                  aria-busy={!!isGeneratingWorksheet[idx]}
                                                  className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                              >
-                                                 {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <FileText size={14} aria-hidden="true"/>}
+                                                 {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <FileText size={14} aria-hidden="true"/>}
                                                  {isGeneratingWorksheet[idx] ? (t('brainstorm.creating_worksheet') || 'Creating worksheet…') : (t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')}
                                              </button>
                                          )
@@ -219,7 +219,7 @@ function BrainstormView(props) {
                                              aria-busy={!!isGeneratingBrainstormRubric[idx]}
                                              className="mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
-                                             {isGeneratingBrainstormRubric[idx] ? <RefreshCw size={12} className="animate-spin" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
+                                             {isGeneratingBrainstormRubric[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
                                              {isGeneratingBrainstormRubric[idx] ? 'Creating rubric...' : 'Generate Activity Rubric'}
                                          </button>
                                      ) : null}
