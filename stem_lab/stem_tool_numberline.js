@@ -588,6 +588,8 @@ window.StemLab = window.StemLab || {
             return h('svg', {
               width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
               style: { cursor: (challenge && challenge.type === 'place') ? 'crosshair' : 'default' },
+              role: 'img',
+              'aria-label': challenge && challenge.question ? challenge.question : 'Number line visualization',
               onClick: function(e) {
                 if (!challenge || challenge.type !== 'place') return;
                 var rect = e.currentTarget.getBoundingClientRect();
@@ -728,14 +730,14 @@ window.StemLab = window.StemLab || {
                       ),
                       h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),
                       h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
-                        challenge.type !== 'place' ? h('input', {
-                          type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1',
+                        h('input', {
+                          type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1', min: challenge.type === 'place' ? range.min : undefined, max: challenge.type === 'place' ? range.max : undefined,
                           onChange: function(e) { upd({ answer: e.target.value }); },
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
-                          placeholder: t('stem.numberline.your_answer', 'Your answer'),
-                          'aria-label': t('stem.numberline.challenge_answer', 'Challenge answer'),
+                          placeholder: challenge.type === 'place' ? t('stem.numberline.placement_value', 'Value to place') : t('stem.numberline.your_answer', 'Your answer'),
+                          'aria-label': challenge.type === 'place' ? t('stem.numberline.keyboard_placement_value', 'Placement value') : t('stem.numberline.challenge_answer', 'Challenge answer'),
                           className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
-                        }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, t('stem.numberline.click_the_number_line_above_to_place_a', 'Click the number line above to place a marker.')),
+                        }),
                         h('button', { 'aria-label': t('stem.numberline.check_answer', 'Check Answer'),
                           onClick: checkAnswer,
                           disabled: challenge.type === 'place' && !answer,
@@ -1158,14 +1160,14 @@ window.StemLab = window.StemLab || {
               var svgH = rotate ? 190 : H;
               return h('svg', {
                 width: '100%', height: svgH, viewBox: '0 0 ' + W + ' ' + svgH, className: 'max-w-full',
-                style: { cursor: 'grab', touchAction: 'none', userSelect: 'none', outline: 'none' },
+                style: { cursor: 'grab', touchAction: 'none', userSelect: 'none' },
                 role: 'slider',
+                'aria-label': t('stem.numberline.number_line_marker_use_arrow_keys_to_m', 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.'),
                 tabIndex: 0,
                 'aria-valuemin': fdMin,
                 'aria-valuemax': fdMax,
                 'aria-valuenow': Math.round(fdValue * 1000) / 1000,
                 'aria-valuetext': decimal + ', which is ' + simpNum + ' over ' + simpDen + (isRepeatingDecimal ? ', repeating decimal' : ''),
-                'aria-label': t('stem.numberline.number_line_marker_use_arrow_keys_to_m', 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.'),
                 onPointerDown: startPointer,
                 onKeyDown: handleLineKey
               },
@@ -2111,7 +2113,7 @@ window.StemLab = window.StemLab || {
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['A', 'B', '≈A', '≈B', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['A', 'B', '≈A', '≈B', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     return h('tr', { key: 'lr' + idx },
                       h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.a),
