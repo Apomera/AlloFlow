@@ -1262,11 +1262,12 @@
 
       var tabBar = h('nav', {
         'aria-label': __alloT('stem.microbiology.microbiology_sections', 'Microbiology sections'),
+        role: 'tablist',
         className: 'micro-tab-list'
       },
         visibleMicroTabs.map(function(t) {
           var active = d.tab === t.id;
-          return h('button', { key: t.id, type: 'button', 'aria-current': active ? 'page' : undefined, 'aria-label': t.label,
+          return h('button', { key: t.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-current': active ? 'page' : undefined, 'aria-label': t.label,
             className: 'micro-tab-btn' + (active ? ' active' : ''),
             onClick: function() { upd({ tab: t.id }); }
           }, t.icon + ' ' + t.label);
@@ -1488,7 +1489,7 @@
                   h('span', null, __alloT('stem.microbiology.slide_smear_1000x_oil_immersion', '🔬 Slide Smear (1000x Oil Immersion)')),
                   h('span', { style: { color: '#a78bfa' } }, step === 0 ? 'Step 0: Heat-Fixed Smear' : 'Step ' + step + ': ' + stepLabels[step - 1])
                 ),
-                h('svg', { viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
+                h('svg', { role: 'img', 'aria-label': 'Gram stain microscopy process visualization', viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
                   h('circle', { cx: 100, cy: 75, r: 72, fill: 'none', stroke: '#1e293b', strokeWidth: 0.5 }),
                   h('line', { x1: 100, y1: 3, x2: 100, y2: 147, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
                   h('line', { x1: 25, y1: 75, x2: 175, y2: 75, stroke: '#1e293b', strokeWidth: 0.3, strokeDasharray: '2,2' }),
@@ -3697,7 +3698,7 @@
                   h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
                     h('thead', null, h('tr', null,
                       ['Class', 'Where', 'Job'].map(function(c, i) {
-                        return h('th', { key: i, style: { padding: 5, textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800 } }, c);
+                        return h('th', { key: i, scope: 'col', style: { padding: 5, textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800 } }, c);
                       })
                     )),
                     h('tbody', null,
@@ -4028,10 +4029,10 @@
                   ];
                   return h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, minWidth: 720 } },
                     h('thead', null, h('tr', null,
-                      h('th', { style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800 } }, __alloT('stem.microbiology.vaccine', 'Vaccine')),
-                      h('th', { style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 160 } }, __alloT('stem.microbiology.disease', 'Disease')),
+                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800 } }, __alloT('stem.microbiology.vaccine', 'Vaccine')),
+                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 160 } }, __alloT('stem.microbiology.disease', 'Disease')),
                       ages.map(function(a, i) {
-                        return h('th', { key: i, style: { padding: 6, textAlign: 'center', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 56 } }, a);
+                        return h('th', { key: i, scope: 'col', style: { padding: 6, textAlign: 'center', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 56 } }, a);
                       })
                     )),
                     h('tbody', null,
@@ -4513,7 +4514,7 @@
               var strokeColor = pct >= 80 ? '#10b981' : (pct >= 60 ? '#38bdf8' : '#fbbf24');
               return h('div', { style: { padding: 20, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 16 } },
                 h('div', { style: { fontSize: 32, marginBottom: 8 } }, pct >= 80 ? '🧬' : pct >= 60 ? '🦠' : '🔬'),
-                h('svg', { width: 100, height: 100, style: { transform: 'rotate(-90deg)' } },
+                h('svg', { role: 'img', 'aria-label': sel.name + ' quiz score ' + pct + ' percent', width: 100, height: 100, style: { transform: 'rotate(-90deg)' } },
                   h('circle', { cx: 50, cy: 50, r: radius, fill: 'none', stroke: '#0f172a', strokeWidth: 8 }),
                   h('circle', {
                     cx: 50,
@@ -4615,7 +4616,7 @@
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
                 h('thead', null, h('tr', null,
                   ['Microbe', 'Type', 'Where', 'Role'].map(function(c, i) {
-                    return h('th', { key: i, style: { padding: 5, textAlign: 'left', background: '#f1f5f9', border: '1px solid var(--allo-stem-border, #cbd5e1)', fontWeight: 800 } }, c);
+                    return h('th', { key: i, scope: 'col', style: { padding: 5, textAlign: 'left', background: '#f1f5f9', border: '1px solid var(--allo-stem-border, #cbd5e1)', fontWeight: 800 } }, c);
                   })
                 )),
                 h('tbody', null,
