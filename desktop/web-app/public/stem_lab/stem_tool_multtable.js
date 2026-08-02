@@ -302,7 +302,7 @@ window.StemLab = window.StemLab || {
       var maxNum = 12;
 
       // ── Speed Run timer state ──
-      var _mt = labToolData._multTimer || { active: false, endTime: 0, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] };
+      var _mt = labToolData._multTimer || { active: false, paused: false, endTime: 0, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] };
       var _mtUpd = function(obj) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { _multTimer: Object.assign({}, prev._multTimer || _mt, obj) });
@@ -332,11 +332,12 @@ window.StemLab = window.StemLab || {
       var showHeatmap = _ext.showHeatmap || false;
 
       // Timer tick — ref-based interval
-      if (_mt.active && !labToolData._multTimerInterval) {
+      if (_mt.active && !_mt.paused && !labToolData._multTimerInterval) {
         var _ivl = setInterval(function() {
           setLabToolData(function(prev) {
             var tm = prev._multTimer || _mt;
             if (!tm.active) { clearInterval(_ivl); return Object.assign({}, prev, { _multTimerInterval: null }); }
+            if (tm.paused) { clearInterval(_ivl); return Object.assign({}, prev, { _multTimerInterval: null }); }
             var left = Math.max(0, Math.round((tm.endTime - Date.now()) / 1000));
             if (left <= 0) {
               clearInterval(_ivl);
@@ -600,7 +601,7 @@ window.StemLab = window.StemLab || {
         if (key === 's' && !_mt.active) {
           e.preventDefault();
           nextProblem();
-          _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
+          _mtUpd({ active: true, paused: false, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
           if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
           labToolData._multTimerInterval = null;
           playSound('speedStart');
@@ -1001,7 +1002,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex items-center gap-2' },
-                  h('button', { onClick: function() { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); } }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('button', { onClick: function() { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false, paused: false }); if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; } } }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
                   h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, 'Fact strategy studio')
                 ),
                 h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
@@ -1048,7 +1049,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
             // Streak badge
             (_mt.streak || 0) >= 2 && h('div', { 
-              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
+              className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse motion-reduce:animate-none'
             }, '\uD83D\uDD25 ' + _mt.streak + ' streak!'),
             // Badge count
             earnedCount > 0 && h('button', { 'aria-label': t('stem.multtable.view_badges_b', 'View badges (B)'),
@@ -1081,7 +1082,7 @@ window.StemLab = window.StemLab || {
                 setMultTableChallenge(null); setMultTableAnswer(''); setMultTableFeedback(null);
                 setMultTableHover(null); setMultTableRevealed(new Set());
                 setHighlightCell(null); setInputDisabled(false);
-                if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
+                if (_mt.active) { _mtUpd({ active: false, paused: false }); if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; } }
                 extUpd({ patternId: null, mtTab: 'practice', visualA: 7, visualB: 8 });
                 announceToSR('Multiplication table reset');
               },
@@ -1161,7 +1162,7 @@ window.StemLab = window.StemLab || {
           ),
           _ext.aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none' }),
                 h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
               )
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
@@ -1208,7 +1209,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Speed Run timer banner ──
-        _mt.active && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border-2 border-amber-300 flex items-center gap-3 animate-pulse' },
+        _mt.active && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border-2 border-amber-300 flex items-center gap-3 animate-pulse motion-reduce:animate-none' },
           h('span', { className: 'text-2xl' }, '\u23F1\uFE0F'),
           h('div', { className: 'flex-1' },
             h('div', { className: 'flex items-center justify-between' },
@@ -1224,10 +1225,24 @@ window.StemLab = window.StemLab || {
               }})
             )
           ),
+          h('button', { 'aria-label': _mt.paused ? t('stem.multtable.resume_speed_run', 'Resume Speed Run') : t('stem.multtable.pause_speed_run', 'Pause Speed Run'),
+            onClick: function() {
+              if (_mt.paused) {
+                _mtUpd({ paused: false, endTime: Date.now() + Math.max(0, _mt.timeLeft) * 1000 });
+                announceToSR('Speed Run resumed');
+              } else {
+                var remaining = Math.max(0, Math.round((_mt.endTime - Date.now()) / 1000));
+                _mtUpd({ paused: true, timeLeft: remaining });
+                if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; }
+                announceToSR('Speed Run paused');
+              }
+            },
+            className: 'px-3 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-600 transition-all'
+          }, _mt.paused ? t('stem.multtable.resume', 'â–¶ Resume') : t('stem.multtable.pause', 'â¸ Pause')),
           h('button', { 'aria-label': t('stem.multtable.stop', 'Stop'),
             onClick: function() {
-              _mtUpd({ active: false });
-              if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+              _mtUpd({ active: false, paused: false });
+              if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; }
               playSound('speedEnd');
               addToast('\u23F1\uFE0F Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info');
             },
@@ -1466,7 +1481,7 @@ window.StemLab = window.StemLab || {
                       title: isCommPair ? 'Commutative pair: ' + (c + 1) + '×' + (r + 1) + ' = ' + (r + 1) + '×' + (c + 1) + ' = ' + val : undefined,
                       className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' +
                         (isHighlighted
-                          ? 'bg-amber-400 text-amber-900 font-bold ring-2 ring-amber-500 ring-offset-1 rounded scale-110 shadow-lg animate-pulse'
+                          ? 'bg-amber-400 text-amber-900 font-bold ring-2 ring-amber-500 ring-offset-1 rounded scale-110 shadow-lg animate-pulse motion-reduce:animate-none'
                           : isExact
                             ? 'bg-pink-700 text-white font-bold scale-110 shadow-lg rounded'
                             : isCommPair
@@ -1494,7 +1509,7 @@ window.StemLab = window.StemLab || {
           h('button', { 'aria-label': t('stem.multtable.speed_run_2min', 'Speed Run (2min)'),
             onClick: function() {
               nextProblem();
-              _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
+              _mtUpd({ active: true, paused: false, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120, streak: 0, missed: [], adaptiveHistory: [] });
               if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
               labToolData._multTimerInterval = null;
               playSound('speedStart');
@@ -1512,7 +1527,7 @@ window.StemLab = window.StemLab || {
               setMultTableRevealed(new Set());
               setHighlightCell(null);
               setInputDisabled(false);
-              if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
+              if (_mt.active) { _mtUpd({ active: false, paused: false }); if (labToolData._multTimerInterval) { clearInterval(labToolData._multTimerInterval); labToolData._multTimerInterval = null; } }
             },
             className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
           }, t('stem.multtable.reset_4', '\u21BA Reset'))
@@ -1527,6 +1542,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center justify-center' },
             h('input', {
               type: 'number',
+              'aria-label': t('stem.multtable.answer', 'Multiplication or division answer'),
               value: multTableAnswer,
               onChange: function(e) { if (!inputDisabled) setMultTableAnswer(e.target.value); },
               onKeyDown: function(e) { if (e.key === 'Enter' && multTableAnswer && !inputDisabled) checkMult(); },
@@ -1535,7 +1551,6 @@ window.StemLab = window.StemLab || {
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
                   : 'border-pink-600 focus:border-pink-500'),
               placeholder: '?',
-              'aria-label': t('stem.multtable.answer', 'Multiplication or division answer'),
               autoFocus: true,
               disabled: inputDisabled,
               id: 'multtable-input'
@@ -1575,7 +1590,7 @@ window.StemLab = window.StemLab || {
           ),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
-            h('p', { className: 'text-[11px] text-slate-600 animate-pulse' }, t('stem.multtable.next_question_coming', 'Next question coming...')),
+            h('p', { className: 'text-[11px] text-slate-600 animate-pulse motion-reduce:animate-none' }, t('stem.multtable.next_question_coming', 'Next question coming...')),
             h('button', { 'aria-label': t('stem.multtable.skip_next', 'Skip Next'),
               onClick: function() {
                 if (labToolData._multAdvanceTimer) clearTimeout(labToolData._multAdvanceTimer);
