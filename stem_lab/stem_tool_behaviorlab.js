@@ -4259,7 +4259,7 @@ dataRef.current = d;
 
                         (isDone ? 'bg-emerald-600/40 text-emerald-200 border border-emerald-500/40 shadow-md shadow-emerald-500/10' :
 
-                          isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse' :
+                          isCurrent ? 'bg-amber-600/40 text-amber-200 border border-amber-500/40 ring-2 ring-amber-400/50 animate-pulse motion-reduce:animate-none' :
 
                             'bg-slate-800/60 text-slate-200 border border-slate-700/40')
 
@@ -4271,7 +4271,7 @@ dataRef.current = d;
 
                 blChainStep >= CHAIN_SEQ.length && React.createElement("span", {
 
-                  className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-700 to-yellow-700 text-white animate-pulse shadow-lg shadow-amber-500/30"
+                  className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-700 to-yellow-700 text-white animate-pulse motion-reduce:animate-none shadow-lg shadow-amber-500/30"
 
                 }, __alloT('stem.behaviorlab.reinforce_now', "🍕 REINFORCE NOW!"))
 
@@ -4913,7 +4913,7 @@ dataRef.current = d;
                     title: badge.name + ': ' + badge.desc + (earned ? ' (EARNED!)' : ' (locked)'),
                     onClick: function() { if (earned || isCurrent) { upd('blLevel', l.id); upd('blPhase', 'intro'); upd('blLevelScore', 0); upd('blTick', 0); } }
                   },
-                    React.createElement("div", { className: "text-2xl " + (isCurrent ? 'animate-bounce' : '') }, badge.icon),
+                    React.createElement("div", { className: "text-2xl " + (isCurrent ? 'animate-bounce motion-reduce:animate-none' : '') }, badge.icon),
                     React.createElement("div", { className: "text-[11px] font-bold " + (earned ? 'text-amber-400' : 'text-slate-200') }, 'L' + l.id),
                     earned ? React.createElement("div", { className: "text-[11px] text-green-400" }, __alloT('stem.behaviorlab.earned', '\u2713 Earned')) : React.createElement("div", { className: "text-[11px] text-slate-200" }, '\uD83D\uDD12')
                   );
@@ -5964,7 +5964,7 @@ dataRef.current = d;
               React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-2 uppercase tracking-wider" }, "\uD83C\uDFAF Clinical Scenarios (" + (blScenarioIdx + 1) + "/" + SCENARIO_CHALLENGES.length + ")"),
               // Streak indicator
               blStreak > 0 && React.createElement("div", { className: "text-center mb-2" },
-                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-100') },
+                React.createElement("span", { className: "inline-block px-3 py-0.5 rounded-full text-[11px] font-bold " + (blStreak >= 5 ? 'bg-amber-700 text-white animate-pulse motion-reduce:animate-none' : blStreak >= 3 ? 'bg-emerald-700 text-emerald-100' : 'bg-slate-700 text-slate-100') },
                   '\uD83D\uDD25 ' + blStreak + ' streak!' + (blStreak >= 5 ? ' AMAZING!' : blStreak >= 3 ? ' On fire!' : ''))
               ),
               // Score
