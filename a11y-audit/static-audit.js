@@ -318,6 +318,9 @@ const CHECKS = [
     severity: 'major',
     description: 'Draggable interaction with no keyboard-based movement alternative',
     test(line, lineNum, lines) {
+      // CSS selectors such as [draggable="true"] style touch targets; they do
+      // not create a draggable interaction and should not trigger this rule.
+      if (/\[\s*draggable\s*=/.test(line) && !/onDragStart|onMouseDown.*drag/i.test(line)) return false;
       if (!/draggable\s*[:=]\s*['"]?true|onDragStart|onMouseDown.*drag/i.test(line)) return false;
       const localContext = lines.slice(lineNum - 1, lineNum + 10).join(' ');
       const context = lines.slice(lineNum - 1, lineNum + 120).join(' ');
