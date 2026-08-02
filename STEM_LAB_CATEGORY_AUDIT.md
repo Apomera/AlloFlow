@@ -160,56 +160,72 @@ than an edge case.
 
 ---
 
-## Part 3 - Proposed taxonomy
+## Part 3 - Taxonomy (SHIPPED)
 
-Validated: every one of the 128 tiles is assigned exactly once, no duplicates, no unknown ids.
-Section sizes go from today's 2-31 range to 4-14.
+Implemented in the reorder commit. Every one of the 128 tiles is assigned exactly once, and
+each tile's source text was preserved byte-for-byte - only its position and owning header
+changed. Section sizes go from 2-31 to 4-14.
 
 | # | Section | Chip | N | Notable moves in |
 |---|---|---|---:|---|
-| 1 | Number & Operations | math | 10 | |
-| 2 | Algebra, Functions & Calculus | math | 5 | |
-| 3 | Geometry & Measurement | math | 7 | `geoSandbox`, `geometryProver`, `geometryWorld` reunited |
-| 4 | Data, Statistics & Probability | math | 6 | `statsLab`, `dataPlot`, `dataStudio`, `dataLab`, `lumen` |
-| 5 | Life Science & Genetics | science | 9 | `punnett` from Physics; `evoLab` from Social Studies |
-| 6 | Human Body, Health & Safety | science | 6 | `nutritionLab`, `firstResponse`, `kitchenLab` |
-| 7 | Ecology, Environment & Animals | science | 14 | `birdLab`, `raptorHunt`, `migration`, `cephalopodLab` |
-| 8 | Earth & Space Science | science | 14 | astronomy + spaceflight unified |
-| 9 | Chemistry | science | 4 | `molecule`, `chemBalance`, `titrationLab`, `bakingScience` |
-| 10 | Physics | science | 6 | `coasterLab` from Life & Earth Science |
-| 11 | Engineering & Design | engineering | 5 | `archStudio`, `bridgeLab`, `printingPress` |
-| 12 | Computing, AI & Digital Literacy | engineering | 12 | `llmLiteracy` from Social Studies |
-| 13 | Arts, Music & Communication | creative | 8 | `echolocation` + `echoTrainer` reunited |
-| 14 | Learning & Behavioral Science | applied | 4 | `learningLab`, `assessmentLiteracy` join |
-| 15 | Life Skills, Careers & Economics | applied | 10 | |
-| 16 | Sports & Movement Science | applied | 4 | `throwlab`, `skatelab`, `playlab`, `swimLab` |
-| 17 | Strategy Games | strategy | 4 | |
+| 1 | Math Fundamentals *(i18n)* | math | 10 | number and operations core |
+| 2 | Advanced Math *(i18n)* | math | 5 | algebra, functions, calculus |
+| 3 | 📐 Geometry & Measurement | math | 7 | `geoSandbox`, `geometryProver`, `geometryWorld` reunited |
+| 4 | 📊 Data, Statistics & Probability | math | 6 | `statsLab`, `dataPlot`, `dataStudio`, `dataLab`, `lumen` |
+| 5 | 🧬 Life Science & Genetics | science | 9 | `punnett` from Physics; `evoLab` from Social Studies |
+| 6 | 🫀 Human Body, Health & Safety | science | 6 | `nutritionLab`, `firstResponse`, `kitchenLab` |
+| 7 | 🌍 Ecology, Environment & Animals | science | 14 | `birdLab`, `raptorHunt`, `migration`, `cephalopodLab` |
+| 8 | 🌎 Earth & Space Science | science | 14 | astronomy + spaceflight unified |
+| 9 | Physics & Chemistry *(i18n)* | science | 10 | `coasterLab` in; chemistry set rejoined |
+| 10 | ⚙️ Engineering & Design | engineering | 5 | `archStudio`, `bridgeLab`, `printingPress` |
+| 11 | 💻 Computing, AI & Digital Literacy | engineering | 12 | `llmLiteracy` from Social Studies |
+| 12 | Arts & Music *(i18n)* | creative | 8 | `echolocation` + `echoTrainer` reunited |
+| 13 | 🧠 Learning & Behavioral Science | applied | 4 | `learningLab`, `assessmentLiteracy` join |
+| 14 | 💰 Life Skills, Careers & Economics | applied | 10 | |
+| 15 | 🏅 Sports & Movement Science | applied | 4 | `throwlab`, `skatelab`, `playlab`, `swimLab` |
+| 16 | ⚔️ Strategy Games | strategy | 4 | |
 
-Per-chip totals: math 28, science 53, engineering 17, creative 8, applied 18, strategy 4.
+Per-chip totals: science 53, math 28, applied 18, engineering 17, creative 8, strategy 4.
 
-If fewer sections are preferred, Chemistry (4) and Physics (6) merge cleanly into a single
-Physical Science section, and Sports (4) folds into Physics.
+**On i18n.** Four sections marked *(i18n)* keep their existing `t()` keys, which is why the
+implemented names differ slightly from the first draft of this audit: Chemistry and Physics
+were merged so the translated `stem.tools_menu.physics_chemistry` key survives, and
+"Number & Operations" stayed "Math Fundamentals". The other 12 headers are hardcoded English,
+which matches the pre-existing convention (11 of the old 16 were already hardcoded) but is
+still debt. **Follow-up:** add `stem.tools_menu.*` keys for those 12 and hand-translate them
+into the language packs. The chip filter itself no longer depends on label text at all, so
+translating a header can never again break filtering.
 
 ---
 
-## Part 4 - Recommended implementation order
+## Part 4 - Implementation status
 
-**Step 1 - Declare the chip on the header, delete the substring matching.**
-Add an explicit `chip: 'science'` field to each `{ category: true }` header row and change the
-filter to compare `header.chip === _catFilter`. This alone fixes F1 and F6 and is a small,
-low-risk change. It removes the dependency on translated display text entirely.
+**Step 1 - Declare the chip on the header. DONE.**
+Each `{ category: true }` header now carries `chip: '<id>'` and the filter compares that field;
+the `_catMap` substring table is gone. Fixes F1 and F6. Verified 16/16 headers carry a valid
+chip and all 128 tiles are chip-reachable.
 
-**Step 2 - Backfill search aliases for the 13 drifted tools.**
-Highest value per line of code in this audit. Extending `_searchAliasMap` costs one line each
-and turns seven dead queries into hits. Consider a dev-tools gate
-(`check_stem_search_coverage.cjs`) that fails when a tool's own `registerTool` desc contains a
-substantive term absent from its tile desc and aliases, so this cannot silently regress.
+**Step 2 - Backfill search aliases. DONE.**
+`_searchAliasMap` went from 14 to 29 entries, covering the 13 drifted tools plus `molecule`
+(the periodic table) and `kitchenLab` (food safety). All seven dead queries now resolve;
+precision spot-checked for new catch-alls. Every keyword came from the tool's own
+`registerTool` description.
 
-**Step 3 - Reorder the array to the Part 3 taxonomy.**
-Pure data movement, but it is a large diff in a 439KB file, so it should land as its own commit
-with nothing else in it. `check_stem_tile_catalog.cjs` verifies nothing was dropped.
+**Step 3 - Reorder to the Part 3 taxonomy. DONE.**
+Landed as its own commit. Tiles were sliced and reassembled, never re-printed, so all 128 kept
+their exact source text (independently verified: 0 tiles changed).
 
-**Step 4 - Refresh stale tile descriptions** so the tile advertises what the tool actually does.
+### Remaining
+
+**Step 4 - `check_stem_search_coverage.cjs` gate.** Step 2 fixed today's 15 tools but not the
+root cause: the haystack still cannot see a tool's own description, so the next tool can ship
+under-indexed. A gate that fails when a tool's `registerTool` desc contains a substantive term
+absent from its tile desc and aliases would close this permanently.
+
+**Step 5 - i18n keys for the 12 hardcoded headers** (see the note in Part 3).
+
+**Step 6 - Refresh stale tile descriptions** so the tile advertises what the tool actually does.
+`rockCycle` (381 chars of real features against a 72-char tile) is the worst case.
 
 ---
 
