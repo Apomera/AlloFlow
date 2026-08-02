@@ -4644,6 +4644,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
               h('canvas', {
+              role: 'img', 'aria-label': 'Interactive play field canvas',
               ref: canvasRef,
               // The 2:1 CSS aspect ratio reserves space before HiDPI setup.
               // The effect sets the internal 720x360 drawing buffer only.
