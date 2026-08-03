@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "High-Impact-Reports-89-92-App-E-accessibility-report.json",
+    "accessibleHtml": "High-Impact-Reports-89-92-App-E-accessible.html",
+    "privacyReceipt": "High-Impact-Reports-89-92-App-E-privacy-receipt.json",
+    "taggedPdf": "High-Impact-Reports-89-92-App-E-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-03T15:16:57Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "High Impact Reports 89-92 App E.pdf",
+    "bytes": 5541389,
+    "kind": "pdf",
+    "sha256": "1d2a41fa13171c03de146cd609c1b280ebf4babffdcde31ea5248e4455e25473"
+  },
+  "systemWideNetworkUseVerified": false
+}

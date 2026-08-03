@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "ohchr-udhr-spanish-accessibility-report.json",
+    "accessibleHtml": "ohchr-udhr-spanish-accessible.html",
+    "privacyReceipt": "ohchr-udhr-spanish-privacy-receipt.json",
+    "taggedPdf": "ohchr-udhr-spanish-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-03T16:07:34Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "ohchr-udhr-spanish.pdf",
+    "bytes": 186317,
+    "kind": "pdf",
+    "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+  },
+  "systemWideNetworkUseVerified": false
+}

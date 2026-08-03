@@ -1,0 +1,110 @@
+{
+  "alloflowPortableVersion": "0.2.0",
+  "artifacts": {
+    "accessibilityReport": "ohchr-udhr-spanish-accessibility-report.json",
+    "accessibleHtml": "ohchr-udhr-spanish-accessible.html",
+    "privacyReceipt": "ohchr-udhr-spanish-privacy-receipt.json",
+    "taggedPdf": "ohchr-udhr-spanish-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 1959,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 73,
+        "embedded_image_characters": 0,
+        "image_blocks": 0,
+        "plan_internal_token_recall": null,
+        "text_characters": 11891,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "recall": 1.0,
+      "sourceTokens": 1959,
+      "status": "completed"
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 32,
+        "images": 0,
+        "links": 1,
+        "tables": 0
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 109251,
+      "pdfUaFinalization": {
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 8
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-03T16:07:34Z",
+  "manualReview": [
+    "SPANISH SOURCE, SPANISH REBUILD. document.language is 'es' and every block is verbatim from the OHCHR Spanish rendering; this is the original-language rebuild, not a translation (variant: original).",
+    "ARTICLE 2 IS TWO PARAGRAPHS. Unlike the English rendering, the Spanish source sets Artículo 2 as two separate paragraphs ('Toda persona...' and 'Además...'); both were kept as separate blocks.",
+    "SENTENCES REJOINED ACROSS PAGES. The Artículo 10 paragraph spans printed pages 3-4 and was rejoined into one block assigned to page 3.",
+    "LISTS SPLIT ACROSS PAGES. Artículo 14's two clauses straddle pages 4-5 (item 1 on page 4, item 2 on page 5); the list is assigned to page 4. Artículo 29's heading falls at the bottom of page 8 with its clauses on page 9; the list is assigned to page 9.",
+    "NUMBERED CLAUSES AS ORDERED LISTS. Articles 11, 13-17, 20, 21, 23, 25-27, and 29 use the source's own clause numbering, rendered as ordered lists; single-clause articles remain paragraphs.",
+    "ATTRIBUTION LINE KEPT. The Spanish rendering includes an adoption line ('Adoptada y proclamada por la Asamblea General...') absent from the English rendering; it is kept as a paragraph under the title.",
+    "NO PAGE FURNITURE, NO IMAGES. The source pages carry no running heads, footers, page numbers, or figures.",
+    "BORN-DIGITAL SOURCE. The PDF has a text layer, so source_token_recall in the accessibility report independently measures this plan; transcription was performed by reading.",
+    "LICENSE. Public-domain UN document; OHCHR PDF rendering used for local accessibility testing.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "ohchr-udhr-spanish.pdf",
+    "bytes": 186317,
+    "kind": "pdf",
+    "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

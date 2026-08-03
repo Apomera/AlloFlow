@@ -1,0 +1,560 @@
+{
+  "binding": {
+    "html_sha256": "17b1f3427352fd97db97ebb97c8d9877f28482925086132bedefc63b545fece2",
+    "plan_sha256": "3d1afb63a74b13f0bacc645651784f2702009903d663281649f95970dd7d3386",
+    "source_sha256": "e75f479c5cc632e88dcf3da247bbef96b093462610c0eee53d281f1fe379661c"
+  },
+  "createdAt": "2026-08-03T15:38:27Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "page-008",
+      "instruction": "Read source page 8 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Universal Declaration of Human Rights"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Preamble"
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Article I"
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Article 2"
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Article 3"
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Article 4"
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Article 5"
+    },
+    {
+      "id": "heading-008",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 6"
+    },
+    {
+      "id": "heading-009",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 7"
+    },
+    {
+      "id": "heading-010",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 8"
+    },
+    {
+      "id": "heading-011",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 9"
+    },
+    {
+      "id": "heading-012",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 10"
+    },
+    {
+      "id": "heading-013",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Article 11"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-014",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Article 12"
+    },
+    {
+      "id": "heading-015",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Article 13"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-016",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Article 14"
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-017",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Article 15"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-018",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Article 16"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-019",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Article 17"
+    },
+    {
+      "id": "list-006",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-020",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Article 18"
+    },
+    {
+      "id": "heading-021",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Article 19"
+    },
+    {
+      "id": "heading-022",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Article 20"
+    },
+    {
+      "id": "list-007",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-023",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Article 21"
+    },
+    {
+      "id": "list-008",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-024",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Article 22"
+    },
+    {
+      "id": "heading-025",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Article 23"
+    },
+    {
+      "id": "list-009",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-026",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Article 24"
+    },
+    {
+      "id": "heading-027",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Article 25"
+    },
+    {
+      "id": "list-010",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-028",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Article 26"
+    },
+    {
+      "id": "list-011",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-029",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Article 27"
+    },
+    {
+      "id": "list-012",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-030",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Article 28"
+    },
+    {
+      "id": "heading-031",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Article 29"
+    },
+    {
+      "id": "list-013",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-032",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Article 30"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "All source text from pages 1-8 (title, Preamble, 7 whereas clauses, proclamation, Articles I and 2-30 with every numbered clause) is present in the rebuild; no undisclosed omissions found.",
+      "status": "verified"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "No invented content; the only non-source text is the standard skip-to-main-content accessibility link.",
+      "status": "verified"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "Linear order matches the source exactly: title, Preamble, Articles I, 2-30; cross-page sentence rejoins (p1-2, p3-4, p7-8) are disclosed and correct.",
+      "status": "verified"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "All observed transformations (Article I Roman numeral kept verbatim, three cross-page sentence rejoins, Article 16/21 heading-list page splits, ordered lists for exactly articles 11, 13-17, 20, 21, 23, 25-27, 29, no page furniture, no images) match the manualReview notes and each note is accurate.",
+      "status": "verified"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "read_source_directly": true,
+    "statement": "I extracted and read all 8 pages of ohchr-udhr-english.pdf directly with pdftotext, page by page, and read the accessible HTML rebuild and its accessibility report in full. I compared wording verbatim, heading levels, ordered-list item counts and order, and data-source-page attributions for every worksheet item, and checked each disclosed transformation (Article I Roman numeral, cross-page rejoins, heading/list page splits) against the source. All 57 items matched."
+  }
+}

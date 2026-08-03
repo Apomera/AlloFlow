@@ -1,0 +1,493 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "High-Impact Assessment Reports for Children and Adolescents (excerpt: pages 89-92 and Appendix E, pages 191-194)",
+    "language": "en",
+    "source_page_count": 8,
+    "source_sha256": "1d2a41fa13171c03de146cd609c1b280ebf4babffdcde31ea5248e4455e25473",
+    "document_type": "booklet",
+    "subject": "Psychoeducational assessment report writing: assessment procedures, background information, intervention history, clinical interviews, and a background information outline with a case example."
+  },
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "High-Impact Assessment Reports for Children and Adolescents (Excerpt)",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "This accessible copy contains two non-contiguous excerpts: pages 89-92 from the chapter on consumer-responsive report writing, and pages 191-194 from Appendix E.",
+      "source_page": 1
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Consumer-Responsive Report Writing (printed pages 89-92)",
+      "source_page": 1
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Assessment Procedures",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "A list of assessment procedures follows the Reason for Referral, thus identifying the assessment measures that were purposefully selected to answer the referral questions and to test hypotheses relating to them. The list should include all sources of assessment data that the evaluator relied on to address referral questions and concerns. In addition to tests and rating scales, the list should include observations in naturalistic settings (e.g., classroom observation, home observation) and the types of interviews conducted (e.g., parent interview, teacher interview). The list should be inclusive, but not overly detailed or technical. The use of existing documents, such as school records and prior evaluations, may be subsumed under a general reference to “review of records.” The full title of all administered tests should be specified, including the edition number. If a test is adapted in some way or administered only in part, this should be noted accordingly (e.g., “Universal Test of Executive Functions—selected subtests”). For ratings scales with versions for different informants, the evaluator should specify which versions were used (e.g., “Mania Rating Scale—Parent Report, Self-Report”).",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "The list of procedures should include only the evaluator’s own data collection activities. A report may be enhanced by secondhand sources, such as a previous psychological assessment or a teacher-administered academic measure. If these sources were documented elsewhere, they fall under the category of “review of records”; if not, the source should be qualified (e.g., “administered by . . .”).",
+      "source_page": 1
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Background Information",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "The Background Information section provides detailed elaboration of the Reason for Referral, as well as essential information about the child’s history, status, and circumstances. The elaboration of referral information may include how concerns have evolved over time; under what conditions they have been more and less problematic; what interventions have been tried and with what results; and how referring and nonreferring parties regard the situation. Box 5.4 illustrates this correspondence between the Reason for Referral and Background Information material.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "The Background Information section is ideally organized by theme or topic. Appendix E identifies common themes and a logical sequence in which to present them, along with an example of a Background Information section for an involved case.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Assessment data from secondary sources—that is, other than the evaluator’s direct contact with, or observation of, the child—belong in Background Information (see footnote 4). Secondary sources include school and agency records (e.g., service reports, attendance records), special education documentation (e.g., referral forms, the child’s IEP), general education progress monitoring data, intake questionnaires, interviews with key informants, and prior evaluations. An assessment report may benefit greatly from incorporating assessment data from other members of the evaluation team, such as academic achievement test results from a special education teacher.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Footnote 4: As discussed in the Assessment Results section that follows, rating scales completed by a third party, such as a parent or teacher, are an exception to this rule.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "In relying on secondary sources, the evaluator cannot verify the accuracy of background information. Therefore, the information should be attributed to its source, rather than presented as fact. To avoid sentence-by-sentence identifying of sources, the evaluator might devote an entire paragraph or subsection to a given individual or source. This organizing scheme works especially well when one source contributes a substantial amount of information on a given topic, which might be afforded a subsection heading of its own (e.g., “Parent Interview” or “Prior Evaluations”). However, information about a given topic that is informed by multiple sources is best organized by theme, for example, the discussion of educational history might include input from parent and teacher reports, school records, and prior evaluations. Placing same-topic information from multiple sources in the same paragraph or section brings into focus whether the sources complement one another or offer different perspectives.",
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "How much background information to include in a report should be guided by the purposes of the assessment and may be far less than what the evaluator has collected. The evaluator should be selective in reporting information that has been documented in other reports or in records that are otherwise available to consumers. Alternatively, the evaluator may determine that circumstances call for a comprehensive documentation of information that will be of value to current or future readers. Regardless, the evaluator should apply the “So what?” principle, rather than include material simply because it was obtained in conducting the assessment.",
+      "source_page": 3
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "Box 5.4. Correspondence between Reason for Referral and Background Information",
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "The Reason for Referral section should state questions and concerns specifically, but concisely. Further elaboration and details should be reserved for the Background Information section. Examples of what might appear in each section are provided below.",
+      "source_page": 2
+    },
+    {
+      "type": "table",
+      "caption": "Box 5.4. Examples of statements in the Reason for Referral section and the corresponding elaboration in the Background Information section.",
+      "columns": ["Reason for referral", "Background information"],
+      "row_headers": true,
+      "rows": [
+        [
+          "“Louise’s teacher, Mr. Gehrig, reports that Louise rarely completes in-class seatwork or homework.”",
+          "Does this apply to any particular type of assignment?\nWhat are the consequences of not submitting work?\nHas Mr. Gehrig tried to address the problem in any way? What was the result of these efforts?\nAre Louise’s parents aware that she has homework that isn’t getting done?"
+        ],
+        [
+          "“Tyrone’s mother, Ms. Cobb, is concerned that Tyrone dislikes school and pleads to stay home.”",
+          "How many absences has he had this year and in past years?\nHow often does he ask to stay home?\nWhat reasons does he give?\nHow does Mrs. Cobb respond to Tyrone’s requests to stay home? What then occurs?\nWhat is her understanding about why Tyrone is avoiding school?"
+        ],
+        [
+          "“Christy has made little progress in reading since first grade.”",
+          "What specific areas of reading are lagging (e.g., word identification, fluency)?\nHow has reading progress been assessed, and what are the specific findings?\nWhat strategies or remedial services have been implemented? What has helped, and what has not?"
+        ],
+        [
+          "“Ruth has frequent verbal and physical altercations with peers.”",
+          "Description(s) of typical altercations.\nWhat precipitates these altercations?\nUnder what conditions do these incidents occur and not occur?\nWhat consequences or disciplinary actions follow (e.g., office visits, detentions, suspensions)? Have occurrences increased or decreased as a result?"
+        ]
+      ],
+      "source_page": 2
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Intervention History",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "The documentation of what interventions have been tried, and with what results, is a key element of background information. This is critically important input for weighing the merits and particulars of potential interventions. Although many conclusions and recommendations that emerge from the assessment of a child’s cognitive, academic, and social–emotional development are well-educated guesses, findings that are informed by actual experience—how a child responded to specific strategies and supports—are truly evidence based. Instructional methods, specific curricula, environmental supports, motivational techniques, behavior plans, and other items that have proven to be effective should be documented in fine detail. In qualitative research, this is called “thick description.” What personnel were required, and what did they do? How frequently was the intervention provided? Was it immediately effective, or did it take hold after some delay? Was the plan productively modified over time? It is also important to include details of what has not worked as well, rather than simply naming the method, since specific aspects of implementation may have compromised the effectiveness of a potentially valuable intervention. Thus, intervention history should be a major focus of interviews with parents, teachers, and service providers. It is also advisable to ask the child about interventions: What was helpful? How did she experience these supports? What does he think would be helpful going forward? Information about intervention history not only informs the current set of recommendations, but may prove useful to service providers or caretakers at a later time.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "Progress monitoring data is a key source of intervention particulars. The documentation of CBM performance, response to a behavior plan, or goal attainment scale outcomes provide valuable information about performance levels and rates of improvement. The examiner might productively supplement these data by talking with the individuals who implemented interventions or collected the data to learn how the interventions were conducted and what factors affected outcomes favorably or unfavorably.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "When there is a substantial amount of data available about past services and interventions and how the child responded to them, it is advisable to present this in a separate Intervention History section, or a separate subsection of Background Information. Data on prior supports and interventions should be routinely available when an RTI model is used for LD identification, since federal special education regulations explicitly call for documentation of “the instructional strategies used and the student-centered data collected” (Sec. 300.311(a)(7)). A good deal of information about services provided and performance levels should be available when a child who receives special education services is reevaluated—in fact, this information should be core material for the assessment and the ensuing report.",
+      "source_page": 3
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Interviews",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "The evaluator may choose to integrate interview findings with other data in a theme-organized Background Information section. Alternatively, these findings could appear in a separate Interviews section, possibly with subheadings for the types of informants (e.g., Parent Interview, Teacher Interview). This approach may be well suited for capturing the extended input of an interviewee whose perspective and insights are of distinct importance. For example, an Interview section might feature the historical account and explanations of a parent who initiated a referral because of disagreements over how the school has managed the child’s behavior problems.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "Some information that the evaluated child provides (e.g., regarding educational history or family structure) clearly belongs in Background Information (e.g., regarding educational history or family structure). However, this section is not necessarily the place to report the child’s responses to clinical interview questions. A clinical interview delves into the child’s attitudes, beliefs, view of self and others, social-emotional status, and the like (see sample questions and topics in Box 5.5). This material has more in common with personality testing (sentence completion measures, in particular) and may be best included in the Assessment Results section.",
+      "source_page": 4
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "Box 5.5. Sample Clinical Interview Questions",
+      "source_page": 4
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "“What are you good at?”",
+        "“What do you like to do in your spare time?”",
+        "“What do you think is going on with [referral concern]? Has anything made the situation better? Is there anything you think might be helpful?”",
+        "“Who are you closest to at school?”",
+        "“If you had a serious problem, what adult would you talk to?”",
+        "“What makes you mad? sad? glad? scared?”",
+        "“If you could have any three wishes, what would you wish for?”",
+        "“If you could be any animal for a day, what animal would you be and what would you do?”",
+        "“What do you see yourself doing after you finish with school?”"
+      ],
+      "source_page": 4
+    },
+    {
+      "type": "heading",
+      "level": 5,
+      "text": "Screening for Depression or Suicidality",
+      "source_page": 4
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "“How are you sleeping? eating?”",
+        "“How you have been feeling lately?”",
+        "“On a scale of 1 to 10, how would you rate your mood?”",
+        "“Do you ever feel so bad that you think about hurting yourself?”"
+      ],
+      "source_page": 4
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Appendix E. Background Information Outline and Case Example (printed pages 191-194)",
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Background Information Outline",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "The topics below should be routinely considered for inclusion in the Background Information section. Start by identifying the sources of information. For example, “Background information was obtained from Kristina, from her parents, Robert and Whitney Gray, from her pediatrician, from her teachers at Southwest High School, and from prior evaluation reports.”",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Then, address relevant topics, in separate paragraphs, in approximately the order shown. Sample material that may fall under broad topics is also listed.",
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "1. Introduction",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Identify the child with one or two positive descriptors and provide basic identifying information (e.g., age, grade, school or program placement, family structure, town).",
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "2. Current Functioning",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Start with presenting issues, either cognitive/academic or behavioral/psychiatric, depending on which ones are more relevant to the referral questions. Note the onset, frequency, duration, and severity of symptoms, as needed.",
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 5,
+      "text": "Cognitive/Academic Functioning",
+      "source_page": 5
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Educational disability (e.g., learning disability, speech and language impairment)",
+        "Cognitive ability",
+        "Academic performance",
+        "Productivity in school; homework completion",
+        "Attention; concentration",
+        "Vision, hearing, or sensorimotor impairment"
+      ],
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 5,
+      "text": "Behavioral/Psychiatric Functioning",
+      "source_page": 6
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Psychiatric diagnosis (e.g., ADHD, psychosis) – According to whom? When?",
+        "Symptoms (e.g., tics, mania)",
+        "Areas of dysfunction (e.g., anxiety, depression, disruptive behavior)",
+        "Trauma",
+        "Peer relations",
+        "School-related anxiety or depression",
+        "Behavior problems; discipline infractions"
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "3. Assets",
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 5,
+      "text": "Strengths",
+      "source_page": 6
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "What is the child good at?",
+        "Admirable qualities/characteristics"
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 5,
+      "text": "Activities",
+      "source_page": 6
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Friendships/peers",
+        "Group membership",
+        "Hobbies, special interests",
+        "Extracurricular activities: athletics, performing arts, etc."
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "4. Family History",
+      "source_page": 6
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Who is in the family?",
+        "Parent employment",
+        "Ages and personalities of siblings",
+        "How do they all get along?",
+        "Family stressors that may contribute to current concerns",
+        "Family history of learning; psychiatric problems"
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "5. Educational History",
+      "source_page": 6
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Schools attended",
+        "Areas of strength and weakness",
+        "Early difficulty in reading or math?",
+        "Grade retention?",
+        "Special services (e.g., special education, 504 services, Tier 2 or 3 supports)",
+        "Related services (counseling, speech/language therapy, social skills group, etc.)"
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "6. Mental Health History",
+      "source_page": 7
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Treatment history—now and past",
+        "Psychotherapy—Who, when, focus, etc.",
+        "Medication—What and how frequent? Anything else tried? Who prescribed?",
+        "Other treatment (e.g., home mentor, hospitalization, group treatment)"
+      ],
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "7. Developmental History",
+      "source_page": 7
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Pregnancy and birth history",
+        "Milestones: Gross motor, fine motor, language",
+        "Early temperament",
+        "Early stressors (e.g., separation, family stress, maternal depression)"
+      ],
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "8. Medical History",
+      "source_page": 7
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Current health status (healthy; any problems?)",
+        "Name of pediatrician, if cited as information source",
+        "History of seizure, concussion, loss of consciousness, chronic illness (e.g., asthma, diabetes), hospitalization, surgery",
+        "Sleep and eating habits"
+      ],
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "9. Summary of Prior Evaluations",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Summarize key points, or state, “X has had no prior evaluations.”",
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Case Example",
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "Reason for Referral",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Shawn is a friendly 10-year-old boy who has been receiving special education and related services since first grade. He has been diagnosed with attention-deficit/hyperactivity disorder (ADHD). His parents initiated this re-evaluation to better understand why he is not performing well in school.",
+      "source_page": 7
+    },
+    {
+      "type": "heading",
+      "level": 4,
+      "text": "Background Information (Case Example)",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Background information was obtained from Shawn, from his parents A. and G. Carter, from his primary teacher at King School, Ms. E., from his pediatrician, Dr. M., from school records, and from prior evaluation reports.",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Shawn was described by his parents as a sociable, compassionate, and cooperative boy. However, he struggles with many tasks both at school and at home. His parents feel that his factual memory is fine but he has trouble applying skills. He follows only the first step when given multistep directions. Shawn’s current classroom teacher, Ms. E., described him as a kind boy, eager to please, who is perceptive regarding the feelings of others.",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Shawn’s parents reported that he was diagnosed as having ADHD by Dr. M in 2014. They report that he has frequent worries, such as what will happen if someone breaks into his family’s house (this has not previously happened) and whether or not his brother will get hurt if he tips back in his chair. He tends to overfocus on a topic or concern. Peer relationships are hard for him, as he tends to act in immature ways. He has one ongoing friend and he has begun to play with two children in his neighborhood. Shawn has a history of vocal tics that were precipitated by stimulant medication. He has no history of traumatic experience.",
+      "source_page": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "As reported by Shawn’s parents, his father and his current adoptive mother married in 2014. They then had a son, Eric, who is now 2 years of age. Mr. Carter works as a system engineer for a large retail business. Mrs. Carter works as an educator. Shawn’s biological mother, Z., provided for him lovingly, although she was ill for some time prior to her death, when he was 4. Shawn has received much attention from his grandparents. There is no family history of learning, developmental, or psychiatric disorders.",
+      "source_page": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "School records indicate that Shawn is currently repeating the fourth grade. Shawn has received special education services since first grade. His initial disability category of developmental delay was changed to other health impairment/ADHD in 2016. According to his current individualized educational plan (IEP), dated 2/11/19, he receives specialized instruction in mathematics, speech/language therapy, and school-based counseling. Several instructional accommodations are listed as well. Ms. E. reported that his oral reading is accurate, but his comprehension is weak. He also omits small words when reading. He has difficulty moving from basic knowledge to higher-level problem solving. Ms. E. rated his performance in social studies as being “at grade level,” with performance in reading, writing, and science being “somewhat below grade level,” and performance in grammar and mathematics being “far below grade level.”",
+      "source_page": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Shawn has received counseling off-and-on from the school adjustment counselor. He has had no other behavioral health intervention, other than a short period of medical treatment for ADHD.",
+      "source_page": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Regarding developmental and medical histories, Shawn was born premature at 31 weeks, with a birth weight of 3 pounds, 2 ounces. He spent 2 months in the neonatal intensive care unit, with common complications of lung problems and mild vision problems (retinopathy). Shawn’s early motor development was delayed. His language development was normal. Shawn has no history of seizure or head injury. He is healthy at present. Shawn wears eyeglasses to improve his acuity. He sometimes has problems with eye convergence, which cause him to see double. His pediatrician is Dr. T.",
+      "source_page": 8
+    },
+    {
+      "type": "paragraph",
+      "text": "Shawn had a series of school-based evaluations in late 2016. The results of a psychological evaluation, done by school psychologist, S. M., indicated that his general aptitude for academic learning was average, at approximately the 50th percentile, with much stronger nonverbal/spatial than verbal abilities. Shawn’s working memory was exceptionally strong (at approximately the 90th percentile). Problematic attention and anxiety were noted as well. Shawn’s academic basic skills were assessed by the King School special education teacher, M. K. Shawn showed strong reading decoding but mildly weak comprehension. His math skills were also mildly weak. Shawn’s writing skills were average at the level of writing sentences and low average when asked to write a brief essay. His spelling skills were average. The results of a speech-and-language evaluation, done by M. J., yielded largely normal results, including age-appropriate phonological awareness and naming speed, but with some weakness in using words to describe relationships between concepts.",
+      "source_page": 8
+    }
+  ],
+  "review_notes": [
+    "SOURCE IS A SCAN. The source PDF contains 8 page images and zero embedded fonts, so it has no extractable text layer. Every word in this plan was transcribed by the host model reading the page images. A person who can see the original must verify the wording before this copy is distributed or cited.",
+    "SIDEBARS RELOCATED. Box 5.4 (printed page 90) and Box 5.5 (printed page 92) are floating sidebars that interrupt the body text in the original. To produce a single linear reading order, each box was moved to the end of the section it belongs to (Box 5.4 after the Background Information narrative, Box 5.5 after the Interviews narrative). Body text order is otherwise unchanged.",
+    "NO PAGE-BREAK MARKERS. Because the sidebars were pulled out of flow, inserting visual page-break markers would place some boundaries incorrectly. Printed-page provenance is instead recorded on every block via source_page. Mapping: block source_page 1-4 = printed pages 89-92; 5-8 = printed pages 191-194.",
+    "PAGE FURNITURE DROPPED. Running heads (“Consumer-Responsive Report Writing”, “HIGH-IMPACT ASSESSMENT REPORTS FOR CHILDREN AND ADOLESCENTS”, “Appendix E”) and the printed page numbers 89-92 and 191-194 were treated as page furniture and not reproduced as body text. The printed page range is preserved in the document title and in the two section headings.",
+    "TABLE CELLS FLATTENED. In the original, the Background information column of Box 5.4 is a bulleted list inside each table cell. The plan format cannot nest a list inside a table cell, so the bullets were flattened to newline-separated sentences. No wording was changed and no bullet was dropped.",
+    "APPARENT TYPO PRESERVED. Box 5.5 reads “How you have been feeling lately?” in the source. This looks like a missing word but was transcribed verbatim rather than silently corrected.",
+    "SENTENCES REJOINED ACROSS PAGES. Printed page 91 ends mid-word (“is reevalu-”) and printed page 193 ends mid-sentence (“his factual”). Both sentences were rejoined across the page boundary into single paragraphs.",
+    "DISCONTINUOUS EXCERPT. Pages 89-92 and 191-194 are not contiguous in the source book. They are presented here as two sibling top-level sections so the gap is visible rather than implied.",
+    "FOOTNOTE INLINED. Footnote 4 on printed page 89 was rendered as a labeled paragraph immediately after the paragraph that cites it, and the in-text superscript marker was replaced with the phrase “(see footnote 4)”. There is no linked footnote reference.",
+    "HEADING FOR CASE EXAMPLE DISAMBIGUATED. The case example’s “Background Information” heading was titled “Background Information (Case Example)” so it is distinguishable from the earlier section of the same name when navigating by heading.",
+    "NO IMAGES CARRIED OVER. The 8 images in the source are the scanned page bitmaps themselves, not illustrations, figures, or charts. There is no pictorial content that requires alt text, so no image blocks were emitted.",
+    "SOURCE_PAGES DELIBERATELY OMITTED. The optional source_pages field was left out. Populating it from this same transcription would make the plan-internal completeness check compare the transcription against itself, which would report a pass without independently verifying anything.",
+    "COPYRIGHT. This is copyrighted published material. This accessible copy is an alternate-format conversion for the document owner’s use; redistribution is the owner’s responsibility to clear."
+  ]
+}

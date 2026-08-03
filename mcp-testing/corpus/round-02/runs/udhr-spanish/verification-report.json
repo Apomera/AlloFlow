@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "9d5edeb399ba7f61f77c30ad229b86d2d121ff45a600c2df0b3a6df785aacc87",
+    "plan_sha256": "74c7822fa03fa94810f2a232ce7de766e025d5d2232e78b8d002b2e65a0208e9",
+    "source_sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 58,
+    "unreadable": 0,
+    "verified": 58
+  },
+  "createdAt": "2026-08-03T16:09:42Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "statement": "I extracted all 9 pages of ohchr-udhr-spanish.pdf with pdftotext (UTF-8), read the accessible HTML in full, compared every heading, paragraph, list, and page attribution, and confirmed the normalized full texts are word-for-word identical (1927 words each) including accents and punctuation."
+  }
+}

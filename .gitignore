@@ -213,3 +213,9 @@ desktop/web-app/firestore-debug.log
 # Commit the generated manifest + .partNN files instead (see build_data_kernel_assets.cjs).
 /duckdb-assets/duckdb-mvp.wasm
 /desktop/web-app/public/duckdb-assets/duckdb-mvp.wasm
+# Corpus source PDFs are large and re-downloadable; MANIFEST.json records
+# url + sha256 for every document. Run artifacts and reports ARE committed.
+/mcp-testing/corpus/born-digital/*.pdf
+/mcp-testing/corpus/scanned/*.pdf
+/mcp-testing/corpus/forms/*.pdf
+/mcp-testing/corpus/office/*

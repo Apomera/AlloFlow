@@ -71,27 +71,62 @@ Those dependency requests do not intentionally include document content. All oth
 in `dataHandling.offlineToolNames` need no network, AlloFlow, Cloudflare, paid Worker, or
 institution account.
 
-### Claude Code
+### Claude Code — nothing to install
+
+The repo ships a project-scoped [`.mcp.json`](../../.mcp.json) at the root that registers this
+connector (and the Agent Core one) with **relative** paths. Anyone who clones the repo and starts
+Claude Code **from the repo root** is prompted to approve the servers and then has the tools; no
+per-machine path editing, no `claude mcp add`. The key is not stored there — the connector's own
+auto-discovery finds it (see above), so the file is safe to commit.
+
+Two things this depends on, and both are the normal case: `node` must be on `PATH`, and Claude
+Code must be launched from the repo root (project-scoped servers resolve relative to the project
+directory). Starting Claude Code from a parent directory such as your home folder is the usual
+reason the tools are silently absent.
+
+To register it by hand instead — for a checkout somewhere unusual, or a client that has no
+project scope:
 
 ```bash
-claude mcp add alloflow-remediation \
-  --env GEMINI_API_KEY=YOUR_KEY \
-  -- node "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/mcp/alloflow-remediation-mcp-stdio.cjs"
+# from the repo root; $PWD keeps it machine-independent
+claude mcp add alloflow-remediation -- node "$PWD/desktop/mcp/alloflow-remediation-mcp-stdio.cjs"
 ```
 
 ### Claude Desktop (`claude_desktop_config.json`)
+
+Claude Desktop has no project scope, so this config does need an absolute path — but generate it
+rather than transcribing it, so it is right on every machine:
+
+```bash
+# from the repo root
+node -e "console.log(JSON.stringify({mcpServers:{'alloflow-remediation':{command:'node',args:[require('path').resolve('desktop/mcp/alloflow-remediation-mcp-stdio.cjs')]}}},null,2))"
+```
 
 ```json
 {
   "mcpServers": {
     "alloflow-remediation": {
       "command": "node",
-      "args": ["C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/mcp/alloflow-remediation-mcp-stdio.cjs"],
+      "args": ["<absolute path printed by the command above>"],
       "env": { "GEMINI_API_KEY": "YOUR_KEY" }
     }
   }
 }
 ```
+
+For distribution to people who do not have the repo at all, build the `.mcpb` bundle
+(`node desktop/mcp/build_mcpb.cjs`) — see [MCPB_RELEASE.md](MCPB_RELEASE.md). That is the only
+path that needs neither a checkout nor a hand-written path.
+
+### Verify a registration on any machine
+
+```bash
+node mcp-testing/tools/mcp_call.cjs list desktop/mcp/alloflow-remediation-mcp-stdio.cjs
+node mcp-testing/tools/mcp_call.cjs call desktop/mcp/alloflow-remediation-mcp-stdio.cjs remediation_selftest
+```
+
+The first proves the server starts and registers its tools; the second proves the install can
+actually remediate. Neither needs a key or an MCP client. See [mcp-testing/README.md](../../mcp-testing/README.md).
 
 ### Direct CLI (no MCP client — handy for a first smoke)
 

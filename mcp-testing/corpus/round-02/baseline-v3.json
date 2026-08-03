@@ -1,0 +1,493 @@
+[
+  {
+    "name": "ed-parent-guide-idea",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "Interactive form fields are present; the portable rebuild deliberately blocks forms.",
+          "id": "form-fields",
+          "severity": "review"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "ed-parent-guide-idea.pdf",
+        "bytes": 64871,
+        "kind": "pdf",
+        "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": true,
+        "encrypted": false,
+        "fontObjects": 0,
+        "hasFormFields": true,
+        "hasOutline": false,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 2,
+        "isScannedLikely": false,
+        "pageCount": 2,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 2,
+      "characters": 5528,
+      "tokens": 863
+    }
+  },
+  {
+    "name": "irs-i1040-instructions",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "The document has no structure tree; it is not a tagged PDF.",
+          "id": "untagged",
+          "severity": "critical"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "irs-i1040-instructions.pdf",
+        "bytes": 4434643,
+        "kind": "pdf",
+        "sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": true,
+        "encrypted": false,
+        "fontObjects": 0,
+        "hasFormFields": false,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 2,
+        "isScannedLikely": false,
+        "pageCount": 126,
+        "tagged": false
+      }
+    },
+    "text": {
+      "pages": 126,
+      "characters": 649123,
+      "tokens": 133357
+    }
+  },
+  {
+    "name": "nasa-artemis-plan",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "Interactive form fields are present; the portable rebuild deliberately blocks forms.",
+          "id": "form-fields",
+          "severity": "review"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "nasa-artemis-plan.pdf",
+        "bytes": 36927385,
+        "kind": "pdf",
+        "sha256": "51f8c4d5666ce7aeb5f0a7427cacb11cf0e4a4f6c1408c1a387ec062513615dd"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": true,
+        "encrypted": false,
+        "fontObjects": 0,
+        "hasFormFields": true,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 152,
+        "isScannedLikely": false,
+        "pageCount": 74,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 74,
+      "characters": 108556,
+      "tokens": 16753
+    }
+  },
+  {
+    "name": "nist-hb44-excerpt",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "Interactive form fields are present; the portable rebuild deliberately blocks forms.",
+          "id": "form-fields",
+          "severity": "review"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "nist-hb44-excerpt.pdf",
+        "bytes": 77578129,
+        "kind": "pdf",
+        "sha256": "419b1501115086972ddfcb9accdc49dca0b8a27c3af8aa5d648b21d30229e34d"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": true,
+        "encrypted": false,
+        "fontObjects": 135,
+        "hasFormFields": true,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 10,
+        "isScannedLikely": false,
+        "pageCount": 573,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 573,
+      "characters": 1489742,
+      "tokens": 213005
+    }
+  },
+  {
+    "name": "nist-sp800-63-3-digital-identity",
+    "band": "born-digital",
+    "audit": {
+      "issues": [],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "nist-sp800-63-3-digital-identity.pdf",
+        "bytes": 1599268,
+        "kind": "pdf",
+        "sha256": "915bb812cb705918461e642e84141c6ca2adc2ca0106e1d88f3884c61f07110a"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": true,
+        "encrypted": false,
+        "fontObjects": 6,
+        "hasFormFields": false,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 17,
+        "isScannedLikely": false,
+        "pageCount": 76,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 76,
+      "characters": 152982,
+      "tokens": 22340
+    }
+  },
+  {
+    "name": "ohchr-udhr-english",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        },
+        {
+          "description": "No document title was found in Info or XMP metadata.",
+          "id": "no-title",
+          "severity": "moderate"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "ohchr-udhr-english.pdf",
+        "bytes": 195195,
+        "kind": "pdf",
+        "sha256": "e75f479c5cc632e88dcf3da247bbef96b093462610c0eee53d281f1fe379661c"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 2,
+        "hasFormFields": false,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": false,
+        "hasXmpMetadata": true,
+        "imageXObjects": 0,
+        "isScannedLikely": false,
+        "pageCount": 8,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 8,
+      "characters": 10958,
+      "tokens": 1783
+    }
+  },
+  {
+    "name": "ohchr-udhr-spanish",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "ohchr-udhr-spanish.pdf",
+        "bytes": 186317,
+        "kind": "pdf",
+        "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 2,
+        "hasFormFields": false,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 0,
+        "isScannedLikely": false,
+        "pageCount": 9,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 9,
+      "characters": 12316,
+      "tokens": 2136
+    }
+  },
+  {
+    "name": "uscis-civics-100q",
+    "band": "born-digital",
+    "audit": {
+      "issues": [
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        },
+        {
+          "description": "No document title was found in Info or XMP metadata.",
+          "id": "no-title",
+          "severity": "moderate"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "uscis-civics-100q.pdf",
+        "bytes": 302640,
+        "kind": "pdf",
+        "sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 10,
+        "hasFormFields": false,
+        "hasOutline": true,
+        "hasSearchableText": true,
+        "hasTitle": false,
+        "hasXmpMetadata": true,
+        "imageXObjects": 0,
+        "isScannedLikely": false,
+        "pageCount": 11,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 11,
+      "characters": 19319,
+      "tokens": 2980
+    }
+  },
+  {
+    "name": "irs-f1040-1913-scan",
+    "band": "scanned",
+    "audit": {
+      "issues": [
+        {
+          "description": "The document has no structure tree; it is not a tagged PDF.",
+          "id": "untagged",
+          "severity": "critical"
+        },
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "irs-f1040-1913-scan.pdf",
+        "bytes": 129985,
+        "kind": "pdf",
+        "sha256": "7bb00943803f5cecc34782145cd75dfd8feaa07a1c4daadeab2689f0980f810b"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 22,
+        "hasFormFields": false,
+        "hasOutline": false,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 0,
+        "isScannedLikely": false,
+        "pageCount": 4,
+        "tagged": false
+      }
+    },
+    "text": {
+      "pages": 4,
+      "characters": 14575,
+      "tokens": 2424
+    }
+  },
+  {
+    "name": "irs-f1040-1954-scan",
+    "band": "scanned",
+    "audit": {
+      "issues": [
+        {
+          "description": "No text-showing operators were found; screen readers have nothing to read.",
+          "id": "no-text-layer",
+          "severity": "critical"
+        },
+        {
+          "description": "The document has no structure tree; it is not a tagged PDF.",
+          "id": "untagged",
+          "severity": "critical"
+        },
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        },
+        {
+          "description": "No XMP metadata stream is present.",
+          "id": "no-xmp-metadata",
+          "severity": "minor"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "irs-f1040-1954-scan.pdf",
+        "bytes": 502650,
+        "kind": "pdf",
+        "sha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": false,
+        "contentStreamInflateFailures": 1,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 0,
+        "hasFormFields": false,
+        "hasOutline": false,
+        "hasSearchableText": false,
+        "hasTitle": true,
+        "hasXmpMetadata": false,
+        "imageXObjects": 4,
+        "isScannedLikely": true,
+        "pageCount": 4,
+        "tagged": false
+      }
+    },
+    "text": {
+      "pages": 4,
+      "characters": 3,
+      "tokens": 0
+    }
+  },
+  {
+    "name": "irs-f1040",
+    "band": "forms",
+    "audit": {
+      "issues": [
+        {
+          "description": "No document language is declared.",
+          "id": "no-language",
+          "severity": "serious"
+        },
+        {
+          "description": "Interactive form fields are present; the portable rebuild deliberately blocks forms.",
+          "id": "form-fields",
+          "severity": "review"
+        }
+      ],
+      "note": "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, and no score. Semantic quality (alt text, reading order, table structure) still requires the host model to read the document.",
+      "ok": true,
+      "source": {
+        "basename": "irs-f1040.pdf",
+        "bytes": 220237,
+        "kind": "pdf",
+        "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982"
+      },
+      "structuralFindings": {
+        "claimsPdfUa": true,
+        "contentStreamInflateFailures": 0,
+        "declaresLanguage": false,
+        "encrypted": false,
+        "fontObjects": 0,
+        "hasFormFields": true,
+        "hasOutline": false,
+        "hasSearchableText": true,
+        "hasTitle": true,
+        "hasXmpMetadata": true,
+        "imageXObjects": 0,
+        "isScannedLikely": false,
+        "pageCount": 2,
+        "tagged": true
+      }
+    },
+    "text": {
+      "pages": 2,
+      "characters": 9671,
+      "tokens": 1553
+    }
+  }
+]

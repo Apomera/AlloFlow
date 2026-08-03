@@ -1,0 +1,501 @@
+{
+  "binding": {
+    "html_sha256": "f7890f8bc638f2fed8edaf3abf718e771ac9cf22ce066c922feddcbfe9d66850",
+    "plan_sha256": "bfaed43bf5578a7eb3acc7fcafff2cc4c41b00983b9bef08b16302020b0e32ee",
+    "source_sha256": "1d2a41fa13171c03de146cd609c1b280ebf4babffdcde31ea5248e4455e25473"
+  },
+  "createdAt": "2026-08-03T15:17:08Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Both Assessment Procedures paragraphs, both Background Information paragraphs, and footnote 4 present verbatim; running head and printed page number 89 dropped per disclosed note; footnote inlined with '(see footnote 4)' per disclosed note.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Box 5.4 (heading, italic intro, full 4-row table) and the 'In relying on secondary sources' paragraph all present verbatim; box relocated after the Background Information narrative per disclosed note.",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "'How much background information' paragraph and all three Intervention History paragraphs present verbatim, including 'thick description' and Sec. 300.311(a)(7); 'is reevalu-' rejoined across the page break as disclosed.",
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Both Interviews paragraphs (including the source's duplicated parenthetical 'e.g., regarding educational history or family structure', reproduced faithfully), Box 5.5's 9 questions, and the 4 screening questions all match; the 'How you have been feeling lately?' typo preserved as disclosed.",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "APPENDIX E title, Background Information Outline heading, both intro paragraphs (Kristina example verbatim), sections 1-2, and the first three Cognitive/Academic items all present.",
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Remaining Cognitive/Academic items, all 7 Behavioral/Psychiatric items, Assets (Strengths 2, Activities 4), Family History 6 items, and Educational History's first 4 items all match; running head 'Appendix E' dropped per disclosed note.",
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Special/Related services items, sections 6-9 with all list items, CASE EXAMPLE, Reason for Referral paragraph, and both Background Information paragraphs present verbatim; 'his factual' rejoined across the page break as disclosed.",
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "page-008",
+      "instruction": "Read source page 8 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "All six paragraphs of the case example (worries/tics, family/Eric, school records/IEP dated 2/11/19 with grade-level quotes, counseling, developmental/medical 31 weeks 3 lb 2 oz, late-2016 evaluations) match verbatim on spot checks.",
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "Synthesized document title from the book's running head 'HIGH-IMPACT ASSESSMENT REPORTS FOR CHILDREN AND ADOLESCENTS' plus '(Excerpt)'; accurate to the source and appropriate as the single h1.",
+      "source_page": 1,
+      "status": "verified",
+      "text": "High-Impact Assessment Reports for Children and Adolescents (Excerpt)"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "Matches the chapter running head 'Consumer-Responsive Report Writing'; printed page range addition is disclosed in the review notes.",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Consumer-Responsive Report Writing (printed pages 89-92)"
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Assessment Procedures"
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Background Information"
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "Source reads 'BOX 5.4. Correspondence between Reason for Referral and Background Information'; wording matches with case normalized.",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Box 5.4. Correspondence between Reason for Referral and Background Information"
+    },
+    {
+      "caption": "Box 5.4. Examples of statements in the Reason for Referral section and the corresponding elaboration in the Background Information section.",
+      "columns": 2,
+      "id": "table-001",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "All 4 rows compared cell by cell: Louise 4 bullets, Tyrone 5, Christy 3, Ruth 4 — every line matches the source verbatim, order preserved, headers 'Reason for referral'/'Background information' correct; bullet flattening to newline-separated lines disclosed; caption is an added descriptive accessibility caption, accurate to the source table.",
+      "rows": 4,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Intervention History"
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Interviews"
+    },
+    {
+      "id": "heading-008",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Box 5.5. Sample Clinical Interview Questions"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 9,
+      "kind": "list",
+      "note": "All 9 clinical interview questions present in source order, verbatim including bracketed '[referral concern]'.",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-009",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 5,
+      "note": "Source reads 'SCREENING FOR DEPRESSION OR SUICIDALITY:' inside Box 5.5; case normalized and trailing colon dropped, meaning and hierarchy (sub-head under the Box 5.5 h4) preserved.",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Screening for Depression or Suicidality"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "All 4 screening questions verbatim, including the source typo 'How you have been feeling lately?' preserved as disclosed.",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-010",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "Combines the source's 'APPENDIX E' badge and display title 'Background Information Outline and Case Example'; page range addition disclosed; correct sibling h2 to the chapter excerpt.",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Appendix E. Background Information Outline and Case Example (printed pages 191-194)"
+    },
+    {
+      "id": "heading-011",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "Source reads 'BACKGROUND INFORMATION OUTLINE'; case normalized.",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Background Information Outline"
+    },
+    {
+      "id": "heading-012",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "1. Introduction"
+    },
+    {
+      "id": "heading-013",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "2. Current Functioning"
+    },
+    {
+      "id": "heading-014",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 5,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Cognitive/Academic Functioning"
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "All 6 items in source order (first 3 on printed p. 191, last 3 on printed p. 192); the merged list carries data-source-page 5, consistent with the disclosed per-block provenance convention.",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-015",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 5,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Behavioral/Psychiatric Functioning"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 7,
+      "kind": "list",
+      "note": "All 7 items verbatim in source order, including the en-dash construction 'Psychiatric diagnosis (e.g., ADHD, psychosis) – According to whom? When?'.",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-016",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "3. Assets"
+    },
+    {
+      "id": "heading-017",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 5,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Strengths"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-018",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 5,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Activities"
+    },
+    {
+      "id": "list-006",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-019",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "4. Family History"
+    },
+    {
+      "id": "list-007",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "All 6 items verbatim including the source's semicolon in 'Family history of learning; psychiatric problems'.",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-020",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "5. Educational History"
+    },
+    {
+      "id": "list-008",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "All 6 items in source order (first 4 on printed p. 192, 'Special services' and 'Related services' on printed p. 193); merged list tagged data-source-page 6 per the disclosed provenance convention.",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-021",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "6. Mental Health History"
+    },
+    {
+      "id": "list-009",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-022",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "7. Developmental History"
+    },
+    {
+      "id": "list-010",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-023",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "8. Medical History"
+    },
+    {
+      "id": "list-011",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "All 4 items verbatim, including the long seizure/concussion/chronic-illness item with its hanging continuation rejoined correctly.",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-024",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "9. Summary of Prior Evaluations"
+    },
+    {
+      "id": "heading-025",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "Source reads 'CASE EXAMPLE'; case normalized; correct h3 sibling of Background Information Outline.",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Case Example"
+    },
+    {
+      "id": "heading-026",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Reason for Referral"
+    },
+    {
+      "id": "heading-027",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "Source heading is just 'Background Information'; the '(Case Example)' suffix is a disclosed disambiguation for heading navigation and is accurate.",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Background Information (Case Example)"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "No undisclosed omissions found. Everything absent (running heads, printed page numbers 89-92 and 191-194) is covered by the PAGE FURNITURE DROPPED note; footnote 4 is inlined as disclosed.",
+      "status": "verified"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "No invented substantive content. The only added text is transparent editorial scaffolding: the intro sentence about the two non-contiguous excerpts (covered by the DISCONTINUOUS EXCERPT note), the descriptive table caption, printed-page ranges in headings, and the 'Footnote 4:'/'(see footnote 4)' labels (covered by the FOOTNOTE INLINED note). All are accurate and clearly editorial.",
+      "status": "verified"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "Body text order preserved throughout; Box 5.4 and Box 5.5 relocated to the end of their sections exactly as disclosed, which improves linear reading by removing the sidebar interruptions.",
+      "status": "verified"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "Every observed transformation is disclosed and every checked disclosure is accurate: sidebar relocation, page furniture dropped, table bullets flattened with no wording change, the 'How you have been feeling lately?' typo genuinely present in the source, both cross-page rejoins ('is reevalu-/ated' and 'his factual / memory'), footnote inlining, and the Case Example heading disambiguation.",
+      "status": "verified"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "read_source_directly": true,
+    "statement": "I read all 8 scanned pages of the source PDF directly with vision, then read the full rebuilt HTML and the review notes in the accessibility report, and compared every heading, paragraph, list item, and table cell against the source page images, spot-checking wording verbatim including typos, punctuation, and cross-page hyphen rejoins."
+  }
+}

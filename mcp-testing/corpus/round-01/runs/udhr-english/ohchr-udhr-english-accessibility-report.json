@@ -1,0 +1,109 @@
+{
+  "alloflowPortableVersion": "0.2.0",
+  "artifacts": {
+    "accessibilityReport": "ohchr-udhr-english-accessibility-report.json",
+    "accessibleHtml": "ohchr-udhr-english-accessible.html",
+    "privacyReceipt": "ohchr-udhr-english-privacy-receipt.json",
+    "taggedPdf": "ohchr-udhr-english-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 1784,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 72,
+        "embedded_image_characters": 0,
+        "image_blocks": 0,
+        "plan_internal_token_recall": null,
+        "text_characters": 10566,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "recall": 1.0,
+      "sourceTokens": 1783,
+      "status": "completed"
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 32,
+        "images": 0,
+        "links": 1,
+        "tables": 0
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 105394,
+      "pdfUaFinalization": {
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 8
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-03T15:32:54Z",
+  "manualReview": [
+    "SOURCE QUIRK PRESERVED. The first article is headed 'Article I' (Roman numeral one) in this OHCHR rendering while every other article uses Arabic numerals ('Article 2' through 'Article 30'). Transcribed verbatim, not normalized.",
+    "SENTENCES REJOINED ACROSS PAGES. The 'Proclaims this Universal Declaration...' paragraph spans printed pages 1-2, Article 11 clause 2 spans pages 3-4, and Article 27 clause 2 spans pages 7-8. Each was rejoined into a single block assigned to its starting page.",
+    "HEADINGS SPLIT FROM CONTENT ACROSS PAGE BREAKS. The headings 'Article 16' (page 4) and 'Article 21' (page 5) appear at the bottom of one page with their clause lists starting on the next; each list is assigned to the page where its items begin.",
+    "NUMBERED CLAUSES AS ORDERED LISTS. Articles whose clauses are numbered in the source (11, 13-17, 20, 21, 23, 25-27, 29) are rendered as ordered lists; single-clause articles remain paragraphs, matching the source's own formatting.",
+    "NO PAGE FURNITURE OBSERVED. The source pages carry no running heads, footers, or printed page numbers, so nothing was dropped.",
+    "NO IMAGES. The source contains no figures or illustrations; no image blocks were emitted.",
+    "BORN-DIGITAL SOURCE. This PDF has a text layer, so the deterministic source_token_recall in the accessibility report independently measures this plan against the source's own text; the transcription was still performed by reading, not by trusting extraction.",
+    "LICENSE. The Universal Declaration of Human Rights is a public-domain UN document; this OHCHR PDF rendering is used here for local accessibility testing.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "ohchr-udhr-english.pdf",
+    "bytes": 195195,
+    "kind": "pdf",
+    "sha256": "e75f479c5cc632e88dcf3da247bbef96b093462610c0eee53d281f1fe379661c"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

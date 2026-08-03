@@ -1,0 +1,568 @@
+{
+  "binding": {
+    "html_sha256": "9d5edeb399ba7f61f77c30ad229b86d2d121ff45a600c2df0b3a6df785aacc87",
+    "plan_sha256": "74c7822fa03fa94810f2a232ce7de766e025d5d2232e78b8d002b2e65a0208e9",
+    "source_sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+  },
+  "createdAt": "2026-08-03T16:07:46Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Verified. Articulo 10 paragraph spans pages 3-4; rejoined into one block on page 3 per disclosed review note.",
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Verified. Articulo 14 item 2 physically on page 5; whole list assigned to page 4 per disclosed review note.",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "page-008",
+      "instruction": "Read source page 8 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "page-009",
+      "instruction": "Read source page 9 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "Verified. Articulo 29 clauses on page 9 under heading attributed to page 8, matching disclosed review note.",
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Declaración Universal de Derechos Humanos"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Preámbulo"
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Artículo 1"
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Artículo 2"
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "Artículo 3"
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 4"
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 5"
+    },
+    {
+      "id": "heading-008",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 6"
+    },
+    {
+      "id": "heading-009",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 7"
+    },
+    {
+      "id": "heading-010",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 8"
+    },
+    {
+      "id": "heading-011",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 9"
+    },
+    {
+      "id": "heading-012",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "Artículo 10"
+    },
+    {
+      "id": "heading-013",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Artículo 11"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-014",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Artículo 12"
+    },
+    {
+      "id": "heading-015",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Artículo 13"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-016",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "Artículo 14"
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "Verified. 2 items; item 2 sits on source page 5, list assigned to page 4 per disclosed note.",
+      "ordered": true,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-017",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Artículo 15"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-018",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Artículo 16"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-019",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Artículo 17"
+    },
+    {
+      "id": "list-006",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-020",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Artículo 18"
+    },
+    {
+      "id": "heading-021",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Artículo 19"
+    },
+    {
+      "id": "heading-022",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Artículo 20"
+    },
+    {
+      "id": "list-007",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-023",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Artículo 21"
+    },
+    {
+      "id": "list-008",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-024",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Artículo 22"
+    },
+    {
+      "id": "heading-025",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Artículo 23"
+    },
+    {
+      "id": "list-009",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-026",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Artículo 24"
+    },
+    {
+      "id": "heading-027",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "Artículo 25"
+    },
+    {
+      "id": "list-010",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-028",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Artículo 26"
+    },
+    {
+      "id": "list-011",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-029",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Artículo 27"
+    },
+    {
+      "id": "list-012",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-030",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Artículo 28"
+    },
+    {
+      "id": "heading-031",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "Verified. Heading on page 8 with its 3-item list attributed to page 9, as disclosed.",
+      "source_page": 8,
+      "status": "verified",
+      "text": "Artículo 29"
+    },
+    {
+      "id": "list-013",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "Verified. 3 items on source page 9 under Articulo 29 heading from page 8, as disclosed.",
+      "ordered": true,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-032",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "Artículo 30"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "Full-text comparison (pdftotext vs HTML, whitespace/list-marker normalized) is word-for-word identical: 1927 words each, no omissions.",
+      "status": "verified"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "No invented content; every main-content word exists in the source. Only boilerplate skip-link/meta added.",
+      "status": "verified"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "Linear order follows the source exactly: title, adoption line, Preambulo, Articulos 1-30 in sequence; cross-page rejoins disclosed.",
+      "status": "verified"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "All observed transformations (Art 2 two paragraphs, Art 10 rejoin to p3, Art 14 list to p4, Art 29 list to p9, clause lists) appear in manualReview notes and are accurate.",
+      "status": "verified"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "read_source_directly": true,
+    "statement": "I extracted all 9 pages of ohchr-udhr-spanish.pdf with pdftotext (UTF-8), read the accessible HTML in full, compared every heading, paragraph, list, and page attribution, and confirmed the normalized full texts are word-for-word identical (1927 words each) including accents and punctuation."
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "purpose": "Local corpus for refining the AlloFlow portable remediation pathway. Test use only; artifacts stay local.",
+  "downloaded": "2026-08-03",
+  "documents": [
+    {
+      "name": "ed-parent-guide-idea",
+      "band": "born-digital",
+      "file": "born-digital/ed-parent-guide-idea.pdf",
+      "bytes": 64871,
+      "sha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5",
+      "url": "https://sites.ed.gov/idea/files/policy_speced_guid_idea_memosdcltrs_iep-translation-06-14-2016.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "irs-i1040-instructions",
+      "band": "born-digital",
+      "file": "born-digital/irs-i1040-instructions.pdf",
+      "bytes": 4434643,
+      "sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+      "url": "https://www.irs.gov/pub/irs-pdf/i1040gi.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "nasa-artemis-plan",
+      "band": "born-digital",
+      "file": "born-digital/nasa-artemis-plan.pdf",
+      "bytes": 36927385,
+      "sha256": "51f8c4d5666ce7aeb5f0a7427cacb11cf0e4a4f6c1408c1a387ec062513615dd",
+      "url": "https://www.nasa.gov/wp-content/uploads/2020/12/artemis_plan-20200921.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "nist-hb44-excerpt",
+      "band": "born-digital",
+      "file": "born-digital/nist-hb44-excerpt.pdf",
+      "bytes": 77578129,
+      "sha256": "419b1501115086972ddfcb9accdc49dca0b8a27c3af8aa5d648b21d30229e34d",
+      "url": "https://nvlpubs.nist.gov/nistpubs/hb/2024/NIST.HB.44-2024.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "nist-sp800-63-3-digital-identity",
+      "band": "born-digital",
+      "file": "born-digital/nist-sp800-63-3-digital-identity.pdf",
+      "bytes": 1599268,
+      "sha256": "915bb812cb705918461e642e84141c6ca2adc2ca0106e1d88f3884c61f07110a",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-63-3.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "ohchr-udhr-english",
+      "band": "born-digital",
+      "file": "born-digital/ohchr-udhr-english.pdf",
+      "bytes": 195195,
+      "sha256": "e75f479c5cc632e88dcf3da247bbef96b093462610c0eee53d281f1fe379661c",
+      "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/eng.pdf",
+      "license": "UN OHCHR; UDHR text is public domain; local test use only"
+    },
+    {
+      "name": "ohchr-udhr-spanish",
+      "band": "born-digital",
+      "file": "born-digital/ohchr-udhr-spanish.pdf",
+      "bytes": 186317,
+      "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+      "url": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/spn.pdf",
+      "license": "UN OHCHR; UDHR text is public domain; local test use only"
+    },
+    {
+      "name": "uscis-civics-100q",
+      "band": "born-digital",
+      "file": "born-digital/uscis-civics-100q.pdf",
+      "bytes": 302640,
+      "sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379",
+      "url": "https://www.uscis.gov/sites/default/files/document/questions-and-answers/100q.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "irs-f1040-1913-scan",
+      "band": "scanned",
+      "file": "scanned/irs-f1040-1913-scan.pdf",
+      "bytes": 129985,
+      "sha256": "7bb00943803f5cecc34782145cd75dfd8feaa07a1c4daadeab2689f0980f810b",
+      "url": "https://www.irs.gov/pub/irs-prior/f1040--1913.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "irs-f1040-1954-scan",
+      "band": "scanned",
+      "file": "scanned/irs-f1040-1954-scan.pdf",
+      "bytes": 502650,
+      "sha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc",
+      "url": "https://www.irs.gov/pub/irs-prior/f1040--1954.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "irs-f1040",
+      "band": "forms",
+      "file": "forms/irs-f1040.pdf",
+      "bytes": 220237,
+      "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
+      "url": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+      "license": "US Government work (public domain)"
+    }
+  ]
+}

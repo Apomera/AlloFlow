@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "17b1f3427352fd97db97ebb97c8d9877f28482925086132bedefc63b545fece2",
+    "plan_sha256": "3d1afb63a74b13f0bacc645651784f2702009903d663281649f95970dd7d3386",
+    "source_sha256": "e75f479c5cc632e88dcf3da247bbef96b093462610c0eee53d281f1fe379661c"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 57,
+    "unreadable": 0,
+    "verified": 57
+  },
+  "createdAt": "2026-08-03T15:40:40Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "statement": "I extracted and read all 8 pages of ohchr-udhr-english.pdf directly with pdftotext, page by page, and read the accessible HTML rebuild and its accessibility report in full. I compared wording verbatim, heading levels, ordered-list item counts and order, and data-source-page attributions for every worksheet item, and checked each disclosed transformation (Article I Roman numeral, cross-page rejoins, heading/list page splits) against the source. All 57 items matched."
+  }
+}

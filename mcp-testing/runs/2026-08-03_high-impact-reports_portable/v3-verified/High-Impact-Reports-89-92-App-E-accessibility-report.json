@@ -1,0 +1,114 @@
+{
+  "alloflowPortableVersion": "0.2.0",
+  "artifacts": {
+    "accessibilityReport": "High-Impact-Reports-89-92-App-E-accessibility-report.json",
+    "accessibleHtml": "High-Impact-Reports-89-92-App-E-accessible.html",
+    "privacyReceipt": "High-Impact-Reports-89-92-App-E-privacy-receipt.json",
+    "taggedPdf": "High-Impact-Reports-89-92-App-E-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 3100,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 68,
+        "embedded_image_characters": 0,
+        "image_blocks": 0,
+        "plan_internal_token_recall": null,
+        "text_characters": 20325,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "reason": "The source has no usable extractable text layer (scanned pages or an encoding outside deterministic scope); fidelity rests on the plan author's reading plus independent verification.",
+      "sourceTokens": 0,
+      "status": "not_measurable"
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 27,
+        "images": 0,
+        "links": 1,
+        "tables": 1
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 173281,
+      "pdfUaFinalization": {
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 11
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-03T15:16:57Z",
+  "manualReview": [
+    "SOURCE IS A SCAN. The source PDF contains 8 page images and zero embedded fonts, so it has no extractable text layer. Every word in this plan was transcribed by the host model reading the page images. A person who can see the original must verify the wording before this copy is distributed or cited.",
+    "SIDEBARS RELOCATED. Box 5.4 (printed page 90) and Box 5.5 (printed page 92) are floating sidebars that interrupt the body text in the original. To produce a single linear reading order, each box was moved to the end of the section it belongs to (Box 5.4 after the Background Information narrative, Box 5.5 after the Interviews narrative). Body text order is otherwise unchanged.",
+    "NO PAGE-BREAK MARKERS. Because the sidebars were pulled out of flow, inserting visual page-break markers would place some boundaries incorrectly. Printed-page provenance is instead recorded on every block via source_page. Mapping: block source_page 1-4 = printed pages 89-92; 5-8 = printed pages 191-194.",
+    "PAGE FURNITURE DROPPED. Running heads (“Consumer-Responsive Report Writing”, “HIGH-IMPACT ASSESSMENT REPORTS FOR CHILDREN AND ADOLESCENTS”, “Appendix E”) and the printed page numbers 89-92 and 191-194 were treated as page furniture and not reproduced as body text. The printed page range is preserved in the document title and in the two section headings.",
+    "TABLE CELLS FLATTENED. In the original, the Background information column of Box 5.4 is a bulleted list inside each table cell. The plan format cannot nest a list inside a table cell, so the bullets were flattened to newline-separated sentences. No wording was changed and no bullet was dropped.",
+    "APPARENT TYPO PRESERVED. Box 5.5 reads “How you have been feeling lately?” in the source. This looks like a missing word but was transcribed verbatim rather than silently corrected.",
+    "SENTENCES REJOINED ACROSS PAGES. Printed page 91 ends mid-word (“is reevalu-”) and printed page 193 ends mid-sentence (“his factual”). Both sentences were rejoined across the page boundary into single paragraphs.",
+    "DISCONTINUOUS EXCERPT. Pages 89-92 and 191-194 are not contiguous in the source book. They are presented here as two sibling top-level sections so the gap is visible rather than implied.",
+    "FOOTNOTE INLINED. Footnote 4 on printed page 89 was rendered as a labeled paragraph immediately after the paragraph that cites it, and the in-text superscript marker was replaced with the phrase “(see footnote 4)”. There is no linked footnote reference.",
+    "HEADING FOR CASE EXAMPLE DISAMBIGUATED. The case example’s “Background Information” heading was titled “Background Information (Case Example)” so it is distinguishable from the earlier section of the same name when navigating by heading.",
+    "NO IMAGES CARRIED OVER. The 8 images in the source are the scanned page bitmaps themselves, not illustrations, figures, or charts. There is no pictorial content that requires alt text, so no image blocks were emitted.",
+    "SOURCE_PAGES DELIBERATELY OMITTED. The optional source_pages field was left out. Populating it from this same transcription would make the plan-internal completeness check compare the transcription against itself, which would report a pass without independently verifying anything.",
+    "COPYRIGHT. This is copyrighted published material. This accessible copy is an alternate-format conversion for the document owner’s use; redistribution is the owner’s responsibility to clear.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "High Impact Reports 89-92 App E.pdf",
+    "bytes": 5541389,
+    "kind": "pdf",
+    "sha256": "1d2a41fa13171c03de146cd609c1b280ebf4babffdcde31ea5248e4455e25473"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

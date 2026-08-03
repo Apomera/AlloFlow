@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "f7890f8bc638f2fed8edaf3abf718e771ac9cf22ce066c922feddcbfe9d66850",
+    "plan_sha256": "bfaed43bf5578a7eb3acc7fcafff2cc4c41b00983b9bef08b16302020b0e32ee",
+    "source_sha256": "1d2a41fa13171c03de146cd609c1b280ebf4babffdcde31ea5248e4455e25473"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 51,
+    "unreadable": 0,
+    "verified": 51
+  },
+  "createdAt": "2026-08-03T15:20:47Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "statement": "I read all 8 scanned pages of the source PDF directly with vision, then read the full rebuilt HTML and the review notes in the accessibility report, and compared every heading, paragraph, list item, and table cell against the source page images, spot-checking wording verbatim including typos, punctuation, and cross-page hyphen rejoins."
+  }
+}

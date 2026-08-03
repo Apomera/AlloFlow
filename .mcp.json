@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "alloflow-remediation": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["desktop/mcp/alloflow-remediation-mcp-stdio.cjs"],
+      "env": {}
+    },
+    "alloflow": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["desktop/mcp/alloflow-mcp-stdio.cjs"],
+      "env": {}
+    }
+  }
+}
