@@ -80,7 +80,7 @@ describe('Solar System canvas alternatives', () => {
     expect(canvas).not.toBeNull();
     expect(canvas.getAttribute('aria-keyshortcuts')).toContain('ArrowLeft');
     expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Home');
-    expect(canvas.getAttribute('aria-describedby')).toBe('orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip');
+    expect(canvas.getAttribute('aria-describedby')).toBe('orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip orrery-stage-readout');
     expect(document.getElementById('orrery-canvas-help')?.textContent).toContain('Keyboard: arrows pan');
     expect(document.getElementById('orrery-model-scale-note')?.textContent).toContain('not one literal scale');
     expect(document.getElementById('orrery-stage-key')?.getAttribute('aria-label')).toBe('Orrery visual key');

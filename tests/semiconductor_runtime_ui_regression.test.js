@@ -166,6 +166,9 @@ describe('Semiconductor Lab runtime UI regressions', () => {
     expect(complete).toContain('Next workspace');
     expect(complete).toContain('Notebook: 2');
     expect(complete).toContain('Snapshot (2)');
+    expect(complete).toContain('semiconductor-notebook-preview');
+    expect(complete).toContain('Recent notebook entries');
+    expect(complete).toContain('Saved Semiconductor Lab state');
     expect(readSource()).toContain('var snapshots = Array.isArray(prev) ? prev : [];');
   });
   it('keeps mode and simulation switching hook-safe', () => {

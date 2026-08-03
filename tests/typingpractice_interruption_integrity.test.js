@@ -56,8 +56,8 @@ describe('Typing Practice interruption and exit integrity', () => {
     expect(source).toContain("renderBackButton(requestDrillExit, palette)");
     expect(source).toContain("if (key === 'Escape')");
     expect(source).toContain('requestDrillExit();');
-    expect(source).toContain("'Exit this drill? Your current typing will not be saved.'");
-    expect(source).toContain("confirmText: 'Exit without saving'");
+    expect(source).toContain("'Exit this drill? Your current typing will be saved as a private resume draft, but it will not count as a completed session.'");
+    expect(source).toContain("confirmText: isWarmup ? 'Exit without saving' : 'Save and exit'");
     expect(source).toContain("cancelText: 'Keep practicing'");
     expect(source).toContain('exitConfirmationPendingRef.current');
   });
@@ -86,7 +86,7 @@ describe('Typing Practice interruption and exit integrity', () => {
   it('explains the safe Escape behavior consistently', () => {
     expect(source).toContain('Press Escape to open an exit confirmation.');
     expect(source).toContain("Esc opens exit confirmation.");
-    expect(source).toContain('Review exit without saving current drill progress');
+    expect(source).toContain('Save a private resume draft and return to the menu');
   });
 
   it('keeps the desktop mirror identical', () => {

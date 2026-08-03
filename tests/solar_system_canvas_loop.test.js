@@ -126,10 +126,12 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('id: "orrery-live-orbit-position"');
       expect(source).toContain('var liveRadialPositionRatio = clamp((livePos.r - livePerihelion) / Math.max(0.000001, liveAphelion - livePerihelion), 0, 1);');
       expect(source).toContain('livePositionMarker.style.left = (liveRadialPositionRatio * 100) + "%";');
-      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip"');
+      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : "")');
       expect(source).toContain('id: "orrery-stage-key"');
       expect(source).toContain('id: "orrery-stage-tip"');
       expect(source).toContain('orrery-live-compare-secondary-speed');
+      expect(source).toContain('id: "orrery-stage-readout"');
+      expect(source).toContain('setLiveText("orrery-stage-readout-values"');
       expect(source).toContain('orrery-live-compare-primary-distance');
       expect(source).toContain('orrery-live-compare-secondary-distance');
       expect(source).toContain('compareMetric("Current distance"');
@@ -344,7 +346,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain("'data-view-preset': props.viewPresetKey || undefined");
       expect(source).toContain('Current view is " + canvasViewLabel');
       expect(source).toContain('role: "status", "aria-live": "polite", "aria-atomic": "true"');
-      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip"');
+      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : "")');
       expect(source).toContain('id: "orrery-canvas-help"');
       expect(source).toContain('var modelScaleNote = scaleMode === "relative"');
       expect(source).toContain('id: "orrery-model-scale-note"');

@@ -2639,6 +2639,11 @@ const d = labToolData.solarSystem || {};
       ".orr-stage-title{display:block;margin-top:3px;font-size:13px;font-weight:700;color:" + (isDark ? "#f8fafc" : "#1e293b") + "}",
       ".orr-stage-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:" + (isDark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.24)" : "rgba(99,102,241,0.16)") + ";font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:" + (isDark ? "#e2e8f0" : "#334155") + "}",
       ".orr-stage-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:" + (isDark ? "#34d399" : "#16a34a") + ";box-shadow:0 0 10px " + (isDark ? "rgba(52,211,153,0.8)" : "rgba(22,163,74,0.45)") + "}",
+      ".orr-stage-readout{position:absolute;right:16px;top:58px;z-index:3;display:flex;flex-direction:column;gap:3px;max-width:250px;padding:8px 10px;border-radius:10px;background:" + (isDark ? "rgba(15,23,42,0.80)" : "rgba(255,255,255,0.86)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.22)" : "rgba(99,102,241,0.16)") + ";box-shadow:" + (isDark ? "0 6px 18px rgba(2,6,23,0.32)" : "0 5px 14px rgba(30,41,59,0.10)") + ";backdrop-filter:blur(8px);pointer-events:none}",
+      ".orr-stage-readout-label{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:" + (isDark ? "#a5b4fc" : "#4f46e5") + "}",
+      ".orr-stage-readout-body{font-size:12px;font-weight:800;color:" + (isDark ? "#f8fafc" : "#1e293b") + "}",
+      ".orr-stage-readout-values{font-size:10px;line-height:1.35;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
+      "@media (max-width:640px){.orr-stage-readout{left:10px;right:10px;top:126px;max-width:none;padding:6px 8px;gap:3px 7px}.orr-stage-readout-values{flex-basis:100%}}",
       ".orr-stage-key{position:absolute;left:16px;top:58px;z-index:3;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none}",
       ".orr-stage-key-item{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:" + (isDark ? "rgba(15,23,42,0.72)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.20)" : "rgba(99,102,241,0.13)") + ";font-size:10px;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
       ".orr-stage-key-dot{width:6px;height:6px;border-radius:50%;display:inline-block}",
@@ -3656,8 +3661,6 @@ const d = labToolData.solarSystem || {};
               )
             )
           ),
-          evidenceBlock,
-          comparisonBlock,
           h("button", {
             key: "toggle-follow", type: "button",
             className: "orr-btn" + (followBodyId === sb.id ? " orr-btn-active" : ""),
@@ -3665,7 +3668,10 @@ const d = labToolData.solarSystem || {};
             "aria-pressed": followBodyId === sb.id,
             "aria-label": followBodyId === sb.id ? "Release camera follow for " + sb.name : "Follow " + sb.name + " with the camera",
             style: { marginTop: "8px", width: "100%", justifyContent: "center", borderColor: sb.color + "66", color: fg }
-          }, followBodyId === sb.id ? "Release camera follow" : "Follow camera")
+          }, followBodyId === sb.id ? "Release camera follow" : "Follow camera"),
+
+          evidenceBlock,
+          comparisonBlock,
         ], { marginTop: "10px", borderLeft: "4px solid " + sb.color });
       }
     }
@@ -3717,7 +3723,7 @@ const d = labToolData.solarSystem || {};
       redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion") + ":" + resetRequest,
       viewPresetKey: zoomMode,
       resetKey: resetRequest,
-      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip",
+      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : ""),
       ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },
@@ -4052,6 +4058,8 @@ const d = labToolData.solarSystem || {};
               setLiveText("orrery-live-speed", fmt(liveSpeed, 2) + " km/s");
               setLiveText("orrery-live-phase", livePhase);
               setLiveText("orrery-live-selected-summary", liveBody.name + ": distance " + fmt(livePos.r, 3) + " AU; speed " + fmt(liveSpeed, 2) + " km/s; phase " + livePhase);
+              setLiveText("orrery-stage-readout-body", liveBody.name);
+              setLiveText("orrery-stage-readout-values", "Distance " + fmt(livePos.r, 3) + " AU \u00b7 speed " + fmt(liveSpeed, 2) + " km/s \u00b7 " + livePhase);
               var livePerihelion = liveBody.a * (1 - liveBody.e);
               var liveAphelion = liveBody.a * (1 + liveBody.e);
               var liveRadialPositionRatio = clamp((livePos.r - livePerihelion) / Math.max(0.000001, liveAphelion - livePerihelion), 0, 1);
@@ -5574,6 +5582,9 @@ const d = labToolData.solarSystem || {};
     );
 
     var stageBody = selBody ? OB.filter(function(b) { return b.id === selBody; })[0] : null;
+    var stageReadoutPos = stageBody ? orbitalPos(stageBody.a, stageBody.e, (TAU * timeRef.current / stageBody.T) % TAU) : null;
+    var stageReadoutSpeed = stageBody ? visViva(stageReadoutPos.r, stageBody.a) : null;
+    var stageReadoutPhase = stageBody ? orbitPhaseLabel(stageBody, timeRef.current) : "";
     var bodyNavigator = h("div", {
       className: "orr-body-navigator", role: "group", "aria-label": "Keyboard world navigator",
       style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "6px", padding: "8px 10px", borderRadius: "10px", background: isDark ? "rgba(15,23,42,0.72)" : "rgba(248,250,252,0.9)", border: "1px solid " + (isDark ? "rgba(99,102,241,0.28)" : "rgba(99,102,241,0.16)") }
@@ -5621,6 +5632,11 @@ const d = labToolData.solarSystem || {};
           h("span", { className: "orr-stage-chip", style: followStageTarget ? { borderColor: followStageTarget.color + "aa" } : stageBody ? { borderColor: stageBody.color + "88" } : {} }, followStageTarget ? "Following: " + followStageTarget.name : stageBody ? "Focus: " + stageBody.name : "All worlds")
         )
       ),
+      stageBody ? h("div", { id: "orrery-stage-readout", className: "orr-stage-readout", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" },
+        h("span", { className: "orr-stage-readout-label" }, "Live reading"),
+        h("strong", { id: "orrery-stage-readout-body", className: "orr-stage-readout-body" }, stageBody.name),
+        h("span", { id: "orrery-stage-readout-values", className: "orr-stage-readout-values" }, "Distance " + fmt(stageReadoutPos.r, 3) + " AU \u00b7 speed " + fmt(stageReadoutSpeed, 2) + " km/s \u00b7 " + stageReadoutPhase)
+      ) : null,
       cvPanel,
       h("div", { id: "orrery-stage-key", className: "orr-stage-key", "aria-label": "Orrery visual key" },
         h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#86efac" : "#16a34a" } }), "Habitable zone"),

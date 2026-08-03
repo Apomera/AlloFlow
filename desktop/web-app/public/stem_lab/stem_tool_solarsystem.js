@@ -3661,8 +3661,6 @@ const d = labToolData.solarSystem || {};
               )
             )
           ),
-          evidenceBlock,
-          comparisonBlock,
           h("button", {
             key: "toggle-follow", type: "button",
             className: "orr-btn" + (followBodyId === sb.id ? " orr-btn-active" : ""),
@@ -3670,7 +3668,10 @@ const d = labToolData.solarSystem || {};
             "aria-pressed": followBodyId === sb.id,
             "aria-label": followBodyId === sb.id ? "Release camera follow for " + sb.name : "Follow " + sb.name + " with the camera",
             style: { marginTop: "8px", width: "100%", justifyContent: "center", borderColor: sb.color + "66", color: fg }
-          }, followBodyId === sb.id ? "Release camera follow" : "Follow camera")
+          }, followBodyId === sb.id ? "Release camera follow" : "Follow camera"),
+
+          evidenceBlock,
+          comparisonBlock,
         ], { marginTop: "10px", borderLeft: "4px solid " + sb.color });
       }
     }
@@ -3722,7 +3723,7 @@ const d = labToolData.solarSystem || {};
       redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion") + ":" + resetRequest,
       viewPresetKey: zoomMode,
       resetKey: resetRequest,
-      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip",
+      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : ""),
       ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },

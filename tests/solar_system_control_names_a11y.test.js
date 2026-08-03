@@ -279,6 +279,7 @@ describe('Solar System control accessible names', () => {
         orreryMode: true,
         orr_tab: 0,
         orr_sel: 'earth',
+        orr_paused: true,
         orr_compare: 'mars',
       },
     });
@@ -290,6 +291,10 @@ describe('Solar System control accessible names', () => {
     expect(document.getElementById('orrery-live-compare-secondary-speed')).not.toBeNull();
     expect(document.getElementById('orrery-compare-interpretation')?.textContent).toContain('Earth is currently');
     expect(document.getElementById('orrery-compare-interpretation')?.textContent).toContain('Kepler III: Mars has the larger orbit and the longer period.');
+    expect(document.getElementById('orrery-stage-readout')?.getAttribute('role')).toBe('status');
+    expect(document.getElementById('orrery-stage-readout')?.getAttribute('aria-live')).toBe('polite');
+    expect(document.getElementById('orrery-stage-readout-body')?.textContent).toContain('Earth');
+    expect(document.getElementById('orrery-stage-readout-values')?.textContent).toContain('Distance');
   });  it('groups Orrery controls for responsive keyboard scanning', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {

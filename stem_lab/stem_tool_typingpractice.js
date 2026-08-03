@@ -5139,6 +5139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setPauseStartedAt(Date.now());
             setPaused(true);
             setAnnounceText('Typing paused because ' + reason + '. Resume when you are ready.');
+            saveInterruptedDrill('interruption');
           };
           var onBlur = function() {
             pauseForInterruption('this window lost focus');
@@ -5146,10 +5147,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var onVisibilityChange = function() {
             if (document.hidden) pauseForInterruption('this page moved to the background');
           };
+          var onPageHide = function() {
+            saveInterruptedDrill('pagehide');
+          };
           window.addEventListener('blur', onBlur);
+          window.addEventListener('pagehide', onPageHide);
           document.addEventListener('visibilitychange', onVisibilityChange);
           return function() {
             window.removeEventListener('blur', onBlur);
+            window.removeEventListener('pagehide', onPageHide);
             document.removeEventListener('visibilitychange', onVisibilityChange);
           };
         }, [state.view, drillComplete, startTime, paused]);

@@ -4386,6 +4386,13 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'px-3 pb-3' }, commandPanel)
       ) : null;
 
+      var notebookPreview = notebookCount > 0 ? h('details', { id: 'semiconductor-notebook-preview', className: 'mt-2 ml-auto w-full max-w-xl rounded-lg border border-slate-600 bg-slate-900/70' },
+        h('summary', { className: 'cursor-pointer px-3 py-2 text-xs font-bold text-cyan-200 hover:text-white' }, 'Recent notebook entries · ' + notebookCount + ' saved'),
+        h('ol', { className: 'space-y-1 px-3 pb-3 text-xs text-slate-200' }, semiconductorSnapshots.slice(-3).reverse().map(function(entry, index) {
+          return h('li', { key: entry.id || index, className: 'rounded-md border border-slate-700 bg-slate-950/60 px-2 py-1.5 leading-relaxed' }, String(entry.label || 'Saved Semiconductor Lab state'));
+        }))
+      ) : null;
+
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
         backBtn,
         h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -4402,7 +4409,8 @@ window.StemLab = window.StemLab || {
           quickStart,
           h('div', { className: 'flex-1 pr-1' }, content),
           commandDrawer),
-        snapshotBtn
+        snapshotBtn,
+        notebookPreview
       );
     }
   });

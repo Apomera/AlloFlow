@@ -263,10 +263,14 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
 
   await page.locator('#wrap').evaluate((wrap) => { (wrap as HTMLElement).style.width = '320px'; });
   await expect(page.locator('#orrery-model-scale-note')).toContainText('not one literal scale');
-  await expect(page.locator('canvas[role="application"]')).toHaveAttribute('aria-describedby', 'orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip');
+  await expect(page.locator('canvas[role="application"]')).toHaveAttribute('aria-describedby', 'orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip orrery-stage-readout');
   await expect(page.locator('#orrery-hover-summary')).toHaveAttribute('role', 'status');
   await expect(page.locator('#orrery-stage-key')).toContainText('Velocity vector');
   await expect(page.locator('#orrery-stage-tip')).toContainText('Arrow = direction/relative speed');
+  await expect(page.locator('#orrery-stage-readout')).toContainText('Earth');
+  await expect(page.locator('#orrery-stage-readout-values')).toContainText('Distance');
+  await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('role', 'status');
+  await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('aria-live', 'polite');
   await expect(page.locator('#orrery-guided-progress')).toHaveText('0 / 3 guided missions complete');
   await expect(page.locator('body')).toContainText('a · orbit size');
   await expect(page.locator('body')).toContainText('e · eccentricity');
@@ -296,6 +300,23 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
   expect(layout.tipRight).toBeLessThanOrEqual(layout.stageRight - 8);
   expect(layout.textAlign).toBe('left');
   expect(layout.hudDirection).toBe('column');
+
+  const readoutLayout = await page.locator('#orrery-stage-readout').evaluate((readout) => {
+    const stage = readout.closest('.orr-orbit-stage');
+    if (!stage) throw new Error('Orrery stage readout did not mount inside the stage');
+    const readoutRect = readout.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    return {
+      left: Math.round(readoutRect.left),
+      right: Math.round(readoutRect.right),
+      top: Math.round(readoutRect.top),
+      stageLeft: Math.round(stageRect.left),
+      stageRight: Math.round(stageRect.right),
+    };
+  });
+
+  expect(readoutLayout.left).toBeGreaterThanOrEqual(readoutLayout.stageLeft + 8);
+  expect(readoutLayout.right).toBeLessThanOrEqual(readoutLayout.stageRight - 8);
 
   await harness.destroy(page);
 });
@@ -407,6 +428,9 @@ test('reselects a world normally after Escape clears the selection', async ({ pa
   }, undefined, { expectCanvas: false });
 
   const canvas = page.locator('canvas[role="application"]').first();
+  const canvasDescriptionWithoutSelection = 'orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip';
+  const canvasDescriptionWithSelection = canvasDescriptionWithoutSelection + ' orrery-stage-readout';
+  await expect(canvas).toHaveAttribute('aria-describedby', canvasDescriptionWithoutSelection);
   await canvas.scrollIntoViewIfNeeded();
   const readMercuryTarget = () => canvas.evaluate((element) => {
     const state = (element as any).__canvasPanelState;
@@ -427,11 +451,13 @@ test('reselects a world normally after Escape clears the selection', async ({ pa
   await page.mouse.click(firstTarget.clientX, firstTarget.clientY);
   await expect.poll(() => page.evaluate(() => (window as any).__toolData.solarSystem.orr_sel || null)).toBe('mercury');
   await expect(page.locator('#orrery-live-distance')).toHaveCount(1);
+  await expect(canvas).toHaveAttribute('aria-describedby', canvasDescriptionWithSelection);
 
   await canvas.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as any).__toolData.solarSystem.orr_sel || null)).toBeNull();
   await expect(page.locator('#orrery-live-distance')).toHaveCount(0);
 
+  await expect(canvas).toHaveAttribute('aria-describedby', canvasDescriptionWithoutSelection);
   const secondTarget = await readMercuryTarget();
   if (!secondTarget) throw new Error('Mercury target was not available after Escape');
   await page.mouse.click(secondTarget.clientX, secondTarget.clientY);
@@ -883,6 +909,10 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
   }, undefined, { expectCanvas: false });
 
   await expect(page.locator('#orrery-live-selected-summary')).toContainText('Earth: distance');
+  await expect(page.locator('#orrery-stage-readout-body')).toHaveText('Earth');
+  await expect(page.locator('#orrery-stage-readout-values')).toContainText('Distance');
+  await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('aria-live', 'polite');
+  const initialStageReadout = await page.locator('#orrery-stage-readout-values').textContent();
   await expect(page.locator('#orrery-live-selected-summary')).toHaveAttribute('aria-live', 'polite');
   await expect(page.locator('#orrery-live-orbit-position-meter')).toHaveAttribute('role', 'img');
   await expect(page.locator('#orrery-live-orbit-position-meter')).toHaveAttribute('aria-describedby', 'orrery-live-orbit-position');
@@ -891,6 +921,8 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
   const initialOrbitalMarker = await page.locator('#orrery-live-orbit-position-marker').getAttribute('style');
   await page.locator('#orrery-timeline-jump-2').click();
   await expect(page.locator('#orrery-live-orbit-position')).toContainText('near aphelion');
+  await expect(page.locator('#orrery-stage-readout-values')).toContainText('Near aphelion');
+  expect(await page.locator('#orrery-stage-readout-values').textContent()).not.toBe(initialStageReadout);
   const aphelionOrbitalMarker = await page.locator('#orrery-live-orbit-position-marker').getAttribute('style');
   expect(aphelionOrbitalMarker).toContain('left: 100%');
   expect(initialOrbitalMarker).not.toBe(aphelionOrbitalMarker);
