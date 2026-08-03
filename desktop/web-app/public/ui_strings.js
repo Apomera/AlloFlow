@@ -7454,6 +7454,7 @@
     "teacher": "Teacher",
     "parent": "Parent",
     "independent": "Independent Learner",
+    "last_time": "Last time",
     "mic_setup": "Optional Setup",
     "mic_ready": "Microphone Ready",
     "mic_denied": "Access Denied (Check Browser Settings)",

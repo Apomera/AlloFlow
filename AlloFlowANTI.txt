@@ -15656,7 +15656,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setIsAdventureStoryMode(false);
       }
       setHasSelectedRole(true);
+      // Remember the choice so RoleSelectionModal can badge "last time" next boot.
+      // Deliberately a HINT, not an auto-skip: there is no switch-role affordance
+      // after selection (the wizard never reopens), so skipping it would trap a
+      // shared device in one role. 'student' is not remembered — that path opens
+      // the student entry flow, which link-based entry already handles.
+      if (role !== 'student') {
+          try { localStorage.setItem('alloflow_last_role', role); } catch (_) {}
+      }
   };
+  // ── Family deep link (?allo_family) ──────────────────────────────────────
+  // A teacher-distributable link (newsletter, IEP meeting handout) that lands a
+  // family directly in Parent Mode: no launch pad, no role wizard. Parent mode
+  // was otherwise undiscoverable — it is a second-screen card behind launch pad
+  // labels that all sound educator-facing (MODE_AUDIT_2026-08-03.md).
+  // Student-entry params win if both are present, and the teacher password gate
+  // is honored exactly as a manual card click would honor it.
+  const _alloFamilyLinkHandledRef = useRef(false);
+  useEffect(() => {
+      if (_alloFamilyLinkHandledRef.current || hasSelectedRole) return;
+      if (_alloHasAnyStudentEntry()) return;
+      let wantsFamily = false;
+      try { wantsFamily = new URLSearchParams(window.location.search || '').has('allo_family'); } catch (_) {}
+      if (!wantsFamily) return;
+      _alloFamilyLinkHandledRef.current = true;
+      setHasSelectedMode(true);
+      if (APP_CONFIG._cfg_validation_key) {
+          setPendingRole('parent');
+          setIsGateOpen(true);
+      } else {
+          executeRoleSelect('parent');
+      }
+  }, [hasSelectedRole]);
   const handleStudentEntryConfirm = (name, mode) => {
       setStudentNickname(name);
       setStudentProjectSettings(prev => ({

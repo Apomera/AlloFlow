@@ -1288,6 +1288,13 @@ const RoleSelectionModal = React.memo(({
       onSelect(role);
     }
   };
+  // The host remembers the last chosen role (executeRoleSelect writes it). Shown
+  // as a badge on the matching card — a hint, never an auto-skip, because the
+  // wizard is the only role chooser and never reopens after selection.
+  const lastRole = (() => { try { return localStorage.getItem('alloflow_last_role'); } catch (_) { return null; } })();
+  const lastTimeBadge = role => lastRole === role ? /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full px-2 py-0.5"
+  }, t('roles.last_time') || 'Last time') : null;
   const [micStatus, setMicStatus] = useState('idle');
   const handleMicCheck = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1365,7 +1372,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
-  }, t('roles.teacher'))), /*#__PURE__*/React.createElement("button", {
+  }, t('roles.teacher')), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRoleClick('parent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
@@ -1375,7 +1382,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
-  }, t('roles.parent'))), /*#__PURE__*/React.createElement("button", {
+  }, t('roles.parent')), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRoleClick('independent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
@@ -1385,7 +1392,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-cyan-700"
-  }, t('roles.independent')))), /*#__PURE__*/React.createElement("div", {
+  }, t('roles.independent')), lastTimeBadge('independent'))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2"

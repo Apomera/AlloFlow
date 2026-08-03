@@ -126,4 +126,14 @@ signals the link paths use, not this flag.
    home-schooling parents effectively are the teacher. The "simplified" framing refers to
    the relabeled surfaces and presets, and F1 removed the class-professional surfaces that
    actually contradicted it. No curated tool list.
-4. **F4/F5** remain open decisions; no code.
+4. **F4 PARTIALLY ADDRESSED** (same day). Two family-entry improvements:
+   - `?allo_family` deep link — teacher-distributable (newsletter, IEP meeting handout);
+     lands directly in Parent Mode, skipping launch pad and role wizard. Student-entry
+     params take precedence; the teacher password gate is honored exactly as a manual
+     card click would honor it.
+   - The last chosen role (teacher/parent/independent, never student) is remembered in
+     `alloflow_last_role` and shown as a "Last time" badge on the matching role card.
+     Deliberately a hint, NOT an auto-skip: the wizard is the only role chooser and never
+     reopens after selection, so skipping it would trap a shared device in one role.
+     Full role restore stays open until a switch-role affordance exists.
+5. **F5** remains an open decision; no code.

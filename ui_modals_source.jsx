@@ -1288,6 +1288,15 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
         onSelect(role);
     }
   };
+  // The host remembers the last chosen role (executeRoleSelect writes it). Shown
+  // as a badge on the matching card — a hint, never an auto-skip, because the
+  // wizard is the only role chooser and never reopens after selection.
+  const lastRole = (() => { try { return localStorage.getItem('alloflow_last_role'); } catch (_) { return null; } })();
+  const lastTimeBadge = (role) => lastRole === role ? (
+    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full px-2 py-0.5">
+      {t('roles.last_time') || 'Last time'}
+    </span>
+  ) : null;
   const [micStatus, setMicStatus] = useState('idle');
   const handleMicCheck = () => {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1363,6 +1372,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                 <School size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-indigo-700">{t('roles.teacher')}</span>
+            {lastTimeBadge('teacher')}
         </button>
         <button
             onClick={() => handleRoleClick('parent')}
@@ -1373,6 +1383,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                 <Heart size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-orange-700">{t('roles.parent')}</span>
+            {lastTimeBadge('parent')}
         </button>
         <button
             onClick={() => handleRoleClick('independent')}
@@ -1383,6 +1394,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                 <UserCircle2 size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-cyan-700">{t('roles.independent')}</span>
+            {lastTimeBadge('independent')}
         </button>
       </div>
       <div className="border-t border-slate-100 pt-4">
