@@ -4721,7 +4721,7 @@
               },
               {
                 id: 'dataLab', icon: '\uD83D\uDDC2\uFE0F', label: 'CODAP Data Science',
-                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
+                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that reads your column summaries and a sample of your rows, then asks questions instead of giving answers.',
                 color: 'indigo', ready: true
               },
               {

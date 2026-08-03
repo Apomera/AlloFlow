@@ -16,10 +16,10 @@
   MIT-licensed data-science workspace — codap.concord.org — one of the most
   evidence-based open tools in data literacy. Credit and thanks to the
   Concord Consortium. This page embeds the hosted CODAP release and loads a
-  tiny AlloFlow "tutor link" plugin into it (?di=), which can answer ONE
-  question: "what is the SHAPE of the student's work right now?" (dataset /
-  collection / column names, case counts, which graphs exist) — never case
-  values. See tutor_plugin.html.
+  tiny AlloFlow "tutor link" plugin into it (?di=), which answers "what is the
+  student working with right now?" in three bounded layers: shape (dataset /
+  collection / column names, case counts, which graphs exist), per-column
+  summary statistics, and a capped sample of real rows. See tutor_plugin.html.
 
   The Socratic tutor:
   - AI path: questions go to the OPENER AlloFlow window over postMessage
@@ -131,7 +131,7 @@
       <button type="submit" id="askBtn">Ask</button>
     </form>
     <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn">🤔 Give me something to think about</button></div>
-    <div class="privacy">Privacy: the tutor can see your <b>column names, dataset names, and counts</b> — never the values in your table. The conversation is not saved. AI answers only flow when your teacher has AI hints on.</div>
+    <div class="privacy">Privacy: the tutor can see your <b>column names, summary statistics, and a sample of rows</b> from your table, so it can ask about what your data actually shows. The conversation is not saved. AI answers only flow when your teacher has AI hints on.</div>
   </aside>
   <main class="codap" id="codapRegion" aria-label="CODAP data workspace" aria-busy="true">
     <div class="workspace-status" id="workspaceStatus" role="status" aria-live="polite" aria-atomic="true">

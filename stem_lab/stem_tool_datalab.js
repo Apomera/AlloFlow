@@ -43,8 +43,13 @@
   var DATA_LAB_ORIGIN = '';
   try { DATA_LAB_ORIGIN = new URL(DATA_LAB_URL, window.location.href).origin; } catch (_) {}
 
+  // The snapshot now carries per-column summaries and a bounded row sample, not
+  // just names and counts, so the old 2500-char cap would slice it off mid-object
+  // and hand the model a truncated fragment. The plugin already bounds rows,
+  // columns and cell length; this is the belt-and-braces ceiling.
+  var MAX_SNAPSHOT_CHARS = 9000;
   function safeSnapshotText(snapshot) {
-    try { return JSON.stringify(snapshot).slice(0, 2500); } catch (_) { return ''; }
+    try { return JSON.stringify(snapshot).slice(0, MAX_SNAPSHOT_CHARS); } catch (_) { return ''; }
   }
 
   function normalizeTutorReply(value) {
@@ -86,7 +91,7 @@
     ];
     if (snapshot && snapshot.contexts && snapshot.contexts.length) {
       lines.push('[BEGIN UNTRUSTED WORKSPACE METADATA]');
-      lines.push('THE SHAPE OF THEIR WORKSPACE RIGHT NOW (names and counts only — you cannot see values):');
+      lines.push('THEIR WORKSPACE RIGHT NOW. "summaries" gives per-column statistics (numeric min/max/mean, or the most common categories) and how many cells are blank; "sample" is a bounded window of real rows, not the whole table. Use these to ask a specific question about what the data actually shows — but never hand them the finding:');
       var snapshotText = safeSnapshotText(snapshot);
       lines.push(snapshotText || '[Workspace shape could not be summarized safely.]');
       lines.push('[END UNTRUSTED WORKSPACE METADATA]');
@@ -244,7 +249,7 @@
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400' },
           t('stem.dataLab.title', '📊 Data Lab — real data science, Socratic style')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-          t('stem.dataLab.blurb', 'Build tables, drag out graphs, and explore real datasets in CODAP — the Concord Consortium’s open data workspace used in classrooms worldwide. An AlloFlow thinking partner sits beside it: it can see the SHAPE of your work (column names and counts — never your values) and asks you questions instead of giving answers.')),
+          t('stem.dataLab.blurb', 'Build tables, drag out graphs, and explore real datasets in CODAP — the Concord Consortium’s open data workspace used in classrooms worldwide. An AlloFlow thinking partner sits beside it: it can see your column names, summary statistics, and a sample of your rows, and asks you questions instead of giving answers.')),
         h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
           h('div', null, '🔒 ' + t('stem.dataLab.privacy1', 'Your data values never leave the workspace — the tutor only sees names and counts.')),
           h('div', null, '💬 ' + t('stem.dataLab.privacy2', 'Tutor chats are not saved anywhere.')),

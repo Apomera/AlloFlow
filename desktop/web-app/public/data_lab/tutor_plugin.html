@@ -11,11 +11,24 @@
   talks to them over iframe-phone. data_lab.html loads CODAP with
   ?di=<this page>, so this tiny plugin runs INSIDE the CODAP workspace and is
   the tutor's eyes: when the Data Lab page asks (postMessage from window.top),
-  it queries CODAP for a SCHEMA-level snapshot — data context names,
-  collection names, attribute (column) names, and case counts — and posts it
-  back up. It deliberately never reads case VALUES: the Socratic tutor reasons
-  about the shape of the student's work, not the contents, so nothing a
-  student typed into a table leaves CODAP.
+  it queries CODAP for a snapshot and posts it back up.
+
+  The snapshot carries three layers (2026-08-03):
+    1. SHAPE    — context / collection / attribute names and case counts.
+    2. SUMMARY  — per-column aggregates: numeric min/max/mean, or the top few
+                  categories, plus how many cells are blank.
+    3. SAMPLE   — a bounded window of real rows (MAX_SAMPLE_ROWS).
+
+  Layers 2 and 3 exist because a tutor that cannot see values cannot ask a
+  useful question: "your Age column runs 11-14 and 3 rows are blank" is worth
+  more than "you have a column called Age". This matches every other AlloFlow
+  AI call — Statistics Lab already sends computed results and the student's
+  own writing over the same ctx.callGemini path, which in Gemini Canvas rides
+  the user's own Gemini session rather than an AlloFlow-held API key.
+
+  Everything here is bounded on purpose (row, column and cell-length caps) to
+  control prompt size, and the host wraps it all in [BEGIN UNTRUSTED ...]
+  markers so a value a student types into a cell cannot act as an instruction.
 -->
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 8px 10px; background: #eef2fb; color: #24304f; font-size: 12px; }
@@ -63,13 +76,73 @@
   }).then(function (res) {
     connected = Boolean(res && res.success);
     statusEl.textContent = connected
-      ? 'Connected. The tutor can see column names and counts — never your data values.'
+      ? 'Connected. The tutor can see your columns, summary statistics, and a sample of rows.'
       : 'Could not reach CODAP. The tutor will work without a data snapshot.';
     if (connected) dotEl.className = 'dot on';
   });
 
-  // ── Schema-level snapshot (names + counts only, NEVER case values) ──
+  // ── Snapshot: shape + per-column summaries + a bounded row sample ──
   function valuesOf(res) { return (res && res.success && res.values) ? res.values : null; }
+
+  // Bounds. These cap prompt size, not privacy: a class dataset can be
+  // thousands of rows and the tutor only needs enough to ask a good question.
+  var MAX_SAMPLE_ROWS = 20;   // real rows sent verbatim
+  var MAX_SCAN_CASES = 2000;  // rows scanned to compute summaries
+  var MAX_CELL_CHARS = 40;    // per-cell truncation
+
+  function round3(n) { return Math.round(n * 1000) / 1000; }
+
+  // CODAP has returned cases as either { case: { values } } or { values }
+  // depending on version; accept both rather than trusting one shape.
+  function caseValues(entry) {
+    if (!entry) return null;
+    var c = entry.case || entry;
+    return (c && c.values) ? c.values : null;
+  }
+
+  function cellText(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).slice(0, MAX_CELL_CHARS);
+  }
+
+  // One column -> either numeric stats or a category profile. A column counts
+  // as numeric only if MOST non-blank cells parse as numbers, so a mostly-text
+  // column with a stray "42" is not mislabeled.
+  function summarizeAttribute(name, raw) {
+    var nums = [], missing = 0, freq = Object.create(null), distinct = 0, present = 0;
+    for (var i = 0; i < raw.length; i++) {
+      var v = raw[i];
+      if (v === null || v === undefined || String(v).trim() === '') { missing++; continue; }
+      present++;
+      var s = String(v).trim();
+      var num = Number(s);
+      if (typeof v !== 'boolean' && s !== '' && isFinite(num)) nums.push(num);
+      var key = s.slice(0, MAX_CELL_CHARS);
+      if (freq[key] === undefined) { freq[key] = 0; distinct++; }
+      freq[key]++;
+    }
+    var out = { name: name, n: raw.length, missing: missing };
+    if (present > 0 && nums.length >= present * 0.8) {
+      var min = nums[0], max = nums[0], sum = 0;
+      for (var j = 0; j < nums.length; j++) {
+        if (nums[j] < min) min = nums[j];
+        if (nums[j] > max) max = nums[j];
+        sum += nums[j];
+      }
+      out.type = 'numeric';
+      out.min = round3(min);
+      out.max = round3(max);
+      out.mean = round3(sum / nums.length);
+    } else {
+      out.type = 'categorical';
+      out.distinct = distinct;
+      out.top = Object.keys(freq)
+        .map(function (k) { return { value: k, count: freq[k] }; })
+        .sort(function (a, b) { return b.count - a.count; })
+        .slice(0, 3);
+    }
+    return out;
+  }
 
   async function buildSnapshot() {
     var snapshot = { contexts: [], components: [], capturedAt: new Date().toISOString() };
@@ -84,11 +157,46 @@
         if (!collName) continue;
         var attrs = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].attributeList' })) || [];
         var countRes = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].caseCount' }));
-        ctxEntry.collections.push({
+        var attrNames = attrs.slice(0, 30)
+          .map(function (a) { return String((a && (a.name || a.title)) || '').slice(0, 50); })
+          .filter(Boolean);
+        var entry = {
           name: String(collName).slice(0, 60),
           caseCount: (typeof countRes === 'number') ? countRes : null,
-          attributes: attrs.slice(0, 30).map(function (a) { return String((a && (a.name || a.title)) || '').slice(0, 50); }).filter(Boolean)
-        });
+          attributes: attrNames
+        };
+
+        // Values pass: summaries over up to MAX_SCAN_CASES rows, plus the first
+        // MAX_SAMPLE_ROWS verbatim. A failure here must not lose the shape
+        // layer, so it degrades to schema-only rather than throwing.
+        try {
+          var allRes = valuesOf(await codapCall({
+            action: 'get',
+            resource: 'dataContext[' + ctxName + '].collection[' + collName + '].allCases'
+          }));
+          var cases = (allRes && Array.isArray(allRes.cases)) ? allRes.cases : [];
+          if (cases.length && attrNames.length) {
+            var scan = cases.slice(0, MAX_SCAN_CASES);
+            var byAttr = {};
+            attrNames.forEach(function (n) { byAttr[n] = []; });
+            var sample = [];
+            for (var c = 0; c < scan.length; c++) {
+              var vals = caseValues(scan[c]) || {};
+              attrNames.forEach(function (n) { byAttr[n].push(vals[n]); });
+              if (sample.length < MAX_SAMPLE_ROWS) {
+                var row = {};
+                attrNames.forEach(function (n) { row[n] = cellText(vals[n]); });
+                sample.push(row);
+              }
+            }
+            entry.summaries = attrNames.map(function (n) { return summarizeAttribute(n, byAttr[n]); });
+            entry.sample = sample;
+            entry.scanned = scan.length;
+            entry.sampleTruncated = cases.length > sample.length;
+          }
+        } catch (_) { /* schema-only for this collection */ }
+
+        ctxEntry.collections.push(entry);
       }
       snapshot.contexts.push(ctxEntry);
     }
