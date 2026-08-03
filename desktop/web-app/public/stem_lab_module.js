@@ -5096,6 +5096,13 @@
                 desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
                 color: 'fuchsia', ready: true
               },
+              {
+                // @tool parentingLab — shell + M1 shipped; M2-M9 land module-by-module
+                // behind the SME content-review gate (PARENTING_LAB_SPEC.md).
+                id: 'parentingLab', icon: '🫂', label: 'Science of Parenting Lab',
+                desc: 'What the parenting literature actually says — warmth and structure as two dials, with a strength-of-evidence badge on every claim (RCT-supported to popular-but-unsupported). Strengths-based and non-diagnostic. Sister tool to BehaviorLab and Learning Lab.',
+                color: 'rose', ready: true
+              },
               { id: '_cat_LifeSkillsCareers', icon: '', label: '\uD83D\uDCB0 Life Skills, Careers & Economics', desc: '', color: 'slate', chip: 'applied', category: true },
               {
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
@@ -5189,6 +5196,7 @@
               // existing lesson plan or a teacher's memory still finds them.
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
               dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
+              parentingLab: 'parenting parents family science of parenting warmth structure responsiveness demandingness baumrind authoritative authoritarian permissive attachment discipline positive parenting evidence badges styles child development home behavior tantrum bedtime praise',
               molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
               rockCycle: 'rock cycle earth science igneous sedimentary metamorphic shale slate limestone marble granite gneiss metamorphism weathering erosion melting cooling cross section specimen transformation',
               behaviorLab: 'operant conditioning skinner box skinner reinforcement schedules fixed ratio variable ratio fixed interval variable interval chaining chained sequences dro classical conditioning pavlov aba applied behavior analysis fba functional behavior assessment attention escape tangible sensory cumulative record',
@@ -6647,6 +6655,7 @@
             stewardshipHub: true,
             llmLiteracy: true,
             assessmentLiteracy: true,
+            parentingLab: true,
             musicSynth: true,
             beehive: true,
             echolocation: true,

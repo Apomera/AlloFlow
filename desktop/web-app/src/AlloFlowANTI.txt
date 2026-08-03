@@ -12382,6 +12382,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_microbiology.js',
         'stem_lab/stem_tool_raptorhunt.js',
         'stem_lab/stem_tool_schoolbehaviortoolkit.js',
+        // Aug 3 2026: Science of Parenting Lab — shell + M1 (Warmth & Structure);
+        // M2-M9 gated on SME content review (PARENTING_LAB_SPEC.md).
+        'stem_lab/stem_tool_parentinglab.js',
         // May 16 2026: FisherLab + AquacultureLab — 3D immersive sims
         // teaching Maine boating navigation alongside fishing + aquaculture
         // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
