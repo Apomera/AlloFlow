@@ -17,6 +17,9 @@ function slugToDisplay(slug) {
   // For known patterns, keep them clean:
   const known = {
     spanish_latin_america: 'Spanish (Latin America)',
+    // NOTE: `display` is the ENGLISH name. It is what the manifest sorts by and
+    // what English-reading staff search for. It is NOT what the language picker
+    // should lead with — see ENDONYMS below.
     spanish_castilian: 'Spanish (Castilian)',
     french_canadian: 'French (Canadian)',
     portuguese_brazil: 'Portuguese (Brazil)',
@@ -39,6 +42,86 @@ function slugToDisplay(slug) {
   if (known[slug]) return known[slug];
   return slug.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
+
+// Endonyms: each language written in ITSELF.
+//
+// The picker used to label options with the English `display` name, which fails
+// the person it exists for: someone who reads only Somali cannot find "Somali"
+// when the interface is in Vietnamese. Endonyms are legible to the speaker
+// regardless of what language the rest of the UI is in, which is why this is the
+// convention in OS and browser language pickers.
+//
+// It is also 63 strings rather than 63x63 - translating every language NAME into
+// every UI language would be ~3,969 and would still leave a speaker stranded
+// whenever their own language was not the current UI language.
+//
+// Kept here, in the generator, so `node dev-tools/update_lang_manifest.cjs`
+// cannot silently drop them the way a hand-edit of manifest.json would be.
+const ENDONYMS = {
+  acholi: 'Leb Acholi',
+  amharic: 'አማርኛ',
+  arabic: 'العربية',
+  bengali: 'বাংলা',
+  burmese: 'မြန်မာ',
+  chin_falam: 'Laiholh (Falam)',
+  chin_hakha: 'Laiholh (Hakha)',
+  chinese_simplified: '简体中文',
+  chinese_traditional: '繁體中文',
+  dari: 'دری',
+  dutch: 'Nederlands',
+  esperanto: 'Esperanto',
+  farsi: 'فارسی',
+  french: 'Français',
+  french_canadian: 'Français (Canada)',
+  german: 'Deutsch',
+  greek: 'Ελληνικά',
+  gujarati: 'ગુજરાતી',
+  haitian_creole: 'Kreyòl Ayisyen',
+  hausa: 'Hausa',
+  hebrew: 'עברית',
+  hindi: 'हिन्दी',
+  hmong: 'Hmoob',
+  igbo: 'Igbo',
+  indonesian: 'Bahasa Indonesia',
+  italian: 'Italiano',
+  japanese: '日本語',
+  kannada: 'ಕನ್ನಡ',
+  karen: 'ကညီကျိာ်',
+  khmer: 'ភាសាខ្មែរ',
+  kinyarwanda: 'Ikinyarwanda',
+  kirundi: 'Ikirundi',
+  korean: '한국어',
+  lao: 'ພາສາລາວ',
+  latin: 'Latina',
+  lingala: 'Lingála',
+  maay_maay: 'Af-Maay',
+  malayalam: 'മലയാളം',
+  marathi: 'मराठी',
+  marshallese: 'Kajin Ṃajeḷ',
+  nepali: 'नेपाली',
+  pashto: 'پښتو',
+  polish: 'Polski',
+  portuguese_angola: 'Português (Angola)',
+  portuguese_brazil: 'Português (Brasil)',
+  portuguese_portugal: 'Português (Portugal)',
+  punjabi: 'ਪੰਜਾਬੀ',
+  romanian: 'Română',
+  russian: 'Русский',
+  somali: 'Soomaali',
+  spanish_castilian: 'Español (España)',
+  spanish_latin_america: 'Español (Latinoamérica)',
+  swahili: 'Kiswahili',
+  tagalog: 'Tagalog',
+  tamil: 'தமிழ்',
+  telugu: 'తెలుగు',
+  thai: 'ภาษาไทย',
+  tigrinya: 'ትግርኛ',
+  turkish: 'Türkçe',
+  ukrainian: 'Українська',
+  urdu: 'اردو',
+  vietnamese: 'Tiếng Việt',
+  yoruba: 'Yorùbá',
+};
 
 function countKeys(filepath) {
   try {
@@ -67,7 +150,8 @@ function main() {
     const fp = path.join(LANG_DIR, f);
     const stat = fs.statSync(fp);
     const keys = countKeys(fp);
-    return { slug, display, keys, bytes: stat.size, updated: stat.mtime.toISOString().slice(0, 10) };
+    const endonym = ENDONYMS[slug] || display;
+    return { slug, display, endonym, keys, bytes: stat.size, updated: stat.mtime.toISOString().slice(0, 10) };
   }).sort((a, b) => a.display.localeCompare(b.display));
 
   const manifest = {
