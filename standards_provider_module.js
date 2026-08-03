@@ -567,28 +567,111 @@
         };
     }
 
-    function registerLocalSnapshot(snapshot) {
-        registeredProvider = createLocalProvider(snapshot);
+    // Multi-snapshot registry.
+    //
+    // registerLocalSnapshot used to hold a SINGLE slot, so loading a second
+    // snapshot module silently replaced the first — with three reviewed
+    // snapshots shipped (MA science, CCSS math, CCSS ELA) and loadModule
+    // injecting async script tags in no guaranteed order, that meant "which
+    // standards exist" depended on network timing. Snapshots are now keyed by
+    // snapshotId (re-registering the same id is idempotent), and the exposed
+    // provider is rebuilt over the union: standards deduped by id,
+    // relationships by from|to|type. Each snapshot is still validated
+    // INDIVIDUALLY first, so one bad file cannot poison the union, and a
+    // single registered snapshot behaves exactly as before.
+    const registeredSnapshots = new Map();
+
+    function rebuildRegisteredProvider() {
+        if (registeredSnapshots.size === 0) { registeredProvider = null; return null; }
+        const snapshots = Array.from(registeredSnapshots.values());
+        if (snapshots.length === 1) {
+            registeredProvider = createLocalProvider(snapshots[0]);
+            return registeredProvider;
+        }
+        const seenIds = new Set();
+        const standards = [];
+        const seenEdges = new Set();
+        const relationships = [];
+        for (const snap of snapshots) {
+            for (const record of snap.standards) {
+                const key = idToken(record.id);
+                if (seenIds.has(key)) continue;
+                seenIds.add(key);
+                standards.push(record);
+            }
+            for (const relationship of snap.relationships) {
+                const key = `${idToken(relationship.fromId)}|${idToken(relationship.toId)}|${relationship.type}`;
+                if (seenEdges.has(key)) continue;
+                seenEdges.add(key);
+                relationships.push(relationship);
+            }
+        }
+        const first = snapshots[0];
+        const combinedFrom = snapshots.map((s) => ({
+            snapshotId: s.dataset && s.dataset.snapshotId,
+            datasetVersion: s.dataset && s.dataset.datasetVersion,
+            provider: s.dataset && s.dataset.provider
+        }));
+        const dataset = Object.assign({}, first.dataset, {
+            snapshotId: 'combined:' + combinedFrom.map((c) => c.snapshotId || 'unknown').join('+')
+        });
+        const base = createLocalProvider({
+            schemaVersion: first.schemaVersion,
+            dataset,
+            standards,
+            relationships
+        });
+        // The validator normalizes the dataset to known fields, so combinedFrom
+        // cannot ride through it — decorate the manifest accessors instead.
+        // Every per-result `dataset` still carries the combined snapshotId,
+        // which names its parts; this adds the structured list at the top.
+        const withParts = (manifest) => Object.assign(manifest, {
+            combinedFrom: combinedFrom.map((entry) => Object.assign({}, entry))
+        });
+        registeredProvider = Object.assign({}, base, {
+            getManifest: () => withParts(base.getManifest()),
+            getDatasetManifest: () => withParts(base.getDatasetManifest())
+        });
         return registeredProvider;
+    }
+
+    function registerLocalSnapshot(snapshot) {
+        // validate the individual snapshot first — unchanged failure behavior
+        createLocalProvider(snapshot);
+        const key = (snapshot && snapshot.dataset && snapshot.dataset.snapshotId) || ('unkeyed:' + registeredSnapshots.size);
+        registeredSnapshots.set(key, snapshot);
+        return rebuildRegisteredProvider();
     }
 
     function getRegisteredProvider() {
         return registeredProvider;
     }
 
+    function getRegisteredSnapshotManifests() {
+        return Array.from(registeredSnapshots.values()).map((snap) => cloneManifest(snap.dataset));
+    }
+
     function clearRegisteredProvider() {
+        registeredSnapshots.clear();
         registeredProvider = null;
     }
 
-    if (root && root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__) {
-        try {
-            registerLocalSnapshot(root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__);
-        } catch (error) {
-            if (root.console && typeof root.console.warn === 'function') {
-                root.console.warn('[StandardsProvider] Ignored invalid injected local snapshot.', error && error.message);
+    function drainInjectedSnapshots() {
+        if (!root) return;
+        const injected = [];
+        if (root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__) injected.push(root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__);
+        if (Array.isArray(root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__)) injected.push(...root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__);
+        for (const snapshot of injected) {
+            try {
+                registerLocalSnapshot(snapshot);
+            } catch (error) {
+                if (root.console && typeof root.console.warn === 'function') {
+                    root.console.warn('[StandardsProvider] Ignored invalid injected local snapshot.', error && error.message);
+                }
             }
         }
     }
+    drainInjectedSnapshots();
 
     return {
         VERSION,
@@ -596,6 +679,7 @@
         createLocalProvider,
         registerLocalSnapshot,
         getRegisteredProvider,
+        getRegisteredSnapshotManifests,
         clearRegisteredProvider
     };
 });
