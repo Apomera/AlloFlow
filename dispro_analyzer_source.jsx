@@ -606,16 +606,32 @@ function DisproAnalyzerPanel(props) {
             <button type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl" aria-label={tt('dispro.close_aria', 'Close Disproportionality Analyzer')}>✕</button>
           </div>
           <div role="tablist" aria-label={tt('dispro.tabs_aria', 'Analyzer sections')} className="flex gap-1 mt-2">
-            {tabs.map((tb) => (
-              <button key={tb.id} type="button" role="tab" aria-selected={tab === tb.id} data-help-key={'dispro_tab_' + tb.id}
+            {tabs.map((tb, tbIdx) => (
+              <button key={tb.id} type="button" role="tab" id={'dispro-tab-' + tb.id} aria-selected={tab === tb.id}
+                aria-controls="dispro-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'dispro_tab_' + tb.id}
                 onClick={() => { setTab(tb.id); if (tb.id !== 'saved') setViewId(null); }}
+                onKeyDown={(e) => {
+                  // Full ARIA tabs contract (arrow keys + roving tabindex).
+                  let next = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') next = 0;
+                  else if (e.key === 'End') next = tabs.length - 1;
+                  if (next == null) return;
+                  e.preventDefault();
+                  const id = tabs[next].id;
+                  setTab(id);
+                  if (id !== 'saved') setViewId(null);
+                  const el = document.getElementById('dispro-tab-' + id);
+                  if (el) el.focus();
+                }}
                 className={'min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 ' + (tab === tb.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100')}
               ><span aria-hidden="true">{tb.icon}</span> {tb.label}</button>
             ))}
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4" role="tabpanel" id="dispro-tabpanel" aria-labelledby={'dispro-tab-' + tab} tabIndex={-1}>
           {tab === 'analyze' && (
             <div>
               <div className="bg-white border border-slate-300 rounded-xl p-3">

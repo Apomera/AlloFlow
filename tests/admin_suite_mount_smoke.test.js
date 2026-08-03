@@ -148,6 +148,46 @@ describe('UdlWalkthroughPanel', () => {
   });
 });
 
+describe('ARIA tabs keyboard contract', () => {
+  const pressKey = (el, key) => {
+    act(() => { el.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })); });
+  };
+
+  it('arrow keys move selection AND focus with a roving tabindex (walkthrough)', () => {
+    const c = mount(Mods.UdlWalkthrough.UdlWalkthroughPanel, baseProps());
+    const tabsEl = () => Array.from(c.querySelectorAll('[role="tab"]'));
+    expect(tabsEl().length).toBe(4);
+    // Roving tabindex: exactly one tab is focusable.
+    expect(tabsEl().filter((b) => b.tabIndex === 0).length).toBe(1);
+    const first = tabsEl()[0];
+    pressKey(first, 'ArrowRight');
+    expect(c.querySelector('#udlwalk-tab-sessions').getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement.id).toBe('udlwalk-tab-sessions');
+    pressKey(document.activeElement, 'End');
+    expect(c.querySelector('#udlwalk-tab-setup').getAttribute('aria-selected')).toBe('true');
+    pressKey(document.activeElement, 'ArrowRight'); // wraps
+    expect(c.querySelector('#udlwalk-tab-observe').getAttribute('aria-selected')).toBe('true');
+    // The visible panel is a labeled tabpanel.
+    const panel = c.querySelector('[role="tabpanel"]');
+    expect(panel.getAttribute('aria-labelledby')).toBe('udlwalk-tab-observe');
+  });
+
+  it('the same contract holds in dispro and meetdocs', () => {
+    for (const [Comp, prefix] of [
+      [Mods.DisproAnalyzer.DisproAnalyzerPanel, 'dispro'],
+      [Mods.MeetingDocs.MeetingDocsPanel, 'meetdocs'],
+    ]) {
+      const c = mount(Comp, baseProps());
+      const first = c.querySelector('[role="tab"]');
+      pressKey(first, 'ArrowLeft'); // wraps backward to the last tab
+      const selected = Array.from(c.querySelectorAll('[role="tab"]')).find((b) => b.getAttribute('aria-selected') === 'true');
+      expect(selected.id.startsWith(prefix + '-tab-')).toBe(true);
+      expect(selected).toBe(c.querySelectorAll('[role="tab"]')[c.querySelectorAll('[role="tab"]').length - 1]);
+      expect(c.querySelector('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe(selected.id);
+    }
+  });
+});
+
 describe('DisproAnalyzerPanel', () => {
   const seed = () => {
     const groups = [

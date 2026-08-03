@@ -459,24 +459,41 @@ function MeetingDocsPanel(props) {
     { id: "actions", label: tt("meetdocs.tab_actions", "Action items") + (openCount ? " (" + openCount + ")" : ""), icon: "☑️" }
   ];
   const draftTemplate = draft ? templateById(draft.templateId) : null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: tb.id,
       type: "button",
       role: "tab",
+      id: "meetdocs-tab-" + tb.id,
       "aria-selected": tab === tb.id,
+      "aria-controls": "meetdocs-tabpanel",
+      tabIndex: tab === tb.id ? 0 : -1,
       "data-help-key": "meetdocs_tab_" + tb.id,
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "meetings") setViewId(null);
+      },
+      onKeyDown: (e) => {
+        let next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = tabs.length - 1;
+        if (next == null) return;
+        e.preventDefault();
+        const id = tabs[next].id;
+        setTab(id);
+        if (id !== "meetings") setViewId(null);
+        const el = document.getElementById("meetdocs-tab-" + id);
+        if (el) el.focus();
       },
       className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
     " ",
     tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "meetdocs-tabpanel", "aria-labelledby": "meetdocs-tab-" + tab, tabIndex: -1 }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: tpl.id,

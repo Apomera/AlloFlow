@@ -473,16 +473,32 @@ function MeetingDocsPanel(props) {
             <button type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl" aria-label={tt('meetdocs.close_aria', 'Close Meeting Documentation')}>✕</button>
           </div>
           <div role="tablist" aria-label={tt('meetdocs.tabs_aria', 'Meeting documentation sections')} className="flex gap-1 mt-2">
-            {tabs.map((tb) => (
-              <button key={tb.id} type="button" role="tab" aria-selected={tab === tb.id} data-help-key={'meetdocs_tab_' + tb.id}
+            {tabs.map((tb, tbIdx) => (
+              <button key={tb.id} type="button" role="tab" id={'meetdocs-tab-' + tb.id} aria-selected={tab === tb.id}
+                aria-controls="meetdocs-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'meetdocs_tab_' + tb.id}
                 onClick={() => { setTab(tb.id); if (tb.id !== 'meetings') setViewId(null); }}
+                onKeyDown={(e) => {
+                  // Full ARIA tabs contract (arrow keys + roving tabindex).
+                  let next = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') next = 0;
+                  else if (e.key === 'End') next = tabs.length - 1;
+                  if (next == null) return;
+                  e.preventDefault();
+                  const id = tabs[next].id;
+                  setTab(id);
+                  if (id !== 'meetings') setViewId(null);
+                  const el = document.getElementById('meetdocs-tab-' + id);
+                  if (el) el.focus();
+                }}
                 className={'min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 ' + (tab === tb.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100')}
               ><span aria-hidden="true">{tb.icon}</span> {tb.label}</button>
             ))}
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4" role="tabpanel" id="meetdocs-tabpanel" aria-labelledby={'meetdocs-tab-' + tab} tabIndex={-1}>
           {tab === 'new' && !draft && !tplDraft && (
             <div>
               <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('meetdocs.pick_template', 'Pick a format')}</h3>

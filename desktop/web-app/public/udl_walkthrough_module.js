@@ -1058,24 +1058,41 @@ function UdlWalkthroughPanel(props) {
     { id: "building", label: tt("udlwalk.tab_building", "Building"), icon: "🏫" },
     { id: "setup", label: tt("udlwalk.tab_setup", "Roster & setup"), icon: "⚙️" }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: tb.id,
       type: "button",
       role: "tab",
+      id: "udlwalk-tab-" + tb.id,
       "aria-selected": tab === tb.id,
+      "aria-controls": "udlwalk-tabpanel",
+      tabIndex: tab === tb.id ? 0 : -1,
       "data-help-key": "udlwalk_tab_" + tb.id,
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "sessions") setViewSessionId(null);
+      },
+      onKeyDown: (e) => {
+        let next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = tabs.length - 1;
+        if (next == null) return;
+        e.preventDefault();
+        const id = tabs[next].id;
+        setTab(id);
+        if (id !== "sessions") setViewSessionId(null);
+        const el = document.getElementById("udlwalk-tab-" + id);
+        if (el) el.focus();
       },
       className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
     " ",
     tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, tab === "observe" && !draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.pick_teacher", "Who are you visiting?")), roster.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3 mb-3" }, tt("udlwalk.empty_roster", 'No classrooms yet — add them under "Roster & setup", or quick-add one below.')), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4" }, roster.filter((r) => !r.archived).map((r) => /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "udlwalk-tabpanel", "aria-labelledby": "udlwalk-tab-" + tab, tabIndex: -1 }, tab === "observe" && !draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.pick_teacher", "Who are you visiting?")), roster.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3 mb-3" }, tt("udlwalk.empty_roster", 'No classrooms yet — add them under "Roster & setup", or quick-add one below.')), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4" }, roster.filter((r) => !r.archived).map((r) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: r.id,
@@ -1216,8 +1233,10 @@ function UdlWalkthroughPanel(props) {
       const total = cellView(agg.totals[g.id]);
       return /* @__PURE__ */ React.createElement("tr", { key: g.id, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-normal text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g.label), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "(", (UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label, ")")), agg.grades.map((grade) => {
         const v = cellView(agg.cells[g.id][grade]);
-        return /* @__PURE__ */ React.createElement("td", { key: grade, className: "p-1.5 text-center rounded " + v.cls }, v.text, v.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px] opacity-75" }, " (n=", v.n, ")") : null);
-      }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold rounded " + total.cls }, total.text, total.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px] opacity-75" }, " (n=", total.n, ")") : null));
+        {
+        }
+        return /* @__PURE__ */ React.createElement("td", { key: grade, className: "p-1.5 text-center rounded " + v.cls }, v.text, v.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px]" }, " (n=", v.n, ")") : null);
+      }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold rounded " + total.cls }, total.text, total.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px]" }, " (n=", total.n, ")") : null));
     })))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, tt("udlwalk.heatmap_note", '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')), (() => {
       const trend = udlwalkTrend(sessions);
       if (trend.buckets.length < 2) {

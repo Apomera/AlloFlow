@@ -1090,16 +1090,33 @@ function UdlWalkthroughPanel(props) {
             <button type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl" aria-label={tt('udlwalk.close_aria', 'Close UDL Walkthrough')}>✕</button>
           </div>
           <div role="tablist" aria-label={tt('udlwalk.tabs_aria', 'Walkthrough sections')} className="flex gap-1 mt-2">
-            {tabs.map((tb) => (
-              <button key={tb.id} type="button" role="tab" aria-selected={tab === tb.id} data-help-key={'udlwalk_tab_' + tb.id}
+            {tabs.map((tb, tbIdx) => (
+              <button key={tb.id} type="button" role="tab" id={'udlwalk-tab-' + tb.id} aria-selected={tab === tb.id}
+                aria-controls="udlwalk-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'udlwalk_tab_' + tb.id}
                 onClick={() => { setTab(tb.id); if (tb.id !== 'sessions') setViewSessionId(null); }}
+                onKeyDown={(e) => {
+                  // Full ARIA tabs contract: role="tab" without arrow keys is
+                  // announced-but-dead for screen-reader users.
+                  let next = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') next = 0;
+                  else if (e.key === 'End') next = tabs.length - 1;
+                  if (next == null) return;
+                  e.preventDefault();
+                  const id = tabs[next].id;
+                  setTab(id);
+                  if (id !== 'sessions') setViewSessionId(null);
+                  const el = document.getElementById('udlwalk-tab-' + id);
+                  if (el) el.focus();
+                }}
                 className={'min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 ' + (tab === tb.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100')}
               ><span aria-hidden="true">{tb.icon}</span> {tb.label}</button>
             ))}
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-4" role="tabpanel" id="udlwalk-tabpanel" aria-labelledby={'udlwalk-tab-' + tab} tabIndex={-1}>
           {tab === 'observe' && !draft && (
             <div>
               <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('udlwalk.pick_teacher', 'Who are you visiting?')}</h3>
@@ -1304,9 +1321,11 @@ function UdlWalkthroughPanel(props) {
                                 </th>
                                 {agg.grades.map((grade) => {
                                   const v = cellView(agg.cells[g.id][grade]);
-                                  return <td key={grade} className={'p-1.5 text-center rounded ' + v.cls}>{v.text}{v.n ? <span className="text-[9px] opacity-75"> (n={v.n})</span> : null}</td>;
+                                  {/* No opacity on the n-counts: axe flagged 75% opacity as
+                                      sub-AA contrast on the tinted cell backgrounds. */}
+                                  return <td key={grade} className={'p-1.5 text-center rounded ' + v.cls}>{v.text}{v.n ? <span className="text-[9px]"> (n={v.n})</span> : null}</td>;
                                 })}
-                                <td className={'p-1.5 text-center font-bold rounded ' + total.cls}>{total.text}{total.n ? <span className="text-[9px] opacity-75"> (n={total.n})</span> : null}</td>
+                                <td className={'p-1.5 text-center font-bold rounded ' + total.cls}>{total.text}{total.n ? <span className="text-[9px]"> (n={total.n})</span> : null}</td>
                               </tr>
                             );
                           })}

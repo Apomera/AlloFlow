@@ -484,24 +484,41 @@ function DisproAnalyzerPanel(props) {
     { id: "saved", label: tt("dispro.tab_saved", "Saved"), icon: "🗂️" },
     { id: "trends", label: tt("dispro.tab_trends", "Trends"), icon: "📈" }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "dispro_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "dispro-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "dispro-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⚖️"), " ", tt("dispro.title", "Disproportionality Analyzer")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("dispro.subtitle", "Risk ratios from aggregate counts — computed entirely on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("dispro.close_aria", "Close Disproportionality Analyzer") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("dispro.tabs_aria", "Analyzer sections"), className: "flex gap-1 mt-2" }, tabs.map((tb) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "dispro_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "dispro-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "dispro-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⚖️"), " ", tt("dispro.title", "Disproportionality Analyzer")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("dispro.subtitle", "Risk ratios from aggregate counts — computed entirely on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("dispro.close_aria", "Close Disproportionality Analyzer") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("dispro.tabs_aria", "Analyzer sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: tb.id,
       type: "button",
       role: "tab",
+      id: "dispro-tab-" + tb.id,
       "aria-selected": tab === tb.id,
+      "aria-controls": "dispro-tabpanel",
+      tabIndex: tab === tb.id ? 0 : -1,
       "data-help-key": "dispro_tab_" + tb.id,
       onClick: () => {
         setTab(tb.id);
         if (tb.id !== "saved") setViewId(null);
+      },
+      onKeyDown: (e) => {
+        let next = null;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = tabs.length - 1;
+        if (next == null) return;
+        e.preventDefault();
+        const id = tabs[next].id;
+        setTab(id);
+        if (id !== "saved") setViewId(null);
+        const el = document.getElementById("dispro-tab-" + id);
+        if (el) el.focus();
       },
       className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
     " ",
     tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, tab === "analyze" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-outcome", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("dispro.outcome_label", "Outcome being analyzed")), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "dispro-tabpanel", "aria-labelledby": "dispro-tab-" + tab, tabIndex: -1 }, tab === "analyze" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-outcome", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("dispro.outcome_label", "Outcome being analyzed")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "dispro-outcome",
