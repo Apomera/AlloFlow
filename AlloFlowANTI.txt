@@ -22242,6 +22242,23 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // wrapper fired up to 3 FRESH full re-runs against the same throttle. Mirrors the reset path (10348).
       try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
       try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+      // Cancellation-attribution fix (handoff 2026-08-03): the gen bump below is indistinguishable,
+      // from the loop's point of view, from a genuinely newer run taking ownership — so a watchdog
+      // fire used to be reported as "a newer document/run took ownership", inventing a run that
+      // never existed. Record WHO bumped the generation and WHY so the invalidated loop (and any
+      // diagnostics reader) can name the watchdog as the cause.
+      try {
+        if (typeof window !== 'undefined') {
+          window.__alloPdfWatchdogFired = {
+            reason: 'idle-timeout',
+            idleMinutes: IDLE_LIMIT / 60000,
+            runId: watchdogRunId || null,
+            documentEpoch: watchdogEpoch,
+            gen: (window.__alloPdfRunGen || 0) + 1,
+            at: Date.now(),
+          };
+        }
+      } catch (_) {}
       try { if (typeof window !== 'undefined') { window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1; window.__alloPdfAbortSignal = null; } } catch (_) {}
       try {
         if (typeof window !== 'undefined' && window.__alloPdfFixAbortCtrl) {

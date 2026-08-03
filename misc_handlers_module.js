@@ -1263,6 +1263,17 @@ async function runAutoFixLoop(maxRounds, deps) {
     // the exact controller slot and the captured generation.
     const _ownsRunSlot = () => pdfAutoContinueAbortCtrlRef.current === _abortCtrl;
     const _canPublish = () => _ownsRunSlot() && !_genStale();
+    // Cancellation-attribution fix (handoff 2026-08-03): a gen bump can come from a genuinely newer
+    // run OR from the host's 8-minute idle watchdog invalidating THIS loop. The watchdog records its
+    // fire (with the gen it produced) in window.__alloPdfWatchdogFired; when the current generation
+    // is exactly that one, the honest report is "the watchdog cancelled us", not an invented newer
+    // document/run.
+    const _watchdogInvalidatedThisLoop = () => {
+      try {
+        const _wf = (typeof window !== 'undefined') && window.__alloPdfWatchdogFired;
+        return !!(_wf && _genStale() && _wf.gen === (window.__alloPdfRunGen || 0));
+      } catch (_) { return false; }
+    };
     const _canContinue = () => _canPublish()
       && !pdfAutoContinueAbortRef.current
       && !(_abortCtrl.signal && _abortCtrl.signal.aborted);
@@ -1450,7 +1461,10 @@ async function runAutoFixLoop(maxRounds, deps) {
           cur = pdfFixResultRef.current;
           break;
         }
-        const reVerify = await auditOutputAccessibility(result.html);
+        // Ownership fix (handoff 2026-08-03): the re-verification audit is this loop's work — its
+        // transport heartbeats must carry the loop's identity or the host watchdog rejects them and
+        // can fire mid-audit. The signal also lets Stop actually cancel the audit calls.
+        const reVerify = await auditOutputAccessibility(result.html, { signal: _abortCtrl.signal, owner: _loopOwner, trigger: 'auto-continue-round-' + (round + 1) + '-reverify' });
         if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
           cur = pdfFixResultRef.current; break;
         }
@@ -1581,7 +1595,11 @@ async function runAutoFixLoop(maxRounds, deps) {
         || (_abortCtrl.signal && _abortCtrl.signal.aborted)
         || (error && error.name === 'AbortError');
       if (!_canPublish()) {
-        warnLog('[AutoContinue] Stale loop rejected after a newer document/run took ownership:', _safeDiagnosticError(error));
+        if (_watchdogInvalidatedThisLoop()) {
+          warnLog('[AutoContinue] Loop cancelled by the host idle watchdog (no accepted pipeline heartbeat for its idle window):', _safeDiagnosticError(error));
+        } else {
+          warnLog('[AutoContinue] Stale loop rejected after a newer document/run took ownership:', _safeDiagnosticError(error));
+        }
       } else if (_wasCancelled) {
         _toastIfOwned(t('toasts.auto_continue_stopped') || 'Auto-continue stopped.', 'info');
       } else {
@@ -1600,7 +1618,9 @@ async function runAutoFixLoop(maxRounds, deps) {
         setPdfFixLoading(false);
         setPdfFixStep('');
       } else if (_staleAtExit) {
-        warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
+        warnLog(_watchdogInvalidatedThisLoop()
+          ? '[AutoContinue] Loop exiting after a host watchdog cancellation (gen bump was the watchdog\'s, not a newer run\'s).'
+          : '[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
       } else {
         // H18/M7 (audit 2026-07-26): the third case, which used to fall through and clear nothing.
         // The 12-min auto-continue watchdog NULLS pdfAutoContinueAbortCtrlRef, so _ownsExit becomes

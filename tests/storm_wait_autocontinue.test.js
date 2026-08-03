@@ -182,7 +182,7 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     expect(dp).toContain('maxWaitMs: Math.max(0, _deferHardStop - Date.now()),');
     expect(dp).toContain('shouldAbort: _genStale,');
     expect(dp).toContain('const _reFinalAuditHtml = accessibleHtml;');
-    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal }), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
+    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal, trigger: 'deferred-chunk-circle-back-reaudit round ' + _roundNow }), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
   });
   it('re-runs the AI audit (auditOutputAccessibility), NOT a deterministic substitute', () => {
     // the loop body must call the AI audit and must not swap in axe/EA as the coverage source
@@ -190,7 +190,7 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     const e = dp.indexOf('Deferred re-audit SKIPPED', s);
     const block = dp.slice(s, e);
     expect(block).toContain('const _reFinalAuditHtml = accessibleHtml;');
-    expect(block).toContain('auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal })');
+    expect(block).toContain('auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal, trigger:');
     expect(block).not.toContain('deterministicScore');
     expect(block).not.toContain('runAxeAudit');
   });

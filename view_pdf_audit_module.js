@@ -3534,7 +3534,8 @@ function PdfAuditView(props) {
   };
   const _cancelRemediationOperationPrefix = (prefix) => {
     const owned = _remediationOperationOwnerRef.current.getCurrent();
-    const kind = owned && owned.metadata && String(owned.metadata.kind || "");
+    if (!owned) return false;
+    const kind = owned.metadata && String(owned.metadata.kind || "") || "";
     if (!kind.startsWith(String(prefix || ""))) return false;
     return _cancelRemediationOperation(owned);
   };
@@ -4025,6 +4026,253 @@ function PdfAuditView(props) {
       addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (err?.message || "unknown"), "error");
     }
   };
+  const _runOriginalTaggedPdfExport = async (opts) => {
+    const _trigger = opts && opts.trigger || "unspecified";
+    const _exportDiag = (msg) => {
+      try {
+        if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") _docPipeline.logHostDiagnostic("Export", msg + " (trigger: " + _trigger + ")", null);
+      } catch (_) {
+      }
+    };
+    const _exportResult = opts && opts.resultOverride || pdfFixResultRef.current;
+    if (!_exportResult || !_exportResult.accessibleHtml) {
+      _exportDiag("Tagged PDF export refused: no remediated document is loaded");
+      addToast(t("toasts.need_both_original_pdf_remediated") || "Run remediation first - there is no remediated document to tag yet.", "info");
+      return;
+    }
+    _exportDiag("Tagged PDF export started");
+    try {
+      const _fidelityOverride = _activeContentFidelityOverrideRef.current === true;
+      _activeContentFidelityOverrideRef.current = false;
+      if (_hasExecutableActiveContent && !_fidelityOverride) {
+        await _runTypesetExport({ sanitized: true });
+        return;
+      }
+      if (_hasExecutableActiveContent) addToast("Advanced fidelity export enabled: the original executable actions and visual layout will be preserved. Redistribute only after a security review.", "warning");
+      const freshBase64 = await ensurePdfBase64();
+      if (!freshBase64) return;
+      const ok = await _ensurePdfLib();
+      if (!ok) {
+        addToast(t("toasts.couldn_load_pdf_tagging_library_2"), "error");
+        return;
+      }
+      addToast(t("toasts.tagging_original_pdf"), "info");
+      const binStr = atob(freshBase64);
+      const bytes = new Uint8Array(binStr.length);
+      for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+      const _dm = _deriveDocMeta(_exportResult.accessibleHtml, pendingPdfFile?.name);
+      const _ov = pdfMetaOverride || {};
+      const title = _ov.title && _ov.title.trim() || _dm.title;
+      const lang = _ov.lang && _ov.lang.trim() || _dm.lang || "en";
+      const _author = _ov.author && _ov.author.trim() || void 0;
+      let _tagSourceHtml = _exportResult.accessibleHtml;
+      let _result = await createTaggedPdf(bytes, _exportResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_exportResult) });
+      let _autoRestoreLine = null;
+      try {
+        const _td0 = _result && _result.roundTrip && _result.roundTrip.textDiff;
+        const _res0 = _td0 && typeof _td0.residualMissingCount === "number" ? _td0.residualMissingCount : 0;
+        const _srcTxt = _exportResult.sourceText || "";
+        if (_res0 > 0 && _res0 <= 200 && Array.isArray(_td0.missingTokens) && _td0.missingTokens.length && _srcTxt && _docPipeline && typeof _docPipeline.applyWordRestoration === "function") {
+          let _h = _exportResult.accessibleHtml, _placed = [], _left = _td0.missingTokens.map((w) => ({ word: w }));
+          try {
+            const r1 = _docPipeline.applyWordRestoration(_h, _left, _srcTxt);
+            if (r1 && r1.html) {
+              _h = r1.html;
+              _placed = r1.restored || [];
+              _left = r1.unplaceable || [];
+            }
+          } catch (_e1) {
+            warnLog("[AutoRestore] word splice failed: " + (_e1 && _e1.message));
+          }
+          if (_left.length > 0 && typeof _docPipeline.restoreSentencesDeterministic === "function") {
+            try {
+              const r2 = _docPipeline.restoreSentencesDeterministic(_h, _left, _srcTxt);
+              if (r2 && r2.html) {
+                _h = r2.html;
+                _placed = _placed.concat(r2.restoredViaSentence || []);
+                _left = r2.stillMissing || [];
+              }
+            } catch (_e2) {
+              warnLog("[AutoRestore] sentence anchor failed: " + (_e2 && _e2.message));
+            }
+          }
+          if (_placed.length > 0 || _left.length < _td0.missingTokens.length) {
+            const _txt = _h.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
+            const _fr2 = { ..._exportResult, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt };
+            const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr2) });
+            const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
+            const _res2 = _td2 && typeof _td2.residualMissingCount === "number" ? _td2.residualMissingCount : null;
+            if (_r2 && _r2.bytes && _alloTaggedPdfDeliveryVerdict(_r2).ok && _res2 != null && _res2 <= _res0) {
+              const _pre = _exportResult.accessibleHtml;
+              setPdfFixResult((prev) => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre }, "content-modified-pending-reverification", _docPipeline) : prev);
+              _tagSourceHtml = _h;
+              _result = _r2;
+              _autoRestoreLine = { tone: "success", text: "Auto-recovery: " + _placed.length + " missing source word(s) restored inline" + (_left.length > 0 ? " (" + _left.length + " preserved in the Content Recovery appendix)" : "") + " before tagging \u2014 residual missing " + _res0 + " \u2192 " + _res2 + ". \u21A9 Revert undoes it." };
+            } else {
+              _autoRestoreLine = { tone: "info", text: "Auto-recovery attempted on " + _res0 + " residual missing word(s) but did not improve the result \u2014 the original output was kept. Use \u21BB Re-run with restoration to review manually." };
+            }
+          } else {
+            _autoRestoreLine = { tone: "info", text: _res0 + " residual missing word(s) could not be auto-placed \u2014 open the word-level Diff to review them (often cosmetic: quotes, form fills, hyphenation)." };
+          }
+        } else if (_res0 > 200) {
+          _autoRestoreLine = { tone: "warn", text: _res0 + " residual missing words \u2014 too many to auto-restore safely (often OCR noise on scans). Open the word-level Diff, then \u21BB Re-run with restoration if they are real content." };
+        }
+      } catch (_eAuto) {
+        warnLog("[AutoRestore] skipped: " + (_eAuto && _eAuto.message));
+      }
+      const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
+      const summary = _result && _result.summary || null;
+      const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
+      const ocrTextLayer = _result && _result.ocrTextLayer || null;
+      const roundTrip = _result && _result.roundTrip || null;
+      const postExportValidator = _result && _result.postExportValidator || null;
+      if (!taggedBytes) {
+        addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
+        return;
+      }
+      const _priorArtifact = _currentTaggedArtifactTicket();
+      const _priorValidation = _lastTaggedValidationRef.current;
+      const _priorValidationGeneration = _taggedValidationGenerationRef.current;
+      const _priorCanTransfer = !!(_taggedArtifactTicketIsCurrent(_priorArtifact) && _viewValidationMatchesHtml(_priorValidation, _tagSourceHtml) && _viewTaggedArtifactProofMatches(_priorValidation, _priorArtifact) && _priorValidation.veraPdf && _priorValidation.veraPdfBytesHash);
+      const _newTaggedHash = _priorCanTransfer ? await _sha256OfBytes(taggedBytes) : null;
+      const _transferVeraVerdict = !!(_priorCanTransfer && _priorValidationGeneration === _taggedValidationGenerationRef.current && _taggedArtifactTicketIsCurrent(_priorArtifact) && _newTaggedHash === _priorValidation.veraPdfBytesHash);
+      const _taggedArtifact = _selectTaggedArtifact(taggedBytes);
+      _lastTaggedDeliveryRef.current = null;
+      setLastTaggedValidation(null);
+      setVeraPdfResult(null);
+      const _boundTaggedValidation = await _viewBindValidationToHtml({
+        fileName: pendingPdfFile?.name || "document.pdf",
+        title,
+        pdfUa1Checks,
+        ocrTextLayer,
+        roundTrip,
+        postExportValidator,
+        veraPdf: _transferVeraVerdict ? _priorValidation.veraPdf : null,
+        veraPdfAt: _transferVeraVerdict ? _priorValidation.veraPdfAt : null,
+        veraPdfBytesHash: _transferVeraVerdict ? _newTaggedHash : null,
+        generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      }, _tagSourceHtml, _docPipeline);
+      if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)) return;
+      if (String(pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml || "") !== String(_tagSourceHtml || "")) {
+        addToast("The document changed while this download was being prepared (a fix round finished). Click download again for the current version.", "info");
+        return;
+      }
+      setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundTaggedValidation, _taggedArtifact));
+      if (_transferVeraVerdict) setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._priorValidation.veraPdf }, _taggedArtifact));
+      {
+        const _covSev = typeof _exportResult.integrityCoverage === "number" && _exportResult.integrityCoverage < 80;
+        const _refusalSev = Array.isArray(_exportResult.fidelityNotes) && _exportResult.fidelityNotes.some((n) => n && n.kind === "refusal");
+        if (_covSev || _refusalSev) {
+          const _why = _refusalSev ? "AI refusal/meta text was detected in the output" : "only " + _exportResult.integrityCoverage + "% of the source text was preserved";
+          _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-REVIEW-CONTENT.pdf" };
+          _lastTaggedDeliveryRef.current = { withheld: true, reason: "content-fidelity gate (" + _why + ")" };
+          _exportDiag("Tagged PDF export withheld: content-fidelity gate \u2014 " + _why);
+          setFidelityGateIssue(_why);
+          addToast(t("toasts.fidelity_gate_pinned") || "\u26A0 This document may be missing source content \u2014 your options are pinned above the download buttons.", "warning");
+          return;
+        }
+      }
+      const _deliveryVerdict = _alloTaggedPdfDeliveryVerdict(_result);
+      if (!_deliveryVerdict.ok) {
+        const _rtFails = [];
+        const _rtMsg = _deliveryVerdict.reason;
+        _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-UNVERIFIED.pdf" };
+        _lastTaggedDeliveryRef.current = { withheld: true, reason: "post-save structure check failed (" + _rtMsg + ")" };
+        _exportDiag("Tagged PDF export withheld: post-save structure check failed \u2014 " + _rtMsg);
+        setTaggedGateIssue(_rtMsg);
+        addToast(t("toasts.tagged_gate_pinned") || "\u26A0 The tagged PDF failed its post-save structure check \u2014 your options are pinned above the download buttons.", "warning");
+        return;
+      }
+      const blob = new Blob([taggedBytes], { type: "application/pdf" });
+      safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf");
+      _lastTaggedDeliveryRef.current = { withheld: false };
+      _exportDiag("Tagged PDF export delivered");
+      const _rpt = [];
+      if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
+      if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
+        _rpt.push({ tone: "error", text: "Searchable text layer covers " + ocrTextLayer.coveragePct + "% of the scanned text \u2014 " + (ocrTextLayer.droppedChars || 0) + " character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud." });
+      }
+      if (ocrTextLayer && ((ocrTextLayer.pagesEmpty || 0) > 0 || (ocrTextLayer.pagesIncomplete || 0) > 0)) {
+        const _pw = ocrTextLayer.pagesWithText || (ocrTextLayer.pagesCovered || 0) + (ocrTextLayer.pagesIncomplete || 0) + (ocrTextLayer.pagesEmpty || 0);
+        const _bits = [];
+        if ((ocrTextLayer.pagesEmpty || 0) > 0) _bits.push(ocrTextLayer.pagesEmpty + " got NO searchable text");
+        if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + " got only partial text");
+        _rpt.push({ tone: "warn", text: "Per-page OCR: of " + _pw + " scanned page(s), " + _bits.join(" and ") + " \u2014 those page(s) will not be fully searchable or read aloud; verify them against the original." });
+      }
+      if (roundTrip && roundTrip.ok === true && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
+        _rpt.push({ tone: "warn", text: "Structure self-check notes: " + roundTrip.warnings.join("; ") });
+      }
+      if (postExportValidator && postExportValidator.summary) {
+        const _pv = postExportValidator.summary;
+        const _pvTotal = (_pv.pass || 0) + (_pv.fail || 0);
+        if (_pv.overall === "PASS") {
+          _rpt.push({ tone: "success", text: "Byte-level validation of the shipped file: " + _pv.pass + "/" + _pvTotal + " rules pass (AlloFlow self-check \u2014 confirm in PAC 2024 or veraPDF before claiming compliance)." });
+        } else {
+          const _pvFails = (postExportValidator.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule || c.label).filter(Boolean);
+          _rpt.push({ tone: "warn", text: "Byte-level validation: " + _pv.fail + " rule(s) failed on the shipped file" + (_pvFails.length ? " \u2014 " + _pvFails.slice(0, 4).join("; ") + (_pvFails.length > 4 ? "\u2026" : "") : "") + ". Still more accessible than untagged, but review before distributing as compliant." });
+        }
+      } else if (postExportValidator && postExportValidator.error) {
+        _rpt.push({ tone: "info", text: "Byte-level validation could not run (" + postExportValidator.error + ") \u2014 rely on the structure self-check and verify externally in PAC 2024." });
+      }
+      if (summary && typeof summary.reachableLeaves === "number" && summary.reachableLeaves > 0) {
+        const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
+        _rpt.push(summary.uaDeclared ? { tone: "success", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance." } : { tone: "info", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked \u2014 PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged." + (summary.symbolRunsExcluded > 0 ? " (" + summary.symbolRunsExcluded + " decorative symbol-font runs \u2014 bullets/dingbats \u2014 excluded from the count.)" : "") });
+      } else if (pdfAuditResult?.hasSearchableText === true) {
+        _rpt.push({ tone: "info", text: t("pdf_audit.tagged.born_digital_note") || "For text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. Verify in PAC 2024 or Acrobat before claiming PDF/UA conformance." });
+      }
+      if (summary && typeof summary.fontsRepaired === "number" && (summary.fontsRepaired > 0 || (summary.fontsUnrepairable || []).length > 0)) {
+        _rpt.push({ tone: summary.fontsUnrepairable && summary.fontsUnrepairable.length ? "warn" : "success", text: summary.fontsRepaired + " non-embedded font(s) repaired with metric-compatible substitutes" + (summary.fontsUnrepairable && summary.fontsUnrepairable.length ? "; left untouched: " + summary.fontsUnrepairable.slice(0, 4).join("; ") : "") + "." });
+      }
+      if (summary) {
+        const parts = [];
+        if (summary.headings) parts.push(summary.headings + (summary.headings === 1 ? " heading" : " headings"));
+        if (summary.paragraphs) parts.push(summary.paragraphs + (summary.paragraphs === 1 ? " paragraph" : " paragraphs"));
+        if (summary.tables) parts.push(summary.tables + (summary.tables === 1 ? " table" : " tables"));
+        if (summary.lists) parts.push(summary.lists + (summary.lists === 1 ? " list" : " lists"));
+        if (summary.images) parts.push(summary.images + (summary.images === 1 ? " image" : " images"));
+        if (summary.links) parts.push(summary.links + (summary.links === 1 ? " link" : " links"));
+        if (summary.fields) parts.push(summary.fields + (summary.fields === 1 ? " form field" : " form fields"));
+        if (summary.pages) parts.push(summary.pages + (summary.pages === 1 ? " page" : " pages"));
+        _rpt.push({ tone: "success", text: parts.length ? parts.join(" \xB7 ") + " tagged." : "Per-page tagging applied." });
+        if (summary.linkAnnotsTagged) _rpt.push({ tone: "success", text: summary.linkAnnotsTagged + " clickable link annotation(s) wrapped into the structure tree with descriptions." });
+        if (summary.bookmarks) {
+          const _mapped = summary.bookmarksMappedToPages || 0;
+          const _fallback = summary.bookmarks - _mapped;
+          _rpt.push({ tone: _fallback > 0 ? "info" : "success", text: "Bookmarks: " + summary.bookmarks + " headings" + (_mapped > 0 || _fallback > 0 ? " (" + _mapped + " mapped to pages" + (_fallback > 0 ? ", " + _fallback + " fell back to page 1" : "") + ")" : "") + "." });
+        }
+        if (summary.headingHierarchyIssues > 0) {
+          const path = (summary.headingHierarchyPath || []).slice(0, 3).join(", ");
+          _rpt.push({ tone: "info", text: summary.headingHierarchyIssues + " heading-level skip" + (summary.headingHierarchyIssues === 1 ? "" : "s") + " (" + path + ") \u2014 valid, but sequential levels navigate better in a screen reader." });
+        }
+        const _qualityIssues = [];
+        if (summary.imagesMissingAlt > 0) _qualityIssues.push(summary.imagesMissingAlt + " image" + (summary.imagesMissingAlt === 1 ? "" : "s") + " missing alt text");
+        if (summary.imagesTrivialAlt > 0) _qualityIssues.push(summary.imagesTrivialAlt + " image" + (summary.imagesTrivialAlt === 1 ? "" : "s") + " with trivial alt");
+        if (summary.thWithoutScope > 0) _qualityIssues.push(summary.thWithoutScope + " table header cell" + (summary.thWithoutScope === 1 ? "" : "s") + " missing scope");
+        if (summary.linksGenericText > 0) _qualityIssues.push(summary.linksGenericText + " link" + (summary.linksGenericText === 1 ? "" : "s") + " with generic text");
+        if (_qualityIssues.length > 0) _rpt.push({ tone: "warn", text: "Worth fixing in the preview, then re-export: " + _qualityIssues.join(", ") + "." });
+      }
+      _rpt.push({ tone: "info", text: "For an official compliance verdict: open the file in PAC 2024 (free checker), test it with a screen reader, or send this report to your district accessibility coordinator." });
+      setLastTaggedReport({
+        file: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf",
+        when: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
+        lines: _rpt
+      });
+      addToast(t("toasts.tagged_pdf_saved_see_report") || "\u{1F4C4} Tagged PDF saved \u2014 the full report is pinned above the download buttons (\u2715 to dismiss).", "success");
+    } catch (err) {
+      warnLog("[TaggedPDF] failed:", err);
+      _exportDiag("Tagged PDF export FAILED: " + (err && err.message || "unknown error"));
+      addToast(t("toasts.tagged_pdf_failed") + (err?.message || "unknown error") + ". Try PDF (from HTML) as a fallback.", "error");
+    }
+  };
+  const _pendingTaggedExportRef = useRef(null);
+  useEffect(() => {
+    if (_oneClickOperationBusy) return;
+    const _pending = _pendingTaggedExportRef.current;
+    if (!_pending) return;
+    _pendingTaggedExportRef.current = null;
+    addToast(t("pdf_audit.preview.export_dequeued") || "Remediation settled - generating the tagged PDF you queued.", "info");
+    _runOriginalTaggedPdfExport(_pending);
+  }, [_oneClickOperationBusy]);
   const [_issueSourceOpen, _setIssueSourceOpen] = useState({});
   const [_issueEdit, _setIssueEdit] = useState({});
   const _paletteSnapshotRef = useRef(null);
@@ -5812,7 +6060,7 @@ function PdfAuditView(props) {
         // correctly discarded, but the full chunked Gemini audit — the most expensive call in the
         // flow, up to 3 self-heal rounds per chunk — kept running to completion against the quota,
         // and under an active throttle kept feeding the storm the rest of the pipeline was waiting out.
-        _safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal })),
+        _safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal, trigger: "reaudit-and-score (expert edit / final full audit)" })),
         _safeAudit(() => runAxeAudit(newHtml, { signal: _reauditSignal })),
         _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null)
       ]);
@@ -6933,7 +7181,7 @@ function PdfAuditView(props) {
         addToast("Running static HTML/source accessibility audit...", "info");
         const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
         const [aiResult, axeResult, eaResult] = await Promise.all([
-          _safeAudit(() => auditOutputAccessibility(html)),
+          _safeAudit(() => auditOutputAccessibility(html, { trigger: "web-static-audit" })),
           _safeAudit(() => runAxeAudit(html)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null)
         ]);
@@ -7014,7 +7262,7 @@ function PdfAuditView(props) {
       try {
         const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
         const [baseAi, baseAxe, baseEa] = await Promise.all([
-          _safeAudit(() => auditOutputAccessibility(html)),
+          _safeAudit(() => auditOutputAccessibility(html, { trigger: "web-remediate-baseline-audit" })),
           _safeAudit(() => runAxeAudit(html)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(html)) : Promise.resolve(null)
         ]);
@@ -7048,7 +7296,7 @@ function PdfAuditView(props) {
         }
         setPdfFixStep("Verifying static source with all engines...");
         const [finalAi, finalAxe, finalEa] = await Promise.all([
-          _safeAudit(() => auditOutputAccessibility(fixed)),
+          _safeAudit(() => auditOutputAccessibility(fixed, { trigger: "web-remediate-final-verify" })),
           _safeAudit(() => runAxeAudit(fixed)),
           _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(fixed)) : Promise.resolve(null)
         ]);
@@ -7815,6 +8063,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       } finally {
         _oneClickRemediationBusyRef.current = false;
         setOneClickRemediationBusy(false);
+        try {
+          if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") _docPipeline.logHostDiagnostic("Done", "One-click remediation settled \u2014 every phase (primary pass, auto-continuation, final audit, tagged export, validation) has finished, been skipped, or been stopped.", null);
+        } catch (_) {
+        }
       }
     }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all motion-reduce:transition-none shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" }, _oneClickOperationBusy ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin motion-reduce:animate-none inline-block mr-2", "aria-hidden": "true" }, "\u23F3"), pdfAuditLoading ? t("pdf_audit.one_click.auditing") || "Auditing document\u2026" : pdfFixLoading ? pdfFixStep || t("pdf_audit.one_click.remediating") || "Remediating document\u2026" : pdfAutoContinueRunning ? t("pdf_audit.one_click.verifying") || "Verifying improvements\u2026" : t("pdf_audit.one_click.finishing") || "Finishing remediation\u2026", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.wait") || "Keep this window open \u2014 duplicate starts are disabled")) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "95 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))), (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1" }, "\u24D8 ", t("pdf_audit.settings.locked_midrun") || "A run is in progress \u2014 changes here apply to the NEXT run; the current run keeps the settings it started with."))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
       "button",
@@ -10312,7 +10564,9 @@ Return ONLY JSON:
           setPdfPreviewOpen(true);
           setTimeout(updatePdfPreview, 200);
         },
-        className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2"
+        disabled: _oneClickOperationBusy,
+        title: _oneClickOperationBusy ? t("pdf_audit.preview.busy_guard") || "Finishing remediation \u2014 Preview & Edit opens when the run settles, so you edit the final document rather than a snapshot mid-rewrite." : void 0,
+        className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       },
       "\u270F\uFE0F Preview & Edit"
     ), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
@@ -10909,9 +11163,10 @@ Return ONLY JSON:
       {
         onClick: () => downloadAccessiblePdf(pdfFixResult.accessibleHtml, _viewRemediationBaseName(pendingPdfFile?.name) + "-accessible"),
         className: "px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5",
-        title: t("pdf_audit.pdf_from_html.title") || "Regenerate a PDF from the remediated HTML. Layout reflows \u2014 page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
+        title: t("pdf_audit.pdf_from_html.title") || "Print-style PDF via your browser\u2019s Save as PDF. Layout reflows, and tag preservation depends on the browser \u2014 this copy is NOT independently verified. For the verified accessible file, use Tagged PDF."
       },
-      "\u{1F4E5} PDF (from HTML)"
+      "\u{1F4E5} ",
+      t("pdf_audit.pdf_from_html.label") || "Print-style PDF (unverified)"
     ), pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf("data-allo-reconstructed") >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-purple-800" }, "\u2728 AI-reconstructed structure \u2014 please verify"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-700 mt-0.5" }, _listReconstructedTables(pdfFixResult.accessibleHtml).length, " table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each \u2014 check each matches its image, and reject any that's wrong (the image stays)."), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1", role: "list" }, _listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 truncate text-slate-700" }, r.caption || "Reconstructed table " + (i + 1), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "(", r.rows, " row", r.rows === 1 ? "" : "s", ")")), r.html && /* @__PURE__ */ React.createElement("button", { onClick: () => setReconPreviewIdx((prev) => prev === i ? null : i), "aria-expanded": reconPreviewIdx === i, className: "shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50" }, reconPreviewIdx === i ? "\u25BE " + (t("pdf_audit.recon.hide_preview") || "Hide") : "\u{1F50D} " + (t("pdf_audit.recon.preview") || "Preview here")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       try {
         const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
@@ -11065,226 +11320,7 @@ Return ONLY JSON:
       "button",
       {
         id: "allo-tagged-pdf-btn",
-        onClick: async () => {
-          try {
-            const _fidelityOverride = _activeContentFidelityOverrideRef.current === true;
-            _activeContentFidelityOverrideRef.current = false;
-            if (_hasExecutableActiveContent && !_fidelityOverride) {
-              await _runTypesetExport({ sanitized: true });
-              return;
-            }
-            if (_hasExecutableActiveContent) addToast("Advanced fidelity export enabled: the original executable actions and visual layout will be preserved. Redistribute only after a security review.", "warning");
-            const freshBase64 = await ensurePdfBase64();
-            if (!freshBase64) return;
-            const ok = await _ensurePdfLib();
-            if (!ok) {
-              addToast(t("toasts.couldn_load_pdf_tagging_library_2"), "error");
-              return;
-            }
-            addToast(t("toasts.tagging_original_pdf"), "info");
-            const binStr = atob(freshBase64);
-            const bytes = new Uint8Array(binStr.length);
-            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-            const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
-            const _ov = pdfMetaOverride || {};
-            const title = _ov.title && _ov.title.trim() || _dm.title;
-            const lang = _ov.lang && _ov.lang.trim() || _dm.lang || "en";
-            const _author = _ov.author && _ov.author.trim() || void 0;
-            let _tagSourceHtml = pdfFixResult.accessibleHtml;
-            let _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(pdfFixResult) });
-            let _autoRestoreLine = null;
-            try {
-              const _td0 = _result && _result.roundTrip && _result.roundTrip.textDiff;
-              const _res0 = _td0 && typeof _td0.residualMissingCount === "number" ? _td0.residualMissingCount : 0;
-              const _srcTxt = pdfFixResult.sourceText || "";
-              if (_res0 > 0 && _res0 <= 200 && Array.isArray(_td0.missingTokens) && _td0.missingTokens.length && _srcTxt && _docPipeline && typeof _docPipeline.applyWordRestoration === "function") {
-                let _h = pdfFixResult.accessibleHtml, _placed = [], _left = _td0.missingTokens.map((w) => ({ word: w }));
-                try {
-                  const r1 = _docPipeline.applyWordRestoration(_h, _left, _srcTxt);
-                  if (r1 && r1.html) {
-                    _h = r1.html;
-                    _placed = r1.restored || [];
-                    _left = r1.unplaceable || [];
-                  }
-                } catch (_e1) {
-                  warnLog("[AutoRestore] word splice failed: " + (_e1 && _e1.message));
-                }
-                if (_left.length > 0 && typeof _docPipeline.restoreSentencesDeterministic === "function") {
-                  try {
-                    const r2 = _docPipeline.restoreSentencesDeterministic(_h, _left, _srcTxt);
-                    if (r2 && r2.html) {
-                      _h = r2.html;
-                      _placed = _placed.concat(r2.restoredViaSentence || []);
-                      _left = r2.stillMissing || [];
-                    }
-                  } catch (_e2) {
-                    warnLog("[AutoRestore] sentence anchor failed: " + (_e2 && _e2.message));
-                  }
-                }
-                if (_placed.length > 0 || _left.length < _td0.missingTokens.length) {
-                  const _txt = _h.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
-                  const _fr2 = { ...pdfFixResult, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt };
-                  const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr2) });
-                  const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
-                  const _res2 = _td2 && typeof _td2.residualMissingCount === "number" ? _td2.residualMissingCount : null;
-                  if (_r2 && _r2.bytes && _alloTaggedPdfDeliveryVerdict(_r2).ok && _res2 != null && _res2 <= _res0) {
-                    const _pre = pdfFixResult.accessibleHtml;
-                    setPdfFixResult((prev) => prev ? _viewEnforceVerificationHtmlBinding({ ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre }, "content-modified-pending-reverification", _docPipeline) : prev);
-                    _tagSourceHtml = _h;
-                    _result = _r2;
-                    _autoRestoreLine = { tone: "success", text: "Auto-recovery: " + _placed.length + " missing source word(s) restored inline" + (_left.length > 0 ? " (" + _left.length + " preserved in the Content Recovery appendix)" : "") + " before tagging \u2014 residual missing " + _res0 + " \u2192 " + _res2 + ". \u21A9 Revert undoes it." };
-                  } else {
-                    _autoRestoreLine = { tone: "info", text: "Auto-recovery attempted on " + _res0 + " residual missing word(s) but did not improve the result \u2014 the original output was kept. Use \u21BB Re-run with restoration to review manually." };
-                  }
-                } else {
-                  _autoRestoreLine = { tone: "info", text: _res0 + " residual missing word(s) could not be auto-placed \u2014 open the word-level Diff to review them (often cosmetic: quotes, form fills, hyphenation)." };
-                }
-              } else if (_res0 > 200) {
-                _autoRestoreLine = { tone: "warn", text: _res0 + " residual missing words \u2014 too many to auto-restore safely (often OCR noise on scans). Open the word-level Diff, then \u21BB Re-run with restoration if they are real content." };
-              }
-            } catch (_eAuto) {
-              warnLog("[AutoRestore] skipped: " + (_eAuto && _eAuto.message));
-            }
-            const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
-            const summary = _result && _result.summary || null;
-            const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
-            const ocrTextLayer = _result && _result.ocrTextLayer || null;
-            const roundTrip = _result && _result.roundTrip || null;
-            const postExportValidator = _result && _result.postExportValidator || null;
-            if (!taggedBytes) {
-              addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
-              return;
-            }
-            const _priorArtifact = _currentTaggedArtifactTicket();
-            const _priorValidation = _lastTaggedValidationRef.current;
-            const _priorValidationGeneration = _taggedValidationGenerationRef.current;
-            const _priorCanTransfer = !!(_taggedArtifactTicketIsCurrent(_priorArtifact) && _viewValidationMatchesHtml(_priorValidation, _tagSourceHtml) && _viewTaggedArtifactProofMatches(_priorValidation, _priorArtifact) && _priorValidation.veraPdf && _priorValidation.veraPdfBytesHash);
-            const _newTaggedHash = _priorCanTransfer ? await _sha256OfBytes(taggedBytes) : null;
-            const _transferVeraVerdict = !!(_priorCanTransfer && _priorValidationGeneration === _taggedValidationGenerationRef.current && _taggedArtifactTicketIsCurrent(_priorArtifact) && _newTaggedHash === _priorValidation.veraPdfBytesHash);
-            const _taggedArtifact = _selectTaggedArtifact(taggedBytes);
-            _lastTaggedDeliveryRef.current = null;
-            setLastTaggedValidation(null);
-            setVeraPdfResult(null);
-            const _boundTaggedValidation = await _viewBindValidationToHtml({
-              fileName: pendingPdfFile?.name || "document.pdf",
-              title,
-              pdfUa1Checks,
-              ocrTextLayer,
-              roundTrip,
-              postExportValidator,
-              veraPdf: _transferVeraVerdict ? _priorValidation.veraPdf : null,
-              veraPdfAt: _transferVeraVerdict ? _priorValidation.veraPdfAt : null,
-              veraPdfBytesHash: _transferVeraVerdict ? _newTaggedHash : null,
-              generatedAt: (/* @__PURE__ */ new Date()).toISOString()
-            }, _tagSourceHtml, _docPipeline);
-            if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)) return;
-            if (String(pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml || "") !== String(_tagSourceHtml || "")) {
-              addToast("The document changed while this download was being prepared (a fix round finished). Click download again for the current version.", "info");
-              return;
-            }
-            setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundTaggedValidation, _taggedArtifact));
-            if (_transferVeraVerdict) setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._priorValidation.veraPdf }, _taggedArtifact));
-            {
-              const _covSev = typeof pdfFixResult.integrityCoverage === "number" && pdfFixResult.integrityCoverage < 80;
-              const _refusalSev = Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.some((n) => n && n.kind === "refusal");
-              if (_covSev || _refusalSev) {
-                const _why = _refusalSev ? "AI refusal/meta text was detected in the output" : "only " + pdfFixResult.integrityCoverage + "% of the source text was preserved";
-                _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-REVIEW-CONTENT.pdf" };
-                _lastTaggedDeliveryRef.current = { withheld: true, reason: "content-fidelity gate (" + _why + ")" };
-                setFidelityGateIssue(_why);
-                addToast(t("toasts.fidelity_gate_pinned") || "\u26A0 This document may be missing source content \u2014 your options are pinned above the download buttons.", "warning");
-                return;
-              }
-            }
-            const _deliveryVerdict = _alloTaggedPdfDeliveryVerdict(_result);
-            if (!_deliveryVerdict.ok) {
-              const _rtFails = [];
-              const _rtMsg = _deliveryVerdict.reason;
-              _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-UNVERIFIED.pdf" };
-              _lastTaggedDeliveryRef.current = { withheld: true, reason: "post-save structure check failed (" + _rtMsg + ")" };
-              setTaggedGateIssue(_rtMsg);
-              addToast(t("toasts.tagged_gate_pinned") || "\u26A0 The tagged PDF failed its post-save structure check \u2014 your options are pinned above the download buttons.", "warning");
-              return;
-            }
-            const blob = new Blob([taggedBytes], { type: "application/pdf" });
-            safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf");
-            _lastTaggedDeliveryRef.current = { withheld: false };
-            const _rpt = [];
-            if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
-            if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
-              _rpt.push({ tone: "error", text: "Searchable text layer covers " + ocrTextLayer.coveragePct + "% of the scanned text \u2014 " + (ocrTextLayer.droppedChars || 0) + " character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud." });
-            }
-            if (ocrTextLayer && ((ocrTextLayer.pagesEmpty || 0) > 0 || (ocrTextLayer.pagesIncomplete || 0) > 0)) {
-              const _pw = ocrTextLayer.pagesWithText || (ocrTextLayer.pagesCovered || 0) + (ocrTextLayer.pagesIncomplete || 0) + (ocrTextLayer.pagesEmpty || 0);
-              const _bits = [];
-              if ((ocrTextLayer.pagesEmpty || 0) > 0) _bits.push(ocrTextLayer.pagesEmpty + " got NO searchable text");
-              if ((ocrTextLayer.pagesIncomplete || 0) > 0) _bits.push(ocrTextLayer.pagesIncomplete + " got only partial text");
-              _rpt.push({ tone: "warn", text: "Per-page OCR: of " + _pw + " scanned page(s), " + _bits.join(" and ") + " \u2014 those page(s) will not be fully searchable or read aloud; verify them against the original." });
-            }
-            if (roundTrip && roundTrip.ok === true && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
-              _rpt.push({ tone: "warn", text: "Structure self-check notes: " + roundTrip.warnings.join("; ") });
-            }
-            if (postExportValidator && postExportValidator.summary) {
-              const _pv = postExportValidator.summary;
-              const _pvTotal = (_pv.pass || 0) + (_pv.fail || 0);
-              if (_pv.overall === "PASS") {
-                _rpt.push({ tone: "success", text: "Byte-level validation of the shipped file: " + _pv.pass + "/" + _pvTotal + " rules pass (AlloFlow self-check \u2014 confirm in PAC 2024 or veraPDF before claiming compliance)." });
-              } else {
-                const _pvFails = (postExportValidator.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule || c.label).filter(Boolean);
-                _rpt.push({ tone: "warn", text: "Byte-level validation: " + _pv.fail + " rule(s) failed on the shipped file" + (_pvFails.length ? " \u2014 " + _pvFails.slice(0, 4).join("; ") + (_pvFails.length > 4 ? "\u2026" : "") : "") + ". Still more accessible than untagged, but review before distributing as compliant." });
-              }
-            } else if (postExportValidator && postExportValidator.error) {
-              _rpt.push({ tone: "info", text: "Byte-level validation could not run (" + postExportValidator.error + ") \u2014 rely on the structure self-check and verify externally in PAC 2024." });
-            }
-            if (summary && typeof summary.reachableLeaves === "number" && summary.reachableLeaves > 0) {
-              const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
-              _rpt.push(summary.uaDeclared ? { tone: "success", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance." } : { tone: "info", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked \u2014 PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged." + (summary.symbolRunsExcluded > 0 ? " (" + summary.symbolRunsExcluded + " decorative symbol-font runs \u2014 bullets/dingbats \u2014 excluded from the count.)" : "") });
-            } else if (pdfAuditResult?.hasSearchableText === true) {
-              _rpt.push({ tone: "info", text: t("pdf_audit.tagged.born_digital_note") || "For text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. Verify in PAC 2024 or Acrobat before claiming PDF/UA conformance." });
-            }
-            if (summary && typeof summary.fontsRepaired === "number" && (summary.fontsRepaired > 0 || (summary.fontsUnrepairable || []).length > 0)) {
-              _rpt.push({ tone: summary.fontsUnrepairable && summary.fontsUnrepairable.length ? "warn" : "success", text: summary.fontsRepaired + " non-embedded font(s) repaired with metric-compatible substitutes" + (summary.fontsUnrepairable && summary.fontsUnrepairable.length ? "; left untouched: " + summary.fontsUnrepairable.slice(0, 4).join("; ") : "") + "." });
-            }
-            if (summary) {
-              const parts = [];
-              if (summary.headings) parts.push(summary.headings + (summary.headings === 1 ? " heading" : " headings"));
-              if (summary.paragraphs) parts.push(summary.paragraphs + (summary.paragraphs === 1 ? " paragraph" : " paragraphs"));
-              if (summary.tables) parts.push(summary.tables + (summary.tables === 1 ? " table" : " tables"));
-              if (summary.lists) parts.push(summary.lists + (summary.lists === 1 ? " list" : " lists"));
-              if (summary.images) parts.push(summary.images + (summary.images === 1 ? " image" : " images"));
-              if (summary.links) parts.push(summary.links + (summary.links === 1 ? " link" : " links"));
-              if (summary.fields) parts.push(summary.fields + (summary.fields === 1 ? " form field" : " form fields"));
-              if (summary.pages) parts.push(summary.pages + (summary.pages === 1 ? " page" : " pages"));
-              _rpt.push({ tone: "success", text: parts.length ? parts.join(" \xB7 ") + " tagged." : "Per-page tagging applied." });
-              if (summary.linkAnnotsTagged) _rpt.push({ tone: "success", text: summary.linkAnnotsTagged + " clickable link annotation(s) wrapped into the structure tree with descriptions." });
-              if (summary.bookmarks) {
-                const _mapped = summary.bookmarksMappedToPages || 0;
-                const _fallback = summary.bookmarks - _mapped;
-                _rpt.push({ tone: _fallback > 0 ? "info" : "success", text: "Bookmarks: " + summary.bookmarks + " headings" + (_mapped > 0 || _fallback > 0 ? " (" + _mapped + " mapped to pages" + (_fallback > 0 ? ", " + _fallback + " fell back to page 1" : "") + ")" : "") + "." });
-              }
-              if (summary.headingHierarchyIssues > 0) {
-                const path = (summary.headingHierarchyPath || []).slice(0, 3).join(", ");
-                _rpt.push({ tone: "info", text: summary.headingHierarchyIssues + " heading-level skip" + (summary.headingHierarchyIssues === 1 ? "" : "s") + " (" + path + ") \u2014 valid, but sequential levels navigate better in a screen reader." });
-              }
-              const _qualityIssues = [];
-              if (summary.imagesMissingAlt > 0) _qualityIssues.push(summary.imagesMissingAlt + " image" + (summary.imagesMissingAlt === 1 ? "" : "s") + " missing alt text");
-              if (summary.imagesTrivialAlt > 0) _qualityIssues.push(summary.imagesTrivialAlt + " image" + (summary.imagesTrivialAlt === 1 ? "" : "s") + " with trivial alt");
-              if (summary.thWithoutScope > 0) _qualityIssues.push(summary.thWithoutScope + " table header cell" + (summary.thWithoutScope === 1 ? "" : "s") + " missing scope");
-              if (summary.linksGenericText > 0) _qualityIssues.push(summary.linksGenericText + " link" + (summary.linksGenericText === 1 ? "" : "s") + " with generic text");
-              if (_qualityIssues.length > 0) _rpt.push({ tone: "warn", text: "Worth fixing in the preview, then re-export: " + _qualityIssues.join(", ") + "." });
-            }
-            _rpt.push({ tone: "info", text: "For an official compliance verdict: open the file in PAC 2024 (free checker), test it with a screen reader, or send this report to your district accessibility coordinator." });
-            setLastTaggedReport({
-              file: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf",
-              when: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
-              lines: _rpt
-            });
-            addToast(t("toasts.tagged_pdf_saved_see_report") || "\u{1F4C4} Tagged PDF saved \u2014 the full report is pinned above the download buttons (\u2715 to dismiss).", "success");
-          } catch (err) {
-            warnLog("[TaggedPDF] failed:", err);
-            addToast(t("toasts.tagged_pdf_failed") + (err?.message || "unknown error") + ". Try PDF (from HTML) as a fallback.", "error");
-          }
-        },
+        onClick: () => _runOriginalTaggedPdfExport({ trigger: "results-button" }),
         className: _hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5",
         title: _hasExecutableActiveContent ? "Recommended: rebuild a clean tagged PDF from the remediated content. Executable actions from the source PDF are removed; the visual layout is regenerated." : t("pdf_audit.tagged_pdf.title") || "Preserve the original PDF's visual layout and inject accessibility tags into its structure tree. Best for trusted textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
       },
@@ -11308,8 +11344,7 @@ Return ONLY JSON:
         onClick: () => {
           if (_hasExecutableActiveContent) {
             _activeContentFidelityOverrideRef.current = true;
-            const fidelityButton = document.getElementById("allo-tagged-pdf-btn");
-            if (fidelityButton) fidelityButton.click();
+            _runOriginalTaggedPdfExport({ trigger: "advanced-fidelity-override" });
             return;
           }
           _runTypesetExport({ sanitized: true });
@@ -13411,23 +13446,27 @@ Return ONLY the plain-language summary.`, false));
         {
           onClick: () => {
             _cancelRemediationOperationPrefix("preview-");
+            let _editedResult = null;
             try {
               const _h = typeof getPdfPreviewHtml === "function" ? getPdfPreviewHtml() : "";
-              if (_h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
+              if (_h) {
+                const _base = pdfFixResultRef.current;
+                if (_base) _editedResult = { ..._base, accessibleHtml: _h, _userEditedAt: Date.now() };
+                setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
+              }
             } catch (_) {
             }
             setPdfPreviewOpen(false);
-            setTimeout(() => {
-              try {
-                const b = document.getElementById("allo-tagged-pdf-btn");
-                if (b) b.click();
-                else {
-                  const el = document.getElementById("allo-sec-downloads");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              } catch (_) {
-              }
-            }, 220);
+            if (!_inputIsPdf) {
+              _runTypesetExport();
+              return;
+            }
+            if (_oneClickOperationBusy) {
+              _pendingTaggedExportRef.current = { trigger: "preview-generate (queued until remediation settles)" };
+              addToast(t("pdf_audit.preview.export_queued") || "Finishing remediation first \u2014 the tagged PDF will be generated automatically when the run settles.", "info");
+              return;
+            }
+            _runOriginalTaggedPdfExport({ trigger: "preview-generate", resultOverride: _editedResult || void 0 });
           },
           className: "w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm",
           title: t("pdf_audit.preview.tag_now_title") || "Generate an accessible tagged PDF from your current edits \u2014 preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen."
@@ -16723,11 +16762,20 @@ Return ONLY JSON:
             }
           )
         ), img.count > 1 && /* @__PURE__ */ React.createElement("span", { className: "absolute bottom-0 left-0 text-[9px] bg-slate-700/90 text-white px-1 rounded-tr font-bold", title: "This image appears " + img.count + " times in the document (likely a recurring header/logo)" }, "\xD7", img.count), img.isRegenerated && /* @__PURE__ */ React.createElement("span", { className: "absolute top-0 right-0 text-[8px] bg-violet-600 text-white px-1 rounded-bl" }, "AI")))));
-      })(), /* @__PURE__ */ React.createElement("div", { className: "mt-auto space-y-2 pt-3 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-        const html = getPdfPreviewHtml();
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
-        downloadAccessiblePdf(html, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible");
-      }, className: "w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2" }, "\u{1F4E5} Save as PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      })(), /* @__PURE__ */ React.createElement("div", { className: "mt-auto space-y-2 pt-3 border-t border-slate-200" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const html = getPdfPreviewHtml();
+            setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
+            downloadAccessiblePdf(html, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible");
+          },
+          className: "w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2",
+          title: t("pdf_audit.preview.print_style_title") || "Print-style copy via your browser\u2019s Save as PDF \u2014 tag preservation depends on the browser and this copy is not independently verified. Use Generate Tagged PDF above for the verified accessible file."
+        },
+        "\u{1F4E5} ",
+        t("pdf_audit.preview.print_style_label") || "Save as PDF (print-style, unverified)"
+      ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         const html = getPdfPreviewHtml();
         setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
         let _editedReaderHtml;
