@@ -254,3 +254,147 @@ describe('Consciousness Lab epistemic neutrality and frontier cases', () => {
     expect(html).toContain('experiments do not show experience or feeling');
   });
 });
+
+describe('Workspace Bench simulation', () => {
+  const sim = (cfg) => config.testHooks.runWorkspaceSim(cfg);
+
+  it('clamps and defaults every control value', () => {
+    const n = config.testHooks.normalizeSimConfig;
+    expect(n(undefined)).toEqual({
+      substrate: 'human', strength: 65, interference: 30, topDown: 45,
+      reportRequired: true, bypass: false,
+    });
+    expect(n({ strength: 999, interference: -50, topDown: 'x' }))
+      .toMatchObject({ strength: 100, interference: 0, topDown: 45 });
+    expect(n({ substrate: 'nonsense' }).substrate).toBe('human');
+  });
+
+  it('produces an all-or-none ignition step rather than a linear ramp', () => {
+    expect(sim({ strength: 40, interference: 25 }).markers.ignited).toBe(false);
+    expect(sim({ strength: 50, interference: 25 }).markers.ignited).toBe(false);
+    expect(sim({ strength: 60, interference: 25 }).markers.ignited).toBe(true);
+    expect(sim({ strength: 100, interference: 25 }).markers.ignited).toBe(true);
+  });
+
+  it('is deterministic: identical settings give identical markers', () => {
+    const a = sim({ strength: 72, interference: 33, topDown: 51 }).markers;
+    const b = sim({ strength: 72, interference: 33, topDown: 51 }).markers;
+    expect(a).toEqual(b);
+  });
+
+  it('runs both substrates on identical arithmetic, so markers converge', () => {
+    const cfg = { strength: 85, interference: 15, topDown: 50 };
+    const human = sim(Object.assign({}, cfg, { substrate: 'human' })).markers;
+    const model = sim(Object.assign({}, cfg, { substrate: 'model' })).markers;
+    expect(model).toEqual(human);
+  });
+
+  it('drops late markers but not recurrence when report is switched off', () => {
+    const withReport = sim({ strength: 90, interference: 0 }).markers;
+    const noReport = sim({ strength: 90, interference: 0, reportRequired: false }).markers;
+
+    expect(noReport.recurrence).toBeCloseTo(withReport.recurrence, 5);
+    expect(noReport.workspace).toBeCloseTo(withReport.workspace, 5);
+    expect(noReport.output).toBeLessThan(withReport.output / 3);
+  });
+
+  it('dissociates local recurrence from global availability under masking and sedation', () => {
+    const masked = sim({ strength: 90, interference: 95 }).markers;
+    expect(masked.sensory).toBeGreaterThan(0.5);
+    expect(masked.recurrence).toBeLessThan(0.3);
+    expect(masked.ignited).toBe(false);
+
+    const sedated = sim({ substrate: 'human', strength: 90, interference: 0, bypass: true }).markers;
+    expect(sedated.recurrence).toBeGreaterThan(0.7);
+    expect(sedated.workspace).toBeLessThan(0.1);
+    expect(sedated.ignited).toBe(false);
+  });
+
+  it('collapses the verbalizable readout for non-verbalizable model content', () => {
+    const open = sim({ substrate: 'model', strength: 90, interference: 0 }).markers;
+    const closed = sim({ substrate: 'model', strength: 90, interference: 0, bypass: true }).markers;
+
+    expect(closed.recurrence).toBeCloseTo(open.recurrence, 5);
+    expect(closed.workspace).toBeCloseTo(open.workspace, 5);
+    expect(closed.monitor).toBeLessThan(open.monitor / 3);
+  });
+
+  it('never applies a pass/fail criterion to a metaphysical view', () => {
+    const cfg = { strength: 90, interference: 0 };
+    expect(config.testHooks.simTheoryReadoutFor('gnw', cfg).met).toBe(true);
+    expect(config.testHooks.simTheoryReadoutFor('gnw', { strength: 20 }).met).toBe(false);
+
+    ['iit', 'predictive', 'functionalism', 'dualism', 'panpsychism', 'illusionism', 'neutral'].forEach((id) => {
+      expect(config.testHooks.simTheoryReadoutFor(id, cfg).met).toBe(null);
+    });
+  });
+
+  it('renders the bench without claiming the simulation measures experience', () => {
+    const html = renderView('11th Grade', 'bench');
+
+    expect(html).toContain('Workspace Bench');
+    expect(html).toContain('Not measured');
+    expect(html).toContain('Felt experience');
+    expect(html).toContain('not PCI');
+    expect(html).toContain('What this bench cannot show');
+  });
+
+  it('keeps the youngest reading path on a simplified bench', () => {
+    const html = renderView('1st Grade', 'bench');
+
+    expect(html).toContain('It is not a real brain');
+    expect(html).not.toContain('What each view would say about this run');
+    expect(html).not.toContain('Integration index');
+  });
+});
+
+describe('Progress tracking rewards correctness, not participation', () => {
+  const hook = (id) => config.questHooks.find((q) => q.id === id);
+
+  it('requires correct answers before the sorting quests complete', () => {
+    const sort = hook('evidence_sort');
+    expect(sort.check({ evidenceAnswers: { 'mask-result': 'claim', 'broadcast-proof': 'evidence', 'other-minds': 'claim', 'pci-result': 'claim' } })).toBe(false);
+    expect(sort.check({ evidenceAnswers: { 'mask-result': 'evidence', 'broadcast-proof': 'claim', 'other-minds': 'question', 'pci-result': 'evidence' } })).toBe(true);
+
+    const ladder = hook('evidence_ladder');
+    expect(ladder.check({ evidenceLadderAnswers: { 'brain-dependence': 'Unknown', 'complexity-mechanism': 'Unknown', 'frontal-necessity': 'Unknown', 'current-ai-feeling': 'Unknown' } })).toBe(false);
+    expect(ladder.check({ evidenceLadderAnswers: { 'brain-dependence': 'Established', 'complexity-mechanism': 'Suggestive', 'frontal-necessity': 'Disputed', 'current-ai-feeling': 'Unknown' } })).toBe(true);
+  });
+
+  it('does not count comparing a theory with itself', () => {
+    const compare = hook('compare_theories');
+    expect(compare.check({ compareCount: 3, compareA: 'gnw', compareB: 'gnw' })).toBe(false);
+    expect(compare.check({ compareCount: 1, compareA: 'gnw', compareB: 'iit' })).toBe(true);
+  });
+
+  it('tracks knowledge-check completion per reading path and honours legacy saves', () => {
+    const check = hook('knowledge_check');
+    expect(check.check({})).toBe(false);
+    expect(check.check({ checkComplete: {} })).toBe(false);
+    expect(check.check({ checkComplete: { high: true } })).toBe(true);
+    expect(check.check({ checkComplete: true })).toBe(true);
+  });
+
+  it('completes the bench quest only after both substrates and a no-report run', () => {
+    const bench = hook('workspace_bench');
+    expect(bench.check({ simFlags: { human: true } })).toBe(false);
+    expect(bench.check({ simFlags: { human: true, model: true } })).toBe(false);
+    expect(bench.check({ simFlags: { human: true, model: true, noReport: true } })).toBe(true);
+  });
+});
+
+describe('Theory journey placement', () => {
+  it('highlights a stage only for scientific theories that claim one', () => {
+    expect(config.testHooks.journeyStagesFor('gnw')).toEqual(['global']);
+    expect(config.testHooks.journeyStagesFor('rpt')).toEqual(['recurrence']);
+    expect(config.testHooks.journeyStagesFor('predictive')).toEqual([]);
+    expect(config.testHooks.journeyStagesFor('dualism')).toEqual([]);
+  });
+
+  it('explains itself instead of silently highlighting nothing', () => {
+    expect(config.testHooks.journeyNoteFor('gnw')).toBe(null);
+    expect(config.testHooks.journeyNoteFor('predictive')).toContain('does not single out one turning point');
+    expect(config.testHooks.journeyNoteFor('dualism')).toContain('not a proposal about where on this journey');
+    expect(config.testHooks.journeyNoteFor('panpsychism')).toContain('intrinsic integration');
+  });
+});

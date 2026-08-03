@@ -29,6 +29,36 @@
   var EVIDENCE_LADDER_LABELS = ['Established', 'Suggestive', 'Disputed', 'Unknown'];
   var GUIDED_DEBATE_FIELDS = ['positionA', 'positionB', 'evidence', 'uncertainty'];
 
+  var EVIDENCE_KINDS = {
+    'mask-result': 'evidence', 'broadcast-proof': 'claim', 'other-minds': 'question', 'pci-result': 'evidence',
+    'rpt-sufficient': 'claim', 'no-report': 'question', 'cogitate': 'evidence', 'jspace-interpretation': 'claim',
+    'proxy-validity': 'question'
+  };
+
+  var EVIDENCE_LADDER_RUNGS = {
+    'brain-dependence': 'Established', 'complexity-mechanism': 'Suggestive',
+    'frontal-necessity': 'Disputed', 'current-ai-feeling': 'Unknown'
+  };
+
+  function countCorrect(answers, key) {
+    var given = answers || {};
+    return Object.keys(given).filter(function (id) { return key[id] && given[id] === key[id]; }).length;
+  }
+
+  function completedCheckCount(data) {
+    var flag = data && data.checkComplete;
+    if (flag === true) return 1;
+    if (flag && typeof flag === 'object') {
+      return Object.keys(flag).filter(function (id) { return flag[id]; }).length;
+    }
+    return 0;
+  }
+
+  function simCrosscheckDone(data) {
+    var flags = (data && data.simFlags) || {};
+    return !!(flags.human && flags.model && flags.noReport);
+  }
+
   function caseIdsForProfile(profile) {
     var ids = ['green-light', 'animal-moral-patient', 'ai-emotion', 'masking'];
     if (LEVEL_ORDER.indexOf(profile.id) >= LEVEL_ORDER.indexOf('middle')) ids.push('dream');
@@ -583,13 +613,228 @@
   };
 
   var SIGNAL_STAGES = [
-    { id: 'input', label: '1. Feedforward signal', plain: 'A signal first moves through sensory pathways.', match: [] },
-    { id: 'recurrence', label: '2. Local return loops', plain: 'Later processing feeds back to earlier sensory areas.', match: ['rpt'] },
-    { id: 'global', label: '3. Global availability', plain: 'Information becomes usable by memory, report, planning, and control.', match: ['gnw', 'functionalism'] },
-    { id: 'metacognition', label: '4. Higher-order representation', plain: 'The system represents itself as being in a mental state.', match: ['hot'] },
-    { id: 'integration', label: '5. Intrinsic integration', plain: 'The system is analyzed as an irreducible cause-effect whole.', match: ['iit'] },
-    { id: 'selfmodel', label: '6. Attention model', plain: 'A simplified model tracks and controls attention.', match: ['ast'] }
+    { id: 'input', label: '1. Feedforward signal', plain: 'A signal first moves through sensory pathways.' },
+    { id: 'recurrence', label: '2. Local return loops', plain: 'Later processing feeds back to earlier sensory areas.' },
+    { id: 'global', label: '3. Global availability', plain: 'Information becomes usable by memory, report, planning, and control.' },
+    { id: 'metacognition', label: '4. Higher-order representation', plain: 'The system represents itself as being in a mental state.' },
+    { id: 'integration', label: '5. Intrinsic integration', plain: 'The system is analyzed as an irreducible cause-effect whole.' },
+    { id: 'selfmodel', label: '6. Attention model', plain: 'A simplified model tracks and controls attention.' }
   ];
+
+  var FOCUS_LABELS = {
+    input: 'the first feedforward sweep',
+    recurrence: 'the local return loops',
+    global: 'the step where information becomes globally available',
+    metacognition: 'the higher-order representation step',
+    integration: 'the question of intrinsic integration',
+    selfmodel: 'the attention model',
+    prediction: 'precision-weighted prediction, which operates at every step rather than one of them',
+    phenomenal: 'the felt character that no step in this diagram measures',
+    biology: 'the physical substrate the whole sequence runs on'
+  };
+
+  function stageMatchesTheory(stage, theory) {
+    return theory.group === 'science' && (theory.focus || []).indexOf(stage.id) !== -1;
+  }
+
+  function journeyNoteForTheory(theory) {
+    var stageIds = SIGNAL_STAGES.map(function (stage) { return stage.id; });
+    var focus = theory.focus || [];
+    var hasStage = focus.some(function (id) { return stageIds.indexOf(id) !== -1; });
+    var attaches = focus.map(function (id) { return FOCUS_LABELS[id]; }).filter(Boolean).join(', and ');
+    if (theory.group === 'science') {
+      if (hasStage) return null;
+      return 'This approach does not single out one turning point on this journey. It describes ' + (attaches || 'the whole loop') + '.';
+    }
+    return 'This view is not a proposal about where on this journey experience appears. It asks what any of these steps would have to be' + (attaches ? ', and it attaches to ' + attaches : '') + '.';
+  }
+
+  var SIM_TICKS = 14;
+  var SIM_IGNITION_THRESHOLD = 0.5;
+  var SIM_STAGE_KEYS = ['sensory', 'recurrent', 'workspace', 'monitor', 'output'];
+
+  var SIM_SUBSTRATES = {
+    human: {
+      id: 'human', label: 'Human participant', short: 'Human', icon: '🧑',
+      plainLabel: 'A person', plainSpace: 'the sharing step',
+      blurb: 'A brief target, an optional mask, an attention manipulation, and an optional report task.',
+      plainBlurb: 'A picture flashes. Something can cover it up. We can ask the person what they saw.',
+      strengthLabel: 'Target strength', interferenceLabel: 'Mask strength', topDownLabel: 'Attention to the target',
+      plainStrengthLabel: 'How clear is the picture?', plainInterferenceLabel: 'How much covers it up?',
+      reportLabel: 'Report required', plainReportLabel: 'We ask what they saw',
+      reportOnNote: 'The participant rates or describes the target after each trial.',
+      plainReportOnNote: 'We are asking the person to tell us about the picture.',
+      plainReportOffNote: 'We are not asking. The picture still happens, but nobody has to answer.',
+      reportOffNote: 'No-report trial: the target is still presented, but nothing is asked about it.',
+      bypassLabel: 'Reduced arousal (sedated state)',
+      bypassNote: 'Global coupling is lowered, so local sensory processing can continue while global availability collapses.',
+      stages: [
+        ['sensory', 'Feedforward sweep', 'Early sensory areas respond to the target.', 'Eyes and first signals'],
+        ['recurrent', 'Local recurrence', 'Later areas feed back to earlier ones.', 'Signals loop back'],
+        ['workspace', 'Global availability', 'Content becomes usable by memory, planning, and language.', 'Shared with the whole brain'],
+        ['monitor', 'Higher-order readout', 'The system represents itself as being in that state.', 'Noticing that you noticed'],
+        ['output', 'Report or action', 'A response is produced.', 'Saying or doing something']
+      ]
+    },
+    model: {
+      id: 'model', label: 'Language model probe', short: 'Model', icon: '🧮',
+      plainLabel: 'A computer program', plainSpace: 'the sharing step',
+      blurb: 'A representation inside a tested model, an interfering context, a steering nudge, and an optional request to verbalize.',
+      plainBlurb: 'An idea appears inside a computer program. Other words can crowd it out. We can ask the program what it is thinking about.',
+      strengthLabel: 'Representation salience', interferenceLabel: 'Distractor interference', topDownLabel: 'Top-down steering',
+      plainStrengthLabel: 'How strong is the idea?', plainInterferenceLabel: 'How much crowds it out?',
+      reportLabel: 'Verbal report requested', plainReportLabel: 'We ask what it is thinking',
+      reportOnNote: 'The model is asked to state what it is currently representing.',
+      plainReportOnNote: 'We are asking the program to tell us about the idea.',
+      plainReportOffNote: 'We are not asking. The idea is still there, but nobody has to answer.',
+      reportOffNote: 'No-report run: the representation is present, but nothing is asked about it.',
+      bypassLabel: 'Non-verbalizable content',
+      bypassNote: 'Content the J-lens does not capture: downstream computation continues while the verbalizable marker collapses.',
+      stages: [
+        ['sensory', 'Input encoding', 'Tokens are embedded into the residual stream.', 'Words go in'],
+        ['recurrent', 'Local mixing', 'Attention and MLP blocks recombine nearby content.', 'The model mixes them'],
+        ['workspace', 'Verbalizable subspace', 'Content enters the J-lens-defined broadcast subspace.', 'Shared inside the model'],
+        ['monitor', 'Self-monitoring readout', 'The model represents its own current content.', 'The model checks itself'],
+        ['output', 'Emitted tokens', 'A response is produced.', 'Words come out']
+      ]
+    }
+  };
+
+  function simClamp01(value) { return value < 0 ? 0 : value > 1 ? 1 : value; }
+
+  function simSigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+
+  function normalizeSimConfig(config) {
+    var raw = config || {};
+    function bounded(value, fallback) {
+      var n = typeof value === 'number' ? value : parseFloat(value);
+      if (!isFinite(n)) return fallback;
+      return Math.max(0, Math.min(100, n));
+    }
+    return {
+      substrate: raw.substrate === 'model' ? 'model' : 'human',
+      strength: bounded(raw.strength, 65),
+      interference: bounded(raw.interference, 30),
+      topDown: bounded(raw.topDown, 45),
+      reportRequired: raw.reportRequired !== false,
+      bypass: !!raw.bypass
+    };
+  }
+
+  // Each stage tracks its driver with an instant attack and a slow decay, so a brief stimulus
+  // propagates visibly instead of being smoothed away. The workspace stage adds a self-feeding
+  // term inside a sigmoid, which is what produces the all-or-none ignition step.
+  function runWorkspaceSim(config) {
+    var cfg = normalizeSimConfig(config);
+    var drive = cfg.strength / 100;
+    var mask = cfg.interference / 100;
+    var gain = cfg.topDown / 100;
+    var coupling = (cfg.substrate === 'human' && cfg.bypass) ? 0.22 : 1;
+    var lensOpen = !(cfg.substrate === 'model' && cfg.bypass);
+    var rest = simSigmoid(-0.55 * 9);
+    var sensory = 0, recurrent = 0, workspace = 0, monitor = 0, output = 0;
+    var ticks = [];
+    for (var t = 0; t < SIM_TICKS; t++) {
+      var pulse = t < 3 ? drive : 0;
+      var maskPulse = (t >= 2 && t < 7) ? mask : 0;
+      sensory = simClamp01(Math.max(sensory * 0.55, pulse * (1 - maskPulse * 0.45)));
+      recurrent = simClamp01(Math.max(recurrent * 0.7, sensory * 0.95 * (1 - mask * 0.85)));
+      var wsInput = recurrent * (0.7 + gain * 0.6) * coupling + workspace * 0.5;
+      var wsTarget = simClamp01((simSigmoid((wsInput - 0.55) * 9) - rest) / (1 - rest));
+      workspace = simClamp01(Math.max(workspace * 0.75, wsTarget));
+      monitor = simClamp01(Math.max(monitor * 0.6, workspace * (lensOpen ? 0.9 : 0.12) * (0.62 + gain * 0.38)));
+      output = simClamp01(Math.max(output * 0.5, monitor * (cfg.reportRequired ? 0.92 : 0.18)));
+      ticks.push({ t: t, sensory: sensory, recurrent: recurrent, workspace: workspace, monitor: monitor, output: output });
+    }
+    return { config: cfg, ticks: ticks, markers: simMarkers(ticks) };
+  }
+
+  function simMarkers(ticks) {
+    function peak(key) {
+      return ticks.reduce(function (best, tick) { return tick[key] > best ? tick[key] : best; }, 0);
+    }
+    var peaks = SIM_STAGE_KEYS.map(peak);
+    var peakWorkspace = peaks[2];
+    var ignitionTick = null;
+    for (var i = 0; i < ticks.length; i++) {
+      if (ticks[i].workspace >= SIM_IGNITION_THRESHOLD) { ignitionTick = ticks[i].t; break; }
+    }
+    var downstream = [peakWorkspace, peaks[3], peaks[4]];
+    var breadth = downstream.filter(function (value) { return value >= 0.3; }).length / downstream.length;
+    // Deliberately a mean-times-spread number: it rises with global spread by construction,
+    // which is the point the IIT card makes about why a complexity proxy is not a theory test.
+    var mean = peaks.reduce(function (sum, value) { return sum + value; }, 0) / peaks.length;
+    var spread = peaks.filter(function (value) { return value >= 0.25; }).length / peaks.length;
+    return {
+      sensory: peaks[0], recurrence: peaks[1], workspace: peakWorkspace,
+      monitor: peaks[3], output: peaks[4],
+      ignited: peakWorkspace >= SIM_IGNITION_THRESHOLD, ignitionTick: ignitionTick,
+      breadth: breadth, integration: simClamp01(mean * spread)
+    };
+  }
+
+  function simPercent(value) { return Math.round(value * 100) + '%'; }
+
+  function simTheoryReadout(theory, run) {
+    var m = run.markers;
+    var cfg = run.config;
+    var isModel = cfg.substrate === 'model';
+    var space = isModel ? 'the verbalizable subspace' : 'the global workspace';
+    if (theory.id === 'gnw') {
+      return { met: m.ignited && m.breadth >= 0.66, text: m.ignited
+        ? 'Activity in ' + space + ' crossed this model’s ignition threshold at step ' + m.ignitionTick + ' and reached ' + Math.round(m.breadth * 3) + ' of 3 downstream stages.'
+        : 'Activity in ' + space + ' peaked at ' + simPercent(m.workspace) + ', below this model’s ignition threshold, so the availability criterion is not met on this run.' };
+    }
+    if (theory.id === 'rpt') {
+      return { met: m.recurrence >= 0.45, text: 'Local recurrence peaked at ' + simPercent(m.recurrence) + '. Notice that this marker can stay high while global availability collapses — that dissociation is the whole point of the RPT/GNWT disagreement.' };
+    }
+    if (theory.id === 'hot') {
+      return { met: m.monitor >= 0.4, text: 'The higher-order readout peaked at ' + simPercent(m.monitor) + '. Because the readout here is driven by the workspace stage, this toy cannot separate a constitutive higher-order state from a consequence of access — the same confound the real debate turns on.' };
+    }
+    if (theory.id === 'ast') {
+      return { met: m.monitor >= 0.35 && cfg.topDown >= 30, text: 'Attention weighting was set to ' + cfg.topDown + '% and the self-model readout peaked at ' + simPercent(m.monitor) + '. AST would read this as attention control plus an awareness attribution, not as felt experience.' };
+    }
+    if (theory.id === 'iit') {
+      return { met: null, text: 'Not computed. IIT’s criterion is intrinsic cause-effect structure. The integration index shown here (' + simPercent(m.integration) + ') is a differentiation-times-spread number invented for this toy — it is not Φ, not PCI, and it rises with global spread, which is exactly why a complexity proxy cannot stand in for the theory.' };
+    }
+    if (theory.id === 'predictive') {
+      return { met: null, text: 'No threshold applied. Precision weighting (' + cfg.topDown + '%) changed which content dominated, but predictive accounts describe this entire loop rather than naming a consciousness-specific criterion for it.' };
+    }
+    if (theory.id === 'functionalism') {
+      return { met: null, text: 'Functionalism asks whether the causal organization is the same, not which substrate ran it. Run the other lane with these settings: if the markers match, that is the functionalist’s point — and it still does not settle whether either lane feels anything.' };
+    }
+    return { met: null, text: 'This is a claim about what consciousness fundamentally is. No number this simulation produces confirms or refutes it, in either lane.' };
+  }
+
+  function simConfoundNote(run, simple) {
+    var m = run.markers;
+    var cfg = run.config;
+    if (simple) {
+      if (!cfg.reportRequired) {
+        return 'Nobody is asking about it now. The last steps got much smaller, but the early steps did not change. So part of what we were measuring was the asking.';
+      }
+      if (cfg.bypass) {
+        return 'The early steps still worked, but the sharing step almost stopped. A machine can be busy without sharing.';
+      }
+      return 'We are asking about it, so the last step includes the answering, not only the noticing. Turn the button off and see which steps stay.';
+    }
+    if (!cfg.reportRequired) {
+      return 'Report is switched off. The late markers (readout ' + simPercent(m.monitor) + ', output ' + simPercent(m.output) + ') fell while recurrence held at ' + simPercent(m.recurrence) + '. A late marker that disappears when you stop asking for a report was partly measuring the report.';
+    }
+    if (cfg.bypass && cfg.substrate === 'model') {
+      return 'The content is non-verbalizable, so the J-lens marker collapsed to ' + simPercent(m.workspace) + ' while local mixing continued at ' + simPercent(m.recurrence) + '. A lens that only sees verbalizable content will always under-report everything else — that is a selection effect, not an absence.';
+    }
+    if (cfg.bypass && cfg.substrate === 'human') {
+      return 'Arousal is reduced, so global availability fell to ' + simPercent(m.workspace) + ' while the feedforward sweep still reached ' + simPercent(m.sensory) + '. This is the state-versus-content distinction: the machinery ran, and the sharing did not.';
+    }
+    return 'Report is switched on, so the output marker includes decision, memory, and response processes on top of whatever was experienced. Switch it off and watch which markers survive.';
+  }
+
+  function simPhenomenalVerdict(simple) {
+    return simple
+      ? 'Nobody measured a feeling here. All these numbers came from arithmetic we wrote to help us ask questions. They cannot tell us whether anything felt like something.'
+      : 'Not measured — in either lane. Every number above is a functional marker produced by arithmetic that was written to illustrate the debate. None of it is evidence about whether anything was felt.';
+  }
 
   var SOURCES = [
     { min: 'early', label: 'Seth & Bayne (2022), Theories of consciousness', url: 'https://www.nature.com/articles/s41583-022-00587-4', note: 'Peer-reviewed overview of major theory families and comparison problems.' },
@@ -606,6 +851,8 @@
     { min: 'college', label: 'Anthropic research summary: A global workspace in language models', url: 'https://www.anthropic.com/research/global-workspace', note: 'Author summary that explicitly states the experiments do not show experience or feeling.' },
     { min: 'graduate', label: 'Tsakiris et al. (2015), no-report paradigms', url: 'https://pubmed.ncbi.nlm.nih.gov/26585549/', note: 'Foundational analysis of reducing, not eliminating, report-related confounds.' }
   ];
+
+  var AWARDED_KEYS = {};
 
   function availableTheories(profile) {
     return profile.theoryIds.concat(profile.philosophyIds).map(function (id) { return THEORIES[id]; }).filter(Boolean);
@@ -627,11 +874,12 @@
     aliases: ['consciousness', 'mind', 'awareness', 'phenomenal consciousness', 'global workspace', 'integrated information'],
     questDataKey: 'consciousnessLab',
     questHooks: [
-      { id: 'compare_theories', label: 'Compare two theories', icon: '\u2696\uFE0F', check: function (d) { return (d.compareCount || 0) >= 1; }, progress: function (d) { return Math.min(1, d.compareCount || 0) + '/1'; } },
-      { id: 'evidence_sort', label: 'Classify four claims', icon: '\uD83E\uDDEA', check: function (d) { return Object.keys(d.evidenceAnswers || {}).length >= 4; }, progress: function (d) { return Math.min(4, Object.keys(d.evidenceAnswers || {}).length) + '/4'; } },
-      { id: 'evidence_ladder', label: 'Place four claims on the evidence ladder', icon: '\uD83E\uDE9C', check: function (d) { return Object.keys(d.evidenceLadderAnswers || {}).length >= 4; }, progress: function (d) { return Math.min(4, Object.keys(d.evidenceLadderAnswers || {}).length) + '/4'; } },
+      { id: 'compare_theories', label: 'Compare two different theories', icon: '\u2696\uFE0F', check: function (d) { return (d.compareCount || 0) >= 1 && !!d.compareA && !!d.compareB && d.compareA !== d.compareB; }, progress: function (d) { return ((d.compareCount || 0) >= 1 && d.compareA && d.compareB && d.compareA !== d.compareB) ? 'Done!' : '0/1'; } },
+      { id: 'evidence_sort', label: 'Correctly classify four claims', icon: '\uD83E\uDDEA', check: function (d) { return countCorrect(d.evidenceAnswers, EVIDENCE_KINDS) >= 4; }, progress: function (d) { return Math.min(4, countCorrect(d.evidenceAnswers, EVIDENCE_KINDS)) + '/4'; } },
+      { id: 'evidence_ladder', label: 'Correctly place four claims on the evidence ladder', icon: '\uD83E\uDE9C', check: function (d) { return countCorrect(d.evidenceLadderAnswers, EVIDENCE_LADDER_RUNGS) >= 4; }, progress: function (d) { return Math.min(4, countCorrect(d.evidenceLadderAnswers, EVIDENCE_LADDER_RUNGS)) + '/4'; } },
       { id: 'guided_debate', label: 'Complete a structured two-position debate', icon: '\uD83D\uDDE3\uFE0F', check: function (d) { return completedDebateCount(d) >= 1; }, progress: function (d) { return completedDebateCount(d) >= 1 ? 'Done!' : '0/1'; } },
-      { id: 'knowledge_check', label: 'Complete the knowledge check', icon: '\u2705', check: function (d) { return !!d.checkComplete; }, progress: function (d) { return d.checkComplete ? 'Done!' : 'Not yet'; } },
+      { id: 'workspace_bench', label: 'Run the bench on both substrates, including one no-report run', icon: '\uD83D\uDD2C', check: function (d) { return simCrosscheckDone(d); }, progress: function (d) { var f = d.simFlags || {}; return (((f.human ? 1 : 0) + (f.model ? 1 : 0) + (f.noReport ? 1 : 0))) + '/3'; } },
+      { id: 'knowledge_check', label: 'Complete the knowledge check', icon: '\u2705', check: function (d) { return completedCheckCount(d) >= 1; }, progress: function (d) { return completedCheckCount(d) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'reflect_ai', label: 'Reflect on AI and emotion', icon: '\uD83E\uDD16', check: function (d) { return String(d.aiReflection || '').trim().length >= 30; }, progress: function (d) { return Math.min(30, String(d.aiReflection || '').trim().length) + '/30 chars'; } }
     ],
     testHooks: {
@@ -643,7 +891,19 @@
       evidenceLadderLabels: EVIDENCE_LADDER_LABELS.slice(),
       guidedDebateFields: GUIDED_DEBATE_FIELDS.slice(),
       debateMinimumFor: function (grade) { return debateMinimumForProfile(resolveProfile(grade)); },
-      debateReadyFor: function (grade, debate) { return debateReadyForProfile(debate, resolveProfile(grade)); }
+      debateReadyFor: function (grade, debate) { return debateReadyForProfile(debate, resolveProfile(grade)); },
+      evidenceKinds: Object.assign({}, EVIDENCE_KINDS),
+      evidenceLadderRungs: Object.assign({}, EVIDENCE_LADDER_RUNGS),
+      completedCheckCount: completedCheckCount,
+      simCrosscheckDone: simCrosscheckDone,
+      normalizeSimConfig: normalizeSimConfig,
+      runWorkspaceSim: runWorkspaceSim,
+      simTheoryReadoutFor: function (theoryId, config) { return simTheoryReadout(THEORIES[theoryId], runWorkspaceSim(config)); },
+      simSubstrateIds: Object.keys(SIM_SUBSTRATES),
+      journeyStagesFor: function (theoryId) {
+        return SIGNAL_STAGES.filter(function (stage) { return stageMatchesTheory(stage, THEORIES[theoryId]); }).map(function (stage) { return stage.id; });
+      },
+      journeyNoteFor: function (theoryId) { return journeyNoteForTheory(THEORIES[theoryId]); }
     },
     render: function (ctx) {
       return renderConsciousnessLab(ctx || {});
@@ -659,7 +919,7 @@
     var profile = resolveProfile(ctx.gradeLevel || '7th Grade');
     var theories = availableTheories(profile);
     var d = (ctx.toolData && ctx.toolData.consciousnessLab) || {};
-    var activeView = ['learn', 'compare', 'evidence', 'cases', 'check', 'sources'].indexOf(d.activeView) !== -1 ? d.activeView : 'learn';
+    var activeView = ['learn', 'compare', 'evidence', 'cases', 'bench', 'check', 'sources'].indexOf(d.activeView) !== -1 ? d.activeView : 'learn';
     var selectedId = theories.some(function (theory) { return theory.id === d.selectedTheory; }) ? d.selectedTheory : theories[0].id;
     var compareA = theories.some(function (theory) { return theory.id === d.compareA; }) ? d.compareA : theories[0].id;
     var compareB = theories.some(function (theory) { return theory.id === d.compareB; }) ? d.compareB : theories[Math.min(1, theories.length - 1)].id;
@@ -700,7 +960,10 @@
     }
 
     function awardOnce(key, points, reason) {
-      if (d.awards && d.awards[key]) return;
+      // AWARDED_KEYS closes the window between a click and the next render, during which
+      // `d.awards` is still the stale snapshot and a second click would award twice.
+      if ((d.awards && d.awards[key]) || AWARDED_KEYS[key]) return;
+      AWARDED_KEYS[key] = true;
       patchState(function (current) {
         var awards = Object.assign({}, current.awards || {});
         awards[key] = true;
@@ -712,11 +975,14 @@
     var dark = !!ctx.isDark;
     var contrast = !!ctx.isContrast;
     var C = contrast ? {
-      bg: '#000000', panel: '#000000', raised: '#111111', text: '#ffffff', muted: '#f8fafc', border: '#facc15', accent: '#facc15', accentText: '#000000', science: '#67e8f9', philosophy: '#f9a8d4', good: '#86efac', bad: '#fca5a5', focus: '#ffffff'
+      bg: '#000000', panel: '#000000', raised: '#111111', text: '#ffffff', muted: '#f8fafc', border: '#facc15', accent: '#facc15', accentText: '#000000', science: '#67e8f9', philosophy: '#f9a8d4', good: '#86efac', bad: '#fca5a5', focus: '#ffffff',
+      link: '#67e8f9', step: '#facc15', alertBg: '#111111', alertText: '#fca5a5'
     } : dark ? {
-      bg: '#0b1020', panel: '#111827', raised: '#172033', text: '#f8fafc', muted: '#cbd5e1', border: '#475569', accent: '#c4b5fd', accentText: '#1e1b4b', science: '#67e8f9', philosophy: '#f9a8d4', good: '#86efac', bad: '#fca5a5', focus: '#fbbf24'
+      bg: '#0b1020', panel: '#111827', raised: '#172033', text: '#f8fafc', muted: '#cbd5e1', border: '#475569', accent: '#c4b5fd', accentText: '#1e1b4b', science: '#67e8f9', philosophy: '#f9a8d4', good: '#86efac', bad: '#fca5a5', focus: '#fbbf24',
+      link: '#93c5fd', step: '#c4b5fd', alertBg: '#172033', alertText: '#fca5a5'
     } : {
-      bg: '#f8fafc', panel: '#ffffff', raised: '#f5f3ff', text: '#172033', muted: '#475569', border: '#cbd5e1', accent: '#6d28d9', accentText: '#ffffff', science: '#0369a1', philosophy: '#9d174d', good: '#047857', bad: '#b91c1c', focus: '#7c3aed'
+      bg: '#f8fafc', panel: '#ffffff', raised: '#f5f3ff', text: '#172033', muted: '#475569', border: '#cbd5e1', accent: '#6d28d9', accentText: '#ffffff', science: '#0369a1', philosophy: '#9d174d', good: '#047857', bad: '#b91c1c', focus: '#7c3aed',
+      link: '#1d4ed8', step: '#6d28d9', alertBg: '#fef2f2', alertText: '#991b1b'
     };
 
     injectConsciousnessStyles();
@@ -726,6 +992,7 @@
       ['compare', '\u2696\uFE0F', 'Compare'],
       ['evidence', '\uD83E\uDDEA', 'Evidence Lab'],
       ['cases', '\uD83D\uDCA1', 'Cases'],
+      ['bench', '\uD83D\uDD2C', 'Workspace Bench'],
       ['check', '\u2705', 'Knowledge Check'],
       ['sources', '\uD83D\uDCDA', 'Sources & Limits']
     ];
@@ -774,7 +1041,8 @@
             var active = activeView === item[0];
             return h('button', {
               key: item[0], type: 'button', id: 'cns-tab-' + item[0], role: 'tab',
-              'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cns-panel-' + item[0],
+              // Only the active panel is rendered, so every tab points at the one panel that exists.
+              'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cns-view-panel',
               tabIndex: active ? 0 : -1,
               onKeyDown: function (event) { handleViewKeyDown(event, index); },
               onClick: function () { selectView(item[0]); },
@@ -787,7 +1055,7 @@
 
     function panel(content) {
       return h('section', {
-        id: 'cns-panel-' + activeView, role: 'tabpanel', 'aria-labelledby': 'cns-tab-' + activeView,
+        id: 'cns-view-panel', role: 'tabpanel', 'aria-labelledby': 'cns-tab-' + activeView, tabIndex: -1,
         className: 'cns-view', style: { background: C.panel, borderColor: C.border }
       }, content);
     }
@@ -838,7 +1106,9 @@
               h('span', { className: 'cns-theory-summary' }, theoryCopy.summary)
             );
           })),
-          h('article', { className: 'cns-detail', style: { background: C.raised, borderColor: C.accent }, 'aria-live': 'polite' },
+          // No aria-live here: announceToSR already names the selection, and marking this whole
+          // article live made screen readers re-read the entire detail block on every click.
+          h('article', { className: 'cns-detail', style: { background: C.raised, borderColor: C.accent } },
             h('div', { className: 'cns-detail-title' }, h('span', { 'aria-hidden': 'true' }, selected.icon), h('div', null, pill(selected.group === 'science' ? 'SCIENTIFIC MODEL' : 'PHILOSOPHICAL VIEW', selected.group), h('h3', null, selected.name))),
             h('p', { className: 'cns-detail-summary' }, copy.summary),
             h('div', { className: 'cns-epistemic-grid' },
@@ -856,18 +1126,20 @@
     }
 
     function renderSignalJourney(selected) {
+      var journeyNote = journeyNoteForTheory(selected);
       return h('section', { 'aria-labelledby': 'cns-journey-title' },
         h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'MODEL, NOT A LITERAL MAP'), h('h2', { id: 'cns-journey-title' }, 'One signal, several proposed turning points'))),
         h('p', { className: 'cns-lead' }, profile.id === 'early'
           ? 'Theories point to different places where a clue might become something you notice.'
           : 'This learning diagram places several proposals on one processing journey. Real neural dynamics overlap; the sequence is an analogy, not an anatomical claim.'),
         h('ol', { className: 'cns-journey' }, SIGNAL_STAGES.map(function (stage) {
-          var match = stage.match.indexOf(selected.id) !== -1;
+          var match = stageMatchesTheory(stage, selected);
           return h('li', { key: stage.id, className: match ? 'is-focus' : '', style: { background: match ? C.raised : C.panel, borderColor: match ? C.accent : C.border } },
-            h('strong', null, stage.label), h('span', null, stage.plain),
+            h('strong', null, stage.label), h('span', { className: 'cns-journey-plain' }, stage.plain),
             match && h('span', { className: 'cns-focus-tag', style: { background: C.accent, color: C.accentText } }, selected.short + ' emphasizes this')
           );
-        }))
+        })),
+        journeyNote && h('p', { className: 'cns-journey-note', style: { background: C.raised, borderColor: C.border, color: C.muted } }, journeyNote)
       );
     }
 
@@ -881,8 +1153,12 @@
         example: 'Concrete example', evidence: 'Relevant evidence', challenge: 'Unresolved challenge', biology: 'Role of biology / substrate'
       };
       var fallback = {
+        claim: 'This view does not state a separate core proposal at this reading level.',
         target: 'This view does not isolate one target at this reading level.',
         mechanism: 'See the core proposal.', prediction: 'A more precise prediction is introduced at a later level.',
+        example: 'No worked example is introduced for this view at this reading level.',
+        evidence: 'No distinct evidence line is introduced for this view at this reading level.',
+        challenge: 'No distinct challenge is introduced for this view at this reading level.',
         biology: 'The view does not settle this question by itself.'
       };
       return panel(h(React.Fragment, null,
@@ -894,11 +1170,11 @@
           ? 'Pick two ideas. Look for one way they are alike and one way they differ.'
           : 'Select two views and compare explanatory target, mechanism, evidence, and limitations. A shared finding is not automatically discriminating evidence.'),
         h('div', { className: 'cns-compare-pickers' },
-          h('label', null, h('span', null, 'First lens'), h('select', { value: compareA, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareA: value, compareCount: (current.compareCount || 0) + 1 }; }, 'First comparison lens changed'); } },
+          h('label', null, h('span', null, 'First lens'), h('select', { value: compareA, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareA: value, compareB: current.compareB || compareB, compareCount: (current.compareCount || 0) + 1 }; }, 'First comparison lens changed'); } },
             theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); })
           )),
           h('span', { className: 'cns-vs', 'aria-hidden': 'true' }, 'VS'),
-          h('label', null, h('span', null, 'Second lens'), h('select', { value: compareB, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareB: value, compareCount: (current.compareCount || 0) + 1 }; }, 'Second comparison lens changed'); } },
+          h('label', null, h('span', null, 'Second lens'), h('select', { value: compareB, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareB: value, compareA: current.compareA || compareA, compareCount: (current.compareCount || 0) + 1 }; }, 'Second comparison lens changed'); } },
             theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); })
           ))
         ),
@@ -908,7 +1184,8 @@
             h('caption', null, a.name + ' compared with ' + b.name + ' for ' + profile.shortLabel),
             h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Question'), h('th', { scope: 'col' }, a.name), h('th', { scope: 'col' }, b.name))),
             h('tbody', null, profile.compareRows.map(function (row) {
-              return h('tr', { key: row }, h('th', { scope: 'row' }, rowLabels[row]), h('td', null, ac[row] || fallback[row] || ac.summary), h('td', null, bc[row] || fallback[row] || bc.summary));
+              // Never fall through to the summary: it would appear under a row label it does not answer.
+              return h('tr', { key: row }, h('th', { scope: 'row' }, rowLabels[row]), h('td', null, ac[row] || fallback[row]), h('td', null, bc[row] || fallback[row]));
             }))
           )
         ),
@@ -1044,7 +1321,7 @@
                   var next = Object.assign({}, current.evidenceLadderAnswers || {});
                   next[item.id] = label;
                   return { evidenceLadderAnswers: next };
-                }, label + ' rung selected');
+                }, label + ' selected. ' + (label === item.rung ? 'Well calibrated.' : 'Try another rung. Best rung: ' + item.rung + '.'));
                 if (label === item.rung) awardOnce('ladder-' + item.id, 3, 'Placed a claim on the evidence ladder');
               }, style: { borderColor: active ? C.accent : C.border, background: active ? C.accent : C.panel, color: active ? C.accentText : C.text } }, label);
             })),
@@ -1087,7 +1364,7 @@
                   var nextAnswers = Object.assign({}, current.evidenceAnswers || {});
                   nextAnswers[item.id] = kind;
                   return { evidenceAnswers: nextAnswers };
-                }, keyMap[kind] + ' selected');
+                }, keyMap[kind] + ' selected. ' + (kind === item.kind ? 'Correct.' : 'Recheck. Best category: ' + keyMap[item.kind] + '.'));
                 if (kind === item.kind) awardOnce('evidence-' + item.id, 3, 'Classified a consciousness claim');
               }, style: { borderColor: picked === kind ? C.accent : C.border, background: picked === kind ? C.accent : C.panel, color: picked === kind ? C.accentText : C.text } }, keyMap[kind]);
             })),
@@ -1343,10 +1620,10 @@
           lenses: profile.id === 'early' ? ['RPT looks for a signal that loops back.', 'GNWT looks for information shared with many brain jobs.'] : ['RPT emphasizes local sensory recurrence.', 'GNWT emphasizes global availability; HOT emphasizes higher-order representation.'],
           guard: 'A missed report is not direct proof of zero experience; awareness may be graded and report adds task demands.', theoryQuestion: profile.id === 'early' ? 'what extra processing might be needed for the first picture to be noticed.' : 'which transition the mask disrupts and whether that transition concerns experience, access, or report.' }
       ];
-      if (levelAtLeast(profile.id, 'middle')) {
+      {
         cases.push({ id: 'dream', title: 'Dreaming without a response', icon: '\uD83C\uDF19', tag: 'State vs. behavior', setup: 'During sleep, a person may be behaviorally unresponsive yet later report a vivid dream.', prompt: 'Which measures concern the capacity for experience, and why is responsiveness an imperfect proxy?', lenses: ['IIT-related complexity measures and brain-network dynamics address conscious capacity.', 'Content theories ask how particular dream images become experienced.'], guard: 'Behavioral unresponsiveness does not entail unconsciousness.', theoryQuestion: 'how conscious content or capacity can persist while external responsiveness is absent.' });
       }
-      if (levelAtLeast(profile.id, 'high')) {
+      {
         cases.push({ id: 'zombie', title: 'Philosophical zombie', icon: '\uD83E\uDDDF', tag: 'Thought experiment', setup: 'Imagine a physical and functional duplicate of a person that, by stipulation, has no phenomenal experience.', prompt: 'Is that scenario genuinely possible or only verbally describable? How would functionalism, physicalism, dualism, and illusionism respond?', lenses: ['Functionalists and many physicalists challenge the coherent possibility of a true duplicate without experience.', 'Dualist or anti-functionalist arguments use the scenario to question whether function fixes phenomenality.'], guard: 'This tests implications and intuitions. It is not an empirical experiment or evidence that such beings exist.', theoryQuestion: 'whether its proposed mechanism or ontology allows a complete physical and functional duplicate without experience.' });
         var jspaceCopy = profile.id === 'high' ? {
           setup: 'Anthropic researchers report a small J-lens-defined set of verbalizable representations in tested Claude models. Contents were reportable, deliberately modulated, causally involved in silent multi-step reasoning, flexibly reused, and broadly connected to downstream computation.',
@@ -1369,7 +1646,11 @@
         };
         cases.push({ id: 'jspace', title: 'Frontier case: Claude\'s J-space (2026)', icon: '\uD83D\uDD2C', tag: 'New evidence \u00B7 advanced', setup: jspaceCopy.setup, prompt: jspaceCopy.prompt, lenses: jspaceCopy.lenses, guard: jspaceCopy.guard, source: 'https://arxiv.org/abs/2607.15495', theoryQuestion: jspaceCopy.theoryQuestion });
       }
-      return cases;
+      // caseIdsForProfile is the single source of truth for which cases a reading path sees,
+      // so the tested gate and the rendered gate cannot drift apart.
+      return caseIdsForProfile(profile).map(function (id) {
+        return cases.filter(function (item) { return item.id === id; })[0];
+      }).filter(Boolean);
     }
 
     function renderCases() {
@@ -1435,7 +1716,7 @@
           var active = item.id === selectedCaseId;
           return h('button', { key: item.id, id: 'cns-case-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cns-case-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { handleCaseKeyDown(event, index); }, onClick: function () { patchState({ selectedCase: item.id }, item.title + ' selected'); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, h('span', { 'aria-hidden': 'true' }, item.icon), item.title);
         })),
-        h('article', { id: 'cns-case-panel', role: 'tabpanel', 'aria-labelledby': 'cns-case-tab-' + selectedCaseId, className: 'cns-case', style: { background: C.raised, borderColor: C.border }, 'aria-live': 'polite' },
+        h('article', { id: 'cns-case-panel', role: 'tabpanel', 'aria-labelledby': 'cns-case-tab-' + selectedCaseId, className: 'cns-case', style: { background: C.raised, borderColor: C.border } },
           h('div', { className: 'cns-case-heading' }, h('div', null, pill(selectedCase.tag, selectedCase.id === 'ai-emotion' ? 'philosophy' : 'science'), h('h3', null, selectedCase.title))),
           h('p', { className: 'cns-case-setup' }, selectedCase.setup),
           epistemicBox('thought', 'Discussion prompt', selectedCase.prompt),
@@ -1483,6 +1764,222 @@
             h('p', { className: 'cns-debate-requirement' }, 'Each response needs at least ' + debateMinimum + ' characters for this reading path.'),
             h('button', { type: 'button', className: 'cns-debate-finish', disabled: !debateReady, onClick: finishDebate, style: { background: debateReady ? C.accent : C.raised, color: debateReady ? C.accentText : C.muted, borderColor: debateReady ? C.accent : C.border } }, debate.complete && debateReady ? 'Debate complete ✓' : 'Finish guided debate'),
             debate.complete && debateReady && h('p', { className: 'cns-debate-complete', role: 'status', style: { color: C.good } }, 'Structure complete: two distinct positions, evidence, and uncertainty are present. Reread for fairness and keep your conclusion open to revision.')
+          )
+        )
+      ));
+    }
+
+    function renderBench() {
+      // Only the K-2 path gets the reduced bench; grades 3-5 upward can work the full one.
+      var simple = profile.id === 'early';
+      var advanced = levelAtLeast(profile.id, 'high');
+      function copyFor(plainKey, key) { return simple && substrate[plainKey] ? substrate[plainKey] : substrate[key]; }
+      var cfg = normalizeSimConfig(d.sim);
+      var substrate = SIM_SUBSTRATES[cfg.substrate];
+      var other = SIM_SUBSTRATES[cfg.substrate === 'human' ? 'model' : 'human'];
+      var run = runWorkspaceSim(cfg);
+      var otherRun = runWorkspaceSim(Object.assign({}, cfg, { substrate: other.id }));
+      var visibleStages = simple
+        ? substrate.stages.filter(function (stage) { return ['sensory', 'workspace', 'output'].indexOf(stage[0]) !== -1; })
+        : substrate.stages;
+
+      function updateSim(patch, announcement) {
+        patchState(function (current) {
+          var nextSim = Object.assign({}, normalizeSimConfig(current.sim), patch);
+          var flags = Object.assign({}, current.simFlags || {});
+          flags[nextSim.substrate] = true;
+          if (!nextSim.reportRequired) flags.noReport = true;
+          return { sim: nextSim, simFlags: flags };
+        }, announcement);
+        if (simCrosscheckDone({ simFlags: Object.assign({}, d.simFlags, patchFlags(patch)) })) {
+          awardOnce('bench-crosscheck', 6, 'Compared workspace markers across substrates');
+        }
+      }
+
+      function patchFlags(patch) {
+        var flags = {};
+        var next = Object.assign({}, cfg, patch);
+        flags[next.substrate] = true;
+        if (!next.reportRequired) flags.noReport = true;
+        return flags;
+      }
+
+      function slider(key, label, hint) {
+        var id = 'cns-sim-' + key;
+        return h('div', { className: 'cns-sim-control' },
+          h('label', { htmlFor: id }, h('strong', null, label), h('span', { className: 'cns-sim-value' }, cfg[key] + '%')),
+          h('input', {
+            id: id, type: 'range', min: 0, max: 100, step: 5, value: cfg[key],
+            onChange: function (e) {
+              var value = parseInt(e.target.value, 10);
+              updateSim(patchFor(key, value), label + ' set to ' + value + ' percent');
+            }
+          }),
+          hint && h('span', { className: 'cns-sim-hint' }, hint)
+        );
+      }
+
+      function patchFor(key, value) {
+        var patch = {};
+        patch[key] = value;
+        return patch;
+      }
+
+      function toggle(key, label, note) {
+        var active = key === 'reportRequired' ? cfg.reportRequired : cfg.bypass;
+        return h('div', { className: 'cns-sim-toggle' },
+          h('button', {
+            type: 'button', 'aria-pressed': active ? 'true' : 'false',
+            onClick: function () { updateSim(patchFor(key, !active), label + (active ? ' switched off' : ' switched on')); },
+            style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border }
+          }, (active ? '✓ ' : '') + label),
+          h('span', { className: 'cns-sim-hint' }, note)
+        );
+      }
+
+      function stageBars(activeRun, stages) {
+        return h('table', { className: 'cns-sim-table' },
+          h('caption', null, (simple ? 'How much each step lit up, ' : 'Peak activity by stage, ')
+            + (simple && SIM_SUBSTRATES[activeRun.config.substrate].plainLabel
+              ? SIM_SUBSTRATES[activeRun.config.substrate].plainLabel
+              : SIM_SUBSTRATES[activeRun.config.substrate].label)),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col' }, simple ? 'Step' : 'Stage'),
+            h('th', { scope: 'col' }, 'Peak'),
+            h('th', { scope: 'col' }, 'Level')
+          )),
+          h('tbody', null, stages.map(function (stage) {
+            var value = activeRun.markers[stage[0] === 'recurrent' ? 'recurrence' : stage[0]];
+            var pct = Math.round(value * 100);
+            return h('tr', { key: stage[0] },
+              h('th', { scope: 'row' },
+                h('strong', null, simple ? stage[3] : stage[1]),
+                !simple && h('span', { className: 'cns-sim-stage-note' }, stage[2])
+              ),
+              h('td', null, pct + '%'),
+              // One bar colour on purpose: a second colour would read as a category boundary
+              // that this model does not have. Length and the printed number carry the value.
+              h('td', null, h('span', { className: 'cns-sim-bar', 'aria-hidden': 'true' },
+                h('span', { style: { width: Math.max(2, pct) + '%', background: C.accent } })
+              ))
+            );
+          }))
+        );
+      }
+
+      // At K-2 the comparison rows mirror the three steps shown above it, so nothing
+      // appears here that the learner has not already seen in the step table.
+      var markerRows = simple ? [
+        ['First signals', 'sensory'],
+        ['Shared with everything', 'workspace'],
+        ['Saying or doing something', 'output']
+      ] : [
+        ['Local recurrence', 'recurrence'],
+        [cfg.substrate === 'model' ? 'Verbalizable subspace' : 'Global availability', 'workspace'],
+        ['Self-monitoring readout', 'monitor'],
+        ['Report / output', 'output'],
+        ['Integration index (toy)', 'integration']
+      ];
+
+      return panel(h(React.Fragment, null,
+        h('div', { className: 'cns-section-heading' },
+          h('div', null, h('span', { className: 'cns-step' }, 'TOY MODEL · NOT A BRAIN, NOT A MODEL'), h('h2', null, 'Workspace Bench')),
+          pill('Markers only · nothing here measures experience', 'note')
+        ),
+        h('p', { className: 'cns-lead' }, simple
+          ? 'Move the sliders and watch which steps light up. This is a made-up machine that helps us ask questions. It is not a real brain and not a real computer program.'
+          : 'Run the same settings through a human masking paradigm and through a language-model probe. The point is not that either lane is realistic. The point is that the functional markers can match while the question this lab is about stays open in both.'),
+        h('div', { className: 'cns-sim-substrates', role: 'group', 'aria-label': 'Choose a substrate' },
+          [SIM_SUBSTRATES.human, SIM_SUBSTRATES.model].map(function (item) {
+            var active = item.id === cfg.substrate;
+            return h('button', {
+              key: item.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+              onClick: function () { updateSim({ substrate: item.id }, item.label + ' selected'); },
+              style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border }
+            }, h('span', { 'aria-hidden': 'true' }, item.icon), h('span', null, simple && item.plainLabel ? item.plainLabel : item.label));
+          })
+        ),
+        h('p', { className: 'cns-sim-blurb' }, copyFor('plainBlurb', 'blurb')),
+        h('div', { className: 'cns-sim-controls' },
+          slider('strength', copyFor('plainStrengthLabel', 'strengthLabel'), null),
+          slider('interference', copyFor('plainInterferenceLabel', 'interferenceLabel'), null),
+          !simple && slider('topDown', substrate.topDownLabel, null)
+        ),
+        h('div', { className: 'cns-sim-toggles' },
+          toggle('reportRequired', copyFor('plainReportLabel', 'reportLabel'),
+            cfg.reportRequired ? copyFor('plainReportOnNote', 'reportOnNote') : copyFor('plainReportOffNote', 'reportOffNote')),
+          !simple && toggle('bypass', substrate.bypassLabel, substrate.bypassNote)
+        ),
+        h('div', { className: 'cns-sim-readout', style: { background: C.raised, borderColor: C.border } },
+          h('h3', null, 'What happened in this run'),
+          h('p', { className: 'cns-sim-status', role: 'status' }, simple
+            ? (run.markers.ignited
+              ? 'The sharing step switched on at step ' + run.markers.ignitionTick + '. Once it switches on, it goes most of the way.'
+              : 'The sharing step never switched on. It only reached ' + simPercent(run.markers.workspace) + '.')
+            : (run.markers.ignited
+              ? 'Ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' crossed this toy’s threshold at step ' + run.markers.ignitionTick + '.'
+              : 'No ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' peaked at ' + simPercent(run.markers.workspace) + ', under this toy’s threshold.')),
+          stageBars(run, visibleStages),
+          h('p', { className: 'cns-sim-confound' }, h('strong', null, simple ? 'What to notice: ' : 'Read-out discipline: '), simConfoundNote(run, simple))
+        ),
+        h('div', { className: 'cns-sim-compare', style: { background: C.panel, borderColor: C.border } },
+          h('h3', null, simple ? 'Same settings, both machines' : 'Same settings, both substrates'),
+          h('p', { className: 'cns-sim-hint' }, simple
+            ? 'The same numbers go into both machines. Look at how close the results are.'
+            : 'Identical control values, two lanes. Where the markers converge, a functional description is doing all the work.'),
+          h('div', { className: 'cns-table-wrap' },
+            h('table', { className: 'cns-compare-table' },
+              h('caption', null, 'Marker comparison for the current settings'),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col' }, simple ? 'What we measured' : 'Marker'),
+                h('th', { scope: 'col' }, simple && substrate.plainLabel ? substrate.plainLabel : substrate.label),
+                h('th', { scope: 'col' }, simple && other.plainLabel ? other.plainLabel : other.label)
+              )),
+              h('tbody', null, markerRows.map(function (row) {
+                return h('tr', { key: row[1] },
+                  h('th', { scope: 'row' }, row[0]),
+                  h('td', null, simPercent(run.markers[row[1]])),
+                  h('td', null, simPercent(otherRun.markers[row[1]]))
+                );
+              }).concat([
+                h('tr', { key: 'phenomenal', className: 'cns-sim-phenomenal-row' },
+                  h('th', { scope: 'row' }, simple ? 'What it feels like' : 'Felt experience'),
+                  h('td', null, 'Not measured'),
+                  h('td', null, 'Not measured')
+                )
+              ]))
+            )
+          ),
+          h('p', { className: 'cns-sim-verdict', style: { borderColor: C.bad } }, h('strong', null, 'The row that matters: '), simPhenomenalVerdict(simple))
+        ),
+        !simple && h('section', { className: 'cns-sim-theories', 'aria-labelledby': 'cns-sim-theories-title', style: { borderColor: C.border } },
+          h('div', { className: 'cns-section-heading' },
+            h('div', null, h('span', { className: 'cns-step' }, 'SAME RUN, DIFFERENT CRITERIA'), h('h3', { id: 'cns-sim-theories-title' }, 'What each view would say about this run')),
+            h('span', { className: 'cns-count' }, theories.length + ' views at this level')
+          ),
+          h('p', { className: 'cns-sim-hint' }, 'A criterion being met here is a fact about this toy’s arithmetic, not evidence for the theory. Views that make no processing-stage claim say so.'),
+          h('div', { className: 'cns-sim-theory-grid' }, theories.map(function (theory) {
+            var readout = simTheoryReadout(theory, run);
+            var tone = readout.met === true ? C.good : readout.met === false ? C.bad : C.muted;
+            return h('article', { key: theory.id, className: 'cns-sim-theory', style: { borderColor: tone, background: C.raised } },
+              h('div', { className: 'cns-sim-theory-head' },
+                h('span', { 'aria-hidden': 'true' }, theory.icon),
+                h('h4', null, theory.name),
+                h('span', { className: 'cns-sim-verdict-tag', style: { color: tone, borderColor: tone } },
+                  readout.met === true ? 'Criterion met in this toy' : readout.met === false ? 'Criterion not met in this toy' : 'No criterion applied')
+              ),
+              h('p', null, readout.text)
+            );
+          }))
+        ),
+        advanced && h('div', { className: 'cns-sim-limits', style: { background: C.raised, borderColor: C.border } },
+          h('h3', null, 'What this bench cannot show'),
+          h('ul', null,
+            h('li', null, 'The equations were chosen to make the debate legible. They are not fitted to neural data or to any model’s internals, and no parameter here was estimated from a real experiment.'),
+            h('li', null, 'The higher-order readout is driven by the workspace stage, so this toy structurally cannot separate a constitutive higher-order state from a downstream consequence of access.'),
+            h('li', null, 'The integration index is a differentiation-times-spread number invented for this page. It is not Φ, not PCI, and it rises with global spread by construction.'),
+            h('li', null, 'Both lanes are the same five equations with different labels. That the markers converge is a property of the code, not a discovery about substrates.'),
+            h('li', null, 'No setting produces evidence about phenomenal experience, because nothing in the model represents it.')
           )
         )
       ));
@@ -1565,8 +2062,11 @@
                     profileAnswers[index] = optionIndex;
                     byProfile[quizKey] = profileAnswers;
                     var willComplete = Object.keys(profileAnswers).length === quiz.length;
-                    return { quizAnswers: byProfile, checkComplete: willComplete || current.checkComplete };
-                  }, 'Answer ' + (optionIndex + 1) + ' selected for question ' + (index + 1));
+                    var prior = current.checkComplete;
+                    var completion = (prior && typeof prior === 'object') ? Object.assign({}, prior) : (prior === true ? { legacy: true } : {});
+                    if (willComplete) completion[quizKey] = true;
+                    return { quizAnswers: byProfile, checkComplete: completion };
+                  }, 'Answer ' + (optionIndex + 1) + ' selected for question ' + (index + 1) + '. ' + (optionIndex === q[2] ? 'Correct.' : 'Not quite. ' + q[3]));
                   if (optionIndex === q[2]) awardOnce('quiz-' + quizKey + '-' + index, 4, 'Consciousness knowledge check');
                 }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, option);
               })),
@@ -1578,7 +2078,7 @@
           h('strong', null, 'Check complete: ' + correct + ' of ' + quiz.length + '.'),
           h('p', null, correct === quiz.length ? 'You kept evidence, theory, and uncertainty separate.' : 'Review the feedback, then change any answer. Open questions are not graded as if one philosophy has already won.')
         ),
-        h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState(function (current) { var byProfile = Object.assign({}, current.quizAnswers || {}); delete byProfile[quizKey]; return { quizAnswers: byProfile }; }, 'Knowledge check reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset this level\'s check')
+        h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState(function (current) { var byProfile = Object.assign({}, current.quizAnswers || {}); delete byProfile[quizKey]; var prior = current.checkComplete; var completion = (prior && typeof prior === 'object') ? Object.assign({}, prior) : (prior === true ? { legacy: true } : {}); delete completion[quizKey]; return { quizAnswers: byProfile, checkComplete: completion }; }, 'Knowledge check reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset this level\'s check')
       ));
     }
 
@@ -1623,6 +2123,7 @@
     if (activeView === 'compare') body = renderCompare();
     else if (activeView === 'evidence') body = renderEvidence();
     else if (activeView === 'cases') body = renderCases();
+    else if (activeView === 'bench') body = renderBench();
     else if (activeView === 'check') body = renderCheck();
     else if (activeView === 'sources') body = renderSources();
     else body = renderLearn();
@@ -1630,7 +2131,11 @@
     return h('main', {
       id: 'cns-main', className: 'consciousness-lab', 'data-grade-profile': profile.id,
       'data-reading-path': profile.shortLabel, 'aria-label': 'Consciousness Theory Lab for ' + profile.shortLabel,
-      style: { background: C.bg, color: C.text, '--cns-focus': C.focus, '--cns-border': C.border, '--cns-panel': C.panel, '--cns-text': C.text, '--cns-muted': C.muted }
+      style: {
+        background: C.bg, color: C.text, '--cns-focus': C.focus, '--cns-border': C.border,
+        '--cns-panel': C.panel, '--cns-text': C.text, '--cns-muted': C.muted,
+        '--cns-link': C.link, '--cns-step': C.step, '--cns-alert-bg': C.alertBg, '--cns-alert-text': C.alertText
+      }
     }, renderHeader(), body, h('p', { className: 'cns-footer-note' }, 'Consciousness Theory Lab \u00B7 Compare claims with care \u00B7 Keep evidence and experience distinct'));
   }
 
@@ -1654,21 +2159,28 @@
       '.cns-grade-note{margin-top:12px;padding:10px 14px;border:1px solid;border-radius:11px;font-size:12px}',
       '.cns-tabs{display:flex;gap:8px;overflow-x:auto;padding:14px 2px 10px;scrollbar-width:thin}.cns-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;padding:8px 13px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}',
       '.cns-view{padding:clamp(16px,3vw,28px);border:1px solid;border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.08)}',
-      '.cns-view h2{margin:2px 0 0;font-size:clamp(20px,3vw,28px);line-height:1.2}.cns-view h3{line-height:1.3}.cns-lead{max-width:900px;margin:10px 0 18px;color:var(--cns-muted);font-size:15px}.cns-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.cns-step{font-size:10px;font-weight:950;letter-spacing:.14em;color:#7c3aed}.cns-count,.cns-score{font-size:12px;font-weight:850;color:var(--cns-muted)}',
+      '.cns-view h2{margin:2px 0 0;font-size:clamp(20px,3vw,28px);line-height:1.2}.cns-view h3{line-height:1.3}.cns-lead{max-width:900px;margin:10px 0 18px;color:var(--cns-muted);font-size:15px}.cns-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.cns-step{font-size:10px;font-weight:950;letter-spacing:.14em;color:var(--cns-step)}.cns-count,.cns-score{font-size:12px;font-weight:850;color:var(--cns-muted)}',
       '.cns-pill{display:inline-flex;align-items:center;width:max-content;padding:3px 8px;border:1px solid;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}.cns-target-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cns-target{position:relative;padding:14px 14px 14px 48px;border:1px solid;border-radius:12px}.cns-target h3{margin:0 0 3px;font-size:14px}.cns-target p{margin:0;color:var(--cns-muted);font-size:12px}.cns-target-number{position:absolute;left:13px;top:14px;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#7c3aed;color:#fff;font-size:11px;font-weight:900}',
       '.cns-vocab{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;font-size:12px}.cns-vocab>span{padding:3px 8px;border:1px solid;border-radius:999px}.cns-epistemic{padding:11px 13px;border-left:4px solid;border-radius:8px}.cns-epistemic-label{font-size:9px;font-weight:950;letter-spacing:.13em}.cns-epistemic strong{display:block;margin:1px 0 3px;font-size:13px}.cns-epistemic p{margin:0;font-size:12px;line-height:1.5}.cns-epistemic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}',
       '.cns-view hr{margin:26px 0;border:0;border-top:1px solid}.cns-scope-note{margin:8px 0 14px;padding:10px 12px;border-left:3px solid #7c3aed;color:var(--cns-muted);font-size:12px}.cns-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.cns-theory-card{display:flex;align-items:flex-start;gap:6px;flex-direction:column;padding:14px;border:1px solid;border-radius:12px;text-align:left;transition:transform .15s ease,box-shadow .15s ease}.cns-theory-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.12)}.cns-theory-icon{font-size:24px}.cns-theory-name{font-size:13px;font-weight:900}.cns-theory-summary{font-size:11px;line-height:1.45;color:var(--cns-muted)}',
       '.cns-detail{margin-top:14px;padding:18px;border:2px solid;border-radius:14px}.cns-detail-title{display:flex;align-items:center;gap:12px}.cns-detail-title>span{font-size:32px}.cns-detail-title h3{margin:2px 0;font-size:20px}.cns-detail-summary{font-size:15px;font-weight:650}.cns-misconception{margin:12px 0 0;padding:8px 10px;border-radius:8px;background:rgba(217,119,6,.1);font-size:12px}',
-      '.cns-journey{display:grid;grid-template-columns:repeat(6,minmax(125px,1fr));gap:8px;margin:0;padding:0;list-style:none}.cns-journey li{position:relative;padding:12px;border:1px solid;border-radius:10px}.cns-journey li:not(:last-child):after{content:"\u2192";position:absolute;right:-9px;top:50%;z-index:2;font-weight:900}.cns-journey strong,.cns-journey span{display:block}.cns-journey strong{font-size:11px}.cns-journey>li>span{margin-top:3px;color:var(--cns-muted);font-size:10px}.cns-focus-tag{margin-top:8px!important;padding:3px 6px;border-radius:5px;color:inherit!important;font-weight:850}',
-      '.cns-compare-pickers{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end;margin:12px 0}.cns-compare-pickers label span{display:block;margin-bottom:4px;font-size:11px;font-weight:850}.cns-compare-pickers select{width:100%;padding:8px;border:1px solid var(--cns-border);border-radius:9px;background:var(--cns-panel);color:var(--cns-text)}.cns-vs{padding-bottom:12px;font-size:11px;font-weight:950}.cns-alert{padding:8px 10px;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:12px}.cns-table-wrap{overflow-x:auto}.cns-compare-table{width:100%;border-collapse:collapse;font-size:12px}.cns-compare-table caption{padding:8px;text-align:left;font-weight:850}.cns-compare-table th,.cns-compare-table td{min-width:170px;padding:10px;border:1px solid var(--cns-border);vertical-align:top;text-align:left}.cns-compare-table thead th{background:#312e81;color:#fff}.cns-compare-table tbody th{min-width:130px;background:rgba(124,58,237,.09)}.cns-compare-challenge{margin-top:14px;padding:14px;border:1px solid;border-radius:11px}.cns-compare-challenge h3{margin:0}.cns-compare-challenge p{font-size:12px;color:var(--cns-muted)}',
+      '.cns-journey{display:grid;grid-template-columns:repeat(6,minmax(125px,1fr));gap:8px;margin:0;padding:0;list-style:none}.cns-journey li{position:relative;padding:12px;border:1px solid;border-radius:10px}.cns-journey li:not(:last-child):after{content:"\u2192";position:absolute;right:-9px;top:50%;z-index:2;font-weight:900}.cns-journey strong,.cns-journey span{display:block}.cns-journey strong{font-size:11px}.cns-journey-plain{margin-top:3px;color:var(--cns-muted);font-size:10px}.cns-focus-tag{margin-top:8px;padding:3px 6px;border-radius:5px;font-size:10px;font-weight:850}.cns-journey-note{margin:12px 0 0;padding:10px 12px;border:1px solid;border-left-width:4px;border-radius:9px;font-size:12px}',
+      '.cns-compare-pickers{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end;margin:12px 0}.cns-compare-pickers label span{display:block;margin-bottom:4px;font-size:11px;font-weight:850}.cns-compare-pickers select{width:100%;padding:8px;border:1px solid var(--cns-border);border-radius:9px;background:var(--cns-panel);color:var(--cns-text)}.cns-vs{padding-bottom:12px;font-size:11px;font-weight:950}.cns-alert{padding:8px 10px;border:1px solid currentColor;border-radius:8px;background:var(--cns-alert-bg);color:var(--cns-alert-text);font-size:12px}.cns-table-wrap{overflow-x:auto}.cns-compare-table{width:100%;border-collapse:collapse;font-size:12px}.cns-compare-table caption{padding:8px;text-align:left;font-weight:850}.cns-compare-table th,.cns-compare-table td{min-width:170px;padding:10px;border:1px solid var(--cns-border);vertical-align:top;text-align:left}.cns-compare-table thead th{background:#312e81;color:#fff}.cns-compare-table tbody th{min-width:130px;background:rgba(124,58,237,.09)}.cns-compare-challenge{margin-top:14px;padding:14px;border:1px solid;border-radius:11px}.cns-compare-challenge h3{margin:0}.cns-compare-challenge p{font-size:12px;color:var(--cns-muted)}',
       '.consciousness-lab textarea{width:100%;padding:10px;border:1px solid var(--cns-border);border-radius:9px;background:var(--cns-panel);color:var(--cns-text);resize:vertical}.cns-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}.cns-legend>div{padding:10px;border:1px dashed var(--cns-border);border-radius:9px}.cns-legend strong,.cns-legend span{display:block}.cns-legend strong{font-size:11px}.cns-legend span{font-size:10px;color:var(--cns-muted)}.cns-evidence-list{display:grid;gap:10px}.cns-sort-card{position:relative;padding:14px 14px 14px 48px;border:1px solid;border-radius:11px}.cns-sort-card p{margin:0 0 10px;font-weight:650}.cns-sort-number{position:absolute;left:14px;top:14px;display:grid;place-items:center;width:24px;height:24px;border-radius:6px;background:#312e81;color:#fff;font-size:11px;font-weight:900}.cns-sort-actions{display:flex;gap:7px;flex-wrap:wrap}.cns-sort-actions button{padding:7px 10px;border:1px solid;border-radius:8px;font-size:11px;font-weight:800}.cns-feedback{margin:9px 0 0!important;font-size:11px;font-weight:500!important}.cns-reset{margin-top:14px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:11px;font-weight:800}',
       '.cns-ladder{margin:0 0 18px;padding:16px;border:1px solid;border-radius:13px}.cns-ladder h3{margin:2px 0 0;font-size:19px}.cns-ladder-intro{margin:8px 0 12px;color:var(--cns-muted);font-size:12px}.cns-ladder-key{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 12px;padding:0;list-style:none}.cns-ladder-key li{display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--cns-border);border-radius:8px}.cns-ladder-key li>span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#312e81;color:#fff;font-size:10px;font-weight:900}.cns-ladder-key strong{font-size:11px}.cns-ladder-items{display:grid;gap:9px}.cns-ladder-item{padding:12px;border:1px solid;border-radius:9px}.cns-ladder-item>p{margin:0 0 8px;font-size:12px;font-weight:700}.cns-ladder-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.cns-ladder-actions button{padding:7px;border:1px solid;border-radius:7px;font-size:10px;font-weight:850}',
-      '.cns-case-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}.cns-case-tabs button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:8px 11px;border:1px solid;border-radius:9px;font-size:11px;font-weight:850}.cns-case{padding:18px;border:1px solid;border-radius:13px}.cns-case-heading h3{margin:5px 0;font-size:20px}.cns-case-setup{font-size:14px}.cns-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.cns-lens-pair>div{padding:12px;border:1px solid;border-radius:9px}.cns-lens-pair p{margin:4px 0 0;color:var(--cns-muted);font-size:12px}.cns-source-inline{font-size:11px}.cns-source-inline a,.cns-sources a{color:#2563eb;font-weight:800}.cns-reflection{margin-top:14px}.cns-reflection label span{display:block;margin:3px 0 7px;color:var(--cns-muted);font-size:11px}.cns-objective-anchor{margin-top:9px;padding:9px;border:1px solid;border-radius:8px;font-size:12px}',
+      '.cns-case-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}.cns-case-tabs button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:8px 11px;border:1px solid;border-radius:9px;font-size:11px;font-weight:850}.cns-case{padding:18px;border:1px solid;border-radius:13px}.cns-case-heading h3{margin:5px 0;font-size:20px}.cns-case-setup{font-size:14px}.cns-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.cns-lens-pair>div{padding:12px;border:1px solid;border-radius:9px}.cns-lens-pair p{margin:4px 0 0;color:var(--cns-muted);font-size:12px}.cns-source-inline{font-size:11px}.cns-source-inline a,.cns-sources a{color:var(--cns-link);font-weight:800}.cns-reflection{margin-top:14px}.cns-reflection label span{display:block;margin:3px 0 7px;color:var(--cns-muted);font-size:11px}.cns-objective-anchor{margin-top:9px;padding:9px;border:1px solid;border-radius:8px;font-size:12px}',
       '.cns-case-theories{margin:13px 0;padding:14px;border:1px solid;border-radius:11px}.cns-case-theories h4{margin:2px 0 0;font-size:18px}.cns-case-theories-intro{margin:7px 0 11px;color:var(--cns-muted);font-size:11px}.cns-case-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.cns-case-interpretation{padding:11px;border-left:4px solid;border-radius:8px}.cns-case-interpretation h5{margin:5px 0 2px;font-size:13px}.cns-case-interpretation p{margin:4px 0;color:var(--cns-muted);font-size:11px}.cns-guided-debate{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-guided-debate>p{color:var(--cns-muted);font-size:12px}.cns-debate-pickers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}.cns-debate-pickers label>span{display:block;margin-bottom:4px;font-size:10px;font-weight:850}.cns-debate-pickers select{width:100%;padding:8px;border:1px solid;border-radius:8px}.cns-debate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-debate-grid label{display:block}.cns-debate-grid label>strong,.cns-debate-grid label>span{display:block}.cns-debate-grid label>span{min-height:30px;margin:2px 0 5px;color:var(--cns-muted);font-size:10px}.cns-debate-requirement{margin:8px 0 0;font-size:10px!important}.cns-debate-finish{margin-top:12px;padding:8px 13px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900}.cns-debate-finish:disabled{cursor:not-allowed;opacity:.7}.cns-debate-complete{margin:8px 0 0;font-size:11px;font-weight:750}',
+      '.cns-sim-substrates{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.cns-sim-substrates button{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}.cns-sim-substrates button>span:first-child{font-size:19px}.cns-sim-blurb{margin:0 0 14px;color:var(--cns-muted);font-size:12px}',
+      '.cns-sim-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px}.cns-sim-control label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:12px}.cns-sim-value{font-variant-numeric:tabular-nums;font-weight:850;color:var(--cns-muted)}.cns-sim-control input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-sim-hint{display:block;margin-top:4px;color:var(--cns-muted);font-size:11px;line-height:1.45}',
+      '.cns-sim-toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:16px}.cns-sim-toggle button{width:100%;padding:9px 12px;border:1px solid;border-radius:9px;text-align:left;font-size:12px;font-weight:850}',
+      '.cns-sim-readout{padding:15px;border:1px solid;border-radius:12px}.cns-sim-readout h3{margin:0 0 8px;font-size:17px}.cns-sim-status{margin:0 0 12px;font-size:13px;font-weight:700}.cns-sim-table{width:100%;border-collapse:collapse;font-size:12px}.cns-sim-table caption{padding:0 0 8px;text-align:left;font-size:11px;font-weight:850;color:var(--cns-muted)}.cns-sim-table th,.cns-sim-table td{padding:8px;border-bottom:1px solid var(--cns-border);vertical-align:middle;text-align:left}.cns-sim-table tbody th{font-size:12px;font-weight:800}.cns-sim-table td:nth-child(2){width:64px;font-variant-numeric:tabular-nums;font-weight:850}.cns-sim-table td:nth-child(3){width:45%}.cns-sim-stage-note{display:block;margin-top:2px;color:var(--cns-muted);font-size:10px;font-weight:500}.cns-sim-bar{display:block;width:100%;height:11px;border:1px solid var(--cns-border);border-radius:999px;overflow:hidden}.cns-sim-bar>span{display:block;height:100%}.cns-sim-confound{margin:12px 0 0;font-size:12px;line-height:1.5}',
+      '.cns-sim-compare{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-sim-compare h3{margin:0 0 6px;font-size:17px}.cns-sim-phenomenal-row th,.cns-sim-phenomenal-row td{font-weight:900}.cns-sim-verdict{margin:12px 0 0;padding:11px 13px;border:1px solid;border-left-width:5px;border-radius:9px;font-size:12px;line-height:1.55}',
+      '.cns-sim-theories{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-sim-theories h3{margin:2px 0 0;font-size:17px}.cns-sim-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:12px}.cns-sim-theory{padding:12px;border:1px solid;border-left-width:4px;border-radius:9px}.cns-sim-theory-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.cns-sim-theory-head>span:first-child{font-size:18px}.cns-sim-theory h4{margin:0;font-size:13px}.cns-sim-verdict-tag{flex:0 0 100%;width:max-content;margin-top:2px;padding:2px 7px;border:1px solid;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.cns-sim-theory p{margin:7px 0 0;color:var(--cns-muted);font-size:11px;line-height:1.5}',
+      '.cns-sim-limits{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-sim-limits h3{margin:0}.cns-sim-limits li{margin:6px 0;font-size:12px;line-height:1.5}',
       '.cns-quiz{display:grid;gap:12px;margin:0;padding:0;list-style:none}.cns-quiz>li{padding:14px;border:1px solid;border-radius:11px}.cns-quiz fieldset{margin:0;padding:0;border:0}.cns-quiz legend{margin-bottom:9px;font-size:13px;font-weight:850}.cns-answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.cns-answer-grid button{padding:8px 10px;border:1px solid;border-radius:8px;text-align:left;font-size:11px}.cns-complete{margin-top:14px;padding:13px;border:2px solid;border-radius:10px}.cns-complete p{margin:3px 0 0;color:var(--cns-muted);font-size:12px}',
       '.cns-boundaries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-limit-list{margin:18px 0;padding:14px;border:1px solid var(--cns-border);border-radius:11px}.cns-limit-list h3{margin:0}.cns-limit-list li{margin:5px 0;font-size:12px}.cns-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0;padding:0;list-style:none}.cns-sources li{padding:12px;border:1px solid;border-radius:9px}.cns-sources p{margin:5px 0 0;color:var(--cns-muted);font-size:10px}.cns-frontier-note{margin-top:14px;padding:13px;border:1px solid;border-radius:10px}.cns-frontier-note h3{margin:0}.cns-frontier-note p{margin:5px 0 0;color:var(--cns-muted);font-size:12px}.cns-footer-note{margin:14px 0 0;text-align:center;color:var(--cns-muted);font-size:10px}',
       '@media(max-width:900px){.cns-journey{grid-template-columns:repeat(3,minmax(130px,1fr))}.cns-journey li:after{display:none}.cns-epistemic-grid{grid-template-columns:1fr}.cns-target-grid{grid-template-columns:1fr}.cns-sources{grid-template-columns:1fr}}',
-      '@media(max-width:620px){.consciousness-lab{padding:10px}.cns-hero{align-items:flex-start;padding:16px}.cns-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:27px}.cns-view{padding:14px}.cns-compare-pickers,.cns-debate-pickers,.cns-debate-grid{grid-template-columns:1fr}.cns-vs{display:none}.cns-legend,.cns-lens-pair,.cns-answer-grid,.cns-boundaries,.cns-ladder-key,.cns-ladder-actions{grid-template-columns:1fr}.cns-journey{grid-template-columns:1fr}.cns-sort-card{padding-left:42px}.cns-tabs button{padding:7px 10px}}',
+      '@media(max-width:620px){.consciousness-lab{padding:10px}.cns-hero{align-items:flex-start;padding:16px}.cns-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:27px}.cns-view{padding:14px}.cns-compare-pickers,.cns-debate-pickers,.cns-debate-grid{grid-template-columns:1fr}.cns-vs{display:none}.cns-legend,.cns-lens-pair,.cns-answer-grid,.cns-boundaries,.cns-ladder-key,.cns-ladder-actions,.cns-sim-controls,.cns-sim-toggles,.cns-sim-theory-grid{grid-template-columns:1fr}.cns-sim-substrates button{width:100%}.cns-journey{grid-template-columns:1fr}.cns-sort-card{padding-left:42px}.cns-tabs button{padding:7px 10px}}',
       '@media(prefers-reduced-motion:reduce){.cns-theory-card{transition:none}.cns-theory-card:hover{transform:none}}',
       '@media(forced-colors:active){.consciousness-lab *{forced-color-adjust:auto}.cns-hero{background:Canvas}.cns-target-number,.cns-sort-number,.cns-compare-table thead th{background:Highlight;color:HighlightText}}'
     ].join('\n');
