@@ -25,16 +25,79 @@ describe('Science of Parenting Lab — shell + M1', () => {
     }
   });
 
-  it('shows M1-M5 open and the four later modules locked', () => {
+  it('shows all nine modules open with zero locks', () => {
     loadTool(FILE, 'parentingLab');
     const html = renderTool('parentingLab', {});
-    expect(html).toContain('Warmth &amp; Structure');
-    expect(html).toContain('Attachment: the theory vs. the brand');
-    expect(html).toContain('The RCT core');
-    expect(html).toContain('PRIDE Skills Studio');
-    expect(html).toContain('ABC at Home');
-    const locks = (html.match(/In expert review/g) || []).length;
-    expect(locks).toBe(4);
+    for (const title of ['Warmth &amp; Structure', 'Attachment: the theory vs. the brand', 'The RCT core',
+      'PRIDE Skills Studio', 'ABC at Home', 'Discipline: what the evidence says',
+      'Myths vs. literature', 'Adolescents: autonomy', 'partnering with school']) {
+      expect(html).toContain(title);
+    }
+    expect((html.match(/In expert review/g) || []).length).toBe(0);
+  });
+
+  it('M6 states the professional consensus firmly and the colonial-history note as scholarship', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm6' } });
+    // SME resolution 1: firmer than the badge — consensus stated as "don't".
+    expect(html).toContain('The consensus on spanking is: don');
+    expect(html).toContain('advise against');
+    // The cultural beat: zero contempt, and the colonization argument HEDGED.
+    expect(html).toContain('never a verdict on parents or cultures');
+    expect(html).toContain('some scholars trace');
+    expect(html).toContain('scholarship rather than settled fact');
+    // Alternatives taught with the why:
+    expect(html).toContain('teaching without modeling aggression');
+    // SME resolution 3: reward charts + the ratio made it in.
+    expect(html).toContain('Reward charts, done so they work');
+    expect(html).toContain('The ratio is the strategy');
+  });
+
+  it('M7 centers quality-over-quantity and effort-not-trait praise', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm7' } });
+    // SME resolution 4: co-viewing and talking about media are the lever.
+    expect(html).toContain('quality beats quantity');
+    expect(html).toContain('TALKING ABOUT IT afterward');
+    // SME resolution 5: the practical praise rule with qualifiers stated.
+    expect(html).toContain('not the trait');
+    expect(html).toContain('replications find the effects smaller');
+  });
+
+  it('M8 rests on the disclosure reinterpretation with the safety exception stated', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm8' } });
+    expect(html).toContain('TEEN&#x27;S OWN DISCLOSURE');
+    expect(html).toContain('relationship effect wearing a supervision costume');
+    // Honesty: the surveillance warning AND when safety overrides privacy.
+    expect(html).toContain('safety outranks privacy');
+  });
+
+  it('M9 keeps national resources with the 211 state router and the legal-advice disclaimer', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm9' } });
+    // SME resolution 7: national + 211 as the find-your-state route + SEL cross-ref.
+    expect(html).toContain('988');
+    expect(html).toContain('1-800-422-4453');
+    expect(html).toContain('211');
+    expect(html).toContain('SEL Hub');
+    // IEP section ships as orientation, not legal advice, with state-varying timelines.
+    expect(html).toContain('orientation, not legal advice');
+    expect(html).toContain('varies by state');
+    // The checklist renders with all items uncheckable/checkable.
+    expect(html).toContain('Meeting-prep checklist');
+    expect((html.match(/role="checkbox"/g) || []).length).toBe(7);
+  });
+
+  it('M6/M7/M8 quiz answers are distributed, not single-option-biased', () => {
+    for (const arrName of ['M6_CLAIMS', 'M7_CLAIMS', 'M8_SCENES']) {
+      const seg = src.match(new RegExp('var ' + arrName + ' = \\[([\\s\\S]*?)\\n  \\];'))[1];
+      const answers = [...seg.matchAll(/answer:\s*'(\w+)'/g)].map((m) => m[1]);
+      expect(new Set(answers).size, arrName).toBeGreaterThanOrEqual(2);
+      for (const a of new Set(answers)) {
+        expect(answers.filter((x) => x === a).length, arrName + ' answer ' + a).toBeLessThanOrEqual(Math.ceil(answers.length / 2));
+      }
+    }
   });
 
   it('renders M4 with the avoids framed as normal parenting elsewhere', () => {

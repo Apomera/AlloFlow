@@ -1,8 +1,34 @@
 # Science of Parenting Lab — Spec for Review
 
-**Status:** DRAFT for Aaron's content review. No code exists. Nothing below ships until the
-claims are verified by Aaron (SME sign-off is a hard gate for this tool, per the
-BehaviorLab/Lovaas precedent).
+**Status:** SME review completed IN CHAT 2026-08-03 — Aaron answered the nine open
+questions directly; resolutions recorded below. M1-M5 shipped previously; M6-M9 built
+against these resolutions. Aaron's three routed-around judgment calls in shipped content
+(no attachment-stability numbers; "Lansford and colleagues" generic citation; Triple P
+"wider error bar") were explicitly confirmed.
+
+## SME resolutions (Aaron, 2026-08-03)
+
+1. **Spanking (M6):** firmer than the badge alone — state the professional consensus as
+   "don't," teach the alternatives (brief time-out, planned ignoring, response cost) and
+   WHY they work better. Add a culturally sensitive beat: non-judgmental toward
+   communities where physical discipline is normative; the colonization-holdover argument
+   may be included but HEDGED ("some scholars trace...") — Aaron called it "perhaps
+   arguable," so it ships as a scholarly argument, not a fact.
+2. **Natural/logical consequences (M6):** keep the "thinner direct evidence than its
+   reputation" characterization.
+3. **M6 additions approved:** reward charts / token economies + praise-to-correction
+   ratio (ratios stated as coached rules of thumb, not laws).
+4. **Screen time (M7):** keep the card; pivot emphasis to QUALITY over quantity and
+   mediating factors — co-viewing, discussing shows afterward, contextualizing media.
+5. **Praise/mindset (M7):** keep, centered on the practical rule (praise effort/strategy/
+   process, not "you're so smart"), replication qualifiers stated.
+6. **Monitoring (M8):** Stattin & Kerr disclosure framing endorsed as the spine.
+7. **Resources (M9):** national list (988, Childhelp) + 211 as the find-your-state
+   router. SEL Hub already ships a crisis-safety layer (988/741741) — M9 cross-references
+   it rather than duplicating the system.
+8. **IEP/504 (M9):** unanswered in the chat pass — I drafted for Aaron's line-edit;
+   that section remains flagged for his review before deploy.
+9. **Shipped M1-M5 judgment calls:** all three confirmed as-is.
 **Date:** 2026-08-03
 **Pattern siblings:** `behaviorLab` (the operant science), `schoolBehaviorToolkit` (what
 schools do with it), `learningLab` (how learning works), `assessmentLiteracy` (junk-science

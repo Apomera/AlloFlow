@@ -101,7 +101,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     burst: { source: 'Extinction literature, laboratory and applied', badge: 'meta',
       note: 'When a behavior stops paying, it typically gets louder before it fades — which is exactly when most people give in, teaching the louder version.' },
     coercion: { source: 'Patterson, coercive family process', badge: 'meta',
-      note: 'An escalation loop that trains BOTH sides: the child learns that escalating works, the parent learns that giving in ends the noise. The exit is warmth plus boring consistency, not bigger consequences.' }
+      note: 'An escalation loop that trains BOTH sides: the child learns that escalating works, the parent learns that giving in ends the noise. The exit is warmth plus boring consistency, not bigger consequences.' },
+    // ── M6: discipline ──
+    spanking: { source: 'Gershoff & Grogan-Kaylor (2016) meta-analysis; AAP (2018); APA (2019)', badge: 'meta',
+      note: 'Across dozens of studies: associations with worse outcomes in every domain examined, and no evidence of benefits. Causal inference has limits — and the professional consensus does not: every major pediatric and psychological body advises against it.' },
+    discCulture: { source: 'Cross-cultural discipline research (incl. normativeness moderation, e.g., Lansford)', badge: 'cultural',
+      note: 'Where physical discipline is culturally normative, some associated harms attenuate — they do not disappear. Outcomes research is about practices, never a judgment of parents or communities.' },
+    alternatives: { source: 'Program trial literature (time-out, planned ignoring, response cost)', badge: 'rct',
+      note: 'The trial-supported reduction tools: brief boring time-out, planned ignoring for minor behavior, briefly losing a privilege. Calm, small, predictable — teaching without modeling aggression.' },
+    tokens: { source: 'Token-economy and reward-chart applied literature', badge: 'rct',
+      note: 'Deep applied evidence when rewards are immediate, specific, achievable, and faded over time. One honest caveat: for behaviors a child already loves, added rewards can backfire; use them for behaviors a child avoids.' },
+    ratio: { source: 'Coaching heuristic across parent-training programs', badge: 'meta',
+      note: 'Programs commonly coach several warm interactions for every correction. The specific numbers (4:1, 5:1) are rules of thumb, not laws — the direction is what carries evidence.' },
+    natConsequences: { source: 'Popular framework (Dreikurs tradition); limited direct trials', badge: 'popular',
+      note: 'A sensible-sounding framework with thinner direct evidence than its reputation. What demonstrably makes any consequence work: immediacy, consistency, and calm — not size or cleverness.' },
+    // ── M7: myths ──
+    processPraise: { source: 'Process-praise research (Dweck tradition), WITH replication qualifiers', badge: 'meta',
+      note: 'Praise the effort, strategy, or specific behavior rather than "you\'re so smart." The lab effects are real but smaller and less universal than the bestseller version; labeled praise carries its own trial support regardless.' },
+    screens: { source: 'Large-sample association studies (Orben & Przybylski 2019)', badge: 'meta',
+      note: 'Screen-time associations with wellbeing are small. Quality and context beat minutes: what is watched, with whom, and whether anyone talks about it afterward.' },
+    selfEsteem: { source: 'Self-esteem movement literature and its reappraisals', badge: 'popular',
+      note: 'A plausible idea that outran its evidence: raising self-esteem directly does not cause achievement; competence tends to come first.' },
+    birthOrder: { source: 'Rohrer et al. (2015), large-sample analyses', badge: 'popular',
+      note: 'Large studies find essentially no reliable birth-order effects on personality. A very sticky myth.' },
+    // ── M8: adolescents ──
+    disclosure: { source: 'Stattin & Kerr (2000) and the monitoring-reinterpretation literature', badge: 'meta',
+      note: 'What looked like "monitoring works" is largely "teens who feel close TELL their parents things." Knowledge flows from the relationship; surveillance without relationship produces evasion, not information.' },
+    autonomy: { source: 'Self-determination theory research on autonomy support', badge: 'meta',
+      note: 'Autonomy support — real choices, rationales for rules, acknowledging the teen\'s view — associates with better adjustment than either control or disengagement.' },
+    // ── M9: help + school ──
+    therapyNames: { source: 'Child-therapy trial literatures (PCIT, PMT, CBT)', badge: 'rct',
+      note: 'The names on the door that carry randomized-trial support for common child and family concerns.' }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -446,12 +476,214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       why: 'The chase IS the payoff — ten minutes of undivided, entertaining parent. The coached move flips the schedule: big engagement for steps toward the bathroom, flat minimal response to the boneless act. Same total attention, opposite timing.' }
   ];
 
-  // Locked previews for M6-M9 (content pending the spec review gate).
-  var LOCKED_MODULES = [
-    { id: 'm6', icon: '⚖️', title: 'Discipline: what the evidence says', teaser: 'Spanking meta-analyses, time-out honestly, consistency over severity.' },
-    { id: 'm7', icon: '🔍', title: 'Myths vs. literature', teaser: 'Praise junkies, screen-time panic, birth order — badge them yourself.' },
-    { id: 'm8', icon: '🧭', title: 'Adolescents: autonomy and staying in the room', teaser: 'Why snooping fails and disclosure is a relationship outcome.' },
-    { id: 'm9', icon: '🤲', title: 'When to seek help + partnering with school', teaser: 'Red flags, therapy names decoded, and how IEP meetings actually work.' }
+  // ─────────────────────────────────────────────────────────
+  // M6 — Discipline: what the evidence says
+  // ─────────────────────────────────────────────────────────
+  var M6_CARDS = [
+    {
+      id: 'disc-consensus',
+      title: 'The consensus on spanking is: don\'t',
+      evidence: 'spanking',
+      body: 'Here the honest read and the firm read are the same read. The largest meta-analysis (Gershoff & Grogan-Kaylor, 2016) found spanking associated with worse outcomes in every domain examined — behavior, mental health, the parent-child relationship — and no evidence of benefits, including the compliance it is meant to buy. Causal inference from correlational data has limits, and this literature says so. The professional consensus does not hesitate: the American Academy of Pediatrics (2018) and the American Psychological Association (2019) both advise against physical discipline. This lab\'s one directive sentence: there are better tools, and they are the ones with trial evidence.'
+    },
+    {
+      id: 'disc-culture',
+      title: 'Culture, history, and zero contempt',
+      evidence: 'discCulture',
+      body: 'Physical discipline is normative in many communities, used by loving parents raising children they would do anything for — and outcomes research is about practices, never a verdict on parents or cultures. Two honest notes belong here. The cross-cultural literature finds that where a practice is normative, some associated harms attenuate, though they do not reverse. And some scholars trace the prevalence of corporal punishment in certain communities to histories of colonization and slavery rather than to older indigenous traditions — an argument worth knowing, held here as scholarship rather than settled fact. Every culture also carries rich non-physical discipline traditions to build from.'
+    },
+    {
+      id: 'disc-instead',
+      title: 'What to use instead — and why it works better',
+      evidence: 'alternatives',
+      body: 'The trial-supported reduction tools are unglamorous: a brief, boring time-out (M3 covers "done right"); planned ignoring for minor attention-seeking; response cost — briefly losing a privilege, announced in advance, executed calmly. Why do these outperform harsher options? They carry information instead of fear: the child learns exactly which behavior stopped paying, nothing about the parent being dangerous. They do not model aggression as a problem-solving tool. They leave the relationship bank — the warmth that makes every other tool work — undrained. And because they are small, a parent can actually deliver them EVERY time, and consistency is the ingredient doing most of the work.'
+    },
+    {
+      id: 'disc-tokens',
+      title: 'Reward charts, done so they work',
+      evidence: 'tokens',
+      body: 'Sticker charts and token systems have deep applied evidence — when built right. Working versions: the reward is immediate (tokens now, cash-in soon), the target is specific ("shoes on by 7:40," not "be good"), the bar starts where the child can actually reach it, and the system fades once the habit stands on its own. Failing versions: vague targets, delayed payoffs, moving goalposts, and charts that quietly become punishment ledgers. One honest caveat from the research: for things a child already loves doing, adding rewards can dampen the joy — spend charts on behaviors a child avoids, not ones they own.'
+    },
+    {
+      id: 'disc-ratio',
+      title: 'The ratio is the strategy',
+      evidence: 'ratio',
+      body: 'The parent-training programs coach a simple audit: for every correction, several warm interactions — labeled praise, interest, special time. Programs often say four- or five-to-one; treat the numbers as rules of thumb and the direction as the finding. The logic is mechanical, not sentimental: corrections only carry information when they are rare events against a warm background. A child corrected constantly stops hearing corrections; a child praised specifically knows exactly what to do more of. If discipline feels like it is failing, the coached first move is not a bigger consequence — it is checking the ratio.'
+    },
+    {
+      id: 'disc-natural',
+      title: '"Natural consequences" — reputation vs. receipts',
+      evidence: 'natConsequences',
+      body: 'The natural-and-logical-consequences framework sounds airtight: let the missed jacket teach the cold walk. As a whole framework it carries thinner direct trial evidence than its reputation suggests — it is a philosophy that borrowed the confidence of the research next door. What IS demonstrated, across the applied literature: any consequence teaches best when it is immediate, consistent, and delivered calmly, and consequence SIZE matters far less than parents expect. So use natural consequences when they are safe and immediate — they are conveniently pre-built — but the magic ingredient was never the naturalness. It was the consistency.'
+    }
+  ];
+
+  // M6 interactive: the badge system in action — tier the claims yourself.
+  var M6_BADGE_OPTIONS = [
+    { id: 'rct', label: 'RCT-supported' },
+    { id: 'meta', label: 'Meta-analytic association' },
+    { id: 'cultural', label: 'Culturally moderated' },
+    { id: 'popular', label: 'Popular, not supported' }
+  ];
+  var M6_CLAIMS = [
+    { id: 'c1', text: '"Spanking improves children\'s long-term behavior."', answer: 'popular',
+      why: 'The meta-analytic literature finds no evidence of benefits — not even short-term compliance holds up — and associations with worse outcomes across domains. Professional bodies advise against it.' },
+    { id: 'c2', text: '"A brief, calm, boring time-out reduces problem behavior in young children."', answer: 'rct',
+      why: 'A component of multiple trial-supported programs, endorsed by the AAP. The adjectives are load-bearing: brief, calm, boring, reconnected afterward.' },
+    { id: 'c3', text: '"How physical discipline relates to outcomes depends partly on how normative it is in the surrounding culture."', answer: 'cultural',
+      why: 'The normativeness-moderation finding: where a practice is common and expected, some associated harms attenuate. Attenuate — not vanish, not reverse.' },
+    { id: 'c4', text: '"Token charts can build new habits when rewards are immediate and specific."', answer: 'rct',
+      why: 'Token economies are among the oldest well-evidenced tools in the applied literature — with the design details (immediate, specific, achievable, faded) carrying the effect.' },
+    { id: 'c5', text: '"Bigger consequences teach faster than small ones."', answer: 'popular',
+      why: 'Size matters far less than immediacy and consistency — and large consequences are harder to deliver every time, which quietly destroys the consistency that was doing the work.' },
+    { id: 'c6', text: '"Children in warmer households respond better to correction."', answer: 'meta',
+      why: 'Robust association, causally entangled in both directions — and entirely consistent with the ratio logic: correction carries information best against a warm background.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // M7 — Myths vs. literature
+  // ─────────────────────────────────────────────────────────
+  var M7_CARDS = [
+    {
+      id: 'myth-praise',
+      title: 'Praise: the useful version of the mindset story',
+      evidence: 'processPraise',
+      body: 'The famous studies compared praising the child ("you\'re so smart") with praising the process ("you found a strategy that worked"), and found person-praise made children play it safe while process-praise kept them trying. The honest footnote: replications find the effects smaller and less universal than the bestseller version implied. The practical rule survives the footnote comfortably, because it converges with the trial-supported skill from the RCT core: praise the effort, the strategy, or the specific behavior — not the trait. "You checked your work twice" beats "you\'re a genius" on every tier of the evidence.'
+    },
+    {
+      id: 'myth-screens',
+      title: 'Screens: quality beats quantity',
+      evidence: 'screens',
+      body: 'The moral panic says screen time is driving an epidemic. The large-sample association studies find links to wellbeing that are real but small — in one famous analysis, comparable to the association with eating potatoes. What the literature keeps pointing at instead: WHAT is watched matters more than how long, WITH WHOM matters more than what, and TALKING ABOUT IT afterward matters most of all. Co-viewing, asking what happened in the show, connecting it to the child\'s world — the research word is "active mediation," the plain word is conversation. Worry less about the clock; sit down more often.'
+    },
+    {
+      id: 'myth-selfesteem',
+      title: 'The self-esteem detour',
+      evidence: 'selfEsteem',
+      body: 'For a generation, schools and parenting advice treated self-esteem as the master cause: raise it, and grades, behavior, and happiness follow. The reappraisals found the arrow mostly points the other way — competence builds esteem far more reliably than esteem builds competence, and untethered praise built neither. The rehabilitated version is quieter and better supported: children feel good about themselves when they can DO things, so build skills and let esteem arrive as the receipt, not the down payment.'
+    },
+    {
+      id: 'myth-birthorder',
+      title: 'Birth order: astrology with siblings',
+      evidence: 'birthOrder',
+      body: 'The responsible firstborn, the rebel middle, the charming baby — irresistible, and essentially unsupported. Large-sample analyses (hundreds of thousands of people) find no reliable birth-order effects on personality; a small first-born edge on IQ measures is real but tiny. Why does the myth feel so true at home? Because within a family, birth order is confounded with age: the "responsible firstborn" is mostly just older. This one earns its badge as a calibration exercise — a belief can be vivid, universal, and wrong.'
+    }
+  ];
+  var M7_CLAIMS = [
+    { id: 'y1', text: '"Praising children makes them dependent on praise."', answer: 'popular',
+      why: 'Labeled, specific praise is a core skill of the trial-supported programs. The kernel of truth: empty person-praise ("so smart!") has real downsides — which is an argument for better praise, not less.' },
+    { id: 'y2', text: '"Praising effort and strategy beats praising traits."', answer: 'meta',
+      why: 'Supported direction with honest replication qualifiers on size — and it converges with labeled praise, which carries trial support on its own.' },
+    { id: 'y3', text: '"Screen time is the main driver of teen mental-health problems."', answer: 'popular',
+      why: 'The associations are small — far too small for "main driver." The evidence-supported lever is quality and conversation, not the clock.' },
+    { id: 'y4', text: '"Watching a show WITH your child and discussing it changes what the child takes from it."', answer: 'meta',
+      why: 'The active-mediation literature: co-viewing plus conversation is where the real leverage lives.' },
+    { id: 'y5', text: '"Raising a child\'s self-esteem directly will raise their achievement."', answer: 'popular',
+      why: 'The reappraisal literature found the arrow mostly runs from competence to esteem. Build the skill; the feeling follows.' },
+    { id: 'y6', text: '"Birth order shapes personality."', answer: 'popular',
+      why: 'Large-sample analyses: essentially null for personality. The firstborn in your house is not more responsible because of birth order; they are mostly just older.' },
+    { id: 'y7', text: '"A short daily block of child-led play improves behavior over weeks."', answer: 'rct',
+      why: 'This one is not a myth — special time is a coached component of the trial-supported programs. Planted here on purpose: the badge skill includes recognizing when a claim is BETTER than it sounds.' },
+    { id: 'y8', text: '"Whether teens experience strict rules as caring or controlling differs across cultural contexts."', answer: 'cultural',
+      why: 'The cultural-moderation literature again: the meaning a practice carries in its context shapes how it lands. Same rule, different message, different outcome.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // M8 — Adolescents
+  // ─────────────────────────────────────────────────────────
+  var M8_CARDS = [
+    {
+      id: 'teen-disclosure',
+      title: 'The monitoring plot twist',
+      evidence: 'disclosure',
+      body: 'For decades, "parental monitoring" predicted good outcomes, and the advice wrote itself: track your teen. Then Stattin and Kerr looked at where parents\' knowledge actually came from — and most of it was the TEEN\'S OWN DISCLOSURE. Teens who feel close, respected, and un-pounced-on tell their parents things; teens under surveillance without relationship get better at hiding. The "monitoring effect" was substantially a relationship effect wearing a supervision costume. The practical inversion: the goal is not more tracking, it is being the kind of listener a teen voluntarily talks to. Every serve-and-return deposit from Module 2 is this, ten years later.'
+    },
+    {
+      id: 'teen-autonomy',
+      title: 'Autonomy support is not letting go of the wheel',
+      evidence: 'autonomy',
+      body: 'The self-determination research distinguishes three stances. CONTROL: rules without reasons, decisions without input, love that feels contingent on compliance. ABDICATION: no rules, no interest, "they\'re old enough." AUTONOMY SUPPORT: real choices inside real limits, rationales for the rules that exist, and the teen\'s perspective acknowledged out loud even when the answer is still no. The third stance associates with better adjustment than either extreme. The phone-parks-at-9pm scene from Module 1 was autonomy support wearing work clothes: the limit held, AND the teen\'s objection got a hearing and a review date.'
+    },
+    {
+      id: 'teen-warmth',
+      title: 'Conflict is the feature, coldness is the bug',
+      evidence: 'autonomy',
+      body: 'Adolescent conflict rises in nearly every family — it is developmentally on schedule, the sound of an autonomy system coming online. The literature\'s reassurance: ordinary bickering about chores, curfews, and tone predicts little, as long as the warmth underneath holds. What predicts trouble is the warmth dropping out — fewer meals, fewer laughs, the relationship going cold while everyone tells themselves it is a phase. And the repair skill from Module 2 does not retire: a parent who can say "I handled that badly last night" is teaching the exact skill they most want the teen to have at 25.'
+    },
+    {
+      id: 'teen-safety',
+      title: 'When privacy loses the tiebreak',
+      evidence: 'disclosure',
+      body: 'Honesty requires the exception: the disclosure research describes ordinary life, not emergencies. Signals like talk of self-harm, disappearing money, sudden social collapse, or substances change the calculation — safety outranks privacy, and checking becomes the loving move even at a relationship cost you should expect and repair afterward. The teachable frame is transparency: "I read your messages because I was scared for you" preserves more trust than surveillance discovered by accident. Module 9 covers where to take what you find.'
+    }
+  ];
+  var M8_STANCES = [
+    { id: 'support', label: 'Autonomy support' },
+    { id: 'control', label: 'Control' },
+    { id: 'abdicate', label: 'Abdication' }
+  ];
+  var M8_SCENES = [
+    { id: 't1', text: 'Sixteen-year-old wants to quit piano after eight years. Parent: "Walk me through it. If you still feel this way after the recital, we\'ll end on your terms — what would you want to do with the practice hours?"',
+      answer: 'support',
+      why: 'A real choice inside a real process: the teen\'s reasoning is heard, the decision genuinely theirs, and the parent stays interested in what comes next rather than defending sunk costs.' },
+    { id: 't2', text: '"Because I said so, and while you live under my roof you\'ll play piano. This discussion is over."',
+      answer: 'control',
+      why: 'A rule without a rationale and a perspective unacknowledged. It may win the evening; the disclosure research says it quietly closes the channel that mattered.' },
+    { id: 't3', text: '"Whatever, quit, it\'s your life." Parent goes back to their phone.',
+      answer: 'abdicate',
+      why: 'Reads as freedom, lands as indifference. Autonomy support requires staying IN the conversation — interest is the part that makes the freedom feel like respect.' },
+    { id: 't4', text: 'Curfew broken by an hour, no text. Next morning: "You\'re later than we agreed and I was scared. What happened? ... Okay. The curfew stands, and next time a text buys you flexibility. Fair?"',
+      answer: 'support',
+      why: 'The limit holds AND the teen\'s account got a genuine hearing, with a workable path offered. Note the parent led with the feeling, not the verdict.' },
+    { id: 't5', text: 'Parent installs a hidden tracker after the broken curfew, says nothing, and brings up locations "casually" for weeks.',
+      answer: 'control',
+      why: 'Covert surveillance is the move the disclosure literature warns about: it produces better hiding, not better information — and its discovery spends trust you cannot easily rebuy. (Safety emergencies change this calculus — openly.)' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // M9 — When to seek help + partnering with school
+  // ─────────────────────────────────────────────────────────
+  var M9_CARDS = [
+    {
+      id: 'help-when',
+      title: 'When to ask for help',
+      evidence: null,
+      body: 'The honest heuristic is not about any single behavior — nearly every behavior in this lab is normal at some age. Clinicians look at four dials: DURATION (weeks and months, not days), INTENSITY (beyond what peers show), SETTINGS (showing up at home AND school AND with friends), and IMPAIRMENT (it is costing the child friendships, learning, sleep, joy). When those dials climb together, asking for help early is the strong move, not the last resort — and asking is assessment, not commitment. Start with the pediatrician or the school; both are doors to everything else.'
+    },
+    {
+      id: 'help-names',
+      title: 'Therapy names, decoded',
+      evidence: 'therapyNames',
+      body: 'Three names carry the deepest trial support for common child and family concerns. PCIT (Parent-Child Interaction Therapy): a coach literally in your ear during play with your young child — the PRIDE module is its opening phase. PMT (parent management training, Kazdin tradition): the ABC module, taught systematically, for defiance and meltdowns. CBT (cognitive behavioral therapy): for anxiety, low mood, and worry loops in school-age kids and teens, with exposure-based versions for anxiety carrying particularly strong support. A fair question for any provider: "what approach do you use, and what is the evidence for it with kids like mine?" Good providers enjoy that question.'
+    },
+    {
+      id: 'help-school',
+      title: 'The school side: IEPs, 504s, and how to ask',
+      evidence: null,
+      body: 'Plain-English version, from the school-psych side of the table. A 504 PLAN provides accommodations — changes to HOW a child learns (extra time, preferential seating, breaks) — for a disability that limits a major life activity. An IEP provides specialized instruction — changes to WHAT and HOW a child is taught — under IDEA, and comes with measurable goals the team must track. You can request an evaluation AT ANY TIME, in writing, to the principal or special-education office; the district must respond within a legally defined timeline (the exact clock varies by state — ask for yours in the same letter). You are a full member of the team, you may bring anyone to the meeting, and you may ask for anything to be explained again in plain language. Procedures vary by state and district; this is orientation, not legal advice.'
+    },
+    {
+      id: 'help-meeting',
+      title: 'Walking into the meeting',
+      evidence: null,
+      body: 'The parents who leave IEP and 504 meetings satisfied tend to arrive the same way: with a one-page picture of their child (strengths first, then concerns, then what helps at home), two or three specific questions written down, and the understanding that the first meeting is a conversation, not a verdict. Use the checklist below to build your own prep list — it saves with this tool, and you can rebuild it before every meeting.'
+    },
+    {
+      id: 'help-crisis',
+      title: 'If it is a crisis',
+      evidence: null,
+      body: 'For thoughts of self-harm or suicide: call or text 988 (Suicide & Crisis Lifeline) — available 24/7. For concerns about abuse: Childhelp National Child Abuse Hotline, 1-800-422-4453. To find state and local services of every kind — food, housing, counseling, respite — dial 211 or visit 211.org; it is the national router to what exists where you live. AlloFlow\'s SEL Hub carries these same crisis lines inside its student-facing activities, on purpose: safety information bears repeating. None of this replaces emergency services — for immediate danger, call 911.'
+    }
+  ];
+  // Meeting-prep checklist: check items off; persists with the tool state.
+  var M9_CHECKLIST = [
+    { id: 'p1', text: 'One-page snapshot of my child: strengths FIRST, then concerns, then what helps at home' },
+    { id: 'p2', text: 'My top 2-3 questions, written down (it is easy to blank in the room)' },
+    { id: 'p3', text: 'Copies of anything relevant: report cards, outside evaluations, work samples' },
+    { id: 'p4', text: 'My request history: when I asked for what, in writing, and any responses' },
+    { id: 'p5', text: 'Asked who will BE at the meeting, and invited anyone I want with me' },
+    { id: 'p6', text: 'Decided what a good outcome looks like to me before walking in' },
+    { id: 'p7', text: 'Reminder to self: I can ask for plain language, and I can ask for time to think before signing' }
   ];
 
   function srAnnounce(msg) {
@@ -534,7 +766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         role: 'note',
         className: 'rounded-xl px-4 py-2.5 mb-4 text-xs font-bold',
         style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.4)', color: isDark ? '#fcd34d' : '#92400e' }
-      }, __alloT('stem.parentingLab.review_banner', 'Preview build — module 1 of 9. Content ships module-by-module after expert review (PARENTING_LAB_SPEC.md).'));
+      }, __alloT('stem.parentingLab.review_banner', 'All nine modules drafted; expert content review in progress (PARENTING_LAB_SPEC.md). The IEP/504 section in Module 9 awaits its final line-edit.'));
 
       var backBtn = h('button', {
         onClick: function() {
@@ -585,11 +817,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             },
               h('summary', { className: 'cursor-pointer px-4 py-3 flex items-center justify-between gap-2 flex-wrap font-bold text-sm', style: { color: pal.text } },
                 h('span', null, (open ? '✓ ' : '') + c.title),
-                badgeChip(ev.badge, 'sm')
+                ev.badge ? badgeChip(ev.badge, 'sm') : null
               ),
               h('div', { className: 'px-4 pb-4' },
                 h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
-                h('p', { className: 'text-[11px] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note)
+                // Guidance cards (practical how-to, e.g., meeting prep) carry no
+                // evidence entry on purpose — a source line would imply one study
+                // "proves" what is really synthesized practice guidance.
+                ev.source ? h('p', { className: 'text-[11px] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note) : null
               )
             );
           })
@@ -678,19 +913,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
               __alloT('stem.parentingLab.m5_teaser', 'The checkout-line tantrum analyzed, the extinction burst, and the escalation trap that trains everyone.'))
           ),
-          h('div', { className: 'grid gap-2 sm:grid-cols-2' },
-            LOCKED_MODULES.map(function(m) {
-              return h('div', {
-                key: m.id,
-                className: 'rounded-2xl p-3 opacity-70',
-                style: { background: pal.card, border: '1px dashed ' + pal.border },
-                'aria-label': m.title + ' — ' + __alloT('stem.parentingLab.locked', 'coming after content review')
-              },
-                h('div', { className: 'text-sm font-bold', style: { color: pal.text } }, m.icon + ' ' + m.title),
-                h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, m.teaser),
-                h('div', { className: 'text-[10px] font-bold mt-1.5 uppercase tracking-wider', style: { color: pal.accent } }, '🔒 ' + __alloT('stem.parentingLab.locked_short', 'In expert review'))
-              );
-            })
+          h('button', {
+            onClick: function() { setPL({ view: 'm6' }); announceToSR(__alloT('stem.parentingLab.m6_open_sr', 'Opened module six: discipline evidence.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '⚖️ ' + __alloT('stem.parentingLab.m6_title', 'M6 — Discipline: what the evidence says')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M6_CARDS) + '/' + M6_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.claimsDone || {}).length + '/' + M6_CLAIMS.length + ' ' + __alloT('stem.parentingLab.claims', 'claims'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m6_teaser', 'The spanking consensus, what to use instead, reward charts done right, and the ratio.'))
+          ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm7' }); announceToSR(__alloT('stem.parentingLab.m7_open_sr', 'Opened module seven: myths versus literature.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🔍 ' + __alloT('stem.parentingLab.m7_title', 'M7 — Myths vs. literature')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M7_CARDS) + '/' + M7_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.mythsDone || {}).length + '/' + M7_CLAIMS.length + ' ' + __alloT('stem.parentingLab.claims', 'claims'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m7_teaser', 'Praise junkies, screen-time panic, self-esteem, birth order — badge the claims yourself.'))
+          ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm8' }); announceToSR(__alloT('stem.parentingLab.m8_open_sr', 'Opened module eight: adolescents.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🧭 ' + __alloT('stem.parentingLab.m8_title', 'M8 — Adolescents: autonomy and staying in the room')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M8_CARDS) + '/' + M8_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.stanceDone || {}).length + '/' + M8_SCENES.length + ' ' + __alloT('stem.parentingLab.scenes', 'scenes'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m8_teaser', 'The monitoring plot twist: knowledge flows from relationship, not surveillance.'))
+          ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm9' }); announceToSR(__alloT('stem.parentingLab.m9_open_sr', 'Opened module nine: getting help and partnering with school.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🤲 ' + __alloT('stem.parentingLab.m9_title', 'M9 — When to seek help + partnering with school')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M9_CARDS) + '/' + M9_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.prepDone || {}).length + '/' + M9_CHECKLIST.length + ' ' + __alloT('stem.parentingLab.prep', 'prep items'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m9_teaser', 'Red flags as four dials, therapy names decoded, IEP/504 in plain English, and the meeting-prep checklist.'))
           )
         );
       }
@@ -862,6 +1135,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             nextText: __alloT('stem.parentingLab.abc_next', 'Next scene →'),
             doneText: __alloT('stem.parentingLab.abc_done', 'All scenes analyzed. BehaviorLab teaches this science with full rigor; the School Behavior Toolkit shows the school side of the same triangle.')
           })
+        );
+      }
+
+      // ─────────────── M6 — Discipline ───────────────
+      if (view === 'm6') {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('⚖️ ' + __alloT('stem.parentingLab.m6_title', 'M6 — Discipline: what the evidence says')),
+          reviewBanner,
+          contentCardList(M6_CARDS, 'All discipline cards read'),
+          tagQuiz({
+            icon: '🏅', title: __alloT('stem.parentingLab.claims_title', 'Tier the claims yourself'),
+            sub: __alloT('stem.parentingLab.claims_sub', 'This module IS the badge system in action. Place each claim on the evidence tier it deserves.'),
+            groupLabel: __alloT('stem.parentingLab.claims_group', 'Choose the evidence tier'),
+            items: M6_CLAIMS.map(function(c) { return { id: c.id, prompt: c.text, answer: c.answer, why: c.why }; }),
+            options: M6_BADGE_OPTIONS, doneKey: 'claimsDone', curKey: 'claimsCurrent', xpLabel: 'Claim tiered',
+            nextText: __alloT('stem.parentingLab.claims_next', 'Next claim →'),
+            doneText: __alloT('stem.parentingLab.claims_done', 'All claims tiered. That skill — asking "which tier is this?" before "should I do this?" — is the one this lab most wants to send home.')
+          })
+        );
+      }
+
+      // ─────────────── M7 — Myths vs. literature ───────────────
+      if (view === 'm7') {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🔍 ' + __alloT('stem.parentingLab.m7_title', 'M7 — Myths vs. literature')),
+          reviewBanner,
+          contentCardList(M7_CARDS, 'All myth cards read'),
+          tagQuiz({
+            icon: '🃏', title: __alloT('stem.parentingLab.myths_title', 'Badge the claim'),
+            sub: __alloT('stem.parentingLab.myths_sub', 'Headlines never carry evidence badges. Practice adding them yourself.'),
+            groupLabel: __alloT('stem.parentingLab.myths_group', 'Choose the evidence tier'),
+            items: M7_CLAIMS.map(function(c) { return { id: c.id, prompt: c.text, answer: c.answer, why: c.why }; }),
+            options: M6_BADGE_OPTIONS, doneKey: 'mythsDone', curKey: 'mythsCurrent', xpLabel: 'Myth badged',
+            nextText: __alloT('stem.parentingLab.myths_next', 'Next claim →'),
+            doneText: __alloT('stem.parentingLab.myths_done', 'All claims badged. The pattern to keep: vivid and universal is not the same as true.')
+          })
+        );
+      }
+
+      // ─────────────── M8 — Adolescents ───────────────
+      if (view === 'm8') {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🧭 ' + __alloT('stem.parentingLab.m8_title', 'M8 — Adolescents: autonomy and staying in the room')),
+          reviewBanner,
+          contentCardList(M8_CARDS, 'All adolescent cards read'),
+          tagQuiz({
+            icon: '🚪', title: __alloT('stem.parentingLab.stance_title', 'Support, control, or abdication?'),
+            sub: __alloT('stem.parentingLab.stance_sub', 'Tag each response with the stance it embodies. Autonomy support keeps both the limit AND the relationship.'),
+            groupLabel: __alloT('stem.parentingLab.stance_group', 'Choose the stance'),
+            items: M8_SCENES.map(function(s) { return { id: s.id, prompt: s.text, answer: s.answer, why: s.why }; }),
+            options: M8_STANCES, doneKey: 'stanceDone', curKey: 'stanceCurrent', xpLabel: 'Stance tagged',
+            nextText: __alloT('stem.parentingLab.stance_next', 'Next scene →'),
+            doneText: __alloT('stem.parentingLab.stance_done', 'All scenes tagged. The through-line since Module 2: the relationship is the channel everything else travels on.')
+          })
+        );
+      }
+
+      // ─────────────── M9 — Help + school ───────────────
+      if (view === 'm9') {
+        var prepDone = d.prepDone || {};
+        function togglePrep(itemId) {
+          var next = Object.assign({}, prepDone);
+          if (next[itemId]) delete next[itemId]; else next[itemId] = true;
+          setPL({ prepDone: next });
+          var count = Object.keys(next).length;
+          if (count === M9_CHECKLIST.length) { awardXP(10, 'Meeting prep complete'); announceToSR(__alloT('stem.parentingLab.prep_done_sr', 'Every prep item checked. You are ready for the meeting.')); }
+        }
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🤲 ' + __alloT('stem.parentingLab.m9_title', 'M9 — When to seek help + partnering with school')),
+          reviewBanner,
+          contentCardList(M9_CARDS, 'All help-and-school cards read'),
+          h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '📋 ' + __alloT('stem.parentingLab.prep_title', 'Meeting-prep checklist')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, Object.keys(prepDone).length + ' / ' + M9_CHECKLIST.length)
+            ),
+            h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.prep_sub', 'Check items as you prepare. This list saves with the tool — reset it before each new meeting by unchecking.')),
+            h('div', { className: 'flex flex-col gap-1.5' },
+              M9_CHECKLIST.map(function(item) {
+                var on = !!prepDone[item.id];
+                return h('button', {
+                  key: item.id,
+                  role: 'checkbox', 'aria-checked': on,
+                  onClick: function() { togglePrep(item.id); },
+                  onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePrep(item.id); } },
+                  className: 'text-left rounded-xl px-3 py-2 text-sm border-2 transition-colors flex items-start gap-2',
+                  style: on
+                    ? { background: 'rgba(5,150,105,0.1)', borderColor: 'rgba(5,150,105,0.45)', color: pal.text }
+                    : { background: pal.panel, borderColor: pal.border, color: pal.text }
+                },
+                  h('span', { 'aria-hidden': 'true', className: 'font-black', style: { color: on ? '#059669' : pal.muted } }, on ? '☑' : '☐'),
+                  h('span', null, item.text)
+                );
+              })
+            )
+          )
         );
       }
 
