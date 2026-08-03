@@ -69,7 +69,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     guan: { source: 'Chao (1994)', badge: 'cultural',
       note: 'The "authoritarian" label mismeasures Chinese-American guan (training/devotion) parenting; outcome patterns differ across cultural contexts.' },
     crossCultural: { source: 'Multi-country parenting research (e.g., Lansford and colleagues)', badge: 'cultural',
-      note: 'How a practice lands depends on what it means in context — the same behavior reads as care in one setting and as harshness in another.' }
+      note: 'How a practice lands depends on what it means in context — the same behavior reads as care in one setting and as harshness in another.' },
+    // ── M2: attachment ──
+    attachTheory: { source: 'Bowlby (1969); Ainsworth et al. (1978)', badge: 'meta',
+      note: 'Attachment as an evolved system: the child uses a familiar caregiver as a secure base for exploring and a safe haven under threat.' },
+    strangeSituation: { source: 'Ainsworth et al. (1978), the Strange Situation procedure', badge: 'meta',
+      note: 'A structured LAB method for classifying reunion behavior. A research instrument — not a home test, and not a verdict on a family.' },
+    serveReturn: { source: 'Responsive-caregiving literature; Harvard Center on the Developing Child framing', badge: 'meta',
+      note: 'Back-and-forth responsive interaction as the everyday engine of security. Coaching programs built on responsiveness have randomized-trial support.' },
+    notDestiny: { source: 'Longitudinal attachment research (van IJzendoorn and colleagues)', badge: 'meta',
+      note: 'Classifications are moderately stable and shift with life circumstances. Predictions to later outcomes are probabilistic and modest — a start, not a sentence.' },
+    apBrand: { source: 'Definitional: Sears "attachment parenting" vs. the attachment literature', badge: 'popular',
+      note: 'Co-sleeping, babywearing, and extended nursing are lifestyle choices — fine if chosen, but not what attachment security is made of.' },
+    // ── M3: the RCT core ──
+    programs: { source: 'PCIT, Incredible Years, and Parent Management Training trial literatures; Triple P (see dissemination note)', badge: 'rct',
+      note: 'Parent-focused programs tested in randomized trials, replicated across teams. Triple P is the most widely disseminated and has drawn publication-bias critiques from independent reviewers — the honest read is "supported, with a wider error bar."' },
+    sharedSkills: { source: 'Common components across the program trial literature', badge: 'rct',
+      note: 'Child-led attending time, specific labeled praise, planned ignoring of minor misbehavior, clear one-step instructions, calm consistent follow-through.' },
+    timeoutEv: { source: 'Component analyses within program trials; AAP guidance', badge: 'rct',
+      note: 'A component of many trial-supported programs and AAP-endorsed — while heavily contested in popular parenting culture. "Done right" means brief, boring, age-appropriate, and ending in reconnection.' }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -150,10 +168,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     }
   ];
 
-  // Locked previews for M2-M9 (content pending the spec review gate).
+  // ─────────────────────────────────────────────────────────
+  // M2 — Attachment: the theory vs. the brand
+  // ─────────────────────────────────────────────────────────
+  var M2_CARDS = [
+    {
+      id: 'secure-base',
+      title: 'A secure base, not a personality type',
+      evidence: 'attachTheory',
+      body: 'Attachment is an evolved system, not a parenting philosophy. A young child uses a familiar caregiver as a SECURE BASE to explore from and a SAFE HAVEN to return to when the world gets scary. Security is not about how much a child needs you — every child does — it is about whether, in this relationship, the child has learned that reaching out works. That learning comes from ordinary, repeated experiences, not from any single practice or product.'
+    },
+    {
+      id: 'strange-situation',
+      title: 'What the Strange Situation actually is',
+      evidence: 'strangeSituation',
+      body: 'The famous secure/insecure classifications come from a twenty-minute structured LAB procedure: separations and reunions with a stranger present, coded by trained observers, mostly around twelve months of age. It is a research instrument that made attachment measurable — and it was never designed as a home test, a checklist, or a way to score a family. If an article implies you can classify your own child from everyday behavior, it has left the science behind.'
+    },
+    {
+      id: 'serve-return',
+      title: 'Serve and return: the everyday engine',
+      evidence: 'serveReturn',
+      body: 'The practical core of the responsiveness literature fits in one loop: a child SERVES (a look, a babble, a "watch this!", a question), and the caregiver RETURNS it — noticing, responding, and building on it. Misses happen constantly in every family, and that is fine; the research points at patterns, not perfection. Repair — coming back after a miss — is itself part of the pattern. Programs that coach exactly this loop have randomized-trial support.'
+    },
+    {
+      id: 'not-destiny',
+      title: 'Not destiny',
+      evidence: 'notDestiny',
+      body: 'Early classifications are moderately stable, and they shift when life circumstances shift — for better and for worse. Links from infant attachment to later outcomes are real but probabilistic and modest. Two honest conclusions follow: early relationships matter, and no early classification is a sentence. A rough first year is a reason for support, not a verdict on a child or a parent.'
+    },
+    {
+      id: 'the-brand',
+      title: 'The brand that borrowed the name',
+      evidence: 'apBrand',
+      body: '"Attachment parenting" (the Sears brand) prescribes practices: co-sleeping, babywearing, extended nursing, constant physical closeness. Those are lifestyle choices families are free to make — but they are not what attachment security is made of, and the attachment literature does not require any of them. Secure attachment is built from responsive patterns, which exist on every continent, on every work schedule, in every feeding method. The brand borrowed the theory\'s name; do not let it borrow the theory\'s evidence.'
+    }
+  ];
+
+  // Serve & Return interactive: each item is a child's serve plus three
+  // possible responses; exactly one is a genuine return. Misses are framed
+  // gently — the module's own content says misses are universal.
+  var M2_SERVES = [
+    {
+      id: 's1',
+      serve: 'Toddler points out the window: "Da! Da!" (a dog is passing)',
+      options: [
+        { id: 'a', text: '"Yes — a dog! A big brown dog. Where did he go?"', kind: 'return' },
+        { id: 'b', text: 'Keep pushing the stroller a little faster; there is a schedule.', kind: 'miss' },
+        { id: 'c', text: '"Say DOG. D-O-G. Can you say dog properly?"', kind: 'redirect' }
+      ],
+      why: 'The return notices the serve, names what the child is excited about, and builds on it with a turn the child can take. The drill response redirects the child\'s serve into the adult\'s agenda — well-meant, but it ends the rally instead of extending it.'
+    },
+    {
+      id: 's2',
+      serve: 'Eight-year-old, at pickup: "Nobody would let me join the game at recess."',
+      options: [
+        { id: 'a', text: '"Well, did you ask nicely? You have to ask nicely."', kind: 'redirect' },
+        { id: 'b', text: '"That sounds lonely. What happened?"', kind: 'return' },
+        { id: 'c', text: '"You are fine. Get in the car, we are late for practice."', kind: 'miss' }
+      ],
+      why: 'The return receives the feeling first and invites more. Jumping straight to advice or blame ("did you ask nicely?") answers a question the child did not ask — and teaches them to stop serving hard things.'
+    },
+    {
+      id: 's3',
+      serve: 'Baby drops the spoon off the high chair. Again. While looking right at you.',
+      options: [
+        { id: 'a', text: 'Take the spoon away without a word.', kind: 'miss' },
+        { id: 'b', text: 'Sigh loudly and check your phone.', kind: 'miss' },
+        { id: 'c', text: 'Pick it up, hand it back with raised eyebrows: "Oh no! Where did it GO?"', kind: 'return' }
+      ],
+      why: 'The drop-and-look IS the serve — a turn-taking game and an early physics experiment at once. Returning it a few times costs little and is exactly the loop the literature keeps pointing at. (And yes, you are allowed to end the game eventually.)'
+    },
+    {
+      id: 's4',
+      serve: 'Teen, from the doorway, at 10:40pm: "Did you ever mess up a friendship really badly?"',
+      options: [
+        { id: 'a', text: 'Put the phone down: "Yeah. More than once. Want the worst one?"', kind: 'return' },
+        { id: 'b', text: '"It is almost eleven. We can talk tomorrow."', kind: 'miss' },
+        { id: 'c', text: '"Who did you fight with? Was it Maya? What did you do?"', kind: 'redirect' }
+      ],
+      why: 'Teen serves often come sideways, late, and disguised as small questions. The return accepts the serve on the teen\'s terms — a story, not an interrogation. The interrogation response turns a door-opener into a door-closer. (Module 8 is entirely about this.)'
+    },
+    {
+      id: 's5',
+      serve: 'You snapped at your six-year-old this morning and you both know it.',
+      options: [
+        { id: 'a', text: 'Act extra cheerful and pretend it did not happen.', kind: 'miss' },
+        { id: 'b', text: '"I would not have yelled if you had been ready on time."', kind: 'redirect' },
+        { id: 'c', text: '"I was grumpy this morning and I was unfair to you. I am sorry. Fresh start?"', kind: 'return' }
+      ],
+      why: 'Repair is a return served late — and the literature treats it as part of a secure pattern, not an admission of failure. The blame version teaches that reaching out after a rupture gets you a second rupture.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // M3 — The RCT core
+  // ─────────────────────────────────────────────────────────
+  var M3_CARDS = [
+    {
+      id: 'where-evidence',
+      title: 'Where the strongest evidence lives',
+      evidence: 'programs',
+      body: 'The strongest tier of this whole literature is a family of parent-coaching programs tested in randomized trials: Parent-Child Interaction Therapy (PCIT), Incredible Years, and parent management training in the Kazdin tradition, among others. Triple P deserves both halves of its sentence: widely disseminated and trial-supported, AND critiqued by independent reviewers for publication bias in its evidence base — so read it as "supported, with a wider error bar." None of these are styles. All of them are skills.'
+    },
+    {
+      id: 'shared-skills',
+      title: 'The five skills they all share',
+      evidence: 'sharedSkills',
+      body: 'Strip the branding and the trial-supported programs teach overlapping cores: (1) child-led attending time — a few minutes daily where the child leads and you narrate; (2) SPECIFIC labeled praise — "you put every block back in the bin" beats "good job"; (3) planned ignoring of minor attention-seeking misbehavior — paired with warm attention the moment behavior turns; (4) clear, one-step, tell-not-ask instructions; (5) calm, consistent, boring follow-through. Small skills, learnable by anyone, carrying most of the freight.'
+    },
+    {
+      id: 'timeout-honest',
+      title: 'Time-out, said honestly',
+      evidence: 'timeoutEv',
+      body: 'Time-out is a component of many of the trial-supported programs and is endorsed by the American Academy of Pediatrics — and it is one of the most attacked techniques in popular parenting culture. Both facts belong in the same paragraph. What the evidence supports is specific: brief (minutes, not moods), boring rather than frightening, used for a small set of pre-named behaviors, and always followed by reconnection. "Time-in" — connecting during calm — is not a rival; the programs teach both. What the evidence does not support is time-out as exile, humiliation, or surprise.'
+    },
+    {
+      id: 'skills-beat-styles',
+      title: 'Skills beat styles',
+      evidence: 'programs',
+      body: 'Module 1 ended with a promise: the specific skills with trial evidence are a better bet than chasing a style label. This is that bet, cashed out. You cannot practice "being authoritative" on Tuesday afternoon — but you can practice one labeled praise, one clear instruction, and five minutes of child-led time, and those are the components the trials actually moved. If the styles literature describes the weather, these skills are what you can do with your hands.'
+    }
+  ];
+
+  // Tag the Skill interactive: concrete parent moves; which shared skill is it?
+  var M3_SKILLS = [
+    { id: 'attend', label: 'Child-led attending' },
+    { id: 'praise', label: 'Specific labeled praise' },
+    { id: 'ignore', label: 'Planned ignoring' },
+    { id: 'instruct', label: 'Clear one-step instruction' },
+    { id: 'follow', label: 'Consistent follow-through' }
+  ];
+  var M3_MOVES = [
+    { id: 'k1', text: '"You carried your plate to the sink without being asked — that is being responsible."', skill: 'praise',
+      why: 'Labeled praise names the exact behavior. "Good job" praises the child in general; this praises the move, which is what makes the move more likely tomorrow.' },
+    { id: 'k2', text: 'Child whines theatrically for a cookie. Parent keeps unloading the dishwasher, face neutral — then turns warmly the moment the whining stops: "You asked in a calm voice. Yes, after dinner."', skill: 'ignore',
+      why: 'Planned ignoring only works as a PAIR: no reaction for the minor bid, warm attention the instant behavior turns. Alone it is just coldness; paired, it is teaching.' },
+    { id: 'k3', text: '"Shoes on, please." (Not: "Okay, are we ready to maybe think about shoes?")', skill: 'instruct',
+      why: 'One step, told not asked, phrased so compliance is possible and visible. Question-shaped commands invite "no" — and then punish the child for answering the question you asked.' },
+    { id: 'k4', text: 'Ten minutes of blocks. The child builds; the parent narrates like a sportscaster: "A red one on top... it is getting so tall..." No questions, no fixes.', skill: 'attend',
+      why: 'Child-led attending is the daily deposit the programs all start with. Narration without questions or takeovers tells the child: what you choose to do is worth my full attention.' },
+    { id: 'k5', text: 'Screen time ends at the timer. Today the child protests; the tablet still goes on the shelf — same shelf, same calm voice as yesterday.', skill: 'follow',
+      why: 'Consistency is the skill that makes every other skill believable. The calm, boring, predictable follow-through is doing more work than any consequence\'s size.' },
+    { id: 'k6', text: '"You used your brave voice with the dentist — you told her which tooth hurt."', skill: 'praise',
+      why: 'Labeled praise again, on purpose: it is the highest-frequency skill in the trial programs, and the easiest one to start today.' }
+  ];
+
+  // Locked previews for M4-M9 (content pending the spec review gate).
   var LOCKED_MODULES = [
-    { id: 'm2', icon: '🤝', title: 'Attachment: the theory vs. the brand', teaser: 'Bowlby and Ainsworth vs. the lifestyle brand that borrowed their name.' },
-    { id: 'm3', icon: '🧪', title: 'The RCT core', teaser: 'PCIT, Incredible Years, PMT — and the skills they all share.' },
     { id: 'm4', icon: '🗣️', title: 'PRIDE Skills Studio', teaser: 'Practice the play-session skills, utterance by utterance.' },
     { id: 'm5', icon: '🔁', title: 'ABC at Home', teaser: 'The checkout-line tantrum, analyzed — and the extinction burst.' },
     { id: 'm6', icon: '⚖️', title: 'Discipline: what the evidence says', teaser: 'Spanking meta-analyses, time-out honestly, consistency over severity.' },
@@ -187,8 +348,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     color: 'rose',
     category: 'science',
     questHooks: [
-      { id: 'pl_read_m1', label: 'Read all five Warmth & Structure cards', icon: '📖', check: function(d) { return d && d.readCards && Object.keys(d.readCards).length >= 5; }, progress: function(d) { return ((d && d.readCards && Object.keys(d.readCards).length) || 0) + '/5 cards'; } },
-      { id: 'pl_dials', label: 'Rate 4 vignettes on both dials', icon: '🎛️', check: function(d) { return d && d.dialsDone && Object.keys(d.dialsDone).length >= 4; }, progress: function(d) { return ((d && d.dialsDone && Object.keys(d.dialsDone).length) || 0) + '/4 vignettes'; } }
+      { id: 'pl_read_m1', label: 'Read all five Warmth & Structure cards', icon: '📖', check: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].every(function(id) { return m[id]; }); }, progress: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].filter(function(id) { return m[id]; }).length + '/5 cards'; } },
+      { id: 'pl_dials', label: 'Rate 4 vignettes on both dials', icon: '🎛️', check: function(d) { return d && d.dialsDone && Object.keys(d.dialsDone).length >= 4; }, progress: function(d) { return ((d && d.dialsDone && Object.keys(d.dialsDone).length) || 0) + '/4 vignettes'; } },
+      { id: 'pl_serves', label: 'Return 4 serves in the Serve & Return studio', icon: '🤝', check: function(d) { return d && d.servesDone && Object.keys(d.servesDone).length >= 4; }, progress: function(d) { return ((d && d.servesDone && Object.keys(d.servesDone).length) || 0) + '/4 serves'; } },
+      { id: 'pl_skills', label: 'Tag 5 moves with the right shared skill', icon: '🧪', check: function(d) { return d && d.movesDone && Object.keys(d.movesDone).length >= 5; }, progress: function(d) { return ((d && d.movesDone && Object.keys(d.movesDone).length) || 0) + '/5 moves'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -209,11 +372,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         });
       }
 
-      var view = d.view || 'menu';           // 'menu' | 'm1'
-      var readCards = d.readCards || {};      // cardId -> true
+      var view = d.view || 'menu';           // 'menu' | 'm1' | 'm2' | 'm3'
+      var readCards = d.readCards || {};      // cardId -> true (all modules share the map; ids are unique)
       var dialsDone = d.dialsDone || {};      // vignetteId -> { warmth, structure, correct }
       var dialsCurrent = d.dialsCurrent || 0; // index into M1_VIGNETTES
       var dialsPick = d.dialsPick || {};      // in-progress { warmth, structure }
+      var servesDone = d.servesDone || {};    // serveId -> { pick, kind }
+      var servesCurrent = d.servesCurrent || 0;
+      var movesDone = d.movesDone || {};      // moveId -> { pick, correct }
+      var movesCurrent = d.movesCurrent || 0;
 
       // Palette — calm, warm; readable in dark and light hosts.
       var pal = isDark
@@ -263,9 +430,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         );
       }
 
+      // Shared card list — same details/summary markup for every module.
+      function markCardReadIn(cards, cardId, xpLabel) {
+        if (readCards[cardId]) return;
+        var next = Object.assign({}, readCards); next[cardId] = true;
+        setPL({ readCards: next });
+        var all = cards.every(function(c) { return next[c.id]; });
+        if (all) { awardXP(10, xpLabel); announceToSR(__alloT('stem.parentingLab.cards_done_generic_sr', 'All cards in this module read.')); }
+      }
+      function contentCardList(cards, xpLabel) {
+        return h('div', { className: 'space-y-3 mb-6' },
+          cards.map(function(c) {
+            var open = !!readCards[c.id];
+            var ev = EVIDENCE[c.evidence] || {};
+            return h('details', {
+              key: c.id,
+              open: open || undefined,
+              className: 'rounded-2xl overflow-hidden',
+              style: { background: pal.panel, border: '1px solid ' + pal.border },
+              onToggle: function(e) { if (e.target.open) markCardReadIn(cards, c.id, xpLabel); }
+            },
+              h('summary', { className: 'cursor-pointer px-4 py-3 flex items-center justify-between gap-2 flex-wrap font-bold text-sm', style: { color: pal.text } },
+                h('span', null, (open ? '✓ ' : '') + c.title),
+                badgeChip(ev.badge, 'sm')
+              ),
+              h('div', { className: 'px-4 pb-4' },
+                h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
+                h('p', { className: 'text-[11px] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note)
+              )
+            );
+          })
+        );
+      }
+      function moduleHeader(title) {
+        return h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn, h('h2', { className: 'text-lg font-black' }, title));
+      }
+      function cardsRead(cards) { return cards.filter(function(c) { return readCards[c.id]; }).length; }
+
       // ─────────────── MENU ───────────────
       if (view === 'menu') {
-        var m1Done = Object.keys(readCards).length >= M1_CARDS.length && Object.keys(dialsDone).length >= 4;
+        var m1Done = cardsRead(M1_CARDS) >= M1_CARDS.length && Object.keys(dialsDone).length >= 4;
         return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn,
@@ -289,6 +493,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
               __alloT('stem.parentingLab.m1_teaser', 'The two dimensions under the famous four styles — and why "correlates with" is doing heavy lifting.'))
           ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm2' }); announceToSR(__alloT('stem.parentingLab.m2_open_sr', 'Opened module two: attachment.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🤝 ' + __alloT('stem.parentingLab.m2_title', 'M2 — Attachment: the theory vs. the brand')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M2_CARDS) + '/' + M2_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(servesDone).length + '/' + M2_SERVES.length + ' ' + __alloT('stem.parentingLab.serves', 'serves'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m2_teaser', 'Bowlby and Ainsworth vs. the lifestyle brand that borrowed their name — plus the Serve & Return studio.'))
+          ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm3' }); announceToSR(__alloT('stem.parentingLab.m3_open_sr', 'Opened module three: the R C T core.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🧪 ' + __alloT('stem.parentingLab.m3_title', 'M3 — The RCT core')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M3_CARDS) + '/' + M3_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(movesDone).length + '/' + M3_MOVES.length + ' ' + __alloT('stem.parentingLab.moves', 'moves'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m3_teaser', 'PCIT, Incredible Years, PMT — the five skills they all share, and time-out said honestly.'))
+          ),
           h('div', { className: 'grid gap-2 sm:grid-cols-2' },
             LOCKED_MODULES.map(function(m) {
               return h('div', {
@@ -306,17 +536,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         );
       }
 
-      // ─────────────── M1 ───────────────
-      function markCardRead(cardId) {
-        if (readCards[cardId]) return;
-        var next = Object.assign({}, readCards); next[cardId] = true;
-        setPL({ readCards: next });
-        if (Object.keys(next).length === M1_CARDS.length) {
-          awardXP(10, 'All Warmth & Structure cards read');
-          announceToSR(__alloT('stem.parentingLab.cards_done_sr', 'All five cards read.'));
+      // ─────────────── M2 — Attachment ───────────────
+      if (view === 'm2') {
+        var sv = M2_SERVES[servesCurrent];
+        var svDone = sv && servesDone[sv.id];
+        function pickServe(optId) {
+          if (!sv || svDone) return;
+          var opt = null;
+          for (var i = 0; i < sv.options.length; i++) if (sv.options[i].id === optId) opt = sv.options[i];
+          if (!opt) return;
+          var next = Object.assign({}, servesDone);
+          next[sv.id] = { pick: optId, kind: opt.kind };
+          setPL({ servesDone: next });
+          if (opt.kind === 'return') awardXP(5, 'Serve returned');
+          announceToSR(opt.kind === 'return'
+            ? __alloT('stem.parentingLab.serve_return_sr', 'That is a return. Explanation shown below.')
+            : __alloT('stem.parentingLab.serve_miss_sr', 'That one ends the rally. Explanation shown below.'));
         }
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🤝 ' + __alloT('stem.parentingLab.m2_title', 'M2 — Attachment: the theory vs. the brand')),
+          reviewBanner,
+          contentCardList(M2_CARDS, 'All attachment cards read'),
+          h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🤝 ' + __alloT('stem.parentingLab.serves_title', 'Serve & Return studio')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (servesCurrent + 1) + ' / ' + M2_SERVES.length)
+            ),
+            h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.serves_sub', 'Each scene is a serve. Pick the response that returns it. Misses are universal in every family — this is practice, not scoring.')),
+            sv && h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed font-semibold', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, sv.serve),
+            sv && h('div', { className: 'flex flex-col gap-2 mb-3' },
+              sv.options.map(function(o) {
+                var picked = svDone && svDone.pick === o.id;
+                var isReturn = o.kind === 'return';
+                var revealStyle = svDone
+                  ? (isReturn
+                    ? { background: 'rgba(5,150,105,0.1)', borderColor: 'rgba(5,150,105,0.5)', color: pal.text }
+                    : (picked ? { background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.5)', color: pal.text } : { background: pal.panel, borderColor: pal.border, color: pal.muted }))
+                  : { background: pal.panel, borderColor: pal.border, color: pal.text };
+                return h('button', {
+                  key: o.id,
+                  disabled: !!svDone,
+                  onClick: function() { pickServe(o.id); },
+                  className: 'text-left rounded-xl px-3 py-2 text-sm border-2 transition-colors disabled:cursor-default',
+                  style: revealStyle
+                }, (svDone && isReturn ? '✓ ' : '') + o.text);
+              })
+            ),
+            sv && svDone && h('div', null,
+              h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, sv.why),
+              servesCurrent < M2_SERVES.length - 1
+                ? h('button', { onClick: function() { setPL({ servesCurrent: servesCurrent + 1 }); }, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, __alloT('stem.parentingLab.serves_next', 'Next serve →'))
+                : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, __alloT('stem.parentingLab.serves_done', 'All serves played. Repair counts as a return served late — and the RCT core module turns this loop into daily skills.'))
+            )
+          )
+        );
       }
 
+      // ─────────────── M3 — The RCT core ───────────────
+      if (view === 'm3') {
+        var mv = M3_MOVES[movesCurrent];
+        var mvDone = mv && movesDone[mv.id];
+        function pickSkill(skillId) {
+          if (!mv || mvDone) return;
+          var correct = mv.skill === skillId;
+          var next = Object.assign({}, movesDone);
+          next[mv.id] = { pick: skillId, correct: correct };
+          setPL({ movesDone: next });
+          if (correct) awardXP(5, 'Skill tagged');
+          announceToSR(correct
+            ? __alloT('stem.parentingLab.skill_hit_sr', 'Correct tag. Explanation shown below.')
+            : __alloT('stem.parentingLab.skill_miss_sr', 'Different tag than intended. Explanation shown below.'));
+        }
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🧪 ' + __alloT('stem.parentingLab.m3_title', 'M3 — The RCT core')),
+          reviewBanner,
+          contentCardList(M3_CARDS, 'All RCT core cards read'),
+          h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🏷️ ' + __alloT('stem.parentingLab.moves_title', 'Tag the skill')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (movesCurrent + 1) + ' / ' + M3_MOVES.length)
+            ),
+            h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.moves_sub', 'Each scene shows one concrete parent move from the trial-supported programs. Which shared skill is it?')),
+            mv && h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed font-semibold', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, mv.text),
+            mv && h('div', { role: 'group', 'aria-label': __alloT('stem.parentingLab.moves_group', 'Choose the skill'), className: 'flex flex-wrap gap-2 mb-3' },
+              M3_SKILLS.map(function(s) {
+                var picked = mvDone && mvDone.pick === s.id;
+                var isAnswer = mv.skill === s.id;
+                var style = mvDone
+                  ? (isAnswer
+                    ? { background: 'rgba(5,150,105,0.15)', borderColor: 'rgba(5,150,105,0.55)', color: pal.text }
+                    : (picked ? { background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.5)', color: pal.text } : { background: pal.panel, borderColor: pal.border, color: pal.muted }))
+                  : { background: pal.panel, borderColor: pal.border, color: pal.text };
+                return h('button', {
+                  key: s.id,
+                  disabled: !!mvDone,
+                  onClick: function() { pickSkill(s.id); },
+                  className: 'rounded-lg px-3 py-1.5 text-xs font-bold border-2 transition-colors disabled:cursor-default',
+                  style: style
+                }, (mvDone && isAnswer ? '✓ ' : '') + s.label);
+              })
+            ),
+            mv && mvDone && h('div', null,
+              h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, mv.why),
+              movesCurrent < M3_MOVES.length - 1
+                ? h('button', { onClick: function() { setPL({ movesCurrent: movesCurrent + 1 }); }, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, __alloT('stem.parentingLab.moves_next', 'Next move →'))
+                : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, __alloT('stem.parentingLab.moves_done', 'All moves tagged. These five skills are the trial-supported core — small, practicable, and learnable by anyone.'))
+            )
+          )
+        );
+      }
+
+      // ─────────────── M1 ───────────────
       function pickDial(dial, value) {
         var next = Object.assign({}, dialsPick); next[dial] = value;
         setPL({ dialsPick: next });
@@ -379,28 +711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         reviewBanner,
 
         // Content cards
-        h('div', { className: 'space-y-3 mb-6' },
-          M1_CARDS.map(function(c) {
-            var open = !!readCards[c.id];
-            var ev = EVIDENCE[c.evidence] || {};
-            return h('details', {
-              key: c.id,
-              open: open || undefined,
-              className: 'rounded-2xl overflow-hidden',
-              style: { background: pal.panel, border: '1px solid ' + pal.border },
-              onToggle: function(e) { if (e.target.open) markCardRead(c.id); }
-            },
-              h('summary', { className: 'cursor-pointer px-4 py-3 flex items-center justify-between gap-2 flex-wrap font-bold text-sm', style: { color: pal.text } },
-                h('span', null, (open ? '✓ ' : '') + c.title),
-                badgeChip(ev.badge, 'sm')
-              ),
-              h('div', { className: 'px-4 pb-4' },
-                h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
-                h('p', { className: 'text-[11px] mt-2 font-semibold', style: { color: pal.muted } }, __alloT('stem.parentingLab.source', 'Source') + ': ' + ev.source + ' — ' + ev.note)
-              )
-            );
-          })
-        ),
+        contentCardList(M1_CARDS, 'All Warmth & Structure cards read'),
 
         // Two Dials interactive
         h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },

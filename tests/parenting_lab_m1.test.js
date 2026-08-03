@@ -25,12 +25,46 @@ describe('Science of Parenting Lab — shell + M1', () => {
     }
   });
 
-  it('shows M1 open and all eight later modules locked', () => {
+  it('shows M1-M3 open and the six later modules locked', () => {
     loadTool(FILE, 'parentingLab');
     const html = renderTool('parentingLab', {});
     expect(html).toContain('Warmth &amp; Structure');
+    expect(html).toContain('Attachment: the theory vs. the brand');
+    expect(html).toContain('The RCT core');
     const locks = (html.match(/In expert review/g) || []).length;
-    expect(locks).toBe(8);
+    expect(locks).toBe(6);
+  });
+
+  it('renders M2 with five badged cards and the Serve & Return studio', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm2' } });
+    expect((html.match(/Source: /g) || []).length).toBe(5);
+    expect(html).toContain('Serve &amp; Return studio');
+    expect(html).toContain('practice, not scoring');
+    // The brand/theory separation is the module's spine:
+    expect(html).toContain('not what attachment security is made of');
+  });
+
+  it('renders M3 with the Triple P publication-bias note intact', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm3' } });
+    // Honesty pin: the dissemination caveat must survive every future edit.
+    expect(html).toContain('publication bias');
+    expect(html).toContain('wider error bar');
+    expect(html).toContain('Tag the skill');
+    // Time-out honesty: endorsement and contestation in the same breath.
+    expect(html).toContain('American Academy of Pediatrics');
+  });
+
+  it('serve options are not position-biased toward the first slot', () => {
+    const serves = src.match(/var M2_SERVES = \[([\s\S]*?)\n  \];/)[1];
+    const blocks = serves.split(/\bserve:/).slice(1);
+    const firstIsReturn = blocks.filter((b) => {
+      const m = b.match(/kind:\s*'(\w+)'/);
+      return m && m[1] === 'return';
+    }).length;
+    // At least one scene must NOT have the return in the first option slot.
+    expect(firstIsReturn).toBeLessThan(blocks.length);
   });
 
   it('renders M1 with every card badged from the EVIDENCE register', () => {
