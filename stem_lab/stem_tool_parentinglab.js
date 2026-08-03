@@ -87,7 +87,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     sharedSkills: { source: 'Common components across the program trial literature', badge: 'rct',
       note: 'Child-led attending time, specific labeled praise, planned ignoring of minor misbehavior, clear one-step instructions, calm consistent follow-through.' },
     timeoutEv: { source: 'Component analyses within program trials; AAP guidance', badge: 'rct',
-      note: 'A component of many trial-supported programs and AAP-endorsed — while heavily contested in popular parenting culture. "Done right" means brief, boring, age-appropriate, and ending in reconnection.' }
+      note: 'A component of many trial-supported programs and AAP-endorsed — while heavily contested in popular parenting culture. "Done right" means brief, boring, age-appropriate, and ending in reconnection.' },
+    // ── M4: PRIDE ──
+    pride: { source: 'PCIT child-directed interaction (Eyberg tradition)', badge: 'rct',
+      note: 'The PRIDE skills are the coached core of PCIT\'s first phase, and close cousins appear across the trial-supported programs.' },
+    specialTime: { source: 'Common component across PCIT / Incredible Years / PMT trials', badge: 'rct',
+      note: 'A short daily dose of child-led play with the skills on and the "avoids" off. The dose is small on purpose: five minutes a day that actually happen beat an hour that does not.' },
+    // ── M5: ABC at home ──
+    abcFrame: { source: 'Applied behavior-analytic literature (antecedent-behavior-consequence)', badge: 'meta',
+      note: 'A framework with deep applied roots: behavior does a job, and consequences teach. The parent-training skills derived from it carry randomized-trial support (see the RCT core).' },
+    functionsHome: { source: 'Functional assessment literature (attention / escape / tangible / sensory)', badge: 'meta',
+      note: 'The four common jobs a behavior can be doing. Knowing the job predicts what will and will not work — and a function is a description, never by itself a mandate to intervene.' },
+    burst: { source: 'Extinction literature, laboratory and applied', badge: 'meta',
+      note: 'When a behavior stops paying, it typically gets louder before it fades — which is exactly when most people give in, teaching the louder version.' },
+    coercion: { source: 'Patterson, coercive family process', badge: 'meta',
+      note: 'An escalation loop that trains BOTH sides: the child learns that escalating works, the parent learns that giving in ends the noise. The exit is warmth plus boring consistency, not bigger consequences.' }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -313,10 +327,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       why: 'Labeled praise again, on purpose: it is the highest-frequency skill in the trial programs, and the easiest one to start today.' }
   ];
 
-  // Locked previews for M4-M9 (content pending the spec review gate).
+  // ─────────────────────────────────────────────────────────
+  // M4 — PRIDE Skills Studio
+  // ─────────────────────────────────────────────────────────
+  var M4_CARDS = [
+    {
+      id: 'pride-what',
+      title: 'Five minutes where the child is the boss',
+      evidence: 'specialTime',
+      body: 'The trial-supported programs mostly begin in the same surprising place: not with discipline, but with a short daily block of child-led play — often called special time. The child picks the activity (hands-on play works best; screens and competitive games fight the format), the parent follows, and for those minutes the parent\'s only job is a set of five skills. The dose is small on purpose. Five minutes that actually happen every day beat the ambitious hour that never does.'
+    },
+    {
+      id: 'pride-skills',
+      title: 'The PRIDE skills',
+      evidence: 'pride',
+      body: 'PRAISE — labeled and specific: "you shared your blocks with me" rather than "good job." REFLECT — say back what the child says, slightly expanded: "Yeah, the truck crashed!" IMITATE — do what they are doing; parallel play is a compliment. DESCRIBE — sportscast their actions: "you are putting the red one on top." ENJOY — warmth out loud; let your face and voice show that being with them is good. Every skill hands the lead back to the child, which is the whole design.'
+    },
+    {
+      id: 'pride-avoids',
+      title: 'The three habits to park at the door',
+      evidence: 'pride',
+      body: 'During special time, three very normal parent moves are deliberately switched off. QUESTIONS ("what color is that?") take over the agenda and turn play into a quiz. COMMANDS ("put it over here") take the lead away outright. CRITICISM ("that is not how it goes") teaches that playing near you costs something. None of these are bad parenting in general — they are just the opposite of this exercise, which is practicing pure following. The quiz habit is the sneakiest: it feels educational while it takes the wheel.'
+    },
+    {
+      id: 'pride-reallife',
+      title: 'When special time goes sideways',
+      evidence: 'specialTime',
+      body: 'The programs plan for reality: if minor misbehavior shows up during special time, the coached response is to withdraw attention briefly — look away, go quiet — and return warmly the instant play resumes. If behavior gets unsafe, special time simply ends, calmly, and tomorrow is a fresh start. No lectures inside the five minutes. The skills you are practicing here are the same attending and planned-ignoring muscles from the RCT core module, in their natural habitat.'
+    }
+  ];
+
+  // Utterance labeler: a play-session transcript; label each parent line.
+  var M4_LABELS = [
+    { id: 'praise', label: 'Labeled praise' },
+    { id: 'reflect', label: 'Reflection' },
+    { id: 'imitate', label: 'Imitate' },
+    { id: 'describe', label: 'Describe' },
+    { id: 'question', label: 'Question (avoid)' },
+    { id: 'command', label: 'Command (avoid)' },
+    { id: 'criticism', label: 'Criticism (avoid)' }
+  ];
+  var M4_UTTERANCES = [
+    { id: 'u1', child: 'Child starts stacking blocks into a wobbly tower.', parent: '"You are building it so tall — three blocks already."', answer: 'describe',
+      why: 'Sportscasting the child\'s action, no steering. Describe is the workhorse skill: easy to say, keeps the child leading, and shows you are actually watching.' },
+    { id: 'u2', child: '"The dragon lives in the tower!"', parent: '"The dragon lives in the TOWER — right at the top!"', answer: 'reflect',
+      why: 'A reflection: the child\'s own words, returned slightly expanded. It tells the child their words steer the play.' },
+    { id: 'u3', child: 'Child carefully balances the last block.', parent: '"What shape is that block?"', answer: 'question',
+      why: 'The quiz habit. It feels educational, but it yanks the agenda from castle-building to shape-naming. In special time, park it — there are 23.9 other hours for shapes.' },
+    { id: 'u4', child: 'Child hands the parent a block.', parent: '"Thank you for handing me a block — that was helpful."', answer: 'praise',
+      why: 'Labeled praise: it names the exact behavior. Compare "good job", which spends the same breath teaching nothing in particular.' },
+    { id: 'u5', child: 'The tower leans badly to the left.', parent: '"Turn that one flat or it will fall."', answer: 'command',
+      why: 'A command — it takes the lead, even though it is engineering-correct. In special time the tower is allowed to fall; watching you NOT take over is part of what the child learns.' },
+    { id: 'u6', child: 'The tower falls. Child laughs and starts again.', parent: '"You are starting again right away — that is sticking with it."', answer: 'praise',
+      why: 'Labeled praise aimed at persistence — catching a behavior worth growing at the exact moment it happens.' },
+    { id: 'u7', child: 'Child lines the blocks up in a long row instead.', parent: '"Rows are not really how blocks work, sweetie."', answer: 'criticism',
+      why: 'Gentle words, critical function: it tells the child their way of playing is wrong. Rows are exactly how blocks work, if the child says so — that is the special-time contract.' },
+    { id: 'u8', child: 'Child pushes a block-car along the rug, making engine noises.', parent: 'Parent picks up a block, pushes it alongside, matching the engine noise.', answer: 'imitate',
+      why: 'Imitation — joining the game on the child\'s terms. Parallel play is a compliment the child can feel.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // M5 — ABC at Home
+  // ─────────────────────────────────────────────────────────
+  var M5_CARDS = [
+    {
+      id: 'abc-frame',
+      title: 'Behavior does a job',
+      evidence: 'abcFrame',
+      body: 'The most useful lens in the applied literature fits on an index card: ANTECEDENT (what set the stage), BEHAVIOR (what the child did), CONSEQUENCE (what happened next — especially what the behavior earned). Consequences teach, whether or not anyone intended a lesson. The checkout-line candy from Module 1 is the classic: the fourth "just this once" is not a lapse, it is a lesson plan — and the lesson is "whining works on the fourth try."'
+    },
+    {
+      id: 'abc-functions',
+      title: 'The four jobs',
+      evidence: 'functionsHome',
+      body: 'Most behavior that worries parents is doing one of four jobs: getting ATTENTION (even scolding is attention), ESCAPING something hard or boring, getting a TANGIBLE thing (the candy, the tablet, five more minutes), or meeting a SENSORY need (movement, sound, pressure — behavior that feels good from the inside). The job predicts the fix: attention-maintained behavior starves without an audience but grows under lectures; escape-maintained behavior grows every time the demand disappears. Same behavior, different job, opposite fix — which is why "what works" advice without a function attached is a coin flip.'
+    },
+    {
+      id: 'abc-burst',
+      title: 'It gets worse before it gets better',
+      evidence: 'burst',
+      body: 'When a behavior that used to pay suddenly stops paying, it does not fade quietly — it gets louder first. The extinction burst is the best-documented trap in this literature, because the burst arrives exactly when a tired parent concludes "this is not working" and gives in — thereby paying out at the new, louder rate. Two practical rules follow: only stop paying a behavior you can outlast, and tell yourself in advance that louder-before-quieter means it IS working. Pick battles you can hold.'
+    },
+    {
+      id: 'abc-coercion',
+      title: 'The escalation trap trains everyone',
+      evidence: 'coercion',
+      body: 'Patterson\'s coercion research mapped a loop many exhausted families will recognize: parent asks, child protests louder, parent escalates, child escalates further — until one side gives in. Whoever folds, both sides learn: the child learns escalation eventually works, the parent learns that giving in (or exploding) ends the noise. Nobody in the loop is bad; the loop itself is the problem. The exit is unglamorous: calmer asks, smaller demands you can actually hold, warmth banked outside the conflict — the special-time deposit from the PRIDE module is exactly that bank.'
+    },
+    {
+      id: 'abc-limits',
+      title: 'A function is not a verdict',
+      evidence: 'functionsHome',
+      body: 'Two honest limits. First: knowing a behavior\'s function does not mean the behavior needs fixing. A child who rocks or flaps when excited is often meeting a sensory need that costs no one anything — understanding it beats extinguishing it, and that judgment matters especially for neurodivergent kids. Second: home ABC-watching is a lens for everyday friction, not a clinical tool. If a behavior is dangerous, escalating, or driving the whole family\'s life, that is what the school team and clinicians are for — Module 9 covers how to ask. BehaviorLab teaches this science with full rigor; the School Behavior Toolkit shows the school side of the same triangle.'
+    }
+  ];
+
+  var M5_FUNCTIONS = [
+    { id: 'attention', label: 'Attention' },
+    { id: 'escape', label: 'Escape' },
+    { id: 'tangible', label: 'Tangible' },
+    { id: 'sensory', label: 'Sensory' }
+  ];
+  var M5_SCENES = [
+    { id: 'f1', text: 'Checkout line. Child whines for candy; last three trips, whining eventually produced candy. A = candy in sight, B = whining, C = ?',
+      answer: 'tangible',
+      why: 'The behavior earns a THING. Note what the fix is not: a lecture (that adds attention to a tangible-maintained behavior — paying in a second currency). The fix is the boring one: candy stops following whining, and a burst is expected on trip one.' },
+    { id: 'f2', text: 'Every night, twenty minutes into homework, a meltdown — and homework gets shelved "until things calm down."',
+      answer: 'escape',
+      why: 'The meltdown\'s job is making the hard thing disappear, and it works nightly. Escape-maintained behavior grows every time the demand evaporates — the counter-move is shrinking the demand (five problems, then a real break) so staying beats escaping.' },
+    { id: 'f3', text: 'The moment a parent starts a phone call, the six-year-old suddenly needs help, has an emergency, or plays the drum solo. The call keeps pausing.',
+      answer: 'attention',
+      why: 'A parent on the phone is an attention drought; the behavior reliably ends it. The paired fix from the RCT core: attention BEFORE the call ("two minutes, then I talk to Grandma"), boring non-response during, warm attention for waiting.' },
+    { id: 'f4', text: 'During long car rides, a nine-year-old hums the same three notes and drums on the window. Nobody reacts either way; she does it alone in her room too.',
+      answer: 'sensory',
+      why: 'No audience, no escape, no payout — the behavior feels good from the inside. And per the fifth card: this may need no fix at all. Headphones for the rest of the car, maybe. A function is a description, not a verdict.' },
+    { id: 'f5', text: 'Toothbrushing time. The four-year-old goes boneless and giggles; the parent chases, negotiates, narrates — a nightly ten-minute show ending in one distracted minute of brushing.',
+      answer: 'attention',
+      why: 'The chase IS the payoff — ten minutes of undivided, entertaining parent. The coached move flips the schedule: big engagement for steps toward the bathroom, flat minimal response to the boneless act. Same total attention, opposite timing.' }
+  ];
+
+  // Locked previews for M6-M9 (content pending the spec review gate).
   var LOCKED_MODULES = [
-    { id: 'm4', icon: '🗣️', title: 'PRIDE Skills Studio', teaser: 'Practice the play-session skills, utterance by utterance.' },
-    { id: 'm5', icon: '🔁', title: 'ABC at Home', teaser: 'The checkout-line tantrum, analyzed — and the extinction burst.' },
     { id: 'm6', icon: '⚖️', title: 'Discipline: what the evidence says', teaser: 'Spanking meta-analyses, time-out honestly, consistency over severity.' },
     { id: 'm7', icon: '🔍', title: 'Myths vs. literature', teaser: 'Praise junkies, screen-time panic, birth order — badge them yourself.' },
     { id: 'm8', icon: '🧭', title: 'Adolescents: autonomy and staying in the room', teaser: 'Why snooping fails and disclosure is a relationship outcome.' },
@@ -351,7 +482,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       { id: 'pl_read_m1', label: 'Read all five Warmth & Structure cards', icon: '📖', check: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].every(function(id) { return m[id]; }); }, progress: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].filter(function(id) { return m[id]; }).length + '/5 cards'; } },
       { id: 'pl_dials', label: 'Rate 4 vignettes on both dials', icon: '🎛️', check: function(d) { return d && d.dialsDone && Object.keys(d.dialsDone).length >= 4; }, progress: function(d) { return ((d && d.dialsDone && Object.keys(d.dialsDone).length) || 0) + '/4 vignettes'; } },
       { id: 'pl_serves', label: 'Return 4 serves in the Serve & Return studio', icon: '🤝', check: function(d) { return d && d.servesDone && Object.keys(d.servesDone).length >= 4; }, progress: function(d) { return ((d && d.servesDone && Object.keys(d.servesDone).length) || 0) + '/4 serves'; } },
-      { id: 'pl_skills', label: 'Tag 5 moves with the right shared skill', icon: '🧪', check: function(d) { return d && d.movesDone && Object.keys(d.movesDone).length >= 5; }, progress: function(d) { return ((d && d.movesDone && Object.keys(d.movesDone).length) || 0) + '/5 moves'; } }
+      { id: 'pl_skills', label: 'Tag 5 moves with the right shared skill', icon: '🧪', check: function(d) { return d && d.movesDone && Object.keys(d.movesDone).length >= 5; }, progress: function(d) { return ((d && d.movesDone && Object.keys(d.movesDone).length) || 0) + '/5 moves'; } },
+      { id: 'pl_pride', label: 'Label 6 lines of the play-session transcript', icon: '🗣️', check: function(d) { return d && d.prideDone && Object.keys(d.prideDone).length >= 6; }, progress: function(d) { return ((d && d.prideDone && Object.keys(d.prideDone).length) || 0) + '/6 lines'; } },
+      { id: 'pl_abc', label: 'Tag the function in 4 home scenes', icon: '🔁', check: function(d) { return d && d.abcDone && Object.keys(d.abcDone).length >= 4; }, progress: function(d) { return ((d && d.abcDone && Object.keys(d.abcDone).length) || 0) + '/4 scenes'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -519,6 +652,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
               __alloT('stem.parentingLab.m3_teaser', 'PCIT, Incredible Years, PMT — the five skills they all share, and time-out said honestly.'))
           ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm4' }); announceToSR(__alloT('stem.parentingLab.m4_open_sr', 'Opened module four: PRIDE skills studio.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🗣️ ' + __alloT('stem.parentingLab.m4_title', 'M4 — PRIDE Skills Studio')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M4_CARDS) + '/' + M4_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.prideDone || {}).length + '/' + M4_UTTERANCES.length + ' ' + __alloT('stem.parentingLab.lines', 'lines'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m4_teaser', 'Five minutes where the child is the boss — label a play session line by line.'))
+          ),
+          h('button', {
+            onClick: function() { setPL({ view: 'm5' }); announceToSR(__alloT('stem.parentingLab.m5_open_sr', 'Opened module five: A B C at home.')); },
+            className: 'w-full text-left rounded-2xl p-4 mb-3 transition-all hover:shadow-md',
+            style: { background: pal.panel, border: '2px solid ' + pal.border, color: pal.text }
+          },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('span', { className: 'font-black text-base' }, '🔁 ' + __alloT('stem.parentingLab.m5_title', 'M5 — ABC at Home')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.accent } },
+                cardsRead(M5_CARDS) + '/' + M5_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(d.abcDone || {}).length + '/' + M5_SCENES.length + ' ' + __alloT('stem.parentingLab.scenes', 'scenes'))
+            ),
+            h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
+              __alloT('stem.parentingLab.m5_teaser', 'The checkout-line tantrum analyzed, the extinction burst, and the escalation trap that trains everyone.'))
+          ),
           h('div', { className: 'grid gap-2 sm:grid-cols-2' },
             LOCKED_MODULES.map(function(m) {
               return h('div', {
@@ -593,58 +752,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         );
       }
 
+      // Generic tag-quiz panel — one mechanic serving M3 (skills), M4 (PRIDE
+      // labeler) and M5 (function analyzer): a scene, option chips, reveal, next.
+      // cfg: { icon, title, sub, groupLabel, items:[{id, prompt, answer, why}],
+      //        options:[{id,label}], doneKey, curKey, nextText, doneText, xpLabel }
+      function tagQuiz(cfg) {
+        var doneMap = d[cfg.doneKey] || {};
+        var cur = d[cfg.curKey] || 0;
+        var it = cfg.items[cur];
+        var itDone = it && doneMap[it.id];
+        function pickOpt(optId) {
+          if (!it || itDone) return;
+          var correct = it.answer === optId;
+          var next = Object.assign({}, doneMap);
+          next[it.id] = { pick: optId, correct: correct };
+          var patch = {}; patch[cfg.doneKey] = next;
+          setPL(patch);
+          if (correct) awardXP(5, cfg.xpLabel);
+          announceToSR(correct
+            ? __alloT('stem.parentingLab.tag_hit_sr', 'Correct tag. Explanation shown below.')
+            : __alloT('stem.parentingLab.tag_miss_sr', 'Different tag than intended. Explanation shown below.'));
+        }
+        function nextItem() { var patch = {}; patch[cfg.curKey] = cur + 1; setPL(patch); }
+        return h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+            h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, cfg.icon + ' ' + cfg.title),
+            h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (cur + 1) + ' / ' + cfg.items.length)
+          ),
+          h('p', { className: 'text-xs mb-3', style: { color: pal.muted } }, cfg.sub),
+          it && h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, it.prompt),
+          it && h('div', { role: 'group', 'aria-label': cfg.groupLabel, className: 'flex flex-wrap gap-2 mb-3' },
+            cfg.options.map(function(s) {
+              var picked = itDone && itDone.pick === s.id;
+              var isAnswer = it.answer === s.id;
+              var style = itDone
+                ? (isAnswer
+                  ? { background: 'rgba(5,150,105,0.15)', borderColor: 'rgba(5,150,105,0.55)', color: pal.text }
+                  : (picked ? { background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.5)', color: pal.text } : { background: pal.panel, borderColor: pal.border, color: pal.muted }))
+                : { background: pal.panel, borderColor: pal.border, color: pal.text };
+              return h('button', {
+                key: s.id,
+                disabled: !!itDone,
+                onClick: function() { pickOpt(s.id); },
+                className: 'rounded-lg px-3 py-1.5 text-xs font-bold border-2 transition-colors disabled:cursor-default',
+                style: style
+              }, (itDone && isAnswer ? '✓ ' : '') + s.label);
+            })
+          ),
+          it && itDone && h('div', null,
+            h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, it.why),
+            cur < cfg.items.length - 1
+              ? h('button', { onClick: nextItem, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, cfg.nextText)
+              : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, cfg.doneText)
+          )
+        );
+      }
+
       // ─────────────── M3 — The RCT core ───────────────
       if (view === 'm3') {
-        var mv = M3_MOVES[movesCurrent];
-        var mvDone = mv && movesDone[mv.id];
-        function pickSkill(skillId) {
-          if (!mv || mvDone) return;
-          var correct = mv.skill === skillId;
-          var next = Object.assign({}, movesDone);
-          next[mv.id] = { pick: skillId, correct: correct };
-          setPL({ movesDone: next });
-          if (correct) awardXP(5, 'Skill tagged');
-          announceToSR(correct
-            ? __alloT('stem.parentingLab.skill_hit_sr', 'Correct tag. Explanation shown below.')
-            : __alloT('stem.parentingLab.skill_miss_sr', 'Different tag than intended. Explanation shown below.'));
-        }
         return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
           moduleHeader('🧪 ' + __alloT('stem.parentingLab.m3_title', 'M3 — The RCT core')),
           reviewBanner,
           contentCardList(M3_CARDS, 'All RCT core cards read'),
-          h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
-            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
-              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🏷️ ' + __alloT('stem.parentingLab.moves_title', 'Tag the skill')),
-              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (movesCurrent + 1) + ' / ' + M3_MOVES.length)
-            ),
-            h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
-              __alloT('stem.parentingLab.moves_sub', 'Each scene shows one concrete parent move from the trial-supported programs. Which shared skill is it?')),
-            mv && h('div', { className: 'rounded-xl p-3 mb-3 text-sm leading-relaxed font-semibold', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, mv.text),
-            mv && h('div', { role: 'group', 'aria-label': __alloT('stem.parentingLab.moves_group', 'Choose the skill'), className: 'flex flex-wrap gap-2 mb-3' },
-              M3_SKILLS.map(function(s) {
-                var picked = mvDone && mvDone.pick === s.id;
-                var isAnswer = mv.skill === s.id;
-                var style = mvDone
-                  ? (isAnswer
-                    ? { background: 'rgba(5,150,105,0.15)', borderColor: 'rgba(5,150,105,0.55)', color: pal.text }
-                    : (picked ? { background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.5)', color: pal.text } : { background: pal.panel, borderColor: pal.border, color: pal.muted }))
-                  : { background: pal.panel, borderColor: pal.border, color: pal.text };
-                return h('button', {
-                  key: s.id,
-                  disabled: !!mvDone,
-                  onClick: function() { pickSkill(s.id); },
-                  className: 'rounded-lg px-3 py-1.5 text-xs font-bold border-2 transition-colors disabled:cursor-default',
-                  style: style
-                }, (mvDone && isAnswer ? '✓ ' : '') + s.label);
-              })
-            ),
-            mv && mvDone && h('div', null,
-              h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, mv.why),
-              movesCurrent < M3_MOVES.length - 1
-                ? h('button', { onClick: function() { setPL({ movesCurrent: movesCurrent + 1 }); }, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, __alloT('stem.parentingLab.moves_next', 'Next move →'))
-                : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, __alloT('stem.parentingLab.moves_done', 'All moves tagged. These five skills are the trial-supported core — small, practicable, and learnable by anyone.'))
-            )
-          )
+          tagQuiz({
+            icon: '🏷️', title: __alloT('stem.parentingLab.moves_title', 'Tag the skill'),
+            sub: __alloT('stem.parentingLab.moves_sub', 'Each scene shows one concrete parent move from the trial-supported programs. Which shared skill is it?'),
+            groupLabel: __alloT('stem.parentingLab.moves_group', 'Choose the skill'),
+            items: M3_MOVES.map(function(m) { return { id: m.id, prompt: m.text, answer: m.skill, why: m.why }; }),
+            options: M3_SKILLS, doneKey: 'movesDone', curKey: 'movesCurrent', xpLabel: 'Skill tagged',
+            nextText: __alloT('stem.parentingLab.moves_next', 'Next move →'),
+            doneText: __alloT('stem.parentingLab.moves_done', 'All moves tagged. These five skills are the trial-supported core — small, practicable, and learnable by anyone.')
+          })
+        );
+      }
+
+      // ─────────────── M4 — PRIDE Skills Studio ───────────────
+      if (view === 'm4') {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🗣️ ' + __alloT('stem.parentingLab.m4_title', 'M4 — PRIDE Skills Studio')),
+          reviewBanner,
+          contentCardList(M4_CARDS, 'All PRIDE cards read'),
+          tagQuiz({
+            icon: '🎬', title: __alloT('stem.parentingLab.pride_title', 'Label the play session'),
+            sub: __alloT('stem.parentingLab.pride_sub', 'A five-minute block session, one parent line at a time. Tag each line as a PRIDE skill or one of the three avoids. The avoids are normal parenting everywhere else — special time just practices switching them off.'),
+            groupLabel: __alloT('stem.parentingLab.pride_group', 'Choose the label'),
+            items: M4_UTTERANCES.map(function(u) {
+              return { id: u.id, answer: u.answer, why: u.why,
+                prompt: h('span', null, h('em', { style: { color: pal.muted } }, u.child + ' '), h('strong', null, u.parent)) };
+            }),
+            options: M4_LABELS, doneKey: 'prideDone', curKey: 'prideCurrent', xpLabel: 'Utterance labeled',
+            nextText: __alloT('stem.parentingLab.pride_next', 'Next line →'),
+            doneText: __alloT('stem.parentingLab.pride_done', 'Transcript labeled. Five minutes of this daily is the opening move of the trial-supported programs — and the deposit the ABC module spends.')
+          })
+        );
+      }
+
+      // ─────────────── M5 — ABC at Home ───────────────
+      if (view === 'm5') {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          moduleHeader('🔁 ' + __alloT('stem.parentingLab.m5_title', 'M5 — ABC at Home')),
+          reviewBanner,
+          contentCardList(M5_CARDS, 'All ABC cards read'),
+          tagQuiz({
+            icon: '🔎', title: __alloT('stem.parentingLab.abc_title', 'What job is the behavior doing?'),
+            sub: __alloT('stem.parentingLab.abc_sub', 'Read each scene as an ABC: what sets the stage, what the child does, what the behavior earns. Then tag the job. Remember the fifth card: a function is a description, not a verdict.'),
+            groupLabel: __alloT('stem.parentingLab.abc_group', 'Choose the function'),
+            items: M5_SCENES.map(function(s) { return { id: s.id, prompt: s.text, answer: s.answer, why: s.why }; }),
+            options: M5_FUNCTIONS, doneKey: 'abcDone', curKey: 'abcCurrent', xpLabel: 'Function tagged',
+            nextText: __alloT('stem.parentingLab.abc_next', 'Next scene →'),
+            doneText: __alloT('stem.parentingLab.abc_done', 'All scenes analyzed. BehaviorLab teaches this science with full rigor; the School Behavior Toolkit shows the school side of the same triangle.')
+          })
         );
       }
 

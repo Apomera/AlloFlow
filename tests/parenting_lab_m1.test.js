@@ -25,14 +25,52 @@ describe('Science of Parenting Lab — shell + M1', () => {
     }
   });
 
-  it('shows M1-M3 open and the six later modules locked', () => {
+  it('shows M1-M5 open and the four later modules locked', () => {
     loadTool(FILE, 'parentingLab');
     const html = renderTool('parentingLab', {});
     expect(html).toContain('Warmth &amp; Structure');
     expect(html).toContain('Attachment: the theory vs. the brand');
     expect(html).toContain('The RCT core');
+    expect(html).toContain('PRIDE Skills Studio');
+    expect(html).toContain('ABC at Home');
     const locks = (html.match(/In expert review/g) || []).length;
-    expect(locks).toBe(6);
+    expect(locks).toBe(4);
+  });
+
+  it('renders M4 with the avoids framed as normal parenting elsewhere', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm4' } });
+    expect((html.match(/Source: /g) || []).length).toBe(4);
+    expect(html).toContain('Label the play session');
+    // Honesty pin: the avoids are exercise-specific, not bad parenting.
+    expect(html).toContain('normal parenting everywhere else');
+    // All five PRIDE skills present in the card content:
+    for (const s of ['PRAISE', 'REFLECT', 'IMITATE', 'DESCRIBE', 'ENJOY']) expect(html).toContain(s);
+  });
+
+  it('renders M5 with the burst warning and the function-is-not-a-verdict pin', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm5' } });
+    expect((html.match(/Source: /g) || []).length).toBe(5);
+    expect(html).toContain('extinction burst');
+    // Neurodiversity pin: sensory scene and card must survive edits.
+    expect(html).toContain('a description, not a verdict');
+    expect(html).toContain('neurodivergent');
+    // Coercion is framed as a loop, not blame:
+    expect(html).toContain('Nobody in the loop is bad');
+  });
+
+  it('M4/M5 answers are not position- or single-option-biased', () => {
+    const utter = src.match(/var M4_UTTERANCES = \[([\s\S]*?)\n  \];/)[1];
+    const uAnswers = [...utter.matchAll(/answer:\s*'(\w+)'/g)].map((m) => m[1]);
+    // At least 4 distinct labels used, and no label is a majority.
+    expect(new Set(uAnswers).size).toBeGreaterThanOrEqual(4);
+    for (const a of new Set(uAnswers)) {
+      expect(uAnswers.filter((x) => x === a).length).toBeLessThan(uAnswers.length / 2);
+    }
+    const scenes = src.match(/var M5_SCENES = \[([\s\S]*?)\n  \];/)[1];
+    const sAnswers = [...scenes.matchAll(/answer:\s*'(\w+)'/g)].map((m) => m[1]);
+    expect(new Set(sAnswers).size).toBeGreaterThanOrEqual(3);
   });
 
   it('renders M2 with five badged cards and the Serve & Return studio', () => {
