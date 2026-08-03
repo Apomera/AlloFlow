@@ -37,12 +37,14 @@ beforeAll(() => {
   delete window.AlloModules.UdlWalkthrough;
   delete window.AlloModules.DisproAnalyzer;
   delete window.AlloModules.MeetingDocs;
+  delete window.AlloModules.SpedTimelines;
   loadModule('admin_hub_module.js');
   loadModule('udl_walkthrough_module.js');
   loadModule('dispro_analyzer_module.js');
   loadModule('meeting_docs_module.js');
+  loadModule('sped_timelines_module.js');
   Mods = window.AlloModules;
-  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs']) {
+  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines']) {
     if (!Mods[k]) throw new Error(k + ' did not register');
   }
 });
@@ -81,8 +83,9 @@ describe('AdminHubPanel', () => {
     expect(c.textContent).toContain('never an automated verdict');
     clickText(c, 'UDL Walkthrough');
     clickText(c, 'Disproportionality Analyzer');
+    clickText(c, 'SpEd Timelines');
     clickText(c, 'Meeting Documentation');
-    expect(opened).toEqual(['walkthrough', 'dispro', 'meetings']);
+    expect(opened).toEqual(['walkthrough', 'dispro', 'timelines', 'meetings']);
   });
 });
 
@@ -216,6 +219,28 @@ describe('DisproAnalyzerPanel', () => {
     clickText(c, 'Trends');
     expect(c.textContent).toContain('Risk ratios over time');
     expect(c.querySelector('svg')).toBeTruthy(); // two saved ODRs analyses -> chart
+  });
+});
+
+describe('SpedTimelinesPanel', () => {
+  it('dashboard shows band counts and urgency order; completing a case round-trips to storage', () => {
+    localStorage.setItem('allo_sped_cases_v1', JSON.stringify([
+      { id: 'c1', code: 'JD', type: 'annual', provider: 'AP', keyDate: '2025-09-01', dueDate: '2026-07-01', completedAt: null },
+      { id: 'c2', code: 'MR', type: 'initial_eval', provider: 'JB', keyDate: '2026-07-20', dueDate: '2099-12-31', completedAt: null },
+    ]));
+    const c = mount(Mods.SpedTimelines.SpedTimelinesPanel, baseProps());
+    expect(c.textContent).toContain('SpEd Timelines');
+    expect(c.textContent).toContain('Open timelines, most urgent first');
+    // Overdue case listed before the far-future one.
+    const rows = Array.from(c.querySelectorAll('tbody th')).map((th) => th.textContent);
+    expect(rows[0]).toBe('JD');
+    expect(c.textContent).toContain('Caseload by provider');
+    clickText(c, 'Timelines');
+    expect(c.textContent).toContain('Add a timeline');
+    const box = Array.from(c.querySelectorAll('input[type="checkbox"]')).find((b) => (b.getAttribute('aria-label') || '').includes('JD'));
+    act(() => { box.click(); });
+    const stored = JSON.parse(localStorage.getItem('allo_sped_cases_v1'));
+    expect(stored.find((x) => x.id === 'c1').completedAt).toBeTruthy();
   });
 });
 

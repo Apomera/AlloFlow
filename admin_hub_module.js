@@ -96,6 +96,15 @@ function AdminHubPanel(props) {
       descCls: "text-slate-600"
     },
     {
+      id: "timelines",
+      icon: "⏰",
+      title: tt("adminhub.timelines_title", "SpEd Timelines"),
+      desc: tt("adminhub.timelines_desc", "Evaluation clocks, IEP annuals, and triennials on one urgency dashboard with per-provider caseloads — student codes only; due dates are editable prefills you confirm against your state rule."),
+      accent: "from-amber-50 to-orange-50 border-amber-600",
+      titleCls: "text-amber-800",
+      descCls: "text-amber-700"
+    },
+    {
       id: "meetings",
       icon: "📋",
       title: tt("adminhub.meetings_title", "Meeting Documentation"),

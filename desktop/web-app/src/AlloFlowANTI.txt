@@ -12077,8 +12077,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
-    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080301'); }; })();
+    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080302'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
+    window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
@@ -13687,6 +13688,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
   const [isMeetingDocsOpen, setIsMeetingDocsOpen] = useState(false);
+  const [isSpedTimelinesOpen, setIsSpedTimelinesOpen] = useState(false);
   useEffect(() => {
     try {
       if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
@@ -46360,7 +46362,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
             else if (toolId === 'dispro') { if (typeof window.__alloLazyDisproAnalyzer === 'function') { try { window.__alloLazyDisproAnalyzer(); } catch (_) {} } setIsDisproAnalyzerOpen(true); }
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
+            else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
           },
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="SpedTimelines.SpedTimelinesPanel" isOpen={isSpedTimelinesOpen} onClose={() => setIsSpedTimelinesOpen(false)} icon="⏰" displayName="SpEd Timelines" t={t}>
+        {(SpedTimelinesPanel) => React.createElement(SpedTimelinesPanel, {
+          isOpen: true,
+          onClose: () => setIsSpedTimelinesOpen(false),
+          t,
+          addToast,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="MeetingDocs.MeetingDocsPanel" isOpen={isMeetingDocsOpen} onClose={() => setIsMeetingDocsOpen(false)} icon="📋" displayName="Meeting Documentation" t={t}>
