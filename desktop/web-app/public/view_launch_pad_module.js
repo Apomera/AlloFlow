@@ -92,14 +92,24 @@
           if (!r.ok) continue;
           var m = await r.json();
           if (m && Array.isArray(m.available)) {
-            var displays = m.available.map(function (e) {
+            // Keep the endonym next to the English display name. The VALUE handed to
+            // setUiLanguage stays the English name; only the label changes.
+            var displays = m.available.filter(function (e) {
               return e && e.display;
-            }).filter(Boolean).sort(function (a, b) {
-              return a.localeCompare(b);
+            }).map(function (e) {
+              return {
+                value: e.display,
+                endonym: e.endonym || e.display
+              };
+            }).sort(function (a, b) {
+              return a.value.localeCompare(b.value);
             });
             // English first, then alphabetical
-            var ordered = ['English'].concat(displays.filter(function (d) {
-              return d !== 'English';
+            var ordered = [{
+              value: 'English',
+              endonym: 'English'
+            }].concat(displays.filter(function (d) {
+              return d.value !== 'English';
             }));
             if (!cancelled) setLaunchPadLangs(ordered);
             return;
@@ -111,6 +121,26 @@
       cancelled = true;
     };
   }, []);
+  // Label a language in ITSELF, matching the header picker. Same rule in both
+  // places so the two surfaces cannot drift: endonym first, English appended
+  // only when the endonym is non-Latin AND the English name has no
+  // parentheses of its own.
+  var LP_NON_LATIN = /[^\u0020-\u024F\u1E00-\u1EFF\s().,'\u2019-]/;
+  function lpLangLabel(entry) {
+    if (!entry) return '';
+    var endonym = entry.endonym || entry.value;
+    if (endonym === entry.value) return entry.value;
+    var needsGloss = LP_NON_LATIN.test(endonym) && !/[()]/.test(entry.value);
+    return needsGloss ? endonym + ' (' + entry.value + ')' : endonym;
+  }
+  function lpCurrentLabel() {
+    for (var i = 0; i < LAUNCH_PAD_LANGS.length; i++) {
+      if (LAUNCH_PAD_LANGS[i] && LAUNCH_PAD_LANGS[i].value === currentUiLanguage) {
+        return lpLangLabel(LAUNCH_PAD_LANGS[i]);
+      }
+    }
+    return currentUiLanguage;
+  }
   React.useEffect(function () {
     if (!langMenuOpen || typeof document === 'undefined') return;
     var list = langListRef.current;
@@ -254,7 +284,7 @@
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap'
     }
-  }, currentUiLanguage), /*#__PURE__*/React.createElement("span", {
+  }, lpCurrentLabel()), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     style: {
       fontSize: '9px',
@@ -289,7 +319,8 @@
       overflowY: 'auto',
       zIndex: 100001
     }
-  }, LAUNCH_PAD_LANGS.map(langName => {
+  }, LAUNCH_PAD_LANGS.map(lang => {
+    var langName = lang.value;
     var selected = langName === currentUiLanguage;
     return /*#__PURE__*/React.createElement("li", {
       key: langName,
@@ -319,7 +350,7 @@
         cursor: isTranslating ? 'wait' : 'pointer',
         transition: 'background 0.15s'
       }
-    }, selected ? '✓ ' : '  ', langName));
+    }, selected ? '✓ ' : '  ', lpLangLabel(lang)));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "lp-logo-block",
     style: {

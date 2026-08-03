@@ -73,12 +73,15 @@ function LaunchPadView(props) {
           if (!r.ok) continue;
           var m = await r.json();
           if (m && Array.isArray(m.available)) {
+            // Keep the endonym next to the English display name. The VALUE handed to
+            // setUiLanguage stays the English name; only the label changes.
             var displays = m.available
-              .map(function(e) { return e && e.display; })
-              .filter(Boolean)
-              .sort(function(a, b) { return a.localeCompare(b); });
+              .filter(function(e) { return e && e.display; })
+              .map(function(e) { return { value: e.display, endonym: e.endonym || e.display }; })
+              .sort(function(a, b) { return a.value.localeCompare(b.value); });
             // English first, then alphabetical
-            var ordered = ['English'].concat(displays.filter(function(d) { return d !== 'English'; }));
+            var ordered = [{ value: 'English', endonym: 'English' }]
+              .concat(displays.filter(function(d) { return d.value !== 'English'; }));
             if (!cancelled) setLaunchPadLangs(ordered);
             return;
           }
@@ -87,6 +90,27 @@ function LaunchPadView(props) {
     })();
     return function() { cancelled = true; };
   }, []);
+  // Label a language in ITSELF, matching the header picker. Same rule in both
+  // places so the two surfaces cannot drift: endonym first, English appended
+  // only when the endonym is non-Latin AND the English name has no
+  // parentheses of its own.
+  var LP_NON_LATIN = /[^\u0020-\u024F\u1E00-\u1EFF\s().,'\u2019-]/;
+  function lpLangLabel(entry) {
+    if (!entry) return '';
+    var endonym = entry.endonym || entry.value;
+    if (endonym === entry.value) return entry.value;
+    var needsGloss = LP_NON_LATIN.test(endonym) && !/[()]/.test(entry.value);
+    return needsGloss ? endonym + ' (' + entry.value + ')' : endonym;
+  }
+  function lpCurrentLabel() {
+    for (var i = 0; i < LAUNCH_PAD_LANGS.length; i++) {
+      if (LAUNCH_PAD_LANGS[i] && LAUNCH_PAD_LANGS[i].value === currentUiLanguage) {
+        return lpLangLabel(LAUNCH_PAD_LANGS[i]);
+      }
+    }
+    return currentUiLanguage;
+  }
+
   React.useEffect(function() {
     if (!langMenuOpen || typeof document === 'undefined') return;
     var list = langListRef.current;
@@ -187,7 +211,7 @@ function LaunchPadView(props) {
               onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
             >
               <span aria-hidden="true" style={{ fontSize: '14px' }}>🌐</span>
-              <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUiLanguage}</span>
+              <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lpCurrentLabel()}</span>
               <span aria-hidden="true" style={{ fontSize: '9px', opacity: 0.7 }}>{langMenuOpen ? '▲' : '▼'}</span>
             </button>
             {langMenuOpen && (
@@ -201,7 +225,8 @@ function LaunchPadView(props) {
                   boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                   maxHeight: '60vh', overflowY: 'auto', zIndex: 100001,
                 }}>
-                  {LAUNCH_PAD_LANGS.map((langName) => {
+                  {LAUNCH_PAD_LANGS.map((lang) => {
+                    var langName = lang.value;
                     var selected = langName === currentUiLanguage;
                     return (
                       <li key={langName} style={{ margin: 0 }}>
@@ -220,7 +245,7 @@ function LaunchPadView(props) {
                             transition: 'background 0.15s',
                           }}
                         >
-                          {selected ? '✓ ' : '  '}{langName}
+                          {selected ? '✓ ' : '  '}{lpLangLabel(lang)}
                         </button>
                       </li>
                     );
