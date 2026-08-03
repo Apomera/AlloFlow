@@ -329,6 +329,7 @@
     className: "text-emerald-600",
     "aria-hidden": "true"
   }), " ", t('project_settings.unlock_xp')), /*#__PURE__*/React.createElement("input", {
+    "data-help-key": "settings_unlock_xp",
     type: "number",
     min: "0",
     step: "100",
@@ -346,6 +347,7 @@
     className: "text-blue-600",
     "aria-hidden": "true"
   }), " ", t('project_settings.base_xp')), /*#__PURE__*/React.createElement("input", {
+    "data-help-key": "settings_base_xp",
     type: "number",
     min: "10",
     step: "10",
@@ -363,6 +365,7 @@
     className: "text-amber-600",
     "aria-hidden": "true"
   }), " ", t('project_settings.storybook_xp')), /*#__PURE__*/React.createElement("input", {
+    "data-help-key": "settings_adventure_xp",
     type: "number",
     min: "0",
     step: "100",
