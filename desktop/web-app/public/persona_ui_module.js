@@ -463,6 +463,7 @@ const InteractiveBlueprintCard = React.memo(({
     }) || `Building — ${_settled} of ${_total} steps finished`, _active ? ` · ${getToolLabel(_active.tool)}` : ''), typeof onStopRun === 'function' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-stop-run",
+      "data-help-key": "blueprint_stop_run_btn",
       onClick: onStopRun,
       className: "shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50",
       title: t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'
@@ -682,6 +683,7 @@ const InteractiveBlueprintCard = React.memo(({
       "aria-expanded": openDescIds.indexOf(item.id) !== -1,
       "aria-controls": `bp-desc-${item.id}`,
       "data-testid": "bp-desc-toggle",
+      "data-help-key": "blueprint_resource_desc_toggle",
       className: "ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400",
       title: t('blueprint.what_is_this') || 'What does this resource do?',
       "aria-label": `${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`

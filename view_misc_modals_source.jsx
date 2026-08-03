@@ -256,6 +256,7 @@ function UDLGuideModal(props) {
                     <button
                       type="button"
                       data-testid="bp-template-apply"
+                      data-help-key="blueprint_template_apply_btn"
                       onClick={() => handleApplyLessonTemplate(tpl.id)}
                       className={`flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`}
                     >
@@ -306,6 +307,7 @@ function UDLGuideModal(props) {
                     <button
                       type="button"
                       data-testid="bp-archive-restore"
+                      data-help-key="blueprint_archive_restore_btn"
                       onClick={() => handleRestoreArchivedPlan(rec.id)}
                       className={`flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`}
                     >
@@ -318,6 +320,7 @@ function UDLGuideModal(props) {
                     <button
                       type="button"
                       data-testid="bp-archive-delete"
+                      data-help-key="blueprint_archive_delete_btn"
                       onClick={() => handleDeleteArchivedPlan(rec.id)}
                       aria-label={`${t('blueprint.archive_delete') || 'Delete archived plan'}: ${rec.name}`}
                       title={t('blueprint.archive_delete') || 'Delete archived plan'}

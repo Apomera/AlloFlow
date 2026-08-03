@@ -299,17 +299,17 @@ function ProjectSettingsView(props) {
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><MapIcon size={16} className="text-emerald-600" aria-hidden="true"/> {t('project_settings.unlock_xp')}</span>
-                    <input type="number" min="0" step="100" value={studentProjectSettings.adventureUnlockXP ?? 0} onChange={(event) => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_unlock_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureUnlockXP ?? 0} onChange={(event) => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.unlock_xp_desc')}</span>
                   </label>
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><Trophy size={16} className="text-blue-600" aria-hidden="true"/> {t('project_settings.base_xp')}</span>
-                    <input type="number" min="10" step="10" value={studentProjectSettings.baseXP ?? 100} onChange={(event) => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_base_xp" type="number" min="10" step="10" value={studentProjectSettings.baseXP ?? 100} onChange={(event) => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.base_xp_desc')}</span>
                   </label>
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><Trophy size={16} className="text-amber-600" aria-hidden="true"/> {t('project_settings.storybook_xp')}</span>
-                    <input type="number" min="0" step="100" value={studentProjectSettings.adventureMinXP ?? 0} onChange={(event) => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_adventure_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureMinXP ?? 0} onChange={(event) => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.storybook_xp_desc')}</span>
                   </label>
                 </div>

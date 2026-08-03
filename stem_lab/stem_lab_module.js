@@ -4632,7 +4632,7 @@
                 // @tool funcGrapher
                 id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher'),
                 desc: 'Plot linear, quadratic, and trig functions. Adjust coefficients in real-time.',
-                color: 'indigo', ready: true
+                aliases: ['trigonometry', 'sine', 'cosine', 'amplitude', 'period'], color: 'indigo', ready: true
               },
               {
                 id: 'inequality', icon: '↕️', label: t('stem.tools_menu.inequality_grapher'),
@@ -4721,7 +4721,7 @@
               },
               {
                 id: 'dataLab', icon: '\uD83D\uDDC2\uFE0F', label: 'CODAP Data Science',
-                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that reads your column summaries and a sample of your rows, then asks questions instead of giving answers.',
+                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
                 color: 'indigo', ready: true
               },
               {
@@ -4869,7 +4869,7 @@
                 desc: 'Explore fronts, pressure, humidity, wind, radar, station models, severe-weather hazards, and evidence-based forecasting.',
                 color: 'sky', ready: true
               },
-              { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+              { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', aliases: ['convection', 'mantle convection', 'heat transfer'], color: 'orange', ready: true },
               { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               // gisStudio registers itself in stem_tool_gisstudio.js but had NO tile here,
@@ -4917,6 +4917,9 @@
                 desc: 'Adjust frequency, amplitude, wavelength. Explore interference patterns.',
                 color: 'cyan', ready: true
               },
+              { id: 'heatLab', icon: '🌡️', label: 'Heat & Thermodynamics Lab', desc: 'Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve; and why no heat engine reaches 100%.', aliases: ['thermodynamics', 'heat', 'heat transfer', 'conduction', 'convection', 'radiation', 'insulation', 'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'carnot', 'heat engine', 'thermal', 'temperature', 'second law'], color: 'orange', ready: true },
+              { id: 'nuclearLab', icon: '☢️', label: 'Nuclear & Radiation Lab', desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, fission and fusion, radiation doses on a readable scale, the three accidents in honest numbers, the waste question, and where small modular reactors really stand.', aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'isotope', 'decay', 'fission', 'fusion', 'reactor', 'SMR', 'small modular reactor', 'uranium', 'plutonium', 'carbon dating', 'chernobyl', 'fukushima', 'sievert', 'dose', 'radiation safety', 'shielding', 'nuclear waste', 'alpha', 'beta', 'gamma', 'radon', 'meltdown', 'enrichment', 'nuclear power'], color: 'violet', ready: true },
+              { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
               {
                 // @tool magnetism
                 id: 'magnetism', icon: '🧲', label: 'Magnetism Lab',
@@ -4955,7 +4958,7 @@
                 // @tool chemBalance
                 id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer'),
                 desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
-                aliases: ['Chemistry Lab', 'chem lab', 'chemical equations', 'equation balancing', 'stoichiometry', 'chemical reactions'],
+                aliases: ['Chemistry Lab', 'chem lab', 'chemical equations', 'equation balancing', 'stoichiometry', 'chemical reactions', 'periodic table', 'elements', 'element properties', 'atomic number', 'equation balancer', 'balance equations', 'chemlab', 'safety', 'GHS', 'hazard', 'pictogram'],
                 color: 'lime', ready: true
               },
               {
@@ -4982,7 +4985,7 @@
                 color: 'cyan', ready: true
               },
               { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
-              { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
+              { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', aliases: ['simple machines', 'lever', 'mechanical advantage', 'screw press'], color: 'amber', ready: true },
               {
                 id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
                 desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
@@ -5058,7 +5061,6 @@
               },
               { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
               { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
-              { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
               {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
                 desc: 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
@@ -5132,7 +5134,7 @@
               {
                 id: 'bikeLab', icon: '🚲', label: 'BikeLab: Physics & Repair',
                 desc: '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
-                color: 'amber', ready: true
+                aliases: ['gears', 'gear ratio', 'mechanical advantage'], color: 'amber', ready: true
               },
 
               {

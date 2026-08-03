@@ -1710,7 +1710,7 @@ var d = (labToolData.probability) || {};
                     "aria-label": "With or without replacement (currently " + (d.mbWithoutReplacement ? "without" : "with") + " replacement)",
                     tabIndex: 0,
                     onClick: function () { upd('mbWithoutReplacement', !d.mbWithoutReplacement); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); },
-                    onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
+                   
 
                     className: "relative w-10 h-5 rounded-full transition-colors cursor-pointer",
 
