@@ -830,6 +830,67 @@
     return 'Report is switched on, so the output marker includes decision, memory, and response processes on top of whatever was experienced. Switch it off and watch which markers survive.';
   }
 
+  // Named experiments. Each preset is a complete control state (not a patch),
+  // so applying one always lands on the documented dissociation regardless of
+  // what the learner dialled in beforehand.
+  var SIM_PRESETS = [
+    {
+      id: 'clear', icon: '👁️', label: 'Clearly seen trial', plainLabel: 'Easy to see', minLevel: 'early',
+      config: { substrate: 'human', strength: 85, interference: 10, topDown: 60, reportRequired: true, bypass: false },
+      asks: 'What does an ordinary, unobstructed run look like?',
+      note: 'A strong, unmasked target: every marker rises together. This is the easy case every theory explains — which is exactly why it cannot separate them.',
+      plainNote: 'A clear picture. Every step lights up.'
+    },
+    {
+      id: 'masked', icon: '🎭', label: 'Backward masking', plainLabel: 'Covered up', minLevel: 'early',
+      config: { substrate: 'human', strength: 85, interference: 90, topDown: 60, reportRequired: true, bypass: false },
+      asks: 'Can early processing happen without the later stages?',
+      note: 'The mask interrupts the loops: the feedforward sweep survives while recurrence and everything after it collapse. RPT and GNWT read this same curve differently.',
+      plainNote: 'The cover-up stops the later steps, but the first step still happens.'
+    },
+    {
+      id: 'noreport', icon: '🤫', label: 'No-report paradigm', plainLabel: 'Nobody asks', minLevel: 'middle',
+      config: { substrate: 'human', strength: 85, interference: 10, topDown: 60, reportRequired: false, bypass: false },
+      asks: 'Which markers were measuring the experience, and which were measuring the asking?',
+      note: 'Same stimulus, nothing asked. Watch which late markers fall — whatever disappears was partly measuring the report, not the experience.',
+      plainNote: 'The picture still happens, but nobody has to answer. See which steps stay.'
+    },
+    {
+      id: 'sedated', icon: '💤', label: 'Reduced arousal', plainLabel: 'Sleepy brain', minLevel: 'middle',
+      config: { substrate: 'human', strength: 85, interference: 10, topDown: 60, reportRequired: true, bypass: true },
+      asks: 'Can the machinery run while the sharing stops?',
+      note: 'Local sensory processing continues while global availability collapses — the state-versus-content distinction anesthesia research turns on.',
+      plainNote: 'The early steps work, but the sharing step almost stops.'
+    },
+    {
+      id: 'threshold', icon: '🎚️', label: 'Right at threshold', plainLabel: 'Almost enough', minLevel: 'middle',
+      config: { substrate: 'human', strength: 55, interference: 25, topDown: 45, reportRequired: true, bypass: false },
+      asks: 'Is conscious access graded or all-or-none in this model?',
+      note: 'Sitting just under ignition. Nudge strength up ten points and the workspace stage jumps rather than creeping — that step is built into the equations, not discovered by them.',
+      plainNote: 'Almost enough to switch on. Move the first slider up a little and watch it jump.'
+    },
+    {
+      id: 'non-verbalizable', icon: '🔇', label: 'Non-verbalizable content', plainLabel: 'Cannot say it', minLevel: 'high',
+      config: { substrate: 'model', strength: 90, interference: 5, topDown: 50, reportRequired: true, bypass: true },
+      asks: 'What does a lens that only sees verbalizable content miss?',
+      note: 'Downstream computation continues while the verbalizable marker collapses. An absent reading is evidence about the lens, not proof of an absent representation.',
+      plainNote: 'The program keeps working, but it cannot put this part into words.'
+    },
+    {
+      id: 'attention-starved', icon: '🫥', label: 'Attention withdrawn', plainLabel: 'Not paying attention', minLevel: 'high',
+      // 60/20 verified: 19% workspace at zero attention, 94% at 60. The prose below
+      // claims a dissociation, so the numbers have to actually produce one.
+      config: { substrate: 'human', strength: 60, interference: 20, topDown: 0, reportRequired: true, bypass: false },
+      asks: 'How much of this model’s ignition is doing the work of attention?',
+      note: 'This signal does not ignite while attention is at zero. Raise the attention slider and it does. Whether that makes attention necessary for consciousness, or only for this toy’s workspace stage, is exactly the disputed question.',
+      plainNote: 'Nobody is paying attention, so it does not get shared. Move the attention slider up and watch it switch on.'
+    }
+  ];
+
+  function presetsForProfile(profile) {
+    return SIM_PRESETS.filter(function (preset) { return levelAtLeast(profile.id, preset.minLevel || 'early'); });
+  }
+
   function simPhenomenalVerdict(simple) {
     return simple
       ? 'Nobody measured a feeling here. All these numbers came from arithmetic we wrote to help us ask questions. They cannot tell us whether anything felt like something.'
@@ -900,6 +961,8 @@
       runWorkspaceSim: runWorkspaceSim,
       simTheoryReadoutFor: function (theoryId, config) { return simTheoryReadout(THEORIES[theoryId], runWorkspaceSim(config)); },
       simSubstrateIds: Object.keys(SIM_SUBSTRATES),
+      simPresetIdsFor: function (grade) { return presetsForProfile(resolveProfile(grade)).map(function (preset) { return preset.id; }); },
+      simPresetById: function (id) { return SIM_PRESETS.filter(function (preset) { return preset.id === id; })[0] || null; },
       journeyStagesFor: function (theoryId) {
         return SIGNAL_STAGES.filter(function (stage) { return stageMatchesTheory(stage, THEORIES[theoryId]); }).map(function (stage) { return stage.id; });
       },
@@ -1782,6 +1845,10 @@
       var visibleStages = simple
         ? substrate.stages.filter(function (stage) { return ['sensory', 'workspace', 'output'].indexOf(stage[0]) !== -1; })
         : substrate.stages;
+      var presets = presetsForProfile(profile);
+      var activePreset = presets.filter(function (preset) {
+        return Object.keys(preset.config).every(function (key) { return cfg[key] === preset.config[key]; });
+      })[0] || null;
 
       function updateSim(patch, announcement) {
         patchState(function (current) {
@@ -1900,6 +1967,30 @@
           })
         ),
         h('p', { className: 'cns-sim-blurb' }, copyFor('plainBlurb', 'blurb')),
+        h('section', { className: 'cns-sim-presets', 'aria-labelledby': 'cns-sim-presets-title', style: { borderColor: C.border } },
+          h('h3', { id: 'cns-sim-presets-title' }, simple ? 'Try one of these' : 'Set up a known comparison'),
+          h('p', { className: 'cns-sim-hint' }, simple
+            ? 'Each button sets the sliders for you. Read what to look for first, then look at the numbers.'
+            : 'Each preset is one change from the clear-signal baseline. Read the question and what to expect before reading the run — a bench you interpret after the fact can seem to confirm anything.'),
+          h('div', { className: 'cns-sim-preset-row', role: 'group', 'aria-label': 'Preset comparisons' }, presets.map(function (preset) {
+            var active = activePreset && activePreset.id === preset.id;
+            var presetLabel = simple && preset.plainLabel ? preset.plainLabel : preset.label;
+            var presetNote = simple && preset.plainNote ? preset.plainNote : preset.note;
+            return h('button', {
+              key: preset.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+              onClick: function () {
+                updateSim(Object.assign({}, preset.config), presetLabel + ' loaded. ' + presetNote);
+                awardOnce('bench-preset-' + preset.id, 2, 'Ran a named comparison on the Workspace Bench');
+              },
+              style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border }
+            }, h('span', { 'aria-hidden': 'true' }, preset.icon), presetLabel);
+          })),
+          activePreset && h('div', { className: 'cns-sim-preset-detail', style: { background: C.raised, borderColor: C.accent } },
+            !simple && h('p', null, h('strong', null, 'Question: '), activePreset.asks),
+            h('p', null, h('strong', null, simple ? 'Look for: ' : 'What to look for: '),
+              simple && activePreset.plainNote ? activePreset.plainNote : activePreset.note)
+          )
+        ),
         h('div', { className: 'cns-sim-controls' },
           slider('strength', copyFor('plainStrengthLabel', 'strengthLabel'), null),
           slider('interference', copyFor('plainInterferenceLabel', 'interferenceLabel'), null),
@@ -2171,6 +2262,7 @@
       '.cns-case-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}.cns-case-tabs button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:8px 11px;border:1px solid;border-radius:9px;font-size:11px;font-weight:850}.cns-case{padding:18px;border:1px solid;border-radius:13px}.cns-case-heading h3{margin:5px 0;font-size:20px}.cns-case-setup{font-size:14px}.cns-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.cns-lens-pair>div{padding:12px;border:1px solid;border-radius:9px}.cns-lens-pair p{margin:4px 0 0;color:var(--cns-muted);font-size:12px}.cns-source-inline{font-size:11px}.cns-source-inline a,.cns-sources a{color:var(--cns-link);font-weight:800}.cns-reflection{margin-top:14px}.cns-reflection label span{display:block;margin:3px 0 7px;color:var(--cns-muted);font-size:11px}.cns-objective-anchor{margin-top:9px;padding:9px;border:1px solid;border-radius:8px;font-size:12px}',
       '.cns-case-theories{margin:13px 0;padding:14px;border:1px solid;border-radius:11px}.cns-case-theories h4{margin:2px 0 0;font-size:18px}.cns-case-theories-intro{margin:7px 0 11px;color:var(--cns-muted);font-size:11px}.cns-case-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.cns-case-interpretation{padding:11px;border-left:4px solid;border-radius:8px}.cns-case-interpretation h5{margin:5px 0 2px;font-size:13px}.cns-case-interpretation p{margin:4px 0;color:var(--cns-muted);font-size:11px}.cns-guided-debate{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-guided-debate>p{color:var(--cns-muted);font-size:12px}.cns-debate-pickers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}.cns-debate-pickers label>span{display:block;margin-bottom:4px;font-size:10px;font-weight:850}.cns-debate-pickers select{width:100%;padding:8px;border:1px solid;border-radius:8px}.cns-debate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-debate-grid label{display:block}.cns-debate-grid label>strong,.cns-debate-grid label>span{display:block}.cns-debate-grid label>span{min-height:30px;margin:2px 0 5px;color:var(--cns-muted);font-size:10px}.cns-debate-requirement{margin:8px 0 0;font-size:10px!important}.cns-debate-finish{margin-top:12px;padding:8px 13px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900}.cns-debate-finish:disabled{cursor:not-allowed;opacity:.7}.cns-debate-complete{margin:8px 0 0;font-size:11px;font-weight:750}',
       '.cns-sim-substrates{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.cns-sim-substrates button{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}.cns-sim-substrates button>span:first-child{font-size:19px}.cns-sim-blurb{margin:0 0 14px;color:var(--cns-muted);font-size:12px}',
+      '.cns-sim-presets{margin:0 0 16px;padding:13px;border:1px solid;border-radius:11px}.cns-sim-presets h3{margin:0 0 5px;font-size:15px}.cns-sim-preset-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.cns-sim-preset-row button{padding:7px 12px;border:1px solid;border-radius:999px;font-size:11px;font-weight:850}.cns-sim-preset-detail{margin-top:10px;padding:10px 12px;border:1px solid;border-left-width:4px;border-radius:9px}.cns-sim-preset-detail p{margin:0 0 5px;font-size:12px;line-height:1.5}.cns-sim-preset-detail p:last-child{margin-bottom:0}',
       '.cns-sim-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px}.cns-sim-control label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:12px}.cns-sim-value{font-variant-numeric:tabular-nums;font-weight:850;color:var(--cns-muted)}.cns-sim-control input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-sim-hint{display:block;margin-top:4px;color:var(--cns-muted);font-size:11px;line-height:1.45}',
       '.cns-sim-toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:16px}.cns-sim-toggle button{width:100%;padding:9px 12px;border:1px solid;border-radius:9px;text-align:left;font-size:12px;font-weight:850}',
       '.cns-sim-readout{padding:15px;border:1px solid;border-radius:12px}.cns-sim-readout h3{margin:0 0 8px;font-size:17px}.cns-sim-status{margin:0 0 12px;font-size:13px;font-weight:700}.cns-sim-table{width:100%;border-collapse:collapse;font-size:12px}.cns-sim-table caption{padding:0 0 8px;text-align:left;font-size:11px;font-weight:850;color:var(--cns-muted)}.cns-sim-table th,.cns-sim-table td{padding:8px;border-bottom:1px solid var(--cns-border);vertical-align:middle;text-align:left}.cns-sim-table tbody th{font-size:12px;font-weight:800}.cns-sim-table td:nth-child(2){width:64px;font-variant-numeric:tabular-nums;font-weight:850}.cns-sim-table td:nth-child(3){width:45%}.cns-sim-stage-note{display:block;margin-top:2px;color:var(--cns-muted);font-size:10px;font-weight:500}.cns-sim-bar{display:block;width:100%;height:11px;border:1px solid var(--cns-border);border-radius:999px;overflow:hidden}.cns-sim-bar>span{display:block;height:100%}.cns-sim-confound{margin:12px 0 0;font-size:12px;line-height:1.5}',

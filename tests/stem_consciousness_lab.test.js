@@ -398,3 +398,94 @@ describe('Theory journey placement', () => {
     expect(config.testHooks.journeyNoteFor('panpsychism')).toContain('intrinsic integration');
   });
 });
+
+describe('Workspace Bench presets', () => {
+  const sim = (cfg) => config.testHooks.runWorkspaceSim(cfg);
+  const preset = (id) => config.testHooks.simPresetById(id);
+
+  it('gates presets by reading path', () => {
+    const early = config.testHooks.simPresetIdsFor('1st Grade');
+    expect(early).toEqual(['clear', 'masked']);
+
+    const middle = config.testHooks.simPresetIdsFor('7th Grade');
+    expect(middle).toContain('noreport');
+    expect(middle).toContain('threshold');
+    expect(middle).not.toContain('non-verbalizable');
+
+    const high = config.testHooks.simPresetIdsFor('11th Grade');
+    expect(high).toContain('non-verbalizable');
+    expect(high).toContain('attention-starved');
+  });
+
+  it('gives every preset a full copy set, including plain language', () => {
+    config.testHooks.simPresetIdsFor('Graduate').forEach((id) => {
+      const p = preset(id);
+      expect(p.icon, id).toBeTruthy();
+      expect(p.label, id).toBeTruthy();
+      expect(p.plainLabel, id).toBeTruthy();
+      expect(p.asks, id).toBeTruthy();
+      expect(p.note, id).toBeTruthy();
+      expect(p.plainNote, id).toBeTruthy();
+    });
+  });
+
+  it('stores a complete control state so a preset never inherits stray dials', () => {
+    config.testHooks.simPresetIdsFor('Graduate').forEach((id) => {
+      const c = preset(id).config;
+      ['substrate', 'strength', 'interference', 'topDown', 'reportRequired', 'bypass']
+        .forEach((key) => expect(c[key], id + '.' + key).toBeDefined());
+    });
+  });
+
+  it('actually produces the dissociation each preset claims', () => {
+    const clear = sim(preset('clear').config).markers;
+    expect(clear.ignited).toBe(true);
+
+    // masked: early sweep survives, everything downstream collapses
+    const masked = sim(preset('masked').config).markers;
+    expect(masked.sensory).toBeGreaterThan(0.5);
+    expect(masked.ignited).toBe(false);
+
+    // threshold: subthreshold, but +10 strength ignites (all-or-none, not a ramp)
+    const thr = preset('threshold').config;
+    expect(sim(thr).markers.ignited).toBe(false);
+    expect(sim({ ...thr, strength: thr.strength + 10 }).markers.ignited).toBe(true);
+
+    // no-report: late markers fall, recurrence does not
+    const noreport = sim(preset('noreport').config).markers;
+    expect(noreport.recurrence).toBeCloseTo(clear.recurrence, 5);
+    expect(noreport.output).toBeLessThan(clear.output / 3);
+
+    // sedated: recurrence holds, global availability collapses
+    const sedated = sim(preset('sedated').config).markers;
+    expect(sedated.recurrence).toBeGreaterThan(0.7);
+    expect(sedated.ignited).toBe(false);
+
+    // non-verbalizable: workspace ignites, self-monitor readout collapses
+    const nv = sim(preset('non-verbalizable').config).markers;
+    expect(nv.ignited).toBe(true);
+    expect(nv.monitor).toBeLessThan(clear.monitor / 3);
+
+    // attention withdrawn: same signal fails to ignite without top-down gain
+    const starved = preset('attention-starved').config;
+    expect(sim(starved).markers.ignited).toBe(false);
+    expect(sim({ ...starved, topDown: 60 }).markers.ignited).toBe(true);
+  });
+
+  it('renders preset buttons with the question stated before the numbers', () => {
+    const html = renderView('11th Grade', 'bench');
+    expect(html).toContain('Set up a known comparison');
+    expect(html).toContain('Backward masking');
+    expect(html).toContain('Non-verbalizable content');
+    expect(html).toContain('a bench you interpret after the fact can seem to confirm anything');
+  });
+
+  it('shows the youngest path only its two presets, in plain words', () => {
+    const html = renderView('1st Grade', 'bench');
+    expect(html).toContain('Try one of these');
+    expect(html).toContain('Easy to see');
+    expect(html).toContain('Covered up');
+    expect(html).not.toContain('Backward masking');
+    expect(html).not.toContain('No-report paradigm');
+  });
+});
