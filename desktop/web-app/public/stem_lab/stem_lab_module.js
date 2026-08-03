@@ -4566,7 +4566,7 @@
               },
               {
                 id: 'arithmeticStudio',
-                icon: '\uD83E\uDDEE',
+                icon: '➕',
                 label: 'Arithmetic Strategy Studio',
                 desc: 'Learn all four operations through models, strategies, estimation, and mistake analysis.',
                 color: 'blue',
@@ -4602,7 +4602,7 @@
               },
               {
                 id: 'ratioLab',
-                icon: '\uD83D\uDCCA',
+                icon: '➗',
                 label: 'Ratios, Rates & Proportions Lab',
                 desc: 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',
                 color: 'indigo',
@@ -4615,7 +4615,7 @@
               },
 
               {
-                id: 'unitConvert', icon: '\uD83D\uDCCF', label: t('stem.tools_menu.unit_converter'),
+                id: 'unitConvert', icon: '🔄', label: t('stem.tools_menu.unit_converter'),
                 desc: 'Convert between metric and imperial units for length, mass, volume, and more.',
                 color: 'teal', ready: true
               },
@@ -4650,7 +4650,7 @@
                 color: 'amber', ready: true
               },
               {
-                id: 'graphCalc', icon: '🧪', label: 'Graphing Calculator',
+                id: 'graphCalc', icon: '📟', label: 'Graphing Calculator',
                 desc: 'Type equations, plot functions, explore data. Learn what every button really does.',
                 color: 'indigo', ready: true
               },
@@ -4665,7 +4665,7 @@
               },
               {
                 id: 'areaPerimeter',
-                icon: '\uD83D\uDCD0',
+                icon: '🟦',
                 label: 'Area & Perimeter Lab',
                 desc: 'Tile, compare, decompose, and investigate 2-D shapes while building measurement reasoning.',
                 color: 'teal',
@@ -4694,7 +4694,7 @@
                 desc: 'Build 3D shapes, measure properties, and export STL files for 3D printing.',
                 color: 'sky', ready: true
               },
-              { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
+              { id: 'geometryProver', icon: '🔺', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
               { id: '_cat_DataStatsProbability', icon: '', label: '\uD83D\uDCCA Data, Statistics & Probability', desc: '', color: 'slate', chip: 'math', category: true },
               {
@@ -4738,20 +4738,25 @@
                 color: 'green', ready: true
               },
               {
+                id: 'dissection', icon: '🐸', label: 'Dissection Lab',
+                desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'cellAtlasLab', icon: '\u2237', label: 'Cell Atlas Lab',
                 desc: 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
                 color: 'cyan', ready: true
               },
               { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
               {
-                id: 'punnett', icon: '🧬', label: t('stem.tools_menu.punnett_square'),
+                id: 'punnett', icon: '👪', label: t('stem.tools_menu.punnett_square'),
                 desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
                 color: 'violet', ready: true
               },
               { id: 'microbiology', icon: '\uD83E\uDD7C', label: 'Microbiology Lab', desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
               { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
               {
-                id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
+                id: 'evoLab', icon: '🦎', label: 'EvoLab: Evolution',
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
               },
@@ -4771,11 +4776,6 @@
                 id: 'brainAtlas', icon: '🧠', label: t('stem.tools_menu.brain_atlas'),
                 desc: 'Detailed cerebral regions, lobes, nuclei and clinical correlations. Lateral, medial, inferior & coronal views.',
                 color: 'purple', ready: true
-              },
-              {
-                id: 'dissection', icon: '\uD83D\uDD2C', label: 'Dissection Lab',
-                desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
-                color: 'emerald', ready: true
               },
               {
                 id: 'nutritionLab', icon: '🥗', label: 'NutritionLab: Nutrition Science',
@@ -4815,7 +4815,7 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Environmental Stewardship Campaigns',
+                id: 'stewardshipHub', icon: '♻️', label: 'Environmental Stewardship Campaigns',
                 desc: 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
                 color: 'emerald', ready: true
               },
@@ -4836,7 +4836,7 @@
               },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'raptorHunt', icon: '\uD83E\uDD85', label: 'Raptor Hunt: Predator Physics + Biology', desc: 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
-              { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
+              { id: 'migration', icon: '🦋', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
               {
                 id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
                 desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
@@ -4855,12 +4855,12 @@
               // @tool rocks
               { id: 'rocks', icon: '🪨', label: t('stem.tools_menu.rocks_minerals'), desc: t('stem.tools_menu.interactive_rock_cycle_mineral_properties'), color: 'amber', ready: true },
               {
-                id: 'rockCycle', icon: '\uD83E\uDEA8', label: t('stem.tools_menu.rock_cycle'),
+                id: 'rockCycle', icon: '🔁', label: t('stem.tools_menu.rock_cycle'),
                 desc: 'Trace the transformation of igneous, sedimentary, and metamorphic rocks.',
                 color: 'stone', ready: true
               },
               {
-                id: 'waterCycle', icon: '\uD83C\uDF0A', label: t('stem.tools_menu.water_cycle'),
+                id: 'waterCycle', icon: '💧', label: t('stem.tools_menu.water_cycle'),
                 desc: 'Follow water through evaporation, condensation, precipitation, and collection.',
                 color: 'cyan', ready: true
               },
@@ -4879,11 +4879,11 @@
               // its own icon) so it cannot be re-encoded into mojibake.
               // NB: no apostrophes in comments inside this array — the catalog gate
               // tracks quote state as it scans and an unpaired one blinds it.
-              { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
+              { id: 'gisStudio', icon: '🌐', label: 'GIS Studio', desc: 'Build, compare, compose, sequence, annotate, and export accessible GIS and remote-sensing investigations: import CSV/GeoJSON, choropleths, buffers, change over time, NDVI/NDWI/NDBI, swipe scenes, story maps, and table-first evidence reports.', color: 'teal', ready: true },
               { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
               {
                 // @tool solarSystem
-                id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System',
+                id: 'solarSystem', icon: '🪐', label: 'Solar System',
                 desc: '3D interactive solar system with orbit, zoom, planet facts and quiz.',
                 color: 'blue', ready: true
               },
@@ -4925,7 +4925,7 @@
               },
               {
                 // @tool physics
-                id: 'physics', icon: '⚡', label: t('stem.tools_menu.physics_simulator'),
+                id: 'physics', icon: '🎯', label: t('stem.tools_menu.physics_simulator'),
                 desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
                 color: 'sky', ready: true
               },
@@ -4977,7 +4977,7 @@
               },
               {
                 // @tool semiconductor
-                id: 'semiconductor', icon: '\uD83D\uDD0C', label: 'Semiconductor Lab',
+                id: 'semiconductor', icon: '💠', label: 'Semiconductor Lab',
                 desc: 'Explore transistors, logic gates, silicon doping, and chip design fundamentals.',
                 color: 'cyan', ready: true
               },
@@ -4997,7 +4997,7 @@
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
               { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
               { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
-              { id: 'cellularLab', icon: '\uD83E\uDDEB', label: 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
+              { id: 'cellularLab', icon: '🟩', label: 'Cellular Automaton Lab', desc: "Explore polished 2-D Life-like worlds with custom B/S rules, scientific lenses, design challenges, 17 classic patterns, dynamic grids, population evidence, PNG export, and all 256 elementary Wolfram rules.", color: 'emerald', ready: true },
               {
                 id: 'cyberDefense', icon: '\uD83D\uDEE1\uFE0F', label: 'Cyber Defense Lab',
                 desc: 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
@@ -5009,7 +5009,7 @@
                 color: 'teal', ready: true
               },
               {
-                id: 'llmLiteracy', icon: '🧠', label: 'AI Literacy Lab',
+                id: 'llmLiteracy', icon: '🤖', label: 'AI Literacy Lab',
                 desc: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
                 color: 'violet', ready: true
               },
@@ -5024,7 +5024,7 @@
                 color: 'violet', ready: true
               },
               {
-                id: 'simShelf', icon: '\uD83E\uDDEA', label: 'Sim Shelf',
+                id: 'simShelf', icon: '🗄️', label: 'Sim Shelf',
                 desc: 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
                 color: 'amber', ready: true
               },
@@ -5081,7 +5081,7 @@
                 color: 'teal', ready: true
               },
               {
-                id: 'learningLab', icon: '🧠', label: 'Learning Lab: How Learning Works',
+                id: 'learningLab', icon: '🎓', label: 'Learning Lab: How Learning Works',
                 desc: 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
                 color: 'indigo', ready: true
               },
@@ -5092,7 +5092,7 @@
                 aliases: ['consciousness', 'mind', 'awareness', 'phenomenal consciousness', 'global workspace', 'integrated information']
               },
               {
-                id: 'assessmentLiteracy', icon: '📊', label: 'Assessment Literacy Lab',
+                id: 'assessmentLiteracy', icon: '📋', label: 'Assessment Literacy Lab',
                 desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
                 color: 'fuchsia', ready: true
               },
@@ -5118,7 +5118,7 @@
                 color: 'slate', ready: true
               },
               {
-                id: 'weldLab', icon: '🔥', label: 'WeldLab: Welding & Metal Joining',
+                id: 'weldLab', icon: '⚒️', label: 'WeldLab: Welding & Metal Joining',
                 desc: 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
                 color: 'orange', ready: true
               },
@@ -5171,8 +5171,8 @@
               },
               { id: '_cat_Strategy', icon: '', label: '\u2694\uFE0F Strategy Games', desc: '', color: 'slate', chip: 'strategy', category: true },
               { id: 'arccity', icon: '🌆', label: 'Arc City', desc: 'Author functions, re-light a neon city, and battle across two function-powered Circuit Clash arenas.', color: 'fuchsia', ready: true },
-              { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
-              { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
+              { id: 'spaceColony', label: 'Kepler Colony', icon: '🛖', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
+              { id: 'spaceExplorer', label: 'Space Explorer', icon: '🛸', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
