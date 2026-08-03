@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "75ac83eb4552b9e5569e5992c0d82ccd18851ea71c12818ccd0c66a0a0da6217",
+    "plan_sha256": "e1de607c92651e95e935d78f33dbc30743cc5cc69325bc8afb84410d87ac7e9c",
+    "source_sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 228,
+    "unreadable": 0,
+    "verified": 228
+  },
+  "createdAt": "2026-08-03T16:26:25Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "statement": "I extracted all 11 pages of the source PDF (uscis-civics-100q.pdf) with pdftotext and read the rebuilt HTML and its accessibility-report review notes in full, then compared every heading, every answer list (count, order, wording, parentheticals, bracketed notes), the h1-h4 hierarchy, and each disclosed transformation item by item."
+  }
+}

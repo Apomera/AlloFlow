@@ -999,11 +999,26 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             source_tokens = _tokens(extraction["text"])
             token_total = sum(source_tokens.values())
             if token_total >= MIN_RECALL_TOKENS:
-                source_recall = _token_recall(source_tokens, _tokens(_plan_text(validated)))
+                plan_tokens = _tokens(_plan_text(validated))
+                source_recall = _token_recall(source_tokens, plan_tokens)
+                # Show WHAT is missing, so a reviewer can tell disclosed page
+                # furniture (running footers, repeated footnotes) from real
+                # content loss at a glance (corpus round 3: a 0.76 recall was
+                # entirely an every-page footnote consolidated by design).
+                missing = sorted(
+                    ((token, count - plan_tokens.get(token, 0))
+                     for token, count in source_tokens.items()
+                     if count > plan_tokens.get(token, 0)),
+                    key=lambda item: -item[1],
+                )
                 source_recall_detail = {
                     "status": "completed",
                     "sourceTokens": token_total,
                     "recall": source_recall,
+                    "missingTokens": sum(count for _, count in missing),
+                    "topMissingTokens": [
+                        {"token": token, "count": count} for token, count in missing[:20]
+                    ],
                 }
             else:
                 source_recall_detail = {

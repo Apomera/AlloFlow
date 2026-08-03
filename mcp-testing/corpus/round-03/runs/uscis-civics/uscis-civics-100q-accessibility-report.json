@@ -1,0 +1,193 @@
+{
+  "alloflowPortableVersion": "0.2.0",
+  "artifacts": {
+    "accessibilityReport": "uscis-civics-100q-accessibility-report.json",
+    "accessibleHtml": "uscis-civics-100q-accessible.html",
+    "privacyReceipt": "uscis-civics-100q-privacy-receipt.json",
+    "taggedPdf": "uscis-civics-100q-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 2322,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 219,
+        "embedded_image_characters": 0,
+        "image_blocks": 0,
+        "plan_internal_token_recall": null,
+        "text_characters": 13622,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "missingTokens": 707,
+      "recall": 0.7628,
+      "sourceTokens": 2980,
+      "status": "completed",
+      "topMissingTokens": [
+        {
+          "count": 34,
+          "token": "you"
+        },
+        {
+          "count": 34,
+          "token": "years"
+        },
+        {
+          "count": 34,
+          "token": "been"
+        },
+        {
+          "count": 33,
+          "token": "or"
+        },
+        {
+          "count": 33,
+          "token": "have"
+        },
+        {
+          "count": 28,
+          "token": "the"
+        },
+        {
+          "count": 18,
+          "token": "www"
+        },
+        {
+          "count": 18,
+          "token": "uscis"
+        },
+        {
+          "count": 18,
+          "token": "gov"
+        },
+        {
+          "count": 17,
+          "token": "united"
+        },
+        {
+          "count": 17,
+          "token": "states"
+        },
+        {
+          "count": 17,
+          "token": "if"
+        },
+        {
+          "count": 17,
+          "token": "65"
+        },
+        {
+          "count": 17,
+          "token": "old"
+        },
+        {
+          "count": 17,
+          "token": "older"
+        },
+        {
+          "count": 17,
+          "token": "legal"
+        },
+        {
+          "count": 17,
+          "token": "permanent"
+        },
+        {
+          "count": 17,
+          "token": "resident"
+        },
+        {
+          "count": 17,
+          "token": "for"
+        },
+        {
+          "count": 17,
+          "token": "20"
+        }
+      ]
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 113,
+        "images": 0,
+        "links": 1,
+        "tables": 0
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 371387,
+      "pdfUaFinalization": {
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 17
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-03T16:22:54Z",
+  "manualReview": [
+    "QUESTIONS AS HEADINGS. Each of the 100 numbered questions is a level-4 heading (under h2 subject / h3 section) so screen-reader users can navigate question-by-question - the core use of this study document. The printed question numbers are kept in the heading text; answers are unordered lists exactly as bulleted in the source.",
+    "ASTERISKS PRESERVED. The asterisk marking 65/20-eligible questions is kept verbatim at the end of each marked question (6, 11, 13, 17, 20, 27, 28, 44, 45, 49, 54, 56, 70, 75, 78, 85, 94, 95, 97, 99), and the footnote explaining it appears once, in the introduction.",
+    "REPEATED FOOTER CONSOLIDATED. The 65/20 asterisk footnote and the www.uscis.gov footer are printed on every page of the source; the footnote is included once as an introduction paragraph and the URL/footer/page numbers/\"(rev. 01/19)\" line are treated as page furniture and dropped.",
+    "AGENCY SEAL NOT REPRODUCED. Page 1 carries the DHS seal and \"U.S. Citizenship and Immigration Services\" wordmark as a logo; it is identifying imagery, not content, and is described here rather than embedded.",
+    "BRACKETED OFFICER/ACCEPTABILITY NOTES KEPT VERBATIM. The bracketed notes in questions 20, 23, 43, 44, 87, and 95 are part of the answer content and are preserved inside the relevant list items (87 and 95 as adjacent paragraphs, matching their placement outside the bullet list in the source).",
+    "LINK TEXT KEPT AS TEXT. \"Visit uscis.gov/citizenship/testupdates ...\" answers are link-styled in the source; they are preserved as answer text (the destination is in the wording itself), not as hyperlinks.",
+    "HEADING NUMBERS DOUBLE AS ORDER. The 100 questions are an enumerated sequence; numbering lives in the heading text rather than an ordered list so that each question can head its own answers. The deterministic recall metric therefore sees the numerals (they are literal heading text).",
+    "CONTENT IS TIME-SENSITIVE BY DESIGN. Several answers direct readers to uscis.gov/citizenship/testupdates because officeholder answers change; this rebuild reproduces the rev. 01/19 document as published and is not itself updated civics guidance.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning.",
+    "Deterministic source-text recall is 0.7628: a measurable share of the source PDF's own text layer is absent from the plan. Re-read the source before trusting this rebuild."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "uscis-civics-100q.pdf",
+    "bytes": 302640,
+    "kind": "pdf",
+    "sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

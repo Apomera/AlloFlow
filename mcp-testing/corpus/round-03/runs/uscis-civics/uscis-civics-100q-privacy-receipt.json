@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "uscis-civics-100q-accessibility-report.json",
+    "accessibleHtml": "uscis-civics-100q-accessible.html",
+    "privacyReceipt": "uscis-civics-100q-privacy-receipt.json",
+    "taggedPdf": "uscis-civics-100q-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-03T16:22:54Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "uscis-civics-100q.pdf",
+    "bytes": 302640,
+    "kind": "pdf",
+    "sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379"
+  },
+  "systemWideNetworkUseVerified": false
+}

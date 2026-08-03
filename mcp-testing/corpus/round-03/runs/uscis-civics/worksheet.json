@@ -1,0 +1,2264 @@
+{
+  "binding": {
+    "html_sha256": "75ac83eb4552b9e5569e5992c0d82ccd18851ea71c12818ccd0c66a0a0da6217",
+    "plan_sha256": "e1de607c92651e95e935d78f33dbc30743cc5cc69325bc8afb84410d87ac7e9c",
+    "source_sha256": "a19050dcb6f64f97596c75089459de3a5ff8a84606924b26f149669ac7c4a379"
+  },
+  "createdAt": "2026-08-03T16:22:54Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "page-008",
+      "instruction": "Read source page 8 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "page-009",
+      "instruction": "Read source page 9 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "page-010",
+      "instruction": "Read source page 10 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "page-011",
+      "instruction": "Read source page 11 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Civics (History and Government) Questions for the Naturalization Test"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "AMERICAN GOVERNMENT"
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "A: Principles of American Democracy"
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "1. What is the supreme law of the land?"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "2. What does the Constitution do?"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "3. The idea of self-government is in the first three words of the Constitution. What are these words?"
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "4. What is an amendment?"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-008",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "5. What do we call the first ten amendments to the Constitution?"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-009",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "6. What is one right or freedom from the First Amendment?*"
+    },
+    {
+      "id": "list-006",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-010",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "7. How many amendments does the Constitution have?"
+    },
+    {
+      "id": "list-007",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-011",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "8. What did the Declaration of Independence do?"
+    },
+    {
+      "id": "list-008",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-012",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "9. What are two rights in the Declaration of Independence?"
+    },
+    {
+      "id": "list-009",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-013",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "10. What is freedom of religion?"
+    },
+    {
+      "id": "list-010",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-014",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "11. What is the economic system in the United States?*"
+    },
+    {
+      "id": "list-011",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-015",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "12. What is the “rule of law”?"
+    },
+    {
+      "id": "list-012",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-016",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "B: System of Government"
+    },
+    {
+      "id": "heading-017",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "13. Name one branch or part of the government.*"
+    },
+    {
+      "id": "list-013",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-018",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "14. What stops one branch of government from becoming too powerful?"
+    },
+    {
+      "id": "list-014",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-019",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "15. Who is in charge of the executive branch?"
+    },
+    {
+      "id": "list-015",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-020",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "16. Who makes federal laws?"
+    },
+    {
+      "id": "list-016",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-021",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "17. What are the two parts of the U.S. Congress?*"
+    },
+    {
+      "id": "list-017",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-022",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 2,
+      "status": "verified",
+      "text": "18. How many U.S. Senators are there?"
+    },
+    {
+      "id": "list-018",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "heading-023",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "19. We elect a U.S. Senator for how many years?"
+    },
+    {
+      "id": "list-019",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-024",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "20. Who is one of your state’s U.S. Senators now?*"
+    },
+    {
+      "id": "list-020",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-025",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "21. The House of Representatives has how many voting members?"
+    },
+    {
+      "id": "list-021",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-026",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "22. We elect a U.S. Representative for how many years?"
+    },
+    {
+      "id": "list-022",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-027",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "23. Name your U.S. Representative."
+    },
+    {
+      "id": "list-023",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-028",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "24. Who does a U.S. Senator represent?"
+    },
+    {
+      "id": "list-024",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-029",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "25. Why do some states have more Representatives than other states?"
+    },
+    {
+      "id": "list-025",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-030",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "26. We elect a President for how many years?"
+    },
+    {
+      "id": "list-026",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-031",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "27. In what month do we vote for President?*"
+    },
+    {
+      "id": "list-027",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-032",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "28. What is the name of the President of the United States now?*"
+    },
+    {
+      "id": "list-028",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-033",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "29. What is the name of the Vice President of the United States now?"
+    },
+    {
+      "id": "list-029",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-034",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "30. If the President can no longer serve, who becomes President?"
+    },
+    {
+      "id": "list-030",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-035",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "31. If both the President and the Vice President can no longer serve, who becomes President?"
+    },
+    {
+      "id": "list-031",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-036",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "32. Who is the Commander in Chief of the military?"
+    },
+    {
+      "id": "list-032",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-037",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "33. Who signs bills to become laws?"
+    },
+    {
+      "id": "list-033",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-038",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "34. Who vetoes bills?"
+    },
+    {
+      "id": "list-034",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-039",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 3,
+      "status": "verified",
+      "text": "35. What does the President’s Cabinet do?"
+    },
+    {
+      "id": "list-035",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "heading-040",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "36. What are two Cabinet-level positions?"
+    },
+    {
+      "id": "list-036",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 16,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-041",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "37. What does the judicial branch do?"
+    },
+    {
+      "id": "list-037",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-042",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "38. What is the highest court in the United States?"
+    },
+    {
+      "id": "list-038",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-043",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "39. How many justices are on the Supreme Court?"
+    },
+    {
+      "id": "list-039",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-044",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "40. Who is the Chief Justice of the United States now?"
+    },
+    {
+      "id": "list-040",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-045",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "41. Under our Constitution, some powers belong to the federal government. What is one power of the federal government?"
+    },
+    {
+      "id": "list-041",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-046",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 4,
+      "status": "verified",
+      "text": "42. Under our Constitution, some powers belong to the states. What is one power of the states?"
+    },
+    {
+      "id": "list-042",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-047",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "43. Who is the Governor of your state now?"
+    },
+    {
+      "id": "list-043",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-048",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "44. What is the capital of your state?*"
+    },
+    {
+      "id": "list-044",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-049",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "45. What are the two major political parties in the United States?*"
+    },
+    {
+      "id": "list-045",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-050",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "46. What is the political party of the President now?"
+    },
+    {
+      "id": "list-046",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-051",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "47. What is the name of the Speaker of the House of Representatives now?"
+    },
+    {
+      "id": "list-047",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-052",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "C: Rights and Responsibilities"
+    },
+    {
+      "id": "heading-053",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "48. There are four amendments to the Constitution about who can vote. Describe one of them."
+    },
+    {
+      "id": "list-048",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-054",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "49. What is one responsibility that is only for United States citizens?*"
+    },
+    {
+      "id": "list-049",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-055",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "50. Name one right only for United States citizens."
+    },
+    {
+      "id": "list-050",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-056",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "51. What are two rights of everyone living in the United States?"
+    },
+    {
+      "id": "list-051",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-057",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "52. What do we show loyalty to when we say the Pledge of Allegiance?"
+    },
+    {
+      "id": "list-052",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-058",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "53. What is one promise you make when you become a United States citizen?"
+    },
+    {
+      "id": "list-053",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "heading-059",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "54. How old do citizens have to be to vote for President?*"
+    },
+    {
+      "id": "list-054",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-060",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "55. What are two ways that Americans can participate in their democracy?"
+    },
+    {
+      "id": "list-055",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 10,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-061",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "56. When is the last day you can send in federal income tax forms?*"
+    },
+    {
+      "id": "list-056",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-062",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "57. When must all men register for the Selective Service?"
+    },
+    {
+      "id": "list-057",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-063",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "AMERICAN HISTORY"
+    },
+    {
+      "id": "heading-064",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "A: Colonial Period and Independence"
+    },
+    {
+      "id": "heading-065",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "58. What is one reason colonists came to America?"
+    },
+    {
+      "id": "list-058",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 6,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-066",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "59. Who lived in America before the Europeans arrived?"
+    },
+    {
+      "id": "list-059",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-067",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "60. What group of people was taken to America and sold as slaves?"
+    },
+    {
+      "id": "list-060",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-068",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "61. Why did the colonists fight the British?"
+    },
+    {
+      "id": "list-061",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-069",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "62. Who wrote the Declaration of Independence?"
+    },
+    {
+      "id": "list-062",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-070",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "63. When was the Declaration of Independence adopted?"
+    },
+    {
+      "id": "list-063",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-071",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "64. There were 13 original states. Name three."
+    },
+    {
+      "id": "list-064",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 13,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-072",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "65. What happened at the Constitutional Convention?"
+    },
+    {
+      "id": "list-065",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-073",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "66. When was the Constitution written?"
+    },
+    {
+      "id": "list-066",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-074",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "67. The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers."
+    },
+    {
+      "id": "list-067",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-075",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "68. What is one thing Benjamin Franklin is famous for?"
+    },
+    {
+      "id": "list-068",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-076",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "69. Who is the “Father of Our Country”?"
+    },
+    {
+      "id": "list-069",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-077",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 7,
+      "status": "verified",
+      "text": "70. Who was the first President?*"
+    },
+    {
+      "id": "list-070",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-078",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "B: 1800s"
+    },
+    {
+      "id": "heading-079",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "71. What territory did the United States buy from France in 1803?"
+    },
+    {
+      "id": "list-071",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-080",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "72. Name one war fought by the United States in the 1800s."
+    },
+    {
+      "id": "list-072",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-081",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "73. Name the U.S. war between the North and the South."
+    },
+    {
+      "id": "list-073",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-082",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "74. Name one problem that led to the Civil War."
+    },
+    {
+      "id": "list-074",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-083",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "75. What was one important thing that Abraham Lincoln did?*"
+    },
+    {
+      "id": "list-075",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-084",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "76. What did the Emancipation Proclamation do?"
+    },
+    {
+      "id": "list-076",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-085",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "77. What did Susan B. Anthony do?"
+    },
+    {
+      "id": "list-077",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-086",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "C: Recent American History and Other Important Historical Information"
+    },
+    {
+      "id": "heading-087",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "78. Name one war fought by the United States in the 1900s.*"
+    },
+    {
+      "id": "list-078",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-088",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "79. Who was President during World War I?"
+    },
+    {
+      "id": "list-079",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-089",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 8,
+      "status": "verified",
+      "text": "80. Who was President during the Great Depression and World War II?"
+    },
+    {
+      "id": "list-080",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 8,
+      "status": "verified"
+    },
+    {
+      "id": "heading-090",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "81. Who did the United States fight in World War II?"
+    },
+    {
+      "id": "list-081",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-091",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "82. Before he was President, Eisenhower was a general. What war was he in?"
+    },
+    {
+      "id": "list-082",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-092",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "83. During the Cold War, what was the main concern of the United States?"
+    },
+    {
+      "id": "list-083",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-093",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "84. What movement tried to end racial discrimination?"
+    },
+    {
+      "id": "list-084",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-094",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "85. What did Martin Luther King, Jr. do?*"
+    },
+    {
+      "id": "list-085",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-095",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "86. What major event happened on September 11, 2001, in the United States?"
+    },
+    {
+      "id": "list-086",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-096",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 9,
+      "status": "verified",
+      "text": "87. Name one American Indian tribe in the United States."
+    },
+    {
+      "id": "list-087",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 22,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 9,
+      "status": "verified"
+    },
+    {
+      "id": "heading-097",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "INTEGRATED CIVICS"
+    },
+    {
+      "id": "heading-098",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "A: Geography"
+    },
+    {
+      "id": "heading-099",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "88. Name one of the two longest rivers in the United States."
+    },
+    {
+      "id": "list-088",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-100",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "89. What ocean is on the West Coast of the United States?"
+    },
+    {
+      "id": "list-089",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-101",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "90. What ocean is on the East Coast of the United States?"
+    },
+    {
+      "id": "list-090",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-102",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "91. Name one U.S. territory."
+    },
+    {
+      "id": "list-091",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 5,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-103",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "92. Name one state that borders Canada."
+    },
+    {
+      "id": "list-092",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 13,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-104",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "93. Name one state that borders Mexico."
+    },
+    {
+      "id": "list-093",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 4,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-105",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "94. What is the capital of the United States?*"
+    },
+    {
+      "id": "list-094",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-106",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 10,
+      "status": "verified",
+      "text": "95. Where is the Statue of Liberty?*"
+    },
+    {
+      "id": "list-095",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 10,
+      "status": "verified"
+    },
+    {
+      "id": "heading-107",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "B: Symbols"
+    },
+    {
+      "id": "heading-108",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "96. Why does the flag have 13 stripes?"
+    },
+    {
+      "id": "list-096",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "heading-109",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "97. Why does the flag have 50 stars?*"
+    },
+    {
+      "id": "list-097",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "heading-110",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "98. What is the name of the national anthem?"
+    },
+    {
+      "id": "list-098",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "heading-111",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "C: Holidays"
+    },
+    {
+      "id": "heading-112",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "99. When do we celebrate Independence Day?*"
+    },
+    {
+      "id": "list-099",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 1,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "heading-113",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 4,
+      "note": "",
+      "source_page": 11,
+      "status": "verified",
+      "text": "100. Name two national U.S. holidays."
+    },
+    {
+      "id": "list-100",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 10,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 11,
+      "status": "verified"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent)",
+    "read_source_directly": true,
+    "statement": "I extracted all 11 pages of the source PDF (uscis-civics-100q.pdf) with pdftotext and read the rebuilt HTML and its accessibility-report review notes in full, then compared every heading, every answer list (count, order, wording, parentheticals, bracketed notes), the h1-h4 hierarchy, and each disclosed transformation item by item."
+  }
+}
