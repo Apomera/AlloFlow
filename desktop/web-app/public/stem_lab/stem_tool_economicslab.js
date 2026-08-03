@@ -4295,7 +4295,235 @@ var d = labToolData || {};
 
                   )
 
-                )
+                ),
+
+              // ── Investing Deep-Dives ──
+              // The three things the trading sim alone can't teach: building a
+              // whole portfolio (not picking one ticker), risk as variance (not
+              // just red days), and long-horizon ranges of outcomes (not one
+              // smooth compound line). All assumptions are illustrative
+              // long-run-average teaching numbers and every panel says so.
+              (function () {
+
+                var paStocks = d.paStocks !== undefined ? d.paStocks : 60;
+                var paBonds = d.paBonds !== undefined ? d.paBonds : 30;
+                if (paStocks + paBonds > 100) paBonds = 100 - paStocks;
+                var paCash = 100 - paStocks - paBonds;
+
+                var ivAsset = { stocks: { ret: 10, vol: 17 }, bonds: { ret: 4, vol: 6 }, cash: { ret: 1.5, vol: 1 } };
+                var ivMean = (paStocks * ivAsset.stocks.ret + paBonds * ivAsset.bonds.ret + paCash * ivAsset.cash.ret) / 100;
+                var ivWS = paStocks / 100 * ivAsset.stocks.vol;
+                var ivWB = paBonds / 100 * ivAsset.bonds.vol;
+                // Modest stock/bond correlation (0.2); cash treated as ~riskless.
+                var ivVol = Math.sqrt(ivWS * ivWS + ivWB * ivWB + 2 * 0.2 * ivWS * ivWB);
+
+                var ivFmt = function (v) { return '$' + Math.round(v).toLocaleString(); };
+
+                var paAnswers = [d.paQ0, d.paQ1, d.paQ2];
+                var paDone = paAnswers.every(function (a) { return a !== undefined && a !== null; });
+                var paScore = paDone ? paAnswers.reduce(function (s, a) { return s + a; }, 0) : 0;
+                var paProfile = paScore <= 1
+                  ? { name: t('stem.economicslab.iv_profile_conservative', 'Conservative'), stocks: 30, bonds: 50 }
+                  : paScore <= 4
+                    ? { name: t('stem.economicslab.iv_profile_balanced', 'Balanced'), stocks: 60, bonds: 30 }
+                    : { name: t('stem.economicslab.iv_profile_aggressive', 'Aggressive'), stocks: 85, bonds: 10 };
+
+                var paQs = [
+                  { q: t('stem.economicslab.iv_q_drop', 'The market drops 30% in one year. What do you do?'), opts: [t('stem.economicslab.iv_q_drop_a', 'Sell everything before it gets worse'), t('stem.economicslab.iv_q_drop_b', 'Hold on and wait it out'), t('stem.economicslab.iv_q_drop_c', 'Buy more while prices are low')] },
+                  { q: t('stem.economicslab.iv_q_when', 'When will you actually need this money?'), opts: [t('stem.economicslab.iv_q_when_a', 'In under 5 years'), t('stem.economicslab.iv_q_when_b', 'In 5–15 years'), t('stem.economicslab.iv_q_when_c', 'In 15+ years')] },
+                  { q: t('stem.economicslab.iv_q_pref', 'Which portfolio sounds better to you?'), opts: [t('stem.economicslab.iv_q_pref_a', 'Small steady gains, few surprises'), t('stem.economicslab.iv_q_pref_b', 'A balance of growth and stability'), t('stem.economicslab.iv_q_pref_c', 'Big swings if it means bigger growth')] }
+                ];
+
+                var ivCard = function (openKey, title, content) {
+                  return React.createElement('div', { className: 'mt-2 bg-slate-50 rounded-xl border border-slate-400 p-3' },
+                    React.createElement('button', {
+                      onClick: function () { upd(openKey, !d[openKey]); },
+                      'aria-expanded': !!d[openKey],
+                      className: 'w-full flex items-center justify-between text-left text-sm font-bold text-slate-800 bg-transparent border-0 p-0'
+                    },
+                      React.createElement('span', null, title),
+                      React.createElement('span', { 'aria-hidden': true, className: 'text-slate-500' }, d[openKey] ? '▾' : '▸')),
+                    d[openKey] ? React.createElement('div', { className: 'mt-2' }, content) : null);
+                };
+
+                // ── Panel 1: Portfolio Builder (risk quiz + asset allocation) ──
+                var paSeg = function (pctVal, color, label) {
+                  return pctVal > 0 ? React.createElement('div', {
+                    style: { width: pctVal + '%', background: color },
+                    className: 'flex items-center justify-center text-white text-[10px] font-bold h-full'
+                  }, pctVal >= 12 ? label + ' ' + pctVal + '%' : '') : null;
+                };
+
+                var paBadYear = 10000 * (1 + (ivMean - 2 * ivVol) / 100);
+
+                var paPanel = React.createElement('div', null,
+                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_pa_intro', 'Real investors don’t just pick stocks — they decide how to split money across asset types. Answer 3 questions to find your risk profile, then build your mix.')),
+                  paQs.map(function (qq, qi) {
+                    return React.createElement('div', { key: 'paq' + qi, className: 'mb-2' },
+                      React.createElement('div', { className: 'text-xs font-bold text-slate-700 mb-1' }, (qi + 1) + '. ' + qq.q),
+                      React.createElement('div', { className: 'flex gap-1 flex-wrap' },
+                        qq.opts.map(function (op, oi) {
+                          var sel = d['paQ' + qi] === oi;
+                          return React.createElement('button', {
+                            key: 'pao' + oi,
+                            'aria-pressed': sel,
+                            onClick: function () {
+                              upd('paQ' + qi, oi);
+                              var othersDone = [0, 1, 2].every(function (x) { return x === qi || (d['paQ' + x] !== undefined && d['paQ' + x] !== null); });
+                              if (othersDone && !d.paQuizDone) {
+                                upd('paQuizDone', true);
+                                addXP(10, 'Investor profile quiz');
+                                if (addToast) addToast('🧭 ' + t('stem.economicslab.iv_profile_unlocked', 'Investor profile unlocked!'), 'success');
+                              }
+                            },
+                            className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (sel ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300')
+                          }, op);
+                        })));
+                  }),
+                  paDone && React.createElement('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-2 mb-2 text-[11px] text-indigo-800' },
+                    React.createElement('span', { className: 'font-bold' }, t('stem.economicslab.iv_pa_suggested', 'Suggested mix') + ': ' + paProfile.name + ' — '),
+                    paProfile.stocks + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ' / ' + paProfile.bonds + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ' / ' + (100 - paProfile.stocks - paProfile.bonds) + '% ' + t('stem.economicslab.iv_cash', 'cash'),
+                    React.createElement('button', {
+                      onClick: function () { upd('paStocks', paProfile.stocks); upd('paBonds', paProfile.bonds); },
+                      className: 'ml-2 px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold border-0'
+                    }, t('stem.economicslab.iv_pa_apply', 'Apply'))),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-1' },
+                    React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_stocks_pct', 'Stocks') + ': ' + paStocks + '%',
+                      React.createElement('input', { type: 'range', min: 0, max: 100, step: 5, value: paStocks, 'aria-label': t('stem.economicslab.iv_stocks_pct_aria', 'Percent in stocks'), onChange: function (e) { var v = +e.target.value; upd('paStocks', v); if (v + paBonds > 100) upd('paBonds', 100 - v); }, className: 'w-full' })),
+                    React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_bonds_pct', 'Bonds') + ': ' + paBonds + '%',
+                      React.createElement('input', { type: 'range', min: 0, max: 100 - paStocks, step: 5, value: paBonds, 'aria-label': t('stem.economicslab.iv_bonds_pct_aria', 'Percent in bonds'), onChange: function (e) { upd('paBonds', +e.target.value); }, className: 'w-full' }))),
+                  React.createElement('div', { className: 'flex h-6 rounded-lg overflow-hidden border border-slate-300 mb-2', role: 'img', 'aria-label': t('stem.economicslab.iv_alloc_bar', 'Allocation bar') + ': ' + paStocks + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ', ' + paBonds + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ', ' + paCash + '% ' + t('stem.economicslab.iv_cash', 'cash') },
+                    paSeg(paStocks, '#9333ea', t('stem.economicslab.iv_stocks', 'stocks')),
+                    paSeg(paBonds, '#2563eb', t('stem.economicslab.iv_bonds', 'bonds')),
+                    paSeg(paCash, '#64748b', t('stem.economicslab.iv_cash', 'cash'))),
+                  React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_expected_return', 'Expected return')),
+                      React.createElement('div', { className: 'text-sm font-bold text-green-600' }, '≈' + ivMean.toFixed(1) + '%/yr')),
+                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_typical_year', 'Typical year')),
+                      React.createElement('div', { className: 'text-sm font-bold text-slate-700' }, (ivMean - ivVol).toFixed(0) + '% to +' + (ivMean + ivVol).toFixed(0) + '%')),
+                    React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                      React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_bad_year', 'Bad year, on $10K')),
+                      React.createElement('div', { className: 'text-sm font-bold text-red-500' }, ivFmt(paBadYear)))),
+                  paDone && Math.abs(paStocks - paProfile.stocks) > 15 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 border border-amber-100' },
+                    t('stem.economicslab.iv_pa_mismatch', '🧭 Your mix is quite far from your quiz profile. That’s allowed — but know why: more stocks = more growth and bigger drops; fewer = calmer ride, slower growth.')));
+
+                // ── Panel 2: Risk Visualizer (volatility drag, deterministic) ──
+                var rvMk = function (a, b) { var rr = []; for (var ri = 0; ri < 10; ri++) rr.push(ri % 2 === 0 ? a : b); return rr; };
+                var rvSeries = [
+                  { name: t('stem.economicslab.iv_rv_steady', 'Steady Eddie'), color: '#059669', rets: rvMk(7, 7) },
+                  { name: t('stem.economicslab.iv_rv_wild', 'Wild Ride'), color: '#dc2626', rets: rvMk(32, -18) },
+                  { name: t('stem.economicslab.iv_rv_mix', '50/50 mix, rebalanced'), color: '#4f46e5', rets: rvMk(19.5, -5.5) }
+                ].map(function (sr) {
+                  var v = 10000, peak = 10000, dd = 0, pts = [10000];
+                  sr.rets.forEach(function (r) { v *= 1 + r / 100; if (v > peak) peak = v; var drop = (peak - v) / peak; if (drop > dd) dd = drop; pts.push(v); });
+                  return { name: sr.name, color: sr.color, pts: pts, end: v, dd: dd };
+                });
+                var rvMax = rvSeries.reduce(function (m, sr) { return sr.pts.reduce(function (m2, p) { return Math.max(m2, p); }, m); }, 10000);
+
+                var rvPanel = React.createElement('div', null,
+                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_rv_intro', 'All three investments below average exactly +7% per year. Watch what the ride does to the destination.')),
+                  React.createElement('svg', {
+                    viewBox: '0 0 320 160', className: 'w-full', role: 'img',
+                    'aria-label': t('stem.economicslab.iv_rv_chart_aria', 'Line chart of $10,000 over 10 years: steady +7% ends near $19,700; a wild ride averaging +7% ends near $14,900; a rebalanced 50/50 mix ends near $18,400.')
+                  },
+                    React.createElement('line', { x1: 20, y1: 145, x2: 310, y2: 145, stroke: '#cbd5e1', strokeWidth: 1 }),
+                    React.createElement('text', { x: 20, y: 156, fill: '#94a3b8', fontSize: 8 }, t('stem.economicslab.iv_rv_year0', 'Year 0')),
+                    React.createElement('text', { x: 285, y: 156, fill: '#94a3b8', fontSize: 8 }, '10'),
+                    rvSeries.map(function (sr) {
+                      return React.createElement('polyline', {
+                        key: sr.name, fill: 'none', stroke: sr.color, strokeWidth: 2,
+                        points: sr.pts.map(function (p, pi) { return (20 + pi * 29) + ',' + (145 - p / rvMax * 130).toFixed(1); }).join(' ')
+                      });
+                    })),
+                  React.createElement('div', { className: 'flex flex-col gap-1 mt-1' },
+                    rvSeries.map(function (sr) {
+                      return React.createElement('div', { key: 'leg' + sr.name, className: 'flex items-center gap-2 text-[11px] text-slate-700' },
+                        React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-3 rounded-sm', style: { background: sr.color } }),
+                        React.createElement('span', { className: 'font-bold' }, sr.name),
+                        React.createElement('span', null, t('stem.economicslab.iv_rv_ends', 'ends') + ' ' + ivFmt(sr.end) + ' · ' + t('stem.economicslab.iv_rv_worst_drop', 'worst drop') + ' −' + (sr.dd * 100).toFixed(0) + '%'));
+                    })),
+                  React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+                    t('stem.economicslab.iv_rv_lesson', '📚 Same average, different endings: big losses hurt more than equal-sized gains help (volatility drag). Splitting money between the two and rebalancing every year recovers most of the gap — that’s what diversification buys, and why "risk" means more than "some red days."')));
+
+                // ── Panel 3: Range of Outcomes (Monte Carlo, seeded/deterministic) ──
+                var mcYears = d.mcYears || 30;
+                var mcPanel = null;
+                if (d.mcOpen) {
+                  var mcN = 200;
+                  var mcSeedState = (((d.mcSeed || 1) * 7919 + 104729 + paStocks * 31 + paBonds * 7) % 2147483647) || 1;
+                  var mcRnd = function () { mcSeedState = (mcSeedState * 16807) % 2147483647; return mcSeedState / 2147483647; };
+                  var mcNorm = function () { var u = mcRnd(), v2 = mcRnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v2); };
+                  var mcPerYear = [];
+                  for (var my = 0; my <= mcYears; my++) mcPerYear.push([]);
+                  for (var ms = 0; ms < mcN; ms++) {
+                    var mv = 10000;
+                    mcPerYear[0].push(mv);
+                    for (var yy = 1; yy <= mcYears; yy++) {
+                      var mr = ivMean / 100 + ivVol / 100 * mcNorm();
+                      if (mr < -0.9) mr = -0.9;
+                      mv *= 1 + mr;
+                      mcPerYear[yy].push(mv);
+                    }
+                  }
+                  var mcPct = function (arr, q) { var s2 = arr.slice().sort(function (a, b) { return a - b; }); return s2[Math.min(s2.length - 1, Math.floor(q * s2.length))]; };
+                  var mcP10 = [], mcP50 = [], mcP90 = [], mcCst = [];
+                  for (var py = 0; py <= mcYears; py++) {
+                    mcP10.push(mcPct(mcPerYear[py], 0.1));
+                    mcP50.push(mcPct(mcPerYear[py], 0.5));
+                    mcP90.push(mcPct(mcPerYear[py], 0.9));
+                    mcCst.push(10000 * Math.pow(1 + ivMean / 100, py));
+                  }
+                  var mcMax = Math.max(mcP90[mcYears], mcCst[mcYears]);
+                  var mcX = function (yi) { return 20 + yi / mcYears * 285; };
+                  var mcY = function (v) { return (150 - v / mcMax * 135).toFixed(1); };
+                  var mcBand = mcP90.map(function (v, yi) { return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ') + ' ' + mcP10.slice().reverse().map(function (v, ri) { var yi = mcYears - ri; return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ');
+                  mcPanel = React.createElement('div', null,
+                    React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_mc_intro', 'The Compound Interest calculator draws ONE smooth line. Real markets deliver a range. Here are 200 simulated futures for $10,000 in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + ').'),
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2 items-center' },
+                      React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_years', 'Years') + ': ' + mcYears,
+                        React.createElement('input', { type: 'range', min: 10, max: 40, step: 5, value: mcYears, 'aria-label': t('stem.economicslab.iv_mc_years_aria', 'Simulation years'), onChange: function (e) { upd('mcYears', +e.target.value); }, className: 'w-full' })),
+                      React.createElement('button', {
+                        onClick: function () { upd('mcSeed', (d.mcSeed || 1) + 1); if (announceToSR) announceToSR(t('stem.economicslab.iv_mc_rerolled', 'New simulation run generated.')); },
+                        className: 'px-3 py-2 rounded-xl text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200'
+                      }, t('stem.economicslab.iv_mc_reroll', '🎲 Re-roll 200 futures'))),
+                    React.createElement('svg', {
+                      viewBox: '0 0 320 160', className: 'w-full', role: 'img',
+                      'aria-label': t('stem.economicslab.iv_mc_chart_aria', 'Fan chart of simulated outcomes.') + ' ' + t('stem.economicslab.iv_mc_chart_aria2', 'After') + ' ' + mcYears + ' ' + t('stem.economicslab.iv_mc_chart_aria3', 'years, the middle 80% of runs end between') + ' ' + ivFmt(mcP10[mcYears]) + ' ' + t('stem.economicslab.iv_mc_chart_aria4', 'and') + ' ' + ivFmt(mcP90[mcYears]) + '. ' + t('stem.economicslab.iv_mc_chart_aria5', 'Median') + ' ' + ivFmt(mcP50[mcYears]) + '.'
+                    },
+                      React.createElement('polygon', { points: mcBand, fill: '#c7d2fe', opacity: 0.55 }),
+                      React.createElement('polyline', { fill: 'none', stroke: '#4f46e5', strokeWidth: 2, points: mcP50.map(function (v, yi) { return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ') }),
+                      React.createElement('polyline', { fill: 'none', stroke: '#d97706', strokeWidth: 1.5, strokeDasharray: '4 3', points: mcCst.map(function (v, yi) { return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ') }),
+                      React.createElement('line', { x1: 20, y1: 150, x2: 310, y2: 150, stroke: '#cbd5e1', strokeWidth: 1 }),
+                      React.createElement('text', { x: 20, y: 158, fill: '#94a3b8', fontSize: 8 }, '0'),
+                      React.createElement('text', { x: 290, y: 158, fill: '#94a3b8', fontSize: 8 }, mcYears + 'y')),
+                    React.createElement('div', { className: 'flex gap-3 text-[10px] text-slate-600 mt-1' },
+                      React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-2 rounded-sm align-middle mr-1', style: { background: '#c7d2fe' } }), t('stem.economicslab.iv_mc_band', 'middle 80% of runs')),
+                      React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-0.5 align-middle mr-1', style: { background: '#4f46e5' } }), t('stem.economicslab.iv_mc_median', 'median run')),
+                      React.createElement('span', null, React.createElement('span', { 'aria-hidden': true, className: 'inline-block w-3 h-0.5 align-middle mr-1', style: { background: '#d97706' } }), t('stem.economicslab.iv_mc_straight', 'straight-line calc'))),
+                    React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center mt-2' },
+                      React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_unlucky', 'Unlucky (10th pct)')),
+                        React.createElement('div', { className: 'text-sm font-bold text-red-500' }, ivFmt(mcP10[mcYears]))),
+                      React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_median_end', 'Median')),
+                        React.createElement('div', { className: 'text-sm font-bold text-indigo-600' }, ivFmt(mcP50[mcYears]))),
+                      React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
+                        React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_lucky', 'Lucky (90th pct)')),
+                        React.createElement('div', { className: 'text-sm font-bold text-green-600' }, ivFmt(mcP90[mcYears])))),
+                    React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
+                      t('stem.economicslab.iv_mc_lesson', '📚 The dashed line is what a constant-rate calculator promises — the median simulated run usually lands below it, because the average is pulled up by a few lucky runs. And two savers with the same average return can end in very different places: the ORDER of good and bad years matters (sequence-of-returns risk), especially near retirement.')));
+                }
+
+                return React.createElement('div', { className: 'mt-4' },
+                  React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.economicslab.iv_deep_dives', '🎓 Investing Deep-Dives')),
+                  React.createElement('p', { className: 'text-[11px] text-slate-600 mb-1 m-0' }, t('stem.economicslab.iv_deep_dives_sub', 'Beyond picking stocks: build a whole portfolio, see what risk really means, and explore the range of long-run outcomes.')),
+                  ivCard('paOpen', t('stem.economicslab.iv_pa_title', '🧩 Portfolio Builder — risk profile & asset mix'), paPanel),
+                  ivCard('rvOpen', t('stem.economicslab.iv_rv_title', '🎢 Risk Visualizer — same average, different ride'), rvPanel),
+                  ivCard('mcOpen', t('stem.economicslab.iv_mc_title', '🎲 Range of Outcomes — 200 simulated futures'), mcPanel),
+                  React.createElement('p', { className: 'text-[10px] text-slate-500 italic mt-2 m-0' }, t('stem.economicslab.iv_disclaimer', 'Illustrative teaching model: long-run US-style averages (stocks ≈10%/yr, bonds ≈4%, cash ≈1.5%, historical-style volatility), ignoring fees, taxes, and inflation. Not a prediction and not financial advice.')));
+              })()
 
             ),
 
