@@ -329,6 +329,7 @@ const _pkAudioLoadTimeoutMs = () => {
   }
 };
 const READ_ALOUD_PRELOAD_PROMOTION_MS = 2e3;
+const READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS = 3e4;
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
   if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
   try {
@@ -905,7 +906,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         }
         audioBufferRef.current[bufferKey] = promise;
         try {
-          const _tOut3 = _pkAudioLoadTimeoutMs();
+          const _tOut3 = Math.max(_pkAudioLoadTimeoutMs(), READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS);
           audioUrl = await _pkAwaitWithTimeout(promise, _tOut3, sessionSignal);
         } catch (e) {
           _pkTrace("pk:resolve-timeout", { idx: index, source: "fresh" });

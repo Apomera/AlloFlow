@@ -341,6 +341,13 @@ const _pkAudioLoadTimeoutMs = () => {
     } catch (_) { return 30000; }
 };
 const READ_ALOUD_PRELOAD_PROMOTION_MS = 2000;
+// The ACTIVE sentence's fresh interactive request runs callTTS's full retry
+// ladder: 12s deadline + 800ms backoff + 12s retry (+150ms lane settle).
+// Field log 2026-08-03 (French): the host config still shipped
+// timeouts.audioLoadMs = 15000, so the sequencer aborted the active request
+// mid-retry and terminated playback while synthesis was still viable. The
+// fresh-path wait must NEVER undercut the ladder, whatever the config says.
+const READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS = 30000;
 
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
     if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
@@ -976,7 +983,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   }
                   audioBufferRef.current[bufferKey] = promise;
                   try {
-                      const _tOut3 = _pkAudioLoadTimeoutMs();
+                      const _tOut3 = Math.max(_pkAudioLoadTimeoutMs(), READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS);
                       audioUrl = await _pkAwaitWithTimeout(promise, _tOut3, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'fresh' });

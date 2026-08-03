@@ -382,6 +382,38 @@ describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
     });
   });
 
+  it('waits out the full interactive synthesis ladder even when host config still says 15s', async () => {
+    // Field log 2026-08-03 (French): AlloFlowConfig.timeouts.audioLoadMs was
+    // still 15000, so the sequencer aborted the ACTIVE fresh request at 15s —
+    // mid-way through callTTS's second 12s attempt — and terminated playback.
+    // The fresh-path wait must be floored at the ladder length (30s).
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    window.AlloFlowConfig = { timeouts: { audioLoadMs: 15000 } };
+    try {
+      // Resolves at 24s: inside the 12s + 800ms + 12s interactive retry
+      // ladder, but PAST the legacy 15s audio wait.
+      const callTTS = vi.fn(() => new Promise((resolve) => {
+        setTimeout(() => resolve('blob:frase-lenta'), 24000);
+      }));
+      const deps = makeSpanishDeps({ callTTS });
+      const sentences = ['Primera frase.'];
+
+      const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'leveled-es');
+      await vi.advanceTimersByTimeAsync(16000);
+      expect(deps.stopPlayback).not.toHaveBeenCalled(); // did NOT give up at 15s
+      await vi.advanceTimersByTimeAsync(9000);
+      await run;
+
+      expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:frase-lenta']);
+      expect(deps.stopPlayback).not.toHaveBeenCalled();
+      expect(deps.playSequence).not.toHaveBeenCalled(); // no skip; this sentence is the one playing
+    } finally {
+      delete window.AlloFlowConfig;
+    }
+  });
+
   it('stops playback instead of skipping when synthesis yields no audio and browser fallback is off', async () => {
     audioInstances = [];
     vi.stubGlobal('Audio', SequenceAudio);

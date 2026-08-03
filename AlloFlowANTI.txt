@@ -11750,7 +11750,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           aiTextMs: 120000,        // 2 min — AI text generation
           aiImageMs: 180000,       // 3 min — image gen
           aiOptimizeMs: 90000,     // 90s — image optimization
-          audioLoadMs: 15000,      // 15s — audio file load
+          audioLoadMs: 30000,      // 30s — audio resolution incl. the TTS interactive retry ladder (12s + 800ms backoff + 12s)
           webSearchMs: 15000,      // 15s — web search proxy
           contentEngineOptimizeMs: 90000, // 90s — content engine optimization
         },
@@ -12223,7 +12223,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=61cda06f0');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=61cda06f0');
     loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=61cda06f0');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=8599b21c');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=72c923fc');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=61cda06f0');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=61cda06f0');
     loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=61cda06f0');

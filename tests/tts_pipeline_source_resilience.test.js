@@ -105,6 +105,10 @@ describe('source resilience contracts', () => {
 
     const phase = read('phase_k_helpers_source.jsx');
     expect(phase).toContain('READ_ALOUD_PRELOAD_PROMOTION_MS = 2000');
+    // The active fresh request must outlast callTTS's interactive retry
+    // ladder even when a host/user config supplies a shorter audio wait.
+    expect(phase).toContain('READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS = 30000');
+    expect(phase).toContain('Math.max(_pkAudioLoadTimeoutMs(), READ_ALOUD_FRESH_SYNTHESIS_WAIT_MS)');
     expect(phase).toContain("'pk:preload-promoted'");
     // Caller cancellation terminates; it must never masquerade as a promotion.
     expect(phase).toContain("String(e && e.name || '') !== 'AbortError'");
@@ -124,6 +128,9 @@ describe('source resilience contracts', () => {
     // explicit English for the side-by-side translation lane.
     expect(host).toContain("leveledTextLanguage || currentUiLanguage || 'English'");
     expect(host).toContain("addPart(part, 'target/' + paragraphIndex, 'English')");
+    // Host default must match the fresh-path floor; 15000 stranded playback
+    // mid-retry (field log 2026-08-03, French).
+    expect(host).toContain('audioLoadMs: 30000');
   });
 
   it('keeps Leveled Text download cancellation and sentence accessibility available', () => {
