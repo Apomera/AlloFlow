@@ -212,14 +212,38 @@ function alignmentMapGraph(standards, auditScope, savedGraph) {
   try {
     var P = window.AlloModules && window.AlloModules.StandardsProvider;
     var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
-    return E.fromAlignmentAudit({ standards: standards }, { standardsProvider: provider, auditScope: auditScope });
+    return E.fromAlignmentAudit({
+      standards: standards
+    }, {
+      standardsProvider: provider,
+      auditScope: auditScope
+    });
+  } catch (e) {
+    return null;
+  }
+}
+function alignmentPrereqGaps(reports) {
+  // Deterministic gap listing from the registered snapshots: prerequisites
+  // are source-provided buildsTowards edges, never model inference. Null
+  // (provider absent) renders nothing rather than an empty claim.
+  try {
+    var P = window.AlloModules && window.AlloModules.StandardsProvider;
+    var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
+    if (!provider || typeof provider.getPrerequisiteGaps !== 'function') return null;
+    var codes = reports.map(function (report) {
+      return report && report.standard;
+    }).filter(Boolean);
+    if (!codes.length) return null;
+    return provider.getPrerequisiteGaps(codes);
   } catch (e) {
     return null;
   }
 }
 function alignmentMapEntries(standards, graph, auditScope) {
   var reports = Array.isArray(standards && standards.perStandard) ? standards.perStandard : [];
-  var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) { return node && node.type === 'standard'; }) : [];
+  var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) {
+    return node && node.type === 'standard';
+  }) : [];
   var nodeById = {};
   var artifactById = {};
   if (graph && Array.isArray(graph.nodes)) graph.nodes.forEach(function (node) {
@@ -228,21 +252,37 @@ function alignmentMapEntries(standards, graph, auditScope) {
     if (node.type === 'auditArtifact' && node.artifactId) artifactById[node.artifactId] = node;
   });
   if (!Object.keys(artifactById).length && auditScope && typeof auditScope === 'object') {
-    var scopeItems = Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : Array.isArray(auditScope.includedArtifactIds) ? auditScope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id }; }) : [];
+    var scopeItems = Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : Array.isArray(auditScope.includedArtifactIds) ? auditScope.includedArtifactIds.slice(0, 100).map(function (id) {
+      return {
+        id: id
+      };
+    }) : [];
     scopeItems.forEach(function (item) {
-      item = item && typeof item === 'object' ? item : { id: item };
+      item = item && typeof item === 'object' ? item : {
+        id: item
+      };
       var artifactId = String(item.id || '').trim();
-      if (artifactId) artifactById[artifactId] = { artifactId: artifactId, label: item.title || 'Audited artifact ' + artifactId, artifactType: item.type || 'unknown' };
+      if (artifactId) artifactById[artifactId] = {
+        artifactId: artifactId,
+        label: item.title || 'Audited artifact ' + artifactId,
+        artifactType: item.type || 'unknown'
+      };
     });
   }
   function evidenceArtifacts(ids) {
-    return (Array.isArray(ids) ? ids : []).map(function (id) { return artifactById[String(id || '').trim()]; }).filter(Boolean).slice(0, 12);
+    return (Array.isArray(ids) ? ids : []).map(function (id) {
+      return artifactById[String(id || '').trim()];
+    }).filter(Boolean).slice(0, 12);
   }
   function attributionLinks(nodeId, relationType) {
     return graph && Array.isArray(graph.edges) ? graph.edges.filter(function (edge) {
       return edge && edge.fromId === nodeId && edge.relationType === relationType && edge.attribution === 'explicit' && edge.toId && edge.artifactId;
     }).map(function (edge) {
-      return { edgeId: edge.id, artifactId: edge.artifactId, attributionSource: edge.attributionSource || 'audit-model' };
+      return {
+        edgeId: edge.id,
+        artifactId: edge.artifactId,
+        attributionSource: edge.attributionSource || 'audit-model'
+      };
     }).slice(0, 12) : [];
   }
   function findingEntries(gaps, attributions) {
@@ -253,8 +293,18 @@ function alignmentMapEntries(standards, graph, auditScope) {
       if (!text) return null;
       var ids = gap && typeof gap === 'object' && Array.isArray(gap.artifactIds) ? gap.artifactIds : [];
       var attributionSource = gap && typeof gap === 'object' ? gap.attributionSource : null;
-      if (!ids.length) attributionItems.some(function (attribution) { if (!attribution || String(attribution.text || '').trim() !== text) return false; ids = Array.isArray(attribution.artifactIds) ? attribution.artifactIds : []; attributionSource = attribution.attributionSource; return true; });
-      return { text: text, artifactIds: ids, attributionSource: ids.length ? (attributionSource || 'audit-model') : null, artifacts: evidenceArtifacts(ids) };
+      if (!ids.length) attributionItems.some(function (attribution) {
+        if (!attribution || String(attribution.text || '').trim() !== text) return false;
+        ids = Array.isArray(attribution.artifactIds) ? attribution.artifactIds : [];
+        attributionSource = attribution.attributionSource;
+        return true;
+      });
+      return {
+        text: text,
+        artifactIds: ids,
+        attributionSource: ids.length ? attributionSource || 'audit-model' : null,
+        artifacts: evidenceArtifacts(ids)
+      };
     }).filter(Boolean);
   }
   return reports.map(function (report, index) {
@@ -265,64 +315,88 @@ function alignmentMapEntries(standards, graph, auditScope) {
     var findings = [];
     var recommendations = [];
     var context = null;
-    if (standardNode && standardNode.standardsContext) {
-      var related = [];
-      if (graph && Array.isArray(graph.edges)) graph.edges.forEach(function (edge) {
-        if (!edge) return;
-        var otherId = null;
-        var direction = null;
-        if (edge.fromId === standardNode.id) { otherId = edge.toId; direction = 'outgoing'; }
-        else if (edge.toId === standardNode.id) { otherId = edge.fromId; direction = 'incoming'; }
-        if (!otherId) return;
-        var target = nodeById[otherId];
-        if (!target || target.type !== 'standardsContext') return;
-        if (related.some(function (item) { return item.id === target.id; })) return;
-        related.push({
-          id: target.id,
-          label: target.label,
-          code: target.code,
-          kind: target.kind,
-          relationType: edge.relationType || edge.type,
-          direction: direction,
-          text: target.text || null,
-          sourceUrl: target.sourceUrl || null,
-          framework: target.framework || null
-        });
-      });
-      context = {
-        record: standardNode.standardsContext,
-        related: related.slice(0, 12)
-      };
-    }
-    if (standardNode && graph && Array.isArray(graph.edges)) {
-      graph.edges.forEach(function (edge) {
-        if (!edge || edge.fromId !== standardNode.id) return;
+    if (standardNode && graph && Array.isArray(graph.edges)) graph.edges.forEach(function (edge) {
+      if (!edge) return;
+      if (edge.fromId === standardNode.id) {
         var target = nodeById[edge.toId];
         if (!target) return;
         if (target.type === 'auditEvidence') {
-          var targetEvidenceIds = Array.isArray(target.artifactIds) ? target.artifactIds : []; evidence.push({ label: target.label, status: target.status, evidence: target.evidence, notes: target.notes, artifactIds: targetEvidenceIds, attributionSource: target.attributionSource || (targetEvidenceIds.length ? 'audit-model' : null), attributionLinks: attributionLinks(target.id, 'evidenceFrom'), artifacts: evidenceArtifacts(targetEvidenceIds) });
+          var targetEvidenceIds = Array.isArray(target.artifactIds) ? target.artifactIds : [];
+          evidence.push({
+            label: target.label,
+            status: target.status,
+            evidence: target.evidence,
+            notes: target.notes,
+            artifactIds: targetEvidenceIds,
+            attributionSource: target.attributionSource || (targetEvidenceIds.length ? 'audit-model' : null),
+            attributionLinks: attributionLinks(target.id, 'evidenceFrom'),
+            artifacts: evidenceArtifacts(targetEvidenceIds)
+          });
         } else if (target.type === 'auditFinding') {
-          var findingIds = Array.isArray(target.artifactIds) ? target.artifactIds : []; findings.push({ text: target.finding || target.label, artifactIds: findingIds, attributionSource: target.attributionSource || (findingIds.length ? 'audit-model' : null), attributionLinks: attributionLinks(target.id, 'findingFrom'), artifacts: evidenceArtifacts(findingIds) });
-        } else if (target.type === 'auditRecommendation') {
-          recommendations.push(target.recommendation || target.label);
-        }
+          var findingIds = Array.isArray(target.artifactIds) ? target.artifactIds : [];
+          findings.push({
+            text: target.finding || target.label,
+            artifactIds: findingIds,
+            attributionSource: target.attributionSource || (findingIds.length ? 'audit-model' : null),
+            attributionLinks: attributionLinks(target.id, 'findingFrom'),
+            artifacts: evidenceArtifacts(findingIds)
+          });
+        } else if (target.type === 'auditRecommendation') recommendations.push(target.recommendation || target.label);
+      }
+      var otherId = edge.fromId === standardNode.id ? edge.toId : edge.toId === standardNode.id ? edge.fromId : null;
+      if (!otherId) return;
+      var contextTarget = nodeById[otherId];
+      if (!contextTarget || contextTarget.type !== 'standardsContext') return;
+      context = context || {
+        record: standardNode.standardsContext,
+        related: []
+      };
+      if (!context.related.some(function (item) {
+        return item.id === contextTarget.id;
+      })) context.related.push({
+        id: contextTarget.id,
+        label: contextTarget.label,
+        code: contextTarget.code,
+        kind: contextTarget.kind,
+        text: contextTarget.text,
+        sourceUrl: contextTarget.sourceUrl,
+        framework: contextTarget.framework,
+        relationType: edge.relationType || edge.type,
+        direction: edge.fromId === standardNode.id ? 'outgoing' : 'incoming'
       });
-    }
-    if (!evidence.length) {
-      [
-        { key: 'textAlignment', label: 'Text alignment' },
-        { key: 'activityAlignment', label: 'Activity alignment' },
-        { key: 'assessmentAlignment', label: 'Assessment alignment' }
-      ].forEach(function (dimension) {
-        var section = analysis[dimension.key] && typeof analysis[dimension.key] === 'object' ? analysis[dimension.key] : {};
-        var fallbackEvidenceIds = Array.isArray(section.artifactIds) ? section.artifactIds : []; evidence.push({ label: dimension.label, status: alignmentMapStatus(section.status), evidence: String(section.evidence || ''), notes: String(section.notes || ''), artifactIds: fallbackEvidenceIds, attributionSource: fallbackEvidenceIds.length ? (section.attributionSource || 'audit-model') : null, attributionLinks: [], artifacts: evidenceArtifacts(fallbackEvidenceIds) });
+    });
+    if (standardNode && standardNode.standardsContext && !context) context = {
+      record: standardNode.standardsContext,
+      related: []
+    };
+    if (!evidence.length) [{
+      key: 'textAlignment',
+      label: 'Text alignment'
+    }, {
+      key: 'activityAlignment',
+      label: 'Activity alignment'
+    }, {
+      key: 'assessmentAlignment',
+      label: 'Assessment alignment'
+    }].forEach(function (dimension) {
+      var section = analysis[dimension.key] && typeof analysis[dimension.key] === 'object' ? analysis[dimension.key] : {};
+      var fallbackEvidenceIds = Array.isArray(section.artifactIds) ? section.artifactIds : [];
+      evidence.push({
+        label: dimension.label,
+        status: alignmentMapStatus(section.status),
+        evidence: String(section.evidence || ''),
+        notes: String(section.notes || ''),
+        artifactIds: fallbackEvidenceIds,
+        attributionSource: fallbackEvidenceIds.length ? section.attributionSource || 'audit-model' : null,
+        attributionLinks: [],
+        artifacts: evidenceArtifacts(fallbackEvidenceIds)
       });
-    }
+    });
     if (!findings.length) findings = findingEntries(report.gaps, report.findingAttributions);
     if (!recommendations.length && report.adminRecommendation) recommendations = [String(report.adminRecommendation)];
     return {
       id: standardNode ? standardNode.id : 'alignment-standard-' + index,
-      label: standardNode ? standardNode.label : String(report.standard || ('Standard ' + (index + 1))),
+      label: standardNode ? standardNode.label : String(report.standard || 'Standard ' + (index + 1)),
       status: standardNode ? standardNode.status : alignmentMapStatus(report.overallDetermination || report.status),
       evidence: evidence,
       findings: findings,
@@ -343,7 +417,10 @@ function attributionSourceLabel(value) {
 function itemAttributionSource(item) {
   var links = item && Array.isArray(item.attributionLinks) ? item.attributionLinks : [];
   var sources = [];
-  links.forEach(function (link) { var source = String(link && link.attributionSource || '').trim().toLowerCase(); if (source && sources.indexOf(source) === -1) sources.push(source); });
+  links.forEach(function (link) {
+    var source = String(link && link.attributionSource || '').trim().toLowerCase();
+    if (source && sources.indexOf(source) === -1) sources.push(source);
+  });
   if (sources.length === 1) return sources[0];
   if (sources.length > 1) return 'mixed';
   return item && item.attributionSource;
@@ -356,8 +433,10 @@ function attributionReviewButton(link, artifact, onConfirmAttribution) {
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "ml-2 rounded border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700",
-    "aria-label": "Confirm source: " + (artifact.label || artifact.artifactId),
-    onClick: function () { onConfirmAttribution(link.edgeId); }
+    "aria-label": 'Confirm source: ' + (artifact.label || artifact.artifactId),
+    onClick: function () {
+      onConfirmAttribution(link.edgeId);
+    }
   }, "Confirm source");
 }
 function AlignmentEvidenceSources(item, onConfirmAttribution) {
@@ -368,18 +447,20 @@ function AlignmentEvidenceSources(item, onConfirmAttribution) {
     className: "mt-1 rounded border border-emerald-100 bg-emerald-50/50 p-2"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-semibold text-emerald-900"
-  }, "Explicit artifact attribution (", artifacts.length, ")"), /*#__PURE__*/React.createElement("p", {
+  }, 'Explicit artifact attribution (' + artifacts.length + ')'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-emerald-900"
   }, "These artifacts were explicitly named as evidence sources. This is a declared source link, not an independent verification."), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-emerald-900"
-  }, "Attribution source: ", attributionSourceLabel(itemAttributionSource(item)) || "Unspecified producer"), /*#__PURE__*/React.createElement("ul", {
+  }, "Attribution source: ", attributionSourceLabel(itemAttributionSource(item)) || 'Unspecified producer'), /*#__PURE__*/React.createElement("ul", {
     className: "mt-1 list-disc ml-5 text-emerald-950",
     "aria-label": "Evidence source artifacts"
   }, artifacts.map(function (artifact, index) {
-    var link = links.filter(function (candidate) { return candidate && candidate.artifactId === artifact.artifactId; })[0];
+    var link = links.filter(function (candidate) {
+      return candidate && candidate.artifactId === artifact.artifactId;
+    })[0];
     return /*#__PURE__*/React.createElement("li", {
       key: String(artifact.artifactId || index)
-    }, /*#__PURE__*/React.createElement("strong", null, "Evidence source: "), artifact.label || artifact.artifactId, artifact.artifactType ? " - " + artifact.artifactType : "", attributionReviewButton(link, artifact, onConfirmAttribution));
+    }, /*#__PURE__*/React.createElement("strong", null, "Evidence source: "), artifact.label || artifact.artifactId, artifact.artifactType ? ' · ' + artifact.artifactType : '', attributionReviewButton(link, artifact, onConfirmAttribution));
   })));
 }
 function AlignmentFindingSources(item, onConfirmAttribution) {
@@ -390,41 +471,55 @@ function AlignmentFindingSources(item, onConfirmAttribution) {
     className: "mt-1 rounded border border-amber-100 bg-amber-50/50 p-2"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-semibold text-amber-900"
-  }, "Explicit finding attribution (", artifacts.length, ")"), /*#__PURE__*/React.createElement("p", {
+  }, 'Explicit finding attribution (' + artifacts.length + ')'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-amber-900"
   }, "These artifacts were explicitly named as sources of this finding. This is a declared source link, not an independent verification."), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-amber-900"
-  }, "Attribution source: ", attributionSourceLabel(itemAttributionSource(item)) || "Unspecified producer"), /*#__PURE__*/React.createElement("ul", {
+  }, "Attribution source: ", attributionSourceLabel(itemAttributionSource(item)) || 'Unspecified producer'), /*#__PURE__*/React.createElement("ul", {
     className: "mt-1 list-disc ml-5 text-amber-950",
     "aria-label": "Finding source artifacts"
   }, artifacts.map(function (artifact, index) {
-    var link = links.filter(function (candidate) { return candidate && candidate.artifactId === artifact.artifactId; })[0];
+    var link = links.filter(function (candidate) {
+      return candidate && candidate.artifactId === artifact.artifactId;
+    })[0];
     return /*#__PURE__*/React.createElement("li", {
       key: String(artifact.artifactId || index)
-    }, /*#__PURE__*/React.createElement("strong", null, "Finding source: "), artifact.label || artifact.artifactId, artifact.artifactType ? " - " + artifact.artifactType : "", attributionReviewButton(link, artifact, onConfirmAttribution));
+    }, /*#__PURE__*/React.createElement("strong", null, "Finding source: "), artifact.label || artifact.artifactId, artifact.artifactType ? ' · ' + artifact.artifactType : '', attributionReviewButton(link, artifact, onConfirmAttribution));
   })));
-}function AlignmentMapScopeDetails(meta, fallbackScope) {
-  var scope = meta && meta.auditScope && typeof meta.auditScope === 'object' ? meta.auditScope : fallbackScope;
+}
+function AlignmentMapScopeDetails(meta, fallbackScope) {
+  var scope = meta && meta.auditScope ? meta.auditScope : fallbackScope;
   if (!scope || typeof scope !== 'object') return null;
   var items = Array.isArray(scope.includedArtifacts) ? scope.includedArtifacts.slice(0, 100) : [];
-  if (!items.length && Array.isArray(scope.includedArtifactIds)) items = scope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id, title: 'Audited artifact ' + id, type: 'unknown' }; });
+  if (!items.length && Array.isArray(scope.includedArtifactIds)) {
+    items = scope.includedArtifactIds.slice(0, 100).map(function (id) {
+      return {
+        id: id,
+        title: 'Artifact ' + id,
+        type: 'unknown'
+      };
+    });
+  }
   if (!items.length) return null;
+  var truncated = Array.isArray(scope.includedArtifacts) && scope.includedArtifacts.length > items.length;
   return /*#__PURE__*/React.createElement("details", {
-    className: "mt-2 rounded border border-slate-200 bg-white p-2 text-xs"
+    className: "mt-2 rounded border border-indigo-200 bg-white/70 p-2 text-xs"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-bold text-slate-800"
-  }, "Audited artifact scope (", items.length, scope.includedArtifacts && scope.includedArtifacts.length > items.length ? "+" : "", ")"), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-slate-600"
+    className: "cursor-pointer font-semibold text-indigo-900"
+  }, 'Audited artifact scope (' + items.length + (truncated ? '+' : '') + ')'), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-indigo-900"
   }, "These artifacts were included in the audit scope. This is scope provenance, not a claim that every artifact supports every standard."), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-slate-600"
+    className: "mt-1 text-indigo-900"
   }, "Scope relationship source: Deterministic check of the selected artifact IDs."), /*#__PURE__*/React.createElement("ul", {
-    className: "mt-2 list-disc ml-5 text-slate-700",
+    className: "mt-1 space-y-1 text-indigo-950",
     "aria-label": "Audited artifacts"
   }, items.map(function (item, index) {
-    item = item && typeof item === 'object' ? item : { id: item };
+    var artifact = item && typeof item === 'object' ? item : {
+      id: item
+    };
     return /*#__PURE__*/React.createElement("li", {
-      key: String(item.id || index)
-    }, item.title || item.id || "Audited artifact", item.type ? " · " + item.type : "", item.id ? " · ID " + item.id : "");
+      key: String(artifact.id || index)
+    }, /*#__PURE__*/React.createElement("strong", null, artifact.title || 'Artifact ' + (index + 1)), artifact.type ? ' · ' + artifact.type : '', artifact.id ? ' · ID ' + artifact.id : '', artifact.timestamp ? ' · ' + artifact.timestamp : '');
   })));
 }
 function AlignmentEvidenceMap(p) {
@@ -434,13 +529,23 @@ function AlignmentEvidenceMap(p) {
   if (!reports.length) return null;
   var graph = alignmentMapGraph(standards, auditScope, p && p.alignmentMapGraph);
   var entries = alignmentMapEntries(standards, graph, auditScope);
+  var prereqGaps = alignmentPrereqGaps(reports);
   var meta = graph && graph.meta && graph.meta.alignmentAudit;
-  var confirmAttribution = typeof (p && p.onConfirmAttribution) === 'function' && graph ? function (edgeId) { p.onConfirmAttribution({ edgeId: edgeId, graph: graph }); } : null;
-  var exportGraph = typeof (p && p.onExportAlignmentGraph) === 'function' && graph ? function () { p.onExportAlignmentGraph({ graph: graph }); } : null;
+  var confirmAttribution = typeof (p && p.onConfirmAttribution) === 'function' && graph ? function (edgeId) {
+    p.onConfirmAttribution({
+      edgeId: edgeId,
+      graph: graph
+    });
+  } : null;
+  var exportGraph = typeof (p && p.onExportAlignmentGraph) === 'function' && graph ? function () {
+    p.onExportAlignmentGraph({
+      graph: graph
+    });
+  } : null;
   return /*#__PURE__*/React.createElement("section", {
     id: "audit-alignment-map",
     "aria-labelledby": "audit-alignment-map-heading",
-    "data-graph-version": graph && graph.version || "audit-fallback",
+    "data-graph-version": graph && graph.version || 'audit-fallback',
     className: "mt-4 p-4 rounded-lg border border-indigo-200 bg-indigo-50"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between gap-3"
@@ -456,13 +561,41 @@ function AlignmentEvidenceMap(p) {
     className: "mt-1 text-xs text-indigo-900"
   }, "A readable graph view: each standard connects to text, activity, and assessment evidence, then to open findings and recommendations."), meta && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] text-indigo-900"
-  }, "Grounding: ", meta.provider || "AlloFlow curriculum audit", meta.datasetVersion ? " · Dataset " + meta.datasetVersion : ""), meta && meta.attributionConfirmations && meta.attributionConfirmations.count > 0 ? /*#__PURE__*/React.createElement("p", { role: "status", className: "mt-1 text-[11px] text-emerald-800" }, "Teacher-confirmed relationships are saved in a derived graph snapshot; the original audit declaration remains available.") : null, meta && meta.standardsGraph && meta.standardsGraph.enabled ? /*#__PURE__*/React.createElement("p", {
+  }, "Grounding: ", meta.provider || 'AlloFlow curriculum audit', meta.datasetVersion ? ' · Dataset ' + meta.datasetVersion : ''), meta && meta.attributionConfirmations && meta.attributionConfirmations.count > 0 && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-1 text-[11px] text-emerald-800"
+  }, "Teacher-confirmed relationships are saved in a derived graph snapshot; the original audit declaration remains available."), meta && meta.standardsGraph && meta.standardsGraph.enabled && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] text-indigo-900"
-  }, "Standards graph: ", meta.standardsGraph.matchedTargets + "/" + entries.length + " exact target" + (entries.length === 1 ? "" : "s") + " connected · " + meta.standardsGraph.contextNodes + " context node" + (meta.standardsGraph.contextNodes === 1 ? "" : "s") + " · " + meta.standardsGraph.contextRelationships + " relationship" + (meta.standardsGraph.contextRelationships === 1 ? "" : "s") + (meta.standardsGraph.truncatedTargets ? " · bounded results truncated" : "")) : null, AlignmentMapScopeDetails(meta, auditScope), /*#__PURE__*/React.createElement("ol", {
+  }, 'Standards graph: ' + meta.standardsGraph.matchedTargets + '/' + entries.length + ' exact target' + (entries.length === 1 ? '' : 's') + ' connected · ' + meta.standardsGraph.contextNodes + ' context node' + (meta.standardsGraph.contextNodes === 1 ? '' : 's') + ' · ' + meta.standardsGraph.contextRelationships + ' relationship' + (meta.standardsGraph.contextRelationships === 1 ? '' : 's') + (meta.standardsGraph.truncatedTargets ? ' · bounded results truncated' : '')), prereqGaps && prereqGaps.missing.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs",
+    role: "note",
+    "aria-label": "Prerequisite gaps from the knowledge graph"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold text-amber-900"
+  }, "Prerequisite gaps (knowledge graph)"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-0.5 text-amber-900"
+  }, "Earlier standards that build toward the audited ones but are not in the audited set. Each line is a source-provided buildsTowards edge", prereqGaps.dataset && prereqGaps.dataset.provider ? ' from ' + prereqGaps.dataset.provider : '', " — planning context for educator judgment, not certification."), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-1 space-y-0.5"
+  }, prereqGaps.missing.slice(0, 12).map(function (gap) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: gap.id
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-mono font-bold"
+    }, gap.code), " ", gap.label || gap.text, /*#__PURE__*/React.createElement("span", {
+      className: "text-amber-800"
+    }, ' — builds toward ' + gap.buildsToward.join(', ')));
+  })), prereqGaps.unresolved.length > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-[11px] text-amber-800"
+  }, prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.')), prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[11px] text-emerald-900"
+  }, "Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards", prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : '', "."), /*#__PURE__*/React.createElement(AlignmentMapScopeDetails, {
+    meta: meta,
+    fallbackScope: auditScope
+  }), /*#__PURE__*/React.createElement("ol", {
     className: "mt-3 space-y-3",
     "aria-label": "Standards alignment map"
   }, entries.map(function (entry, index) {
-    var headingId = "audit-alignment-standard-" + index;
+    var headingId = 'audit-alignment-standard-' + index;
     return /*#__PURE__*/React.createElement("li", {
       key: entry.id,
       className: "rounded-lg border border-indigo-200 bg-white p-3"
@@ -474,49 +607,45 @@ function AlignmentEvidenceMap(p) {
       id: headingId,
       className: "font-bold text-slate-900"
     }, entry.label), /*#__PURE__*/React.createElement("span", {
-      className: "flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded " + alignmentMapBadgeClass(entry.status),
-      "aria-label": "Overall status: " + alignmentMapStatus(entry.status)
-    }, alignmentMapStatus(entry.status))), /*#__PURE__*/React.createElement("ul", {
-      className: "mt-2 space-y-2 text-xs",
-      "aria-label": "Evidence for " + entry.label
-    }, entry.evidence.map(function (item, evidenceIndex) {
-      return /*#__PURE__*/React.createElement("li", {
-        key: item.label + "-" + evidenceIndex,
-        className: "border-t border-slate-100 pt-2"
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center gap-2"
-      }, /*#__PURE__*/React.createElement("strong", null, item.label), /*#__PURE__*/React.createElement("span", {
-        className: "text-[10px] uppercase font-bold px-1.5 py-0.5 rounded " + alignmentMapBadgeClass(item.status)
-      }, alignmentMapStatus(item.status))), /*#__PURE__*/React.createElement("p", {
-        className: "mt-1 text-slate-700"
-      }, item.evidence || "No evidence recorded."), item.notes ? /*#__PURE__*/React.createElement("p", {
-        className: "mt-1 text-slate-500 italic"
-      }, "Note: ", item.notes) : null, AlignmentEvidenceSources(item, confirmAttribution));
-    })), entry.context ? /*#__PURE__*/React.createElement("div", {
+      className: 'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status),
+      "aria-label": 'Overall status: ' + alignmentMapStatus(entry.status)
+    }, alignmentMapStatus(entry.status))), entry.context && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 rounded border border-indigo-100 bg-indigo-50 p-2 text-xs",
-      "aria-label": "Standards context for " + entry.label
+      "aria-label": 'Standards context for ' + entry.label
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold text-indigo-900"
-    }, "Standards context: ", entry.context.record.code || entry.context.record.label || entry.label, entry.context.record.framework ? " · " + entry.context.record.framework : "", entry.context.record.sourceUrl ? " · Source verified" : ""), entry.context.related.length > 0 ? /*#__PURE__*/React.createElement("ul", {
+    }, "Standards context: ", entry.context.record.code || entry.context.record.label || entry.label, entry.context.record.framework ? ' · ' + entry.context.record.framework : '', entry.context.record.sourceUrl ? ' · Source verified' : ''), entry.context.related.length > 0 ? /*#__PURE__*/React.createElement("ul", {
       className: "mt-1 list-disc ml-5 text-indigo-950"
-    }, entry.context.related.map(function (item) {
+    }, entry.context.related.slice(0, 12).map(function (item) {
       return /*#__PURE__*/React.createElement("li", {
         key: item.id
-      }, /*#__PURE__*/React.createElement("details", {
-        className: "py-1"
-      }, /*#__PURE__*/React.createElement("summary", {
-        className: "cursor-pointer text-indigo-950"
-      }, item.direction === "incoming" ? "Parent/group: " : "Child/related: ", item.code ? item.code + " · " : "", item.label, item.kind && item.kind !== "standard" ? " (" + item.kind + ")" : ""), item.text ? /*#__PURE__*/React.createElement("p", {
-        className: "mt-1 pl-4 text-slate-700"
+      }, /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", null, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', item.label, item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''), item.text ? /*#__PURE__*/React.createElement("p", {
+        className: "mt-1 text-indigo-900"
       }, item.text) : null, item.sourceUrl ? /*#__PURE__*/React.createElement("a", {
-        className: "mt-1 ml-4 inline-block text-indigo-700 underline",
+        className: "mt-1 inline-block text-indigo-700 underline",
         href: item.sourceUrl,
         target: "_blank",
         rel: "noreferrer"
       }, "Open source record") : null));
     })) : /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-indigo-900"
-    }, "No bounded graph neighbors returned.")) : null, entry.findings.length > 0 ? /*#__PURE__*/React.createElement("div", {
+    }, "No bounded graph neighbors returned.")), /*#__PURE__*/React.createElement("ul", {
+      className: "mt-2 space-y-2 text-xs",
+      "aria-label": 'Evidence for ' + entry.label
+    }, entry.evidence.map(function (item, evidenceIndex) {
+      return /*#__PURE__*/React.createElement("li", {
+        key: item.label + '-' + evidenceIndex,
+        className: "border-t border-slate-100 pt-2"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-2"
+      }, /*#__PURE__*/React.createElement("strong", null, item.label), /*#__PURE__*/React.createElement("span", {
+        className: 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ' + alignmentMapBadgeClass(item.status)
+      }, alignmentMapStatus(item.status))), /*#__PURE__*/React.createElement("p", {
+        className: "mt-1 text-slate-700"
+      }, item.evidence || 'No evidence recorded.'), item.notes ? /*#__PURE__*/React.createElement("p", {
+        className: "mt-1 text-slate-500 italic"
+      }, "Note: ", item.notes) : null, AlignmentEvidenceSources(item, confirmAttribution));
+    })), entry.findings.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mt-3 border-t border-rose-100 pt-2"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-bold text-rose-800"
@@ -525,12 +654,12 @@ function AlignmentEvidenceMap(p) {
     }, entry.findings.map(function (finding, findingIndex) {
       return /*#__PURE__*/React.createElement("li", {
         key: findingIndex
-      }, finding && typeof finding === "object" ? finding.text : String(finding || ""), AlignmentFindingSources(finding, confirmAttribution));
-    }))) : null, entry.recommendations.length > 0 ? /*#__PURE__*/React.createElement("div", {
+      }, finding && typeof finding === 'object' ? finding.text : String(finding || ''), AlignmentFindingSources(finding, confirmAttribution));
+    }))), entry.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mt-3 border-t border-indigo-100 pt-2 text-xs"
     }, /*#__PURE__*/React.createElement("strong", {
       className: "text-indigo-800"
-    }, "Recommendation: "), entry.recommendations.join(" ")) : null));
+    }, "Recommendation: "), entry.recommendations.join(' '))));
   })));
 }
 function StandardsSection(p) {
@@ -623,7 +752,13 @@ function StandardsSection(p) {
     }, report.adminRecommendation))));
   })), s.notes && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 text-[11px] text-slate-500 italic"
-  }, s.notes), AlignmentEvidenceMap({ standards: s, auditScope: p.auditScope, alignmentMapGraph: p.alignmentMapGraph, onConfirmAttribution: p.onConfirmAttribution, onExportAlignmentGraph: p.onExportAlignmentGraph }));
+  }, s.notes), AlignmentEvidenceMap({
+    standards: s,
+    auditScope: p.auditScope,
+    alignmentMapGraph: p.alignmentMapGraph,
+    onConfirmAttribution: p.onConfirmAttribution,
+    onExportAlignmentGraph: p.onExportAlignmentGraph
+  }));
 }
 function VocabularySection(p) {
   var v = p.vocab;

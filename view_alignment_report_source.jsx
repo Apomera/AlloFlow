@@ -120,6 +120,19 @@ var _lazyIcon = function (name) {
       return null;
     }
   }
+  function alignmentPrereqGaps(reports) {
+    // Deterministic gap listing from the registered snapshots: prerequisites
+    // are source-provided buildsTowards edges, never model inference. Null
+    // (provider absent) renders nothing rather than an empty claim.
+    try {
+      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
+      if (!provider || typeof provider.getPrerequisiteGaps !== 'function') return null;
+      var codes = reports.map(function (report) { return report && report.standard; }).filter(Boolean);
+      if (!codes.length) return null;
+      return provider.getPrerequisiteGaps(codes);
+    } catch (e) { return null; }
+  }
   function alignmentMapEntries(standards, graph, auditScope) {
     var reports = Array.isArray(standards && standards.perStandard) ? standards.perStandard : [];
     var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) { return node && node.type === 'standard'; }) : [];
@@ -285,6 +298,7 @@ var _lazyIcon = function (name) {
     if (!reports.length) return null;
     var graph = alignmentMapGraph(standards, auditScope, p && p.alignmentMapGraph);
     var entries = alignmentMapEntries(standards, graph, auditScope);
+    var prereqGaps = alignmentPrereqGaps(reports);
     var meta = graph && graph.meta && graph.meta.alignmentAudit;
     var confirmAttribution = typeof (p && p.onConfirmAttribution) === 'function' && graph ? function (edgeId) { p.onConfirmAttribution({ edgeId: edgeId, graph: graph }); } : null;
     var exportGraph = typeof (p && p.onExportAlignmentGraph) === 'function' && graph ? function () { p.onExportAlignmentGraph({ graph: graph }); } : null;
@@ -293,7 +307,16 @@ var _lazyIcon = function (name) {
       <p className="mt-1 text-xs text-indigo-900">A readable graph view: each standard connects to text, activity, and assessment evidence, then to open findings and recommendations.</p>
       {meta && <p className="mt-2 text-[11px] text-indigo-900">Grounding: {meta.provider || 'AlloFlow curriculum audit'}{meta.datasetVersion ? ' · Dataset ' + meta.datasetVersion : ''}</p>}{meta && meta.attributionConfirmations && meta.attributionConfirmations.count > 0 && <p role="status" className="mt-1 text-[11px] text-emerald-800">Teacher-confirmed relationships are saved in a derived graph snapshot; the original audit declaration remains available.</p>}
       {meta && meta.standardsGraph && meta.standardsGraph.enabled && <p className="mt-1 text-[11px] text-indigo-900">{'Standards graph: ' + meta.standardsGraph.matchedTargets + '/' + entries.length + ' exact target' + (entries.length === 1 ? '' : 's') + ' connected · ' + meta.standardsGraph.contextNodes + ' context node' + (meta.standardsGraph.contextNodes === 1 ? '' : 's') + ' · ' + meta.standardsGraph.contextRelationships + ' relationship' + (meta.standardsGraph.contextRelationships === 1 ? '' : 's') + (meta.standardsGraph.truncatedTargets ? ' · bounded results truncated' : '')}</p>}
-      <AlignmentMapScopeDetails meta={meta} fallbackScope={auditScope} />
+{prereqGaps && prereqGaps.missing.length > 0 && <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs" role="note" aria-label="Prerequisite gaps from the knowledge graph">
+        <div className="font-bold text-amber-900">Prerequisite gaps (knowledge graph)</div>
+        <p className="mt-0.5 text-amber-900">Earlier standards that build toward the audited ones but are not in the audited set. Each line is a source-provided buildsTowards edge{prereqGaps.dataset && prereqGaps.dataset.provider ? ' from ' + prereqGaps.dataset.provider : ''} — planning context for educator judgment, not certification.</p>
+        <ul className="mt-1 space-y-0.5">{prereqGaps.missing.slice(0, 12).map(function (gap) {
+          return <li key={gap.id}><span className="font-mono font-bold">{gap.code}</span> {gap.label || gap.text}<span className="text-amber-800">{' — builds toward ' + gap.buildsToward.join(', ')}</span></li>;
+        })}</ul>
+        {prereqGaps.unresolved.length > 0 && <p className="mt-1 text-[11px] text-amber-800">{prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.'}</p>}
+      </div>}
+      {prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && <p className="mt-2 text-[11px] text-emerald-900">Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards{prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : ''}.</p>}
+            <AlignmentMapScopeDetails meta={meta} fallbackScope={auditScope} />
       <ol className="mt-3 space-y-3" aria-label="Standards alignment map">{entries.map(function (entry, index) {
         var headingId = 'audit-alignment-standard-' + index;
         return <li key={entry.id} className="rounded-lg border border-indigo-200 bg-white p-3"><article aria-labelledby={headingId}><div className="flex items-start justify-between gap-3"><h4 id={headingId} className="font-bold text-slate-900">{entry.label}</h4><span className={'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status)} aria-label={'Overall status: ' + alignmentMapStatus(entry.status)}>{alignmentMapStatus(entry.status)}</span></div>

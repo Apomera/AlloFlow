@@ -550,6 +550,62 @@
             };
         }
 
+        function getPrerequisiteGaps(queries, options) {
+            // Deterministic set difference, not inference: resolve each audited
+            // query to a snapshot standard, then list the source-provided
+            // buildsTowards SOURCES of those standards that are not themselves
+            // in the audited set. Nothing here guesses — every listed gap is a
+            // concrete edge in the reviewed dataset, and unresolved queries are
+            // reported rather than silently dropped, so "no gaps" can never
+            // mean "we could not read your standards".
+            const list = array(queries).slice(0, MAX_RESULTS);
+            const maxResults = boundedMax(options);
+            const evaluated = [];
+            const unresolved = [];
+            const coveredIds = new Set();
+            const resolvedRecords = [];
+            for (const query of list) {
+                const resolution = resolveStandard(query);
+                if (resolution && resolution.status === 'resolved' && resolution.match) {
+                    coveredIds.add(idToken(resolution.match.id));
+                    resolvedRecords.push({ query: text(query, MAX_TEXT), record: byId.get(idToken(resolution.match.id)) });
+                } else {
+                    unresolved.push({ query: text(query, MAX_TEXT), status: resolution ? resolution.status : 'unresolved' });
+                }
+            }
+            const missingById = new Map();
+            for (const entry of resolvedRecords) {
+                const prereqs = neighborsByType(entry.record, 'buildsTowards', 'incoming', maxResults);
+                const missingIds = [];
+                for (const prereq of prereqs.records) {
+                    if (coveredIds.has(idToken(prereq.id))) continue;
+                    missingIds.push(prereq.id);
+                    const existing = missingById.get(idToken(prereq.id));
+                    if (existing) {
+                        if (!existing.buildsToward.includes(entry.record.code)) existing.buildsToward.push(entry.record.code);
+                    } else if (missingById.size < maxResults) {
+                        missingById.set(idToken(prereq.id), Object.assign({}, prereq, { buildsToward: [entry.record.code] }));
+                    }
+                }
+                evaluated.push({
+                    query: entry.query,
+                    standard: publicRecord(entry.record),
+                    prerequisiteCount: prereqs.records.length,
+                    missingIds,
+                    truncated: prereqs.truncated
+                });
+            }
+            const missing = Array.from(missingById.values());
+            missing.sort((a, b) => compareRecords({ record: a }, { record: b }));
+            return {
+                evaluated,
+                missing,
+                unresolved,
+                edgeSource: 'buildsTowards',
+                dataset: cloneManifest(value.dataset)
+            };
+        }
+
         return {
             VERSION,
             getManifest: () => cloneManifest(value.dataset),
@@ -563,7 +619,8 @@
             getNeighborhood,
             getPrerequisites,
             getRelatedStandards,
-            getLearningComponents
+            getLearningComponents,
+            getPrerequisiteGaps
         };
     }
 
