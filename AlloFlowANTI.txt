@@ -12210,6 +12210,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=e805fe3c7');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=e805fe3c7');
     loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=e805fe3c7');
+    // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
+    // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
+    // snapshot module does not switch it on; these lines do. The provider keys a
+    // multi-snapshot registry and the modules use an array fallback, so load
+    // order (async script tags) cannot drop a snapshot. Usage boundary: matches
+    // are alignment evidence for educator judgment - never certification, never
+    // grading/placement/evaluation. The sidebar resolver shows that boundary.
+    loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
+    loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
+    loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=e805fe3c7');
     loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=e805fe3c7');
     loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=e805fe3c7');

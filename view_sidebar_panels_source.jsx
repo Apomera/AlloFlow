@@ -445,6 +445,13 @@ function UniversalSettingsPanel(props) {
                                                     </span>
                                                 )}
                                             </div>
+                                            {/* Usage boundary from the dataset manifest review: visible, not a tooltip.
+                                                Graph matches support educator judgment; presenting them as official
+                                                certification or using them for high-stakes decisions is out of bounds. */}
+                                            <p className="text-[10px] leading-snug text-cyan-900/80">
+                                                {(localStandardsManifest && localStandardsManifest.attribution) || 'Standards data: Learning Commons Knowledge Graph (CC BY 4.0).'}{' '}
+                                                Matches are alignment evidence to support educator judgment — not official certification, and not for grading, placement, or evaluation.
+                                            </p>
                                             {localResolution && localResolution.status === 'resolved' && localResolution.match && (
                                                 <div role="status" className="rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700">
                                                     <div className="font-bold text-emerald-800">Exact local match: {localResolution.match.code}</div>
