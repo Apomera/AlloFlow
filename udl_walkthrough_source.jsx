@@ -293,6 +293,160 @@ function udlwalkExecCopy(text) {
   } catch (_) { return false; }
 }
 
+// ── Building-level aggregation (pure seams — dashboard + research export) ──
+
+// Guideline id = look-for id minus the item index ('eng_7_1' -> 'eng_7').
+function udlwalkGuidelineOf(lookForId) {
+  const parts = String(lookForId).split('_');
+  return parts.slice(0, 2).join('_');
+}
+
+// Ordered guideline list derived from the instrument (9 entries).
+const UDLWALK_GUIDELINES = (function () {
+  const seen = new Set();
+  const out = [];
+  UDLWALK_LOOK_FORS.forEach((lf) => {
+    const gid = udlwalkGuidelineOf(lf.id);
+    if (!seen.has(gid)) { seen.add(gid); out.push({ id: gid, principle: lf.principle, label: lf.guideline }); }
+  });
+  return out;
+})();
+
+const UDLWALK_UNGRADED = '—';
+
+// Rollup for the Building dashboard. Validity rules baked in here, not in the
+// render: 'no_opp' is excluded from every denominator, and pdSignals only
+// consider guidelines with at least MIN_N rated observations building-wide.
+function udlwalkAggregate(sessions, roster) {
+  const MIN_N = 3;
+  const gradeOf = {};
+  (roster || []).forEach((r) => { gradeOf[r.id] = (r.grade && String(r.grade).trim()) || UDLWALK_UNGRADED; });
+  const gradeSet = new Set();
+  const blank = () => ({ observed: 0, partial: 0, not: 0, rated: 0, noOpp: 0 });
+  const cells = {};
+  const totals = {};
+  UDLWALK_GUIDELINES.forEach((g) => { cells[g.id] = {}; totals[g.id] = blank(); });
+  const coverageMap = {};
+  (sessions || []).forEach((s) => {
+    const grade = gradeOf[s.teacherId] || UDLWALK_UNGRADED;
+    const cov = coverageMap[s.teacherId] || (coverageMap[s.teacherId] = { visits: 0, lastDate: '' });
+    cov.visits += 1;
+    if (String(s.date || '') > cov.lastDate) cov.lastDate = String(s.date || '');
+    Object.keys(s.evidence || {}).forEach((lookForId) => {
+      const entry = s.evidence[lookForId];
+      const rating = entry && entry.rating;
+      if (!rating) return;
+      const gid = udlwalkGuidelineOf(lookForId);
+      if (!totals[gid]) return; // unknown id (future instrument version) — skip, don't throw
+      gradeSet.add(grade);
+      const cell = cells[gid][grade] || (cells[gid][grade] = blank());
+      if (rating === 'no_opp') { cell.noOpp += 1; totals[gid].noOpp += 1; return; }
+      cell[rating] += 1; cell.rated += 1;
+      totals[gid][rating] += 1; totals[gid].rated += 1;
+    });
+  });
+  const grades = Array.from(gradeSet).sort((a, b) => {
+    if (a === UDLWALK_UNGRADED) return 1;
+    if (b === UDLWALK_UNGRADED) return -1;
+    const na = parseFloat(a), nb = parseFloat(b);
+    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+    return String(a).localeCompare(String(b));
+  });
+  const coverage = (roster || []).map((r) => ({
+    teacherId: r.id,
+    visits: (coverageMap[r.id] || {}).visits || 0,
+    lastDate: (coverageMap[r.id] || {}).lastDate || '',
+  }));
+  const pdSignals = UDLWALK_GUIDELINES
+    .filter((g) => totals[g.id].rated >= MIN_N)
+    .map((g) => ({ id: g.id, rate: totals[g.id].observed / totals[g.id].rated, n: totals[g.id].rated }))
+    .sort((a, b) => a.rate - b.rate)
+    .slice(0, 3);
+  return { grades, cells, totals, coverage, pdSignals, minN: MIN_N };
+}
+
+// Inter-rater agreement between two sessions of the SAME lesson recorded by
+// two observers. Exact-match on items BOTH observers rated (no_opp counts as
+// a rating — "nothing to see" is itself a judgment they can disagree on).
+function udlwalkAgreement(sessionA, sessionB) {
+  const evA = (sessionA && sessionA.evidence) || {};
+  const evB = (sessionB && sessionB.evidence) || {};
+  let bothRated = 0, agree = 0, onlyOne = 0;
+  const disagreements = [];
+  UDLWALK_LOOK_FORS.forEach((lf) => {
+    const a = evA[lf.id] && evA[lf.id].rating;
+    const b = evB[lf.id] && evB[lf.id].rating;
+    if (a && b) {
+      bothRated += 1;
+      if (a === b) agree += 1;
+      else disagreements.push({ id: lf.id, guideline: lf.guideline, a, b });
+    } else if (a || b) {
+      onlyOne += 1;
+    }
+  });
+  return { bothRated, agree, onlyOne, pct: bothRated ? agree / bothRated : null, disagreements };
+}
+
+// De-identified long-format rows for research export: one row per rated
+// look-for. Teacher CODE only (never the name), and NO free text — evidence
+// notes and observer notes can contain names, so only their presence is
+// exported. Building name is deliberately omitted too.
+function udlwalkResearchRows(sessions, roster) {
+  const byId = {};
+  (roster || []).forEach((r) => { byId[r.id] = r; });
+  const rows = [];
+  (sessions || []).forEach((s) => {
+    const teacher = byId[s.teacherId];
+    const momentCount = (s.studentIndicators || []).length;
+    Object.keys(s.evidence || {}).forEach((lookForId) => {
+      const entry = s.evidence[lookForId];
+      if (!entry || !entry.rating) return;
+      const lf = UDLWALK_LOOK_FORS.find((x) => x.id === lookForId);
+      rows.push({
+        session_id: s.id,
+        teacher_code: teacher ? teacher.code : 'unknown',
+        grade: teacher ? ((teacher.grade && String(teacher.grade).trim()) || '') : '',
+        date: s.date || '',
+        duration_min: s.durationMin != null ? s.durationMin : '',
+        grouping: (s.context && s.context.grouping) || '',
+        lesson_phase: (s.context && s.context.lessonPhase) || '',
+        framework: s.frameworkVersion || UDLWALK_FRAMEWORK,
+        look_for_id: lookForId,
+        guideline_id: udlwalkGuidelineOf(lookForId),
+        principle: lf ? lf.principle : '',
+        rating: entry.rating,
+        note_present: entry.note ? 1 : 0,
+        student_moment_count: momentCount,
+      });
+    });
+  });
+  return rows;
+}
+
+function udlwalkCsv(rows) {
+  if (!rows || !rows.length) return '';
+  const cols = Object.keys(rows[0]);
+  const esc = (v) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\r\n');
+}
+
+function udlwalkDownload(filename, mime, content, addToast, okMsg, failMsg) {
+  try {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    addToast(okMsg, 'info');
+  } catch (e) {
+    addToast(failMsg + String(e && e.message), 'error');
+  }
+}
+
 // ── Look-for card (module scope; no hooks beyond local UI state) ──
 function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
   const [showNote, setShowNote] = React.useState(false);
@@ -441,6 +595,8 @@ function UdlWalkthroughPanel(props) {
   const [newTeacherName, setNewTeacherName] = React.useState('');
   const [newTeacherGrade, setNewTeacherGrade] = React.useState('');
   const [elapsedMin, setElapsedMin] = React.useState(0);
+  const [irA, setIrA] = React.useState('');
+  const [irB, setIrB] = React.useState('');
   const dialogRef = React.useRef(null);
   const importInputRef = React.useRef(null);
 
@@ -629,6 +785,7 @@ function UdlWalkthroughPanel(props) {
   const tabs = [
     { id: 'observe', label: tt('udlwalk.tab_observe', 'Observe'), icon: '🚪' },
     { id: 'sessions', label: tt('udlwalk.tab_sessions', 'Visits'), icon: '🗂️' },
+    { id: 'building', label: tt('udlwalk.tab_building', 'Building'), icon: '🏫' },
     { id: 'setup', label: tt('udlwalk.tab_setup', 'Roster & setup'), icon: '⚙️' },
   ];
 
@@ -806,6 +963,153 @@ function UdlWalkthroughPanel(props) {
               </ul>
             </div>
           )}
+
+          {tab === 'building' && (() => {
+            const agg = udlwalkAggregate(sessions, roster);
+            const sessionLabel = (s) => udlwalkTeacherDisplay(teacherById(s.teacherId), config.anonymizeTeachers) + ' · ' + s.date + ' · ' + s.durationMin + ' ' + tt('udlwalk.minutes', 'min');
+            const sessA = sessions.find((s) => s.id === irA) || null;
+            const sessB = sessions.find((s) => s.id === irB) || null;
+            const agreement = (sessA && sessB && sessA.id !== sessB.id) ? udlwalkAgreement(sessA, sessB) : null;
+            const cellView = (c) => {
+              if (!c || !c.rated) return { text: '—', cls: 'bg-slate-50 text-slate-400' };
+              const rate = c.observed / c.rated;
+              const cls = rate >= 0.7 ? 'bg-green-100 text-green-900' : rate >= 0.4 ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-900';
+              return { text: Math.round(rate * 100) + '%', n: c.rated, cls };
+            };
+            return (
+              <div>
+                {sessions.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('udlwalk.building_empty', 'The building view fills in as visits are saved. Start on the Observe tab.')}</p>}
+                {sessions.length > 0 && (
+                  <div>
+                    <div className="overflow-x-auto bg-white border border-slate-300 rounded-xl p-2">
+                      <table className="w-full text-xs border-collapse">
+                        <caption className="text-left text-sm font-bold text-slate-700 p-1">{tt('udlwalk.heatmap_caption', 'Share of ratings marked "observed", by guideline')}</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left p-1.5 text-slate-600">{tt('udlwalk.heatmap_guideline', 'Guideline')}</th>
+                            {agg.grades.map((g) => <th key={g} scope="col" className="p-1.5 text-slate-600">{g === UDLWALK_UNGRADED ? tt('udlwalk.ungraded', 'No grade') : g}</th>)}
+                            <th scope="col" className="p-1.5 text-slate-700 font-bold">{tt('udlwalk.heatmap_all', 'All')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {UDLWALK_GUIDELINES.map((g) => {
+                            const total = cellView(agg.totals[g.id]);
+                            return (
+                              <tr key={g.id} className="border-t border-slate-200">
+                                <th scope="row" className="text-left p-1.5 font-normal text-slate-700">
+                                  <span className="font-bold">{g.label}</span>{' '}
+                                  <span className="text-[10px] text-slate-500">({(UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label})</span>
+                                </th>
+                                {agg.grades.map((grade) => {
+                                  const v = cellView(agg.cells[g.id][grade]);
+                                  return <td key={grade} className={'p-1.5 text-center rounded ' + v.cls}>{v.text}{v.n ? <span className="text-[9px] opacity-75"> (n={v.n})</span> : null}</td>;
+                                })}
+                                <td className={'p-1.5 text-center font-bold rounded ' + total.cls}>{total.text}{total.n ? <span className="text-[9px] opacity-75"> (n={total.n})</span> : null}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1.5">{tt('udlwalk.heatmap_note', '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')}</p>
+
+                    {agg.pdSignals.length > 0 && (
+                      <div className="mt-3 bg-white border border-indigo-300 rounded-xl p-3">
+                        <h4 className="text-sm font-bold text-indigo-800">{tt('udlwalk.pd_title', 'PD signals')}</h4>
+                        <p className="text-[10px] text-slate-500">{tt('udlwalk.pd_note', 'Lowest observed-rates with at least ' + agg.minN + ' rated observations building-wide — framed as PD topics, not verdicts.')}</p>
+                        <ul className="mt-1.5 space-y-1">
+                          {agg.pdSignals.map((sig) => {
+                            const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
+                            return (
+                              <li key={sig.id} className="text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2">
+                                <span className="font-bold">{g ? g.label : sig.id}</span> — {Math.round(sig.rate * 100)}% {tt('udlwalk.observed_short', 'observed')} (n={sig.n}). {UDLWALK_SUGGESTIONS[g ? g.principle : ''] || ''}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
+                      <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.coverage_title', 'Coverage')}</h4>
+                      <p className="text-[10px] text-slate-500">{tt('udlwalk.coverage_note', 'Walkthrough initiatives die from uneven coverage — who has not had a visit lately?')}</p>
+                      <ul className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                        {agg.coverage.map((c) => {
+                          const teacher = teacherById(c.teacherId);
+                          return (
+                            <li key={c.teacherId} className={'text-xs p-2 rounded-lg border ' + (c.visits === 0 ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
+                              <span className="font-bold">{udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)}</span>{' — '}
+                              {c.visits === 0 ? tt('udlwalk.coverage_never', 'no visits yet') : (c.visits + ' ' + tt('udlwalk.coverage_visits', 'visit(s), last') + ' ' + c.lastDate)}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
+                      <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.research_title', 'Research export (de-identified)')}</h4>
+                      <p className="text-[10px] text-slate-500">{tt('udlwalk.research_note', 'Teacher codes only — never names. Free-text notes are excluded (they can contain names); only their presence is exported. Building name is omitted.')}</p>
+                      <div className="mt-1.5 flex flex-wrap gap-2">
+                        <button type="button" onClick={() => {
+                          const rows = udlwalkResearchRows(sessions, roster);
+                          if (!rows.length) { addToast(tt('udlwalk.research_empty', 'No rated evidence to export yet.'), 'warning'); return; }
+                          udlwalkDownload('udl-walkthrough-research.csv', 'text/csv', udlwalkCsv(rows), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
+                        }} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('udlwalk.research_csv', 'Research CSV')}</button>
+                        <button type="button" onClick={() => {
+                          const rows = udlwalkResearchRows(sessions, roster);
+                          if (!rows.length) { addToast(tt('udlwalk.research_empty', 'No rated evidence to export yet.'), 'warning'); return; }
+                          const payload = { kind: 'alloflow-udl-walkthrough-research', version: 1, exportedAt: new Date().toISOString(), framework: config.frameworkVersion || UDLWALK_FRAMEWORK, rows };
+                          udlwalkDownload('udl-walkthrough-research.json', 'application/json', JSON.stringify(payload, null, 2), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
+                        }} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('udlwalk.research_json', 'Research JSON')}</button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
+                      <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.ir_title', 'Inter-rater check')}</h4>
+                      <p className="text-[10px] text-slate-500">{tt('udlwalk.ir_note', 'Two observers record the same lesson on their own devices, one imports the other’s export (Roster & setup tab), then compare the two visits here. Exact-match agreement on items both observers rated; "no opportunity" counts as a rating.')}</p>
+                      <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label htmlFor="udlwalk-ir-a" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_a', 'Observer A visit')}</label>
+                          <select id="udlwalk-ir-a" value={irA} onChange={(e) => setIrA(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{tt('udlwalk.ir_pick', 'Choose a visit…')}</option>
+                            {sessions.map((s) => <option key={s.id} value={s.id}>{sessionLabel(s)}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="udlwalk-ir-b" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_b', 'Observer B visit')}</label>
+                          <select id="udlwalk-ir-b" value={irB} onChange={(e) => setIrB(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">{tt('udlwalk.ir_pick', 'Choose a visit…')}</option>
+                            {sessions.map((s) => <option key={s.id} value={s.id}>{sessionLabel(s)}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      {irA && irB && irA === irB && <p className="mt-1.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2">{tt('udlwalk.ir_same', 'Choose two different visits.')}</p>}
+                      {agreement && (
+                        <div className="mt-2 text-xs text-slate-700">
+                          {agreement.bothRated === 0 ? (
+                            <p className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">{tt('udlwalk.ir_none', 'These two visits have no look-fors that both observers rated.')}</p>
+                          ) : (
+                            <div>
+                              <p className="font-bold text-slate-800">{Math.round(agreement.pct * 100)}% {tt('udlwalk.ir_agree', 'agreement')} ({agreement.agree}/{agreement.bothRated} {tt('udlwalk.ir_both', 'items both rated')}{agreement.onlyOne ? ('; ' + agreement.onlyOne + ' ' + tt('udlwalk.ir_only_one', 'rated by only one observer')) : ''})</p>
+                              {agreement.disagreements.length > 0 && (
+                                <ul className="mt-1.5 space-y-1">
+                                  {agreement.disagreements.map((d) => (
+                                    <li key={d.id} className="bg-rose-50 border border-rose-200 rounded-lg p-2">
+                                      <span className="font-bold">{d.guideline}</span> ({d.id}): A = {(UDLWALK_RATING_META[d.a] || {}).label}, B = {(UDLWALK_RATING_META[d.b] || {}).label}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {tab === 'setup' && (
             <div>
