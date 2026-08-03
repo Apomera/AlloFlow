@@ -1881,6 +1881,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (totalTerms === 0) {
              addToast(t('toasts.request_at_least_one'), "error");
              setIsProcessing(false);
+             // Unattended callers need a named reason, not an undefined return
+             // their run record can only label "produced nothing".
+             if (configOverride && configOverride.rethrowErrors) throw new Error('glossary step requested zero terms (set a Tier 2 or Tier 3 count)');
              return;
         }
         let levelContext = "";
