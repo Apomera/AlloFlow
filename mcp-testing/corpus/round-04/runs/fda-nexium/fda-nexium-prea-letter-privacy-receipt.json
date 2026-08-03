@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "fda-nexium-prea-letter-accessibility-report.json",
+    "accessibleHtml": "fda-nexium-prea-letter-accessible.html",
+    "privacyReceipt": "fda-nexium-prea-letter-privacy-receipt.json",
+    "taggedPdf": "fda-nexium-prea-letter-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-03T17:39:01Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "fda-nexium-prea-letter.pdf",
+    "bytes": 170089,
+    "kind": "pdf",
+    "sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1"
+  },
+  "systemWideNetworkUseVerified": false
+}

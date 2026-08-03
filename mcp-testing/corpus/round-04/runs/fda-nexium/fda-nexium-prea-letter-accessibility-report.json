@@ -1,0 +1,200 @@
+{
+  "alloflowPortableVersion": "0.2.0",
+  "artifacts": {
+    "accessibilityReport": "fda-nexium-prea-letter-accessibility-report.json",
+    "accessibleHtml": "fda-nexium-prea-letter-accessible.html",
+    "privacyReceipt": "fda-nexium-prea-letter-privacy-receipt.json",
+    "taggedPdf": "fda-nexium-prea-letter-alloflow-accessible.pdf"
+  },
+  "checks": {
+    "humanSourceComparison": {
+      "status": "required"
+    },
+    "independentVerification": {
+      "how": "Run verify-init to derive a worksheet, have a fresh-context reader fill it, then verify-check to stamp the verification report.",
+      "status": "not_run"
+    },
+    "outputTextRecall": {
+      "planTokens": 2450,
+      "recall": 1.0,
+      "status": "completed"
+    },
+    "pdfUaValidation": {
+      "compliant": true,
+      "failedRuleCount": 0,
+      "failedRules": [],
+      "identifierWithheld": false,
+      "processExitCode": 0,
+      "standard": "PDF/UA-1",
+      "status": "completed",
+      "validator": "veraPDF"
+    },
+    "repairPlan": {
+      "metrics": {
+        "block_count": 67,
+        "embedded_image_characters": 10283,
+        "image_blocks": 1,
+        "plan_internal_token_recall": null,
+        "text_characters": 15416,
+        "unresolved_images": 0
+      },
+      "sourceBinding": {
+        "algorithm": "sha256",
+        "matched": true
+      },
+      "status": "completed",
+      "warnings": []
+    },
+    "semanticHtml": {
+      "status": "completed"
+    },
+    "sourceTextRecall": {
+      "missingTokens": 190,
+      "recall": 0.9099,
+      "sourceTokens": 2109,
+      "status": "completed",
+      "topMissingTokens": [
+        {
+          "count": 12,
+          "token": "1"
+        },
+        {
+          "count": 5,
+          "token": "0"
+        },
+        {
+          "count": 4,
+          "token": "magnesium"
+        },
+        {
+          "count": 4,
+          "token": "release"
+        },
+        {
+          "count": 3,
+          "token": "esomeprazole"
+        },
+        {
+          "count": 3,
+          "token": "suspension"
+        },
+        {
+          "count": 3,
+          "token": "delayed"
+        },
+        {
+          "count": 3,
+          "token": "3"
+        },
+        {
+          "count": 3,
+          "token": "ofthe"
+        },
+        {
+          "count": 2,
+          "token": "pmr59"
+        },
+        {
+          "count": 2,
+          "token": "2"
+        },
+        {
+          "count": 2,
+          "token": "nda021957"
+        },
+        {
+          "count": 2,
+          "token": "erosiveesophagitis"
+        },
+        {
+          "count": 2,
+          "token": "oferosive"
+        },
+        {
+          "count": 2,
+          "token": "astrazenecahas"
+        },
+        {
+          "count": 2,
+          "token": "5mg"
+        },
+        {
+          "count": 1,
+          "token": "nda"
+        },
+        {
+          "count": 1,
+          "token": "021957"
+        },
+        {
+          "count": 1,
+          "token": "oral11"
+        },
+        {
+          "count": 1,
+          "token": "provideda"
+        }
+      ]
+    },
+    "staticHtmlAudit": {
+      "counts": {
+        "headings": 7,
+        "images": 1,
+        "links": 1,
+        "tables": 1
+      },
+      "errors": [],
+      "ok": true,
+      "status": "completed",
+      "warnings": []
+    },
+    "taggedPdfGeneration": {
+      "blockedNetworkRequests": 0,
+      "bytes": 138190,
+      "pdfUaFinalization": {
+        "metadataAdded": true,
+        "pdfuaIdentifierClaimed": true,
+        "wrappedContentStreams": 8
+      },
+      "pdfUaIdentifierClaimed": true,
+      "status": "completed",
+      "structuralMarkers": {
+        "language": true,
+        "markInfo": true,
+        "marked": true,
+        "structTreeRoot": true,
+        "title": true,
+        "xmpMetadata": true
+      }
+    }
+  },
+  "complianceClaim": false,
+  "createdAt": "2026-08-03T17:39:01Z",
+  "manualReview": [
+    "REDACTED CONTENT MARKED, NOT INVENTED. Page 5 contains a blank grey block marked “(b) (4)” covering four bulleted items withheld under Freedom of Information Act exemption 4. The rebuild states plainly that four items exist and that their wording is unavailable. Nothing was guessed or reconstructed.",
+    "LETTERHEAD RELOCATED. The sender's address block (“Regulatory Affairs / AstraZeneca Pharmaceuticals LP / One MedImmune Way Gaithersburg, MD 20878”) is printed at the FOOT of page 1 in the source as letterhead design. It is placed immediately after the logo here so a screen-reader user encounters sender identity at the start of the letter, as in any correspondence.",
+    "LOGO GIVEN ALT TEXT. The AstraZeneca logo is embedded with alt text “AstraZeneca logo” rather than marked decorative, because it is the primary sender identification at the top of a business letter. The image was extracted from the source PDF itself (400x104 JPEG), not recreated.",
+    "LETTERED LIST MARKERS FOLDED INTO TEXT. The source's a) / b) options on page 2 use alphabetic markers. The plan format supports only ordered (numeric) and unordered lists, so these are an unordered list with the “a)” and “b)” markers preserved inside the item text. No wording changed.",
+    "INLINE CHARACTER STYLING IS NOT CARRIED. The plan format has no inline bold or italic, so ALL of the source's character-level emphasis is dropped, everywhere it occurs. This list is illustrative, not exhaustive: bold on the page 1 letterhead lines, “Date:”, the “Re:” block and the capitalised subject lines; italics on the a) and b) options on page 2; and italics on the passage beginning “pediatric extrapolation for maintenance of healing…” on page 4. The consequence to weigh is that where italics alone marked quoted external language and no quotation marks accompany them — the page 2 options and the page 4 passage are both examples — the rebuild reads that text as ordinary narration. A reader who needs to know exactly which words the source set as quotations must consult the original. No wording was changed anywhere.",
+    "DOCUMENT SUMMARY IS AUTHORED. The rebuild carries a one-sentence summary of the letter in its document metadata (used as the HTML meta description). It is written for this rebuild, is not printed anywhere in the source, and introduces no facts absent from the letter.",
+    "E-MAIL ADDRESSES ARE NOT LINKS IN THE SOURCE. All three e-mail addresses on page 7 are coloured blue, and two of them (AZTech-Subissues@ and krishna.joshi@) are also underlined by a drawn rule; emery.gigger@ in the signature block is blue but not underlined. None is a hyperlink: the source PDF contains no link annotations at all (no /Annots, /Link, or /URI anywhere in the file). They are preserved as readable text, and no clickable behaviour was lost. Separately, the plan format has no inline-link construct inside paragraph text, so a document that did carry real inline links would lose them.",
+    "RUNNING HEAD DROPPED. Pages 2 through 7 repeat the running head “NDA 021957: NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral”. It is page furniture and is not reproduced as body text; the same information appears in the document title and the Re: line.",
+    "SENTENCE REJOINED ACROSS A PAGE BREAK. The paragraph beginning “Reference is made to approval of NDA 022101…” breaks mid-phrase across pages 1-2 (“…aged 1-” / “11 years.”) and was rejoined into a single block assigned to page 1. This is the only mid-sentence page break in the document; no other text was rejoined.",
+    "BULLET GROUPS MERGED ACROSS A PAGE BREAK. The two-item bullet list summarising the infant GERD study results (“The majority of patients…”, “Safety data on esomeprazole…”) is split by the page 2/3 boundary in the source and is presented here as one list assigned to page 2.",
+    "SUBMISSION LABELS AS HEADINGS. “Submission Information:”, “Module 1:” and “Module 5:” are bold labels in the source; they are level-3 headings under “Deferral Extension Request” so the submission contents can be navigated. Their trailing colons are kept verbatim.",
+    "MULTI-LINE ADDRESS BLOCKS. The letterhead, recipient address, Re: block, the two capitalised subject lines, and the signature block are single paragraphs whose internal line breaks are rendered as explicit line breaks, so each block keeps its printed shape while reading as one unit.",
+    "TITLE IS SYNTHESISED. The source is a letter and has no title line. The document title used here joins two fragments: the subject line “RESPONSE TO PREA NON-COMPLIANCE LETTER”, which the source prints in capitals and which is recased here to sentence capitals, and the NDA and product identification printed under “Re:”, which the source prints in mixed case and which is carried verbatim. The combination is editorial. “(dated 21 August 2019)” and “eCTD Sequence No. 0192” are not carried into the title; both appear in full in the body of the rebuild.",
+    "TABLE CAPTION IS SYNTHESISED. The page 6 table is printed without a caption. The caption used here paraphrases the sentence that introduces it on page 5 (“…the sponsor proposes the following new Pediatric study timelines… for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years”). A caption is required for an accessible table; the wording is editorial and introduces no facts absent from the source.",
+    "TABLE FOOTNOTE MARKER KEPT IN CELL. The asterisk on “Final Protocol Submission*” is preserved inside the table cell, and its footnote follows the table as a paragraph, exactly as printed.",
+    "PUBLIC DOCUMENT, REAL PEOPLE NAMED. This letter is published by the FDA and names its authors and their work contact details as printed. It is reproduced here unchanged for local accessibility testing; the redactions were applied by the publisher, not by this rebuild.",
+    "Compare every page of the rebuild with the source; automated checks cannot verify meaning."
+  ],
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "fda-nexium-prea-letter.pdf",
+    "bytes": 170089,
+    "kind": "pdf",
+    "sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1"
+  },
+  "verdict": "pdf_generated_validation_passed_review_required"
+}

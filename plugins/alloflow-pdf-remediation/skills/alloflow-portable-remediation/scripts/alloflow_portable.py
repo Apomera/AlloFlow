@@ -480,9 +480,21 @@ def esc(value: Any) -> str:
     return html.escape(str(value or ""), quote=True)
 
 
+def esc_lines(value: Any) -> str:
+    """Escape text and honour intentional line breaks as <br>.
+
+    Address blocks, signature blocks, and flattened table cells carry their
+    shape in newlines. HTML collapses whitespace, so without this the lines
+    silently ran together and a plan that claimed to preserve them was making
+    a false claim (corpus round 4, caught by the independent verifier).
+    """
+    return "<br>".join(esc(line) for line in str(value or "").split("\n"))
+
+
 def render_html(validated: Dict[str, Any]) -> str:
     document = validated["document"]
     parts: List[str] = []
+    image_caption_counter = [1]  # unique ids for aria-describedby targets
     for block in validated["blocks"]:
         kind = block["type"]
         page = block.get("source_page")
@@ -491,13 +503,13 @@ def render_html(validated: Dict[str, Any]) -> str:
             level = int(block["level"])
             parts.append(f"<h{level}{source_attr}>{esc(block['text'])}</h{level}>")
         elif kind == "paragraph":
-            parts.append(f"<p{source_attr}>{esc(block['text'])}</p>")
+            parts.append(f"<p{source_attr}>{esc_lines(block['text'])}</p>")
         elif kind == "blockquote":
             cite = f"<cite>{esc(block.get('cite'))}</cite>" if block.get("cite") else ""
-            parts.append(f"<blockquote{source_attr}><p>{esc(block['text'])}</p>{cite}</blockquote>")
+            parts.append(f"<blockquote{source_attr}><p>{esc_lines(block['text'])}</p>{cite}</blockquote>")
         elif kind == "list":
             tag = "ol" if block.get("ordered") else "ul"
-            items = "".join(f"<li>{esc(item)}</li>" for item in block.get("items") or [])
+            items = "".join(f"<li>{esc_lines(item)}</li>" for item in block.get("items") or [])
             parts.append(f"<{tag}{source_attr}>{items}</{tag}>")
         elif kind == "table":
             headers = "".join(f'<th scope="col">{esc(value)}</th>' for value in block["columns"])
@@ -506,28 +518,47 @@ def render_html(validated: Dict[str, Any]) -> str:
                 cells = []
                 for index, value in enumerate(row):
                     if index == 0 and block.get("row_headers"):
-                        cells.append(f'<th scope="row">{esc(value)}</th>')
+                        cells.append(f'<th scope="row">{esc_lines(value)}</th>')
                     else:
-                        cells.append(f"<td>{esc(value)}</td>")
+                        cells.append(f"<td>{esc_lines(value)}</td>")
                 rows.append("<tr>" + "".join(cells) + "</tr>")
             parts.append(
                 f"<table{source_attr}><caption>{esc(block['caption'])}</caption>"
                 f"<thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
             )
         elif kind == "image":
+            # NOT <figure>/<figcaption>: Chromium's tagged-PDF export maps a
+            # <figure> element to its own /Figure structure element, which
+            # carries no /Alt (only the inner <img> does). That outer, altless
+            # Figure fails PDF/UA-1 clause 7.3-1 (corpus round 4). A div
+            # wrapper plus aria-describedby keeps the caption association in
+            # HTML while leaving exactly one /Figure - the image's - in the PDF.
             data_uri = block.get("_data_uri")
-            caption = f"<figcaption>{esc(block.get('caption'))}</figcaption>" if block.get("caption") else ""
+            caption_id = f"alloflow-figcap-{image_caption_counter[0]}"
+            has_caption = bool(block.get("caption"))
+            if has_caption:
+                image_caption_counter[0] += 1
+            caption = (
+                f'<p class="alloflow-figure-caption" id="{caption_id}">'
+                f"{esc(block.get('caption'))}</p>"
+                if has_caption
+                else ""
+            )
+            describedby = f' aria-describedby="{caption_id}"' if has_caption else ""
             if data_uri:
                 alt = "" if block.get("decorative") else block.get("alt", "")
                 role = ' role="presentation"' if block.get("decorative") else ""
                 parts.append(
-                    f"<figure{source_attr}><img src=\"{data_uri}\" alt=\"{esc(alt)}\"{role}>{caption}</figure>"
+                    f'<div{source_attr} class="alloflow-figure">'
+                    f'<img src="{data_uri}" alt="{esc(alt)}"{role}{describedby}>'
+                    f"{caption}</div>"
                 )
             elif not block.get("decorative"):
                 parts.append(
-                    f'<figure{source_attr} class="alloflow-figure-fallback">'
-                    f'<div role="img" aria-label="{esc(block.get("alt"))}">{esc(block.get("alt"))}</div>'
-                    f"{caption}</figure>"
+                    f'<div{source_attr} class="alloflow-figure alloflow-figure-fallback">'
+                    f'<div role="img" aria-label="{esc(block.get("alt"))}"{describedby}>'
+                    f'{esc(block.get("alt"))}</div>'
+                    f"{caption}</div>"
                 )
         elif kind == "link":
             link_text = esc(block["text"])
@@ -573,7 +604,7 @@ caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
 th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: left; vertical-align: top; }}
 th {{ background: #e5e7eb; color: #111827; }}
 img {{ display: block; height: auto; max-width: 100%; }}
-figcaption {{ margin-top: .35rem; color: #374151; }}
+figcaption, .alloflow-figure-caption {{ margin-top: .35rem; color: #374151; }}
 .alloflow-figure-fallback {{ border: 2px solid #6b7280; padding: .75rem; }}
 .alloflow-page-break {{ display: block; break-before: page; height: 0; }}
 @media print {{
@@ -906,6 +937,53 @@ def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
         return {"status": "failed", "reason": compact_error(exc), "processExitCode": result.returncode}
 
 
+def _has_interactive_fields(data: bytes) -> bool:
+    """True when the PDF really carries fillable form fields.
+
+    An /AcroForm dictionary alone is NOT enough: Word and Acrobat leave an
+    empty one behind on ordinary prose documents (corpus round 4: a business
+    letter carried /AcroForm with an empty /Fields array and was wrongly
+    refused). Require a non-empty /Fields array or a real /Widget annotation.
+    """
+    if re.search(rb"/Subtype\s*/Widget\b", data):
+        return True
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    def fields_non_empty(fields_blob: bytes) -> bool:
+        inline = re.match(rb"\s*\[(.*?)\]", fields_blob, re.S)
+        if inline:
+            return bool(re.search(rb"\d+\s+0\s+R", inline.group(1)))
+        ref = re.match(rb"\s*(\d+)\s+0\s+R", fields_blob)
+        if ref:
+            entry = index.get(int(ref.group(1)))
+            if entry is None:
+                return False
+            body = entry[0]
+            # An indirect /Fields resolves to an array object, which the
+            # dictionary-only walk stores as its raw slice.
+            array = re.search(rb"\[(.*?)\]", body, re.S)
+            target = array.group(1) if array else body
+            return bool(re.search(rb"\d+\s+0\s+R", target))
+        return False
+
+    for _number, (dictionary, _raw) in index.items():
+        acro = re.search(rb"/AcroForm\s+(\d+)\s+0\s+R", dictionary)
+        if acro:
+            entry = index.get(int(acro.group(1)))
+            if entry is None:
+                continue
+            fields = re.search(rb"/Fields(.{0,80})", entry[0], re.S)
+            if fields and fields_non_empty(fields.group(1)):
+                return True
+    for match in re.finditer(rb"/AcroForm\s*<<(.{0,400})", data, re.S):
+        fields = re.search(rb"/Fields(.{0,80})", match.group(1), re.S)
+        if fields and fields_non_empty(fields.group(1)):
+            return True
+    return False
+
+
 def ensure_source_document(path: Path) -> Dict[str, Any]:
     """Accept a local .pdf, .docx, or .pptx source and return its binding receipt."""
     if not path.is_file():
@@ -968,6 +1046,22 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     if validated["document"]["source_sha256"] != source_receipt["sha256"]:
         raise PortableError(
             "Repair plan source mismatch: document.source_sha256 does not match the supplied PDF.",
+            3,
+        )
+
+    # The blocked-type gate reads document_type, which the plan author supplies.
+    # Cross-check it against the source itself so a mislabelled interactive form
+    # cannot slip through: relabelling a fillable form as "report" bypassed the
+    # gate entirely until this check existed (corpus round 4). This catches
+    # digital forms only - a SCANNED form carries no machine-detectable fields,
+    # so classifying those still depends on the reader.
+    if source_receipt["kind"] == "pdf" and _has_interactive_fields(source.read_bytes()):
+        raise PortableError(
+            "The source contains interactive form fields but the plan declares document_type '"
+            + str(validated["document"]["document_type"])
+            + "'. Rebuilding a form can change field behaviour and meaning. Declare it as "
+            "'form' for an explicit refusal, or deliver an audit-only explanation and refer "
+            "the document owner.",
             3,
         )
 
@@ -1138,7 +1232,7 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
         if pdf_result.get("status") == "completed":
             try:
                 pdf_extraction = _pdf_extract_text(staged_paths["pdf"].read_bytes())
-                plan_tokens = _tokens(_plan_text(validated))
+                plan_tokens = _tokens(_plan_text(validated, include_alt=False))
                 output_recall = _token_recall(plan_tokens, _tokens(pdf_extraction["text"]))
                 output_recall_detail = {
                     "status": "completed",
@@ -1777,10 +1871,29 @@ def _decode_literal_string(body: bytes, font: Optional[Dict[str, Any]] = None) -
             replacement = _LITERAL_ESCAPES.get(nxt)
             codes.append(ord(replacement) if replacement else (nxt[0] if nxt else 0))
             i += 2
+    return _decode_font_bytes(bytes(code & 0xFF for code in codes), font)
+
+
+def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
+    """Decode raw string bytes through the current font's ToUnicode CMap.
+
+    Shared by literal "(...)" and hex "<...>" strings: both are byte codes in
+    the font's encoding, and composite fonts use MULTI-BYTE codes. Handling
+    only single-byte codes here turned a 2-byte Identity-H font's literal
+    strings into raw glyph bytes (corpus round 4: an FDA/AstraZeneca letter
+    extracted as pure binary and scored 0.39 recall).
+    """
     mapping = font.get("map") if font else None
-    if mapping and (font.get("codeLen") or 1) == 1:
-        return "".join(mapping[c] if c in mapping else chr(c) for c in codes)
-    return "".join(chr(c) for c in codes)
+    if not mapping:
+        return raw.decode("latin1")
+    code_len = font.get("codeLen") or 1
+    if code_len <= 1:
+        return "".join(mapping.get(byte, chr(byte)) for byte in raw)
+    out: List[str] = []
+    for index in range(0, len(raw) - (len(raw) % code_len), code_len):
+        code = int.from_bytes(raw[index:index + code_len], "big")
+        out.append(mapping.get(code, ""))
+    return "".join(out)
 
 
 def _bfrange_target(dst_hex: bytes, offset: int) -> str:
@@ -1868,15 +1981,7 @@ def _decode_hex_string(hex_bytes: bytes, font: Optional[Dict[str, Any]]) -> str:
     digits = re.sub(rb"\s+", b"", hex_bytes).decode("ascii")
     if len(digits) % 2:
         digits += "0"
-    raw = bytes.fromhex(digits)
-    if font and font.get("map"):
-        code_len = font.get("codeLen") or 2
-        out = []
-        for i in range(0, len(raw) - (len(raw) % code_len), code_len):
-            code = int.from_bytes(raw[i:i + code_len], "big")
-            out.append(font["map"].get(code, ""))
-        return "".join(out)
-    return raw.decode("latin1")
+    return _decode_font_bytes(bytes.fromhex(digits), font)
 
 
 def _page_content_text(content: bytes, fonts: Dict[str, Dict[str, Any]]) -> str:
@@ -1927,6 +2032,39 @@ def _decompress_stream(dictionary: bytes, raw: bytes) -> Optional[bytes]:
     return None
 
 
+def _fonts_from_resources(
+    index: Dict[int, Tuple[bytes, Optional[bytes]]], resources: Optional[bytes]
+) -> Dict[str, Dict[str, Any]]:
+    """Build {resource name -> font info} for one /Resources dictionary.
+
+    Code length comes from the FONT SUBTYPE, not from the ToUnicode CMap's
+    codespacerange: simple fonts (Type1/TrueType/Type3) always take 1-byte
+    codes, and only Type0 composite fonts take multi-byte ones. Trusting the
+    CMap's range instead silently broke every simple font whose generator
+    wrote a <0000><FFFF> codespace (corpus round 4).
+    """
+    font_dict = _dict_value(index, resources, "Font")
+    fonts: Dict[str, Dict[str, Any]] = {}
+    if not font_dict:
+        return fonts
+    for name, ref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", font_dict):
+        entry = index.get(int(ref))
+        if not entry:
+            continue
+        parsed: Dict[str, Any] = {}
+        unicode_ref = re.search(rb"/ToUnicode\s+(\d+)\s+0\s+R", entry[0])
+        if unicode_ref:
+            cmap_entry = index.get(int(unicode_ref.group(1)))
+            if cmap_entry and cmap_entry[1] is not None:
+                cmap_bytes = _decompress_stream(cmap_entry[0], cmap_entry[1])
+                if cmap_bytes:
+                    parsed = _parse_tounicode(cmap_bytes)
+        composite = re.search(rb"/Subtype\s*/Type0\b", entry[0]) is not None
+        parsed["codeLen"] = 2 if composite else 1
+        fonts[name.decode("latin1")] = parsed
+    return fonts
+
+
 def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
     index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
     for number, dictionary, raw in _pdf_iter_stream_objects(data):
@@ -1946,23 +2084,7 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
             node = entry[0]
             resources = _dict_value(index, node, "Resources")
             seen_parents += 1
-        font_dict = _dict_value(index, resources, "Font")
-        fonts: Dict[str, Dict[str, Any]] = {}
-        if font_dict:
-            for name, ref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", font_dict):
-                entry = index.get(int(ref))
-                if not entry:
-                    continue
-                unicode_ref = re.search(rb"/ToUnicode\s+(\d+)\s+0\s+R", entry[0])
-                parsed: Dict[str, Any] = {}
-                if unicode_ref:
-                    cmap_entry = index.get(int(unicode_ref.group(1)))
-                    if cmap_entry and cmap_entry[1] is not None:
-                        cmap_bytes = _decompress_stream(cmap_entry[0], cmap_entry[1])
-                        if cmap_bytes:
-                            parsed = _parse_tounicode(cmap_bytes)
-                fonts[name.decode("latin1")] = parsed
-        return fonts
+        return _fonts_from_resources(index, resources)
 
     pages: List[str] = []
     for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
@@ -2010,22 +2132,9 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
             own_resources = _dict_value(index, entry[0], "Resources")
             own_fonts = inherited_fonts
             if own_resources is not None:
-                own_font_dict = _dict_value(index, own_resources, "Font")
+                own_font_dict = _fonts_from_resources(index, own_resources)
                 if own_font_dict:
-                    own_fonts = dict(inherited_fonts)
-                    for fname, fref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", own_font_dict):
-                        fentry = index.get(int(fref))
-                        if not fentry:
-                            continue
-                        uref = re.search(rb"/ToUnicode\s+(\d+)\s+0\s+R", fentry[0])
-                        parsed: Dict[str, Any] = {}
-                        if uref:
-                            centry = index.get(int(uref.group(1)))
-                            if centry and centry[1] is not None:
-                                cbytes = _decompress_stream(centry[0], centry[1])
-                                if cbytes:
-                                    parsed = _parse_tounicode(cbytes)
-                        own_fonts[fname.decode("latin1")] = parsed
+                    own_fonts = {**inherited_fonts, **own_font_dict}
             page_text.append(_page_content_text(content, own_fonts))
             # Recurse into referenced Form XObjects (from the stream's own
             # resources when present, else the page's).
@@ -2052,7 +2161,14 @@ def _tokens(text: str) -> "Counter[str]":
     return Counter(re.findall(r"[^\W_]+", text.lower(), re.UNICODE))
 
 
-def _plan_text(validated: Dict[str, Any]) -> str:
+def _plan_text(validated: Dict[str, Any], include_alt: bool = True) -> str:
+    """Concatenate the plan's text.
+
+    include_alt=False drops image alt text, which is authored by the plan and
+    lives in the tagged PDF's /Alt structure attribute rather than in visible
+    page content. Counting it against the OUTPUT recall made a correctly
+    rendered image look like content loss (corpus round 4).
+    """
     # Ordered-list numbering is carried structurally by <ol>, but in a source
     # text layer the numerals are literal glyphs; emit them here so recall
     # compares semantics, not markup choices (corpus round 1: UDHR's clause
@@ -2062,6 +2178,8 @@ def _plan_text(validated: Dict[str, Any]) -> str:
         if block.get("type") == "list" and block.get("ordered"):
             for position, item in enumerate(block["items"], start=1):
                 pieces.append(f"{position}. {item}")
+        elif block.get("type") == "image" and not include_alt:
+            pieces.append(str(block.get("caption") or ""))
         else:
             pieces.append(block_text(block))
     return "\n".join(pieces)

@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "b342b7ace0acc32ebf8cbc84cc96f3d47c4ab1a026acd3d12f347fc3abcce56a",
+    "plan_sha256": "cbbff2c38ff5935a31459bacaabda94400417f5a12acf9761f6a5e74138d8100",
+    "source_sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 25,
+    "unreadable": 0,
+    "verified": 25
+  },
+  "createdAt": "2026-08-03T17:51:51Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent, sixth pass)",
+    "statement": "I read the source PDF directly rather than the repair plan: I extracted all seven pages with pdftotext -layout, then decompressed every page content stream and decoded the Identity-H text through each font’s ToUnicode CMap, so I could see the exact font (Times New Roman regular/Bold/Italic/BoldItalic, Arial and Arial Bold, Symbol), fill colour and x/y position of every run. I carved the DCTDecode image out of the PDF and looked at it (400x104 JPEG, sha256 1058ce9b..., byte-identical to the base64 embedded in the HTML). I decoded the page 5 form XObject and read its operators (0.666656 g grey fill from 117,146 to 542,417 plus 6pt Helvetica “(b) (4)”) and counted exactly four Symbol bullet markers with no accompanying text. I compared every page 6 table cell against the content stream, scanned all 101 objects including those inside object streams for /Annots, /Link and /URI (zero hits), and ran a word-level in-order diff of source text against the rebuilt HTML. Source sha256 c2c6b405... and HTML sha256 b342b7ac... both match the worksheet binding."
+  }
+}

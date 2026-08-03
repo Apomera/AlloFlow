@@ -1,0 +1,242 @@
+{
+  "binding": {
+    "html_sha256": "b342b7ace0acc32ebf8cbc84cc96f3d47c4ab1a026acd3d12f347fc3abcce56a",
+    "plan_sha256": "cbbff2c38ff5935a31459bacaabda94400417f5a12acf9761f6a5e74138d8100",
+    "source_sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1"
+  },
+  "createdAt": "2026-08-03T17:39:02Z",
+  "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
+  "items": [
+    {
+      "id": "page-001",
+      "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "page-002",
+      "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "page-003",
+      "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "page-004",
+      "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "page-005",
+      "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 5,
+      "status": "verified"
+    },
+    {
+      "id": "page-006",
+      "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "page-007",
+      "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
+      "kind": "page",
+      "note": "",
+      "source_page": 7,
+      "status": "verified"
+    },
+    {
+      "id": "heading-001",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 1,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Response to PREA Non-Compliance Letter — NDA 021957, NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral"
+    },
+    {
+      "alt": "AstraZeneca logo",
+      "id": "image-001",
+      "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
+      "kind": "image_alt",
+      "note": "",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "id": "heading-002",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 1,
+      "status": "verified",
+      "text": "Background"
+    },
+    {
+      "id": "list-001",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "list-002",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "list-003",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "id": "list-004",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 3,
+      "kind": "list",
+      "note": "",
+      "ordered": true,
+      "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "id": "list-005",
+      "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
+      "items": 2,
+      "kind": "list",
+      "note": "",
+      "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "id": "heading-003",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 5,
+      "status": "verified",
+      "text": "Clinical study design and timing"
+    },
+    {
+      "caption": "Proposed pediatric study timelines for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years.",
+      "columns": 3,
+      "id": "table-001",
+      "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
+      "kind": "table",
+      "note": "",
+      "rows": 4,
+      "source_page": 6,
+      "status": "verified"
+    },
+    {
+      "id": "heading-004",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 2,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Deferral Extension Request"
+    },
+    {
+      "id": "heading-005",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Submission Information:"
+    },
+    {
+      "id": "heading-006",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Module 1:"
+    },
+    {
+      "id": "heading-007",
+      "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
+      "kind": "heading",
+      "level": 3,
+      "note": "",
+      "source_page": 6,
+      "status": "verified",
+      "text": "Module 5:"
+    },
+    {
+      "id": "global-completeness",
+      "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-no-invention",
+      "instruction": "Is there any content in the rebuild that does not exist in the source?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-reading-order",
+      "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    },
+    {
+      "id": "global-review-notes",
+      "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
+      "kind": "global",
+      "note": "",
+      "status": "verified"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (subagent, sixth pass)",
+    "read_source_directly": true,
+    "statement": "I read the source PDF directly rather than the repair plan: I extracted all seven pages with pdftotext -layout, then decompressed every page content stream and decoded the Identity-H text through each font’s ToUnicode CMap, so I could see the exact font (Times New Roman regular/Bold/Italic/BoldItalic, Arial and Arial Bold, Symbol), fill colour and x/y position of every run. I carved the DCTDecode image out of the PDF and looked at it (400x104 JPEG, sha256 1058ce9b..., byte-identical to the base64 embedded in the HTML). I decoded the page 5 form XObject and read its operators (0.666656 g grey fill from 117,146 to 542,417 plus 6pt Helvetica “(b) (4)”) and counted exactly four Symbol bullet markers with no accompanying text. I compared every page 6 table cell against the content stream, scanned all 101 objects including those inside object streams for /Annots, /Link and /URI (zero hits), and ran a word-level in-order diff of source text against the rebuilt HTML. Source sha256 c2c6b405... and HTML sha256 b342b7ac... both match the worksheet binding."
+  }
+}

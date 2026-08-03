@@ -75,6 +75,42 @@
       "license": "US Government work (public domain)"
     },
     {
+      "name": "fda-nexium-prea-letter",
+      "band": "figures",
+      "file": "figures/fda-nexium-prea-letter.pdf",
+      "bytes": 170089,
+      "sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1",
+      "url": "https://www.fda.gov/media/135691/download",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "nsf-science-indicators-brief",
+      "band": "figures",
+      "file": "figures/nsf-science-indicators-brief.pdf",
+      "bytes": 8528614,
+      "sha256": "d7e1a20e39cc79e6643d52fe3aa418576ce0532c61a18a1fbcc07a3e51f45a21",
+      "url": "https://ncses.nsf.gov/pubs/nsb20221/assets/nsb20221.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "usgs-water-cycle",
+      "band": "figures",
+      "file": "figures/usgs-water-cycle.pdf",
+      "bytes": 4478406,
+      "sha256": "d0a3b06606378733a2ec96cfa01e3b12c111d13059d070e3e039b751347a4529",
+      "url": "https://pubs.usgs.gov/gip/2005/17/gip-17.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "irs-f1040",
+      "band": "forms",
+      "file": "forms/irs-f1040.pdf",
+      "bytes": 220237,
+      "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
+      "url": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
       "name": "irs-f1040-1913-scan",
       "band": "scanned",
       "file": "scanned/irs-f1040-1913-scan.pdf",
@@ -93,12 +129,21 @@
       "license": "US Government work (public domain)"
     },
     {
-      "name": "irs-f1040",
-      "band": "forms",
-      "file": "forms/irs-f1040.pdf",
-      "bytes": 220237,
-      "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
-      "url": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+      "name": "nces-condition-of-education",
+      "band": "tables",
+      "file": "tables/nces-condition-of-education.pdf",
+      "bytes": 2126802,
+      "sha256": "1af930c7316af4c17c67b61d080741e4ac5b99c6b1f8e2af217a97a9c6664700",
+      "url": "https://nces.ed.gov/pubs2023/2023144.pdf",
+      "license": "US Government work (public domain)"
+    },
+    {
+      "name": "nist-cyber-framework-quickstart",
+      "band": "tables",
+      "file": "tables/nist-cyber-framework-quickstart.pdf",
+      "bytes": 1518858,
+      "sha256": "3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c",
+      "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf",
       "license": "US Government work (public domain)"
     }
   ]

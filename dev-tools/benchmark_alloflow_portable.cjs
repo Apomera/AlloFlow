@@ -254,7 +254,18 @@ function definitions(root) {
           source_page: 1,
         },
       ],
-      htmlIncludes: ['alt="Three stages show a seed, a sprout, and a leafy plant under sunlight."', '<figcaption>Growth from seed to plant</figcaption>', 'data:image/png;base64,'],
+      // Captions are <p class="alloflow-figure-caption"> associated by
+      // aria-describedby, NOT <figure>/<figcaption>: Chromium's tagged-PDF
+      // export turns a <figure> element into a second /Figure structure
+      // element that carries no /Alt, which fails PDF/UA-1 clause 7.3-1.
+      htmlIncludes: [
+        'alt="Three stages show a seed, a sprout, and a leafy plant under sunlight."',
+        'class="alloflow-figure-caption"',
+        'Growth from seed to plant',
+        'aria-describedby=',
+        'data:image/png;base64,',
+      ],
+      htmlExcludes: ['<figure', '<figcaption'],
     },
     {
       id: 'scanned-page-review',
