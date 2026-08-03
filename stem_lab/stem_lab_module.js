@@ -5085,6 +5085,12 @@
                 color: 'indigo', ready: true
               },
               {
+                id: 'consciousnessLab', icon: '💭', label: 'Consciousness Theory Lab',
+                desc: 'Compare scientific theories and philosophical views of consciousness through evidence, predictions, real cases, and thought experiments. Reading depth and knowledge checks adapt from K-2 through graduate study.',
+                color: 'violet', ready: true,
+                aliases: ['consciousness', 'mind', 'awareness', 'phenomenal consciousness', 'global workspace', 'integrated information']
+              },
+              {
                 id: 'assessmentLiteracy', icon: '📊', label: 'Assessment Literacy Lab',
                 desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
                 color: 'fuchsia', ready: true
@@ -6629,6 +6635,7 @@
             cephalopodLab: true,
             statsLab: true,
             learningLab: true,
+            consciousnessLab: true,
             // Added May 15 2026 — was registering successfully but missing
             // from this map caused the fallback at line ~4489 to return
             // null, so the user saw a blank tile content area.

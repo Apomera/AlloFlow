@@ -303,19 +303,37 @@
     var unitKey = field(['unit', 'units'], false);
     var sourceKey = field(['source', 'datasource'], false);
     var methodKey = field(['method', 'methodology'], false);
-    var rows = table.rows.slice(0, 3000).map(function (row) {
-      return {
-        name: String(row[nameKey] || '').trim(),
-        lat: Number(row[latKey]), lon: Number(row[lonKey]), year: Number(row[yearKey]), value: Number(row[valueKey]),
-        unit: unitKey ? String(row[unitKey] || '').trim() : '',
-        source: sourceKey ? String(row[sourceKey] || '').trim() : '',
-        method: methodKey ? String(row[methodKey] || '').trim() : ''
+    var rejectedRows = [], sourceRows = table.rows.slice(0, 3000);
+    var candidates = sourceRows.map(function (row, index) {
+      var raw = {
+        row: index + 2,
+        name: row[nameKey] == null ? '' : String(row[nameKey]).trim(),
+        latitude: row[latKey] == null ? '' : String(row[latKey]).trim(),
+        longitude: row[lonKey] == null ? '' : String(row[lonKey]).trim(),
+        year: row[yearKey] == null ? '' : String(row[yearKey]).trim(),
+        value: row[valueKey] == null ? '' : String(row[valueKey]).trim()
       };
-    }).filter(function (row) {
-      return row.name && Number.isFinite(row.lat) && row.lat >= -90 && row.lat <= 90 &&
+      return {
+        raw: raw,
+        record: {
+          name: raw.name, lat: Number(raw.latitude), lon: Number(raw.longitude), year: Number(raw.year), value: Number(raw.value),
+          unit: unitKey ? String(row[unitKey] || '').trim() : '',
+          source: sourceKey ? String(row[sourceKey] || '').trim() : '',
+          method: methodKey ? String(row[methodKey] || '').trim() : ''
+        }
+      };
+    });
+    var rows = candidates.filter(function (candidate) {
+      var row = candidate.record, raw = candidate.raw;
+      var valid = raw.name && raw.latitude && raw.longitude && raw.year && raw.value &&
+        Number.isFinite(row.lat) && row.lat >= -90 && row.lat <= 90 &&
         Number.isFinite(row.lon) && row.lon >= -180 && row.lon <= 180 &&
         Number.isFinite(row.year) && Number.isFinite(row.value);
-    });
+      if (!valid && rejectedRows.length < 50) rejectedRows.push(raw);
+      return valid;
+    }).map(function (candidate) { return candidate.record; });
+    var invalidRows = Math.max(0, sourceRows.length - rows.length);
+    var truncatedRows = Math.max(0, table.rows.length - sourceRows.length);
     if (!rows.length) throw new Error('No valid time-series rows were found.');
     var keyCount = {}, duplicates = [];
     rows.forEach(function (row) {
@@ -327,7 +345,7 @@
       .sort(function (a, b) { return a - b; });
     if (years.length < 2) throw new Error('Add at least two distinct years to analyze change.');
     return {
-      rows: rows, years: years, duplicates: duplicates,
+      rows: rows, years: years, duplicates: duplicates, invalidRows: invalidRows, truncatedRows: truncatedRows, invalidSamples: rejectedRows,
       units: rows.map(function (row) { return row.unit; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; }),
       sources: rows.map(function (row) { return row.source; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; })
     };
@@ -1557,6 +1575,7 @@
     var left = model.left || { label: 'Left map', rows: [] };
     var right = model.right || { label: 'Right map', rows: [] };
     var selected = Array.isArray(model.selected) ? model.selected : [];
+    var spatial = model.spatialAnalysis && typeof model.spatialAnalysis === 'object' ? model.spatialAnalysis : {};
     function number(value, digits) {
       if (value === null || value === undefined || value === '') return '\u2014';
       return Number.isFinite(Number(value)) ? Number(value).toFixed(digits == null ? 2 : digits) : '\u2014';
@@ -1607,6 +1626,13 @@
         return '<tr><th scope="row">' + escapeHTML(row.name) + '</th><td>' + number(row.lat, 4) + '</td><td>' +
           number(row.lon, 4) + '</td><td>' + escapeHTML(row.value == null ? 'No data' : row.value) + '</td></tr>';
       }).join('') + '</tbody></table></section>' : '';
+    var spatialSection = '<section><h2>Spatial method and provenance</h2><dl>' +
+      '<dt><strong>Method</strong></dt><dd>' + escapeHTML(spatial.method || 'No active spatial analysis') + '</dd>' +
+      '<dt><strong>Interpretation</strong></dt><dd>' + escapeHTML(spatial.detail || 'No spatial method was active when this report was generated.') + '</dd>' +
+      '<dt><strong>Analysis points</strong></dt><dd>' + escapeHTML(spatial.pointCount == null ? 0 : spatial.pointCount) + '</dd>' +
+      '<dt><strong>Selected records</strong></dt><dd>' + escapeHTML(spatial.selectedCount == null ? selected.length : spatial.selectedCount) + '</dd>' +
+      (spatial.selectedMean == null ? '' : '<dt><strong>Selected mean</strong></dt><dd>' + escapeHTML(number(spatial.selectedMean, 1) + (spatial.unit ? ' ' + spatial.unit : '')) + '</dd>') +
+      '</dl><p>This records how the spatial result was produced. Straight-line proximity, boundaries, and point values are descriptive evidence; they do not establish cause and effect.</p></section>';
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
       '<title>' + escapeHTML(model.title || 'GIS Studio Evidence Report') + '</title><style>' +
       'body{font:16px/1.5 system-ui,sans-serif;color:#172033;background:#fff;margin:0}main{max-width:980px;margin:auto;padding:32px}' +
@@ -1623,7 +1649,7 @@
       '<div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div>' +
       '<section class="callout"><h2>Claim and observation</h2><p>' + escapeHTML(model.observation || 'Add an evidence-based observation in GIS Studio.') +
       '</p><p><strong>Analysis note:</strong> ' + escapeHTML(model.analysis || 'Spatial patterns describe relationships; they do not establish cause and effect.') + '</p></section>' +
-      coordinatePlot + table(left, 'Left') + table(right, 'Right') + selectedTable +
+      coordinatePlot + table(left, 'Left') + table(right, 'Right') + spatialSection + selectedTable +
       '<section><h2>Sources and limitations</h2><p>' + escapeHTML(model.sources || 'Verify learning data with authoritative sources before making decisions.') +
       '</p><p>Basemap appearance can influence interpretation. Classification, scale, missing values, coordinate quality, and boundary definitions can change the visible pattern.</p></section>' +
       '</main></body></html>';
@@ -1784,6 +1810,9 @@
         var s36 = React.useState(0), selectedFeatureIndex = s36[0], setSelectedFeatureIndex = s36[1];
         var s37 = React.useState([]), analysisSelection = s37[0], setAnalysisSelection = s37[1];
         var s38 = React.useState('none'), analysisSelectionSource = s38[0], setAnalysisSelectionSource = s38[1];
+        var analysisHistoryState = React.useState([]), analysisHistory = analysisHistoryState[0], setAnalysisHistory = analysisHistoryState[1];
+        var analysisFutureState = React.useState([]), analysisFuture = analysisFutureState[0], setAnalysisFuture = analysisFutureState[1];
+        var analysisCopyStatusState = React.useState(''), analysisCopyStatus = analysisCopyStatusState[0], setAnalysisCopyStatus = analysisCopyStatusState[1];
         var s39 = React.useState(initial.gisCompareLeft || 'point:density'), compareLeft = s39[0], setCompareLeft = s39[1];
         var s40 = React.useState(initial.gisCompareRight || 'point:access'), compareRight = s40[0], setCompareRight = s40[1];
         var s41 = React.useState(initial.gisCompareLeftBasemap || 'street'), compareLeftBasemap = s41[0], setCompareLeftBasemap = s41[1];
@@ -1801,6 +1830,7 @@
         var s51 = React.useState(EXAMPLE_TIME_DATA.years[EXAMPLE_TIME_DATA.years.length - 1]), timeFocusYear = s51[0], setTimeFocusYear = s51[1];
         var s52 = React.useState(false), timePlaying = s52[0], setTimePlaying = s52[1];
         var s53 = React.useState(''), timeError = s53[0], setTimeError = s53[1];
+        var timeImportDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), timeImportDiagnostics = timeImportDiagnosticsState[0], setTimeImportDiagnostics = timeImportDiagnosticsState[1];
         var s54 = React.useState(''), timeObservation = s54[0], setTimeObservation = s54[1];
         var s55 = React.useState('Loading before-and-after maps. The change table is ready now.'), timeStatus = s55[0], setTimeStatus = s55[1];
         var timeMapReadyState = React.useState(false), timeMapReady = timeMapReadyState[0], setTimeMapReady = timeMapReadyState[1];
@@ -2030,6 +2060,87 @@
           });
         }
 
+        function analysisSnapshot() {
+          return {
+            points: analysisPoints.map(function (point) { return { lat: point.lat, lon: point.lon }; }),
+            selection: analysisSelection.slice(),
+            source: analysisSelectionSource,
+            mode: analysisMode,
+            bufferRadiusKm: bufferRadiusKm,
+            featureIndex: selectedFeatureIndex
+          };
+        }
+
+        function applyAnalysisSnapshot(snapshot) {
+          var next = snapshot || { points: [], selection: [], source: 'none', mode: analysisMode, bufferRadiusKm: bufferRadiusKm, featureIndex: selectedFeatureIndex };
+          setAnalysisMode(['distance', 'buffer', 'nearest'].indexOf(next.mode) >= 0 ? next.mode : analysisMode);
+          setAnalysisPoints(Array.isArray(next.points) ? next.points : []);
+          setBufferRadiusKm(Math.max(1, Math.min(500, Number(next.bufferRadiusKm) || 25)));
+          setSelectedFeatureIndex(Math.max(0, Number(next.featureIndex) || 0));
+          setAnalysisSelection(Array.isArray(next.selection) ? next.selection : []);
+          setAnalysisSelectionSource(next.source || 'none');
+          setAnalysisCopyStatus('');
+          persist('gisSpatialAnalysis', true);
+        }
+
+        function hasAnalysisState() {
+          return analysisPoints.length > 0 || analysisSelection.length > 0 || analysisSelectionSource !== 'none';
+        }
+
+        function pushAnalysisHistory() {
+          setAnalysisHistory(function (previous) { return previous.concat([analysisSnapshot()]).slice(-20); });
+          setAnalysisCopyStatus('');
+          setAnalysisFuture([]);
+        }
+
+        function undoAnalysis() {
+          if (!analysisHistory.length) {
+            announce('There is no spatial analysis change to undo.');
+            return;
+          }
+          var previous = analysisHistory[analysisHistory.length - 1];
+          setAnalysisHistory(function (items) { return items.slice(0, -1); });
+          setAnalysisFuture(function (items) { return items.concat([analysisSnapshot()]).slice(-20); });
+          applyAnalysisSnapshot(previous);
+          announce('Last spatial analysis change undone.');
+        }
+
+        function redoAnalysis() {
+          if (!analysisFuture.length) {
+            announce('There is no spatial analysis change to redo.');
+            return;
+          }
+          var next = analysisFuture[analysisFuture.length - 1];
+          setAnalysisFuture(function (items) { return items.slice(0, -1); });
+          setAnalysisHistory(function (items) { return items.concat([analysisSnapshot()]).slice(-20); });
+          applyAnalysisSnapshot(next);
+          announce('Spatial analysis change restored.');
+        }
+        React.useEffect(function () {
+          function onAnalysisShortcut(event) {
+            if (event.isComposing || event.altKey) return;
+            var target = event.target;
+            var tagName = target && target.tagName ? String(target.tagName).toLowerCase() : '';
+            if (tagName === 'input' || tagName === 'textarea' || tagName === 'select' || (target && target.isContentEditable)) return;
+            if (!event.ctrlKey && !event.metaKey) return;
+            var key = String(event.key || '').toLowerCase();
+            if (key === 'z' && event.shiftKey && analysisFuture.length) {
+              event.preventDefault();
+              redoAnalysis();
+            } else if (key === 'z' && !event.shiftKey && analysisHistory.length) {
+              event.preventDefault();
+              undoAnalysis();
+            } else if (key === 'y' && analysisFuture.length) {
+              event.preventDefault();
+              redoAnalysis();
+            }
+          }
+          window.addEventListener('keydown', onAnalysisShortcut);
+          return function () { window.removeEventListener('keydown', onAnalysisShortcut); };
+        }, [analysisHistory, analysisFuture]);
+
+
+
         React.useEffect(function () {
           if (typeof ctx.canvasNarrate === 'function') {
             ctx.canvasNarrate('gis-studio', 'init', {
@@ -2202,6 +2313,7 @@
             }
             map.on('click', function (event) {
               var point = { lat: event.latlng.lat, lon: event.latlng.lng };
+              pushAnalysisHistory();
               if (analysisMode === 'distance') {
                 setAnalysisPoints(function (previous) { return previous.concat([point]).slice(-20); });
                 setAnalysisSelection([]); setAnalysisSelectionSource('none');
@@ -2643,6 +2755,7 @@
         }
 
         function clearAnalysis() {
+          if (hasAnalysisState()) pushAnalysisHistory();
           setAnalysisPoints([]);
           setAnalysisSelection([]);
           setAnalysisSelectionSource('none');
@@ -2654,6 +2767,7 @@
             announce('Choose a polygon or multipolygon boundary.');
             return;
           }
+          pushAnalysisHistory();
           var selected = selectPointsInFeature(records, selectedGeoFeature);
           setAnalysisSelection(selected);
           setAnalysisSelectionSource('boundary');
@@ -2860,10 +2974,16 @@
                 analysisMode === 'buffer' ? 'Click once to center a straight-line radius and select mapped points inside it.' :
                   'Click anywhere to identify the closest mapped point by straight-line distance.'),
             h('button', { type: 'button', onClick: clearAnalysis, style: Object.assign({}, control, { width: '100%', cursor: 'pointer' }) }, 'Clear map analysis'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8, marginBottom: 2 } },
+              h('button', { type: 'button', onClick: undoAnalysis, disabled: !analysisHistory.length, 'aria-label': 'Undo last spatial analysis change', style: Object.assign({}, control, { cursor: analysisHistory.length ? 'pointer' : 'not-allowed', opacity: analysisHistory.length ? 1 : 0.55 }) }, 'Undo analysis'),
+              h('button', { type: 'button', onClick: redoAnalysis, disabled: !analysisFuture.length, 'aria-label': 'Redo spatial analysis change', style: Object.assign({}, control, { cursor: analysisFuture.length ? 'pointer' : 'not-allowed', opacity: analysisFuture.length ? 1 : 0.55 }) }, 'Redo analysis')),
+            h('p', { style: { margin: '5px 0 0', color: '#7dd3fc', fontSize: 10 } },
+              analysisHistory.length ? analysisHistory.length + ' undoable analysis change' + (analysisHistory.length === 1 ? '' : 's') + '.' : 'No undoable analysis changes yet.'),
+            h('p', { style: { margin: '3px 0 0', color: '#8aa9bb', fontSize: 10 } }, 'Keyboard: Ctrl/Cmd+Z to undo; Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y to redo.'),
             geoFeatures.length > 0 && h('div', { style: { marginTop: 13, paddingTop: 12, borderTop: '1px solid #28516a' } },
               h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, 'GeoJSON feature to measure'),
-                h('select', { value: selectedFeatureIndex, onChange: function (event) { setSelectedFeatureIndex(Number(event.target.value)); setAnalysisSelection([]); setAnalysisSelectionSource('none'); }, style: control },
+                h('select', { value: selectedFeatureIndex, onChange: function (event) { if (hasAnalysisState()) pushAnalysisHistory(); setSelectedFeatureIndex(Number(event.target.value)); setAnalysisSelection([]); setAnalysisSelectionSource('none'); }, style: control },
                   geoFeatures.map(function (feature, index) {
                     var props = feature.properties || {};
                     var name = geoNameKey && props[geoNameKey] != null ? props[geoNameKey] : 'Feature ' + (index + 1);
@@ -2892,6 +3012,8 @@
                 h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.08em' } }, 'MEASURE • BUFFER • SELECT'),
                 h('h2', { id: 'gis-analysis-results-heading', style: { margin: '3px 0 0', color: '#f0fdfa', fontSize: 16 } }, 'Spatial analysis results')),
               h('button', { type: 'button', onClick: sonifySelection, disabled: !selectedRecords.length, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee', opacity: selectedRecords.length ? 1 : 0.55 }) }, '♫ Sonify selection')),
+              h('button', { type: 'button', onClick: copyAnalysisSummary, disabled: !hasAnalysisState(), 'aria-label': 'Copy the current spatial analysis summary', style: Object.assign({}, control, { cursor: hasAnalysisState() ? 'pointer' : 'not-allowed', opacity: hasAnalysisState() ? 1 : 0.55 }) }, 'Copy analysis summary'),
+            analysisCopyStatus && h('p', { role: 'status', style: { margin: '5px 0 0', color: '#86efac', fontSize: 11 } }, analysisCopyStatus),
             h('p', { role: 'status', style: { margin: '10px 0', color: '#cfe8f3', fontSize: 12, lineHeight: 1.55 } }, narrative),
             selectedGeoFeature && h('div', { style: { display: 'flex', gap: 9, flexWrap: 'wrap', padding: 10, borderRadius: 9, background: '#071827', color: '#dbeafe', fontSize: 11 } },
               (selectedGeometryType === 'Polygon' || selectedGeometryType === 'MultiPolygon') && h('strong', { style: { color: '#86efac' } }, 'Area: ' + formatArea(measuredFeature.areaSquareKm)),
@@ -3147,6 +3269,8 @@
           setAnalysisPoints(Array.isArray(settings.analysisPoints) ? settings.analysisPoints.slice(0, 20) : []);
           setBufferRadiusKm(Math.max(1, Math.min(500, Number(settings.bufferRadiusKm) || 25)));
           setAnalysisUnit(settings.analysisUnit === 'imperial' ? 'imperial' : 'metric');
+          setAnalysisHistory([]);
+          setAnalysisFuture([]);
           setSelectedFeatureIndex(Math.max(0, Number(settings.selectedFeatureIndex) || 0));
           setAnalysisSelection(Array.isArray(settings.analysisSelection) ? settings.analysisSelection : []);
           setAnalysisSelectionSource(String(settings.analysisSelectionSource || 'none'));
@@ -3297,6 +3421,7 @@
           try {
             var parsed = parseTimeCSV(timeText);
             setTimeDataset(parsed);
+            setTimeImportDiagnostics({ invalidRows: Number(parsed.invalidRows) || 0, truncatedRows: Number(parsed.truncatedRows) || 0, invalidSamples: Array.isArray(parsed.invalidSamples) ? parsed.invalidSamples : [] });
             setTimeBaseline(parsed.years[0]);
             setTimeFocusYear(parsed.years[parsed.years.length - 1]);
             setTimePlaying(false);
@@ -3304,6 +3429,7 @@
             persist('gisTimelineAnalyzed', true);
             announce(parsed.rows.length + ' time-series records across ' + parsed.years.length + ' years loaded.');
           } catch (problem) {
+            setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
             setTimeError(problem.message);
             announce('Time-series CSV error. ' + problem.message);
           }
@@ -3314,9 +3440,33 @@
           if (!file) return;
           if (file.size > 2 * 1024 * 1024) { setTimeError('Choose a time-series CSV smaller than 2 MB.'); return; }
           var reader = new FileReader();
-          reader.onload = function () { setTimeText(String(reader.result || '')); setTimeError(''); };
+          reader.onload = function () { setTimeText(String(reader.result || '')); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); };
           reader.onerror = function () { setTimeError('That time-series file could not be read.'); };
           reader.readAsText(file);
+        }
+
+        function downloadTimeImportReport() {
+          if (!timeImportDiagnostics.invalidRows && !timeImportDiagnostics.truncatedRows) {
+            announce('There are no rejected or capped time-series rows to report.');
+            return;
+          }
+          try {
+            var samples = Array.isArray(timeImportDiagnostics.invalidSamples) ? timeImportDiagnostics.invalidSamples : [];
+            var reportRows = [
+              ['GIS Studio time-series import review'],
+              ['Invalid rows rejected', timeImportDiagnostics.invalidRows],
+              ['Additional source rows beyond the 3,000-row limit', timeImportDiagnostics.truncatedRows],
+              [],
+              ['Source row', 'Name', 'Latitude', 'Longitude', 'Year', 'Value', 'Reason']
+            ].concat(samples.map(function (row) {
+              return [row.row, row.name, row.latitude, row.longitude, row.year, row.value, 'A required field is missing or outside the allowed range'];
+            }));
+            if (samples.length < timeImportDiagnostics.invalidRows) reportRows.push([], ['Note', 'Only the first 50 rejected rows are included.']);
+            triggerDownload(rowsToCSV(reportRows), safeFileStem(projectTitle, 'gis-project') + '-time-series-import-review.csv', 'text/csv;charset=utf-8');
+            announce('Time-series import review downloaded.');
+          } catch (reportError) {
+            setTimeError('The time-series import review could not be downloaded. ' + reportError.message);
+          }
         }
 
         function toggleTimelinePlayback() {
@@ -3404,6 +3554,8 @@
           setAnalysisPoints([]);
           setAnalysisSelection([]);
           setAnalysisSelectionSource('none');
+          setAnalysisHistory([]);
+          setAnalysisFuture([]);
           if (mission.id === 'coast-connectivity') {
             setCompareLeft('point:density');
             setCompareRight('point:access');
@@ -3462,6 +3614,83 @@
           persist('gisEvidenceExported', true);
           announce(mission.title + ' evidence report downloaded.');
         }
+        function spatialAnalysisEvidence() {
+          var method = 'No active spatial analysis';
+          var detail = 'No map-click or boundary analysis is active.';
+          if (analysisSelectionSource === 'buffer' && analysisPoints.length) {
+            method = 'Radius buffer';
+            detail = formatDistance(Number(bufferRadiusKm) || 0) + ' straight-line radius centered on the map click; selected points are inside the radius.';
+          } else if (analysisSelectionSource === 'nearest' && analysisPoints.length) {
+            method = 'Nearest point';
+            detail = selectedRecords.length
+              ? selectedRecords[0].name + ' is ' + formatDistance(haversineKm(analysisPoints[0], selectedRecords[0])) + ' from the map click.'
+              : 'No mapped point was available near the map click.';
+          } else if (analysisSelectionSource === 'boundary') {
+            method = 'Boundary selection';
+            detail = selectedRecords.length + ' mapped points selected inside the chosen ' + (selectedGeometryType || 'boundary') + '.';
+          } else if (analysisMode === 'distance' && analysisPoints.length > 1) {
+            method = 'Distance path';
+            detail = formatDistance(pathKm) + ' geodesic path across ' + (analysisPoints.length - 1) + ' segment' + (analysisPoints.length === 2 ? '' : 's') + '.';
+          } else if (analysisPoints.length) {
+            method = analysisMode === 'buffer' ? 'Radius buffer' : analysisMode === 'nearest' ? 'Nearest point' : 'Distance tool';
+            detail = analysisPoints.length + ' analysis point' + (analysisPoints.length === 1 ? '' : 's') + ' placed; complete the interaction to produce a result.';
+          }
+          return {
+            method: method,
+            detail: detail,
+            pointCount: analysisPoints.length,
+            selectedCount: selectedRecords.length,
+            selectedMean: Number.isFinite(selectedMean) ? selectedMean : null,
+            unit: String(unit || '').trim()
+          };
+        }
+        function analysisEvidenceText() {
+          var evidence = spatialAnalysisEvidence();
+          var lines = [
+            'GIS Studio spatial analysis',
+            'Method: ' + evidence.method,
+            'Interpretation: ' + evidence.detail,
+            'Analysis points: ' + evidence.pointCount,
+            'Selected records: ' + evidence.selectedCount
+          ];
+          if (evidence.selectedMean != null) {
+            lines.push('Selected mean: ' + Number(evidence.selectedMean).toFixed(1) + (evidence.unit ? ' ' + evidence.unit : ''));
+          }
+          if (selectedRecords.length) {
+            var names = selectedRecords.slice(0, 12).map(function (record) { return record.name; }).join(', ');
+            lines.push('Selected locations: ' + names + (selectedRecords.length > 12 ? ' +' + (selectedRecords.length - 12) + ' more' : ''));
+          }
+          lines.push('Limitation: Spatial relationships are descriptive evidence; proximity and selection do not establish cause and effect.');
+          return lines.join('\n');
+        }
+
+        function copyAnalysisSummary() {
+          var text = analysisEvidenceText();
+          function fallbackDownload() {
+            try {
+              triggerDownload(text, safeFileStem(projectTitle, 'gis-analysis') + '-summary.txt', 'text/plain;charset=utf-8');
+              setAnalysisCopyStatus('Clipboard unavailable; analysis summary downloaded as a text file.');
+              announce('Clipboard unavailable. Analysis summary downloaded as a text file.');
+            } catch (downloadError) {
+              setAnalysisCopyStatus('The analysis summary could not be copied or downloaded.');
+              announce('The analysis summary could not be copied or downloaded.');
+            }
+          }
+          try {
+            if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              navigator.clipboard.writeText(text).then(function () {
+                setAnalysisCopyStatus('Analysis summary copied to the clipboard.');
+                announce('Analysis summary copied to the clipboard.');
+              }, fallbackDownload);
+            } else {
+              fallbackDownload();
+            }
+          } catch (copyError) {
+            fallbackDownload();
+          }
+        }
+
+
 
         function makeEvidenceModel() {
           return {
@@ -3473,6 +3702,7 @@
               'Maine learning data include rounded population-density approximations and an illustrative broadband-access index. Basemaps: OpenStreetMap and Esri World Imagery.',
             left: Object.assign({}, leftSeries, { label: comparisonLabel(leftChoice), basemap: compareLeftBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
             right: Object.assign({}, rightSeries, { label: comparisonLabel(rightChoice), basemap: compareRightBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
+            spatialAnalysis: spatialAnalysisEvidence(),
             selected: selectedRecords.map(function (record) {
               return { name: record.name, lat: record.lat, lon: record.lon, value: valueOf(record, metric, imported) };
             })
@@ -4462,11 +4692,13 @@
                 h('label', { style: { display: 'grid', gap: 5, margin: '9px 0', fontWeight: 700 } }, 'Choose CSV file',
                   h('input', { type: 'file', accept: '.csv,text/csv', onChange: readTimeFile })),
                 h('label', { style: { display: 'grid', gap: 5, fontWeight: 700 } }, 'Or paste time-series CSV',
-                  h('textarea', { value: timeText, onChange: function (event) { setTimeText(event.target.value); setTimeError(''); }, rows: 8, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff', fontFamily: 'monospace' } })),
+                  h('textarea', { value: timeText, onChange: function (event) { setTimeText(event.target.value); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); }, rows: 8, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff', fontFamily: 'monospace' } })),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 9 } },
                   h('button', { type: 'button', onClick: loadTimeSeries, style: primary }, 'Load time series'),
-                  h('button', { type: 'button', onClick: function () { setTimeText(EXAMPLE_TIME_CSV); setTimeError(''); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Restore example'))),
+                  h('button', { type: 'button', onClick: downloadTimeImportReport, disabled: !timeImportDiagnostics.invalidRows && !timeImportDiagnostics.truncatedRows, style: Object.assign({}, control, { cursor: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 'pointer' : 'not-allowed', opacity: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 1 : 0.55 }) }, 'Download time-series import review'),
+                  h('button', { type: 'button', onClick: function () { setTimeText(EXAMPLE_TIME_CSV); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Restore example'))),
               timeError && h('p', { role: 'alert', style: { margin: '10px 0 0', padding: 9, borderRadius: 8, background: '#7f1d1d', color: '#fecaca' } }, timeError)),
+            (timeImportDiagnostics.invalidRows > 0 || timeImportDiagnostics.truncatedRows > 0) && h('p', { role: 'status', style: { margin: '8px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } }, 'Import review: ' + timeImportDiagnostics.invalidRows + ' row' + (timeImportDiagnostics.invalidRows === 1 ? '' : 's') + ' rejected.' + (timeImportDiagnostics.truncatedRows > 0 ? ' ' + timeImportDiagnostics.truncatedRows + ' additional source row' + (timeImportDiagnostics.truncatedRows === 1 ? '' : 's') + ' were beyond the 3,000-row limit.' : '')),
             h('section', { 'aria-labelledby': 'gis-time-controls-heading', style: panel },
               h('h2', { id: 'gis-time-controls-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, 'Timeline controls'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 } },

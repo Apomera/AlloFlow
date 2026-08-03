@@ -90,8 +90,9 @@ describe('remediation view async document ownership', () => {
 });
 
 describe('owned batch intake and readiness', () => {
-  it('recognizes extension-only PDFs and commits one completed intake atomically', () => {
-    expect(view).toContain('/\\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i');
+  it('recognizes extension-only documents and supported images, preserving MIME in one atomic intake', () => {
+    expect(view).toContain('/\\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods|png|jpe?g|webp)$/i');
+    expect(view).toContain('mimeType: _viewRemediationMimeType(file)');
     expect(view).toContain('const _alloEnqueueBatchFilesOwned = async (files) => {');
     expect(view).toContain('setPdfBatchQueue((previousQueue) => [...previousQueue, ...entries])');
     expect(view).toContain('const _added = await _alloEnqueueBatchFilesOwned(files);');

@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const SOLAR_SYSTEM_PATHS = [
@@ -23,6 +23,14 @@ describe('Solar System data-table semantics', () => {
       expect(count(source, /(?:h\("caption"|React\.createElement\('caption')/g)).toBe(5);
       expect(source).toContain("verification_table_t_a_should_1_00_for");
       expect(source).toContain("v_budget_earth_all_planets_hohmann");
+      expect(source).toContain('\\u0394v\\u2081 (km/s)');
+      expect(source).toContain('\\u0394v\\u2082 (km/s)');
+      expect(source).toContain('"Total \\u0394v (km/s)"');
+      expect(source).toContain('"Transit time (days / yr)"');
+      expect(source).toContain('id: "orrery-k3-units-note"');
+      expect(source).toContain('"T\\u00b2 (yr\\u00b2)"');
+      expect(source).toContain('"a\\u00b3 (AU\\u00b3)"');
+      expect(source).toContain('"T\\u00b2/a\\u00b3 (yr\\u00b2/AU\\u00b3)"');
       expect(source).toContain("quick_table_of_planet_properties_diame");
 
       expect(count(source, /scope: ["']col["']/g)).toBe(21);

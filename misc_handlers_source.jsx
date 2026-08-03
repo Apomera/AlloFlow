@@ -31,6 +31,7 @@ const _MISC_EXTENSION_MIME = Object.freeze({
     mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4v: 'video/mp4', avi: 'video/x-msvideo', mkv: 'video/x-matroska', mpeg: 'video/mpeg', mpg: 'video/mpeg', ogv: 'video/ogg',
     png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', bmp: 'image/bmp', tif: 'image/tiff', tiff: 'image/tiff', heic: 'image/heic', heif: 'image/heif',
 });
+const _MISC_REMEDIATION_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 const _miscUploadExtension = (file) => {
     const match = String(file && file.name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
     return match ? match[1] : '';
@@ -371,7 +372,13 @@ const handleFileUpload = async (e, deps) => {
     const isPdf = fileInfo.kind === 'pdf';
     const isDocx = fileInfo.kind === 'docx';
     const isPptx = fileInfo.kind === 'pptx';
-    if (isPdf || isDocx || isPptx) {
+    // PNG/JPEG/WebP are first-class remediation inputs. Keep the original File
+    // (for its name/type/size) and the raw base64 bytes; the document pipeline
+    // performs its own magic-byte validation before trusting this MIME hint.
+    // Less predictable browser image formats (GIF/TIFF/HEIC/BMP) retain the
+    // existing OCR-to-source-text path below until they have a safe decoder.
+    const isRemediationImage = fileInfo.kind === 'image' && _MISC_REMEDIATION_IMAGE_MIMES.has(fileInfo.mime);
+    if (isPdf || isDocx || isPptx || isRemediationImage) {
         const auditReader = ownReader();
         auditReader.onload = () => {
             releaseReader(auditReader);
@@ -380,7 +387,12 @@ const handleFileUpload = async (e, deps) => {
             if (!base64) { failRead(t('quick_start.error_read_file')); return; }
             setPendingPdfBase64(base64);
             setPendingPdfFile(file);
-            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
+            setPdfAuditResult({
+                _choosing: true,
+                fileName: file.name,
+                fileSize: file.size,
+                ...(isRemediationImage ? { mimeType: fileInfo.mime, _imageInput: true } : {}),
+            });
             finishExtraction();
         };
         auditReader.onerror = () => { releaseReader(auditReader); failRead(t('quick_start.error_read_file')); };

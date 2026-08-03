@@ -1174,6 +1174,24 @@ function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listClo
   return out;
 }
 
+const _VIEW_REMEDIATION_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+function _viewRemediationMimeType(file) {
+  let claimed = String((file && (file.mimeType || file.type)) || '').trim().toLowerCase();
+  if (claimed === 'image/jpg') claimed = 'image/jpeg';
+  if (_VIEW_REMEDIATION_IMAGE_MIMES.has(claimed)) return claimed;
+  const name = String((file && (file.name || file.fileName || file.relPath)) || '').toLowerCase();
+  if (/\.png$/.test(name)) return 'image/png';
+  if (/\.jpe?g$/.test(name)) return 'image/jpeg';
+  if (/\.webp$/.test(name)) return 'image/webp';
+  return claimed;
+}
+function _viewIsRemediationImage(file) {
+  return _VIEW_REMEDIATION_IMAGE_MIMES.has(_viewRemediationMimeType(file));
+}
+function _viewRemediationBaseName(name) {
+  return String(name || 'document').replace(/\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, '');
+}
+
 function _dataImageInfo(src) {
   const match = /^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,([a-z0-9+/=\r\n]+)$/i.exec(String(src || ''));
   if (!match) return null;
@@ -3685,6 +3703,8 @@ function PdfAuditView(props) {
   const _auditMissingDependencies = ((auditDependencyState && auditDependencyState.failed) || [])
     .concat((auditDependencyState && auditDependencyState.pending) || []);
   const _auditInputName = String((pendingPdfFile && pendingPdfFile.name) || '');
+  const _inputMimeType = _viewRemediationMimeType(pendingPdfFile);
+  const _inputIsImage = _viewIsRemediationImage(pendingPdfFile);
   const _auditHasTranscriptPayload = typeof pendingPdfBase64 === 'string' && pendingPdfBase64.slice(0, 23) === 'QUxMT1RSQU5TQ1JJUFQ6djE';
   const _auditHasOfficePayload = /\.(docx|pptx)$/i.test(_auditInputName)
     || (typeof pendingPdfBase64 === 'string' && pendingPdfBase64.slice(0, 5) === 'UEsDB' && !/\.pdf$/i.test(_auditInputName));
@@ -3946,7 +3966,7 @@ function PdfAuditView(props) {
       addToast(_sanitized
         ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
         : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
       const _typesetSourceHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
@@ -3977,14 +3997,14 @@ function PdfAuditView(props) {
       setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
       const _typesetVerdict = _alloTaggedPdfDeliveryVerdict(_result);
       if (!_typesetVerdict.ok) {
-        const _typesetUnverifiedName = (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean-UNVERIFIED.pdf' : '-tagged-typeset-UNVERIFIED.pdf');
+        const _typesetUnverifiedName = _viewRemediationBaseName(pendingPdfFile?.name) + (_sanitized ? '-tagged-clean-UNVERIFIED.pdf' : '-tagged-typeset-UNVERIFIED.pdf');
         _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: _typesetUnverifiedName };
         _lastTaggedDeliveryRef.current = { withheld: true, reason: 'typeset verification unavailable/failed (' + _typesetVerdict.reason + ')' }; // M14
         setTaggedGateIssue('Generated-layout export: ' + _typesetVerdict.reason);
         addToast('The generated-layout tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.', 'warning');
         return;
       }
-      safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
+      safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), _viewRemediationBaseName(pendingPdfFile?.name) + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
       _lastTaggedDeliveryRef.current = { withheld: false }; // M14: actually handed over
       const _s = (_result && _result.summary) || {};
       if (_s.typesetFont) {
@@ -4230,8 +4250,7 @@ function PdfAuditView(props) {
   // instead of waiting for the ~14s boot mid-gesture. Skipped when the embed proved blocked before.
   React.useEffect(() => {
     try {
-      const _nm = (pendingPdfFile?.name || '').toLowerCase();
-      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nm);
+      const _isPdfIn = !!pendingPdfBase64 && _inputIsPdf;
       if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
     } catch (_) {}
   }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
@@ -4437,7 +4456,7 @@ function PdfAuditView(props) {
       a.href = dlUrl;
       const _partial = j.blobs.length < j.segments.length;
       const _off = j.partOffset || 0;
-      a.download = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-audio' + (j.langSuffix || '') + (j.srMode ? '-sr-style' : '') + ((_partial || _off) ? ('-part' + (_off + 1) + '-' + (_off + j.blobs.length) + 'of' + j.segments.length) : '') + '.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
+      a.download = _viewRemediationBaseName(pendingPdfFile?.name) + '-audio' + (j.langSuffix || '') + (j.srMode ? '-sr-style' : '') + ((_partial || _off) ? ('-part' + (_off + 1) + '-' + (_off + j.blobs.length) + 'of' + j.segments.length) : '') + '.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(dlUrl);
       if (_partial) _toastForRemediationOperation(ticket, '🎧 ' + (t('toasts.audio_partial_dl') || 'Partial audio downloaded') + ' (' + j.blobs.length + '/' + j.segments.length + ' sections — the filename says which part). ' + (t('toasts.audio_partial_resume') || 'Resume to finish the rest.'), auto ? 'error' : 'info');
@@ -5090,7 +5109,8 @@ function PdfAuditView(props) {
     try { if (active && active.reader && active.reader.readyState === 1) active.reader.abort(); } catch (_) {}
   }, []);
   const _isSupportedBatchFile = (file) => !!(file && ((file.type || '').toLowerCase() === 'application/pdf'
-    || /\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(file.name || file.relPath || '')));
+    || _viewIsRemediationImage(file)
+    || /\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods|png|jpe?g|webp)$/i.test(file.name || file.relPath || '')));
   const _alloReadBatchFileOwned = (file, session) => new Promise((resolve) => {
     if (!_batchIngestIsCurrent(session)) { resolve(null); return; }
     const reader = new FileReader();
@@ -5118,7 +5138,7 @@ function PdfAuditView(props) {
           if (!_batchIngestIsCurrent(session)) { settle(null); return; }
           base64 = (converted && converted.payload) || base64;
         }
-        settle({ id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size || 0, base64, status: 'pending', result: null });
+        settle({ id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size || 0, base64, mimeType: _viewRemediationMimeType(file), status: 'pending', result: null });
       } catch (error) {
         if (_batchIngestIsCurrent(session)) addToast('Could not convert "' + file.name + '": ' + ((error && error.message) || 'unknown') + ' - skipped.', 'error');
         settle(null);
@@ -5206,6 +5226,7 @@ function PdfAuditView(props) {
       const descriptors = sourceFiles.map((file) => ({
         name: file.relPath || file.name || 'document',
         size: file.sizeBytes || 0,
+        mimeType: _viewRemediationMimeType(file),
         source: file,
       }));
       const accepted = _alloBatchPreflight(descriptors, []);
@@ -5226,7 +5247,7 @@ function PdfAuditView(props) {
           continue;
         }
         actualBytes += actualSize;
-        queue.push({ id: Date.now() + Math.random(), fileName: descriptor.name, fileSize: actualSize, base64: readResult.base64, status: 'pending', result: null });
+        queue.push({ id: Date.now() + Math.random(), fileName: descriptor.name, fileSize: actualSize, base64: readResult.base64, mimeType: _viewRemediationMimeType({ name: descriptor.name, mimeType: readResult.mimeType || descriptor.mimeType }), status: 'pending', result: null });
       }
       if (!_batchIngestIsCurrent(session)) return;
       if (!queue.length) { addToast('Could not safely read any documents from that folder.', 'error'); return; }
@@ -6620,7 +6641,7 @@ function PdfAuditView(props) {
                 ) : pdfBatchMode ? (
                   <div className="text-left">
                     {batchIngesting && <p role="status" aria-live="polite" className="mb-4 text-center text-sm font-bold text-indigo-700">Reading and validating selected files...</p>}
-                    <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch PDF Remediation</h3>
+                    <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch Document & Image Remediation</h3>
 
                     {/* Drag & Drop Zone */}
                     {!pdfBatchProcessing && !pdfBatchSummary && !batchIngesting && (
@@ -6640,13 +6661,13 @@ function PdfAuditView(props) {
                         }}
                       >
                         <div className="text-4xl mb-2">📥</div>
-                        <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, or Excel files here'}</p>
+                        <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, Excel, PNG, JPEG, or WebP files here'}</p>
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
-                        <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods" multiple className="hidden" id="batch-pdf-input" onChange={async (e) => {
+                        <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods,.png,.jpg,.jpeg,.webp" multiple className="hidden" id="batch-pdf-input" onChange={async (e) => {
                           const files = [...(e.target.files || [])].filter(_isSupportedBatchFile);
                           // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the drop handler)
                           const _added = await _alloEnqueueBatchFilesOwned(files);
-                          if (_added > 0) addToast(`Added ${_added} PDF(s)`, 'success');
+                          if (_added > 0) addToast(`Added ${_added} file(s)`, 'success');
                           e.target.value = '';
                         }} />
                         <label data-help-key="pdf_audit_view_batch_browse_btn" htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
@@ -6662,9 +6683,9 @@ function PdfAuditView(props) {
                           onClick={_alloLoadDesktopFolder}
                           className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
                         >
-                          📂 {t('pdf_audit.batch.scan_folder') || 'Scan Folder (PDF, DOCX, PPTX, incl. subfolders)'}
+                          📂 {t('pdf_audit.batch.scan_folder') || 'Scan Folder (documents + PNG/JPEG/WebP, incl. subfolders)'}
                         </button>
-                        <p className="text-xs text-slate-500 mt-2">{t('pdf_audit.batch.scan_folder_hint') || 'Pick a folder and AlloFlow will remediate every document, then give you a report.'}</p>
+                        <p className="text-xs text-slate-500 mt-2">{t('pdf_audit.batch.scan_folder_hint') || 'Pick a folder and AlloFlow will remediate every supported document or image, then give you a report.'}</p>
                       </div>
                     )}
 
@@ -7111,10 +7132,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 ) : (
                   <>
-                <div className="text-5xl mb-4">📄</div>
-                <h3 className="text-lg font-black text-slate-800 mb-2">PDF Uploaded: {pdfAuditResult.fileName}</h3>
+                <div className="text-5xl mb-4">{_inputIsImage ? '🖼️' : '📄'}</div>
+                <h3 className="text-lg font-black text-slate-800 mb-2">{_inputIsImage ? 'Image' : 'Document'} Uploaded: {pdfAuditResult.fileName}</h3>
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
-                <p className="text-sm text-slate-600 mb-4">{t('pdf_audit.choose_how') || 'Choose how to process this PDF:'}</p>
+                <p className="text-sm text-slate-600 mb-4">{_inputIsImage ? 'Choose how to process this image:' : (t('pdf_audit.choose_how') || 'Choose how to process this document:')}</p>
 
                 {/* ── Media digestion card (2026-06-10): audio/video carry TWO
                     information tracks that can diverge — what is SAID vs what
@@ -7216,8 +7237,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // only. Popup-blocked / closed → silently falls back to the manual button below.
                     let _veraWarm = null; let _veraIframe = null;
                     try {
-                      const _nmIn = (pendingPdfFile?.name || '').toLowerCase();
-                      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+                      const _isPdfIn = !!pendingPdfBase64 && _inputIsPdf;
                       if (pdfAutoVeraPdf && _isPdfIn) {
                         _veraIframe = warmVeraPdfIframe(); // ensure the embedded validator exists (no gesture needed)
                         // Prefer the inline iframe when it's a proven/ready transport → POPUP-FREE. Only open the
@@ -7244,7 +7264,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // remediation never runs without baseline evidence. (Make-Accessible auto-continue fix 2026-06-15)
                     let _audit = null;
                     try {
-                      _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });
+                      _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
                     } catch (auditErr) {
                       if (!_oneClickDocumentIsCurrent()) return;
                       setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
@@ -7303,7 +7323,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _runFix = async () => {
                       if (!_oneClickDocumentIsCurrent()) return;
                       _handsErr = null;
-                      try { _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit }); }
+                      try { _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType, auditResult: _audit }); }
                       catch (e) { _handsErr = e; /* fix surface shows its own errors */ }
                       if (!_oneClickDocumentIsCurrent()) { _res = null; return; }
                       if (!_handsErr) {
@@ -7750,7 +7770,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit did not complete. Please retry.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast((t('toasts.audit_retryable_error') || 'The audit failed. Please retry.') + ' ' + ((error && error.message) || error || ''), 'error'); } }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button data-help-key="pdf_audit_view_start_btn" disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit did not complete. Please retry.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast((t('toasts.audit_retryable_error') || 'The audit failed. Please retry.') + ' ' + ((error && error.message) || error || ''), 'error'); } }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -8367,7 +8387,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
+                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
@@ -9388,9 +9408,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (!freshBase64) return; // user cancelled re-attach
                         if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(_fixDocumentEpoch)) return;
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
+                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
                         } else {
-                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
+                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
                       }} disabled={_remediationBusy || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {_remediationBusy ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
@@ -12821,7 +12841,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             📝 Diff
                           </button>
                         )}
-                        <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible')}
+                        <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, _viewRemediationBaseName(pendingPdfFile?.name) + '-accessible')}
                           className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.pdf_from_html.title') || 'Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents.'}>
                           📥 PDF (from HTML)
@@ -13355,7 +13375,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (!d) { addToast('Could not load the Word export library from any CDN mirror — check the network, or use the HTML download.', 'error'); return; }
                             const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
                             const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES[docMode]);
-                            safeDownloadBlob(blob, `${(pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '')}-accessible.docx`);
+                            safeDownloadBlob(blob, `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.docx`);
                             const bits = [];
                             if (spec.counts.headings) bits.push(spec.counts.headings + ' real heading style' + (spec.counts.headings === 1 ? '' : 's'));
                             if (spec.counts.images) bits.push(spec.counts.images + ' image' + (spec.counts.images === 1 ? '' : 's') + ' with alt text');
@@ -13392,7 +13412,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               } catch (_aiErr) { _theme = _PPTX_THEMES.classic; _themeLabel = 'Classic Light (AI palette unavailable)'; }
                             } else if (pptxThemeId === 'ai') { _theme = _PPTX_THEMES.classic; _themeLabel = 'Classic Light (AI unavailable)'; }
                             const blob = await _buildPptxBlobFromSlides(deck, P, _theme);
-                            safeDownloadBlob(blob, `${(pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '')}-accessible.pptx`);
+                            safeDownloadBlob(blob, `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.pptx`);
                             const bits = [deck.counts.slides + ' slide' + (deck.counts.slides === 1 ? '' : 's') + ' (' + deck.counts.titled + ' titled)', _themeLabel + ' theme'];
                             if (deck.counts.images) bits.push(deck.counts.images + ' image' + (deck.counts.images === 1 ? '' : 's') + ' with alt text');
                             if (deck.counts.tables) bits.push(deck.counts.tables + ' table' + (deck.counts.tables === 1 ? '' : 's') + ' with header rows');
@@ -13427,7 +13447,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const blob = new Blob([_wrapAsReaderApp(_readerHtml)], { type: 'text/html' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
-                          a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
+                          a.href = url; a.download = `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.html`;
                           document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                           addToast(t('toasts.accessible_html_downloaded'), 'success');
                         }} className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5">
@@ -14073,8 +14093,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           // button's own confirm copy it "REPLACES your current results" — with no dialog,
                           // and nothing to connect it to a click made earlier.
                           const _launchArgs = (pdfPageRange && pdfPageRange.start && pdfPageRange.end)
-                            ? { documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }
-                            : { documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name }; // finding 2
+                            ? { documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }
+                            : { documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }; // finding 2
                           try {
                             await fixAndVerifyPdf(_launchArgs);
                           } catch (_) {

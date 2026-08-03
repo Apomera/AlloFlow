@@ -99,6 +99,9 @@ describe('solar system main 3D canvas loop', () => {
 
       expect(source).toContain('var timelineMilestones = scrubBody ? [');
       expect(source).toContain('{ phase: scrubPeriod * 0.5, label: "Aphelion" }');
+      expect(source).toContain('var scrubPhaseAt = function(time)');
+      expect(source).toContain('var isExactEndpoint = scrubBody && time > 0');
+      expect(source).toContain('var liveScrubPhase = scrubPhaseAt(t);');
       expect(source).toContain('orbit timeline landmarks');
       expect(source).toContain('scrubTimelineValue');
       expect(source).toContain('role: "status", "aria-live": paused ? "polite" : "off"');
@@ -117,11 +120,21 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('id: "orrery-live-selected-summary"');
       expect(source).toContain('setLiveText("orrery-live-selected-summary"');
       expect(source).toContain('orrery-live-kepler-cue');
+      expect(source).toContain('var radialPositionRatio = clamp((pos.r - peri) / Math.max(0.000001, aph - peri), 0, 1);');
+      expect(source).toContain('id: "orrery-live-orbit-position-meter"');
+      expect(source).toContain('id: "orrery-live-orbit-position-marker"');
+      expect(source).toContain('id: "orrery-live-orbit-position"');
+      expect(source).toContain('var liveRadialPositionRatio = clamp((livePos.r - livePerihelion) / Math.max(0.000001, liveAphelion - livePerihelion), 0, 1);');
+      expect(source).toContain('livePositionMarker.style.left = (liveRadialPositionRatio * 100) + "%";');
+      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip"');
+      expect(source).toContain('id: "orrery-stage-key"');
+      expect(source).toContain('id: "orrery-stage-tip"');
       expect(source).toContain('orrery-live-compare-secondary-speed');
       expect(source).toContain('orrery-live-compare-primary-distance');
       expect(source).toContain('orrery-live-compare-secondary-distance');
       expect(source).toContain('compareMetric("Current distance"');
-      expect(source).toContain('var compareDistancePhrase =');
+      expect(source).toContain('var describeComparison = function(primary, primaryPos, primarySpeed, secondary, secondaryPos, secondarySpeed)');
+      expect(source).toContain('setLiveText("orrery-compare-interpretation", describeComparison(');
       expect(source).toContain('id: "orrery-compare-interpretation"');
       expect(source).toContain('orrery-live-timeline-value');
       expect(source).toContain('phaseInput.value = String(liveScrubPhase);');
@@ -204,6 +217,15 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('"aria-pressed": zoomMode === "inner"');
       expect(source).toContain('"aria-pressed": showComets');
     });
+});  it('explains playback speed in selected-world time', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var playbackBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;');
+      expect(source).toContain('var formatPlaybackDuration = function(seconds)');
+      expect(source).toContain('id: "orrery-playback-context"');
+      expect(source).toContain('Select a world to see its real-time orbit length.');
+    });
   });  it('honors reduced-motion preferences without removing orbital interaction', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
@@ -211,11 +233,43 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('var reduceMotion = false;');
       expect(source).toContain('reduceMotion: reduceMotion');
       expect(source).toContain('var visualTime = reduceMotion ? 0 : (timestamp || 0);');
+      expect(source).toContain('var hoverPulse = reduceMotion ? 0 : Math.sin((timestamp || 0) * 0.004) * 1.5;');
       expect(source).toContain('if (props.reduceMotion) { cancelInertia(); return; }');
       expect(source).toContain('Reduced motion on · pulses and camera glides off');
       expect(source).toContain('reduced-motion mode keeps decorative effects still');
     });
   });
+  it('keeps canvas hit testing and selection state aligned with optional-body visibility filters', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('var isBodyVisibleInCanvas = function(body)');
+      expect(source).toContain('if (body.type === "comet") return showComets;');
+      expect(source).toContain('if (body.type === "dwarf") return showDwarfs;');
+      expect(source).toContain('if (!isBodyVisibleInCanvas(b)) continue;');
+      expect(source).toContain('var alreadySelected = (selBody === b.id);');
+      expect(source).not.toContain('var alreadySelected = (st._selBodyId === b.id);');
+      expect(source).toContain('var resetRequest = Number(d.orr_view_reset || 0);');
+      expect(source).toContain('if (props.resetKey != null && st._resetKey !== props.resetKey)');
+      expect(source).toContain('resetKey: resetRequest');
+      expect(source).toContain('redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion") + ":" + resetRequest');
+      expect(source).toContain('function cancelCameraGlide()');
+      expect(source).toContain('var cameraInputRef = React.useRef(props.onCameraInput);');
+      expect(source).toContain('function interruptFollow()');
+      expect(source).toContain('interruptFollow();');
+      expect(source).toContain('onCameraInput: function() { if (followBodyId) upd("orr_follow", null); }');
+      expect(source).toContain('cancelCameraGlide();');
+      expect(source).toContain('var f = ev.deltaY');
+      expect(source).toContain('cancelCameraGlide(); interruptFollow(); st.cx -= step;');
+      expect(source).toContain('var nextVisible = !showComets;');
+      expect(source).toContain('var nextVisible = !showDwarfs;');
+      expect(source).toContain('var patch = { orr_showComets: nextVisible };');
+      expect(source).toContain('var patch = { orr_showDwarfs: nextVisible };');
+      expect(source).toContain('patch.orr_sel = null; patch.orr_follow = null; patch.orr_focus_body = null;');
+      expect(source).toContain('patch.orr_compare = null;');
+    });
+  });
+
   it('keeps Orrery section-tab focus synchronized with keyboard navigation', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
@@ -231,7 +285,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('upd("orreryKeplerSeen", seen.concat([_activeKeplerLaw]))');
       expect(source).toContain('function keplerLawIdForTab(index)');
       expect(source).toContain('function mergeKeplerLawSeen(current, lawId)');
-      expect(source).toContain('"data-kepler-visited": tabVisited ? "true" : "false"');
+      expect(source).toContain('"data-kepler-visited": lawVisited ? "true" : "false"');
       expect(source).toContain('var _challengeScore = Object.keys(d.orr_chc || {})');
       expect(source).toContain('var _liveSolvedKeys = Object.keys(d.orr_clc || {})');
       expect(source).toContain('upd("_chalScore", _challengeScore)');
@@ -243,7 +297,7 @@ describe('solar system main 3D canvas loop', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('st.dragDistance = 0;');
-      expect(source).toContain('if (st.dragDistance > 6) st.suppressClick = true;');
+      expect(source).toContain('if (st.dragDistance > 6) {');
       expect(source).toContain('if (st.suppressClick) { st.suppressClick = false; return; }');
       expect(source).toContain('function onCancel()');
       expect(source).toContain('window.addEventListener("pointercancel", onCancel);');
@@ -290,8 +344,12 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain("'data-view-preset': props.viewPresetKey || undefined");
       expect(source).toContain('Current view is " + canvasViewLabel');
       expect(source).toContain('role: "status", "aria-live": "polite", "aria-atomic": "true"');
-      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help"');
+      expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip"');
       expect(source).toContain('id: "orrery-canvas-help"');
+      expect(source).toContain('var modelScaleNote = scaleMode === "relative"');
+      expect(source).toContain('id: "orrery-model-scale-note"');
+      expect(source).toContain('id: "orrery-hover-summary"');
+      expect(source).toContain('cv._orreryHoverSummaryKey');
       expect(source).toContain('var bufferChanged = cv._dpr !== dpr');
       expect(source).toContain('var keyboardInteractRef = React.useRef(props.onKeyboardInteract);');
       expect(source).toContain('if (keyboardInteractRef.current) keyboardInteractRef.current(st);');

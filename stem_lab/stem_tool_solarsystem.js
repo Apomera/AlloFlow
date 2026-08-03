@@ -55,6 +55,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
   })();
 
   var ORRERY_GUIDED_MISSION_IDS = ['earth_distance', 'mercury_speed', 'longer_year'];
+  var ORRERY_TAB_COUNT = 9;
+  var countOrreryTabsSeen = function(d) {
+    var seen = (d && Array.isArray(d.orreryTabsSeen))
+      ? d.orreryTabsSeen.map(function(id) { return String(id); })
+      : [];
+    return seen.filter(function(id, index, all) {
+      var numericId = Number(id);
+      return numericId >= 0 && numericId < ORRERY_TAB_COUNT && all.indexOf(id) === index;
+    }).length;
+  };
   var countCompletedOrreryGuidedMissions = function(d) {
     var progress = (d && d.orr_mission_progress) || {};
     return ORRERY_GUIDED_MISSION_IDS.filter(function(id) { return progress[id] && progress[id].correct; }).length;
@@ -84,8 +94,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       { id: 'assignment_complete', label: 'Complete any assignment', icon: '\uD83D\uDCCB', field: 'activeAssignment', check: function(d) { if (!d.activeAssignment) return false; var tasks = d['asn_done_' + d.activeAssignment] || []; var asnLen = { inner_planets: 4, gas_giants: 4, habitability: 4, full_survey: 5 }; return tasks.length >= (asnLen[d.activeAssignment] || 4); }, progress: function(d) { if (!d.activeAssignment) return 'Not started'; var tasks = d['asn_done_' + d.activeAssignment] || []; return tasks.length + ' tasks done'; } },
       { id: 'orrery_explore', label: 'Open the Orrery Lab', icon: '\uD83C\uDF0C', field: 'orreryMode', check: function(d) { return d.orreryMode === true || d.orrery_explored_once === true; }, progress: function(d) { return d.orreryMode || d.orrery_explored_once ? 'Done' : 'Not yet'; } },
       { id: 'orrery_kepler_all', label: 'Explore all 3 Kepler Law tabs', icon: '\uD83D\uDCDA', field: 'orreryKeplerSeen', check: function(d) { var s = d.orreryKeplerSeen || []; return s.indexOf('keplerI') !== -1 && s.indexOf('keplerII') !== -1 && s.indexOf('keplerIII') !== -1; }, progress: function(d) { return (d.orreryKeplerSeen || []).length + '/3 laws'; } },
-      { id: 'orrery_calc_3', label: 'Solve 3 calculation challenges', icon: '\uD83E\uDDE0', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 3; }, progress: function(d) { return (d._chalScore || 0) + '/3 solved'; } },
-      { id: 'orrery_live_calc', label: 'Solve a live sim challenge', icon: '\u26A1', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).filter(function(k) { return ls[k].correct; }).length + ' solved'; } },
+      { id: 'orrery_tabs_all', label: 'Sample all 9 Orrery sections', icon: '\uD83C\uDF0C', field: 'orreryTabsSeen', check: function(d) { return countOrreryTabsSeen(d) >= ORRERY_TAB_COUNT; }, progress: function(d) { return countOrreryTabsSeen(d) + '/' + ORRERY_TAB_COUNT + ' sections'; } },
+      { id: 'orrery_calc_3', label: 'Solve 3 calculation challenges', icon: '\uD83E\uDDE0', field: '_chalScore', check: function(d) { return (d._chalScore || 0) >= 3; }, progress: function(d) { return (d._chalScore || 0) + '/3 solved'; } },      { id: 'orrery_live_calc', label: 'Solve a live sim challenge', icon: '\u26A1', field: '_liveSolved', check: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).some(function(k) { return ls[k].correct; }); }, progress: function(d) { var ls = d._liveSolved || {}; return Object.keys(ls).filter(function(k) { return ls[k].correct; }).length + ' solved'; } },
       { id: 'orrery_guided_3', label: 'Complete the 3 guided orbital missions', icon: '🧭', field: 'orr_mission_progress', check: function(d) { return countCompletedOrreryGuidedMissions(d) >= ORRERY_GUIDED_MISSION_IDS.length; }, progress: function(d) { return countCompletedOrreryGuidedMissions(d) + '/' + ORRERY_GUIDED_MISSION_IDS.length + ' missions'; } }
     ],
     render: function(ctx) {
@@ -176,6 +186,27 @@ const d = labToolData.solarSystem || {};
           const tutorialDialogRef = React.useRef(null);
           const tutorialTitleRef = React.useRef(null);
           const tutorialReturnFocusRef = React.useRef(null);
+          const routeFocusTargetRef = React.useRef(null);
+          const navigatorFocusRequestRef = React.useRef(Number(d.orr_focus_navigator || 0));
+          React.useEffect(function() {
+            var target = routeFocusTargetRef.current;
+            if (!target || typeof document === "undefined") return;
+            var focusNode = target === "orrery"
+              ? document.getElementById("orrery-tab-" + String(d.orr_tab || 0))
+              : document.querySelector(".solar3d-canvas");
+            if (!focusNode && target === "3d") focusNode = document.querySelector("[data-solarsystem-canvas-shell] button");
+            if (focusNode && typeof focusNode.focus === "function") {
+              routeFocusTargetRef.current = null;
+              focusNode.focus();
+            }
+          }, [d.orreryMode]);
+          React.useEffect(function() {
+            var request = Number(d.orr_focus_navigator || 0);
+            if (request === navigatorFocusRequestRef.current || !d.orreryMode || Number(d.orr_tab || 0) !== 0 || typeof document === "undefined") return;
+            navigatorFocusRequestRef.current = request;
+            var navigator = document.getElementById("orrery-body-navigator");
+            if (navigator && typeof navigator.focus === "function") navigator.focus();
+          }, [d.orr_focus_navigator, d.orr_tab, d.orreryMode]);
           React.useEffect(function() {
             if (d.tutorialDismissed || typeof document === "undefined") return;
             var dialog = tutorialDialogRef.current;
@@ -2159,8 +2190,8 @@ const d = labToolData.solarSystem || {};
           var _orrSpeed = d.orr_speed || 1;
           var _orrPaused = d.orr_paused || false;
           var _activeKeplerLaw = Number(d.orr_tab || 0) === 1 ? "keplerI" : Number(d.orr_tab || 0) === 2 ? "keplerII" : Number(d.orr_tab || 0) === 3 ? "keplerIII" : null;
-          var _challengeScore = Object.keys(d.orr_chc || {}).filter(function(key) { return !!d.orr_chc[key]; }).length;
-          var _liveSolvedKeys = Object.keys(d.orr_clc || {}).filter(function(key) { return !!d.orr_clc[key]; }).sort().join(",");
+          var _orreryTabIndex = Math.max(0, Math.min(ORRERY_TAB_COUNT - 1, Number(d.orr_tab || 0)));
+          var _challengeScore = Object.keys(d.orr_chc || {}).filter(function(key) { return !!d.orr_chc[key]; }).length;          var _liveSolvedKeys = Object.keys(d.orr_clc || {}).filter(function(key) { return !!d.orr_clc[key]; }).sort().join(",");
           // Sync ref when state changes externally (e.g. Reset button)
           React.useEffect(function() { _orrTimeRef.current = d.orr_time || 0; }, [d.orr_time]);
           // Persist Kepler-law tab visits so the Orrery quest hook reflects actual exploration,
@@ -2170,6 +2201,13 @@ const d = labToolData.solarSystem || {};
             var seen = Array.isArray(d.orreryKeplerSeen) ? d.orreryKeplerSeen : [];
             if (seen.indexOf(_activeKeplerLaw) === -1) upd("orreryKeplerSeen", seen.concat([_activeKeplerLaw]));
           }, [_activeKeplerLaw, d.orreryKeplerSeen]);
+          // Persist every Orrery section visit so the route rail and quest hooks
+          // reflect real exploration across restored sessions and deep links.
+          React.useEffect(function() {
+            var key = String(_orreryTabIndex);
+            var seen = Array.isArray(d.orreryTabsSeen) ? d.orreryTabsSeen.map(function(id) { return String(id); }) : [];
+            if (seen.indexOf(key) === -1) upd("orreryTabsSeen", seen.concat([key]));
+          }, [_orreryTabIndex, d.orreryTabsSeen]);
           // Keep quest-facing completion fields derived from the authoritative answer maps,
           // including progress restored from an earlier session.
           React.useEffect(function() {
@@ -2213,7 +2251,7 @@ const d = labToolData.solarSystem || {};
             };
           }, [_orrPaused, _orrSpeed]);
 
-          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-solarsystem-tool": true },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-solarsystem-tool": true, style: { width: "100%", minWidth: 0, maxWidth: "100%", boxSizing: "border-box" } },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -2307,7 +2345,7 @@ const d = labToolData.solarSystem || {};
                     )
                   ),
                   React.createElement("div", { className: "flex flex-col gap-3" },
-                    React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
+                    React.createElement("div", { role: "group", "aria-label": "Explorer view", "data-solarsystem-route-switcher": true, className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
                       React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Explorer Route"),
                       React.createElement("div", { className: "mt-3 grid gap-2" },
                         [
@@ -2315,12 +2353,16 @@ const d = labToolData.solarSystem || {};
                           { id: 'orrery', label: 'Orrery Lab', desc: 'Orbit mechanics, Kepler laws, and transfer paths.' }
                         ].map(function(route) {
                           var active = route.id === 'orrery' ? d.orreryMode : !d.orreryMode;
-                          var isNewRoute = route.id === 'orrery' && !d.orrery_explored_once;
+
                           return React.createElement("button", {
                             key: route.id,
+                            "aria-pressed": active,
                             onClick: function() {
-                              if (route.id === 'orrery' && !d.orreryMode) updMulti({ orreryMode: true, orrery_explored_once: true });
-                              if (route.id === '3d' && d.orreryMode) upd('orreryMode', false);
+                              var switchingRoute = route.id === 'orrery' ? !d.orreryMode : d.orreryMode;
+                              if (!switchingRoute) return;
+                              routeFocusTargetRef.current = route.id;
+                              if (route.id === 'orrery') updMulti({ orreryMode: true, orrery_explored_once: true });
+                              if (route.id === '3d') upd('orreryMode', false);
                             },
                             className: "rounded-lg border p-3 text-left transition-all " + (active
                               ? (isDark ? 'bg-indigo-500/15 border-indigo-400/50 text-indigo-100' : 'bg-indigo-50 border-indigo-200 text-indigo-900')
@@ -2328,7 +2370,7 @@ const d = labToolData.solarSystem || {};
                           },
                             React.createElement("div", { className: "flex items-center justify-between gap-2" },
                               React.createElement("span", { className: "text-sm font-black" }, route.label),
-                              React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : (isNewRoute ? 'NEW' : 'Open'))
+                              React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
                             ),
                             React.createElement("p", { className: "mt-1 text-[11px] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-500') }, route.desc)
                           );
@@ -2698,6 +2740,7 @@ const d = labToolData.solarSystem || {};
   ];
   var zoomMode = d.orr_zoom || "full";   // inner/full/outer
   var scaleMode = d.orr_scale_mode === "relative" ? "relative" : "teaching";
+  var resetRequest = Number(d.orr_view_reset || 0);
 
   // Kepler I
   var k1_ecc = d.orr_k1e !== undefined ? d.orr_k1e : 0.5;
@@ -2766,9 +2809,19 @@ const d = labToolData.solarSystem || {};
     if (lawId && seen.indexOf(lawId) === -1) seen.push(lawId);
     return seen;
   }
+  function mergeOrreryTabsSeen(current, index) {
+    var seen = Array.isArray(current) ? current.map(function(id) { return String(id); }) : [];
+    var key = String(index);
+    if (seen.indexOf(key) === -1) seen.push(key);
+    return seen;
+  }
   function setTab(i) {
     var lawId = keplerLawIdForTab(i);
-    updMulti({ orr_tab: i, orreryKeplerSeen: mergeKeplerLawSeen(d.orreryKeplerSeen, lawId) });
+    updMulti({
+      orr_tab: i,
+      orreryKeplerSeen: mergeKeplerLawSeen(d.orreryKeplerSeen, lawId),
+      orreryTabsSeen: mergeOrreryTabsSeen(d.orreryTabsSeen, i)
+    });
   }
 
   /* ====================================================================
@@ -2792,12 +2845,19 @@ const d = labToolData.solarSystem || {};
       }, 0);
     }
   };
+  var seenOrreryTabKeys = Array.isArray(d.orreryTabsSeen)
+    ? d.orreryTabsSeen.map(function(id) { return String(id); }).filter(function(id, index, all) {
+      var numericId = Number(id);
+      return numericId >= 0 && numericId < TAB_NAMES.length && all.indexOf(id) === index;
+    })
+    : [];
   var tabHeader = h("div", {
     className: "orr-tab-strip",
     style: {
       position: "relative",
       display: "flex", flexWrap: "wrap", gap: "3px", marginBottom: "14px",
-      padding: "7px", borderRadius: "14px"
+      padding: "7px", borderRadius: "14px",
+      minWidth: 0, maxWidth: "100%", boxSizing: "border-box"
     },
     "aria-label": "Orrery lab sections",
     role: "tablist",
@@ -2812,11 +2872,13 @@ const d = labToolData.solarSystem || {};
   }, TAB_NAMES.map(function(nm, i) {
     var isActive = stab === i;
     var lawId = keplerLawIdForTab(i);
-    var tabVisited = !!lawId && Array.isArray(d.orreryKeplerSeen) && d.orreryKeplerSeen.indexOf(lawId) !== -1;
+    var tabVisited = seenOrreryTabKeys.indexOf(String(i)) !== -1;
+    var lawVisited = !!lawId && Array.isArray(d.orreryKeplerSeen) && d.orreryKeplerSeen.indexOf(lawId) !== -1;
     return h("button", {
       key: "tab" + i, id: "orrery-tab-" + i, role: "tab", "aria-selected": isActive, "aria-controls": "orrery-tabpanel", tabIndex: isActive ? 0 : -1,
       "aria-label": TAB_ARIA_LABELS[i],
-      "data-kepler-visited": tabVisited ? "true" : "false",
+      "data-kepler-visited": lawVisited ? "true" : "false",
+      "data-orrery-visited": tabVisited ? "true" : "false",
       className: "orr-btn" + (isActive ? " orr-btn-active" : ""),
       onClick: function() { setTab(i); },
       style: {
@@ -2858,10 +2920,12 @@ const d = labToolData.solarSystem || {};
     var clickRef = React.useRef(props.onClick);
     var keyboardInteractRef = React.useRef(props.onKeyboardInteract);
     var homeRef = React.useRef(props.onHome);
+    var cameraInputRef = React.useRef(props.onCameraInput);
     drawRef.current = props.draw;
     clickRef.current = props.onClick;
     keyboardInteractRef.current = props.onKeyboardInteract;
     homeRef.current = props.onHome;
+    cameraInputRef.current = props.onCameraInput;
 
     React.useEffect(function() {
       var cv = ref.current;
@@ -2934,6 +2998,29 @@ const d = labToolData.solarSystem || {};
         st._zoomAnim = false;
         st._viewPresetKey = props.viewPresetKey;
       }
+      if (props.resetKey != null && st._resetKey !== props.resetKey) {
+        st.cx = props.width / 2;
+        st.cy = props.height / 2;
+        st.scale = props.initScale || 1;
+        st.targetCx = st.cx;
+        st.targetCy = st.cy;
+        st.targetScale = st.scale;
+        st._zoomAnim = false;
+        st._followBody = null;
+        st._resetKey = props.resetKey;
+      }
+
+      function cancelCameraGlide() {
+        st._zoomAnim = false;
+        st.targetCx = st.cx;
+        st.targetCy = st.cy;
+        st.targetScale = st.scale;
+      }
+      function interruptFollow() {
+        if (!st._followBody) return;
+        st._followBody = null;
+        if (cameraInputRef.current) cameraInputRef.current();
+      }
 
       function scheduleFrame() {
         if (!running || document.hidden || raf.current) return;
@@ -2968,6 +3055,8 @@ const d = labToolData.solarSystem || {};
       }
       function onWheel(ev) {
         ev.preventDefault();
+        cancelCameraGlide();
+        interruptFollow();
         var f = ev.deltaY < 0 ? 1.1 : 0.9;
         st.scale = clamp(st.scale * f, (props.minScale || 0.1), (props.maxScale || 200));
       }
@@ -2982,6 +3071,7 @@ const d = labToolData.solarSystem || {};
       }
       function onDown(ev) {
         cancelInertia();
+        cancelCameraGlide();
         if (ev.pointerType === "touch") {
           st.touchPoints[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
           var touchIds = Object.keys(st.touchPoints);
@@ -3011,6 +3101,7 @@ const d = labToolData.solarSystem || {};
           if (st.pinchActive && pinchIds.length >= 2) {
             var nextPinchDistance = touchDistance(pinchIds);
             if (nextPinchDistance > 0 && st.pinchDistance > 0) {
+              interruptFollow();
               st.scale = clamp(st.pinchScale * nextPinchDistance / Math.max(1, st.pinchDistance), (props.minScale || 0.1), (props.maxScale || 200));
               st.suppressClick = true;
             }
@@ -3035,7 +3126,10 @@ const d = labToolData.solarSystem || {};
         var dx = ev.clientX - st.lastX;
         var dy = ev.clientY - st.lastY;
         st.dragDistance += Math.sqrt(dx * dx + dy * dy);
-        if (st.dragDistance > 6) st.suppressClick = true;
+        if (st.dragDistance > 6) {
+          st.suppressClick = true;
+          interruptFollow();
+        }
         st.cx += dx; st.cy += dy;
         st.vx = dx * 0.5; st.vy = dy * 0.5;
         st.lastX = ev.clientX;
@@ -3120,12 +3214,12 @@ const d = labToolData.solarSystem || {};
         }
         var step = ev.shiftKey ? 60 : 20;
         if (props.panZoom) {
-          if (key === 'ArrowLeft')  { st.cx += step; ev.preventDefault(); return; }
-          if (key === 'ArrowRight') { st.cx -= step; ev.preventDefault(); return; }
-          if (key === 'ArrowUp')    { st.cy += step; ev.preventDefault(); return; }
-          if (key === 'ArrowDown')  { st.cy -= step; ev.preventDefault(); return; }
-          if (key === '+' || key === '=') { st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
-          if (key === '-' || key === '_') { st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === 'ArrowLeft')  { cancelCameraGlide(); interruptFollow(); st.cx += step; ev.preventDefault(); return; }
+          if (key === 'ArrowRight') { cancelCameraGlide(); interruptFollow(); st.cx -= step; ev.preventDefault(); return; }
+          if (key === 'ArrowUp')    { cancelCameraGlide(); interruptFollow(); st.cy += step; ev.preventDefault(); return; }
+          if (key === 'ArrowDown')  { cancelCameraGlide(); interruptFollow(); st.cy -= step; ev.preventDefault(); return; }
+          if (key === '+' || key === '=') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === '-' || key === '_') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
           if (key === 'Home' || key === '0') {
             st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1);
             st.targetCx = st.cx; st.targetCy = st.cy; st.targetScale = st.scale;
@@ -3189,6 +3283,7 @@ const d = labToolData.solarSystem || {};
         cursor: props.panZoom ? "grab" : "default",
         maxWidth: "100%",
         display: "block",
+        boxSizing: "border-box",
         width: "100%",
         height: "auto",
         aspectRatio: props.width + " / " + props.height,
@@ -3229,6 +3324,7 @@ const d = labToolData.solarSystem || {};
         var semiMajorAxisTolerance = Math.max(0.001, sb.a * 0.01);
         var axisRelation = pos.r < sb.a - semiMajorAxisTolerance ? "inside" : pos.r > sb.a + semiMajorAxisTolerance ? "outside" : "near";
         var axisReferenceSpeed = visViva(sb.a, sb.a);
+        var keplerIIIPeriodRatio = sb.a > 0 ? (sb.T * sb.T) / Math.pow(sb.a, 3) : 0;
         var keplerIICue = axisRelation === "inside"
           ? "Inside a: moving faster than the reference speed at a."
           : axisRelation === "outside"
@@ -3416,11 +3512,16 @@ const d = labToolData.solarSystem || {};
         var compareBody = compareBodyId && compareBodyId !== sb.id ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
         var comparePos = compareBody ? orbitalPos(compareBody.a, compareBody.e, (TAU * timeRef.current / compareBody.T) % TAU) : null;
         var compareSpeed = compareBody ? visViva(comparePos.r, compareBody.a) : null;
-        var compareDistanceTolerance = compareBody ? Math.max(0.001, Math.max(pos.r, comparePos.r) * 0.01) : 0;
-        var compareSpeedTolerance = compareBody ? Math.max(0.05, Math.max(spd, compareSpeed) * 0.01) : 0;
-        var compareDistancePhrase = compareBody ? Math.abs(pos.r - comparePos.r) <= compareDistanceTolerance ? "about the same distance from the Sun as" : pos.r < comparePos.r ? "closer to the Sun than" : "farther from the Sun than" : "";
-        var compareSpeedPhrase = compareBody ? Math.abs(spd - compareSpeed) <= compareSpeedTolerance ? "moving at about the same speed as" : spd > compareSpeed ? "moving faster than" : "moving slower than" : "";
-        var comparisonInterpretation = compareBody ? sb.name + " is currently " + compareDistancePhrase + " " + compareBody.name + " and is " + compareSpeedPhrase + " " + compareBody.name + "." : "";
+        var describeComparison = function(primary, primaryPos, primarySpeed, secondary, secondaryPos, secondarySpeed) {
+          if (!primary || !secondary) return "";
+          var distanceTolerance = Math.max(0.001, Math.max(primaryPos.r, secondaryPos.r) * 0.01);
+          var speedTolerance = Math.max(0.05, Math.max(primarySpeed, secondarySpeed) * 0.01);
+          var distancePhrase = Math.abs(primaryPos.r - secondaryPos.r) <= distanceTolerance ? "about the same distance from the Sun as" : primaryPos.r < secondaryPos.r ? "closer to the Sun than" : "farther from the Sun than";
+          var speedPhrase = Math.abs(primarySpeed - secondarySpeed) <= speedTolerance ? "moving at about the same speed as" : primarySpeed > secondarySpeed ? "moving faster than" : "moving slower than";
+          var largerOrbitName = primary.a >= secondary.a ? primary.name : secondary.name;
+          return primary.name + " is currently " + distancePhrase + " " + secondary.name + " and is " + speedPhrase + " " + secondary.name + ". Kepler III: " + largerOrbitName + " has the larger orbit and the longer period.";
+        };
+        var comparisonInterpretation = compareBody ? describeComparison(sb, pos, spd, compareBody, comparePos, compareSpeed) : "";
         var periodLabel = function(period) { return period < 1 ? fmt(period * 365.25, 0) + " days" : fmt(period, 2) + " yr"; };
         var compareMetric = function(label, left, right) {
           var isSpeedMetric = label === "Current speed";
@@ -3439,6 +3540,8 @@ const d = labToolData.solarSystem || {};
         }));
         var peri = sb.a * (1 - sb.e);
         var aph = sb.a * (1 + sb.e);
+        var radialPositionRatio = clamp((pos.r - peri) / Math.max(0.000001, aph - peri), 0, 1);
+        var radialPositionLabel = radialPositionRatio <= 0.2 ? "near perihelion (closest)" : radialPositionRatio >= 0.8 ? "near aphelion (farthest)" : radialPositionRatio < 0.5 ? "between perihelion and a" : "between a and aphelion";
         var vPeri = visViva(peri, sb.a);
         var vAph = visViva(aph, sb.a);
         // Stat badges pick up the planet's color as a faint accent — Mars
@@ -3511,31 +3614,47 @@ const d = labToolData.solarSystem || {};
               type: "button",
               "aria-label": "Clear selected world",
               className: "orr-btn",
-              onClick: function() { updMulti({ orr_sel: null, orr_follow: null, orr_compare: null }); },
+              onClick: function() { updMulti({ orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null, orr_focus_navigator: Number(d.orr_focus_navigator || 0) + 1 }); },
               style: { background: "none", border: "none", cursor: "pointer", color: mutedFg, fontSize: "18px", padding: "2px 6px", borderRadius: "4px" }
             }, "\u2716")
           ),
           h("p", { key: "desc", style: { fontSize: "12px", color: mutedFg, margin: "0 0 10px 0", lineHeight: "1.5", fontStyle: "italic" } }, sb.desc),
           // Stat grid
           h("div", { key: "stats", style: { display: "flex", flexWrap: "wrap", gap: "0" } },
-            statBadge("a", fmt(sb.a, 3) + " AU", "\uD83D\uDCCF"),
-            statBadge("e", fmt(sb.e, 4), "\u2B2D"),
-            statBadge("T", fmt(sb.T, 2) + " yr", "\u23F0"),
-            statBadge("i", fmt(sb.i, 1) + "\u00b0", "\u2220"),
-            statBadge("peri", fmt(peri, 3) + " AU", "\u2600"),
-            statBadge("aph", fmt(aph, 3) + " AU", "\u2744"),
-            statBadge("r now", fmt(pos.r, 3) + " AU", "\uD83D\uDCCD", "orrery-live-distance"),
-            statBadge("v now", fmt(spd, 2) + " km/s", "\uD83D\uDE80", "orrery-live-speed"),
+            statBadge("a \u00b7 orbit size", fmt(sb.a, 3) + " AU", "\uD83D\uDCCF"),
+            statBadge("e \u00b7 eccentricity", fmt(sb.e, 4), "\u2B2D"),
+            statBadge("T \u00b7 period", fmt(sb.T, 2) + " yr", "\u23F0"),
+            statBadge("i \u00b7 inclination", fmt(sb.i, 1) + "\u00b0", "\u2220"),
+            statBadge("perihelion", fmt(peri, 3) + " AU", "\u2600"),
+            statBadge("aphelion", fmt(aph, 3) + " AU", "\u2744"),
+            statBadge("distance now", fmt(pos.r, 3) + " AU", "\uD83D\uDCCD", "orrery-live-distance"),
+            statBadge("speed now", fmt(spd, 2) + " km/s", "\uD83D\uDE80", "orrery-live-speed"),
             statBadge("phase", selectedPhaseStatus, selectedPhaseStatus === "Near perihelion" ? "\u2600" : selectedPhaseStatus === "Near aphelion" ? "\u2744" : "\u21c4", "orrery-live-phase"),
             sb.m > 0 ? statBadge("mass", fmt(sb.m, 4) + " M\u2295", "\u2696") : null,
-            sb.R > 100 ? statBadge("R", fmt(sb.R, 0) + " km", "\u2B55") : null
+            sb.R > 100 ? statBadge("radius", fmt(sb.R, 0) + " km", "\u2B55") : null
           ),
           h("span", { id: "orrery-live-selected-summary", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true", className: "sr-only" }, sb.name + ": distance " + fmt(pos.r, 3) + " AU; speed " + fmt(spd, 2) + " km/s; phase " + selectedPhaseStatus),
           h("div", { key: "kepler-ii-cue", role: "note", "aria-label": "Kepler II speed cue for " + sb.name, style: { marginTop: "10px", padding: "8px 9px", borderRadius: "8px", background: isDark ? "rgba(56,189,248,0.10)" : "rgba(14,165,233,0.07)", border: "1px solid " + (isDark ? "rgba(56,189,248,0.28)" : "rgba(14,165,233,0.20)") } },
             h("div", { style: { fontSize: "11px", fontWeight: 700, color: fg, marginBottom: "3px" } }, "Kepler II cue"),
             h("div", { style: { fontSize: "10px", lineHeight: "1.4", color: mutedFg } }, "Equal areas in equal times mean closer to the Sun \u2192 faster; farther away \u2192 slower."),
             h("div", { id: "orrery-live-kepler-cue", style: { marginTop: "4px", fontSize: "10px", lineHeight: "1.4", color: fg } }, sb.name + " is " + axisRelation + " its semi-major axis a (" + fmt(sb.a, 3) + " AU). " + keplerIICue),
-            h("div", { id: "orrery-live-kepler-reference", style: { marginTop: "4px", fontSize: "10px", color: mutedFg, fontFamily: "monospace" } }, "Reference at a: " + fmt(axisReferenceSpeed, 2) + " km/s \u00b7 Current: " + fmt(spd, 2) + " km/s")
+            h("div", { id: "orrery-live-kepler-reference", style: { marginTop: "4px", fontSize: "10px", color: mutedFg, fontFamily: "monospace" } }, "Reference at a: " + fmt(axisReferenceSpeed, 2) + " km/s \u00b7 Current: " + fmt(spd, 2) + " km/s"),
+            h("div", { id: "orrery-live-kepler-iii", role: "note", "aria-label": "Kepler III period cue for " + sb.name, style: { marginTop: "4px", fontSize: "10px", lineHeight: "1.4", color: fg } }, "Kepler III check: T\u00b2 / a\u00b3 = " + fmt(keplerIIIPeriodRatio, 3) + " yr\u00b2/AU\u00b3 \u2248 1 for a Sun-centered orbit."),
+            h("div", { style: { marginTop: "8px", paddingTop: "7px", borderTop: "1px solid " + (isDark ? "rgba(148,163,184,0.22)" : "rgba(100,116,139,0.18)") } },
+              h("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", fontSize: "9px", color: mutedFg, fontWeight: 700 } },
+                h("span", null, "Perihelion \u00b7 closest"),
+                h("span", null, "Aphelion \u00b7 farthest")
+              ),
+              h("div", { id: "orrery-live-orbit-position-meter", role: "img", "aria-label": "Orbital position of " + sb.name + " from perihelion, closest to the Sun, to aphelion, farthest from the Sun", "aria-describedby": "orrery-live-orbit-position", style: { position: "relative", height: "10px", margin: "5px 2px 3px", borderRadius: "999px", background: isDark ? "linear-gradient(90deg, rgba(251,191,36,0.62), rgba(148,163,184,0.30), rgba(96,165,250,0.62))" : "linear-gradient(90deg, rgba(245,158,11,0.52), rgba(148,163,184,0.28), rgba(59,130,246,0.48))", boxShadow: "inset 0 1px 2px rgba(15,23,42,0.22)" } },
+                h("span", { style: { position: "absolute", left: "50%", top: "-2px", bottom: "-2px", width: "1px", background: isDark ? "rgba(226,232,240,0.72)" : "rgba(71,85,105,0.62)" }, "aria-hidden": "true" }),
+                h("span", { id: "orrery-live-orbit-position-marker", style: { position: "absolute", left: (radialPositionRatio * 100) + "%", top: "50%", width: "12px", height: "12px", transform: "translate(-50%, -50%)", borderRadius: "50%", background: sb.color, border: "2px solid " + (isDark ? "#f8fafc" : "#ffffff"), boxShadow: "0 1px 5px rgba(15,23,42,0.45)", boxSizing: "border-box" }, "aria-hidden": "true" })
+              ),
+              h("div", { id: "orrery-live-orbit-position", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true", style: { fontSize: "10px", lineHeight: "1.4", color: fg } }, sb.name + " is " + radialPositionLabel + " at " + fmt(pos.r, 3) + " AU; speed " + fmt(spd, 2) + " km/s."),
+              h("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", marginTop: "3px", fontSize: "9px", color: mutedFg } },
+                h("span", null, "a = " + fmt(sb.a, 3) + " AU"),
+                h("span", null, "marker = current distance")
+              )
+            )
           ),
           evidenceBlock,
           comparisonBlock,
@@ -3553,7 +3672,29 @@ const d = labToolData.solarSystem || {};
 
     var canvasSelectedBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
     var canvasSelectionCue = canvasSelectedBody ? " " + canvasSelectedBody.name + " is selected." : " No world is selected.";
+    var isBodyVisibleInCanvas = function(body) {
+      if (!body) return false;
+      if (body.type === "comet") return showComets;
+      if (body.type === "dwarf") return showDwarfs;
+      return true;
+    };
     var canvasViewLabel = zoomMode === "inner" ? "inner planets" : zoomMode === "outer" ? "outer planets" : "the full solar system";
+    // Keep the visible ruler and the accessible stage readout on the same "nice" distance.
+    // The value is intentionally compact so it remains useful at narrow widths.
+    var mapScaleSteps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
+    var mapScaleValue = function(scale) {
+      var rawAU = 100 / Math.max(0.5, scale);
+      var chosen = mapScaleSteps[0];
+      for (var stepIndex = 0; stepIndex < mapScaleSteps.length; stepIndex++) {
+        if (mapScaleSteps[stepIndex] >= rawAU) { chosen = mapScaleSteps[stepIndex]; break; }
+        chosen = mapScaleSteps[stepIndex];
+      }
+      return chosen;
+    };
+    var mapScaleLabel = function(scale) {
+      var chosen = mapScaleValue(scale);
+      return (chosen >= 1 ? chosen : chosen.toFixed(1)) + " AU";
+    };
     var keyboardSelectNextBody = function() {
       var currentIndex = canvasSelectedBody ? OB.indexOf(canvasSelectedBody) : -1;
       var nextBody = OB[(currentIndex + 1) % OB.length];
@@ -3573,12 +3714,14 @@ const d = labToolData.solarSystem || {};
       initScale: baseScale,
       minScale: 0.5,
       maxScale: 300,
-      redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion"),
+      redrawKey: zoomMode + ":" + scaleMode + ":" + (reduceMotion ? "reduced" : "motion") + ":" + resetRequest,
       viewPresetKey: zoomMode,
-      ariaDescribedBy: "orrery-canvas-help",
-      ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card or click it again to follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
+      resetKey: resetRequest,
+      ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip",
+      ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },
+      onCameraInput: function() { if (followBodyId) upd("orr_follow", null); },
       onEscape: function() { updMulti({ orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); },
       onClick: function(mx, my, st) {
         // hit-test bodies — first click selects + kicks off smooth zoom-in animation.
@@ -3588,6 +3731,7 @@ const d = labToolData.solarSystem || {};
         var t = timeRef.current;
         for (var i = OB.length - 1; i >= 0; i--) {
           var b = OB[i];
+          if (!isBodyVisibleInCanvas(b)) continue;
           var M = (TAU * t / b.T) % TAU;
           var pos = orbitalPos(b.a, b.e, M);
           var sx = st.cx + pos.x * st.scale;
@@ -3595,10 +3739,9 @@ const d = labToolData.solarSystem || {};
           var dx = mx - sx;
           var dy = my - sy;
           if (dx * dx + dy * dy < 144) {
-            var alreadySelected = (st._selBodyId === b.id);
+            var alreadySelected = (selBody === b.id);
             if (d.orr_compare === b.id) upd("orr_compare", null);
             upd("orr_sel", b.id);
-            st._selBodyId = b.id;
             if (alreadySelected) {
               // Toggle follow mode on repeat-click
               var nextFollowBody = !st._followBody ? b.id : null;
@@ -3899,6 +4042,7 @@ const d = labToolData.solarSystem || {};
                 jumpNode.style.boxShadow = active ? "0 2px 10px rgba(74,144,217,0.3)" : shadowSm;
               }
             };
+            setLiveText("orrery-live-map-scale", "Ruler: " + mapScaleLabel(st.scale));
             var liveBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
             if (liveBody) {
               var livePos = orbitalPos(liveBody.a, liveBody.e, (TAU * t / liveBody.T) % TAU);
@@ -3908,6 +4052,15 @@ const d = labToolData.solarSystem || {};
               setLiveText("orrery-live-speed", fmt(liveSpeed, 2) + " km/s");
               setLiveText("orrery-live-phase", livePhase);
               setLiveText("orrery-live-selected-summary", liveBody.name + ": distance " + fmt(livePos.r, 3) + " AU; speed " + fmt(liveSpeed, 2) + " km/s; phase " + livePhase);
+              var livePerihelion = liveBody.a * (1 - liveBody.e);
+              var liveAphelion = liveBody.a * (1 + liveBody.e);
+              var liveRadialPositionRatio = clamp((livePos.r - livePerihelion) / Math.max(0.000001, liveAphelion - livePerihelion), 0, 1);
+              var liveRadialPositionLabel = liveRadialPositionRatio <= 0.2 ? "near perihelion (closest)" : liveRadialPositionRatio >= 0.8 ? "near aphelion (farthest)" : liveRadialPositionRatio < 0.5 ? "between perihelion and a" : "between a and aphelion";
+              setLiveText("orrery-live-orbit-position", liveBody.name + " is " + liveRadialPositionLabel + " at " + fmt(livePos.r, 3) + " AU; speed " + fmt(liveSpeed, 2) + " km/s.");
+              var livePositionMarker = document.getElementById("orrery-live-orbit-position-marker");
+              if (livePositionMarker) livePositionMarker.style.left = (liveRadialPositionRatio * 100) + "%";
+              var livePositionMeter = document.getElementById("orrery-live-orbit-position-meter");
+              if (livePositionMeter) livePositionMeter.setAttribute("aria-label", "Orbital position of " + liveBody.name + ": " + liveRadialPositionLabel + " at " + fmt(livePos.r, 3) + " AU");
               var liveAxisTolerance = Math.max(0.001, liveBody.a * 0.01);
               var liveAxisRelation = livePos.r < liveBody.a - liveAxisTolerance ? "inside" : livePos.r > liveBody.a + liveAxisTolerance ? "outside" : "near";
               var liveKeplerCue = liveAxisRelation === "inside"
@@ -3920,14 +4073,16 @@ const d = labToolData.solarSystem || {};
               var liveCompare = compareBodyId && compareBodyId !== liveBody.id ? OB.filter(function(body) { return body.id === compareBodyId; })[0] : null;
               if (liveCompare) {
                 var liveComparePos = orbitalPos(liveCompare.a, liveCompare.e, (TAU * t / liveCompare.T) % TAU);
+                var liveCompareSpeed = visViva(liveComparePos.r, liveCompare.a);
                 setLiveText("orrery-live-compare-primary-distance", fmt(livePos.r, 3) + " AU");
                 setLiveText("orrery-live-compare-secondary-distance", fmt(liveComparePos.r, 3) + " AU");
                 setLiveText("orrery-live-compare-primary-speed", fmt(liveSpeed, 1) + " km/s");
-                setLiveText("orrery-live-compare-secondary-speed", fmt(visViva(liveComparePos.r, liveCompare.a), 1) + " km/s");
+                setLiveText("orrery-live-compare-secondary-speed", fmt(liveCompareSpeed, 1) + " km/s");
+                setLiveText("orrery-compare-interpretation", describeComparison(liveBody, livePos, liveSpeed, liveCompare, liveComparePos, liveCompareSpeed));
               }
             }
             if (scrubBody) {
-              var liveScrubPhase = ((t % scrubBody.T) + scrubBody.T) % scrubBody.T;
+              var liveScrubPhase = scrubPhaseAt(t);
               setLiveText("orrery-live-timeline-value", fmt(liveScrubPhase, scrubPrecision) + " / " + fmt(scrubBody.T, scrubPrecision) + " yr \u00b7 " + orbitCalendarLabel(t));
               setLiveText("orrery-live-timeline-phase", orbitPhaseLabel(scrubBody, t));
               var phaseInput = document.getElementById("orrery-phase-scrubber");
@@ -4984,14 +5139,7 @@ const d = labToolData.solarSystem || {};
         // number (0.1, 0.5, 1, 5, 10, 50 AU). Helps students grasp solar system distances.
         (function() {
           var targetPx = 100; // desired bar length in pixels
-          var rawAU = targetPx / st.scale;
-          // Snap to a nice round number
-          var niceSteps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
-          var chosen = niceSteps[0];
-          for (var ns = 0; ns < niceSteps.length; ns++) {
-            if (niceSteps[ns] >= rawAU) { chosen = niceSteps[ns]; break; }
-            chosen = niceSteps[ns];
-          }
+          var chosen = mapScaleValue(st.scale);
           var barPx = chosen * st.scale;
           if (barPx < 20 || barPx > 220) return; // out of useful range
           var baseX = 14, baseY = H - 18;
@@ -5023,7 +5171,7 @@ const d = labToolData.solarSystem || {};
           ctx.font = "bold 10px sans-serif";
           ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
           ctx.textBaseline = "middle";
-          var scaleLabel = chosen >= 1 ? chosen + " AU" : chosen.toFixed(1) + " AU";
+          var scaleLabel = (chosen >= 1 ? chosen : chosen.toFixed(1)) + " AU";
           ctx.fillText(scaleLabel, tickX + barPx + 6, baseY);
           ctx.textBaseline = "alphabetic";
         })();
@@ -5067,7 +5215,8 @@ const d = labToolData.solarSystem || {};
             var hoverTargetR = hoveredIsSun ? Math.max(8, sunR * 2) : (hoveredBody.type === "comet" ? 10 : (hoveredBody.type === "dwarf" ? 10 : 14));
             ctx.save();
             ctx.beginPath();
-            ctx.arc(hoverTargetX, hoverTargetY, hoverTargetR + 5 + Math.sin((timestamp || 0) * 0.004) * 1.5, 0, TAU);
+            var hoverPulse = reduceMotion ? 0 : Math.sin((timestamp || 0) * 0.004) * 1.5;
+            ctx.arc(hoverTargetX, hoverTargetY, hoverTargetR + 5 + hoverPulse, 0, TAU);
             ctx.strokeStyle = hoverAccent + "dd";
             ctx.globalAlpha = 0.9;
             ctx.lineWidth = 1.6;
@@ -5200,6 +5349,52 @@ const d = labToolData.solarSystem || {};
             ctx.restore();
           }
         }
+      if (typeof document !== "undefined") {
+        var hoverSummaryNode = document.getElementById("orrery-hover-summary");
+        if (hoverSummaryNode) {
+          var hoverSummaryKey = "";
+          var hoverSummaryText = "";
+          var hoverSummaryBody = null;
+          if (st.hoverX != null && st.hoverY != null && cv._liveState) {
+            var hoverSunDx = st.hoverX - st.cx;
+            var hoverSunDy = st.hoverY - st.cy;
+            var hoverSunHitR = Math.max(8, sunR * 2);
+            if (hoverSunDx * hoverSunDx + hoverSunDy * hoverSunDy < hoverSunHitR * hoverSunHitR) {
+              hoverSummaryKey = "__sun";
+              hoverSummaryText = "Hovering the Sun. It anchors every plotted orbit. Use Enter or Space to select the next world.";
+            } else {
+              for (var hoverSummaryIdx = OB.length - 1; hoverSummaryIdx >= 0; hoverSummaryIdx--) {
+                var hoverCandidate = OB[hoverSummaryIdx];
+                if (hoverCandidate.type === "comet" && !showComets) continue;
+                if (hoverCandidate.type === "dwarf" && !showDwarfs) continue;
+                var hoverCandidateState = cv._liveState.bodies[hoverCandidate.id];
+                if (!hoverCandidateState) continue;
+                var hoverCandidateX = st.cx + hoverCandidateState.x * st.scale;
+                var hoverCandidateY = st.cy - hoverCandidateState.y * st.scale;
+                var hoverCandidateHitR = hoverCandidate.type === "comet" ? 10 : (hoverCandidate.type === "dwarf" ? 10 : 14);
+                var hoverCandidateDx = st.hoverX - hoverCandidateX;
+                var hoverCandidateDy = st.hoverY - hoverCandidateY;
+                if (hoverCandidateDx * hoverCandidateDx + hoverCandidateDy * hoverCandidateDy < hoverCandidateHitR * hoverCandidateHitR) {
+                  hoverSummaryBody = hoverCandidate;
+                  break;
+                }
+              }
+            }
+          }
+          if (hoverSummaryBody) {
+            var hoverBodyState = cv._liveState.bodies[hoverSummaryBody.id];
+            var hoverDistance = hoverBodyState && hoverBodyState.r != null ? hoverBodyState.r : hoverSummaryBody.a;
+            var hoverSpeed = hoverBodyState && hoverBodyState.speed != null ? hoverBodyState.speed : visViva(hoverDistance, hoverSummaryBody.a);
+            var hoverPeriod = hoverSummaryBody.T < 1 ? fmt(hoverSummaryBody.T * 365.25, 0) + " days" : fmt(hoverSummaryBody.T, 2) + " yr";
+            hoverSummaryKey = hoverSummaryBody.id;
+            hoverSummaryText = "Hovering " + hoverSummaryBody.name + ": distance " + fmt(hoverDistance, 3) + " AU; speed " + fmt(hoverSpeed, 1) + " km/s; orbital period " + hoverPeriod + "; eccentricity " + fmt(hoverSummaryBody.e, 3) + ". Use Enter or Space to select the next world.";
+          }
+          if (cv._orreryHoverSummaryKey !== hoverSummaryKey) {
+            cv._orreryHoverSummaryKey = hoverSummaryKey;
+            hoverSummaryNode.textContent = hoverSummaryText;
+          }
+        }
+      }
       }
     });
 
@@ -5209,7 +5404,13 @@ const d = labToolData.solarSystem || {};
     var scrubPeriod = scrubBody && scrubBody.T > 0 ? scrubBody.T : 1;
     var scrubStep = scrubPeriod < 1 ? 0.001 : scrubPeriod < 10 ? 0.01 : 0.1;
     var scrubPrecision = scrubPeriod < 1 ? 3 : scrubPeriod < 10 ? 2 : 1;
-    var scrubPhase = ((timeRef.current % scrubPeriod) + scrubPeriod) % scrubPeriod;
+    var scrubPhaseAt = function(time) {
+      var cyclePhase = ((time % scrubPeriod) + scrubPeriod) % scrubPeriod;
+      var cycleCount = time / scrubPeriod;
+      var isExactEndpoint = scrubBody && time > 0 && Math.abs(cycleCount - Math.round(cycleCount)) <= 0.000001;
+      return isExactEndpoint ? scrubPeriod : cyclePhase;
+    };
+    var scrubPhase = scrubPhaseAt(timeRef.current);
     var setScrubPhase = function(phase) {
       if (!scrubBody) return;
       orrTimeRef.current = phase;
@@ -5241,6 +5442,17 @@ const d = labToolData.solarSystem || {};
     var timelineMarkIsActive = function(mark) {
       return timelineMarkIsActiveAt(mark, scrubPhase);
     };
+    var playbackBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
+    var playbackSeconds = playbackBody ? playbackBody.T / Math.max(speed, 0.001) : 0;
+    var formatPlaybackDuration = function(seconds) {
+      if (seconds < 0.01) return "<0.01 s";
+      if (seconds < 60) return fmt(seconds, seconds < 1 ? 2 : 1) + " s";
+      if (seconds < 3600) return fmt(seconds / 60, 1) + " min";
+      return fmt(seconds / 3600, 1) + " h";
+    };
+    var playbackContext = playbackBody
+      ? playbackBody.name + " completes one orbit in about " + formatPlaybackDuration(playbackSeconds) + " at " + fmt(speed, 1) + " Earth yr/s."
+      : "Simulation speed: " + fmt(speed, 1) + " Earth yr/s. Select a world to see its real-time orbit length.";
     var playbackControls = h("div", {
       key: "playback-controls",
       role: "group",
@@ -5258,6 +5470,7 @@ const d = labToolData.solarSystem || {};
         style: { width: "120px" }
       }),
       h("span", { style: { fontSize: "12px", color: mutedFg } }, fmt(speed, 1) + " yr/s"),
+      h("span", { id: "orrery-playback-context", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { flex: "1 1 230px", minWidth: "180px", color: mutedFg, fontSize: "11px", lineHeight: "1.3" } }, playbackContext),
       reduceMotion ? h("span", { role: "status", "aria-live": "polite", style: { fontSize: "10px", color: mutedFg, padding: "3px 6px", borderRadius: "6px", background: isDark ? "rgba(148,163,184,0.14)" : "rgba(100,116,139,0.10)" } }, "Reduced motion on · pulses and camera glides off") : null
     );
     var phaseControls = h("div", {
@@ -5307,7 +5520,7 @@ const d = labToolData.solarSystem || {};
       "aria-label": "Orbit view controls",
       style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", flex: "1 1 100%", minWidth: "0" }
     },
-      btn("Reset view", false, function() { updMulti({ orr_time: 0, orr_zoom: "full", orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null }); }, { "aria-label": "Reset orbit time, camera view, and selection" }),
+      btn("Reset view", false, function() { updMulti({ orr_time: 0, orr_zoom: "full", orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null, orr_view_reset: resetRequest + 1 }); }, { "aria-label": "Reset orbit time, camera view, and selection" }),
       h("span", { style: { fontSize: "12px", color: mutedFg } }, "Body size:"),
       btn("Teaching", scaleMode === "teaching", function() { upd("orr_scale_mode", "teaching"); }, { "aria-label": "Use teaching body sizes, enlarged for visibility", "aria-pressed": scaleMode === "teaching" }),
       btn("Relative", scaleMode === "relative", function() { upd("orr_scale_mode", "relative"); }, { "aria-label": "Use relative body sizes with a visibility floor", "aria-pressed": scaleMode === "relative" }),
@@ -5327,8 +5540,36 @@ const d = labToolData.solarSystem || {};
       style: { marginBottom: "2px" }
     },
       h("span", { style: { fontSize: "11px", color: mutedFg, marginRight: "2px" } }, "Show:"),
-      btn("\u2604 Comets", showComets, function() { upd("orr_showComets", !showComets); }, { "aria-pressed": showComets, "aria-label": "Show comets" }),
-      btn("\u26b3 Dwarfs", showDwarfs, function() { upd("orr_showDwarfs", !showDwarfs); }, { "aria-pressed": showDwarfs, "aria-label": "Show dwarf planets" }),
+      btn("\u2604 Comets", showComets, function() {
+        var nextVisible = !showComets;
+        var patch = { orr_showComets: nextVisible };
+        if (!nextVisible) {
+          var selectedComet = selBody && OB.filter(function(body) { return body.id === selBody; })[0];
+          var comparedComet = compareBodyId && OB.filter(function(body) { return body.id === compareBodyId; })[0];
+          var followedComet = followBodyId && OB.filter(function(body) { return body.id === followBodyId; })[0];
+          var focusedComet = focusBodyId && OB.filter(function(body) { return body.id === focusBodyId; })[0];
+          if (selectedComet && selectedComet.type === "comet") { patch.orr_sel = null; patch.orr_follow = null; patch.orr_focus_body = null; }
+          if (comparedComet && comparedComet.type === "comet") patch.orr_compare = null;
+          if (followedComet && followedComet.type === "comet") patch.orr_follow = null;
+          if (focusedComet && focusedComet.type === "comet") patch.orr_focus_body = null;
+        }
+        updMulti(patch);
+      }, { "aria-pressed": showComets, "aria-label": "Show comets" }),
+      btn("\u26b3 Dwarfs", showDwarfs, function() {
+        var nextVisible = !showDwarfs;
+        var patch = { orr_showDwarfs: nextVisible };
+        if (!nextVisible) {
+          var selectedDwarf = selBody && OB.filter(function(body) { return body.id === selBody; })[0];
+          var comparedDwarf = compareBodyId && OB.filter(function(body) { return body.id === compareBodyId; })[0];
+          var followedDwarf = followBodyId && OB.filter(function(body) { return body.id === followBodyId; })[0];
+          var focusedDwarf = focusBodyId && OB.filter(function(body) { return body.id === focusBodyId; })[0];
+          if (selectedDwarf && selectedDwarf.type === "dwarf") { patch.orr_sel = null; patch.orr_follow = null; patch.orr_focus_body = null; }
+          if (comparedDwarf && comparedDwarf.type === "dwarf") patch.orr_compare = null;
+          if (followedDwarf && followedDwarf.type === "dwarf") patch.orr_follow = null;
+          if (focusedDwarf && focusedDwarf.type === "dwarf") patch.orr_focus_body = null;
+        }
+        updMulti(patch);
+      }, { "aria-pressed": showDwarfs, "aria-label": "Show dwarf planets" }),
       btn("Aa Labels", showLabels, function() { upd("orr_showLabels", !showLabels); }, { "aria-pressed": showLabels, "aria-label": "Show orbit labels" })
     );
 
@@ -5365,6 +5606,9 @@ const d = labToolData.solarSystem || {};
     var followStageTarget = followBodyId ? OB.filter(function(b) { return b.id === followBodyId; })[0] : null;
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
     var stageTitle = stageBody ? stageBody.name + " in focus" : "Solar system in motion";
+    var modelScaleNote = scaleMode === "relative"
+      ? "Model note: body-size ratios are preserved; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance."
+      : "Model note: bodies are enlarged for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance.";
     var orbitStage = h("div", { className: "orr-orbit-stage", "data-orrery-stage": true },
       h("div", { className: "orr-stage-hud", "aria-live": "polite" },
         h("div", null,
@@ -5378,15 +5622,16 @@ const d = labToolData.solarSystem || {};
         )
       ),
       cvPanel,
-      h("div", { className: "orr-stage-key", "aria-label": "Orrery visual key" },
+      h("div", { id: "orrery-stage-key", className: "orr-stage-key", "aria-label": "Orrery visual key" },
         h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#86efac" : "#16a34a" } }), "Habitable zone"),
         h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#cbd5e1" : "#64748b" } }), "Orbit paths"),
+        h("span", { id: "orrery-live-map-scale", className: "orr-stage-key-item", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" }, "Ruler: " + mapScaleLabel(baseScale)),
         h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Relative body sizes" : "Teaching body sizes"),
         stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
         stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
         compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
       ),
-      h("div", { className: "orr-stage-tip" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 use Release camera follow or click again to release" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 use Follow camera to keep it centered \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 select a world, then use Follow camera (or click twice to follow)")
+      h("div", { id: "orrery-stage-tip", className: "orr-stage-tip" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 pan or zoom to release, or use Release camera follow" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 use Follow camera to keep it centered, then pan or zoom to release \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 select a world, then use Follow camera (or click twice to follow)")
     );
     var guidedMission = GUIDED_MISSIONS[guidedMissionIdx];
     var guidedRecord = guidedMissionProgress[guidedMission.id] || {};
@@ -5474,6 +5719,8 @@ const d = labToolData.solarSystem || {};
       filterRow,
       bodyNavigator,
       orbitStage,
+      h("p", { id: "orrery-model-scale-note", role: "note", style: { margin: "-4px 2px 0", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, modelScaleNote),
+      h("span", { id: "orrery-hover-summary", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, ""),
       bodyInfoCard
     );
   }
@@ -5485,6 +5732,12 @@ const d = labToolData.solarSystem || {};
     var W = 700, H = 500;
     var ecc = k1_ecc;
     var a_px = 200;
+    var k1PeriRatio = 1 - ecc;
+    var k1AphRatio = 1 + ecc;
+    var k1FocusRatio = ecc;
+    var k1AxisRatio = Math.sqrt(Math.max(0, 1 - ecc * ecc));
+    var k1ShapeLabel = ecc < 0.01 ? "circular" : ecc < 0.1 ? "mildly elliptical" : "elongated";
+    var k1EvidenceText = "e = " + fmt(ecc, 3) + " (" + k1ShapeLabel + "). Perihelion = " + fmt(k1PeriRatio, 3) + "a; aphelion = " + fmt(k1AphRatio, 3) + "a; Sun-to-focus distance c = " + fmt(k1FocusRatio, 3) + "a; b/a = " + fmt(k1AxisRatio, 3) + ".";
     var presets = [
       { label: __alloT('stem.solarsystem.circle_0', "Circle (0)"), e: 0.0 },
       { label: __alloT('stem.solarsystem.venus_0_007', "Venus (0.007)"), e: 0.007 },
@@ -5505,6 +5758,7 @@ const d = labToolData.solarSystem || {};
       panZoom: false,
       reduceMotion: reduceMotion,
       ariaLabel: "Kepler I orbit visualization. An ellipse has the Sun at one focus, a second empty focus, and a moving planet; focal distances r1 and r2 add to 2a.",
+      ariaDescribedBy: "orrery-k1-evidence",
       redrawKey: ecc,
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
@@ -5641,12 +5895,13 @@ const d = labToolData.solarSystem || {};
         }),
         h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(ecc, 3))
       ),
-      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" } },
+      h("div", { role: "group", "aria-label": "Kepler I eccentricity presets", style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" } },
         presets.map(function(p) {
-          return btn(p.label, Math.abs(ecc - p.e) < 0.002, function() { upd("orr_k1e", p.e); }, { key: "k1p-" + p.label });
+          return btn(p.label, Math.abs(ecc - p.e) < 0.002, function() { upd("orr_k1e", p.e); }, { key: "k1p-" + p.label, "aria-pressed": Math.abs(ecc - p.e) < 0.002 });
         })
       ),
       cvPanel,
+      h("div", { id: "orrery-k1-evidence", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginTop: "8px", padding: "8px 10px", borderLeft: "3px solid " + accent, background: isDark ? "rgba(14,165,233,0.10)" : "rgba(14,165,233,0.07)", color: fg, fontSize: "11px", lineHeight: "1.4" } }, k1EvidenceText),
       card([
         h("div", { key: "k1-title", className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "13px", color: fg } }, __alloT('stem.solarsystem.kepler_s_first_law', "\uD83D\uDCDA Kepler\u2019s First Law")),
         h("div", { key: "k1-items", style: { fontSize: "13px", lineHeight: "1.8" } },
@@ -5678,6 +5933,12 @@ const d = labToolData.solarSystem || {};
     var W = 700, H = 620;
     var ecc = k2_ecc;
     var nSectors = k2_sectors;
+    var k2PeriRatio = 1 - ecc;
+    var k2AphRatio = 1 + ecc;
+    var k2PeriSpeed = Math.sqrt(2 / k2PeriRatio - 1);
+    var k2AphSpeed = Math.sqrt(2 / k2AphRatio - 1);
+    var k2SpeedRatio = k2AphSpeed > 0 ? k2PeriSpeed / k2AphSpeed : 0;
+    var k2EvidenceText = "e = " + fmt(ecc, 2) + ": at perihelion r = " + fmt(k2PeriRatio, 2) + "a and v = " + fmt(k2PeriSpeed, 2) + "x reference; at aphelion r = " + fmt(k2AphRatio, 2) + "a and v = " + fmt(k2AphSpeed, 2) + "x. Perihelion is " + fmt(k2SpeedRatio, 2) + "x faster; all " + nSectors + " sectors represent the same time interval.";
     // Hook hoisted — use k2AnimRef
     var animRef = k2AnimRef;
 
@@ -5694,6 +5955,7 @@ const d = labToolData.solarSystem || {};
       panZoom: false,
       reduceMotion: reduceMotion,
       ariaLabel: "Kepler II equal-area visualization. Equal-time sectors show a planet moving faster near perihelion and slower near aphelion.",
+      ariaDescribedBy: "orrery-k2-evidence",
       redrawKey: ecc * 100 + nSectors,
       draw: function(ctx, cv, st, timestamp) {
         ctx.clearRect(0, 0, W, H);
@@ -5930,6 +6192,7 @@ const d = labToolData.solarSystem || {};
         h("span", { style: { fontSize: "13px", color: mutedFg } }, nSectors)
       ),
       cvPanel,
+      h("div", { id: "orrery-k2-evidence", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginTop: "8px", padding: "8px 10px", borderLeft: "3px solid " + accent, background: isDark ? "rgba(34,197,94,0.10)" : "rgba(34,197,94,0.07)", color: fg, fontSize: "11px", lineHeight: "1.4" } }, k2EvidenceText),
       card([
         h("div", { key: "k2-title", className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "13px", color: fg } }, __alloT('stem.solarsystem.kepler_s_second_law', "\uD83D\uDCDA Kepler\u2019s Second Law")),
         h("div", { key: "k2-items", style: { fontSize: "13px", lineHeight: "1.8" } },
@@ -5971,7 +6234,7 @@ const d = labToolData.solarSystem || {};
       height: H,
       panZoom: false,
       ariaLabel: "Kepler III plot of solar-system bodies on logarithmic axes, showing orbital period growing with semi-major axis.",
-      ariaDescribedBy: "orrery-k3-canvas-help",
+      ariaDescribedBy: "orrery-k3-canvas-help orrery-k3-axis-note",
       onKeyboardInteract: function() {
         var currentIndex = d.orr_k3hover ? OB.findIndex(function(body) { return body.id === d.orr_k3hover; }) : -1;
         var nextBody = OB[(currentIndex + 1) % OB.length];
@@ -6048,11 +6311,12 @@ const d = labToolData.solarSystem || {};
         // Tick labels
         ctx.font = "10px sans-serif";
         ctx.fillStyle = mutedFg;
+        function logTickLabel(power) { return power === 0 ? "1" : "10^" + power; }
         for (var gx = Math.ceil(xMin); gx <= Math.floor(xMax); gx++) {
-          ctx.fillText(gx.toString(), toSx(gx) - 4, margin + ph + 16);
+          ctx.fillText(logTickLabel(gx), toSx(gx) - (gx === 0 ? 4 : 10), margin + ph + 16);
         }
         for (var gy = Math.ceil(yMin); gy <= Math.floor(yMax); gy++) {
-          ctx.fillText(gy.toString(), margin - 20, toSy(gy) + 4);
+          ctx.fillText(logTickLabel(gy), margin - 30, toSy(gy) + 4);
         }
 
         // T = a^(3/2) theoretical line
@@ -6160,16 +6424,17 @@ const d = labToolData.solarSystem || {};
     });
 
     var verTable = h("div", { style: { overflowX: "auto", marginTop: "10px" } },
-      h("table", { style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
+      h("div", { id: "orrery-k3-units-note", role: "note", style: { marginBottom: "6px", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Using a in AU and T in years, Kepler III predicts T\u00b2/a\u00b3 \u2248 1.00 yr\u00b2/AU\u00b3 for these solar orbits."),
+      h("table", { id: "orrery-k3-verification-table", "aria-describedby": "orrery-k3-units-note", style: { borderCollapse: "collapse", fontSize: "12px", color: fg, width: "100%" } },
         h("caption", { className: "sr-only" }, __alloT('stem.solarsystem.verification_table_t_a_should_1_00_for', "Verification Table — T²/a³ should ≈ 1.00 for solar orbits")),
         h("thead", null,
           h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
             h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "left" }) }, __alloT('stem.solarsystem.body', "Body")),
             h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.a_au', "a (AU)")),
             h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, __alloT('stem.solarsystem.t_yr', "T (yr)")),
-            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2"),
-            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a\u00b3"),
-            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2/a\u00b3")
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2 (yr\u00b2)"),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "a\u00b3 (AU\u00b3)"),
+            h("th", { scope: "col", style: Object.assign({}, tHeadStyle, { textAlign: "right" }) }, "T\u00b2/a\u00b3 (yr\u00b2/AU\u00b3)")
           )
         ),
         h("tbody", null, tableRows)
@@ -6178,8 +6443,9 @@ const d = labToolData.solarSystem || {};
 
     return h("div", { className: "space-y-3" },
       cvPanel,
+      h("div", { id: "orrery-k3-axis-note", role: "note", style: { color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Log-log plot: tick labels are powers of ten; 10^1 means 10 AU on the x-axis and 10 years on the y-axis."),
       h("div", { id: "orrery-k3-selected", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginTop: "8px", padding: "8px 10px", borderLeft: "3px solid " + accent, background: isDark ? "rgba(245,158,11,0.10)" : "rgba(245,158,11,0.07)", color: fg, fontSize: "11px", lineHeight: "1.4" } }, k3SelectionText),
-      h("span", { id: "orrery-k3-canvas-help", className: "sr-only" }, "Keyboard: press Enter or Space to cycle through plotted worlds and show their Kepler III values; press Escape to clear the selected point."),
+      h("span", { id: "orrery-k3-canvas-help", className: "sr-only", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0 } }, "Keyboard: press Enter or Space to cycle through plotted worlds and show their Kepler III values; press Escape to clear the selected point."),
       card([
         h("div", { key: "vh", style: {
           fontWeight: 700, fontSize: "14px", color: fg, paddingBottom: "8px", marginBottom: "8px",
@@ -6221,36 +6487,37 @@ const d = labToolData.solarSystem || {};
     var bodyButtons = OB.filter(function(b) { return b.type !== "comet"; }).map(function(b) {
       return btn(b.emoji + " " + b.name, ws_body === b.id, function() {
         updMulti({ orr_wsb: b.id, orr_wse: undefined, orr_wsa: undefined });
-      }, { key: "wb-" + b.id });
+      }, { key: "wb-" + b.id, "aria-pressed": ws_body === b.id });
     });
 
     return h("div", { className: "space-y-3" },
       h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } }, __alloT('stem.solarsystem.select_a_body', "\uD83D\uDE80 Select a body:")),
-      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" } }, bodyButtons),
+      h("div", { role: "group", "aria-label": "Orbit Workshop body selection", style: { display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "10px" } }, bodyButtons),
 
       card([
         h("div", { key: "realhdr", style: { fontSize: "12px", color: mutedFg, marginBottom: "6px" } },
           "Real values: a = " + fmt(body.a, 3) + " AU, e = " + fmt(body.e, 4) + ", T = " + fmt(body.T, 2) + " yr"
         ),
-        h("div", { key: "ecc-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
-          h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, "Eccentricity:"),
+        h("div", { id: "orrery-workshop-controls-help", role: "note", style: { margin: "0 0 8px", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Adjust eccentricity and semi-major axis to see the orbit shape, speed, period, and energy scale respond. Values use AU, years, and km/s."),
+        h("div", { key: "ecc-row", className: "orrery-workshop-control-row", style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", marginBottom: "8px" } },
+          h("label", { htmlFor: "orrery-workshop-eccentricity", style: { flex: "1 1 100px", minWidth: "100px", fontSize: "13px", color: fg } }, "Eccentricity:"),
           h("input", {
-            type: "range", min: "0", max: "0.99", step: "0.001", className: "orr-slider", "aria-label": "Eccentricity",
+            id: "orrery-workshop-eccentricity", type: "range", min: "0", max: "0.99", step: "0.001", className: "orr-slider", "aria-label": "Eccentricity", "aria-describedby": "orrery-workshop-controls-help",
             value: ecc,
             onChange: function(ev) { upd("orr_wse", parseFloat(ev.target.value)); },
-            style: { width: "200px" }
+            style: { flex: "1 1 180px", minWidth: "120px", maxWidth: "100%", width: "200px" }
           }),
-          h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(ecc, 3))
+          h("span", { style: { flex: "0 0 50px", fontSize: "13px", color: mutedFg } }, fmt(ecc, 3))
         ),
-        h("div", { key: "sma-row", style: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" } },
-          h("label", { style: { fontSize: "13px", color: fg, minWidth: "100px" } }, __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU):")),
+        h("div", { key: "sma-row", className: "orrery-workshop-control-row", style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", marginBottom: "8px" } },
+          h("label", { htmlFor: "orrery-workshop-semi-major", style: { flex: "1 1 100px", minWidth: "100px", fontSize: "13px", color: fg } }, __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU):")),
           h("input", {
-            type: "range", min: "0.05", max: "80", step: "0.01", className: "orr-slider", "aria-label": __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU)"),
+            id: "orrery-workshop-semi-major", type: "range", min: "0.05", max: "80", step: "0.01", className: "orr-slider", "aria-label": __alloT('stem.solarsystem.semi_major_au', "Semi-major (AU)"), "aria-describedby": "orrery-workshop-controls-help",
             value: sma,
             onChange: function(ev) { upd("orr_wsa", parseFloat(ev.target.value)); },
-            style: { width: "200px" }
+            style: { flex: "1 1 180px", minWidth: "120px", maxWidth: "100%", width: "200px" }
           }),
-          h("span", { style: { fontSize: "13px", color: mutedFg, minWidth: "50px" } }, fmt(sma, 3))
+          h("span", { style: { flex: "0 0 50px", fontSize: "13px", color: mutedFg } }, fmt(sma, 3))
         ),
         h("div", { key: "presets", style: { display: "flex", flexWrap: "wrap", gap: "5px", margin: "8px 0" } },
           h("span", { style: { fontSize: "12px", color: mutedFg, marginRight: "4px" } }, __alloT('stem.solarsystem.what_if_presets', "What-if presets:")),
@@ -6262,6 +6529,7 @@ const d = labToolData.solarSystem || {};
         ),
         h("button", {
           key: "reset-btn",
+          type: "button",
           className: "orr-btn",
           onClick: function() { updMulti({ orr_wse: undefined, orr_wsa: undefined }); },
           style: { padding: "6px 14px", borderRadius: "8px", border: "1px solid " + border, background: isDark ? "#2a2a3e" : "#f0f4f8", color: fg, cursor: "pointer", fontSize: "12px", fontWeight: 600, marginBottom: "6px", boxShadow: shadowSm }
@@ -6333,7 +6601,8 @@ const d = labToolData.solarSystem || {};
           width: 350,
           height: 350,
           panZoom: false,
-          ariaLabel: "Orbit Workshop energy diagram for " + body.name + ". Potential and kinetic energy trade off while total orbital energy remains constant.",
+          ariaLabel: "Orbit Workshop energy diagram for " + body.name + ". Potential and kinetic energy trade off while total orbital energy remains constant; the scale uses the current semi-major axis.",
+          ariaDescribedBy: "orrery-workshop-energy-note",
           redrawKey: ecc * 1000 + sma,
           draw: function(ctx) {
             var WW = 350, HH = 350;
@@ -6344,7 +6613,7 @@ const d = labToolData.solarSystem || {};
             // Plot KE, PE, Total E over true anomaly
             var nPts = 200;
             var mu_norm = 1; // normalized GM
-            var a_norm = 1; // normalized semi-major axis
+            var a_norm = sma; // current semi-major axis in AU; energy remains normalized to GM
             // Energy scale: total E = -mu/(2a), PE = -mu/r, KE = mu(1/r - 1/(2a))
             var Etotal = -mu_norm / (2 * a_norm);
             var maxE = 0, minE = Etotal * 3;
@@ -6413,10 +6682,11 @@ const d = labToolData.solarSystem || {};
             ctx.fillText("Aphelion", mx + pw / 2 - 20, my + ph + 16);
             ctx.fillText("Perihelion", mx + pw - 50, my + ph + 16);
             ctx.save(); ctx.translate(12, my + ph / 2 + 20); ctx.rotate(-PI / 2);
-            ctx.fillText("Energy (normalized)", 0, 0); ctx.restore();
+            ctx.fillText("Energy (normalized GM)", 0, 0); ctx.restore();
           }
         })
       ),
+      h("div", { id: "orrery-workshop-energy-note", role: "note", style: { margin: "-2px 2px 8px", color: mutedFg, fontSize: "11px", lineHeight: "1.4" } }, "Energy is shown in normalized GM units: changing semi-major axis changes total specific energy, while eccentricity changes how potential and kinetic energy trade off."),
 
       card([
         h("div", { key: "dh", style: {
@@ -6474,12 +6744,18 @@ const d = labToolData.solarSystem || {};
 
     var transfer = hohmann(fromBody.a, toBody.a);
     var synodic = synodicPeriod(fromBody.T, toBody.T);
+    var sameTransferOrbit = Math.abs(toBody.a - fromBody.a) < 0.000001;
+    var transferOutward = toBody.a > fromBody.a;
+    var transferDeparturePoint = sameTransferOrbit ? "the shared circular orbit" : (transferOutward ? "perihelion" : "aphelion");
+    var transferArrivalPoint = sameTransferOrbit ? "the shared circular orbit" : (transferOutward ? "aphelion" : "perihelion");
+    var transferBurnInsight = sameTransferOrbit ? "Same-radius route: no net speed change is needed." : (transferOutward ? "Outward route: speed up at departure, then brake at arrival." : "Inward route: brake at departure, then speed up at arrival.");
+    var transferEvidenceText = "Transfer geometry: depart " + fromBody.name + " at " + transferDeparturePoint + " (r = " + fmt(fromBody.a, 3) + " AU) and arrive at " + toBody.name + " at " + transferArrivalPoint + " (r = " + fmt(toBody.a, 3) + " AU). The amber half-ellipse meets both circular orbits at those endpoints. " + transferBurnInsight;
 
     var fromButtons = planets.map(function(p) {
-      return btn(p.emoji + " " + p.name, tr_from === p.id, function() { upd("orr_trf", p.id); }, { key: "tf-" + p.id });
+      return btn(p.emoji + " " + p.name, tr_from === p.id, function() { upd("orr_trf", p.id); }, { key: "tf-" + p.id, "aria-pressed": tr_from === p.id });
     });
     var toButtons = planets.map(function(p) {
-      return btn(p.emoji + " " + p.name, tr_to === p.id, function() { upd("orr_trt", p.id); }, { key: "tt-" + p.id });
+      return btn(p.emoji + " " + p.name, tr_to === p.id, function() { upd("orr_trt", p.id); }, { key: "tt-" + p.id, "aria-pressed": tr_to === p.id });
     });
 
     // ── Hohmann transfer orbit visualization canvas ──
@@ -6489,7 +6765,8 @@ const d = labToolData.solarSystem || {};
       width: TW,
       height: TH,
       panZoom: false,
-      ariaLabel: "Hohmann transfer visualization from " + fromBody.name + " to " + toBody.name + ". Two circular orbits and a transfer ellipse show departure and arrival burns.",
+      ariaLabel: "Hohmann transfer visualization from " + fromBody.name + " to " + toBody.name + ". Two circular orbits and a transfer ellipse show departure and arrival burns. " + transferBurnInsight,
+      ariaDescribedBy: "orrery-transfer-evidence",
       redrawKey: tr_from + "-" + tr_to,
       draw: function(ctx) {
         ctx.clearRect(0, 0, TW, TH);
@@ -6522,22 +6799,26 @@ const d = labToolData.solarSystem || {};
         var e_t = Math.abs(toBody.a - fromBody.a) / (toBody.a + fromBody.a);
         var b_t = a_t * Math.sqrt(1 - e_t * e_t);
         var c_t = a_t * e_t;
-        // If going outward, transfer starts at bottom; draw half ellipse
-        var outward = toBody.a >= fromBody.a;
+        // The departure point is always the right-hand endpoint and the
+        // arrival point the left-hand endpoint; shifting the ellipse center
+        // keeps those endpoints on the correct circular-orbit radii for both
+        // outward and inward transfers.
+        var outward = toBody.a > fromBody.a;
+        var transferCenterX = cx + (outward ? -c_t : c_t) * scale;
         ctx.beginPath();
         ctx.setLineDash([6, 4]);
-        ctx.ellipse(cx + (outward ? -c_t : c_t) * scale, cy, a_t * scale, b_t * scale, 0, outward ? PI : 0, outward ? TAU : PI);
+        ctx.ellipse(transferCenterX, cy, a_t * scale, b_t * scale, 0, 0, PI);
         ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 2.5; ctx.stroke();
         ctx.setLineDash([]);
 
         // Transfer arc (solid, the actual path taken)
         ctx.beginPath();
-        ctx.ellipse(cx + (outward ? -c_t : c_t) * scale, cy, a_t * scale, b_t * scale, 0, outward ? PI : 0, outward ? TAU : PI);
+        ctx.ellipse(transferCenterX, cy, a_t * scale, b_t * scale, 0, 0, PI);
         ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 3;
         ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
 
         // Departure planet
-        var dep_x = cx - fromBody.a * scale;
+        var dep_x = cx + fromBody.a * scale;
         var dep_y = cy;
         ctx.beginPath(); ctx.arc(dep_x, dep_y, 8, 0, TAU);
         var dGrad = ctx.createRadialGradient(dep_x - 2, dep_y - 2, 0, dep_x, dep_y, 8);
@@ -6545,7 +6826,7 @@ const d = labToolData.solarSystem || {};
         ctx.fillStyle = dGrad; ctx.fill();
 
         // Arrival planet (at opposite side)
-        var arr_x = cx + toBody.a * scale;
+        var arr_x = cx - toBody.a * scale;
         var arr_y = cy;
         ctx.beginPath(); ctx.arc(arr_x, arr_y, 8, 0, TAU);
         var aGrad = ctx.createRadialGradient(arr_x - 2, arr_y - 2, 0, arr_x, arr_y, 8);
@@ -6616,11 +6897,11 @@ const d = labToolData.solarSystem || {};
 
     return h("div", { className: "space-y-3" },
       h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } }, __alloT('stem.solarsystem.hohmann_transfer_calculator', "\uD83D\uDE80 Hohmann Transfer Calculator")),
-      h("div", { style: { marginBottom: "6px" } },
+      h("div", { role: "group", "aria-label": "Transfer departure planet", style: { marginBottom: "6px" } },
         h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "From:"),
         h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", alignItems: "center" } }, fromButtons.concat([swapBtn]))
       ),
-      h("div", { style: { marginBottom: "10px" } },
+      h("div", { role: "group", "aria-label": "Transfer arrival planet", style: { marginBottom: "10px" } },
         h("span", { style: { fontSize: "13px", color: fg, marginRight: "8px" } }, "To:"),
         h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px" } }, toButtons)
       ),
@@ -6629,12 +6910,13 @@ const d = labToolData.solarSystem || {};
         transferCanvas,
         h("div", { style: { flex: "1", minWidth: "220px" } },
           card([
+            h("div", { key: "te", id: "orrery-transfer-evidence", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginBottom: "10px", padding: "8px 9px", borderLeft: "3px solid #f59e0b", background: isDark ? "rgba(245,158,11,0.10)" : "rgba(245,158,11,0.07)", color: fg, fontSize: "11px", lineHeight: "1.4" } }, transferEvidenceText),
             h("div", { key: "th", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: fg } },
               fromBody.emoji + " " + fromBody.name + "  \u2192  " + toBody.emoji + " " + toBody.name
             ),
             h("div", { key: "td", style: { fontSize: "13px", lineHeight: "1.8", color: fg } },
-              h("div", null, "\u0394v\u2081 (departure burn): " + fmt(transfer.dv1, 3) + " km/s"),
-              h("div", null, "\u0394v\u2082 (arrival burn): " + fmt(transfer.dv2, 3) + " km/s"),
+              h("div", null, "\u0394v\u2081 (departure: " + (sameTransferOrbit ? "no net change" : (transferOutward ? "speed up" : "brake")) + "): " + fmt(transfer.dv1, 3) + " km/s"),
+              h("div", null, "\u0394v\u2082 (arrival: " + (sameTransferOrbit ? "no net change" : (transferOutward ? "brake" : "speed up")) + "): " + fmt(transfer.dv2, 3) + " km/s"),
               h("div", { style: { fontWeight: 700, fontSize: "14px", marginTop: "4px" } }, "Total \u0394v: " + fmt(transfer.dvTotal, 3) + " km/s"),
               h("div", null, "Transit time: " + (transfer.transitYrs < 1
                 ? fmt(transfer.transitYrs * 365.25, 1) + " days"
@@ -6655,10 +6937,10 @@ const d = labToolData.solarSystem || {};
             h("thead", null,
               h("tr", { style: { background: isDark ? "#1e2a3e" : "#eef2f7" } },
                 h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "left", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.destination', "Destination")),
-                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2081"),
-                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2082"),
-                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.total', "Total")),
-                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, __alloT('stem.solarsystem.transit', "Transit"))
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2081 (km/s)"),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "\u0394v\u2082 (km/s)"),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "Total \u0394v (km/s)"),
+                h("th", { scope: "col", style: { padding: "8px 10px", borderBottom: "2px solid " + accent, textAlign: "right", fontWeight: 700, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", color: mutedFg } }, "Transit time (days / yr)"),
               )
             ),
             h("tbody", null, budgetRows)
@@ -6753,6 +7035,9 @@ const d = labToolData.solarSystem || {};
     var prob = CHALLENGES[idx];
     var answered = ch_correct[idx];
     var hintCount = ch_hints[idx] || 0;
+    var solvedCount = CHALLENGES.reduce(function(count, challenge, challengeIndex) { return count + (ch_correct[challengeIndex] ? 1 : 0); }, 0);
+    var challengeProgressText = "Challenge progress: " + solvedCount + " of " + CHALLENGES.length + " solved";
+    var challengeProgressPercent = Math.round(solvedCount / CHALLENGES.length * 100);
 
     // Live challenge section
     var liveSection = null;
@@ -6832,13 +7117,13 @@ const d = labToolData.solarSystem || {};
 
     liveSection = card([
       h("div", { key: "lhdr", style: { fontWeight: 700, fontSize: "14px", marginBottom: "8px", color: accent } }, __alloT('stem.solarsystem.live_simulation_challenges', "\ud83d\udce1 Live Simulation Challenges")),
-      h("div", { key: "lnav", style: { display: "flex", gap: "4px", marginBottom: "8px" } },
+      h("div", { key: "lnav", role: "group", "aria-label": "Live simulation challenge navigator", style: { display: "flex", gap: "4px", marginBottom: "8px" } },
         LIVE_CHALLENGES.map(function(lc, li) {
           return btn(
             (liveCorrect[li] ? "\u2705 " : "") + "Live " + (li + 1),
             liveIdx === li,
             function() { upd("orr_cli", li); },
-            { key: "lnb-" + li }
+            { key: "lnb-" + li, "aria-pressed": liveIdx === li }
           );
         })
       ),
@@ -6923,10 +7208,16 @@ const d = labToolData.solarSystem || {};
       h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } },
         "\uD83C\uDFC6 Challenge " + (idx + 1) + " of " + CHALLENGES.length
       ),
-      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
+      h("div", { id: "orrery-challenge-progress", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", color: mutedFg, fontSize: "11px" } },
+        h("span", null, challengeProgressText),
+        h("div", { role: "progressbar", "aria-label": "Challenge completion", "aria-valuemin": 0, "aria-valuemax": CHALLENGES.length, "aria-valuenow": solvedCount, "aria-valuetext": challengeProgressText, style: { flex: "1 1 120px", maxWidth: "220px", height: "6px", borderRadius: "999px", overflow: "hidden", background: isDark ? "rgba(148,163,184,0.20)" : "rgba(148,163,184,0.28)" } },
+          h("div", { style: { width: challengeProgressPercent + "%", height: "100%", borderRadius: "999px", background: "linear-gradient(90deg, " + accent + ", #22c55e)" } })
+        )
+      ),
+      h("div", { role: "group", "aria-label": "Challenge question navigator", style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
         CHALLENGES.map(function(c, ci) {
           var label = (ch_correct[ci] ? "\u2705 " : "") + (ci + 1);
-          return btn(label, idx === ci, function() { upd("orr_chi", ci); }, { key: "ch-" + ci });
+          return btn(label, idx === ci, function() { upd("orr_chi", ci); }, { key: "ch-" + ci, "aria-pressed": idx === ci });
         })
       ),
 
@@ -7151,12 +7442,12 @@ const d = labToolData.solarSystem || {};
       h("div", { className: "orr-section-hdr", style: { fontWeight: 700, fontSize: "15px", color: fg } },
         "\u2753 Misconception " + (idx + 1) + " of " + MISCONCEPTIONS.length
       ),
-      h("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
+      h("div", { role: "group", "aria-label": "True or false question navigator", style: { display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "10px" } },
         MISCONCEPTIONS.map(function(m, mi) {
           var done = tf_ans[mi] !== undefined;
           var wasCorrect = done && (tf_ans[mi] === MISCONCEPTIONS[mi].answer);
           var label = (done ? (wasCorrect ? "\u2705 " : "\u274c ") : "") + (mi + 1);
-          return btn(label, idx === mi, function() { upd("orr_tfi", mi); }, { key: "tf-" + mi });
+          return btn(label, idx === mi, function() { upd("orr_tfi", mi); }, { key: "tf-" + mi, "aria-pressed": idx === mi });
         })
       ),
 
@@ -7367,6 +7658,95 @@ const d = labToolData.solarSystem || {};
     { accent: "#14b8a6", soft: "rgba(20,184,166,0.10)", title: __alloT('stem.solarsystem.kepler_inquiry_orbital_mechanics_sandb_2', "Kepler Inquiry — orbital mechanics sandbox"), hint: __alloT('stem.solarsystem.move_semi_major_axis_eccentricity_and_', "Move semi-major axis, eccentricity, and central-body mass. Predict the orbital class — circular, elliptical, eccentric, cometary, parabolic. No score, no reveal.") }
   ];
   var meta = TAB_META[stab] || TAB_META[0];
+  var seenOrrerySections = countOrreryTabsSeen(d);
+  var seenKeplerLaws = Array.isArray(d.orreryKeplerSeen)
+    ? d.orreryKeplerSeen.filter(function(id) { return !!id; }).length
+    : 0;
+  var completedOrreryGuidedMissions = countCompletedOrreryGuidedMissions(d);
+  var guidedMissionProgressLabel = completedOrreryGuidedMissions + " / " + ORRERY_GUIDED_MISSION_IDS.length + " guided missions complete";
+  var nextOrreryTabIndex = -1;
+  for (var nextIndex = 0; nextIndex < TAB_NAMES.length; nextIndex++) {
+    if (seenOrreryTabKeys.indexOf(String(nextIndex)) === -1) {
+      nextOrreryTabIndex = nextIndex;
+      break;
+    }
+  }
+  var nextOrreryLabel = nextOrreryTabIndex === -1
+    ? "All " + TAB_NAMES.length + " sections sampled"
+    : "Next suggested: " + TAB_NAMES[nextOrreryTabIndex];
+  var tabProgressLabel = "Section " + (stab + 1) + " of " + TAB_NAMES.length + ": " + TAB_ARIA_LABELS[stab] + ". " + seenOrrerySections + " of " + TAB_NAMES.length + " sections sampled. " + seenKeplerLaws + " of 3 Kepler law tabs explored. " + guidedMissionProgressLabel + ". " + nextOrreryLabel + ".";
+  var tabProgress = h("div", {
+    id: "orrery-tab-progress",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    "aria-label": tabProgressLabel,
+    "data-active-section": String(stab + 1),
+    "data-sampled-sections": String(seenOrrerySections),
+    "data-guided-missions": String(completedOrreryGuidedMissions),
+    "data-next-section": nextOrreryTabIndex === -1 ? "complete" : String(nextOrreryTabIndex),
+    style: {
+      padding: "6px 9px",
+      borderRadius: "9px",
+      border: "1px solid " + meta.accent + "33",
+      background: isDark ? "rgba(15,23,42,0.72)" : "rgba(248,250,252,0.82)",
+      marginBottom: "12px"
+    }
+  },
+    h("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "8px",
+        flexWrap: "wrap",
+        marginBottom: "6px"
+      }
+    },
+      h("span", { style: { fontSize: "11px", fontWeight: 700, color: isDark ? "#e2e8f0" : "#334155", letterSpacing: "0.02em" } },
+        "Section " + (stab + 1) + " of " + TAB_NAMES.length
+      ),
+      h("span", { id: "orrery-section-progress", style: { fontSize: "10px", color: isDark ? "#cbd5e1" : "#64748b" } }, seenOrrerySections + " / " + TAB_NAMES.length + " sections sampled"),
+      h("span", { id: "orrery-kepler-progress", style: { fontSize: "10px", color: isDark ? "#cbd5e1" : "#64748b" } },
+        seenKeplerLaws + " / 3 Kepler laws explored"
+      ),
+      h("span", { id: "orrery-guided-progress", style: { fontSize: "10px", color: isDark ? "#cbd5e1" : "#64748b" } }, guidedMissionProgressLabel
+      )
+    ),
+    h("div", { "aria-hidden": "true", style: { display: "flex", gap: "3px", width: "100%" } },
+      TAB_NAMES.map(function(_, i) {
+        var segmentVisited = seenOrreryTabKeys.indexOf(String(i)) !== -1;
+        var segmentColor = i === stab
+          ? meta.accent
+          : (segmentVisited ? meta.accent + "66" : (isDark ? "#334155" : "#cbd5e1"));
+        return h("span", {
+          key: "section-segment-" + i,
+          id: "orrery-route-segment-" + i,
+          "data-visited": segmentVisited ? "true" : "false",
+          style: {
+            flex: "1 1 0",
+            height: "4px",
+            borderRadius: "999px",
+            background: segmentColor,
+            boxShadow: i === stab ? "0 0 8px " + meta.accent + "88" : "none"
+          }
+        });
+      })
+    ),
+    h("div", {
+      style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap", marginTop: "7px" }
+    },
+      h("span", { id: "orrery-next-section-label", style: { fontSize: "10px", color: isDark ? "#cbd5e1" : "#64748b" } }, nextOrreryLabel),
+      nextOrreryTabIndex === -1
+        ? h("span", { style: { fontSize: "10px", fontWeight: 700, color: isDark ? "#86efac" : "#15803d" } }, "\u2713 Complete")
+        : h("button", {
+          id: "orrery-next-section", type: "button",
+          "aria-label": "Go to next Orrery section: " + TAB_ARIA_LABELS[nextOrreryTabIndex],
+          onClick: function() { focusTab(nextOrreryTabIndex); },
+          style: { border: "1px solid " + meta.accent + "66", borderRadius: "7px", padding: "4px 8px", background: "transparent", color: isDark ? "#e2e8f0" : "#334155", cursor: "pointer", fontSize: "10px", fontWeight: 700 }
+        }, "Go to " + TAB_NAMES[nextOrreryTabIndex] + " \u2192")
+    )
+  );
   // Cosmic hero band: radial accent glow + faint star dust (CSS pseudos in
   // orr-tab-hero). The CSS variable --orr-accent feeds the glow color so
   // each tab gets its own personality (Kepler I = cyan, II = green, etc.)
@@ -7411,7 +7791,8 @@ const d = labToolData.solarSystem || {};
 
   return h("div", { className: "space-y-3" },
     tabHeader,
-    h("div", { id: "orrery-tabpanel", role: "tabpanel", "aria-labelledby": "orrery-tab-" + stab },
+    tabProgress,
+    h("div", { id: "orrery-tabpanel", role: "tabpanel", "aria-labelledby": "orrery-tab-" + stab, style: { minWidth: 0, maxWidth: "100%", boxSizing: "border-box" } },
       tabHero,
       content
     )

@@ -1265,7 +1265,7 @@ describe('M11 — the failed-chunk banner survives sanitization', () => {
 
   it('it refuses to publish across a document change', () => {
     expect(dp).toContain('const _retryDocumentEpoch = _runDocumentEpoch;');
-    expect(dp).toContain('const _liveEpochNow = _readCurrentDocumentEpoch();');
+    expect(dp).toContain('const _liveEpochNow = _readCurrentRemediationDocumentEpoch();');
     expect(dp).toContain('discarding it rather than rewriting the new document');
   });
 

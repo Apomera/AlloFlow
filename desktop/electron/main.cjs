@@ -870,7 +870,16 @@ handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
 // gates it on window.alloAPI.remediation.selectFolder). Returns file metadata
 // only — contents are fetched on demand via remediation:read-file-base64 to
 // keep the IPC payload small.
-const REMEDIATION_EXTS = new Set(['.pdf', '.docx', '.pptx']);
+const REMEDIATION_MIME_BY_EXT = Object.freeze({
+  '.pdf': 'application/pdf',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+});
+const REMEDIATION_EXTS = new Set(Object.keys(REMEDIATION_MIME_BY_EXT));
 
 handleTrustedIpc('remediation:select-folder', async () => {
   try {
@@ -898,15 +907,16 @@ handleTrustedIpc('remediation:select-folder', async () => {
           if (entry.name === 'node_modules') continue;
           walk(full);
         } else if (entry.isFile() && REMEDIATION_EXTS.has(path.extname(entry.name).toLowerCase())) {
+          const ext = path.extname(entry.name).toLowerCase();
           let sizeBytes = 0;
           try { sizeBytes = fs.statSync(full).size; } catch (_) {}
-          files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes });
+          files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes, mimeType: REMEDIATION_MIME_BY_EXT[ext] });
         }
       }
     };
     walk(root);
 
-    logLine(`remediation:select-folder ${root} -> ${files.length} document(s)`);
+    logLine(`remediation:select-folder ${root} -> ${files.length} supported input(s)`);
     return { canceled: false, root, files };
   } catch (error) {
     return { canceled: true, error: String((error && error.message) || error) };
@@ -922,7 +932,8 @@ handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
       return { error: 'File not found' };
     }
     const buf = fs.readFileSync(filePath);
-    return { base64: buf.toString('base64'), sizeBytes: buf.length };
+    const mimeType = REMEDIATION_MIME_BY_EXT[path.extname(filePath).toLowerCase()];
+    return { base64: buf.toString('base64'), sizeBytes: buf.length, mimeType };
   } catch (error) {
     return { error: String((error && error.message) || error) };
   }

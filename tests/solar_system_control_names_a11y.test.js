@@ -91,6 +91,123 @@ describe('Solar System control accessible names', () => {
     expect(tabs[1]?.getAttribute('aria-label')).toBe('Kepler I: ellipses and the Sun at one focus');
     expect(tabs[2]?.getAttribute('aria-label')).toBe('Kepler II: equal areas in equal times');
   });
+  it('announces Orrery route position and Kepler exploration progress', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 2,
+        orreryKeplerSeen: ['keplerI', 'keplerII'],
+        orr_mission_progress: { earth_distance: { correct: true }, mercury_speed: { correct: true } },
+      },
+    });
+    const route = document.getElementById('orrery-tab-progress');
+    expect(route?.getAttribute('role')).toBe('status');
+    expect(route?.getAttribute('aria-live')).toBe('polite');
+    expect(route?.getAttribute('data-active-section')).toBe('3');
+    expect(route?.textContent).toContain('Section 3 of 9');
+    expect(route?.textContent).toContain('2 / 3 Kepler laws explored');
+    expect(route?.textContent).toContain('2 / 3 guided missions complete');
+    expect(route?.getAttribute('data-guided-missions')).toBe('2');
+    expect(route?.getAttribute('aria-label')).toContain('Kepler II: equal areas in equal times');
+    expect(document.getElementById('orrery-kepler-progress')?.textContent).toContain('2 / 3 Kepler laws explored');
+    expect(document.getElementById('orrery-guided-progress')?.textContent).toContain('2 / 3 guided missions complete');
+  });
+  it('tracks all Orrery section visits in route and quest state', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 2,
+        orreryTabsSeen: ['0', '1', '2'],
+      },
+    });
+    const route = document.getElementById('orrery-tab-progress');
+    expect(route?.getAttribute('data-sampled-sections')).toBe('3');
+    expect(route?.getAttribute('data-next-section')).toBe('3');
+    expect(document.getElementById('orrery-section-progress')?.textContent).toContain('3 / 9 sections sampled');
+    expect(document.getElementById('orrery-next-section')?.textContent).toContain('Go to III Periods');
+    expect(document.getElementById('orrery-tab-0')?.getAttribute('data-orrery-visited')).toBe('true');
+    expect(document.getElementById('orrery-tab-2')?.getAttribute('data-orrery-visited')).toBe('true');
+    expect(document.getElementById('orrery-tab-8')?.getAttribute('data-orrery-visited')).toBe('false');
+    expect(document.getElementById('orrery-route-segment-1')?.getAttribute('data-visited')).toBe('true');
+    expect(document.getElementById('orrery-route-segment-3')?.getAttribute('data-visited')).toBe('false');
+
+    const source = readFileSync(SOURCE, 'utf8');
+    expect(source).toContain('var ORRERY_TAB_COUNT = 9;');
+    expect(source).toContain('var countOrreryTabsSeen = function(d)');
+    expect(source).toContain("id: 'orrery_tabs_all'");
+    expect(source).toContain('function mergeOrreryTabsSeen(current, index)');
+    expect(source).toContain('var segmentVisited = seenOrreryTabKeys.indexOf(String(i)) !== -1;');
+  });
+  it('keeps the route rail honest for out-of-order section visits', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 2,
+        orreryTabsSeen: ['0', '2'],
+      },
+    });
+    const route = document.getElementById('orrery-tab-progress');
+    expect(route?.getAttribute('data-sampled-sections')).toBe('2');
+    expect(route?.getAttribute('data-next-section')).toBe('1');
+    expect(document.getElementById('orrery-route-segment-1')?.getAttribute('data-visited')).toBe('false');
+    expect(document.getElementById('orrery-route-segment-2')?.getAttribute('data-visited')).toBe('true');
+    expect(document.getElementById('orrery-next-section')?.textContent).toContain('Go to I Ellipses');
+  });
+  it('exposes Explorer Route state without a redundant NEW cue', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: { tutorialDismissed: true, orreryMode: true, orr_tab: 0 },
+    });
+    const routeGroup = document.querySelector('[data-solarsystem-route-switcher]');
+    expect(routeGroup?.getAttribute('role')).toBe('group');
+    const routeButtons = [...(routeGroup?.querySelectorAll('button') || [])];
+    const threeD = routeButtons.find((button) => button.textContent?.includes('3D Explorer'));
+    const orrery = routeButtons.find((button) => button.textContent?.includes('Orrery Lab'));
+    expect(threeD?.getAttribute('aria-pressed')).toBe('false');
+    expect(orrery?.getAttribute('aria-pressed')).toBe('true');
+    expect(routeGroup?.textContent).not.toContain('NEW');
+    const source = readFileSync(SOURCE, 'utf8');
+    expect(source).toContain('"aria-pressed": active');
+    expect(source).not.toContain('isNewRoute');
+  });
+  it('associates Orbit Workshop sliders and groups its body choices', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: { tutorialDismissed: true, orreryMode: true, orr_tab: 4 },
+    });
+    const eccentricity = document.getElementById('orrery-workshop-eccentricity');
+    const semiMajor = document.getElementById('orrery-workshop-semi-major');
+    expect(document.querySelector('label[for="orrery-workshop-eccentricity"]')?.textContent).toContain('Eccentricity');
+    expect(document.querySelector('label[for="orrery-workshop-semi-major"]')?.textContent).toContain('Semi-major');
+    expect(eccentricity?.getAttribute('aria-describedby')).toBe('orrery-workshop-controls-help');
+    expect(semiMajor?.getAttribute('aria-describedby')).toBe('orrery-workshop-controls-help');
+    expect(document.getElementById('orrery-workshop-controls-help')?.getAttribute('role')).toBe('note');
+    expect(document.getElementById('orrery-workshop-energy-note')?.getAttribute('role')).toBe('note');
+    const energyCanvas = document.querySelector('canvas[aria-label*="energy diagram"]');
+    expect(energyCanvas?.getAttribute('aria-describedby')).toBe('orrery-workshop-energy-note');
+    const workshopSource = readFileSync(SOURCE, 'utf8');
+    expect(workshopSource).toContain('var a_norm = sma;');
+    expect(workshopSource).toContain('Energy (normalized GM)');
+    const controlRows = [...document.querySelectorAll('.orrery-workshop-control-row')];
+    expect(controlRows).toHaveLength(2);
+    expect(controlRows.every((row) => row.style.flexWrap === 'wrap')).toBe(true);
+    const bodyGroup = document.querySelector('[role="group"][aria-label="Orbit Workshop body selection"]');
+    expect(bodyGroup).not.toBeNull();
+    expect(bodyGroup?.querySelector('button[aria-pressed="true"]')).not.toBeNull();
+    expect(unnamedControls(document.body.innerHTML).map((control) => control.outerHTML)).toEqual([]);
+  });
+  it('exposes selected states and names for Orrery choice groups', () => {
+    const source = readFileSync(SOURCE, 'utf8');
+    expect(source).toContain('role: "group", "aria-label": "Transfer departure planet"');
+    expect(source).toContain('role: "group", "aria-label": "Transfer arrival planet"');
+    expect(source).toContain('"aria-pressed": tr_from === p.id');
+    expect(source).toContain('"aria-pressed": tr_to === p.id');
+    expect(source).toContain('role: "group", "aria-label": "Challenge question navigator"');
+    expect(source).toContain('role: "group", "aria-label": "True or false question navigator"');
+    expect(source).toContain('id: "orrery-challenge-progress"');
+    expect(source).toContain('"aria-valuenow": solvedCount');
+  });
   it("surfaces the selected world's live Kepler II speed cue", () => {
     const markup = renderTool('solarSystem', {
       solarSystem: {
@@ -103,6 +220,7 @@ describe('Solar System control accessible names', () => {
     expect(markup).toContain('Kepler II cue');
     expect(markup).toContain('semi-major axis a');
     expect(markup).toContain('Reference at a:');
+    expect(markup).toContain('Kepler III check');
   });
   it('renders live selected-world readout hooks', () => {
     document.body.innerHTML = renderTool('solarSystem', {
@@ -114,10 +232,19 @@ describe('Solar System control accessible names', () => {
       },
     });
     expect(document.getElementById('orrery-live-distance')).not.toBeNull();
+    expect(document.body.textContent).toContain('a · orbit size');
+    expect(document.body.textContent).toContain('e · eccentricity');
+    expect(document.body.textContent).toContain('T · period');
+    expect(document.body.textContent).toContain('i · inclination');
+    expect(document.body.textContent).toContain('distance now');
+    expect(document.body.textContent).toContain('speed now');
+    expect(document.getElementById('orrery-live-map-scale')?.getAttribute('role')).toBe('status');
+    expect(document.getElementById('orrery-live-map-scale')?.textContent).toContain('Ruler:');
     expect(document.getElementById('orrery-live-speed')).not.toBeNull();
     expect(document.getElementById('orrery-live-phase')).not.toBeNull();
     expect(document.getElementById('orrery-live-kepler-cue')).not.toBeNull();
     expect(document.getElementById('orrery-live-kepler-reference')).not.toBeNull();
+    expect(document.getElementById('orrery-live-kepler-iii')).not.toBeNull();
     expect(document.getElementById('orrery-live-timeline-value')).not.toBeNull();
     expect(document.querySelector('[data-orrery-timeline-landmark][aria-current="step"]')).not.toBeNull();
     expect(document.querySelector('button[data-orrery-timeline-jump][aria-pressed="true"]')).not.toBeNull();
@@ -162,6 +289,7 @@ describe('Solar System control accessible names', () => {
     expect(document.getElementById('orrery-live-compare-primary-speed')).not.toBeNull();
     expect(document.getElementById('orrery-live-compare-secondary-speed')).not.toBeNull();
     expect(document.getElementById('orrery-compare-interpretation')?.textContent).toContain('Earth is currently');
+    expect(document.getElementById('orrery-compare-interpretation')?.textContent).toContain('Kepler III: Mars has the larger orbit and the longer period.');
   });  it('groups Orrery controls for responsive keyboard scanning', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {

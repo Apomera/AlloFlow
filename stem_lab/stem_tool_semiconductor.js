@@ -300,6 +300,8 @@ window.StemLab = window.StemLab || {
             aiExplain: null,
             aiLoading: false,
             guidedSetupSubtool: null,
+            guidedNotes: {},
+            guidedObservationSaved: null,
             // XP tracking
             xpAwardedKeys: {}
           }});
@@ -753,7 +755,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.material, d.temperature, d.showPhoton, d.showFermi]);
+        }, [tab, subtool, d.material, d.temperature, d.showPhoton, d.showFermi]);
 
         return h('div', null,
           // A single named selector keeps all eight comparison materials available
@@ -953,7 +955,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (dopantKey !== 'none') animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [dopantKey, d.dopantCount, d.crystalSize]);
+        }, [tab, subtool, dopantKey, d.dopantCount, d.crystalSize]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -1211,7 +1213,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animFrameRef.current); return; } canvasRef(canvas); animFrameRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animFrameRef.current); };
-        }, [d.pnBias, d.pnShowField, d.pnShowCarriers, d.pnShowDepletion, d.pnShowIV, d.pnLedMode]);
+        }, [tab, subtool, d.pnBias, d.pnShowField, d.pnShowCarriers, d.pnShowDepletion, d.pnShowIV, d.pnLedMode]);
 
         return h('div', null,
           h('canvas', { 
@@ -1468,7 +1470,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.transistorType, d.gateVoltage, d.drainVoltage, d.showCMOS]);
+        }, [tab, subtool, d.transistorType, d.gateVoltage, d.drainVoltage, d.showCMOS]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -1612,7 +1614,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-gates-canvas');
           if (!canvas) return;
           return bindStaticCanvas(canvas, canvasRef);
-        }, [d.gateType, d.inputA, d.inputB]);
+        }, [tab, subtool, d.gateType, d.inputA, d.inputB]);
 
         // Full truth table grid
         var truthTableGrid = null;
@@ -1863,7 +1865,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-iv-canvas');
           if (!canvas) return;
           return bindStaticCanvas(canvas, canvasRef);
-        }, [d.ivDevice, d.ivSweepV, d.ivShowIdeal, d.ivTemp]);
+        }, [tab, subtool, d.ivDevice, d.ivSweepV, d.ivShowIdeal, d.ivTemp]);
 
         var iDisplay = Math.abs(currentI) < 0.001 ? (currentI * 1e6).toFixed(1) + ' \u03BCA' : (currentI * 1000).toFixed(2) + ' mA';
 
@@ -2189,7 +2191,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.fabStage]);
+        }, [tab, subtool, d.fabStage]);
 
         return h('div', null,
           h('canvas', { 
@@ -2361,7 +2363,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.ledMaterial, d.ledCurrent, d.ledMixMode, d.ledMixR, d.ledMixG, d.ledMixB]);
+        }, [tab, subtool, d.ledMaterial, d.ledCurrent, d.ledMixMode, d.ledMixR, d.ledMixG, d.ledMixB]);
 
         return h('div', null,
           h('div', { className: 'flex items-center gap-2 mb-3' },
@@ -2560,7 +2562,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.solarIrradiance, d.solarTemp, d.solarArea, d.solarMaterial, d.solarShowPV]);
+        }, [tab, subtool, d.solarIrradiance, d.solarTemp, d.solarArea, d.solarMaterial, d.solarShowPV]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -2728,7 +2730,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-moore-canvas');
           if (!canvas) return;
           return bindStaticCanvas(canvas, canvasRef);
-        }, [d.mooreYear, d.mooreShowPred, d.mooreLogScale]);
+        }, [tab, subtool, d.mooreYear, d.mooreShowPred, d.mooreLogScale]);
 
         return h('div', null,
           h('canvas', { 
@@ -2930,7 +2932,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-qw-canvas');
           if (!canvas) return;
           return bindStaticCanvas(canvas, canvasRef);
-        }, [d.qwWidth, d.qwDepth, d.qwMaterial, d.qwLevels, d.qwShowWave, d.qwShowProb, d.qwElectricField]);
+        }, [tab, subtool, d.qwWidth, d.qwDepth, d.qwMaterial, d.qwLevels, d.qwShowWave, d.qwShowProb, d.qwElectricField]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -3216,7 +3218,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.memType, d.memBitValue, d.memWriteEnable, d.memShowArray]);
+        }, [tab, subtool, d.memType, d.memBitValue, d.memWriteEnable, d.memShowArray]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -3412,7 +3414,7 @@ window.StemLab = window.StemLab || {
           function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.ampType, d.ampVin, d.ampFreq, d.ampVdd, d.ampRd, d.ampShowBode, d.ampBiasPoint]);
+        }, [tab, subtool, d.ampType, d.ampVin, d.ampFreq, d.ampVdd, d.ampRd, d.ampShowBode, d.ampBiasPoint]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
@@ -3522,6 +3524,15 @@ window.StemLab = window.StemLab || {
 
         if (!d.challengeActive) {
           return h('div', { className: 'text-center py-6' },
+            h('section', { id: 'semiconductor-challenge-howto', className: 'max-w-xl mx-auto mb-4 rounded-xl border border-amber-500/50 bg-amber-950/30 p-3 text-left', 'aria-labelledby': 'semiconductor-challenge-howto-title' },
+              h('div', { id: 'semiconductor-challenge-howto-title', className: 'text-sm font-black text-amber-200' }, t('stem.semiconductor.how_challenge_works', 'How Challenge works')),
+              h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.choose_one_answer_misses_unlock_a_hint', 'Choose one answer. Misses unlock a hint; correct answers build your streak and XP.')),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[11px] text-slate-200' },
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '1. Read the topic'),
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '2. Choose an answer'),
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '3. Review feedback')
+              )
+            ),
             h('div', { className: 'text-4xl mb-2' }, '\uD83C\uDFC6'),
             h('div', { className: 'text-lg font-bold text-white mb-1' }, t('stem.semiconductor.semiconductor_challenge', 'Semiconductor Challenge')),
             h('div', { className: 'flex justify-center gap-3 mb-3' },
@@ -3593,13 +3604,14 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Feedback
-          d.challengeFeedback && h('div', { className: 'text-center mb-3' },
+          d.challengeFeedback && h('div', { className: 'text-center mb-3', role: 'status', 'aria-live': 'polite' },
             h('p', { className: 'text-sm font-bold ' + (d.challengeFeedback === 'correct' ? 'text-emerald-400' : 'text-red-400') },
               d.challengeFeedback === 'correct'
                 ? '\u2705 Correct! +' + (streak >= 5 ? current.xp * 2 : streak >= 3 ? Math.round(current.xp * 1.5) : current.xp) + ' XP' + (streak >= 3 ? ' (\uD83D\uDD25 streak bonus!)' : '')
                 : '\u274C The answer is: ' + current.a
             ),
             d.challengeFeedback === 'wrong' && current.hint && h('div', { className: 'text-xs text-amber-400 mt-1' }, '\uD83D\uDCA1 ' + current.hint),
+            h('p', { className: 'text-xs text-slate-300 mt-2' }, d.challengeFeedback === 'correct' ? 'Keep the streak going with the next question.' : 'Review the hint, then use the next question to try again.'),
             h('div', { className: 'mt-2 flex justify-center gap-2 flex-wrap' },
               btn('Next Question \u2192', function() {
                 var newScore = d.challengeFeedback === 'correct' ? score + 1 : score;
@@ -3644,6 +3656,15 @@ window.StemLab = window.StemLab || {
 
         if (!d.battleActive) {
           return h('div', { className: 'text-center py-6' },
+            h('section', { id: 'semiconductor-battle-howto', className: 'max-w-xl mx-auto mb-4 rounded-xl border border-red-500/50 bg-red-950/25 p-3 text-left', 'aria-labelledby': 'semiconductor-battle-howto-title' },
+              h('div', { id: 'semiconductor-battle-howto-title', className: 'text-sm font-black text-red-200' }, t('stem.semiconductor.how_chip_defense_works', 'How Chip Defense works')),
+              h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.answer_to_damage_the_enemy', 'Answer a round to damage the enemy. A miss costs chip HP, so use the prompt and take your time.')),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2 text-[11px] text-slate-200' },
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '1. Read the threat'),
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '2. Pick the best answer'),
+                h('span', { className: 'rounded-full bg-slate-800/80 px-2 py-1' }, '3. Defend the chip')
+              )
+            ),
             h('div', { className: 'text-4xl mb-2' }, '\u2694\uFE0F'),
             h('div', { className: 'text-lg font-bold text-white mb-1' }, t('stem.semiconductor.chip_defense', 'Chip Defense')),
             h('div', { className: 'text-sm text-slate-200 mb-3' }, t('stem.semiconductor.protect_your_chip_from_waves_of_hardwa', 'Protect your chip from waves of hardware enemies! Use semiconductor knowledge to fight back.')),
@@ -3748,6 +3769,9 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Next round
+          feedback && h('div', { className: 'mb-2 rounded-lg border border-slate-600 bg-slate-900/70 px-3 py-2 text-center text-xs text-slate-100', role: 'status', 'aria-live': 'polite' },
+            feedback === 'correct' ? '✅ Hit confirmed. Advance when you are ready.' : '❌ Miss recorded. Review the answer, then try the next round.'
+          ),
           feedback && h('div', { className: 'text-center' },
             btn('Next Round \u2192', function() {
               var nextRound = round + 1;
@@ -3857,13 +3881,22 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-sm font-bold text-white' }, t('stem.semiconductor.semiconductor_concepts', '\uD83D\uDCDA Semiconductor Concepts')),
             h('div', { className: 'text-[11px] text-slate-300 px-2 py-0.5 rounded bg-slate-800' }, 'Grade band: ' + gradeBand)
           ),
-          TOPICS.map(function(item) {
-            return h('details', { className: 'group', key: item.title },
-              h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-expanded': 'false' },
-                h('span', { className: 'text-[11px] text-slate-400 group-open:rotate-90 transition-transform' }, '\u25B6'),
+          h('section', { id: 'semiconductor-learn-start', className: 'rounded-xl border border-cyan-500/40 bg-cyan-950/20 p-3', 'aria-labelledby': 'semiconductor-learn-start-title' },
+            h('div', { id: 'semiconductor-learn-start-title', className: 'text-sm font-black text-cyan-200' }, t('stem.semiconductor.start_here_band_gap_energy', 'Start here: Band Gap Energy')),
+            h('p', { className: 'mt-1 text-sm text-slate-100 leading-relaxed' }, t('stem.semiconductor.open_one_card_then_test_the_idea', 'Open one card to build the idea, then test it in the simulator. Band gap energy is the key that connects materials, light, and temperature.')),
+            btn('⚡ Try Band Gap simulator', function() {
+              updMulti({ mode: 'explore', subtool: 'bandgap', aiExplain: null });
+              if (announceToSR) announceToSR('Opened Band Gap simulator from Learn');
+            }, 'mt-2 bg-cyan-700 text-white hover:bg-cyan-800')
+          ),
+          TOPICS.map(function(item, topicIndex) {
+            var topicId = 'semiconductor-learn-topic-' + topicIndex;
+            return h('details', { className: 'group', key: item.title, open: topicIndex === 0 },
+              h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-controls': topicId },
+                h('span', { className: 'text-[11px] text-slate-400 group-open:rotate-90 transition-transform', 'aria-hidden': 'true' }, '\u25B6'),
                 item.title
               ),
-              h('div', { className: 'mt-1 pl-4 text-xs text-slate-300 leading-relaxed' }, item.body)
+              h('div', { id: topicId, className: 'mt-1 pl-4 text-xs text-slate-300 leading-relaxed' }, item.body)
             );
           }),
           h('div', { className: 'flex gap-2 mt-3' },
@@ -3962,25 +3995,47 @@ window.StemLab = window.StemLab || {
         h('span', { className: 'text-xs text-cyan-200 font-semibold' }, getSubtoolLabel(subtool))
       ) : null;
 
+      // Render every mode/subtool in one stable order so hooks inside canvas
+      // renderers never change position when a learner switches modes. Only the
+      // selected tree is attached below; unmounted canvas effects exit immediately.
+      var stableRenderCache = {
+        challenge: renderChallenge(),
+        battle: renderBattle(),
+        learn: renderLearn(),
+        bandgap: renderBandGap(),
+        doping: renderDoping(),
+        pnjunction: renderPNJunction(),
+        transistor: renderTransistor(),
+        gates: renderLogicGates(),
+        ivcurve: renderIVCurve(),
+        sandbox: renderCircuitSandbox(),
+        waferfab: renderWaferFab(),
+        ledspec: renderLedSpectrum(),
+        solarcell: renderSolarCell(),
+        moorelaw: renderMooreLaw(),
+        qwell: renderQuantumWell(),
+        memory: renderMemoryCells(),
+        amplifier: renderAmplifier()
+      };
       var content;
-      if (tab === 'challenge') content = renderChallenge();
-      else if (tab === 'battle') content = renderBattle();
-      else if (tab === 'learn') content = renderLearn();
+      if (tab === 'challenge') content = stableRenderCache.challenge;
+      else if (tab === 'battle') content = stableRenderCache.battle;
+      else if (tab === 'learn') content = stableRenderCache.learn;
       else {
-        if (subtool === 'bandgap') content = renderBandGap();
-        else if (subtool === 'doping') content = renderDoping();
-        else if (subtool === 'pnjunction') content = renderPNJunction();
-        else if (subtool === 'transistor') content = renderTransistor();
-        else if (subtool === 'gates') content = renderLogicGates();
-        else if (subtool === 'ivcurve') content = renderIVCurve();
-        else if (subtool === 'sandbox') content = renderCircuitSandbox();
-        else if (subtool === 'waferfab') content = renderWaferFab();
-        else if (subtool === 'ledspec') content = renderLedSpectrum();
-        else if (subtool === 'solarcell') content = renderSolarCell();
-        else if (subtool === 'moorelaw') content = renderMooreLaw();
-        else if (subtool === 'qwell') content = renderQuantumWell();
-        else if (subtool === 'memory') content = renderMemoryCells();
-        else if (subtool === 'amplifier') content = renderAmplifier();
+        if (subtool === 'bandgap') content = stableRenderCache.bandgap;
+        else if (subtool === 'doping') content = stableRenderCache.doping;
+        else if (subtool === 'pnjunction') content = stableRenderCache.pnjunction;
+        else if (subtool === 'transistor') content = stableRenderCache.transistor;
+        else if (subtool === 'gates') content = stableRenderCache.gates;
+        else if (subtool === 'ivcurve') content = stableRenderCache.ivcurve;
+        else if (subtool === 'sandbox') content = stableRenderCache.sandbox;
+        else if (subtool === 'waferfab') content = stableRenderCache.waferfab;
+        else if (subtool === 'ledspec') content = stableRenderCache.ledspec;
+        else if (subtool === 'solarcell') content = stableRenderCache.solarcell;
+        else if (subtool === 'moorelaw') content = stableRenderCache.moorelaw;
+        else if (subtool === 'qwell') content = stableRenderCache.qwell;
+        else if (subtool === 'memory') content = stableRenderCache.memory;
+        else if (subtool === 'amplifier') content = stableRenderCache.amplifier;
         else if (subtool === 'dopeHunt') content = (function() {
           var h = React.createElement;
           var iq = d.dopeHunt || { conc: 5, tempK: 300, material: 'Si', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
@@ -4041,10 +4096,13 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-[10px] italic text-slate-400' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
         })();
-        else content = renderBandGap();
+        else content = stableRenderCache.bandgap;
       }
 
       // Enhanced snapshot with context
+      var snapshotLabel = t('stem.semiconductor.snapshot', '\uD83D\uDCF8 Snapshot');
+      var snapshotButtonCount = Array.isArray(toolSnapshots) ? toolSnapshots.filter(function(item) { return item && item.tool === 'semiconductor'; }).length : 0;
+      if (snapshotButtonCount > 0) snapshotLabel += ' (' + snapshotButtonCount + ')';
       var snapshotBtn = h('button', { onClick: function() {
           var label = tab === 'explore' ? subtool : tab;
           var detail = '';
@@ -4061,7 +4119,8 @@ window.StemLab = window.StemLab || {
           else if (subtool === 'memory') detail = ' ' + (d.memType || 'sram') + ' bit=' + (d.memBitValue || 0);
           else if (subtool === 'amplifier') detail = ' ' + (d.ampType || 'common-source') + ' Vin=' + ((d.ampVin || 0.01) * 1000).toFixed(0) + 'mV';
           setToolSnapshots(function(prev) {
-            return prev.concat([{
+            var snapshots = Array.isArray(prev) ? prev : [];
+            return snapshots.concat([{
               id: 'semi-' + Date.now(), tool: 'semiconductor',
               label: 'Semi: ' + label + detail,
               data: Object.assign({}, d), timestamp: Date.now()
@@ -4070,8 +4129,10 @@ window.StemLab = window.StemLab || {
           addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           if (announceToSR) announceToSR('Snapshot saved');
         },
-        className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
-      }, t('stem.semiconductor.snapshot', '\uD83D\uDCF8 Snapshot'));
+        className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
+        'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
+        title: 'Save current state to notebook'
+      }, snapshotLabel);
 
       var currentSubtool = SUBTOOLS.find(function(st) { return st.id === subtool; }) || SUBTOOLS[0];
       var activeMaterial = MATERIALS[d.material] || MATERIALS.silicon;
@@ -4193,11 +4254,88 @@ window.StemLab = window.StemLab || {
       };
       var quick = QUICK_STARTS[subtool] || QUICK_STARTS.bandgap;
       var guidedSetup = GUIDED_SETUPS[subtool] || GUIDED_SETUPS.bandgap;
+      var guidedNotes = d.guidedNotes || {};
+      var guidedNote = guidedNotes[subtool] || '';
+      var guidedReady = d.guidedSetupSubtool === subtool;
+
+      // Each workspace advances only when the learner changes the variable named
+      // in step 2. Unrelated toggles do not create a false completion signal.
+      function hasGuidedChange() {
+        var hunt = d.dopeHunt || {};
+        if (subtool === 'bandgap') return !!d.showPhoton || (d.material || 'silicon') !== 'silicon' || (d.temperature || 300) !== 300;
+        if (subtool === 'doping') return (d.dopant || 'phosphorus') !== 'phosphorus' || (d.dopantCount == null ? 3 : d.dopantCount) !== 3;
+        if (subtool === 'pnjunction') return Math.abs(d.pnBias || 0) > 0.001;
+        if (subtool === 'transistor') return Math.abs(d.gateVoltage || 0) > 0.001;
+        if (subtool === 'gates') return !!d.inputA || !!d.inputB;
+        if (subtool === 'ivcurve') return Math.abs(d.ivSweepV || 0) > 0.001;
+        if (subtool === 'sandbox') return !!(d.circuitComponents && d.circuitComponents.length);
+        if (subtool === 'waferfab') return (d.fabStage || 0) > 0;
+        if (subtool === 'ledspec') return (d.ledCurrent || 20) !== 20 || (d.ledMaterial || 'red-gan') !== 'red-gan';
+        if (subtool === 'solarcell') return (d.solarIrradiance || 1000) !== 1000 || (d.solarTemp || 300) !== 300;
+        if (subtool === 'moorelaw') return (d.mooreYear || 2024) !== 2024;
+        if (subtool === 'qwell') return (d.qwWidth || 5) !== 5 || (d.qwDepth || 0.3) !== 0.3;
+        if (subtool === 'memory') return (d.memBitValue || 0) !== 0 || (d.memType || 'sram') !== 'sram';
+        if (subtool === 'amplifier') return (d.ampVin || 0.01) !== 0.01 || (d.ampFreq || 1000) !== 1000;
+        if (subtool === 'dopeHunt') return (hunt.conc == null ? 5 : hunt.conc) !== 5 || (hunt.tempK || 300) !== 300 || (hunt.material || 'Si') !== 'Si';
+        return false;
+      }
+
+      var guidedChanged = guidedReady && hasGuidedChange();
+      var guidedSaved = guidedChanged && d.guidedObservationSaved === subtool && guidedNote.trim().length >= 12;
+      var semiconductorSnapshots = Array.isArray(toolSnapshots) ? toolSnapshots.filter(function(item) { return item && item.tool === 'semiconductor'; }) : [];
+      var notebookCount = semiconductorSnapshots.length;
+      var guidedNotebookCount = semiconductorSnapshots.filter(function(item) { return String(item.id || '').indexOf('semi-guided-') === 0; }).length;
+      var currentSubtoolIndex = SUBTOOLS.findIndex(function(item) { return item.id === subtool; });
+      var nextSubtool = SUBTOOLS[(currentSubtoolIndex + 1 + SUBTOOLS.length) % SUBTOOLS.length] || SUBTOOLS[0];
+      var progressText = tab === 'challenge' ? 'Answer one question to earn XP.' : tab === 'battle' ? 'Defend the chip one round at a time.' : tab === 'learn' ? 'Read one concept, then test it in Explore.' : guidedSaved ? 'Complete — choose another workspace to keep going.' : guidedChanged ? 'Explain your change to finish this experiment.' : guidedReady ? 'Change one variable to continue.' : 'Start with a guided setup.';
+      function openNextWorkspace() {
+        updMulti({ mode: 'explore', subtool: nextSubtool.id, guidedSetupSubtool: null, guidedObservationSaved: null, aiExplain: null });
+        if (announceToSR) announceToSR('Opened next workspace: ' + nextSubtool.label);
+      }
       function applyGuidedSetup() {
-        updMulti(Object.assign({}, guidedSetup, { guidedSetupSubtool: subtool }));
+        var clearedNotes = Object.assign({}, guidedNotes);
+        clearedNotes[subtool] = '';
+        updMulti(Object.assign({}, guidedSetup, {
+          guidedSetupSubtool: subtool,
+          guidedNotes: clearedNotes,
+          guidedObservationSaved: null
+        }));
         tryAwardXP('guided-' + subtool, 3, 'Started guided ' + getSubtoolLabel(subtool) + ' experiment');
         if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'guidedSetup', getSubtoolLabel(subtool) + ' guided baseline loaded. Now change one variable and observe the diagram.', { debounce: 300 });
         if (announceToSR) announceToSR(getSubtoolLabel(subtool) + ' guided baseline loaded. Continue with step 2.');
+      }
+      function updateGuidedNote(value) {
+        var nextNotes = Object.assign({}, guidedNotes);
+        nextNotes[subtool] = value;
+        updMulti({ guidedNotes: nextNotes, guidedObservationSaved: null });
+      }
+      function saveGuidedObservation() {
+        if (guidedNote.trim().length < 12 || guidedSaved) return;
+        var capturedAt = Date.now();
+        var capturedData = Object.assign({}, d, {
+          guidedSubtool: subtool,
+          guidedObservation: guidedNote.trim(),
+          guidedObservationSaved: subtool
+        });
+        setToolSnapshots(function(prev) {
+          var snapshots = Array.isArray(prev) ? prev : [];
+          return snapshots.concat([{
+            id: 'semi-guided-' + capturedAt,
+            tool: 'semiconductor',
+            label: 'Guided: ' + getSubtoolLabel(subtool) + ' — ' + guidedNote.trim().slice(0, 72),
+            data: capturedData,
+            timestamp: capturedAt
+          }]);
+        });
+        upd('guidedObservationSaved', subtool);
+        addToast('Observation saved to your lab notebook.', 'success');
+        tryAwardXP('guided-explain-' + subtool, 5, 'Explained a ' + getSubtoolLabel(subtool) + ' observation');
+        if (announceToSR) announceToSR('Observation saved to your lab notebook. Guided experiment complete.');
+      }
+      function guidedStepClass(done, active) {
+        return 'rounded-lg border p-2 text-sm ' + (done
+          ? 'border-emerald-500/80 bg-emerald-950/40 text-slate-100'
+          : active ? 'border-cyan-400 bg-cyan-950/60 text-slate-100' : 'border-slate-600 bg-slate-950/60 text-slate-300');
       }
       var quickStart = tab === 'explore' ? h('section', {
         className: 'mb-3 rounded-xl border border-cyan-500/60 bg-cyan-950/40 p-3',
@@ -4205,19 +4343,42 @@ window.StemLab = window.StemLab || {
       },
         h('div', { className: 'flex flex-wrap items-center gap-2' },
           h('div', { id: 'semiconductor-quick-start-title', className: 'text-sm font-black text-cyan-100' }, t('stem.semiconductor.guided_experiment', 'Guided experiment')),
-          h('span', { className: 'rounded-full bg-cyan-900/70 px-2 py-1 text-[11px] font-bold text-cyan-100' }, t('stem.semiconductor.three_short_steps', '3 short steps'))
+          h('span', { className: 'rounded-full bg-cyan-900/70 px-2 py-1 text-[11px] font-bold text-cyan-100' }, guidedSaved ? t('stem.semiconductor.complete', 'Complete') : t('stem.semiconductor.three_short_steps', '3 short steps'))
         ),
         h('ol', { className: 'mt-3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
-          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '1. Set up'), quick.action),
-          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '2. Change'), quick.change),
-          h('li', { className: 'rounded-lg border border-cyan-700/70 bg-slate-950/60 p-2 text-sm text-slate-100' }, h('strong', { className: 'block text-cyan-200' }, '3. Explain'), quick.notice)
+          h('li', { className: guidedStepClass(guidedReady, !guidedReady) }, h('strong', { className: 'block ' + (guidedReady ? 'text-emerald-300' : 'text-cyan-200') }, guidedReady ? '✓ Baseline loaded' : '1. Set up'), quick.action),
+          h('li', { className: guidedStepClass(guidedChanged, guidedReady && !guidedChanged) }, h('strong', { className: 'block ' + (guidedChanged ? 'text-emerald-300' : 'text-cyan-200') }, guidedChanged ? '✓ Change observed' : '2. Change'), quick.change),
+          h('li', { id: 'semiconductor-guided-question', className: guidedStepClass(guidedSaved, guidedChanged && !guidedSaved) }, h('strong', { className: 'block ' + (guidedSaved ? 'text-emerald-300' : 'text-cyan-200') }, guidedSaved ? '✓ Explanation saved' : '3. Explain'), quick.notice)
         ),
         h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
           h('button', {
             type: 'button', onClick: applyGuidedSetup,
             className: 'min-h-10 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300'
-          }, d.guidedSetupSubtool === subtool ? t('stem.semiconductor.reload_baseline', 'Reload baseline') : t('stem.semiconductor.load_guided_setup', 'Load guided setup')),
-          d.guidedSetupSubtool === subtool && h('span', { className: 'text-sm font-semibold text-emerald-300', role: 'status' }, t('stem.semiconductor.baseline_ready', 'Baseline ready — continue with step 2.'))
+          }, guidedReady ? t('stem.semiconductor.reload_baseline', 'Reload baseline') : t('stem.semiconductor.load_guided_setup', 'Load guided setup')),
+          guidedReady && h('span', { className: 'text-sm font-semibold ' + (guidedSaved ? 'text-emerald-300' : guidedChanged ? 'text-amber-200' : 'text-cyan-100'), role: 'status' }, guidedSaved
+            ? t('stem.semiconductor.experiment_complete', 'Observation saved — experiment complete.')
+            : guidedChanged ? t('stem.semiconductor.change_detected', 'Change detected — explain what you observed.')
+            : t('stem.semiconductor.baseline_ready', 'Baseline ready — continue with step 2.')),
+          guidedSaved && h('button', { type: 'button', onClick: openNextWorkspace, className: 'min-h-10 rounded-lg border border-cyan-400/70 bg-cyan-950/60 px-3 py-2 text-sm font-black text-cyan-100 hover:bg-cyan-900/70 focus:outline-none focus:ring-2 focus:ring-cyan-300' }, 'Next workspace →')
+        ),
+        guidedChanged && h('div', { className: 'mt-3 rounded-lg border border-amber-500/60 bg-slate-950/70 p-3', style: { width: '100%', minWidth: 0, boxSizing: 'border-box' } },
+          h('label', { htmlFor: 'semiconductor-guided-observation', className: 'block text-sm font-black text-amber-200' }, t('stem.semiconductor.what_i_observed', 'What I observed and why')),
+          h('textarea', {
+            id: 'semiconductor-guided-observation', value: guidedNote, rows: 3, maxLength: 500,
+            style: { display: 'block', width: '100%', minWidth: 0, boxSizing: 'border-box' },
+            onChange: function(e) { updateGuidedNote(e.target.value); },
+            placeholder: t('stem.semiconductor.observation_placeholder', 'I observed… This happened because…'),
+            className: 'mt-2 w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm leading-relaxed text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400',
+            'aria-describedby': 'semiconductor-guided-question'
+          }),
+          h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+            h('button', {
+              type: 'button', onClick: saveGuidedObservation, disabled: guidedNote.trim().length < 12 || guidedSaved,
+              'aria-disabled': guidedNote.trim().length < 12 || guidedSaved,
+              className: 'min-h-10 rounded-lg px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-amber-300 ' + (guidedNote.trim().length < 12 || guidedSaved ? 'cursor-not-allowed bg-slate-700 text-slate-300' : 'bg-amber-500 text-slate-950 hover:bg-amber-400')
+            }, guidedSaved ? t('stem.semiconductor.observation_saved', 'Observation saved') : t('stem.semiconductor.save_observation', 'Save observation')),
+            h('span', { className: 'text-xs text-slate-300' }, guidedNote.trim().length < 12 ? t('stem.semiconductor.observation_minimum', 'Write at least 12 characters.') : guidedNote.length + '/500')
+          )
         )
       ) : null;
       var commandDrawer = tab === 'explore' ? h('details', { className: 'mt-4 rounded-xl border border-slate-600 bg-slate-900/50' },
@@ -4231,7 +4392,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-2xl' }, '\uD83D\uDCA1'),
           h('h2', { className: 'text-lg font-bold text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
           h('span', { className: 'text-[11px] text-slate-400 ml-1' }, 'v3.0'),
-          h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
+          h('span', { id: 'semiconductor-progress-summary', className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200', 'aria-label': 'Progress: ' + progressText + '. Notebook: ' + notebookCount }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP · Notebook ' + notebookCount)
         ),
         tabBar,
         h('div', { role: 'tabpanel', id: 'semiconductor-panel-' + tab,

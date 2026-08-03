@@ -228,7 +228,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'Species anatomy cues'");
     expect(source).toContain('They are diagram cues, not specimen scans.');
     expect(source).not.toContain('props.dietColor, props.autoRotate, props.scanTarget');
-    expect(source).toContain('new THREE.HemisphereLight(0xc8e4f0, 0x514631, 0.76)');
+    expect(source).toContain('new THREE.HemisphereLight(habitat.hemiSky, habitat.hemiGround, habitat.hemiIntensity)');
     expect(source).toContain('var naturalDietPalette = {');
     expect(source).toContain("var groundCanvas = document.createElement('canvas');");
     expect(source).toContain('new THREE.DodecahedronGeometry(rockSize, 0)');
@@ -484,7 +484,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addMuscleBelly(a, b, radius, depthScale)');
     expect(source).toContain('if (skeletalProfile.buccalTissue)');
     expect(source).toContain('var caudofemoralOrigin =');
-    expect(source).toContain('addKeratinCone(digitTip, sheathTip');
+    expect(source).toContain('addKeratinCone(digitTip, new THREE.Vector3().copy(digitTip).lerp(clawTip, 1.12)');
     expect(source).toContain('Muscle inference');
     expect(source).toContain('Keratin sheath');
     expect(source).toContain('integumentMode: \'scaled\'');

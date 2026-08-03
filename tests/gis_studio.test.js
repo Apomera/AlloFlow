@@ -82,7 +82,7 @@ describe('GIS Studio', () => {
   it('renders layers, spatial reasoning, sonification, and a table twin', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', {});
-    for (const text of ['Start a first investigation', 'Build evidence packet', 'Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
+    for (const text of ['Start a first investigation', 'Build evidence packet', 'Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Undo analysis', 'Redo analysis', 'Copy analysis summary', 'Keyboard: Ctrl/Cmd+Z to undo', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('<table');
@@ -165,12 +165,15 @@ describe('GIS Studio', () => {
       analysis: 'Pattern does not prove cause.',
       left: { label: 'Population', basemap: 'Street', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 12 }] },
       right: { label: 'Access', basemap: 'Imagery', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 88 }] },
-      selected: [{ name: 'A', lat: 44, lon: -69, value: 12 }]
+      selected: [{ name: 'A', lat: 44, lon: -69, value: 12 }],
+      spatialAnalysis: { method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' }
     });
     expect(report).toContain('<html lang="en">');
     expect(report).toContain('Coordinate plot');
     expect(report).toContain('Print or save as PDF');
     expect(report).toContain('<caption>Left comparison data</caption>');
+    expect(report).toContain('Spatial method and provenance');
+    expect(report).toContain('Radius buffer');
     expect(report).toContain('&lt;script&gt;');
     expect(report).not.toContain('<script>alert');
   });
@@ -205,10 +208,12 @@ describe('GIS Studio', () => {
 
   it('parses time-series CSV metadata and rejects a single-year dataset', () => {
     const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
-    const parsed = tool.testing.parseTimeCSV('name,lat,lon,year,value,unit,source\nA,44,-69,2020,10,percent,Survey\nA,44,-69,2025,15,percent,Survey');
+    const parsed = tool.testing.parseTimeCSV('name,lat,lon,year,value,unit,source\nA,44,-69,2020,10,percent,Survey\nA,44,-69,2025,15,percent,Survey\nBad,200,-69,2025,20,percent,Survey\nMissing year,44,-69,,25,percent,Survey');
     expect(parsed.years).toEqual([2020, 2025]);
     expect(parsed.units).toEqual(['percent']);
     expect(parsed.sources).toEqual(['Survey']);
+    expect(parsed.invalidRows).toBe(2);
+    expect(parsed.invalidSamples[0]).toMatchObject({ row: 4, name: 'Bad', latitude: '200' });
     expect(() => tool.testing.parseTimeCSV('name,lat,lon,year,value\nA,44,-69,2020,10')).toThrow(/two distinct years/);
   });
 
@@ -229,7 +234,7 @@ describe('GIS Studio', () => {
   it('renders the animated, accessible time-series workspace', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'timeline' });
-    for (const text of ['Time-Series Change Lab', 'Import a time-series CSV', 'Baseline year', 'Focus year', 'Play timeline', 'Sonify changes', 'Accessible change summary', 'Absolute change', 'Percent change', 'Download change evidence report', 'Compatibility check']) {
+    for (const text of ['Time-Series Change Lab', 'Import a time-series CSV', 'Download time-series import review', 'Baseline year', 'Focus year', 'Play timeline', 'Sonify changes', 'Accessible change summary', 'Absolute change', 'Percent change', 'Download change evidence report', 'Compatibility check']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('type="range"');

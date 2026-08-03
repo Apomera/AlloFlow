@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');
 const miscSource = read('misc_handlers_source.jsx');
 const educatorSource = read('view_educator_hub_modal_source.jsx');
+const remediationViewSource = read('view_pdf_audit_source.jsx');
 
 const uploadPrelude = miscSource.slice(0, miscSource.indexOf('const handleLoadProject'));
 const uploadRuntime = new Function('window', `${uploadPrelude}\nreturn { handleFileUpload, cancelFileIntakeOperations, classify: _classifyMiscUpload };`)(globalThis.window || {});
@@ -253,6 +254,30 @@ describe('document intake hard limits and media classification', () => {
     expect(deps.setGenerationStep).toHaveBeenLastCalledWith('');
   });
 
+  it.each([
+    [{ name: 'diagram.PNG', type: '', size: 512 }, 'image/png'],
+    [{ name: 'photo.JpEg', type: 'application/octet-stream', size: 768 }, 'image/jpeg'],
+    [{ name: 'chart.webp', type: 'image/webp', size: 1024 }, 'image/webp'],
+  ])('routes supported image %s to remediation without flattening it to OCR text', async (file, expectedMime) => {
+    const deps = uploadDeps();
+
+    await uploadRuntime.handleFileUpload({ target: { files: [file] } }, deps);
+    expect(ControlledFileReader.instances).toHaveLength(1);
+    await ControlledFileReader.instances[0].succeed('UkFXSU1BR0VCWVRFUw==');
+
+    expect(deps.setPendingPdfBase64).toHaveBeenLastCalledWith('UkFXSU1BR0VCWVRFUw==');
+    expect(deps.setPendingPdfFile).toHaveBeenLastCalledWith(file);
+    expect(deps.setPdfAuditResult).toHaveBeenLastCalledWith({
+      _choosing: true,
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: expectedMime,
+      _imageInput: true,
+    });
+    expect(deps.callGeminiVision).not.toHaveBeenCalled();
+    expect(deps.setInputText).not.toHaveBeenCalled();
+  });
+
   it('clears extraction status after an ordinary text upload succeeds', async () => {
     const deps = uploadDeps();
     const file = { name: 'notes.txt', type: 'text/plain', size: 128 };
@@ -386,6 +411,24 @@ const failingAutoLoopDeps = () => {
     warnLog: vi.fn(),
   };
 };
+
+describe('first-class image remediation view contract', () => {
+  it('retains canonical image MIME through single and batch audit/remediation launches', () => {
+    expect(remediationViewSource).toContain("const _VIEW_REMEDIATION_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);");
+    expect(remediationViewSource).toContain("mimeType: _viewRemediationMimeType(file), status: 'pending'");
+    expect(remediationViewSource).toContain("mimeType: _viewRemediationMimeType({ name: descriptor.name, mimeType: readResult.mimeType || descriptor.mimeType })");
+    expect(remediationViewSource).toContain("runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType })");
+    expect(remediationViewSource).toContain('fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType, auditResult: _audit');
+    expect(remediationViewSource).toContain('base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType');
+  });
+
+  it('admits supported images in batch UI while keeping PDF-only validation gated', () => {
+    expect(remediationViewSource).toContain("/\\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods|png|jpe?g|webp)$/i");
+    expect(remediationViewSource).toContain('accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods,.png,.jpg,.jpeg,.webp"');
+    expect(remediationViewSource.match(/const _isPdfIn = !!pendingPdfBase64 && _inputIsPdf;/g)).toHaveLength(2);
+    expect(remediationViewSource).toContain("replace(/\\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, '')");
+  });
+});
 
 describe('auto-remediation failure ownership', () => {
   it('handles a rejected round, clears its flags, and reports the failure without rejecting', async () => {

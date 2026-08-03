@@ -7151,7 +7151,9 @@ window.StemLab = window.StemLab || {
             var eyeMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x6d5434, roughness: 0.22, metalness: 0.03 }) : new THREE.MeshPhongMaterial({ color: 0x6d5434, shininess: 82 });
             var eyePupilMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x090705, roughness: 0.14, metalness: 0.02 }) : new THREE.MeshPhongMaterial({ color: 0x090705, shininess: 96 });
             var eyeGlintMat = new THREE.MeshBasicMaterial({ color: 0xfff3cf });
+            var corneaMat = THREE.MeshPhysicalMaterial ? new THREE.MeshPhysicalMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.18, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, depthWrite: false }) : new THREE.MeshBasicMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.14, depthWrite: false });
             var mouthMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.94 }) : new THREE.MeshPhongMaterial({ color: 0x241a17, shininess: 2 });
+            var oralTissueMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x5b2d2b, roughness: 0.82, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0x5b2d2b, shininess: 5 });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
             var toothMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xfff5d6, roughness: 0.48, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xfff5d6, shininess: 24 });
             var muscleMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), roughness: 0.92, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), shininess: 4, depthWrite: false });
@@ -7193,6 +7195,7 @@ window.StemLab = window.StemLab || {
               tail: null,
               tailContour: null,
               feathers: [],
+              eyes: [],
               bodyBaseScale: null,
               neckBaseScale: null,
               tailBaseRotation: null,
@@ -7829,9 +7832,17 @@ window.StemLab = window.StemLab || {
               }
 
               var faceScale = reconstructionProfile.head;
+              var lowerJawStart = head.clone().lerp(snout, 0.16).add(vec(0, -Math.max(0.052, ht * 0.030), 0));
+              var lowerJawEnd = head.clone().lerp(snout, 0.94).add(vec(0, -Math.max(0.045, ht * 0.024), 0));
+              var lowerJawShell = addSoftTissueCylinder(lowerJawStart, lowerJawEnd, Math.max(0.052, ht * 0.028) * faceScale, Math.max(0.036, ht * 0.019) * faceScale, headMat);
+              addBodyContour(lowerJawShell);
+              addBodyContour(addEllipsoid(lowerJawEnd.clone().add(vec(-Math.max(0.008, len * 0.002), -Math.max(0.006, ht * 0.0025), 0)), vec(Math.max(0.045, len * 0.010) * faceScale, Math.max(0.032, ht * 0.016) * faceScale, Math.max(0.046, ht * 0.024) * faceScale), headMat));
               [-1, 1].forEach(function (faceSide) {
                 var eyePos = head.clone().add(vec(-Math.max(0.025, len * 0.010), Math.max(0.035, ht * 0.020), faceSide * Math.max(0.085, ht * 0.046) * faceScale));
                 var eyeRadius = Math.max(0.022, ht * 0.012) * faceScale;
+                var browStart = eyePos.clone().add(vec(-eyeRadius * 1.22, eyeRadius * 0.84, -faceSide * eyeRadius * 0.16));
+                var browEnd = eyePos.clone().add(vec(eyeRadius * 1.02, eyeRadius * 0.96, -faceSide * eyeRadius * 0.12));
+                addSoftTissueCylinder(browStart, browEnd, eyeRadius * 0.25, eyeRadius * 0.18, headMat);
                 var eye = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius, 18, 12), eyeMat);
                 eye.position.copy(eyePos);
                 eye.scale.set(1, 0.82, 0.46);
@@ -7846,15 +7857,46 @@ window.StemLab = window.StemLab || {
                 glint.position.copy(eyePos).add(vec(-Math.max(0.006, len * 0.0012), Math.max(0.008, ht * 0.003), faceSide * Math.max(0.011, ht * 0.004)));
                 glint.renderOrder = 12;
                 model.add(glint);
+                var cornea = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 1.03, 20, 14), corneaMat);
+                cornea.position.copy(eyePos).add(vec(0, 0, faceSide * eyeRadius * 0.12));
+                cornea.scale.set(1, 0.84, 0.50);
+                cornea.renderOrder = 12;
+                model.add(cornea);
+                var upperLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.04, Math.max(0.004, eyeRadius * 0.17), 7, 22, Math.PI), headMat);
+                upperLid.position.copy(eyePos).add(vec(0, 0, faceSide * eyeRadius * 0.47));
+                upperLid.scale.y = 0.82;
+                upperLid.renderOrder = 13;
+                model.add(upperLid);
+                var lowerLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.02, Math.max(0.0035, eyeRadius * 0.13), 7, 22, Math.PI), headMat);
+                lowerLid.position.copy(upperLid.position);
+                lowerLid.rotation.z = Math.PI;
+                lowerLid.scale.y = 0.82;
+                lowerLid.renderOrder = 13;
+                model.add(lowerLid);
+                idleMotion.eyes.push({ eye: eye, pupil: pupil, glint: glint, cornea: cornea, upperLid: upperLid, lowerLid: lowerLid, eyeBaseY: eye.scale.y, pupilBaseY: pupil.scale.y, corneaBaseY: cornea.scale.y, lidBaseY: upperLid.scale.y });
                 var nostrilPos = snout.clone().add(vec(-Math.max(0.012, len * 0.004), Math.max(0.012, ht * 0.006), faceSide * Math.max(0.048, ht * 0.026) * faceScale));
-                var nostril = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.010, ht * 0.0055) * faceScale, 12, 8), mouthMat);
+                var nostrilRadius = Math.max(0.010, ht * 0.0055) * faceScale;
+                var nostril = new THREE.Mesh(new THREE.SphereGeometry(nostrilRadius, 12, 8), mouthMat);
                 nostril.position.copy(nostrilPos);
                 nostril.scale.set(1.25, 0.55, 0.42);
                 nostril.renderOrder = 10;
                 model.add(nostril);
+                var nostrilRim = new THREE.Mesh(new THREE.TorusGeometry(nostrilRadius * 1.18, Math.max(0.0025, nostrilRadius * 0.20), 7, 18), headMat);
+                nostrilRim.position.copy(nostrilPos).add(vec(0, 0, faceSide * nostrilRadius * 0.40));
+                nostrilRim.scale.set(1.25, 0.56, 1);
+                nostrilRim.renderOrder = 11;
+                model.add(nostrilRim);
                 var mouthStart = head.clone().lerp(snout, 0.18).add(vec(0, -Math.max(0.030, ht * 0.017), faceSide * Math.max(0.060, ht * 0.033) * faceScale));
                 var mouthEnd = head.clone().lerp(snout, 0.92).add(vec(0, -Math.max(0.026, ht * 0.014), faceSide * Math.max(0.052, ht * 0.029) * faceScale));
                 addModelCylinder(mouthStart, mouthEnd, Math.max(0.006, ht * 0.0028), mouthMat, 10);
+                var lowerLipStart = mouthStart.clone().add(vec(0, -Math.max(0.006, ht * 0.0030), faceSide * Math.max(0.002, ht * 0.0010)));
+                var lowerLipEnd = mouthEnd.clone().add(vec(0, -Math.max(0.005, ht * 0.0024), faceSide * Math.max(0.002, ht * 0.0010)));
+                addModelCylinder(lowerLipStart, lowerLipEnd, Math.max(0.004, ht * 0.0020), oralTissueMat, 10);
+                var mouthCorner = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.008, ht * 0.0040) * faceScale, 12, 8), oralTissueMat);
+                mouthCorner.position.copy(mouthStart);
+                mouthCorner.scale.set(0.72, 1.16, 0.48);
+                mouthCorner.renderOrder = 11;
+                model.add(mouthCorner);
               });
 
               if (/Ceratops/i.test(cladeName)) {
@@ -9004,6 +9046,16 @@ window.StemLab = window.StemLab || {
                     item.mesh.rotation.x = item.baseRotation.x + featherWave;
                     item.mesh.rotation.z = item.baseRotation.z + featherWave * 0.62;
                   });
+                  var blinkCycle = (idleTime * 0.16 + idleMotion.phase * 0.13) % 1;
+                  var blinkAmount = blinkCycle > 0.92 ? Math.sin(((blinkCycle - 0.92) / 0.08) * Math.PI) : 0;
+                  idleMotion.eyes.forEach(function (eyeRig) {
+                    eyeRig.eye.scale.y = eyeRig.eyeBaseY * (1 - blinkAmount * 0.88);
+                    eyeRig.pupil.scale.y = eyeRig.pupilBaseY * (1 - blinkAmount * 0.90);
+                    eyeRig.cornea.scale.y = eyeRig.corneaBaseY * (1 - blinkAmount * 0.88);
+                    eyeRig.upperLid.scale.y = eyeRig.lidBaseY * (1 - blinkAmount * 0.88);
+                    eyeRig.lowerLid.scale.y = eyeRig.lidBaseY * (1 - blinkAmount * 0.88);
+                    eyeRig.glint.visible = blinkAmount < 0.48;
+                  });
                 }
                 yawRef.current.value = yaw;
                 model.rotation.y = yaw;
@@ -9843,6 +9895,7 @@ var evidenceRoute = [
           keyItem('#b99d73', 'Quadrate-articular joint', 'A darker condyle marks the primary reptile-style jaw hinge. It is not animated as a freely swinging bird-like quadrate unless fossil mechanics support that interpretation.'),
           keyItem('#c4b5d9', 'Hyoid proxy', 'Paired lavender rods mark conservative tongue-support bones; elaboration is increased only for supported derived herbivorous ornithischians, while soft tongue shape is omitted.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton; muscle and keratin overlays refine the inference.'),
+          keyItem('#6d5434', 'Living face details', 'Layered corneas, round conservative pupils, eyelid margins, brow tissue, nostril rims, lips, and a distinct lower jaw improve readability. A reduced-motion-aware blink adds a subtle living cue; exact color and tissue thickness remain reconstructed.'),
           keyItem('#8f3f32', 'Muscle inference', 'Muted red-brown volumes mark inferred jaw, neck, chest, thigh, calf, and caudofemoral paths. Attachment regions are better constrained than their thickness.'),
           keyItem('#70465c', 'Dorsal lung proxy', 'Paired plum volumes show a conservative dorsal respiratory position derived from living-archosaur comparison; organ boundaries are not fossil outlines.'),
           keyItem('#bdeff2', 'Air-sac proxy', 'Pale volumes show a plausible cervical, clavicular, thoracic, and abdominal distribution only in supported saurischian profiles. Exact compartments and airflow remain inferred.'),

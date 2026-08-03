@@ -70,9 +70,8 @@ function _alloTaggedPdfDeliveryVerdict(result) {
   const unicodeWarning = typesetSummary && typesetSummary.unicodeTypesetWarning;
   const typesetDroppedChars = Number(unicodeWarning && unicodeWarning.droppedChars);
   const typesetDroppedImages = Number(typesetSummary && typesetSummary.imagesDropped);
-  if (Number.isFinite(typesetDroppedChars) && typesetDroppedChars > 0 || Number.isFinite(typesetDroppedImages) && typesetDroppedImages > 0) {
+  if (Number.isFinite(typesetDroppedChars) && typesetDroppedChars > 0 || Number.isFinite(typesetDroppedImages) && typesetDroppedImages > 0)
     return { ok: false, code: "typeset-content-dropped", reason: "the clean rebuild dropped source text or images" };
-  }
   const roundTrip = result && result.roundTrip;
   if (!roundTrip) return { ok: false, code: "roundtrip-unavailable", reason: "post-save structure verification was unavailable" };
   if (roundTrip.ok !== true) {
@@ -1275,6 +1274,23 @@ function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listClo
     depth--;
   }
   return out;
+}
+const _VIEW_REMEDIATION_IMAGE_MIMES = /* @__PURE__ */ new Set(["image/png", "image/jpeg", "image/webp"]);
+function _viewRemediationMimeType(file) {
+  let claimed = String(file && (file.mimeType || file.type) || "").trim().toLowerCase();
+  if (claimed === "image/jpg") claimed = "image/jpeg";
+  if (_VIEW_REMEDIATION_IMAGE_MIMES.has(claimed)) return claimed;
+  const name = String(file && (file.name || file.fileName || file.relPath) || "").toLowerCase();
+  if (/\.png$/.test(name)) return "image/png";
+  if (/\.jpe?g$/.test(name)) return "image/jpeg";
+  if (/\.webp$/.test(name)) return "image/webp";
+  return claimed;
+}
+function _viewIsRemediationImage(file) {
+  return _VIEW_REMEDIATION_IMAGE_MIMES.has(_viewRemediationMimeType(file));
+}
+function _viewRemediationBaseName(name) {
+  return String(name || "document").replace(/\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, "");
 }
 function _dataImageInfo(src) {
   const match = /^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,([a-z0-9+/=\r\n]+)$/i.exec(String(src || ""));
@@ -3742,6 +3758,8 @@ function PdfAuditView(props) {
   };
   const _auditMissingDependencies = (auditDependencyState && auditDependencyState.failed || []).concat(auditDependencyState && auditDependencyState.pending || []);
   const _auditInputName = String(pendingPdfFile && pendingPdfFile.name || "");
+  const _inputMimeType = _viewRemediationMimeType(pendingPdfFile);
+  const _inputIsImage = _viewIsRemediationImage(pendingPdfFile);
   const _auditHasTranscriptPayload = typeof pendingPdfBase64 === "string" && pendingPdfBase64.slice(0, 23) === "QUxMT1RSQU5TQ1JJUFQ6djE";
   const _auditHasOfficePayload = /\.(docx|pptx)$/i.test(_auditInputName) || typeof pendingPdfBase64 === "string" && pendingPdfBase64.slice(0, 5) === "UEsDB" && !/\.pdf$/i.test(_auditInputName);
   const _auditCanRunWithoutGemini = auditReady === false && (_auditHasTranscriptPayload || _auditHasOfficePayload) && _auditMissingDependencies.length > 0 && _auditMissingDependencies.every((name) => name === "GeminiAPI");
@@ -3954,7 +3972,7 @@ function PdfAuditView(props) {
         return;
       }
       addToast(_sanitized ? "\u{1F9FC} " + (t("toasts.typeset_sanitized") || "Rebuilding a clean, tagged PDF from the remediated content \u2014 drops any embedded scripts, actions, or attachments from the original\u2026") : t("toasts.typeset_tagging") || "\u{1F4C4} Generating a typeset tagged PDF from the accessible content\u2026 (clean layout, not the original design)", "info");
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, ""), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? "Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)" : "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? "Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)" : "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) {
         addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
@@ -3983,14 +4001,14 @@ function PdfAuditView(props) {
       setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
       const _typesetVerdict = _alloTaggedPdfDeliveryVerdict(_result);
       if (!_typesetVerdict.ok) {
-        const _typesetUnverifiedName = (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + (_sanitized ? "-tagged-clean-UNVERIFIED.pdf" : "-tagged-typeset-UNVERIFIED.pdf");
+        const _typesetUnverifiedName = _viewRemediationBaseName(pendingPdfFile?.name) + (_sanitized ? "-tagged-clean-UNVERIFIED.pdf" : "-tagged-typeset-UNVERIFIED.pdf");
         _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: _typesetUnverifiedName };
         _lastTaggedDeliveryRef.current = { withheld: true, reason: "typeset verification unavailable/failed (" + _typesetVerdict.reason + ")" };
         setTaggedGateIssue("Generated-layout export: " + _typesetVerdict.reason);
         addToast("The generated-layout tagged PDF could not be verified. An explicitly marked download option is pinned in the Downloads section.", "warning");
         return;
       }
-      safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + (_sanitized ? "-tagged-clean.pdf" : "-tagged-typeset.pdf"));
+      safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), _viewRemediationBaseName(pendingPdfFile?.name) + (_sanitized ? "-tagged-clean.pdf" : "-tagged-typeset.pdf"));
       _lastTaggedDeliveryRef.current = { withheld: false };
       const _s = _result && _result.summary || {};
       if (_s.typesetFont) {
@@ -4453,8 +4471,7 @@ function PdfAuditView(props) {
   });
   React.useEffect(() => {
     try {
-      const _nm = (pendingPdfFile?.name || "").toLowerCase();
-      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nm);
+      const _isPdfIn = !!pendingPdfBase64 && _inputIsPdf;
       if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== "blocked" && !_veraIframeRef.current) warmVeraPdfIframe();
     } catch (_) {
     }
@@ -4668,7 +4685,7 @@ function PdfAuditView(props) {
       a.href = dlUrl;
       const _partial = j.blobs.length < j.segments.length;
       const _off = j.partOffset || 0;
-      a.download = (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-audio" + (j.langSuffix || "") + (j.srMode ? "-sr-style" : "") + (_partial || _off ? "-part" + (_off + 1) + "-" + (_off + j.blobs.length) + "of" + j.segments.length : "") + "." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
+      a.download = _viewRemediationBaseName(pendingPdfFile?.name) + "-audio" + (j.langSuffix || "") + (j.srMode ? "-sr-style" : "") + (_partial || _off ? "-part" + (_off + 1) + "-" + (_off + j.blobs.length) + "of" + j.segments.length : "") + "." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -5430,7 +5447,7 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   }, []);
-  const _isSupportedBatchFile = (file) => !!(file && ((file.type || "").toLowerCase() === "application/pdf" || /\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(file.name || file.relPath || "")));
+  const _isSupportedBatchFile = (file) => !!(file && ((file.type || "").toLowerCase() === "application/pdf" || _viewIsRemediationImage(file) || /\.(pdf|docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods|png|jpe?g|webp)$/i.test(file.name || file.relPath || "")));
   const _alloReadBatchFileOwned = (file, session) => new Promise((resolve) => {
     if (!_batchIngestIsCurrent(session)) {
       resolve(null);
@@ -5476,7 +5493,7 @@ function PdfAuditView(props) {
           }
           base64 = converted && converted.payload || base64;
         }
-        settle({ id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size || 0, base64, status: "pending", result: null });
+        settle({ id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size || 0, base64, mimeType: _viewRemediationMimeType(file), status: "pending", result: null });
       } catch (error) {
         if (_batchIngestIsCurrent(session)) addToast('Could not convert "' + file.name + '": ' + (error && error.message || "unknown") + " - skipped.", "error");
         settle(null);
@@ -5570,6 +5587,7 @@ function PdfAuditView(props) {
       const descriptors = sourceFiles.map((file) => ({
         name: file.relPath || file.name || "document",
         size: file.sizeBytes || 0,
+        mimeType: _viewRemediationMimeType(file),
         source: file
       }));
       const accepted = _alloBatchPreflight(descriptors, []);
@@ -5590,7 +5608,7 @@ function PdfAuditView(props) {
           continue;
         }
         actualBytes += actualSize;
-        queue.push({ id: Date.now() + Math.random(), fileName: descriptor.name, fileSize: actualSize, base64: readResult.base64, status: "pending", result: null });
+        queue.push({ id: Date.now() + Math.random(), fileName: descriptor.name, fileSize: actualSize, base64: readResult.base64, mimeType: _viewRemediationMimeType({ name: descriptor.name, mimeType: readResult.mimeType || descriptor.mimeType }), status: "pending", result: null });
       }
       if (!_batchIngestIsCurrent(session)) return;
       if (!queue.length) {
@@ -7112,7 +7130,7 @@ function PdfAuditView(props) {
           setPdfFixStep("");
         }
       }
-    }, disabled: !!webJobBusy, "aria-busy": webJobBusy === "remediate" ? "true" : void 0, "data-help-key": "pdf_audit_view_web_remediate_btn", className: "px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" }, "\u{1F527} Audit & Remediate static source")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center" }, "Both actions inspect static source with AI, axe-core, and IBM Equal Access. Remediation produces downloadable HTML, with unresolved and out-of-scope checks retained for manual review.")) : pdfBatchMode ? /* @__PURE__ */ React.createElement("div", { className: "text-left" }, batchIngesting && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mb-4 text-center text-sm font-bold text-indigo-700" }, "Reading and validating selected files..."), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-3 text-center" }, "\u{1F4C2} Batch PDF Remediation"), !pdfBatchProcessing && !pdfBatchSummary && !batchIngesting && /* @__PURE__ */ React.createElement(
+    }, disabled: !!webJobBusy, "aria-busy": webJobBusy === "remediate" ? "true" : void 0, "data-help-key": "pdf_audit_view_web_remediate_btn", className: "px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" }, "\u{1F527} Audit & Remediate static source")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center" }, "Both actions inspect static source with AI, axe-core, and IBM Equal Access. Remediation produces downloadable HTML, with unresolved and out-of-scope checks retained for manual review.")) : pdfBatchMode ? /* @__PURE__ */ React.createElement("div", { className: "text-left" }, batchIngesting && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mb-4 text-center text-sm font-bold text-indigo-700" }, "Reading and validating selected files..."), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-3 text-center" }, "\u{1F4C2} Batch Document & Image Remediation"), !pdfBatchProcessing && !pdfBatchSummary && !batchIngesting && /* @__PURE__ */ React.createElement(
       "div",
       {
         "data-help-key": "pdf_audit_view_batch_dropzone",
@@ -7137,12 +7155,12 @@ function PdfAuditView(props) {
         }
       },
       /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u{1F4E5}"),
-      /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-indigo-600" }, t("pdf_audit.batch.drop_text") || "Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, or Excel files here"),
+      /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-indigo-600" }, t("pdf_audit.batch.drop_text") || "Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, Excel, PNG, JPEG, or WebP files here"),
       /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "or click to browse"),
-      /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods", multiple: true, className: "hidden", id: "batch-pdf-input", onChange: async (e) => {
+      /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods,.png,.jpg,.jpeg,.webp", multiple: true, className: "hidden", id: "batch-pdf-input", onChange: async (e) => {
         const files = [...e.target.files || []].filter(_isSupportedBatchFile);
         const _added = await _alloEnqueueBatchFilesOwned(files);
-        if (_added > 0) addToast(`Added ${_added} PDF(s)`, "success");
+        if (_added > 0) addToast(`Added ${_added} file(s)`, "success");
         e.target.value = "";
       } }),
       /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_batch_browse_btn", htmlFor: "batch-pdf-input", className: "inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors" }, t("pdf_audit.batch.browse_files") || "Browse Files")
@@ -7153,8 +7171,8 @@ function PdfAuditView(props) {
         className: "px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
       },
       "\u{1F4C2} ",
-      t("pdf_audit.batch.scan_folder") || "Scan Folder (PDF, DOCX, PPTX, incl. subfolders)"
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("pdf_audit.batch.scan_folder_hint") || "Pick a folder and AlloFlow will remediate every document, then give you a report.")), resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl shrink-0", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-800 mb-1" }, t("pdf_audit.batch.resume.title") || "Previous batch interrupted"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, t("pdf_audit.batch.resume.summary", { done: resumableBatch._doneCount, total: resumableBatch.files.length }) || `${resumableBatch._doneCount}/${resumableBatch.files.length} file(s) completed before the tab closed.`, " ", resumableBatch._incompleteCount > 0 && (t("pdf_audit.batch.resume.remaining", { n: resumableBatch._incompleteCount }) || `${resumableBatch._incompleteCount} remaining.`)), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mb-3 truncate", title: resumableBatch.files.map((f) => f.fileName).join(", ") }, t("pdf_audit.batch.resume.files_label") || "Files:", " ", resumableBatch.files.slice(0, 3).map((f) => f.fileName).join(", "), resumableBatch.files.length > 3 ? " " + (t("pdf_audit.batch.resume.files_more", { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      t("pdf_audit.batch.scan_folder") || "Scan Folder (documents + PNG/JPEG/WebP, incl. subfolders)"
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("pdf_audit.batch.scan_folder_hint") || "Pick a folder and AlloFlow will remediate every supported document or image, then give you a report.")), resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl shrink-0", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-800 mb-1" }, t("pdf_audit.batch.resume.title") || "Previous batch interrupted"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, t("pdf_audit.batch.resume.summary", { done: resumableBatch._doneCount, total: resumableBatch.files.length }) || `${resumableBatch._doneCount}/${resumableBatch.files.length} file(s) completed before the tab closed.`, " ", resumableBatch._incompleteCount > 0 && (t("pdf_audit.batch.resume.remaining", { n: resumableBatch._incompleteCount }) || `${resumableBatch._incompleteCount} remaining.`)), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mb-3 truncate", title: resumableBatch.files.map((f) => f.fileName).join(", ") }, t("pdf_audit.batch.resume.files_label") || "Files:", " ", resumableBatch.files.slice(0, 3).map((f) => f.fileName).join(", "), resumableBatch.files.length > 3 ? " " + (t("pdf_audit.batch.resume.files_more", { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: async () => {
@@ -7503,11 +7521,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </body></html>`);
       win.document.close();
       addToast(t("toasts.dashboard_opened"), "success");
-    }, "data-help-key": "pdf_audit_view_batch_dashboard_btn", className: "px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2" }, "\u{1F4CA} Dashboard")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "PDF Uploaded: ", pdfAuditResult.fileName), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-1" }, (pdfAuditResult.fileSize / (1024 * 1024)).toFixed(1), " MB"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, t("pdf_audit.choose_how") || "Choose how to process this PDF:"), pdfAuditResult._mediaPending && (() => {
+    }, "data-help-key": "pdf_audit_view_batch_dashboard_btn", className: "px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2" }, "\u{1F4CA} Dashboard")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, _inputIsImage ? "\u{1F5BC}\uFE0F" : "\u{1F4C4}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, _inputIsImage ? "Image" : "Document", " Uploaded: ", pdfAuditResult.fileName), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-1" }, (pdfAuditResult.fileSize / (1024 * 1024)).toFixed(1), " MB"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, _inputIsImage ? "Choose how to process this image:" : t("pdf_audit.choose_how") || "Choose how to process this document:"), pdfAuditResult._mediaPending && (() => {
       const mp = pdfAuditResult._mediaPending;
       const effMode = mp.chunked ? "speech" : mediaMode || (mp.isVideo ? "dual" : "speech");
       const MODES = mp.chunked ? [["speech", "\u{1F399} Speech transcript (long recording \u2014 transcribed in segments; visual analysis needs files under 15MB)"]] : mp.isVideo ? [["speech", "\u{1F399} Speech only"], ["visual", "\u{1F3AC} Visuals only"], ["dual", "\u{1F39E} Dual-track (spoken + shown + divergences)"], ["synthesis", "\u{1F4D6} Synthesized narrative"]] : [["speech", "\u{1F399} Speech transcript"], ["synthesis", "\u{1F4D6} Cleaned narrative"]];
-      return /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left", "data-help-key": "pdf_audit_media_digestion_card" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-900 text-sm mb-1" }, "\u{1F399} ", t("pdf_audit.media.heading") || "Step 0: how should AlloFlow digest this recording?"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, mp.isVideo ? t("pdf_audit.media.video_note") || "Video carries two tracks \u2014 what is said and what is shown \u2014 and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative." : t("pdf_audit.media.audio_note") || "The recording will be transcribed by AI \u2014 review the result for transcription errors before distributing."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mb-2" }, MODES.map(([k, label]) => /* @__PURE__ */ React.createElement("label", { key: k, className: "flex items-center gap-2 text-xs cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "allo-media-mode", checked: effMode === k, onChange: () => setMediaMode(k) }), /* @__PURE__ */ React.createElement("span", { className: effMode === k ? "font-bold text-cyan-900" : "text-slate-700" }, label)))), /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.media.instructions_label") || "Custom instructions (optional)"), /* @__PURE__ */ React.createElement("textarea", { value: mediaInstructions, onChange: (e) => setMediaInstructions(e.target.value), rows: 2, "aria-label": t("pdf_audit.media.instructions_label") || "Custom instructions (optional)", placeholder: t("pdf_audit.media.instructions_ph") || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"', className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" }), /* @__PURE__ */ React.createElement("button", { disabled: mediaDigesting || typeof transcribeMediaToPayload !== "function", onClick: async () => {
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left", "data-help-key": "pdf_audit_media_digestion_card" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-900 text-sm mb-1" }, "\u{1F399} ", t("pdf_audit.media.heading") || "Step 0: how should AlloFlow digest this recording?"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, mp.isVideo ? t("pdf_audit.media.video_note") || "Video carries two tracks \u2014 what is said and what is shown \u2014 and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative." : t("pdf_audit.media.audio_note") || "The recording will be transcribed by AI \u2014 review the result for transcription errors before distributing."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mb-2" }, MODES.map(([k, label]) => /* @__PURE__ */ React.createElement("label", { key: k, className: "flex items-center gap-2 text-xs cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "allo-media-mode", checked: effMode === k, onChange: () => setMediaMode(k) }), /* @__PURE__ */ React.createElement("span", { className: effMode === k ? "font-bold text-cyan-900" : "text-slate-700" }, label)))), /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.media.instructions_label") || "Custom instructions (optional)"), /* @__PURE__ */ React.createElement("textarea", { value: mediaInstructions, onChange: (e) => setMediaInstructions(e.target.value), rows: 2, placeholder: t("pdf_audit.media.instructions_ph") || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"', className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" }), /* @__PURE__ */ React.createElement("button", { disabled: mediaDigesting || typeof transcribeMediaToPayload !== "function", onClick: async () => {
         if (_viewDocumentJobIsActive()) {
           addToast("Another document operation is already running.", "info");
           return;
@@ -7557,8 +7575,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         let _veraWarm = null;
         let _veraIframe = null;
         try {
-          const _nmIn = (pendingPdfFile?.name || "").toLowerCase();
-          const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+          const _isPdfIn = !!pendingPdfBase64 && _inputIsPdf;
           if (pdfAutoVeraPdf && _isPdfIn) {
             _veraIframe = warmVeraPdfIframe();
             const _embedViable = !!(_veraIframe && (_veraEmbedPref() === "ok" || _veraIframe.isReady()));
@@ -7572,7 +7589,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast(t("toasts.auditing_remediating_pdf"), "info");
         let _audit = null;
         try {
-          _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });
+          _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
         } catch (auditErr) {
           if (!_oneClickDocumentIsCurrent()) return;
           setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
@@ -7614,7 +7631,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           if (!_oneClickDocumentIsCurrent()) return;
           _handsErr = null;
           try {
-            _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit });
+            _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType, auditResult: _audit });
           } catch (e) {
             _handsErr = e;
           }
@@ -7972,7 +7989,7 @@ Return ONLY JSON:
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
       try {
-        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });
+        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
         if (!_auditCurrent()) return;
         if (!_result) {
           setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
@@ -8364,7 +8381,7 @@ Return ONLY JSON:
       setPdfAuditResult(null);
       addToast(t("toasts.retrying_audit"), "info");
       try {
-        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });
+        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
         if (!_auditCurrent()) return;
         if (!_result) {
           setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
@@ -8886,10 +8903,10 @@ Return ONLY JSON:
       if (!freshBase64) return;
       if (typeof isPdfDocumentIntakeCurrent === "function" && !isPdfDocumentIntakeCurrent(_fixDocumentEpoch)) return;
       if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }).catch(() => {
         });
       } else {
-        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType }).catch(() => {
         });
       }
     }, disabled: _remediationBusy || remediationReady === false, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, _remediationBusy ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), _remediationBusy ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), _remediationBusy && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "region", "aria-label": "Detailed remediation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, Math.round(_remediationPercent), "% estimated"), /* @__PURE__ */ React.createElement("span", null, _formatElapsed(remediationProgress?.elapsedMs), " elapsed")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": Math.round(_remediationPercent), "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: _remediationPercent + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-1 text-center font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true" }, remediationProgress?.detail || pdfFixStep), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "AI calls ", _progressStats.apiCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Vision ", _progressStats.visionCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Retries ", _progressStats.transportRetries || 0), !!_progressStats.recoveredRetries && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" }, "Recovered ", _progressStats.recoveredRetries), !!_progressStats.authThrottles && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-amber-100 text-amber-800" }, "Throttle signals ", _progressStats.authThrottles)), remediationProgress?.activity?.message && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] " + (remediationProgress.status === "throttled" ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, remediationProgress.status === "throttled" ? "Waiting safely: " : "Current activity: "), remediationProgress.activity.message), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAgentTrace((v) => !v), "aria-pressed": showAgentTrace, className: "text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400" }, showAgentTrace ? "Hide live agent trace" : "Show live agent trace")), showAgentTrace && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-center text-slate-600" }, "Read-only safety view: intermediate AI HTML is isolated; code appears only after validation."), (() => {
@@ -10001,7 +10018,7 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-violet-300 rounded-xl p-3 text-xs", role: "dialog", "aria-label": t("pdf_audit.imgreview.aria") || "Review AI image description" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-black text-violet-800" }, "\u{1F50D} ", t("pdf_audit.imgreview.heading") || "Image", " ", imgReviewIdx + 1, " / ", imgReviewItems.length, " ", /* @__PURE__ */ React.createElement("span", { className: "ml-2 px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded font-bold uppercase text-[10px]" }, it.kind)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
         setImgReviewIdx(null);
         setImgReviewItems([]);
-      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, "aria-label": t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)", className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), (() => {
+      }, className: "text-slate-500 hover:text-red-600 font-bold" }, "\u2715 ", t("pdf_audit.imgreview.close") || "Close")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, it.src && /* @__PURE__ */ React.createElement("img", { src: it.src, alt: "", className: "max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[240px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.imgreview.alt_label") || "Description (what a screen reader says)"), /* @__PURE__ */ React.createElement("textarea", { value: imgReviewDraft, onChange: (e) => setImgReviewDraft(e.target.value), rows: 3, className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" }), (() => {
         const _aqFn = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.altQuality || null;
         let _q = null;
         try {
@@ -10890,7 +10907,7 @@ Return ONLY JSON:
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => downloadAccessiblePdf(pdfFixResult.accessibleHtml, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible"),
+        onClick: () => downloadAccessiblePdf(pdfFixResult.accessibleHtml, _viewRemediationBaseName(pendingPdfFile?.name) + "-accessible"),
         className: "px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5",
         title: t("pdf_audit.pdf_from_html.title") || "Regenerate a PDF from the remediated HTML. Layout reflows \u2014 page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
       },
@@ -11314,7 +11331,7 @@ Return ONLY JSON:
             }
             const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
             const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES[docMode]);
-            safeDownloadBlob(blob, `${(pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "")}-accessible.docx`);
+            safeDownloadBlob(blob, `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.docx`);
             const bits = [];
             if (spec.counts.headings) bits.push(spec.counts.headings + " real heading style" + (spec.counts.headings === 1 ? "" : "s"));
             if (spec.counts.images) bits.push(spec.counts.images + " image" + (spec.counts.images === 1 ? "" : "s") + " with alt text");
@@ -11362,7 +11379,7 @@ Return ONLY JSON:
               _themeLabel = "Classic Light (AI unavailable)";
             }
             const blob = await _buildPptxBlobFromSlides(deck, P, _theme);
-            safeDownloadBlob(blob, `${(pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "")}-accessible.pptx`);
+            safeDownloadBlob(blob, `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.pptx`);
             const bits = [deck.counts.slides + " slide" + (deck.counts.slides === 1 ? "" : "s") + " (" + deck.counts.titled + " titled)", _themeLabel + " theme"];
             if (deck.counts.images) bits.push(deck.counts.images + " image" + (deck.counts.images === 1 ? "" : "s") + " with alt text");
             if (deck.counts.tables) bits.push(deck.counts.tables + " table" + (deck.counts.tables === 1 ? "" : "s") + " with header rows");
@@ -11412,7 +11429,7 @@ Return ONLY JSON:
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${(pendingPdfFile?.name || "document").replace(/\.pdf$/i, "")}-accessible.html`;
+      a.download = `${_viewRemediationBaseName(pendingPdfFile?.name)}-accessible.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -11981,7 +11998,7 @@ Return ONLY JSON:
           }
           return;
         }
-        const _launchArgs = pdfPageRange && pdfPageRange.start && pdfPageRange.end ? { documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name } : { documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name };
+        const _launchArgs = pdfPageRange && pdfPageRange.start && pdfPageRange.end ? { documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType } : { documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name, fileSize: pendingPdfFile?.size || 0, mimeType: _inputMimeType };
         try {
           await fixAndVerifyPdf(_launchArgs);
         } catch (_) {

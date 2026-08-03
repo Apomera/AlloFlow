@@ -12360,6 +12360,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_assessmentliteracy.js',
         'stem_lab/stem_tool_autorepair.js',
         'stem_lab/stem_tool_learning_lab.js',
+        'stem_lab/stem_tool_consciousness.js',
         // Catch-up batch (May 15 2026): tools that have files + tile catalog
         // entries + _pluginOnlyTools flags but were never added to this
         // loader. Without this list entry the plugin never registers and
