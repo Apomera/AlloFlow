@@ -1,0 +1,1045 @@
+{
+  "schemaVersion": "alloflow-standards-snapshot/v1",
+  "dataset": {
+    "provider": "Learning Commons Knowledge Graph",
+    "datasetVersion": "v1.11.0",
+    "snapshotId": "learning-commons-v1-11-0-massachusetts-science-5-structural-current-5da6fb36ffb0933e",
+    "generatedAt": "2026-08-03T16:15:04.181Z",
+    "contentDigest": "5da6fb36ffb0933e9bc59050f16dfea59d47d7d7f529fe876b2104ca9b365165",
+    "sourceIntegrity": {
+      "nodes": {
+        "bytes": 292652341,
+        "sha256": "FFC142F72450C9692A9E547207CBA3E0CD4012EB00C1D1BE6AACED165C4139C5",
+        "etag": "\"0a46dded494853cd90e81295c96c3abb-35\"",
+        "lastModified": "2026-07-09T21:56:05Z",
+        "url": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/nodes.jsonl"
+      },
+      "relationships": {
+        "bytes": 520406049,
+        "sha256": "74389D5E438E7A7F23E1128539827533AE08ACACC73C9F3E4C81CC07A8916B21",
+        "etag": "\"0017e742cae8adcc87bf090aeb710cc1-63\"",
+        "lastModified": "2026-07-09T21:56:05Z",
+        "url": "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/relationships.jsonl"
+      }
+    },
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Learning Commons received state standards and written permission under CC BY-4.0 from 1EdTech.",
+    "sourceUrls": [
+      "https://docs.learningcommons.org/knowledge-graph/datasets/academic-standards",
+      "https://docs.learningcommons.org/knowledge-graph/using-knowledge-graph/local-files",
+      "https://docs.learningcommons.org/knowledge-graph/resources/license",
+      "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/nodes.jsonl",
+      "https://cdn.learningcommons.org/knowledge-graph/v1.11.0/exports/relationships.jsonl"
+    ]
+  },
+  "standards": [
+    {
+      "id": "c41777a4-55f6-47cc-ad65-589ea2f0e103",
+      "code": "1",
+      "label": "Asking questions (for science) and defining problems (for engineering)",
+      "text": "Asking questions (for science) and defining problems (for engineering)",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/c41777a4-55f6-47cc-ad65-589ea2f0e103",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/c41777a4-55f6-47cc-ad65-589ea2f0e103"
+      ]
+    },
+    {
+      "id": "f9f905fb-38ac-4737-81c0-73741dd69602",
+      "code": "2",
+      "label": "Developing and using models",
+      "text": "Developing and using models",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/f9f905fb-38ac-4737-81c0-73741dd69602",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/f9f905fb-38ac-4737-81c0-73741dd69602"
+      ]
+    },
+    {
+      "id": "58257a68-8f29-421d-a8e3-f181df8619ec",
+      "code": "3",
+      "label": "Planning and carrying out investigations",
+      "text": "Planning and carrying out investigations",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/58257a68-8f29-421d-a8e3-f181df8619ec",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/58257a68-8f29-421d-a8e3-f181df8619ec"
+      ]
+    },
+    {
+      "id": "33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "code": "33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "label": "Standards by Disciplinary Core Ideas",
+      "text": "Standards by Disciplinary Core Ideas",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0"
+      ]
+    },
+    {
+      "id": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "code": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "label": "Massachusetts Science and Technology/Engineering Framework",
+      "text": "Massachusetts Science and Technology/Engineering Framework",
+      "kind": "framework",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFDocuments/38542f25-9335-4099-bc86-19c23f23b4c4",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFDocuments/38542f25-9335-4099-bc86-19c23f23b4c4"
+      ]
+    },
+    {
+      "id": "3edb252b-4cc1-4dd5-b54d-e565f1afd248",
+      "code": "3edb252b-4cc1-4dd5-b54d-e565f1afd248",
+      "label": "Primary School (Grades Pre-K - 2)",
+      "text": "Primary School (Grades Pre-K - 2)",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "PK, K, 1, 2, 3, 4, 5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/3edb252b-4cc1-4dd5-b54d-e565f1afd248",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/3edb252b-4cc1-4dd5-b54d-e565f1afd248"
+      ]
+    },
+    {
+      "id": "9027ec0b-dc9f-4e39-97ae-ba3e21525d17",
+      "code": "4",
+      "label": "Analyzing and interpreting data",
+      "text": "Analyzing and interpreting data",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/9027ec0b-dc9f-4e39-97ae-ba3e21525d17",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/9027ec0b-dc9f-4e39-97ae-ba3e21525d17"
+      ]
+    },
+    {
+      "id": "daec967e-b467-4f99-b237-1d7e3185e97e",
+      "code": "5",
+      "label": "Using mathematics and computational thinking",
+      "text": "Using mathematics and computational thinking",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/daec967e-b467-4f99-b237-1d7e3185e97e",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/daec967e-b467-4f99-b237-1d7e3185e97e"
+      ]
+    },
+    {
+      "id": "3d455068-24c6-4262-a475-72b8bee02685",
+      "code": "5-ESS",
+      "label": "Grade 5: Earth and Space Sciences",
+      "text": "Grade 5: Earth and Space Sciences",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/3d455068-24c6-4262-a475-72b8bee02685",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/3d455068-24c6-4262-a475-72b8bee02685"
+      ]
+    },
+    {
+      "id": "c1388dff-c6ff-4b1e-9854-14cd49c473f6",
+      "code": "5-ESS1-1",
+      "label": "Use observations, first-hand and from various media, to argue that the Sun is a star that appears larger and brighter than other stars because it is closer to Earth.",
+      "text": "Use observations, first-hand and from various media, to argue that the Sun is a star that appears larger and brighter than other stars because it is closer to Earth.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/c1388dff-c6ff-4b1e-9854-14cd49c473f6",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/c1388dff-c6ff-4b1e-9854-14cd49c473f6"
+      ]
+    },
+    {
+      "id": "09c7024a-4fa0-41de-9170-27059e1b5e8c",
+      "code": "5-ESS1-2",
+      "label": "Use a model to communicate Earth’s relationship to the Sun, Moon, and other stars that explain (a) why people on Earth experience day and night, (b) patterns in daily changes in length and direction of shadows over a day, and (c) changes in the apparent position of the Sun, Moon, and stars at different times during a day, over a month, and over a year.",
+      "text": "Use a model to communicate Earth’s relationship to the Sun, Moon, and other stars that explain (a) why people on Earth experience day and night, (b) patterns in daily changes in length and direction of shadows over a day, and (c) changes in the apparent position of the Sun, Moon, and stars at different times during a day, over a month, and over a year.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/09c7024a-4fa0-41de-9170-27059e1b5e8c",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/09c7024a-4fa0-41de-9170-27059e1b5e8c"
+      ]
+    },
+    {
+      "id": "5d458ed2-af39-4450-baf3-c67f812d12ee",
+      "code": "5-ESS2-1",
+      "label": "Use a model to describe the cycling of water through a watershed through evaporation, precipitation, absorption, surface runoff, and condensation.",
+      "text": "Use a model to describe the cycling of water through a watershed through evaporation, precipitation, absorption, surface runoff, and condensation.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/5d458ed2-af39-4450-baf3-c67f812d12ee",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/5d458ed2-af39-4450-baf3-c67f812d12ee"
+      ]
+    },
+    {
+      "id": "7df5e6eb-58a9-4973-844f-dc3a7bbeb677",
+      "code": "5-ESS2-2",
+      "label": "Describe and graph the relative amounts of salt water in the ocean; fresh water in lakes, rivers, and groundwater; and fresh water frozen in glaciers and polar ice caps to provide evidence about the availability of fresh water in Earth’s biosphere.",
+      "text": "Describe and graph the relative amounts of salt water in the ocean; fresh water in lakes, rivers, and groundwater; and fresh water frozen in glaciers and polar ice caps to provide evidence about the availability of fresh water in Earth’s biosphere.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/7df5e6eb-58a9-4973-844f-dc3a7bbeb677",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/7df5e6eb-58a9-4973-844f-dc3a7bbeb677"
+      ]
+    },
+    {
+      "id": "930f62b0-3e3c-4a5d-9f9b-b522f5535585",
+      "code": "5-ESS3-1",
+      "label": "Obtain and combine information about ways communities reduce human impact on the Earth’s resources and environment by changing an agricultural, industrial, or community practice or process.",
+      "text": "Obtain and combine information about ways communities reduce human impact on the Earth’s resources and environment by changing an agricultural, industrial, or community practice or process.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/930f62b0-3e3c-4a5d-9f9b-b522f5535585",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/930f62b0-3e3c-4a5d-9f9b-b522f5535585"
+      ]
+    },
+    {
+      "id": "c3c2ef30-4006-4e61-b717-438dc6b3840f",
+      "code": "5-ESS3-2(MA)",
+      "label": "Test a simple system designed to filter particulates out of water and propose one change to the design to improve it.*",
+      "text": "Test a simple system designed to filter particulates out of water and propose one change to the design to improve it.*",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/c3c2ef30-4006-4e61-b717-438dc6b3840f",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/c3c2ef30-4006-4e61-b717-438dc6b3840f"
+      ]
+    },
+    {
+      "id": "528e9571-7c23-41fa-a159-893b13e2a2c8",
+      "code": "5-ETS",
+      "label": "Grade 5: Technology/Engineering",
+      "text": "Grade 5: Technology/Engineering",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/528e9571-7c23-41fa-a159-893b13e2a2c8",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/528e9571-7c23-41fa-a159-893b13e2a2c8"
+      ]
+    },
+    {
+      "id": "d238129a-833b-49fa-b8eb-5afc67920f35",
+      "code": "5-LS",
+      "label": "Grade 5: Life Science",
+      "text": "Grade 5: Life Science",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/d238129a-833b-49fa-b8eb-5afc67920f35",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/d238129a-833b-49fa-b8eb-5afc67920f35"
+      ]
+    },
+    {
+      "id": "b93e5657-2e6f-460d-b91a-cd668dc5cdac",
+      "code": "5-LS1-1",
+      "label": "Ask testable questions about the process by which plants use air, water, and energy from sunlight to produce sugars and plant materials needed for growth and reproduction.",
+      "text": "Ask testable questions about the process by which plants use air, water, and energy from sunlight to produce sugars and plant materials needed for growth and reproduction.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/b93e5657-2e6f-460d-b91a-cd668dc5cdac",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/b93e5657-2e6f-460d-b91a-cd668dc5cdac"
+      ]
+    },
+    {
+      "id": "8d4483b3-6a00-4afd-9aaf-92e386b80c5d",
+      "code": "5-LS2-1",
+      "label": "Develop a model to describe the movement of matter among producers, consumers, decomposers, and the air, water, and soil in the environment to (a) show that plants produce sugars and plant materials, (b) show that animals can eat plants and/or other animals for food, and (c) show that some organisms, including fungi and bacteria, break down dead organisms and recycle some materials back to the air and soil.",
+      "text": "Develop a model to describe the movement of matter among producers, consumers, decomposers, and the air, water, and soil in the environment to (a) show that plants produce sugars and plant materials, (b) show that animals can eat plants and/or other animals for food, and (c) show that some organisms, including fungi and bacteria, break down dead organisms and recycle some materials back to the air and soil.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/8d4483b3-6a00-4afd-9aaf-92e386b80c5d",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/8d4483b3-6a00-4afd-9aaf-92e386b80c5d"
+      ]
+    },
+    {
+      "id": "90b76ad7-c6a6-4820-8fa5-3a3002474b91",
+      "code": "5-LS2-2(MA)",
+      "label": "Compare at least two designs for a composter to determine which is most likely to encourage decomposition of materials.*",
+      "text": "Compare at least two designs for a composter to determine which is most likely to encourage decomposition of materials.*",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/90b76ad7-c6a6-4820-8fa5-3a3002474b91",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/90b76ad7-c6a6-4820-8fa5-3a3002474b91"
+      ]
+    },
+    {
+      "id": "e6b3e61f-5d89-4913-889f-50c876e35760",
+      "code": "5-PS",
+      "label": "Grade 5: Physical Science",
+      "text": "Grade 5: Physical Science",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/e6b3e61f-5d89-4913-889f-50c876e35760",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/e6b3e61f-5d89-4913-889f-50c876e35760"
+      ]
+    },
+    {
+      "id": "a5212b4c-7a48-4cfc-931d-0839e8cc58b1",
+      "code": "5-PS1-1",
+      "label": "Use a particle model of matter to explain common phenomena involving gases, and phase changes between gas and liquid and between liquid and solid.",
+      "text": "Use a particle model of matter to explain common phenomena involving gases, and phase changes between gas and liquid and between liquid and solid.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/a5212b4c-7a48-4cfc-931d-0839e8cc58b1",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/a5212b4c-7a48-4cfc-931d-0839e8cc58b1"
+      ]
+    },
+    {
+      "id": "fbe8766b-2642-4146-b596-d6d9cce26802",
+      "code": "5-PS1-2",
+      "label": "Measure and graph the weights (masses) of substances before and after a reaction or phase change to provide evidence that regardless of the type of change that occurs when heating, cooling, or combining substances, the total weight (mass) of matter is conserved.",
+      "text": "Measure and graph the weights (masses) of substances before and after a reaction or phase change to provide evidence that regardless of the type of change that occurs when heating, cooling, or combining substances, the total weight (mass) of matter is conserved.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/fbe8766b-2642-4146-b596-d6d9cce26802",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/fbe8766b-2642-4146-b596-d6d9cce26802"
+      ]
+    },
+    {
+      "id": "32c2a20c-9815-4283-a327-471e857c3dde",
+      "code": "5-PS1-3",
+      "label": "Make observations and measurements of substances to describe characteristic properties of each, including color, hardness, reflectivity, electrical conductivity, thermal conductivity, response to magnetic forces, and solubility.",
+      "text": "Make observations and measurements of substances to describe characteristic properties of each, including color, hardness, reflectivity, electrical conductivity, thermal conductivity, response to magnetic forces, and solubility.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/32c2a20c-9815-4283-a327-471e857c3dde",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/32c2a20c-9815-4283-a327-471e857c3dde"
+      ]
+    },
+    {
+      "id": "6515694f-5808-42f3-ae17-514b08a3a13c",
+      "code": "5-PS1-4",
+      "label": "Conduct an experiment to determine whether the mixing of two or more substances results in new substances with new properties (a chemical reaction) or not (a mixture).",
+      "text": "Conduct an experiment to determine whether the mixing of two or more substances results in new substances with new properties (a chemical reaction) or not (a mixture).",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/6515694f-5808-42f3-ae17-514b08a3a13c",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/6515694f-5808-42f3-ae17-514b08a3a13c"
+      ]
+    },
+    {
+      "id": "7bf16ba5-8e00-48f7-b26c-ea6b58e33d30",
+      "code": "5-PS2-1",
+      "label": "Support an argument with evidence that the gravitational force exerted by Earth on objects is directed toward Earth’s center.",
+      "text": "Support an argument with evidence that the gravitational force exerted by Earth on objects is directed toward Earth’s center.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/7bf16ba5-8e00-48f7-b26c-ea6b58e33d30",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/7bf16ba5-8e00-48f7-b26c-ea6b58e33d30"
+      ]
+    },
+    {
+      "id": "e2a9e8d4-8c6d-4ea1-9af1-88d8efacfc0e",
+      "code": "5-PS3-1",
+      "label": "Use a model to describe that the food animals digest (a) contains energy that was once energy from the Sun, and (b) provides energy and nutrients for life processes, including body repair, growth, motion, body warmth, and reproduction.",
+      "text": "Use a model to describe that the food animals digest (a) contains energy that was once energy from the Sun, and (b) provides energy and nutrients for life processes, including body repair, growth, motion, body warmth, and reproduction.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/e2a9e8d4-8c6d-4ea1-9af1-88d8efacfc0e",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/e2a9e8d4-8c6d-4ea1-9af1-88d8efacfc0e"
+      ]
+    },
+    {
+      "id": "36e08045-d966-4c5e-9a22-48367985f1d5",
+      "code": "5.3-5-ETS3-1(MA)",
+      "label": "Use informational text to provide examples of improvements to existing technologies (innovations) and the development of new technologies (inventions). Recognize that technology is any modification of the natural or designed world done to fulfill human needs or wants.",
+      "text": "Use informational text to provide examples of improvements to existing technologies (innovations) and the development of new technologies (inventions). Recognize that technology is any modification of the natural or designed world done to fulfill human needs or wants.",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/36e08045-d966-4c5e-9a22-48367985f1d5",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/36e08045-d966-4c5e-9a22-48367985f1d5"
+      ]
+    },
+    {
+      "id": "1d43802f-f982-44fa-9d6c-aefaa571b4d3",
+      "code": "5.3-5-ETS3-2(MA)",
+      "label": "Use sketches or drawings to show how each part of a product or device relates to other parts in the product or device.*",
+      "text": "Use sketches or drawings to show how each part of a product or device relates to other parts in the product or device.*",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/1d43802f-f982-44fa-9d6c-aefaa571b4d3",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/1d43802f-f982-44fa-9d6c-aefaa571b4d3"
+      ]
+    },
+    {
+      "id": "c427e3fe-4b2f-4529-90f7-1d5fddf68618",
+      "code": "6",
+      "label": "Constructing explanations (for science) and designing solutions (for engineering)",
+      "text": "Constructing explanations (for science) and designing solutions (for engineering)",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/c427e3fe-4b2f-4529-90f7-1d5fddf68618",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/c427e3fe-4b2f-4529-90f7-1d5fddf68618"
+      ]
+    },
+    {
+      "id": "67cb28d0-7574-45df-88b1-1debfcb0fb4a",
+      "code": "67cb28d0-7574-45df-88b1-1debfcb0fb4a",
+      "label": "Elementary School (Grades 3 - 5)",
+      "text": "Elementary School (Grades 3 - 5)",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "PK, K, 1, 2, 3, 4, 5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/67cb28d0-7574-45df-88b1-1debfcb0fb4a",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/67cb28d0-7574-45df-88b1-1debfcb0fb4a"
+      ]
+    },
+    {
+      "id": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "code": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "label": "Science and Engineering Practices",
+      "text": "Science and Engineering Practices",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/69b3808c-e23b-46b6-900d-f3f2c02dd9a4"
+      ]
+    },
+    {
+      "id": "5baa771e-d129-47cd-a1f7-00632bbba738",
+      "code": "7",
+      "label": "Engaging in an argument from evidence",
+      "text": "Engaging in an argument from evidence",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/5baa771e-d129-47cd-a1f7-00632bbba738",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/5baa771e-d129-47cd-a1f7-00632bbba738"
+      ]
+    },
+    {
+      "id": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "code": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "label": "Grade 5: Connections and Relationships in Systems",
+      "text": "Grade 5: Connections and Relationships in Systems",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/7721b358-3467-4e4c-b198-692ca5aedd32",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/7721b358-3467-4e4c-b198-692ca5aedd32"
+      ]
+    },
+    {
+      "id": "41404314-3fb6-46ae-8d6c-d8fd0c41e1d5",
+      "code": "8",
+      "label": "Obtaining, evaluating, and communicating information",
+      "text": "Obtaining, evaluating, and communicating information",
+      "kind": "standard",
+      "resolvable": true,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "K, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/41404314-3fb6-46ae-8d6c-d8fd0c41e1d5",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/41404314-3fb6-46ae-8d6c-d8fd0c41e1d5"
+      ]
+    },
+    {
+      "id": "50c06b41-0e16-499e-882e-829becaf17f3",
+      "code": "ESS1",
+      "label": "Earth’s Place in the Universe",
+      "text": "Earth’s Place in the Universe",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/50c06b41-0e16-499e-882e-829becaf17f3",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/50c06b41-0e16-499e-882e-829becaf17f3"
+      ]
+    },
+    {
+      "id": "f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a",
+      "code": "ESS2",
+      "label": "Earth’s Systems",
+      "text": "Earth’s Systems",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a"
+      ]
+    },
+    {
+      "id": "ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8",
+      "code": "ESS3",
+      "label": "Earth and Human Activity",
+      "text": "Earth and Human Activity",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8"
+      ]
+    },
+    {
+      "id": "0481da35-90d4-4c7d-bcab-142517a33db7",
+      "code": "ETS3",
+      "label": "Technological Systems",
+      "text": "Technological Systems",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/0481da35-90d4-4c7d-bcab-142517a33db7",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/0481da35-90d4-4c7d-bcab-142517a33db7"
+      ]
+    },
+    {
+      "id": "60f9f8dd-7013-4e74-82c0-4009f1a6590c",
+      "code": "LS1",
+      "label": "From Molecules to Organisms: Structures and Processes",
+      "text": "From Molecules to Organisms: Structures and Processes",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/60f9f8dd-7013-4e74-82c0-4009f1a6590c",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/60f9f8dd-7013-4e74-82c0-4009f1a6590c"
+      ]
+    },
+    {
+      "id": "1d5b3688-6232-4789-8c65-5bc716940f45",
+      "code": "LS2",
+      "label": "Ecosystems: Interactions, Energy, and Dynamics",
+      "text": "Ecosystems: Interactions, Energy, and Dynamics",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/1d5b3688-6232-4789-8c65-5bc716940f45",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/1d5b3688-6232-4789-8c65-5bc716940f45"
+      ]
+    },
+    {
+      "id": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "code": "PS1",
+      "label": "Matter and Its Interactions",
+      "text": "Matter and Its Interactions",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/beac5dc6-0adf-4d60-a33b-9357aecf40e0"
+      ]
+    },
+    {
+      "id": "bdf150cc-d264-4757-bbc5-df26fa74bd0c",
+      "code": "PS2",
+      "label": "Motion and Stability: Forces and Interactions",
+      "text": "Motion and Stability: Forces and Interactions",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/bdf150cc-d264-4757-bbc5-df26fa74bd0c",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/bdf150cc-d264-4757-bbc5-df26fa74bd0c"
+      ]
+    },
+    {
+      "id": "c83c9e2e-f763-4081-8c9e-6bc9ee76983f",
+      "code": "PS3",
+      "label": "Energy",
+      "text": "Energy",
+      "kind": "group",
+      "resolvable": false,
+      "framework": "Massachusetts Science and Technology/Engineering Framework",
+      "frameworkId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "jurisdiction": "Massachusetts",
+      "grade": "5",
+      "subject": "Science",
+      "sourceUrl": "https://satchelcommons.com/ims/case/v1p0/CFItems/c83c9e2e-f763-4081-8c9e-6bc9ee76983f",
+      "sourceUrls": [
+        "https://satchelcommons.com/ims/case/v1p0/CFItems/c83c9e2e-f763-4081-8c9e-6bc9ee76983f"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromId": "0481da35-90d4-4c7d-bcab-142517a33db7",
+      "toId": "1d43802f-f982-44fa-9d6c-aefaa571b4d3",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "0481da35-90d4-4c7d-bcab-142517a33db7",
+      "toId": "36e08045-d966-4c5e-9a22-48367985f1d5",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "1d5b3688-6232-4789-8c65-5bc716940f45",
+      "toId": "8d4483b3-6a00-4afd-9aaf-92e386b80c5d",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "1d5b3688-6232-4789-8c65-5bc716940f45",
+      "toId": "90b76ad7-c6a6-4820-8fa5-3a3002474b91",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "toId": "3edb252b-4cc1-4dd5-b54d-e565f1afd248",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "toId": "67cb28d0-7574-45df-88b1-1debfcb0fb4a",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "toId": "33bfa136-7ff0-4c0a-bed6-f203b2cf5ad0",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "38542f25-9335-4099-bc86-19c23f23b4c4",
+      "toId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "3d455068-24c6-4262-a475-72b8bee02685",
+      "toId": "50c06b41-0e16-499e-882e-829becaf17f3",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "3d455068-24c6-4262-a475-72b8bee02685",
+      "toId": "ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "3d455068-24c6-4262-a475-72b8bee02685",
+      "toId": "f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "50c06b41-0e16-499e-882e-829becaf17f3",
+      "toId": "09c7024a-4fa0-41de-9170-27059e1b5e8c",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "50c06b41-0e16-499e-882e-829becaf17f3",
+      "toId": "c1388dff-c6ff-4b1e-9854-14cd49c473f6",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "528e9571-7c23-41fa-a159-893b13e2a2c8",
+      "toId": "0481da35-90d4-4c7d-bcab-142517a33db7",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "60f9f8dd-7013-4e74-82c0-4009f1a6590c",
+      "toId": "b93e5657-2e6f-460d-b91a-cd668dc5cdac",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "67cb28d0-7574-45df-88b1-1debfcb0fb4a",
+      "toId": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "41404314-3fb6-46ae-8d6c-d8fd0c41e1d5",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "58257a68-8f29-421d-a8e3-f181df8619ec",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "5baa771e-d129-47cd-a1f7-00632bbba738",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "9027ec0b-dc9f-4e39-97ae-ba3e21525d17",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "c41777a4-55f6-47cc-ad65-589ea2f0e103",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "c427e3fe-4b2f-4529-90f7-1d5fddf68618",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "daec967e-b467-4f99-b237-1d7e3185e97e",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "69b3808c-e23b-46b6-900d-f3f2c02dd9a4",
+      "toId": "f9f905fb-38ac-4737-81c0-73741dd69602",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "toId": "3d455068-24c6-4262-a475-72b8bee02685",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "toId": "528e9571-7c23-41fa-a159-893b13e2a2c8",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "toId": "d238129a-833b-49fa-b8eb-5afc67920f35",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "7721b358-3467-4e4c-b198-692ca5aedd32",
+      "toId": "e6b3e61f-5d89-4913-889f-50c876e35760",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8",
+      "toId": "930f62b0-3e3c-4a5d-9f9b-b522f5535585",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "ad4a5f83-62f1-4daa-95d9-a983a1e9aaf8",
+      "toId": "c3c2ef30-4006-4e61-b717-438dc6b3840f",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "bdf150cc-d264-4757-bbc5-df26fa74bd0c",
+      "toId": "7bf16ba5-8e00-48f7-b26c-ea6b58e33d30",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "toId": "32c2a20c-9815-4283-a327-471e857c3dde",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "toId": "6515694f-5808-42f3-ae17-514b08a3a13c",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "toId": "a5212b4c-7a48-4cfc-931d-0839e8cc58b1",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "toId": "fbe8766b-2642-4146-b596-d6d9cce26802",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "c83c9e2e-f763-4081-8c9e-6bc9ee76983f",
+      "toId": "e2a9e8d4-8c6d-4ea1-9af1-88d8efacfc0e",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "d238129a-833b-49fa-b8eb-5afc67920f35",
+      "toId": "1d5b3688-6232-4789-8c65-5bc716940f45",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "d238129a-833b-49fa-b8eb-5afc67920f35",
+      "toId": "60f9f8dd-7013-4e74-82c0-4009f1a6590c",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "e6b3e61f-5d89-4913-889f-50c876e35760",
+      "toId": "bdf150cc-d264-4757-bbc5-df26fa74bd0c",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "e6b3e61f-5d89-4913-889f-50c876e35760",
+      "toId": "beac5dc6-0adf-4d60-a33b-9357aecf40e0",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "e6b3e61f-5d89-4913-889f-50c876e35760",
+      "toId": "c83c9e2e-f763-4081-8c9e-6bc9ee76983f",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a",
+      "toId": "5d458ed2-af39-4450-baf3-c67f812d12ee",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    },
+    {
+      "fromId": "f84fb8bd-b7aa-4fbb-bb12-5e3b552dbe2a",
+      "toId": "7df5e6eb-58a9-4973-844f-dc3a7bbeb677",
+      "type": "hasChild",
+      "source": "Knowledge Graph is provided by Learning Commons under the CC BY-4.0 license. Massachusetts Science standards provided by Massachusetts Department of Elementary & Secondary Education available at https://www.doe.mass.edu/frameworks/scitech/2016-04.pdf."
+    }
+  ]
+}
