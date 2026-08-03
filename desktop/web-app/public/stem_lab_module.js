@@ -4703,7 +4703,7 @@
                 color: 'sky', ready: true
               },
               {
-                id: 'statsLab', icon: '📊', label: 'Statistics Lab',
+                id: 'statsLab', icon: '🔎', label: 'Statistical Tests',
                 desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
                 color: 'sky', ready: true
               },
@@ -4719,13 +4719,13 @@
                 color: 'cyan', ready: true
               },
               {
-                id: 'dataLab', icon: '\uD83D\uDCCA', label: 'Data Lab',
+                id: 'dataLab', icon: '\uD83D\uDDC2\uFE0F', label: 'CODAP Data Science',
                 desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
                 color: 'indigo', ready: true
               },
               {
                 // @tool lumen
-                id: 'lumen', icon: '💡', label: 'Lumen',
+                id: 'lumen', icon: '💡', label: 'Lumen Research Canvas',
                 desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
                 color: 'amber', ready: true
               },
@@ -5184,6 +5184,9 @@
               // microscope" and "food safety". Every keyword below was taken from the
               // tool's own description — do not add features a tool does not have.
               // See STEM_LAB_CATEGORY_AUDIT.md F5.
+              // Tools renamed 2026-08-03 keep their FORMER labels as aliases so an
+              // existing lesson plan or a teacher's memory still finds them.
+              statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
               molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
               rockCycle: 'rock cycle earth science igneous sedimentary metamorphic shale slate limestone marble granite gneiss metamorphism weathering erosion melting cooling cross section specimen transformation',
               behaviorLab: 'operant conditioning skinner box skinner reinforcement schedules fixed ratio variable ratio fixed interval variable interval chaining chained sequences dro classical conditioning pavlov aba applied behavior analysis fba functional behavior assessment attention escape tangible sensory cumulative record',
