@@ -979,7 +979,7 @@
     return lines.slice(0, 2);
   }
 
-  function makeLabelSprite(THREE, text, hex, fontPx) {
+  function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var type = _appTypography(fontPx);
@@ -1011,11 +1011,22 @@
     lines.forEach(function (line, i) { ctx.fillText(line, logicalW / 2, padY + lineH * (i + 0.5)); });
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
-    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+    // Locus captions sit just in front of a wall. Because sprites always face
+    // the camera, a wide caption can rotate partly behind that wall at an
+    // oblique viewing angle unless its depth test is disabled. Keep this opt-in
+    // so room and connection labels still obey normal room-to-room occlusion.
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthTest: !occlusionSafe,
+      depthWrite: false,
+      toneMapped: false
+    }));
     var k = 0.5; sp.scale.set(logicalW * k, logicalH * k, 1);
     sp.userData.typographyKey = type.key;
     sp.userData.baseScale = { x: logicalW * k, y: logicalH * k };
-    sp.renderOrder = 12;
+    sp.renderOrder = occlusionSafe ? 24 : 12;
+    sp.userData.occlusionSafe = !!occlusionSafe;
     return sp;
   }
 
@@ -1510,7 +1521,7 @@
         } catch (eEmptyBeacon) {}
       }
       // Item label under the frame ('?' while its answer is unearned in recall).
-      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24);
+      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, true);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
       // Route-number badge on the frame's top-left corner (order stays visible
@@ -1908,7 +1919,7 @@
         if (old && old.material) {
           try { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } catch (eD) {}
         }
-        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24);
+        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24, true);
         ref.label.position.set(0, -(FRAME_H / 2 + 38), 11);
         if (ref.label.material) ref.label.material.opacity = 1;
         ref.captionText = text;

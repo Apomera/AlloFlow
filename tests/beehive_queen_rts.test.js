@@ -61,6 +61,9 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
 
     expect(latest.beehive.queen.day).toBe(1);
     expect(latest.beehive.queen.rival.strength).toBeGreaterThan(360);
+    expect(latest.beehive.queen.rival.doctrine).toBe('opportunist');
+    expect(latest.beehive.queen.rival.posture).toBe('forage');
+    expect(latest.beehive.queen.rival.telegraph).toContain('Stores');
     expect(latest.beehive.queen.feedback.text).toContain('Cycle 1');
     expect(host.textContent).toContain('Cycle 1');
     expect(latest.beehive.queen.lastImpact.kind).toBe('cycle');
@@ -143,6 +146,11 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     await act(async () => { scout.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
     expect(host.textContent).toContain('Rival intel');
+    const rivalIntelligence = host.querySelector('[data-rts-rival-doctrine="true"]');
+    expect(rivalIntelligence).toBeTruthy();
+    expect(rivalIntelligence.textContent).toContain('Telegraph');
+    expect(rivalIntelligence.textContent).toContain('Best counter');
+    expect(rivalIntelligence.textContent).toContain('Territorial opportunist');
     expect(latest.beehive.queen.lastImpact.kind).toBe('command');
     expect(latest.beehive.queen.lastImpact.title).toBe('Scout Rival');
     expect(latest.beehive.queen.lastImpact.changes.map((change) => change.label)).toEqual(expect.arrayContaining(['Forage control', 'Rival intel', 'Scouts', 'Nectar']));

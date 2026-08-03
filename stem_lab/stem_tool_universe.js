@@ -287,43 +287,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { id: 'big_bang', name: 'Witness Creation', desc: 'Visit the Big Bang (t=0)', icon: '\uD83D\uDCA5', rp: 20, check: function() { return cosmicTime < 0.01; } },
             { id: 'present_day', name: 'Here and Now', desc: 'Reach the present day', icon: '\uD83C\uDF0D', rp: 15, check: function() { return cosmicTime >= 13.0 && cosmicTime <= UNIVERSE_PRESENT_GYR; } },
             { id: 'far_future', name: 'Heat Death', desc: 'Peer into the far future', icon: '\uD83D\uDD2E', rp: 20, check: function() { return cosmicTime >= UNIVERSE_FUTURE_PREVIEW_GYR; } },
-            { id: 'star_lifecycle', name: 'Stellar Scholar', desc: 'Explore the star lifecycle', icon: '\u2B50', rp: 20, check: function() { return d.showStarLife; } },
-            { id: 'hr_diagram', name: 'Astronomer', desc: 'Study the HR Diagram', icon: '\uD83D\uDCCA', rp: 20, check: function() { return d.showHR; } },
-            { id: 'distance_ladder', name: 'Cosmic Surveyor', desc: 'Explore the distance ladder', icon: '\uD83D\uDCCF', rp: 15, check: function() { return d.showDistance; } },
-            { id: 'dark_energy', name: 'Dark Researcher', desc: 'Learn about dark energy & dark matter', icon: '\uD83D\uDD73', rp: 20, check: function() { return d.showDark; } },
+            { id: 'star_lifecycle', name: 'Stellar Scholar', desc: 'Work through the star lifecycle', icon: '\u2B50', rp: 20, check: function() { return uniDidEngage('star-lifecycle', 2); } },
+            { id: 'hr_diagram', name: 'Astronomer', desc: 'Study the HR Diagram', icon: '\uD83D\uDCCA', rp: 20, check: function() { return uniDidEngage('hr-diagram', 2); } },
+            { id: 'distance_ladder', name: 'Cosmic Surveyor', desc: 'Work through the distance ladder', icon: '\uD83D\uDCCF', rp: 15, check: function() { return uniDidEngage('distance-ladder', 2); } },
+            { id: 'dark_energy', name: 'Dark Researcher', desc: 'Investigate about dark energy & dark matter', icon: '\uD83D\uDD73', rp: 20, check: function() { return uniDidEngage('dark-universe', 2); } },
             { id: 'evidence_lab', name: 'Evidence Builder', desc: 'Complete 3 cosmic evidence notes', icon: '\uD83D\uDCCA', rp: 25, check: function() { return ((d.evidenceThreadsMastered || []).length >= 3); } },
             { id: 'guided_cosmic_mission', name: 'Mission Navigator', desc: 'Complete a guided cosmic mission', icon: '\uD83D\uDE80', rp: 25, check: function() { return ((d.cosmicMissionsCompleted || []).length >= 1); } },
             { id: 'evidence_notebook', name: 'Evidence Archivist', desc: 'Save 3 evidence notebook entries', icon: '\uD83D\uDCDD', rp: 20, check: function() { return ((d.cosmicEvidenceNotebook || []).length >= 3); } },
             { id: 'ai_question', name: 'Curious Mind', desc: 'Ask the AI Cosmos Tutor', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', rp: 20, check: function() { return !!d.aiAnswer; } },
-            { id: 'what_if', name: 'Thought Experimenter', desc: 'Explore a What If scenario', icon: '\uD83E\uDD14', rp: 15, check: function() { return d.showWhatIf; } },
-            { id: 'elements', name: 'Alchemist', desc: 'Learn where elements come from', icon: '\u2697', rp: 15, check: function() { return d.showElements; } },
-            { id: 'structures', name: 'Cosmic Architect', desc: 'Explore the cosmic structure hierarchy', icon: '\uD83C\uDF0C', rp: 10, check: function() { return d.showStructures; } },
+            { id: 'what_if', name: 'Thought Experimenter', desc: 'Work through a What If scenario', icon: '\uD83E\uDD14', rp: 15, check: function() { return uniDidEngage('what-if', 1); } },
+            { id: 'elements', name: 'Alchemist', desc: 'Investigate where elements come from', icon: '\u2697', rp: 15, check: function() { return uniDidEngage('elements', 2); } },
+            { id: 'structures', name: 'Cosmic Architect', desc: 'Work through the cosmic structure hierarchy', icon: '\uD83C\uDF0C', rp: 10, check: function() { return uniDidEngage('structures', 2); } },
             { id: 'quiz_master', name: 'Quiz Champion', desc: 'Score 8+ on the cosmic quiz', icon: '\uD83E\uDDE0', rp: 50, check: function() { return (d.quizScore || 0) >= 8; } },
-            { id: 'telescopes', name: 'Observatory Tour', desc: 'Learn about famous telescopes', icon: '\uD83D\uDD2D', rp: 10, check: function() { return d.showTelescopes; } },
-            { id: 'numbers', name: 'Number Cruncher', desc: 'View the cosmic numbers', icon: '\uD83D\uDD22', rp: 10, check: function() { return d.showNumbers; } },
-            { id: 'cosmic_calendar', name: 'Calendar Keeper', desc: 'View the Cosmic Calendar', icon: '\uD83D\uDCC5', rp: 10, check: function() { return d.showCalendar; } },
-            { id: 'black_hole', name: 'Event Horizon', desc: 'Study black hole anatomy', icon: '\uD83D\uDD73', rp: 20, check: function() { return d.showBlackHole; } },
-            { id: 'drake_calc', name: 'SETI Scientist', desc: 'Use the Drake Equation', icon: '\uD83D\uDC7D', rp: 20, check: function() { return d.showDrake; } },
-            { id: 'galaxy_types', name: 'Galaxy Classifier', desc: 'Learn about galaxy types', icon: '\uD83C\uDF0C', rp: 10, check: function() { return d.showGalaxyTypes; } },
-            { id: 'astronomers', name: 'History Buff', desc: 'Explore famous astronomers', icon: '\uD83D\uDD2D', rp: 10, check: function() { return d.showAstronomers; } },
-            { id: 'exoplanets', name: 'Planet Hunter', desc: 'Explore exoplanet types', icon: '\uD83C\uDF0D', rp: 15, check: function() { return d.showExoplanets; } },
-            { id: 'space_missions', name: 'Mission Control', desc: 'Study space missions timeline', icon: '\uD83D\uDE80', rp: 10, check: function() { return d.showMissions; } },
-            { id: 'fermi_paradox', name: 'Fermi Thinker', desc: 'Explore the Fermi Paradox', icon: '\uD83E\uDD14', rp: 20, check: function() { return d.showFermi; } },
-            { id: 'grav_lensing', name: 'Light Bender', desc: 'Learn gravitational lensing', icon: '\uD83D\uDD2E', rp: 15, check: function() { return d.showLensing; } },
-            { id: 'mysteries', name: 'Deep Thinker', desc: 'Explore unsolved cosmic mysteries', icon: '\u2753', rp: 15, check: function() { return d.showMysteries; } },
-            { id: 'multiverse', name: 'Reality Explorer', desc: 'Study multiverse theories', icon: '\uD83C\uDF10', rp: 20, check: function() { return d.showMultiverse; } },
-            { id: 'redshift', name: 'Redshift Detective', desc: 'Compare motion shift and cosmic expansion', icon: '\uD83D\uDD34', rp: 20, check: function() { return d.showRedshift; } },
-            { id: 'nurseries', name: 'Star Nursery', desc: 'Explore stellar nurseries', icon: '\uD83C\uDF1F', rp: 10, check: function() { return d.showNurseries; } },
-            { id: 'pn_gallery', name: 'Nebula Artist', desc: 'View planetary nebulae', icon: '\uD83C\uDF00', rp: 10, check: function() { return d.showPNebulae; } },
-            { id: 'catastrophes', name: 'Doomsday Scholar', desc: 'Study cosmic catastrophes', icon: '\u2604', rp: 15, check: function() { return d.showCatastrophes; } },
-            { id: 'em_spectrum', name: 'Spectrum Master', desc: 'Explore the EM spectrum', icon: '\uD83C\uDF08', rp: 10, check: function() { return d.showSpectrum; } },
-            { id: 'cosmic_scale', name: 'Powers of Ten', desc: 'Explore cosmic scales', icon: '\uD83D\uDD0D', rp: 15, check: function() { return d.showScale; } },
-            { id: 'spectral_class', name: 'Star Classifier', desc: 'Learn spectral classification', icon: '\uD83C\uDF08', rp: 15, check: function() { return d.showSpectral; } },
-            { id: 'gravity_calc', name: 'Weight Watcher', desc: 'Calculate weight on other worlds', icon: '\u2696', rp: 10, check: function() { return d.showGravity; } },
-            { id: 'space_images', name: 'Icon Spotter', desc: 'Study famous space images', icon: '\uD83D\uDCF7', rp: 10, check: function() { return d.showImages; } },
-            { id: 'cosmic_speed', name: 'Speed Demon', desc: 'Compare cosmic speeds', icon: '\uD83C\uDFC1', rp: 10, check: function() { return d.showSpeeds; } },
-            { id: 'citizen_sci', name: 'Citizen Scientist', desc: 'Learn about citizen science', icon: '\uD83E\uDDD1\u200D\uD83D\uDD2C', rp: 15, check: function() { return d.showCitizenSci; } },
-            { id: 'glossary', name: 'Lexicographer', desc: 'Explore the cosmology glossary', icon: '\uD83D\uDCD6', rp: 10, check: function() { return d.showGlossary; } }
+            { id: 'telescopes', name: 'Observatory Tour', desc: 'Investigate about famous telescopes', icon: '\uD83D\uDD2D', rp: 10, check: function() { return uniDidEngage('telescopes', 2); } },
+            { id: 'numbers', name: 'Number Cruncher', desc: 'Dig into the cosmic numbers', icon: '\uD83D\uDD22', rp: 10, check: function() { return uniDidEngage('numbers', 2); } },
+            { id: 'cosmic_calendar', name: 'Calendar Keeper', desc: 'Dig into the Cosmic Calendar', icon: '\uD83D\uDCC5', rp: 10, check: function() { return uniDidEngage('calendar', 2); } },
+            { id: 'black_hole', name: 'Event Horizon', desc: 'Study black hole anatomy', icon: '\uD83D\uDD73', rp: 20, check: function() { return uniDidEngage('black-holes', 2); } },
+            { id: 'drake_calc', name: 'SETI Scientist', desc: 'Use the Drake Equation', icon: '\uD83D\uDC7D', rp: 20, check: function() { return uniDidEngage('drake', 1); } },
+            { id: 'galaxy_types', name: 'Galaxy Classifier', desc: 'Investigate about galaxy types', icon: '\uD83C\uDF0C', rp: 10, check: function() { return uniDidEngage('galaxy-types', 2); } },
+            { id: 'astronomers', name: 'History Buff', desc: 'Work through famous astronomers', icon: '\uD83D\uDD2D', rp: 10, check: function() { return uniDidEngage('astronomers', 2); } },
+            { id: 'exoplanets', name: 'Planet Hunter', desc: 'Work through exoplanet types', icon: '\uD83C\uDF0D', rp: 15, check: function() { return uniDidEngage('exoplanets', 1); } },
+            { id: 'space_missions', name: 'Mission Control', desc: 'Study space missions timeline', icon: '\uD83D\uDE80', rp: 10, check: function() { return uniDidEngage('missions', 2); } },
+            { id: 'fermi_paradox', name: 'Fermi Thinker', desc: 'Work through the Fermi Paradox', icon: '\uD83E\uDD14', rp: 20, check: function() { return uniDidEngage('fermi', 1); } },
+            { id: 'grav_lensing', name: 'Light Bender', desc: 'Investigate gravitational lensing', icon: '\uD83D\uDD2E', rp: 15, check: function() { return uniDidEngage('lensing', 2); } },
+            { id: 'mysteries', name: 'Deep Thinker', desc: 'Work through unsolved cosmic mysteries', icon: '\u2753', rp: 15, check: function() { return uniDidEngage('mysteries', 1); } },
+            { id: 'multiverse', name: 'Reality Explorer', desc: 'Study multiverse theories', icon: '\uD83C\uDF10', rp: 20, check: function() { return uniDidEngage('multiverse', 1); } },
+            { id: 'redshift', name: 'Redshift Detective', desc: 'Compare motion shift and cosmic expansion', icon: '\uD83D\uDD34', rp: 20, check: function() { return uniDidEngage('redshift', 1); } },
+            { id: 'nurseries', name: 'Star Nursery', desc: 'Work through stellar nurseries', icon: '\uD83C\uDF1F', rp: 10, check: function() { return uniDidEngage('nurseries', 1); } },
+            { id: 'pn_gallery', name: 'Nebula Artist', desc: 'Dig into planetary nebulae', icon: '\uD83C\uDF00', rp: 10, check: function() { return uniDidEngage('nebulae', 2); } },
+            { id: 'catastrophes', name: 'Doomsday Scholar', desc: 'Study cosmic catastrophes', icon: '\u2604', rp: 15, check: function() { return uniDidEngage('catastrophes', 1); } },
+            { id: 'em_spectrum', name: 'Spectrum Master', desc: 'Work through the EM spectrum', icon: '\uD83C\uDF08', rp: 10, check: function() { return uniDidEngage('spectrum', 1); } },
+            { id: 'cosmic_scale', name: 'Powers of Ten', desc: 'Work through cosmic scales', icon: '\uD83D\uDD0D', rp: 15, check: function() { return uniDidEngage('powers-of-ten', 3); } },
+            { id: 'spectral_class', name: 'Star Classifier', desc: 'Investigate spectral classification', icon: '\uD83C\uDF08', rp: 15, check: function() { return uniDidEngage('spectral', 1); } },
+            { id: 'gravity_calc', name: 'Weight Watcher', desc: 'Calculate weight on other worlds', icon: '\u2696', rp: 10, check: function() { return uniDidEngage('gravity', 1); } },
+            { id: 'space_images', name: 'Icon Spotter', desc: 'Study famous space images', icon: '\uD83D\uDCF7', rp: 10, check: function() { return uniDidEngage('images', 1); } },
+            { id: 'cosmic_speed', name: 'Speed Demon', desc: 'Compare cosmic speeds', icon: '\uD83C\uDFC1', rp: 10, check: function() { return uniDidEngage('speeds', 2); } },
+            { id: 'citizen_sci', name: 'Citizen Scientist', desc: 'Investigate about citizen science', icon: '\uD83E\uDDD1\u200D\uD83D\uDD2C', rp: 15, check: function() { return uniDidEngage('citizen-science', 2); } },
+            { id: 'glossary', name: 'Lexicographer', desc: 'Work through the cosmology glossary', icon: '\uD83D\uDCD6', rp: 10, check: function() { return uniDidEngage('glossary', 2); } }
           ];
 
           function checkChallenges() {
@@ -1039,6 +1039,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { label: 'Atoms in a human body', value: '~7 \u00D7 10\u00B2\u2077', icon: '\uD83E\uDDEC' }
           ];
 
+
+          // Concept lists for the three sections that were pure canvas or prose. They
+          // give a learner something to actually do, and the challenge system something
+          // honest to measure.
+          var HR_REGIONS = [
+            { name: 'Main Sequence', where: 'The diagonal band, top-left to bottom-right', desc: 'Stars fusing hydrogen into helium in the core. About 90 percent of all stars sit here, the Sun included. Position along the band is set almost entirely by mass: hot, bright, massive stars top-left; cool, faint, low-mass stars bottom-right.', icon: '\u2B50' },
+            { name: 'Red Giants', where: 'Upper right', desc: 'Cool surfaces near 3,000 to 5,000 K, but an enormous radius makes them luminous anyway. A star arrives here once core hydrogen runs out and the outer layers swell. The Sun will do this in roughly 5 billion years.', icon: '\uD83D\uDD34' },
+            { name: 'Supergiants', where: 'Across the top', desc: 'The most luminous stars, up to a million times the Sun. Massive, short-lived and destined for core-collapse supernovae. Betelgeuse and Rigel are both supergiants in Orion.', icon: '\uD83D\uDFE0' },
+            { name: 'White Dwarfs', where: 'Lower left', desc: 'Hot but tiny. These Earth-sized remnants of low-mass stars are faint despite surface temperatures above 10,000 K, because there is so little surface. No fusion is left; they simply cool for billions of years.', icon: '\u26AA' },
+            { name: 'The Instability Strip', where: 'A near-vertical band through the middle', desc: 'Stars here pulsate rather than shine steadily, Cepheid variables among them. Pulsation period tracks true luminosity, and that relationship is what makes them usable as standard candles.', icon: '\u2728' }
+          ];
+
+          var DARK_COMPONENTS = [
+            { name: 'Ordinary matter', pct: 'About 5 percent', desc: 'Everything built from atoms: every star, planet, moon and person. Only a fraction of it sits in stars; most is thin intergalactic gas.', evidence: 'Big Bang nucleosynthesis and the pattern of peaks in the cosmic microwave background pin this share independently of each other.', icon: '\u2699\uFE0F' },
+            { name: 'Dark matter', pct: 'About 27 percent', desc: 'It has mass and gravity but does not emit, absorb or reflect light. Its particle identity is still unknown after decades of direct searches.', evidence: 'Galaxy rotation curves stay flat far from the centre, lensing maps mass where no light is, and the Bullet Cluster shows mass that has separated from the hot gas.', icon: '\uD83D\uDD73\uFE0F' },
+            { name: 'Dark energy', pct: 'About 68 percent', desc: 'A pressure driving the expansion of space to accelerate. Whether it is a true cosmological constant or something that changes over time is genuinely open.', evidence: 'In 1998 distant Type Ia supernovae came out fainter than a decelerating universe predicts, which is what revealed the acceleration.', icon: '\u2728' }
+          ];
+
+          var OBSERVABLE_LIMITS = [
+            { name: 'The particle horizon', fact: 'About 46.5 billion light-years in every direction', desc: 'The greatest distance light could have covered to reach us since the Big Bang. Everything inside it is observable in principle; everything outside is not, yet.', icon: '\uD83C\uDF10' },
+            { name: 'Why not 13.8 billion?', fact: '93 billion light-years across, not 27.6', desc: 'Space expanded while the light was in transit. The matter that emitted the oldest light we can see is now far further away than that light actually travelled.', icon: '\uD83D\uDCCF' },
+            { name: 'A horizon, not a wall', fact: 'A limit in time, not a boundary in space', desc: 'Nothing is physically special at the edge. An observer out there would see their own sphere of the same size, with us sitting near their horizon instead.', icon: '\uD83D\uDEA7' },
+            { name: 'It grows, then it shrinks', fact: 'More becomes visible, and later less', desc: 'Light from further away keeps arriving, so the horizon grows. But accelerating expansion means distant galaxies will eventually recede faster than their light can close the gap, and they will fade from view for good.', icon: '\u23F3' }
+          ];
           // Cosmic quiz bank. Options are deliberately length-matched and the runtime
           // shuffles both question order and option order from a per-attempt seed, so
           // neither answer position nor answer length carries any signal.
@@ -2616,6 +2640,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           };
 
 
+
+
+          // \\u2500\\u2500 Engagement ledger \\u2500\\u2500
+          // Challenges used to fire on d.showX, i.e. on revealing a panel. Opening a
+          // section is navigation, not learning, and "Expand all" would have paid out
+          // twenty badges for one click. The ledger instead records deliberate acts
+          // inside a section \\u2014 choosing an item, moving a slider, answering something \\u2014
+          // and the challenges below read from it. Counting is capped so a learner
+          // cannot farm a single control, and writes are skipped once the cap is hit so
+          // repeated clicking does not churn React state.
+          var UNI_ENGAGE_CAP = 5;
+          var uniEngaged = d.uniEngaged || {};
+          function uniTouched(id) { return uniEngaged[id] || 0; }
+          function uniDidEngage(id, n) { return uniTouched(id) >= (n || 1); }
+          function uniTouch(id) {
+            if (!id) return;
+            var now = uniEngaged[id] || 0;
+            if (now >= UNI_ENGAGE_CAP) return;
+            var next = {};
+            Object.keys(uniEngaged).forEach(function (k) { next[k] = uniEngaged[k]; });
+            next[id] = now + 1;
+            uniEngaged = next;
+            upd('uniEngaged', next);
+            setTimeout(checkChallenges, 60);
+          }
+          // \u2500\u2500 Shared "spotlight list". Several sections were read-only walls of 11px
+          // text inside a scroll box. This turns them into pick-one-and-focus, the same
+          // interaction the Star Lifecycle section already uses. Rows are real buttons,
+          // so keyboard and screen-reader support come for free rather than being
+          // reconstructed with role + tabIndex + onKeyDown.
+          function uniSpotlight(cfg) {
+            var picked = d[cfg.stateKey];
+            var item = (picked === 0 || picked) ? cfg.items[picked] : null;
+            // The four canvas panels are dark whatever the app theme is doing.
+            var dk = cfg.forceDark || isDark;
+            return React.createElement("div", null,
+
+              cfg.hint && React.createElement("p", { className: "text-[11px] italic mb-2 " + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.hint),
+
+              React.createElement("div", { className: "space-y-1 max-h-56 overflow-y-auto pr-1" },
+                cfg.items.map(function (it, i) {
+                  var on = picked === i;
+                  return React.createElement("button", {
+                    key: i,
+                    type: "button",
+                    'aria-pressed': on ? 'true' : 'false',
+                    'aria-label': (on ? 'Hide details for ' : 'Show details for ') + cfg.name(it),
+                    onClick: function () {
+                      var opening = !on;
+                      upd(cfg.stateKey, on ? null : i);
+                      // Opening a detail is a real act of study; closing one is not.
+                      if (opening && cfg.touch) uniTouch(cfg.touch);
+                      playBeep();
+                    },
+                    className: "w-full text-left rounded-lg px-2.5 py-2 border transition-colors",
+                    style: on
+                      ? { background: cfg.accent + '1f', borderColor: cfg.accent, boxShadow: '0 0 14px -6px ' + cfg.accent }
+                      : { background: dk ? 'rgba(148,163,184,0.07)' : 'rgba(255,255,255,0.9)', borderColor: dk ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.2)' }
+                  }, cfg.row(it, on, dk));
+                })
+              ),
+
+              item && React.createElement("div", { role: "status", className: "mt-2 rounded-lg border p-2.5", style: { borderColor: cfg.accent + '80', background: dk ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)' } },
+                cfg.detail(item, dk),
+                cfg.prompt && React.createElement("p", { className: "text-[11px] font-bold mt-2 pt-2", style: { color: cfg.accent, borderTop: '1px solid ' + cfg.accent + '33' } }, "\uD83E\uDD14 " + cfg.prompt(item))
+              ),
+
+              !item && React.createElement("p", { className: "text-[11px] mt-2 " + (dk ? 'text-slate-400' : 'text-slate-500') }, "Choose one to see the detail.")
+            );
+          }
           // \u2500\u2500 Section registry. 36 collapsible topics is a library, not a page, so the
           // index below needs a name, a group and search keywords for each one. Order
           // here matches the render order of the sections themselves. \u2500\u2500
@@ -3022,6 +3116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var cv = document.querySelector('[data-universe-canvas]');
                   if (cv) cv.dataset.time = String(activeCosmicMission.time);
                   updMulti(Object.assign({}, activeCosmicMission.setup || {}, { activeCosmicMission: activeCosmicMission.id, cosmicMissionsLaunched: launchList, cosmicTime: activeCosmicMission.time, cosmicEvidenceThread: activeCosmicMission.evidence, wwtTourStop: activeCosmicMission.wwtStop, isPlaying: false, showImages: true }));
+                  uniTouch('missions');
                   if (typeof awardStemXP === 'function') awardStemXP('universe_guided_mission', 2, 'Launched mission: ' + activeCosmicMission.title);
                 }, className: "rounded-lg bg-rose-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-rose-700" }, activeMissionLaunched ? "Realign Mission" : "Begin Mission")
               ),
@@ -3513,7 +3608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var isActive = d.starStage === si;
                   return React.createElement("div", { 
                     key: si,
-                    onClick: function() { upd('starStage', isActive ? null : si); playBeep(); },
+                    onClick: function() { uniTouch('star-lifecycle'); upd('starStage', isActive ? null : si); playBeep(); },
                     className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
                       ? (isDark ? 'bg-slate-700 border-amber-500' : 'bg-white border-amber-400 shadow-md')
                       : (isDark ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-white/50 border-amber-100 hover:border-amber-300'))
@@ -3640,6 +3735,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   }
                 }),
                 React.createElement("div", { className: "mt-2 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "The Sun is a G2V main-sequence star. It will become a red giant in ~5 billion years, then shrink to a white dwarf.")
+              ),
+              d.showHR && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
+                uniSpotlight({
+                  stateKey: "hrPick", items: HR_REGIONS, accent: "#3b82f6", touch: "hr-diagram",
+                  hint: "Pick a region of the diagram above and find out what living there actually means for a star.",
+                  name: function (it) { return it.name; },
+                  row: function (it, on, dk) {
+                    return React.createElement("span", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                      React.createElement("span", { className: "flex-1" },
+                        React.createElement("span", { className: "block text-[11px] font-bold " + (dk ? 'text-white' : 'text-slate-800') }, it.name),
+                        React.createElement("span", { className: "block text-[11px] " + (dk ? 'text-slate-300' : 'text-slate-600') }, it.where)
+                      ),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#3b82f6" } }, on ? "\u25BE" : "\u203A")
+                    );
+                  },
+                  detail: function (it, dk) {
+                    return React.createElement("div", null,
+                      React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#1d4ed8" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Where it sits: "), it.where),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it means: "), it.desc)
+                    );
+                  },
+                  prompt: function () { return "A star can occupy this region only at certain points in its life. Which points, and why?"; }
+                })
               )
             ),
 
@@ -3652,21 +3772,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-emerald-500 hover:text-emerald-700"
                 }, d.showDistance ? 'Hide' : 'Explore \u2192')
               ),
-              d.showDistance && React.createElement("div", { className: "space-y-1.5" },
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Astronomers use a chain of methods to measure distances across the universe:"),
-                DISTANCE_LADDER.map(function(rung, ri) {
-                  return React.createElement("div", { key: ri, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-emerald-100') + " rounded-lg p-2 border" },
-                    React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-sm" }, rung.icon),
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, rung.name),
-                        React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, rung.dist + " \u2022 " + rung.light)
-                      ),
-                      React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-700') }, rung.method)
-                    )
+              d.showDistance && uniSpotlight({
+                stateKey: "ladderPick", items: DISTANCE_LADDER, accent: "#10b981", touch: "distance-ladder",
+                hint: "Each rung is calibrated by the one below it. Pick a rung and find the overlap that makes the next one trustworthy.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.dist)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#10b981" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#047857" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Method: "), it.method),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Light travel time: "), it.light)
+                  );
+                },
+                prompt: function () { return "Why can this method not simply be used for every distance in the universe?"; }
+              })
             ),
 
             // === DARK ENERGY & DARK MATTER ===
@@ -3730,6 +3858,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", null, "\uD83C\uDF0C **Dark Matter** (27%): Invisible matter that doesn\'t emit light but has gravity. We see its effects on galaxy rotation and gravitational lensing. Leading candidate: unknown particles (WIMPs)."),
                   React.createElement("div", null, "\u2B50 **Ordinary Matter** (5%): Everything you can see \u2014 stars, planets, people, atoms. All of chemistry and biology is just 5% of the universe!")
                 )
+              ),
+              d.showDark && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
+                uniSpotlight({
+                  stateKey: "darkPick", items: DARK_COMPONENTS, accent: "#a855f7", touch: "dark-universe",
+                  hint: "Ninety-five percent of the universe is something we cannot see directly. Pick a slice and check what the claim rests on.",
+                  name: function (it) { return it.name; },
+                  row: function (it, on, dk) {
+                    return React.createElement("span", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                      React.createElement("span", { className: "flex-1" },
+                        React.createElement("span", { className: "block text-[11px] font-bold " + (dk ? 'text-white' : 'text-slate-800') }, it.name),
+                        React.createElement("span", { className: "block text-[11px] " + (dk ? 'text-slate-300' : 'text-slate-600') }, it.pct)
+                      ),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#a855f7" } }, on ? "\u25BE" : "\u203A")
+                    );
+                  },
+                  detail: function (it, dk) {
+                    return React.createElement("div", null,
+                      React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#7e22ce" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Share: "), it.pct),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "How we know: "), it.evidence)
+                    );
+                  },
+                  prompt: function () { return "Which single observation, if it came out differently, would most damage this claim?"; }
+                })
               )
             ),
 
@@ -3748,7 +3902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
                     React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
                     React.createElement("button", { "aria-label": "Listen to thought experiment: " + wi.q,
-                      onClick: function() { speakText(wi.q + ' ' + wi.a); },
+                      onClick: function() { uniTouch('what-if'); speakText(wi.q + ' ' + wi.a); },
                       className: "transition-colors mt-1 text-[11px] text-yellow-400 hover:text-yellow-600"
                     }, "\uD83D\uDD0A Listen")
                   );
@@ -3803,19 +3957,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-orange-500 hover:text-orange-700"
                 }, d.showElements ? 'Hide' : 'Explore \u2192')
               ),
-              d.showElements && React.createElement("div", { className: "space-y-1.5" },
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Every atom in your body was made in a star, supernova, or the Big Bang itself!"),
-                ELEMENT_ORIGINS.map(function(el, ei2) {
-                  return React.createElement("div", { key: ei2, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-orange-100') + " rounded-lg p-2 border flex items-center gap-2" },
-                    React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-white", style: { background: el.color } }, el.name.match(/\((.+)\)/)[1]),
-                    React.createElement("div", { className: "flex-1" },
-                      React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, el.name + " \u2014 " + el.origin),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, el.note)
+              d.showElements && uniSpotlight({
+                stateKey: "elemPick", items: ELEMENT_ORIGINS, accent: "#f97316", touch: "elements",
+                hint: "Every atom in you was made somewhere. Pick a source and trace what it produced.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.origin)
                     ),
-                    React.createElement("span", { className: "text-[11px] font-mono " + (isDark ? 'text-slate-200' : 'text-slate-600') }, el.pct)
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#f97316" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#c2410c" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Share of the elements: "), it.pct),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Note: "), it.note)
+                  );
+                },
+                prompt: function () { return "Which atoms in your own body came from this source, and how long did they take to get here?"; }
+              })
             ),
 
             // === COSMIC STRUCTURES ===
@@ -3827,18 +3990,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-sky-500 hover:text-sky-700"
                 }, d.showStructures ? 'Hide' : 'View \u2192')
               ),
-              d.showStructures && React.createElement("div", { className: "space-y-1" },
-                COSMIC_STRUCTURES.map(function(cs, csi) {
-                  return React.createElement("div", { key: csi, className: "flex items-center gap-2 " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    React.createElement("span", { className: "text-sm", style: { marginLeft: csi * 8 + 'px' } }, cs.icon),
-                    React.createElement("div", { className: "flex-1" },
-                      React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cs.name),
-                      React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " ml-1" }, "(" + cs.example + ")"),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, cs.size + " \u2022 " + cs.desc)
-                    )
+              d.showStructures && uniSpotlight({
+                stateKey: "structPick", items: COSMIC_STRUCTURES, accent: "#0ea5e9", touch: "structures",
+                hint: "Structure nests inside structure. Pick a level and place yourself inside it.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.size)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#0ea5e9" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#0369a1" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Example: "), it.example),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
+                  );
+                },
+                prompt: function () { return "What is the next level up, and roughly how many of these fit inside it?"; }
+              })
             ),
 
             // === FAMOUS TELESCOPES ===
@@ -3850,20 +4024,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-teal-500 hover:text-teal-700"
                 }, d.showTelescopes ? 'Hide' : 'View \u2192')
               ),
-              d.showTelescopes && React.createElement("div", { className: "space-y-1.5" },
-                TELESCOPES.map(function(tel, ti) {
-                  return React.createElement("div", { key: ti, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-teal-100') + " rounded-lg p-2 border" },
-                    React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-sm" }, tel.icon),
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, tel.name + " (" + tel.year + ")"),
-                        React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, tel.type)
-                      )
+              d.showTelescopes && uniSpotlight({
+                stateKey: 'telPick', items: TELESCOPES, accent: '#14b8a6', touch: 'telescopes',
+                hint: 'Every telescope is built for a slice of the spectrum. Pick one and ask what would stay invisible without it.',
+                name: function (tel) { return tel.name; },
+                row: function (tel, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, tel.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, tel.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, tel.year + " \u00B7 " + tel.type)
                     ),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mt-1 italic" }, tel.achievement)
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: '#14b8a6' } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (tel) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: '#0f766e' } }, tel.name + " \u2014 " + tel.type),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, tel.achievement)
+                  );
+                },
+                prompt: function (tel) { return "It observes in " + tel.type + ". What would we not be able to see at all if this were our only telescope?"; }
+              })
             ),
 
             // === COSMIC QUIZ ===
@@ -3930,6 +4112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         disabled: answered,
                         onClick: function() {
                           var right = pos === view.correctPos;
+                          uniTouch('quiz');
                           updMulti({ quizAnswered: true, quizSelected: pos, quizScore: right ? qScore + 1 : qScore });
                           if (right) playCelebrate(); else playBeep();
                           if (typeof announceToSR === 'function') {
@@ -3948,7 +4131,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, cq.why),
                     React.createElement("button", {
                       "aria-label": qi + 1 >= deck.length ? "See your quiz results" : "Go to the next question",
-                      onClick: function() { updMulti({ quizIdx: qi + 1, quizAnswered: false, quizSelected: null }); setTimeout(checkChallenges, 50); },
+                      onClick: function() {
+                        var finalScore = qScore;
+                        var patch = { quizIdx: qi + 1, quizAnswered: false, quizSelected: null };
+                        // Record the best run so the wrap-up survives a later bad attempt.
+                        if (qi + 1 >= deck.length && finalScore > (d.quizBest || 0)) patch.quizBest = finalScore;
+                        updMulti(patch);
+                        setTimeout(checkChallenges, 50);
+                      },
                       className: "transition-colors mt-2 px-3 py-2 min-h-11 text-[11px] font-bold text-white bg-pink-700 rounded-lg hover:bg-pink-600"
                     }, qi + 1 >= deck.length ? "See results \u2192" : "Next question \u2192")
                   )
@@ -3965,15 +4155,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
                 }, d.showNumbers ? 'Hide' : 'View \u2192')
               ),
-              d.showNumbers && React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                COSMIC_NUMBERS.map(function(cn, cni) {
-                  return React.createElement("div", { key: cni, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-indigo-100') + " rounded-lg p-2 border text-center" },
-                    React.createElement("div", { className: "text-sm" }, cn.icon),
-                    React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cn.value),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, cn.label)
+              d.showNumbers && uniSpotlight({
+                stateKey: "numPick", items: COSMIC_NUMBERS, accent: "#6366f1", touch: "numbers",
+                hint: "Big numbers stop meaning anything unless you can check them. Pick one and ask how it was measured.",
+                name: function (it) { return it.label; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.label),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.value)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#6366f1" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#4338ca" } }, it.label),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Value: "), it.value)
+                  );
+                },
+                prompt: function () { return "What measurement would someone have to make to arrive at this number?"; }
+              })
             ),
 
                         // === COSMIC CALENDAR ===
@@ -3985,23 +4188,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
                 }, d.showCalendar ? 'Hide' : 'View \u2192')
               ),
-              d.showCalendar && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "If all 13.8 billion years were compressed into one calendar year, human history would fit in the last second of December 31st."),
-                React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-indigo-700' : 'border-indigo-300') + " space-y-1.5 max-h-64 overflow-y-auto" },
-                  COSMIC_CALENDAR.map(function(cc, cci) {
-                    return React.createElement("div", { key: cci, className: "relative" },
-                      React.createElement("div", { className: "absolute -left-[21px] top-1 w-3 h-3 rounded-full " + (isDark ? 'bg-indigo-400' : 'bg-indigo-500') }),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                        React.createElement("span", { className: "font-bold text-indigo-500 mr-1" }, cc.date),
-                        React.createElement("span", { className: "mr-1" }, cc.icon),
-                        React.createElement("span", { className: "font-medium" }, cc.event),
-                        React.createElement("span", { className: " ml-1 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "(" + cc.real + ")")
-                      )
-                    );
-                  })
-                ),
-                React.createElement("div", { className: "mt-2 text-center text-[11px] font-bold " + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, "All of recorded human history = last 14 seconds of Dec 31!")
-              )
+              d.showCalendar && uniSpotlight({
+                stateKey: "calPick", items: COSMIC_CALENDAR, accent: "#6366f1", touch: "calendar",
+                hint: "The whole history of the universe compressed into one year. Pick a date and see the real one.",
+                name: function (it) { return it.event; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.event),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.date)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#6366f1" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#4338ca" } }, it.event),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Actually happened: "), it.real),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "On the cosmic calendar: "), it.date)
+                  );
+                },
+                prompt: function () { return "How much of the calendar year had already passed before this happened?"; }
+              })
             ),
 
             // === GALAXY TYPES ===
@@ -4013,19 +4222,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-violet-500 hover:text-violet-700"
                 }, d.showGalaxyTypes ? 'Hide' : 'View \u2192')
               ),
-              d.showGalaxyTypes && React.createElement("div", { className: "space-y-2" },
-                GALAXY_TYPES.map(function(gt, gti) {
-                  return React.createElement("div", { key: gti, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-violet-100') + " rounded-lg p-2.5 border" },
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                      React.createElement("span", { className: "text-lg" }, gt.icon),
-                      React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, gt.name + " (" + gt.pct + " of galaxies)"),
-                      React.createElement("span", { className: "ml-auto text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, gt.example)
+              d.showGalaxyTypes && uniSpotlight({
+                stateKey: "galTypePick", items: GALAXY_TYPES, accent: "#8b5cf6", touch: "galaxy-types",
+                hint: "Shape records history. Pick a type and work out what its form says about its past.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.pct)
                     ),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, gt.desc),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-violet-400' : 'text-violet-500') + " mt-1 font-medium" }, "Structure: " + gt.features)
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#8b5cf6" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#6d28d9" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Example: "), it.example),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Structure: "), it.features),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
+                  );
+                },
+                prompt: function () { return "What would have to happen to this galaxy to turn it into one of the other types?"; }
+              })
             ),
 
             // === BLACK HOLE ANATOMY ===
@@ -4142,15 +4362,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     drawBH();
                   }
                 }),
-                BLACK_HOLE_PARTS.map(function(part, pi) {
-                  return React.createElement("div", { key: pi, className: "flex items-start gap-2" },
-                    React.createElement("div", { className: "w-3 h-3 rounded-full mt-0.5 flex-shrink-0 border border-slate-600", style: { background: part.color } }),
-                    React.createElement("div", null,
-                      React.createElement("span", { className: "text-[11px] font-bold text-white" }, part.name),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, part.desc)
-                    )
+                uniSpotlight({
+                stateKey: "bhPick", items: BLACK_HOLE_PARTS, accent: "#fb923c", touch: "black-holes", forceDark: true,
+                hint: "Pick a part of the diagram above to read what it actually is.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#fb923c" } }, on ? "\u25BE" : "\u203A")
                   );
-                })
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#fdba74" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
+                  );
+                },
+                prompt: function () { return "Is this a physical object you could touch, or a boundary defined by how light behaves?"; }
+              })
               )
             ),
 
@@ -4181,7 +4412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("label", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, param.label + ": " + val),
                         React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, param.desc)
                       ),
-                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, 'aria-label': param.label, onChange: function(e) { upd(param.key, parseFloat(e.target.value)); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
+                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, 'aria-label': param.label, onChange: function(e) { uniTouch('drake'); upd(param.key, parseFloat(e.target.value)); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
                     );
                   })
                 ),
@@ -4276,7 +4507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Distance (Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.distMpc)),
-                      React.createElement("input", { type: 'range', min: 1, max: 4000, step: 1, value: iq.distMpc, 'aria-label': 'Galaxy distance in megaparsecs', 'aria-valuetext': iq.distMpc + ' megaparsecs', onChange: function(e) { setKey('distMpc', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("input", { type: 'range', min: 1, max: 4000, step: 1, value: iq.distMpc, 'aria-label': 'Galaxy distance in megaparsecs', 'aria-valuetext': iq.distMpc + ' megaparsecs', onChange: function(e) { uniTouch('hubble'); setKey('distMpc', parseInt(e.target.value, 10)); }, className: "w-full" })
                     ),
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'H\u2080 (km/s/Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.hubbleConst)),
@@ -4338,20 +4569,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-red-500 hover:text-red-700"
                 }, d.showSupernovae ? 'Hide' : 'Learn \u2192')
               ),
-              d.showSupernovae && React.createElement("div", { className: "space-y-2" },
-                SUPERNOVA_TYPES.map(function(sn, sni) {
-                  return React.createElement("div", { key: sni, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-red-100') + " rounded-lg p-2.5 border" },
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                      React.createElement("span", { className: "text-lg" }, sn.icon),
-                      React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, sn.type),
-                      React.createElement("span", { className: "ml-auto text-[11px] " + (isDark ? 'text-red-400' : 'text-red-500') + " font-bold" }, "Peak: " + sn.brightness)
+              d.showSupernovae && uniSpotlight({
+                stateKey: 'snPick', items: SUPERNOVA_TYPES, accent: '#ef4444', touch: 'supernovae',
+                hint: 'Not every exploding star works the same way. Pick a type and follow the mechanism through to why it matters.',
+                name: function (sn) { return sn.type; },
+                row: function (sn, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, sn.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, sn.type),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, sn.trigger)
                     ),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, "\u26A1 Trigger: " + sn.trigger),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " mb-1" }, sn.mechanism),
-                    React.createElement("div", { className: "text-[11px] font-medium " + (isDark ? 'text-amber-400' : 'text-amber-600') }, "\uD83D\uDCA1 " + sn.importance)
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: '#ef4444' } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (sn) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: '#b91c1c' } }, sn.type + " \u00B7 peak brightness " + sn.brightness),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1.5 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "\u26A1 " + sn.mechanism),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-medium", style: { color: isDark ? '#fbbf24' : '#b45309' } }, "\uD83D\uDCA1 " + sn.importance)
+                  );
+                },
+                prompt: function () { return "Would this type work as a standard candle for measuring distance? What would have to be true for that?"; }
+              })
             ),
 
             // === FAMOUS ASTRONOMERS ===
@@ -4363,19 +4603,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-cyan-500 hover:text-cyan-700"
                 }, d.showAstronomers ? 'Hide' : 'View \u2192')
               ),
-              d.showAstronomers && React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-cyan-700' : 'border-cyan-300') + " space-y-1.5 max-h-64 overflow-y-auto" },
-                ASTRONOMERS.map(function(ast, asti) {
-                  return React.createElement("div", { key: asti, className: "relative" },
-                    React.createElement("div", { className: "absolute -left-[21px] top-1 w-3 h-3 rounded-full " + (isDark ? 'bg-cyan-400' : 'bg-cyan-500') }),
-                    React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                      React.createElement("span", { className: "font-bold text-cyan-500 mr-1" }, ast.year),
-                      React.createElement("span", { className: "mr-1" }, ast.icon),
-                      React.createElement("span", { className: "font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, ast.name),
-                      React.createElement("span", { className: " \u2014 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, " \u2014 " + ast.contribution)
-                    )
+              d.showAstronomers && uniSpotlight({
+                stateKey: 'astPick', items: ASTRONOMERS, accent: '#06b6d4', touch: 'astronomers',
+                hint: 'Each of these people was right about something and limited by what could be measured at the time.',
+                name: function (ast) { return ast.name; },
+                row: function (ast, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, ast.icon),
+                    React.createElement("span", { className: "text-[11px] font-bold w-16 flex-shrink-0", style: { color: '#0e7490' } }, ast.year),
+                    React.createElement("span", { className: "flex-1 text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, ast.name),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: '#06b6d4' } }, on ? "\u25BE" : "\u203A")
                   );
-                })
-              )
+                },
+                detail: function (ast) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: '#0e7490' } }, ast.name + " \u00B7 " + ast.year),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, ast.contribution)
+                  );
+                },
+                prompt: function (ast) { return "What instrument or measurement did " + ast.name.split(' ').slice(-1)[0] + " not have access to, and how might that have limited the conclusion?"; }
+              })
             ),
 
             // === OBSERVABLE UNIVERSE ===
@@ -4408,6 +4655,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", null, "\u2753 **Is there more beyond what we can see?**"),
                   React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, OBSERVABLE_UNIVERSE.beyondIt)
                 )
+              ),
+              d.showObservable && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
+                uniSpotlight({
+                  stateKey: "obsPick", items: OBSERVABLE_LIMITS, accent: "#d946ef", touch: "observable",
+                  hint: "The observable universe is not the whole universe. Pick an idea and pin down the difference.",
+                  name: function (it) { return it.name; },
+                  row: function (it, on, dk) {
+                    return React.createElement("span", { className: "flex items-center gap-2" },
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                      React.createElement("span", { className: "flex-1" },
+                        React.createElement("span", { className: "block text-[11px] font-bold " + (dk ? 'text-white' : 'text-slate-800') }, it.name),
+                        React.createElement("span", { className: "block text-[11px] " + (dk ? 'text-slate-300' : 'text-slate-600') }, it.fact)
+                      ),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#d946ef" } }, on ? "\u25BE" : "\u203A")
+                    );
+                  },
+                  detail: function (it, dk) {
+                    return React.createElement("div", null,
+                      React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#a21caf" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "In short: "), it.fact),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "The detail: "), it.desc)
+                    );
+                  },
+                  prompt: function () { return "Does this tell you something about the universe itself, or about our position as observers in it?"; }
+                })
               )
             ),
 
@@ -4449,7 +4721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, ep2.desc),
                       React.createElement("button", { "aria-label": "Listen to " + ep2.name + " description",
-                        onClick: function(e) { e.stopPropagation(); speakText(ep2.name + '. ' + ep2.desc); },
+                        onClick: function(e) { uniTouch('exoplanets'); e.stopPropagation(); speakText(ep2.name + '. ' + ep2.desc); },
                         className: "transition-colors mt-1 text-[11px] text-emerald-400 hover:text-emerald-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -4467,25 +4739,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-blue-500 hover:text-blue-700"
                 }, d.showMissions ? 'Hide' : 'Explore \u2192')
               ),
-              d.showMissions && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "Key moments in humanity's journey to explore the cosmos:"),
-                React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-blue-700' : 'border-blue-300') + " space-y-2 max-h-80 overflow-y-auto" },
-                  SPACE_MISSIONS.map(function(sm, smi) {
-                    return React.createElement("div", { key: smi, className: "relative" },
-                      React.createElement("div", { className: "absolute -left-[21px] top-1.5 w-3 h-3 rounded-full " + (isDark ? 'bg-blue-400' : 'bg-blue-500') }),
-                      React.createElement("div", { className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-blue-100') + " rounded-lg p-2 border" },
-                        React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
-                          React.createElement("span", { className: "text-sm" }, sm.icon),
-                          React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, sm.name),
-                          React.createElement("span", { className: "ml-auto text-[11px] font-bold " + (isDark ? 'text-blue-400' : 'text-blue-500') }, sm.year),
-                          React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, sm.agency)
-                        ),
-                        React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, sm.desc)
-                      )
-                    );
-                  })
-                )
-              )
+              d.showMissions && uniSpotlight({
+                stateKey: "missionPick", items: SPACE_MISSIONS, accent: "#3b82f6", touch: "missions",
+                hint: "Pick a mission and ask what question it was actually built to answer.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.year)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#3b82f6" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#1d4ed8" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Agency: "), it.agency),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it did: "), it.desc)
+                  );
+                },
+                prompt: function () { return "What could we not have known without this mission?"; }
+              })
             ),
 
             // === FERMI PARADOX ===
@@ -4510,7 +4786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, fs.desc),
                       React.createElement("button", { "aria-label": "Listen to " + fs.name + " solution",
-                        onClick: function(e) { e.stopPropagation(); speakText(fs.name + '. ' + fs.desc); },
+                        onClick: function(e) { uniTouch('fermi'); e.stopPropagation(); speakText(fs.name + '. ' + fs.desc); },
                         className: "transition-colors mt-1 text-[11px] text-amber-400 hover:text-amber-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -4623,18 +4899,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     drawLens();
                   }
                 }),
-                React.createElement("div", { className: "space-y-1.5" },
-                  LENSING_EXAMPLES.map(function(le, lei) {
-                    return React.createElement("div", { key: lei, className: "flex items-start gap-2" },
-                      React.createElement("span", { className: "text-sm mt-0.5" }, le.icon),
-                      React.createElement("div", null,
-                        React.createElement("span", { className: "text-[11px] font-bold text-white" }, le.name),
-                        React.createElement("span", { className: "text-[11px] ml-1.5 px-1 py-0.5 rounded " + (le.type === 'Strong lensing' ? 'bg-indigo-900 text-indigo-300' : le.type === 'Weak lensing' ? 'bg-purple-900 text-purple-300' : 'bg-cyan-900 text-cyan-300') }, le.type),
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, le.desc)
-                      )
-                    );
-                  })
-                )
+                uniSpotlight({
+                stateKey: "lensPick", items: LENSING_EXAMPLES, accent: "#818cf8", touch: "lensing", forceDark: true,
+                hint: "Pick a real lensing case and match it to the geometry in the animation above.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.type)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#818cf8" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#c7d2fe" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What is seen: "), it.desc)
+                  );
+                },
+                prompt: function () { return "What does the shape of the lensed image tell you about the mass in front of it?"; }
+              })
               )
             ),
 
@@ -4661,7 +4947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, cm.desc),
                       React.createElement("button", { "aria-label": "Listen to " + cm.name + " mystery",
-                        onClick: function(e) { e.stopPropagation(); speakText(cm.name + '. ' + cm.desc); },
+                        onClick: function(e) { uniTouch('mysteries'); e.stopPropagation(); speakText(cm.name + '. ' + cm.desc); },
                         className: "transition-colors mt-1 text-[11px] text-rose-400 hover:text-rose-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -4694,7 +4980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, mt2.desc),
                       React.createElement("div", { className: "text-[11px] font-medium " + (isDark ? 'text-purple-400' : 'text-purple-600') }, "\uD83D\uDD2C Evidence: " + mt2.evidence),
                       React.createElement("button", { "aria-label": "Listen to " + mt2.name + " theory",
-                        onClick: function(e) { e.stopPropagation(); speakText(mt2.name + '. ' + mt2.desc); },
+                        onClick: function(e) { uniTouch('multiverse'); e.stopPropagation(); speakText(mt2.name + '. ' + mt2.desc); },
                         className: "transition-colors mt-1 text-[11px] text-purple-400 hover:text-purple-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -4888,7 +5174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("input", {
                         type: 'range', min: 1, max: maxD, step: 1, value: distMpc,
-                        onChange: function(e) { upd('hubbleDistMpc', parseInt(e.target.value, 10)); },
+                        onChange: function(e) { uniTouch('redshift'); upd('hubbleDistMpc', parseInt(e.target.value, 10)); },
                         'aria-label': "Hubble's Law distance",
                         style: { flex: 1, accentColor: '#fbbf24' }
                       }),
@@ -4973,7 +5259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, sn.desc),
                       React.createElement("div", { className: "text-[11px] font-medium " + (isDark ? 'text-pink-400' : 'text-pink-600') }, "\u2B50 Features: " + sn.features),
                       React.createElement("button", { "aria-label": "Listen to " + sn.name + " stellar nursery",
-                        onClick: function(e) { e.stopPropagation(); speakText(sn.name + '. ' + sn.desc); },
+                        onClick: function(e) { uniTouch('nurseries'); e.stopPropagation(); speakText(sn.name + '. ' + sn.desc); },
                         className: "transition-colors mt-1 text-[11px] text-pink-400 hover:text-pink-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -4991,27 +5277,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-cyan-500 hover:text-cyan-700"
                 }, d.showPNebulae ? 'Hide' : 'Gallery \u2192')
               ),
-              d.showPNebulae && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "When low-mass stars (like our Sun) die, they shed their outer layers into gorgeous expanding shells of glowing gas. The hot white dwarf core illuminates them from within. Despite the name, they have nothing to do with planets!"),
-                React.createElement("div", { className: "grid grid-cols-1 gap-2" },
-                  PLANETARY_NEBULAE.map(function(pn, pni) {
-                    return React.createElement("div", { key: pni, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-cyan-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("div", { className: "w-7 h-7 rounded-full flex items-center justify-center text-sm", style: { background: pn.color + '25', border: '2px solid ' + pn.color } }, pn.icon),
-                        React.createElement("div", { className: "flex-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, pn.name),
-                          React.createElement("div", { className: "flex gap-2 text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') },
-                            React.createElement("span", null, "\uD83D\uDCCF " + pn.dist),
-                            React.createElement("span", null, "\u23F3 " + pn.age),
-                            React.createElement("span", null, "\uD83C\uDF00 " + pn.shape)
-                          )
-                        )
-                      ),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, pn.desc)
-                    );
-                  })
-                )
-              )
+              d.showPNebulae && uniSpotlight({
+                stateKey: "pnPick", items: PLANETARY_NEBULAE, accent: "#06b6d4", touch: "nebulae",
+                hint: "Each of these is a Sun-like star part-way through dying. Pick one and read its shape.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.shape)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#06b6d4" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#0e7490" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Distance: "), it.dist),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Age: "), it.age),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
+                  );
+                },
+                prompt: function () { return "This shape is only a few thousand years old. What will be left here in a million years?"; }
+              })
             ),
 
             // === COSMIC CATASTROPHES ===
@@ -5039,7 +5328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("span", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, "\u2022 Frequency: " + cc.freq)
                       ),
                       React.createElement("button", { "aria-label": "Listen to " + cc.name + " catastrophe",
-                        onClick: function(e) { e.stopPropagation(); speakText(cc.name + '. ' + cc.desc); },
+                        onClick: function(e) { uniTouch('catastrophes'); e.stopPropagation(); speakText(cc.name + '. ' + cc.desc); },
                         className: "transition-colors mt-1 text-[11px] text-orange-400 hover:text-orange-600"
                       }, "\uD83D\uDD0A Listen")
                     );
@@ -5074,7 +5363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     var isActive = d.spectrumIdx === emi;
                     return React.createElement("div", { 
                       key: emi,
-                      onClick: function() { upd('spectrumIdx', isActive ? null : emi); playBeep(); },
+                      onClick: function() { uniTouch('spectrum'); upd('spectrumIdx', isActive ? null : emi); playBeep(); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-slate-700 border-indigo-500' : 'bg-slate-800 border-slate-700 hover:border-slate-500')
                     },
                       React.createElement("div", { className: "flex items-center gap-2" },
@@ -5110,7 +5399,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 function pushPow(p, announce) {
                   var v = zoomClampPow(p);
-                  updMulti({ zoomPow: parseFloat(v.toFixed(2)), zoomDir: 0 });
+                  var patch = { zoomPow: parseFloat(v.toFixed(2)), zoomDir: 0 };
+                  uniTouch('powers-of-ten');
+                  // Remember how far the learner has actually travelled, for the wrap-up.
+                  if (d.zoomSeenMin === undefined || v < d.zoomSeenMin) patch.zoomSeenMin = parseFloat(v.toFixed(2));
+                  if (d.zoomSeenMax === undefined || v > d.zoomSeenMax) patch.zoomSeenMax = parseFloat(v.toFixed(2));
+                  updMulti(patch);
                   var cv = document.querySelector('[data-universe-zoom]');
                   if (cv) { cv.dataset.playdir = '0'; cv.dataset.powTarget = String(v); }
                   if (announce && typeof announceToSR === 'function') {
@@ -5283,7 +5577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("div", { className: "flex rounded-lg overflow-hidden mb-2 h-2" },
                   SPECTRAL_CLASSES.map(function(sc, sci) {
                     return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
-                      onClick: function() { upd('spectralIdx', sci); playBeep(); }
+                      onClick: function() { uniTouch('spectral'); upd('spectralIdx', sci); playBeep(); }
                     });
                   })
                 ),
@@ -5354,7 +5648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     type: "number", min: 1, max: 500, step: 1,
                     value: d.earthWeight || 70,
                     'aria-label': 'Your weight on Earth in kilograms',
-                    onChange: function(e) { upd('earthWeight', parseFloat(e.target.value) || 70); },
+                    onChange: function(e) { uniTouch('gravity'); upd('earthWeight', parseFloat(e.target.value) || 70); },
                     className: "w-20 px-2 py-1 border rounded text-sm text-center " + (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-green-600')
                   }),
                   React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "(" + Math.round((d.earthWeight || 70) * 2.205) + " lbs)")
@@ -5390,7 +5684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   FAMOUS_IMAGES.map(function(fi, fii) {
                     var isActive = d.imageIdx === fii;
                     return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fii,
-                      onClick: function() { upd('imageIdx', isActive ? null : fii); playBeep(); },
+                      onClick: function() { uniTouch('images'); upd('imageIdx', isActive ? null : fii); playBeep(); },
                       className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-sky-500' : 'bg-white border-sky-400 shadow-md')
                         : (isDark ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-white/50 border-sky-100 hover:border-sky-300'))
@@ -5423,29 +5717,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-amber-500 hover:text-amber-700"
                 }, d.showSpeeds ? 'Hide' : 'Race \u2192')
               ),
-              d.showSpeeds && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "How does your walking speed compare to the speed of light? Spoiler: not great."),
-                React.createElement("div", { className: "space-y-1.5" },
-                  COSMIC_SPEEDS.map(function(cs, csi) {
-                    var maxMps = 299792458;
-                    var barPct = cs.mps ? Math.max(0.5, Math.log10(cs.mps) / Math.log10(maxMps) * 100) : 100;
-                    return React.createElement("div", { key: csi, className: (isDark ? 'bg-slate-700' : 'bg-white') + " rounded-lg p-2 border " + (isDark ? 'border-slate-600' : 'border-amber-100') },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-sm" }, cs.icon),
-                        React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') + " flex-1" }, cs.name),
-                        React.createElement("span", { className: "text-[11px] font-mono " + (isDark ? 'text-amber-300' : 'text-amber-600') }, cs.speed)
-                      ),
-                      React.createElement("div", { className: "flex items-center gap-1.5" },
-                        React.createElement("div", { className: "flex-1 bg-slate-200 rounded-full h-1.5 " + (isDark ? 'bg-slate-600' : '') },
-                          React.createElement("div", { className: "h-1.5 rounded-full transition-all", style: { width: barPct + '%', background: cs.color } })
-                        ),
-                        React.createElement("span", { className: "text-[11px] font-mono w-16 text-right " + (isDark ? 'text-slate-200' : 'text-slate-600') }, cs.frac + " c")
-                      )
-                    );
-                  })
-                ),
-                React.createElement("div", { className: "mt-2 text-center text-[11px] " + (isDark ? 'text-amber-400' : 'text-amber-600') + " font-bold" }, "\u26A1 At walking speed, reaching the nearest star would take ~1 million years. Light does it in 4.24 years.")
-              )
+              d.showSpeeds && uniSpotlight({
+                stateKey: "speedPick", items: COSMIC_SPEEDS, accent: "#f59e0b", touch: "speeds",
+                hint: "You are moving in several directions at once right now. Pick a motion and feel the scale of it.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.speed)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#f59e0b" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#b45309" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Speed: "), it.speed),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Fraction of light speed: "), it.frac)
+                  );
+                },
+                prompt: function () { return "Why can you not feel this motion at all?"; }
+              })
             ),
 
             // === CITIZEN SCIENCE ===
@@ -5457,24 +5751,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[11px] text-teal-500 hover:text-teal-700"
                 }, d.showCitizenSci ? 'Hide' : 'Join \u2192')
               ),
-              d.showCitizenSci && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "You don't need a PhD to contribute to real astronomical research! These projects let students and anyone with a browser help make real discoveries:"),
-                React.createElement("div", { className: "space-y-2" },
-                  CITIZEN_SCIENCE.map(function(cs, csi) {
-                    return React.createElement("div", { key: csi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-teal-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-lg" }, cs.icon),
-                        React.createElement("div", { className: "flex-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cs.name),
-                          React.createElement("span", { className: "ml-1.5 text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-teal-900 text-teal-300' : 'bg-teal-100 text-teal-700') }, cs.field)
-                        )
-                      ),
-                      React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, cs.desc),
-                      React.createElement("div", { className: "text-[11px] font-mono " + (isDark ? 'text-teal-400' : 'text-teal-600') }, "\uD83C\uDF10 " + cs.url)
-                    );
-                  })
-                )
-              )
+              d.showCitizenSci && uniSpotlight({
+                stateKey: "citPick", items: CITIZEN_SCIENCE, accent: "#14b8a6", touch: "citizen-science",
+                hint: "These projects take real contributions from people with no formal training. Pick one and see what it needs.",
+                name: function (it) { return it.name; },
+                row: function (it, on) {
+                  return React.createElement("span", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
+                    React.createElement("span", { className: "flex-1" },
+                      React.createElement("span", { className: "block text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.field)
+                    ),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: "#14b8a6" } }, on ? "\u25BE" : "\u203A")
+                  );
+                },
+                detail: function (it) {
+                  return React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black mb-1", style: { color: "#0f766e" } }, it.name),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Field: "), it.field),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What you would do: "), it.desc),
+                    React.createElement("a", { href: it.url, target: "_blank", rel: "noreferrer", className: "text-[11px] font-bold underline", style: { color: "#14b8a6" } }, "Open the project \u2197")
+                  );
+                },
+                prompt: function () { return "What can a human volunteer still do here that software cannot?"; }
+              })
             ),
 
             // === COSMOLOGY GLOSSARY ===
@@ -5492,7 +5792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   COSMO_GLOSSARY.map(function(gl, gli) {
                     var isActive = d.glossaryIdx === gli;
                     return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
-                      onClick: function() { upd('glossaryIdx', isActive ? null : gli); },
+                      onClick: function() { uniTouch('glossary'); upd('glossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-stone-500' : 'bg-white border-stone-300 shadow-sm')
                         : (isDark ? 'bg-slate-700/30 border-slate-700 hover:border-slate-500' : 'bg-white/50 border-stone-100 hover:border-stone-300'))
@@ -5505,6 +5805,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               )
             ),
 
+
+            // \u2500\u2500 Session wrap-up. The tool tracked plenty but never told the learner what
+            // they had actually covered, and there was no way to start over. \u2500\u2500
+            (function () {
+              var opened = UNI_SECTIONS.filter(function (s) { return !!d[s.flag]; });
+              var unopened = UNI_SECTIONS.filter(function (s) { return !d[s.flag]; });
+              var pctTopics = Math.round(opened.length / UNI_SECTIONS.length * 100);
+              var quizBest = d.quizBest || 0;
+              var zoomLow = d.zoomSeenMin, zoomHigh = d.zoomSeenMax;
+              var zoomDecades = (zoomLow !== undefined && zoomHigh !== undefined) ? (zoomHigh - zoomLow) : 0;
+              var touched = opened.length > 0 || epochsVisited.length > 0 || researchPoints > 0;
+
+              function statTile(label, value, sub, colour) {
+                return React.createElement("div", { className: "rounded-lg p-2.5", style: { background: isDark ? 'rgba(148,163,184,0.09)' : 'rgba(255,255,255,0.86)', border: '1px solid ' + colour + '3d' } },
+                  React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wide", style: { color: isDark ? 'rgba(203,213,225,0.85)' : 'rgba(71,85,105,0.9)' } }, label),
+                  React.createElement("p", { className: "text-lg font-black leading-tight", style: { color: colour } }, value),
+                  sub && React.createElement("p", { className: "text-[10px] font-semibold", style: { color: isDark ? 'rgba(203,213,225,0.7)' : 'rgba(71,85,105,0.75)' } }, sub)
+                );
+              }
+
+              return React.createElement("div", { id: "unisec-wrapup", "data-uni": "indigo", className: "uni-card rounded-xl p-3.5 border" },
+
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2.5" },
+                  React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83E\uDDFE Your session"),
+                  React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, touched ? "Here is what you covered." : "Nothing explored yet \u2014 open a topic above to begin.")
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                  statTile("Topics opened", opened.length + " / " + UNI_SECTIONS.length, pctTopics + "% of the library", "#6366f1"),
+                  statTile("Epochs visited", epochsVisited.length + " / 9", "of cosmic history", "#8b5cf6"),
+                  statTile("Challenges", completedChallenges.length + " / " + CHALLENGES.length, researchPoints + " RP earned", "#f59e0b"),
+                  statTile("Best quiz", quizBest ? quizBest + " / " + QUIZ_PER_ATTEMPT : "\u2014", quizBest ? (quizBest >= 8 ? "champion score" : "try again for 8+") : "not attempted", "#db2777")
+                ),
+
+                zoomDecades > 0.5 && React.createElement("p", { className: "text-[11px] mt-2.5 font-semibold " + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                  "\uD83D\uDD0D You travelled " + zoomDecades.toFixed(1) + " orders of magnitude on the zoom, from " + formatFieldOfView(zoomLow) + " up to " + formatFieldOfView(zoomHigh) + "."),
+
+                cosmicMissionsCompleted.length > 0 && React.createElement("p", { className: "text-[11px] mt-1 font-semibold " + (isDark ? 'text-slate-200' : 'text-slate-700') },
+                  "\uD83D\uDE80 Guided missions completed: " + cosmicMissionsCompleted.length + " of " + GUIDED_COSMIC_MISSIONS.length + "."),
+
+                opened.length > 0 && React.createElement("div", { className: "mt-2.5" },
+                  React.createElement("p", { className: "text-[11px] font-bold mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Topics you opened"),
+                  React.createElement("div", { className: "flex flex-wrap gap-1" },
+                    opened.map(function (s) {
+                      return React.createElement("button", {
+                        key: s.id, type: "button",
+                        'aria-label': 'Return to ' + s.label,
+                        onClick: function () { uniGoTo(s); },
+                        className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-colors",
+                        style: { background: 'rgba(99,102,241,0.14)', color: isDark ? '#c7d2fe' : '#3730a3', border: '1px solid rgba(99,102,241,0.4)' }
+                      }, s.label);
+                    })
+                  )
+                ),
+
+                unopened.length > 0 && React.createElement("div", { className: "mt-2.5" },
+                  React.createElement("p", { className: "text-[11px] font-bold mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, unopened.length + " topics still unopened \u2014 try one of these next"),
+                  React.createElement("div", { className: "flex flex-wrap gap-1" },
+                    // deterministic pick so the suggestion does not reshuffle on every render
+                    unopened.filter(function (s, i) { return i % Math.max(1, Math.ceil(unopened.length / 3)) === 0; }).slice(0, 3).map(function (s) {
+                      return React.createElement("button", {
+                        key: s.id, type: "button",
+                        'aria-label': 'Open ' + s.label,
+                        onClick: function () { uniGoTo(s); },
+                        className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-colors",
+                        style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(248,250,252,0.95)', color: isDark ? '#cbd5e1' : '#475569', border: '1px dashed ' + (isDark ? 'rgba(148,163,184,0.4)' : 'rgba(100,116,139,0.4)') }
+                      }, "+ " + s.label);
+                    })
+                  )
+                ),
+
+                // \u2500\u2500 Reset. Two steps, because it throws away everything above. \u2500\u2500
+                React.createElement("div", { className: "mt-3 pt-2.5", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)') } },
+                  !d.uniConfirmReset
+                    ? React.createElement("button", {
+                        type: "button",
+                        'aria-label': 'Reset all Universe Explorer progress',
+                        onClick: function () { upd('uniConfirmReset', true); },
+                        className: "min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors",
+                        style: { background: 'transparent', color: isDark ? '#fda4af' : '#be123c', border: '1px solid rgba(244,63,94,0.45)' }
+                      }, "\u21BA Reset my progress")
+                    : React.createElement("div", { role: "alertdialog", 'aria-label': 'Confirm reset', className: "rounded-lg border p-2.5", style: { borderColor: 'rgba(244,63,94,0.5)', background: isDark ? 'rgba(76,5,25,0.4)' : 'rgba(255,241,242,0.95)' } },
+                        React.createElement("p", { className: "text-[11px] font-bold mb-2", style: { color: isDark ? '#fecdd3' : '#9f1239' } },
+                          "This clears " + researchPoints + " RP, " + completedChallenges.length + " challenges, " + epochsVisited.length + " visited epochs and every opened topic. It cannot be undone. Your theme stays as it is, and the two starter challenges re-earn straight away because you land back at the Big Bang."),
+                        React.createElement("div", { className: "flex flex-wrap gap-2" },
+                          React.createElement("button", {
+                            type: "button",
+                            'aria-label': 'Confirm and erase all progress',
+                            onClick: function () {
+                              var fresh = { cosmicTime: 0, isPlaying: false, speed: 1 };
+                              UNI_SECTIONS.forEach(function (s) { fresh[s.flag] = false; });
+                              ['researchPoints', 'totalRP', 'quizBest', 'quizScore', 'quizIdx', 'scaleIdx'].forEach(function (k) { fresh[k] = 0; });
+                              ['completedChallenges', 'epochsVisited', 'cosmicMissionsCompleted', 'cosmicMissionsLaunched', 'evidenceThreadsMastered', 'cosmicEvidenceNotebook'].forEach(function (k) { fresh[k] = []; });
+                              // the engagement ledger is progress too; without this the
+                              // badges would re-earn themselves the moment challenges ran
+                              fresh.uniEngaged = {};
+                              ['hrPick', 'darkPick', 'obsPick', 'ladderPick', 'elemPick', 'structPick', 'numPick', 'calPick',
+                               'galTypePick', 'bhPick', 'missionPick', 'lensPick', 'pnPick', 'speedPick', 'citPick'].forEach(function (k) { fresh[k] = undefined; });
+                              ['zoomSeenMin', 'zoomSeenMax', 'astPick', 'telPick', 'snPick', 'starStage', 'quizSelected', 'aiAnswer'].forEach(function (k) { fresh[k] = undefined; });
+                              fresh.quizAnswered = false;
+                              fresh.quizSeed = 1;
+                              fresh.zoomPow = 0.23;
+                              fresh.zoomDir = 0;
+                              fresh.uniQuery = '';
+                              fresh.uniGroup = 'all';
+                              fresh.uniConfirmReset = false;
+                              updMulti(fresh);
+                              if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; }
+                              var zcv = document.querySelector('[data-universe-zoom]');
+                              if (zcv) { zcv.dataset.playdir = '0'; zcv.dataset.powTarget = '0.23'; }
+                              var ccv = document.querySelector('[data-universe-canvas]');
+                              if (ccv) ccv.dataset.time = '0';
+                              if (typeof announceToSR === 'function') announceToSR('Progress reset. Everything is back to the start of cosmic history.');
+                            },
+                            className: "min-h-11 px-3 py-2 rounded-lg text-[11px] font-black text-white transition-colors",
+                            style: { background: '#be123c', border: '1px solid #be123c' }
+                          }, "Yes, erase everything"),
+                          React.createElement("button", {
+                            type: "button",
+                            'aria-label': 'Keep my progress',
+                            onClick: function () { upd('uniConfirmReset', false); },
+                            className: "min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors",
+                            style: { background: isDark ? 'rgba(148,163,184,0.14)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.3)') }
+                          }, "Keep my progress")
+                        )
+                      )
+                )
+              );
+            })(),
                         // === DARK MODE TOGGLE ===
             React.createElement("div", { className: "mt-3 flex items-center justify-between" },
               React.createElement("label", { className: "text-xs " + (isDark ? 'text-slate-200' : 'text-slate-600') + " flex items-center gap-2 cursor-pointer" },

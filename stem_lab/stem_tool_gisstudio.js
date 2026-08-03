@@ -39,6 +39,87 @@
     { name: 'York', lat: 43.48, lon: -70.72, density: 208, access: 91, coastal: true }
   ];
 
+  var NEW_ENGLAND = [
+    { name: 'Portland, ME', lat: 43.66, lon: -70.26, density: 350, access: 93, coastal: true },
+    { name: 'Burlington, VT', lat: 44.48, lon: -73.21, density: 190, access: 91, coastal: false },
+    { name: 'Boston, MA', lat: 42.36, lon: -71.06, density: 5300, access: 96, coastal: true },
+    { name: 'Providence, RI', lat: 41.82, lon: -71.41, density: 3800, access: 94, coastal: true },
+    { name: 'Hartford, CT', lat: 41.76, lon: -72.67, density: 2800, access: 95, coastal: false },
+    { name: 'Manchester, NH', lat: 42.99, lon: -71.45, density: 950, access: 94, coastal: false },
+    { name: 'Northern Vermont', lat: 44.90, lon: -72.80, density: 30, access: 86, coastal: false },
+    { name: 'Cape Cod, MA', lat: 41.70, lon: -70.30, density: 550, access: 92, coastal: true }
+  ];
+
+  var US_REGIONS = [
+    { name: 'Pacific Northwest', lat: 47.61, lon: -122.33, density: 850, access: 95, coastal: true },
+    { name: 'California Coast', lat: 37.77, lon: -122.42, density: 1800, access: 97, coastal: true },
+    { name: 'Southwest', lat: 33.45, lon: -112.07, density: 350, access: 91, coastal: false },
+    { name: 'Mountain West', lat: 39.74, lon: -104.99, density: 520, access: 94, coastal: false },
+    { name: 'Great Plains', lat: 41.26, lon: -95.94, density: 180, access: 87, coastal: false },
+    { name: 'Great Lakes', lat: 41.88, lon: -87.63, density: 1200, access: 93, coastal: false },
+    { name: 'Northeast Corridor', lat: 40.71, lon: -74.01, density: 2900, access: 97, coastal: true },
+    { name: 'Southeast', lat: 33.75, lon: -84.39, density: 650, access: 90, coastal: false },
+    { name: 'Gulf Coast', lat: 29.76, lon: -95.37, density: 1100, access: 89, coastal: true },
+    { name: 'Alaska', lat: 61.22, lon: -149.90, density: 15, access: 78, coastal: true },
+    { name: 'Hawaii', lat: 21.31, lon: -157.86, density: 1250, access: 92, coastal: true }
+  ];
+
+  var GLOBAL_REGIONS = [
+    { name: 'North America', lat: 43.65, lon: -79.38, density: 520, access: 94, coastal: true },
+    { name: 'Latin America', lat: -23.55, lon: -46.63, density: 760, access: 78, coastal: true },
+    { name: 'Europe', lat: 51.51, lon: -0.13, density: 1100, access: 96, coastal: true },
+    { name: 'West Africa', lat: 6.52, lon: 3.38, density: 1300, access: 67, coastal: true },
+    { name: 'East Africa', lat: -1.29, lon: 36.82, density: 430, access: 64, coastal: false },
+    { name: 'Middle East', lat: 30.04, lon: 31.24, density: 900, access: 81, coastal: false },
+    { name: 'South Asia', lat: 28.61, lon: 77.21, density: 1800, access: 72, coastal: false },
+    { name: 'East Asia', lat: 35.68, lon: 139.65, density: 2100, access: 97, coastal: true },
+    { name: 'Southeast Asia', lat: 1.35, lon: 103.82, density: 1500, access: 92, coastal: true },
+    { name: 'Oceania', lat: -33.87, lon: 151.21, density: 420, access: 95, coastal: true },
+    { name: 'Arctic North', lat: 64.15, lon: -21.94, density: 12, access: 88, coastal: true }
+  ];
+
+  var GIS_REGION_PACKS = [
+    {
+      id: 'maine',
+      label: 'Maine counties (16)',
+      scope: 'Maine',
+      defaultZoom: 6,
+      description: 'Sixteen county reference points spanning coastal and inland Maine.',
+      sourceNote: 'Illustrative classroom values; county reference points are not population or service-demand surfaces.',
+      records: MAINE
+    },
+    {
+      id: 'new-england',
+      label: 'New England (6-state sample)',
+      scope: 'New England',
+      defaultZoom: 5,
+      description: 'Eight illustrative reference points across all six New England states.',
+      sourceNote: 'Illustrative classroom values; points support comparison across states but are not official state estimates.',
+      records: NEW_ENGLAND
+    },
+    {
+      id: 'united-states',
+      label: 'United States (macro-region sample)',
+      scope: 'United States',
+      defaultZoom: 4,
+      description: 'Eleven illustrative reference points for major U.S. macro-regions, including Alaska and Hawaii.',
+      sourceNote: 'Illustrative classroom values; macro-region points are not national statistical estimates.',
+      records: US_REGIONS
+    },
+    {
+      id: 'global',
+      label: 'Global regions (classroom sample)',
+      scope: 'Global',
+      defaultZoom: 3,
+      description: 'Eleven illustrative reference points spanning major world regions and climate contexts.',
+      sourceNote: 'Illustrative classroom values; global points are prompts for comparison, not a complete world dataset.',
+      records: GLOBAL_REGIONS
+    }
+  ];
+
+  function getRegionPack(id) {
+    return GIS_REGION_PACKS.filter(function (pack) { return pack.id === id; })[0] || GIS_REGION_PACKS[0];
+  }
   var EXAMPLE = [
     'name,latitude,longitude,value',
     'School garden,43.66,-70.26,82',
@@ -1628,6 +1709,7 @@
       }).join('') + '</tbody></table></section>' : '';
     var spatialSection = '<section><h2>Spatial method and provenance</h2><dl>' +
       '<dt><strong>Method</strong></dt><dd>' + escapeHTML(spatial.method || 'No active spatial analysis') + '</dd>' +
+      '<dt><strong>Region pack</strong></dt><dd>' + escapeHTML(spatial.regionPack || model.regionPack || 'Not specified') + '</dd>' +
       '<dt><strong>Interpretation</strong></dt><dd>' + escapeHTML(spatial.detail || 'No spatial method was active when this report was generated.') + '</dd>' +
       '<dt><strong>Analysis points</strong></dt><dd>' + escapeHTML(spatial.pointCount == null ? 0 : spatial.pointCount) + '</dd>' +
       '<dt><strong>Selected records</strong></dt><dd>' + escapeHTML(spatial.selectedCount == null ? selected.length : spatial.selectedCount) + '</dd>' +
@@ -1725,7 +1807,7 @@
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
-      buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS,
+      buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS, regionPacks: GIS_REGION_PACKS,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
       calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
       normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
@@ -1773,6 +1855,7 @@
         var s1 = React.useState(initial.gisTab || 'map'), tab = s1[0], setTab = s1[1];
         var s2 = React.useState(initial.gisMetric || 'density'), metric = s2[0], setMetric = s2[1];
         var s3 = React.useState('sample'), source = s3[0], setSource = s3[1];
+        var regionPackState = React.useState(initial.gisRegionPack || 'maine'), regionPackId = regionPackState[0], setRegionPackId = regionPackState[1];
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
         var s5 = React.useState(EXAMPLE), csv = s5[0], setCSV = s5[1];
@@ -1876,7 +1959,8 @@
         var timeRightMapInstance = React.useRef(null);
 
         var imported = source === 'import';
-        var records = imported ? importedRows : MAINE;
+        var activeRegionPack = getRegionPack(regionPackId);
+        var records = imported ? importedRows : activeRegionPack.records;
         var values = records.map(function (record) { return valueOf(record, metric, imported); });
         var min = values.length ? Math.min.apply(Math, values) : 0;
         var max = values.length ? Math.max.apply(Math, values) : 1;
@@ -1939,7 +2023,7 @@
           : 'No complete location pairs are available for the selected years.';
         var privacyAssessment = assessCoordinatePrivacy(importedRows, timeDataset.rows);
         var projectTransformations = [
-          importedRows.length ? importedRows.length + ' imported coordinate records normalized' : 'Maine sample point layer active',
+          importedRows.length ? importedRows.length + ' imported coordinate records normalized' : 'Sample region pack active: ' + activeRegionPack.label,
           geoFeatures.length ? geoFeatures.length + ' GeoJSON features classified by ' + geoMetric : 'No GeoJSON layer loaded',
           'Choropleth classification: ' + classification,
           selectedRecords.length ? selectedRecords.length + ' point records selected by ' + analysisSelectionSource : 'No active point selection',
@@ -2206,15 +2290,16 @@
             var canReuse = mapInstance.current && mapNode.current && mapInstance.current.getContainer &&
               mapInstance.current.getContainer() === mapNode.current;
             if (!canReuse) mapNode.current.innerHTML = '';
-            var center = imported && records.length ? [
+            var center = records.length ? [
               records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
               records.reduce(function (sum, record) { return sum + record.lon; }, 0) / records.length
             ] : [45.15, -69.05];
             var storedView = mapViewState.current;
             map = canReuse ? mapInstance.current : L.map(mapNode.current, { keyboard: true, scrollWheelZoom: false }).setView(
               storedView ? storedView.center : center,
-              storedView ? storedView.zoom : (imported ? 5 : 6)
+              storedView ? storedView.zoom : (imported ? 5 : activeRegionPack.defaultZoom)
             );
+            if (canReuse && !storedView) map.setView(center, imported ? 5 : activeRegionPack.defaultZoom);
             mapInstance.current = map;
             if (!canReuse) {
             map.on('moveend', function () {
@@ -2237,7 +2322,7 @@
               if (active) { setLeafletBlocked(true); setMapLoading(false); setMapStatus('Online basemap tiles are unavailable. The offline schematic is shown instead; try the basemap again when connectivity returns.'); }
             });
             tileLayer.addTo(map);
-            if (layers.coast && !imported) {
+            if (layers.coast && !imported && activeRegionPack.id === 'maine') {
               L.polyline([[43.08, -70.74], [43.54, -70.18], [43.91, -69.82], [44.05, -69.10], [44.39, -68.20], [44.68, -67.21], [45.19, -67.28]], {
                 color: '#22d3ee', weight: 4, opacity: 0.75, dashArray: '8 7'
               }).bindTooltip('Coastal guide (schematic)').addTo(map);
@@ -2345,7 +2430,7 @@
               mapInstance.current = null;
             }
           };
-        }, [tab, source, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletRetry]);
+        }, [tab, source, regionPackId, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletRetry]);
 
         React.useLayoutEffect(function () {
           if (tab !== 'compare' || !compareLeftNode.current || !compareRightNode.current) return undefined;
@@ -2360,13 +2445,13 @@
               }
               return;
             }
-            var center = imported && records.length ? [
+            var center = records.length ? [
               records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
               records.reduce(function (sum, record) { return sum + record.lon; }, 0) / records.length
             ] : [45.15, -69.05];
             var stored = compareViewState.current;
             var initialCenter = stored ? stored.center : center;
-            var initialZoom = stored ? stored.zoom : (imported ? 5 : 6);
+            var initialZoom = stored ? stored.zoom : (imported ? 5 : activeRegionPack.defaultZoom);
             var leftCanReuse = compareLeftMapInstance.current && compareLeftNode.current && compareLeftMapInstance.current.getContainer &&
               compareLeftMapInstance.current.getContainer() === compareLeftNode.current;
             var rightCanReuse = compareRightMapInstance.current && compareRightNode.current && compareRightMapInstance.current.getContainer &&
@@ -2375,6 +2460,8 @@
             if (!rightCanReuse) compareRightNode.current.innerHTML = '';
             leftMap = leftCanReuse ? compareLeftMapInstance.current : L.map(compareLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
             rightMap = rightCanReuse ? compareRightMapInstance.current : L.map(compareRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
+            if (leftCanReuse && !stored) leftMap.setView(initialCenter, initialZoom);
+            if (rightCanReuse && !stored) rightMap.setView(initialCenter, initialZoom);
             if (leftCanReuse) {
               leftMap.eachLayer(function (layer) { leftMap.removeLayer(layer); });
               leftMap.off();
@@ -2458,7 +2545,7 @@
               compareRightMapInstance.current = null;
             }
           };
-        }, [tab, source, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints, leafletRetry]);
+        }, [tab, source, regionPackId, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints, leafletRetry]);
 
         React.useEffect(function () {
           if (!timePlaying || timeYears.length < 2) return undefined;
@@ -2754,6 +2841,23 @@
           announce('Join applied. Choropleth now maps ' + joinValueKey + '.');
         }
 
+        function changeRegionPack(nextId) {
+          var next = getRegionPack(nextId);
+          setRegionPackId(next.id);
+          setSource('sample');
+          mapViewState.current = null;
+          compareViewState.current = null;
+          setAnalysisPoints([]);
+          setAnalysisSelection([]);
+          setAnalysisSelectionSource('none');
+          setAnalysisHistory([]);
+          setAnalysisFuture([]);
+          setAnalysisCopyStatus('');
+          setProjectError('');
+          persist('gisRegionPack', next.id);
+          persist('gisSpatialAnalysis', false);
+          announce(next.label + ' loaded. ' + next.description + ' ' + next.sourceNote);
+        }
         function clearAnalysis() {
           if (hasAnalysisState()) pushAnalysisHistory();
           setAnalysisPoints([]);
@@ -3045,8 +3149,13 @@
                 h('p', { style: { margin: '0 0 13px', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, 'A GIS combines geometry, attributes, and layers.'),
                 h('fieldset', { style: { border: 0, padding: 0, margin: '0 0 13px' } },
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'DATA SOURCE'),
-                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { setSource('sample'); } }), ' Maine sample'),
+                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { setSource('sample'); } }), ' Sample / region pack'),
                   h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { setSource('import'); } }), ' My CSV')),
+                !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
+                  h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
+                  h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: control, 'aria-describedby': 'gis-region-pack-note' },
+                    GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, pack.label); })),
+                  h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote)),
                 h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Basemap'),
                   h('select', { value: basemap, onChange: function (event) { setBasemap(event.target.value); persist('gisBasemap', event.target.value); }, style: control },
@@ -3081,7 +3190,7 @@
                   h('input', { type: 'text', value: customBreaks, onChange: function (event) { setCustomBreaks(event.target.value); }, style: control })),
                 h('fieldset', { style: { border: 0, padding: 0, display: 'grid', gap: 8, margin: '0 0 13px' } },
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'Visible layers'),
-                  toggle('points', 'Thematic points'), geoFeatures.length > 0 && toggle('polygons', 'GeoJSON choropleth'), !imported && toggle('coast', 'Coastal guide'), toggle('grid', 'Coordinate grid')),
+                  toggle('points', 'Thematic points'), geoFeatures.length > 0 && toggle('polygons', 'GeoJSON choropleth'), !imported && activeRegionPack.id === 'maine' && toggle('coast', 'Coastal guide'), toggle('grid', 'Coordinate grid')),
                 h('button', { type: 'button', onClick: sonify, style: Object.assign({}, primary, { width: '100%', background: '#083344', border: '1px solid #22d3ee' }) }, '\u266B Sonify values'),
                 h('p', { style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.4 } }, 'Low values use lower pitches. The table is the equivalent non-audio view.'),
                 analysisControls()),
@@ -3216,7 +3325,7 @@
             title: projectTitle,
             provenance: provenance,
             settings: {
-              tab: tab, source: source, metric: metric, layers: layers, basemap: basemap,
+              tab: tab, source: source, regionPack: activeRegionPack.id, metric: metric, layers: layers, basemap: basemap,
               geoMetric: geoMetric, classification: classification, classCount: classCount, customBreaks: customBreaks,
               analysisMode: analysisMode, analysisPoints: analysisPoints, bufferRadiusKm: bufferRadiusKm,
               analysisUnit: analysisUnit, selectedFeatureIndex: selectedFeatureIndex,
@@ -3254,6 +3363,7 @@
           setProvenance(normalizeProvenance(project.provenance));
           setImportedRows(restoredPoints);
           setSource(settings.source === 'import' && restoredPoints.length ? 'import' : 'sample');
+          setRegionPackId(getRegionPack(settings.regionPack || 'maine').id);
           setMetric(settings.metric === 'access' ? 'access' : 'density');
           setLayers(Object.assign({ points: true, coast: true, grid: false, polygons: true }, settings.layers || {}));
           setBasemap(settings.basemap === 'satellite' ? 'satellite' : 'street');
@@ -3339,7 +3449,7 @@
         function downloadMappedCSV() {
           try {
             var rows = [['Name', 'Latitude', 'Longitude', 'Value', 'Source']].concat(records.map(function (record) {
-              return [record.name, record.lat, record.lon, valueOf(record, metric, imported), imported ? 'Imported CSV' : 'Maine sample'];
+              return [record.name, record.lat, record.lon, valueOf(record, metric, imported), imported ? 'Imported CSV' : activeRegionPack.label];
             }));
             triggerDownload(rowsToCSV(rows), safeFileStem(projectTitle, 'gis-project') + '-mapped-points.csv', 'text/csv;charset=utf-8');
             persist('gisMappedDataExported', true);
@@ -3551,6 +3661,10 @@
 
         function prepareMission(mission) {
           setSource('sample');
+          mapViewState.current = null;
+          compareViewState.current = null;
+          setRegionPackId('maine');
+          persist('gisRegionPack', 'maine');
           setAnalysisPoints([]);
           setAnalysisSelection([]);
           setAnalysisSelectionSource('none');
@@ -3638,6 +3752,7 @@
           return {
             method: method,
             detail: detail,
+            regionPack: imported ? 'Imported coordinate data' : activeRegionPack.label,
             pointCount: analysisPoints.length,
             selectedCount: selectedRecords.length,
             selectedMean: Number.isFinite(selectedMean) ? selectedMean : null,
@@ -3699,7 +3814,7 @@
             observation: comparisonObservation || 'Compare the mapped patterns, then add a claim supported by at least two pieces of evidence.',
             analysis: summary + (selectedRecords.length ? ' Spatial analysis selected ' + selectedRecords.length + ' mapped points.' : ''),
             sources: imported ? 'Point data were imported locally by the learner. Basemaps: OpenStreetMap and Esri World Imagery.' :
-              'Maine learning data include rounded population-density approximations and an illustrative broadband-access index. Basemaps: OpenStreetMap and Esri World Imagery.',
+              activeRegionPack.description + ' ' + activeRegionPack.sourceNote + ' Basemaps: OpenStreetMap and Esri World Imagery.',
             left: Object.assign({}, leftSeries, { label: comparisonLabel(leftChoice), basemap: compareLeftBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
             right: Object.assign({}, rightSeries, { label: comparisonLabel(rightChoice), basemap: compareRightBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
             spatialAnalysis: spatialAnalysisEvidence(),

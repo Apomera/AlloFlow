@@ -31,6 +31,11 @@ test.describe('Beehive Drone Flight real WebGL acceptance', () => {
     await expect(hud).toHaveAttribute('data-flight-renderer', 'three-webgl', { timeout: 30_000 });
     await expect(hud).toHaveAttribute('data-flight-frame-health', 'verified', { timeout: 60_000 });
     await expect(page.locator('[data-flight-renderer-badge="true"]')).toHaveText('3D scene verified');
+    const qualityBadge = page.locator('[data-flight-quality-badge="true"]');
+    await expect(qualityBadge).toHaveAttribute('data-quality-tier', /high|balanced|eco/);
+    await page.locator('[data-flight-graphics-mode="true"]').selectOption('eco');
+    await expect(qualityBadge).toHaveAttribute('data-quality-tier', 'eco');
+    await expect(page.locator('[data-beehive-drone-webgl="true"]')).toHaveAttribute('data-flight-frame-health', 'verified');
 
     const beforePixels = await world.screenshot({ timeout: 60_000 });
     expect(beforePixels.length, 'Drone world should contain varied rendered pixels').toBeGreaterThan(8_000);

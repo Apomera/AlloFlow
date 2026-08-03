@@ -35,8 +35,14 @@ test.describe('Beehive tool live tabs interaction', () => {
       console.log('Booting AlloFlow...');
       await bootAlloFlow(page, 'learning');
 
+      const pathwayDialog = page.getByRole('region', { name: /Choose how to use AlloFlow/i });
+      if (await pathwayDialog.isVisible().catch(() => false)) {
+        await pathwayDialog.getByRole('button', { name: /^Learning Tools$/i }).click();
+        await pathwayDialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+      }
+
       console.log('Opening STEM Lab...');
-      const stemLabBtn = page.locator('button').filter({ hasText: /STEM Lab.*interactive math/i }).first();
+      const stemLabBtn = page.getByRole('button', { name: /^STEM Lab\b/i }).first();
       await stemLabBtn.waitFor({ state: 'visible', timeout: 30000 });
       await page.waitForTimeout(3000); // Wait for React hydration
       await stemLabBtn.click({ force: true });
@@ -103,7 +109,9 @@ test.describe('Beehive tool live tabs interaction', () => {
 
     expect(pageErrors).toHaveLength(0);
     // There shouldn't be new critical errors. Let's filter out standard firebase/analytics noise.
-    const criticalConsoleErrors = consoleErrors.filter(e => !/firebase|firestore|workbox|GA_/i.test(e));
+    // The desktop test environment has no cloud-TTS key. The shell logs the rejected
+    // request before applying its verified local-voice fallback; it is not a tool error.
+    const criticalConsoleErrors = consoleErrors.filter(e => !/firebase|firestore|workbox|GA_|TTS-Bot.*API Error: 400|Failed to load resource:.*status of 400/i.test(e));
     expect(criticalConsoleErrors).toHaveLength(0);
   });
 });

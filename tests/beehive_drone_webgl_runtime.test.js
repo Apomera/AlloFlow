@@ -26,11 +26,13 @@ describe('Drone Flight visible WebGL runtime', () => {
       if (throwOnRender) throw new Error('simulated WebGL render failure');
     });
     const dispose = vi.fn();
+    const setPixelRatio = vi.fn();
+    const shadowMap = { enabled: false, type: null };
     THREE.WebGLRenderer = function FakeWebGLRenderer(options) {
       this.domElement = options.canvas;
-      this.shadowMap = { enabled: false, type: null };
+      this.shadowMap = shadowMap;
       this.outputEncoding = 0;
-      this.setPixelRatio = vi.fn();
+      this.setPixelRatio = setPixelRatio;
       this.setSize = vi.fn((width, height) => {
         options.canvas.width = width;
         options.canvas.height = height;
@@ -53,7 +55,7 @@ describe('Drone Flight visible WebGL runtime', () => {
       this.dispose = dispose;
     };
     window.StemLab.ensureThree = vi.fn(() => Promise.resolve(THREE));
-    return { render, dispose };
+    return { render, dispose, setPixelRatio, shadowMap };
   }
 
   async function mountAndStart(rendererOptions) {
@@ -185,6 +187,33 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(warn).toHaveBeenCalled();
   });
 
+  it('applies graphics, steering, and camera comfort settings without restarting flight', async () => {
+    const renderer = await mountAndStart();
+    const state = window.__testHooks.beehive.droneStateRef.current;
+    const graphics = host.querySelector('[data-flight-graphics-mode="true"]');
+    const steering = host.querySelector('[data-flight-steering-sensitivity="true"]');
+    const stabilization = host.querySelector('[data-flight-camera-stabilized="true"]');
+    expect(graphics).toBeTruthy();
+    expect(steering).toBeTruthy();
+    expect(stabilization.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => {
+      graphics.value = 'eco';
+      graphics.dispatchEvent(new Event('change', { bubbles: true }));
+      steering.value = 'gentle';
+      steering.dispatchEvent(new Event('change', { bubbles: true }));
+      stabilization.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await stepFrame();
+    expect(state.graphicsMode).toBe('eco');
+    expect(state.graphicsTier).toBe('eco');
+    expect(state.steeringSensitivity).toBe('gentle');
+    expect(state.cameraStabilized).toBe(false);
+    expect(renderer.setPixelRatio).toHaveBeenLastCalledWith(1);
+    expect(renderer.shadowMap.enabled).toBe(false);
+    expect(host.querySelector('[data-flight-quality-badge="true"]').getAttribute('data-quality-tier')).toBe('eco');
+  });
+
   it('falls back in the same frame when WebGL rendering fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const renderer = await mountAndStart({ throwOnRender: true });
@@ -209,7 +238,7 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(html).toContain('data-flight-renderer-badge="true"');
     expect(html).toContain('Preparing 3D');
     expect((html.match(/data-beehive-drone-canvas="true"/g) || [])).toHaveLength(1);
-    expect(source).toContain("t.camera.rotation.set((ds.pitch || 0) - cameraBob, -(ds.yaw || 0), ds.roll || 0)");
+    expect(source).toContain("t.camera.rotation.set((ds.pitch || 0) - cameraBob, -(ds.yaw || 0), (ds.roll || 0) * (cameraStabilized ? 0.35 : 1))");
     expect(source).toContain("if (keys.ArrowLeft || keys.a) turnInput = -1");
     expect(source).toContain('try { updateThreeWorld(now); }');
     expect(source).toContain("addEventListener('webglcontextlost'");
@@ -217,6 +246,11 @@ describe('Drone Flight visible WebGL runtime', () => {
     expect(source).toContain('var usingThreeScene = !!(threeWorld && threeWorld.ready)');
     expect(source).toContain("c.fillText('FLIGHT PATH'");
     expect(source).toContain("trainingActive: difficulty === 'easy'");
+    expect(source).toContain('syncAdaptiveDroneQuality(dt)');
+    expect(source).toContain("_droneCameraStabilized.current === false ? actualRoll : actualRoll * 0.35");
+    expect(source).toContain('turnRate = ds.controlTurn * speedTurnAuthority * steeringScale');
+    expect(html).toContain('data-flight-comfort-settings="true"');
+    expect(html).toContain('data-flight-quality-badge="true"');
     expect(source).not.toContain("document.querySelector('[data-beehive-focus-panel]')");
     expect(source).not.toContain('c.drawImage(threeWorld.canvas');
     expect(source).not.toContain('_droneOverlayCvRef');

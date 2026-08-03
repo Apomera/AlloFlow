@@ -165,14 +165,16 @@ describe('GIS Studio', () => {
       analysis: 'Pattern does not prove cause.',
       left: { label: 'Population', basemap: 'Street', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 12 }] },
       right: { label: 'Access', basemap: 'Imagery', rows: [{ name: 'A', geometry: 'Point', lat: 44, lon: -69, value: 88 }] },
+      spatialAnalysis: { regionPack: 'Global regions (classroom sample)', method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' },
       selected: [{ name: 'A', lat: 44, lon: -69, value: 12 }],
-      spatialAnalysis: { method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' }
+      spatialAnalysis: { regionPack: 'Global regions (classroom sample)', method: 'Radius buffer', detail: '10 km radius', pointCount: 1, selectedCount: 1, selectedMean: 12, unit: 'people/mi2' }
     });
     expect(report).toContain('<html lang="en">');
     expect(report).toContain('Coordinate plot');
     expect(report).toContain('Print or save as PDF');
     expect(report).toContain('<caption>Left comparison data</caption>');
     expect(report).toContain('Spatial method and provenance');
+    expect(report).toContain('Global regions (classroom sample)');
     expect(report).toContain('Radius buffer');
     expect(report).toContain('&lt;script&gt;');
     expect(report).not.toContain('<script>alert');
@@ -196,6 +198,17 @@ describe('GIS Studio', () => {
     expect(tool.testing.missionCompletion(mission, { setup: true, pattern: true })).toEqual({ complete: 2, total: 4, percent: 50 });
   });
 
+  it('offers portable region packs with explicit scope notes', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const packs = tool.testing.regionPacks;
+    expect(packs.map((pack) => pack.id)).toEqual(['maine', 'new-england', 'united-states', 'global']);
+    expect(packs.find((pack) => pack.id === 'maine').records).toHaveLength(16);
+    expect(packs.find((pack) => pack.id === 'global').records).toHaveLength(11);
+    expect(packs.every((pack) => pack.description && pack.sourceNote)).toBe(true);
+    const html = renderTool('gisStudio', {});
+    expect(html).toContain('Sample region pack');
+    expect(html).toContain('Global regions (classroom sample)');
+  });
   it('renders the guided Maine mission workspace with progress and teacher supports', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'missions' });
@@ -246,12 +259,14 @@ describe('GIS Studio', () => {
     const project = tool.testing.createGISProject({
       title: 'Watershed study',
       provenance: { source: 'Maine agency', units: 'percent' },
+      settings: { regionPack: 'global' },
       data: { importedRows: [{ name: 'A', lat: 44, lon: -69, value: 12 }], geoData: null, timeDataset: { rows: [] } }
     }, '2026-07-25T00:00:00.000Z');
     expect(tool.testing.validateGISProject(project)).toBe(project);
     expect(project.format).toBe('alloflow-gis-studio-project');
     expect(project.version).toBe(1);
     expect(project.provenance.source).toBe('Maine agency');
+    expect(project.settings.regionPack).toBe('global');
     expect(() => tool.testing.validateGISProject({ format: 'wrong', version: 1 })).toThrow(/not a GIS Studio/);
     expect(() => tool.testing.validateGISProject({ ...project, version: 2 })).toThrow(/newer/);
   });

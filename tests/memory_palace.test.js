@@ -639,6 +639,10 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('var factor = overview ? 0.82');
     expect(source).toContain('_scaleFrameLabels();');
     expect(source).toContain('if (reduce) label.scale.set(tx, ty, 1)');
+    expect(source).toContain('depthTest: !occlusionSafe');
+    expect(source).toContain('sp.renderOrder = occlusionSafe ? 24 : 12');
+    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, true)");
+    expect(source).toContain('makeLabelSprite(THREE, text, ref.baseColor, 24, true)');
   });
   it('provides a clickable status map and a responsive frame callout', () => {
     const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');

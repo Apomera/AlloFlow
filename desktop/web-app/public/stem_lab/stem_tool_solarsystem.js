@@ -252,6 +252,23 @@ const d = labToolData.solarSystem || {};
           var completedChallenges = d.completedChallenges || [];
           var planetsVisited = d.planetsVisited || [];
 
+          // Engagement ledger. These badges used to fire on d.showX -- on revealing a
+          // panel rather than doing anything in it. Panels with a real control now
+          // record deliberate acts here and the checks below read from it.
+          var SOL_ENGAGE_CAP = 5;
+          var solEngaged = d.solEngaged || {};
+          function solDidEngage(id, n) { return (solEngaged[id] || 0) >= (n || 1); }
+          function solTouch(id) {
+            if (!id) return;
+            var now = solEngaged[id] || 0;
+            if (now >= SOL_ENGAGE_CAP) return;
+            var next = {};
+            Object.keys(solEngaged).forEach(function (k) { next[k] = solEngaged[k]; });
+            next[id] = now + 1;
+            solEngaged = next;
+            upd('solEngaged', next);
+          }
+
           var CHALLENGES = [
             { id: 'first_planet', name: __alloT('stem.solarsystem.first_contact', 'First Contact'), desc: __alloT('stem.solarsystem.select_any_planet', 'Select any planet'), icon: '\uD83C\uDF1F', rp: 10, check: function() { return !!sel; } },
             { id: 'visit_3', name: __alloT('stem.solarsystem.inner_planets', 'Inner Planets'), desc: __alloT('stem.solarsystem.visit_3_different_planets', 'Visit 3 different planets'), icon: '\uD83D\uDE80', rp: 25, check: function() { return planetsVisited.length >= 3; } },
@@ -263,14 +280,14 @@ const d = labToolData.solarSystem || {};
             { id: 'gravity_calc', name: __alloT('stem.solarsystem.weight_watcher', 'Weight Watcher'), desc: __alloT('stem.solarsystem.use_the_gravity_calculator', 'Use the gravity calculator'), icon: '\u2696', rp: 15, check: function() { return d.gravCalcUsed; } },
             { id: 'light_calc', name: __alloT('stem.solarsystem.speed_of_light', 'Speed of Light'), desc: __alloT('stem.solarsystem.calculate_travel_time_at_light_speed', 'Calculate travel time at light speed'), icon: '\u26A1', rp: 15, check: function() { return d.lightCalcUsed; } },
             { id: 'ai_question', name: __alloT('stem.solarsystem.curious_mind', 'Curious Mind'), desc: __alloT('stem.solarsystem.ask_the_ai_space_tutor_a_question', 'Ask the AI Space Tutor a question'), icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', rp: 20, check: function() { return !!d.aiAnswer; } },
-            { id: 'moon_explorer', name: __alloT('stem.solarsystem.moon_gazer', 'Moon Gazer'), desc: __alloT('stem.solarsystem.explore_notable_moons_of_a_planet', 'Explore notable moons of a planet'), icon: '\uD83C\uDF19', rp: 15, check: function() { return d.showMoons; } },
+            { id: 'moon_explorer', name: __alloT('stem.solarsystem.moon_gazer', 'Moon Gazer'), desc: __alloT('stem.solarsystem.explore_notable_moons_of_a_planet', 'Explore notable moons of a planet'), icon: '\uD83C\uDF19', rp: 15, check: function() { return solDidEngage('moons', 2); } },
             { id: 'night_sky', name: __alloT('stem.solarsystem.stargazer', 'Stargazer'), desc: __alloT('stem.solarsystem.view_the_night_sky_from_a_planet', 'View the night sky from a planet'), icon: '\uD83C\uDF03', rp: 15, check: function() { return d.showSky; } },
             { id: 'atmosphere_descent', name: __alloT('stem.solarsystem.deep_diver', 'Deep Diver'), desc: __alloT('stem.solarsystem.use_the_atmosphere_descent_simulator', 'Use the atmosphere descent simulator'), icon: '\uD83E\uDE82', rp: 20, check: function() { return d.showDescent && d.descentAlt !== undefined && d.descentAlt < 50; } },
             { id: 'planet_builder', name: __alloT('stem.solarsystem.world_builder', 'World Builder'), desc: __alloT('stem.solarsystem.build_a_habitable_planet', 'Build a habitable planet'), icon: '\uD83C\uDFD7', rp: 30, check: function() { var m = d.buildMass||1, dd = d.buildDist||1; return d.showBuilder && dd >= 0.8 && dd <= 1.5 && d.buildAtmo && d.buildWater && m >= 0.5 && m <= 5; } },
-            { id: 'orbital_learn', name: __alloT('stem.solarsystem.kepler_student', 'Kepler Student'), desc: __alloT('stem.solarsystem.study_orbital_mechanics', 'Study orbital mechanics'), icon: '\uD83C\uDF0C', rp: 15, check: function() { return d.showOrbital; } },
+            { id: 'orbital_learn', name: __alloT('stem.solarsystem.kepler_student', 'Kepler Student'), desc: __alloT('stem.solarsystem.study_orbital_mechanics', 'Study orbital mechanics'), icon: '\uD83C\uDF0C', rp: 15, check: function() { return solDidEngage('orbital', 2); } },
             { id: 'hohmann_plan', name: __alloT('stem.solarsystem.mission_planner', 'Mission Planner'), desc: __alloT('stem.solarsystem.plan_a_hohmann_transfer_to_any_planet', 'Plan a Hohmann transfer to any planet'), icon: '\uD83D\uDEF0', rp: 20, check: function() { return d.showHohmann; } },
             { id: 'exo_explorer', name: __alloT('stem.solarsystem.exoplanet_hunter', 'Exoplanet Hunter'), desc: __alloT('stem.solarsystem.explore_exoplanet_comparisons', 'Explore exoplanet comparisons'), icon: '\uD83C\uDF20', rp: 15, check: function() { return d.showExo; } },
-            { id: 'what_if_thinker', name: __alloT('stem.solarsystem.thought_experimenter', 'Thought Experimenter'), desc: __alloT('stem.solarsystem.read_what_if_scenarios', 'Read What If scenarios'), icon: '\uD83E\uDD14', rp: 10, check: function() { return d.showWhatIf; } }
+            { id: 'what_if_thinker', name: __alloT('stem.solarsystem.thought_experimenter', 'Thought Experimenter'), desc: __alloT('stem.solarsystem.read_what_if_scenarios', 'Read What If scenarios'), icon: '\uD83E\uDD14', rp: 10, check: function() { return solDidEngage('whatif', 2); } }
           ];
 
           function checkChallenges() {
@@ -16318,7 +16335,7 @@ const d = labToolData.solarSystem || {};
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen', "Listen"),
-                        onClick: function() { speakText(moon.name + '. ' + moon.fact); },
+                        onClick: function() { solTouch('moons'); speakText(moon.name + '. ' + moon.fact); },
                         className: "transition-colors mt-1 text-[11px] text-indigo-400 hover:text-indigo-600"
                       }, __alloT('stem.solarsystem.listen_2', "\uD83D\uDD0A Listen"))
                     );
@@ -16535,7 +16552,7 @@ const d = labToolData.solarSystem || {};
                         var on = d['_keplerShow_' + tog.id] !== false; // default ON
                         return React.createElement("button", {
                           key: tog.id,
-                          onClick: function() { upd('_keplerShow_' + tog.id, !on); },
+                          onClick: function() { solTouch('orbital'); upd('_keplerShow_' + tog.id, !on); },
                           className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-700 border border-slate-400'))
                         }, tog.label);
                       })
@@ -17061,7 +17078,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen_3', "Listen"),
-                        onClick: function() { speakText(wi.q + ' ' + wi.a); },
+                        onClick: function() { solTouch('whatif'); speakText(wi.q + ' ' + wi.a); },
                         className: "transition-colors mt-1 text-[11px] text-yellow-400 hover:text-yellow-600"
                       }, __alloT('stem.solarsystem.listen_4', "\uD83D\uDD0A Listen"))
                     );
