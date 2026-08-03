@@ -216,6 +216,34 @@ describe('udlwalkFeedbackFromSession', () => {
   });
 });
 
+describe('archiving', () => {
+  it('archived classrooms leave coverage but their sessions still count in the heatmap', () => {
+    const withArchived = roster.map((r) => r.id === 't3' ? { ...r, archived: true } : r);
+    const agg = W.udlwalkAggregate([session('s1', 't3', { eng_7_1: { rating: 'observed' } })], withArchived);
+    expect(agg.coverage.find((c) => c.teacherId === 't3')).toBeUndefined();
+    expect(agg.totals.eng_7.observed).toBe(1); // history preserved
+  });
+});
+
+describe('udlwalkFeedbackHtml', () => {
+  it('escapes injected markup and honors anonymization', () => {
+    const s = session('s1', 't1', {
+      eng_7_1: { rating: 'observed' },
+      act_5_1: { rating: 'not' },
+    }, { summaryNote: '<script>alert(1)</script> & "quotes"' });
+    const teacher = { id: 't1', code: 'T-01', name: 'Ada <b>Teacher</b>', grade: '3' };
+    const anon = W.udlwalkFeedbackHtml(s, teacher, true);
+    expect(anon).toContain('T-01');
+    expect(anon).not.toContain('Ada');
+    const named = W.udlwalkFeedbackHtml(s, teacher, false);
+    expect(named).toContain('Ada &lt;b&gt;Teacher&lt;/b&gt;');
+    expect(named).not.toContain('<script>');
+    expect(named).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(named).toContain('<!DOCTYPE html>');
+    expect(named).toContain('not a validated fidelity instrument');
+  });
+});
+
 describe('observer stamping', () => {
   it('research rows carry the observer initials (empty when unstamped)', () => {
     const rows = W.udlwalkResearchRows([

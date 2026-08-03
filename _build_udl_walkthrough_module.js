@@ -20,7 +20,7 @@ const TMP = path.join(ROOT, '_tmp_udl_walkthrough_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__udlWalkthroughExports = { UdlWalkthroughPanel, udlwalkFeedbackFromSession, udlwalkFeedbackText, udlwalkNextTeacherCode, udlwalkTeacherDisplay, udlwalkAggregate, udlwalkAgreement, udlwalkResearchRows, udlwalkCsv, udlwalkGuidelineOf, UDLWALK_LOOK_FORS, UDLWALK_STUDENT_INDICATORS, UDLWALK_GUIDELINES };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__udlWalkthroughExports = { UdlWalkthroughPanel, udlwalkFeedbackFromSession, udlwalkFeedbackText, udlwalkFeedbackHtml, udlwalkNextTeacherCode, udlwalkTeacherDisplay, udlwalkAggregate, udlwalkAgreement, udlwalkResearchRows, udlwalkCsv, udlwalkGuidelineOf, UDLWALK_LOOK_FORS, UDLWALK_STUDENT_INDICATORS, UDLWALK_GUIDELINES };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling udl_walkthrough_source.jsx with esbuild...');
@@ -80,6 +80,7 @@ ${compiled}
     _testing: {
       udlwalkFeedbackFromSession: udlwalkFeedbackFromSession,
       udlwalkFeedbackText: udlwalkFeedbackText,
+      udlwalkFeedbackHtml: udlwalkFeedbackHtml,
       udlwalkNextTeacherCode: udlwalkNextTeacherCode,
       udlwalkTeacherDisplay: udlwalkTeacherDisplay,
       udlwalkAggregate: udlwalkAggregate,

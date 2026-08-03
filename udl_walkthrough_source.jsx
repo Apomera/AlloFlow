@@ -358,7 +358,9 @@ function udlwalkAggregate(sessions, roster) {
     if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
     return String(a).localeCompare(String(b));
   });
-  const coverage = (roster || []).map((r) => ({
+  // Archived classrooms drop out of coverage (they'd read as "never visited"
+  // forever) but their historical sessions still count in the heatmap.
+  const coverage = (roster || []).filter((r) => !r.archived).map((r) => ({
     teacherId: r.id,
     visits: (coverageMap[r.id] || {}).visits || 0,
     lastDate: (coverageMap[r.id] || {}).lastDate || '',
@@ -454,6 +456,64 @@ function udlwalkCsv(rows) {
   return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\r\n');
 }
 
+function udlwalkDateStamp() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function udlwalkEscHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Standalone accessible HTML document of one visit's feedback card — the
+// thing an admin actually hands (or emails) a teacher. Semantic headings,
+// print CSS, self-contained; deliberately NOT wired into the heavyweight
+// PDF pipeline — any browser's print dialog turns this into a PDF.
+function udlwalkFeedbackHtml(session, teacher, anonymize) {
+  const fb = udlwalkFeedbackFromSession(session);
+  const esc = udlwalkEscHtml;
+  const who = esc(udlwalkTeacherDisplay(teacher, anonymize));
+  const meta = [
+    esc(session.date || ''),
+    session.durationMin != null ? esc(session.durationMin + ' min') : '',
+    (session.observer && session.observer.initials) ? ('Observer: ' + esc(session.observer.initials)) : '',
+  ].filter(Boolean).join(' · ');
+  const strengths = fb.strengths.map((lf) =>
+    '<li><strong>' + esc(lf.guideline) + ':</strong> ' + esc(lf.prompt) + '</li>').join('\n');
+  const moments = (session.studentIndicators || []).map((m) => {
+    const ind = UDLWALK_STUDENT_INDICATORS.find((s) => s.id === m.id);
+    return '<li>' + esc(ind ? ind.label : m.id) + '</li>';
+  }).join('\n');
+  const consider = fb.consider
+    ? '<h2>One thing to consider</h2>\n<p><strong>' + esc(fb.consider.guideline) + ':</strong> ' + esc(fb.consider.prompt) + '</p>'
+      + (fb.suggestion ? ('\n<p>' + esc(fb.suggestion) + '</p>') : '')
+    : '';
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+    + '<title>UDL Walkthrough feedback — ' + who + ' — ' + esc(session.date || '') + '</title>\n'
+    + '<style>\n'
+    + 'body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:44rem;margin:2rem auto;padding:0 1rem;color:#1e293b;line-height:1.5}\n'
+    + 'h1{font-size:1.35rem;border-bottom:2px solid #4f46e5;padding-bottom:.4rem}\n'
+    + 'h2{font-size:1.05rem;margin-top:1.4rem}\n'
+    + '.meta{color:#475569;font-size:.9rem}\n'
+    + 'ul{padding-left:1.2rem}\n'
+    + 'li{margin:.35rem 0}\n'
+    + '.note{white-space:pre-wrap}\n'
+    + 'footer{margin-top:2rem;border-top:1px solid #cbd5e1;padding-top:.6rem;font-size:.75rem;color:#64748b}\n'
+    + '@media print{body{margin:.5rem auto}}\n'
+    + '</style>\n</head>\n<body>\n'
+    + '<h1>UDL Walkthrough feedback — ' + who + '</h1>\n'
+    + '<p class="meta">' + meta + '</p>\n'
+    + '<h2>Strengths observed</h2>\n'
+    + (strengths ? ('<ul>\n' + strengths + '\n</ul>') : '<p>Nothing was rated "observed" on this visit.</p>') + '\n'
+    + consider + '\n'
+    + (moments ? ('<h2>Student moments</h2>\n<ul>\n' + moments + '\n</ul>\n') : '')
+    + (session.summaryNote ? ('<h2>Observer note</h2>\n<p class="note">' + esc(session.summaryNote) + '</p>\n') : '')
+    + '<footer>UDL-aligned look-fors based on the CAST UDL Guidelines 3.0 structure — not a validated fidelity instrument. Growth-framed: instructional-practice feedback, not evaluation. Recorded locally on the observer’s device.</footer>\n'
+    + '</body>\n</html>\n';
+}
+
 function udlwalkDownload(filename, mime, content, addToast, okMsg, failMsg) {
   try {
     const url = URL.createObjectURL(new Blob([content], { type: mime }));
@@ -523,10 +583,15 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
 }
 
 // ── Feedback card view for one saved session ──
-function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete, onEdit }) {
+function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete, onEdit, onToggleShared }) {
   const [armDelete, setArmDelete] = React.useState(false);
   const fb = udlwalkFeedbackFromSession(session);
   const text = udlwalkFeedbackText(session, teacher, anonymize);
+  const downloadHtml = () => {
+    const html = udlwalkFeedbackHtml(session, teacher, anonymize);
+    const name = 'udl-feedback-' + (teacher ? teacher.code : 'visit') + '-' + (session.date || udlwalkDateStamp()) + '.html';
+    udlwalkDownload(name, 'text/html', html, addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
+  };
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-3">
@@ -537,9 +602,15 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
           <button type="button" onClick={() => udlwalkCopyText(text, addToast)} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">
             <span aria-hidden="true">📋</span> {tt('udlwalk.copy_feedback', 'Copy feedback')}
           </button>
+          <button type="button" onClick={downloadHtml} className="min-h-11 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">
+            <span aria-hidden="true">⬇️</span> {tt('udlwalk.download_feedback', 'Download')}
+          </button>
           <button type="button" onClick={onEdit} className="min-h-11 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">
             <span aria-hidden="true">✏️</span> {tt('udlwalk.edit_visit', 'Edit')}
           </button>
+          <button type="button" onClick={onToggleShared} aria-pressed={!!session.sharedWithTeacher}
+            className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (session.sharedWithTeacher ? 'bg-green-600 text-white border-green-700' : 'bg-white text-green-700 border-green-300 hover:bg-green-50')}
+          >{session.sharedWithTeacher ? tt('udlwalk.shared_yes', '✓ Shared') : tt('udlwalk.mark_shared', 'Mark shared')}</button>
           <button type="button"
             onClick={() => { if (armDelete) { onDelete(); } else { setArmDelete(true); udlwalkAnnounce(tt('udlwalk.delete_arm_announce', 'Activate delete again to permanently remove this visit.')); } }}
             className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDelete ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
@@ -809,7 +880,7 @@ function UdlWalkthroughPanel(props) {
       const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'udl-walkthrough-export.json';
+      a.download = 'udl-walkthrough-export-' + udlwalkDateStamp() + '.json';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 4000);
       addToast(tt('udlwalk.export_toast', 'Export started — check your downloads.'), 'info');
@@ -861,7 +932,7 @@ function UdlWalkthroughPanel(props) {
 
   return (
     <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
-      <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="udlwalk-title" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} tabIndex={-1} data-help-key="udlwalk_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="udlwalk-title" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
@@ -872,7 +943,7 @@ function UdlWalkthroughPanel(props) {
           </div>
           <div role="tablist" aria-label={tt('udlwalk.tabs_aria', 'Walkthrough sections')} className="flex gap-1 mt-2">
             {tabs.map((tb) => (
-              <button key={tb.id} type="button" role="tab" aria-selected={tab === tb.id}
+              <button key={tb.id} type="button" role="tab" aria-selected={tab === tb.id} data-help-key={'udlwalk_tab_' + tb.id}
                 onClick={() => { setTab(tb.id); if (tb.id !== 'sessions') setViewSessionId(null); }}
                 className={'min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 ' + (tab === tb.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100')}
               ><span aria-hidden="true">{tb.icon}</span> {tb.label}</button>
@@ -890,7 +961,7 @@ function UdlWalkthroughPanel(props) {
                 </p>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                {roster.map((r) => (
+                {roster.filter((r) => !r.archived).map((r) => (
                   <button key={r.id} type="button" onClick={() => startDraft(r.id)}
                     className="min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
                   >
@@ -1013,6 +1084,7 @@ function UdlWalkthroughPanel(props) {
                 if (draft && !draft.editingId) { addToast(tt('udlwalk.edit_blocked', 'Finish or discard the walkthrough in progress first.'), 'warning'); return; }
                 editSession(viewSession);
               }}
+              onToggleShared={() => setSessions((s) => s.map((x) => x.id === viewSession.id ? { ...x, sharedWithTeacher: !x.sharedWithTeacher } : x))}
               onDelete={() => { setSessions((s) => s.filter((x) => x.id !== viewSession.id)); setViewSessionId(null); addToast(tt('udlwalk.deleted_toast', 'Visit deleted.'), 'info'); }} />
           )}
 
@@ -1034,7 +1106,10 @@ function UdlWalkthroughPanel(props) {
                           <span className="block font-bold text-sm text-slate-800">{udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)}</span>
                           <span className="block text-[10px] text-slate-500">{s.date} · {s.durationMin} {tt('udlwalk.minutes', 'min')}{(s.observer && s.observer.initials) ? (' · ' + tt('udlwalk.observer_short', 'obs.') + ' ' + s.observer.initials) : ''} · {(s.studentIndicators || []).length} {tt('udlwalk.moments_short', 'moments')}</span>
                         </span>
-                        <span className="shrink-0 text-xs font-bold text-green-700">{obs}/{rated.length} <span className="font-normal text-slate-500">{tt('udlwalk.observed_short', 'observed')}</span></span>
+                        <span className="shrink-0 text-right">
+                          <span className="block text-xs font-bold text-green-700">{obs}/{rated.length} <span className="font-normal text-slate-500">{tt('udlwalk.observed_short', 'observed')}</span></span>
+                          {s.sharedWithTeacher && <span className="block text-[10px] font-bold text-green-700">{tt('udlwalk.shared_badge', '✓ shared')}</span>}
+                        </span>
                       </button>
                     </li>
                   );
@@ -1132,13 +1207,14 @@ function UdlWalkthroughPanel(props) {
                         <button type="button" onClick={() => {
                           const rows = udlwalkResearchRows(sessions, roster);
                           if (!rows.length) { addToast(tt('udlwalk.research_empty', 'No rated evidence to export yet.'), 'warning'); return; }
-                          udlwalkDownload('udl-walkthrough-research.csv', 'text/csv', udlwalkCsv(rows), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
+                          // UTF-8 BOM: without it Excel decodes the CSV as ANSI and mangles non-ASCII.
+                          udlwalkDownload('udl-walkthrough-research-' + udlwalkDateStamp() + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + udlwalkCsv(rows), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
                         }} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('udlwalk.research_csv', 'Research CSV')}</button>
                         <button type="button" onClick={() => {
                           const rows = udlwalkResearchRows(sessions, roster);
                           if (!rows.length) { addToast(tt('udlwalk.research_empty', 'No rated evidence to export yet.'), 'warning'); return; }
                           const payload = { kind: 'alloflow-udl-walkthrough-research', version: 1, exportedAt: new Date().toISOString(), framework: config.frameworkVersion || UDLWALK_FRAMEWORK, rows };
-                          udlwalkDownload('udl-walkthrough-research.json', 'application/json', JSON.stringify(payload, null, 2), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
+                          udlwalkDownload('udl-walkthrough-research-' + udlwalkDateStamp() + '.json', 'application/json', JSON.stringify(payload, null, 2), addToast, tt('udlwalk.export_toast', 'Export started — check your downloads.'), tt('udlwalk.export_failed', 'Export failed: '));
                         }} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('udlwalk.research_json', 'Research JSON')}</button>
                       </div>
                     </div>
@@ -1226,8 +1302,8 @@ function UdlWalkthroughPanel(props) {
 
               <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('udlwalk.roster_title', 'Classrooms')}</h3>
               <ul className="space-y-1.5 mb-3">
-                {roster.map((r) => (
-                  <li key={r.id} className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl p-2">
+                {[...roster].sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0)).map((r) => (
+                  <li key={r.id} className={'flex items-center gap-2 border rounded-xl p-2 ' + (r.archived ? 'bg-slate-100 border-slate-200 opacity-70' : 'bg-white border-slate-300')}>
                     <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">{r.code}</span>
                     <input type="text" value={r.name} aria-label={tt('udlwalk.roster_name_aria', 'Teacher name') + ' ' + r.code}
                       onChange={(e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, name: e.target.value } : x))}
@@ -1241,6 +1317,11 @@ function UdlWalkthroughPanel(props) {
                       onChange={(e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, subject: e.target.value } : x))}
                       placeholder={tt('udlwalk.subject_placeholder', 'Subject')}
                       className="w-20 min-h-9 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    <button type="button" aria-pressed={!!r.archived}
+                      onClick={() => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, archived: !x.archived } : x))}
+                      aria-label={(r.archived ? tt('udlwalk.restore_aria', 'Restore') : tt('udlwalk.archive_aria', 'Archive')) + ' ' + (r.name || r.code)}
+                      className={'shrink-0 min-h-9 px-2 py-1 rounded border text-[10px] font-bold ' + (r.archived ? 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50' : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-100')}
+                    >{r.archived ? tt('udlwalk.restore', 'Restore') : tt('udlwalk.archive', 'Archive')}</button>
                   </li>
                 ))}
               </ul>
