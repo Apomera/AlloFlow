@@ -120,3 +120,55 @@ describe('the registration module is offline and self-contained', () => {
     expect(reg || mod, 'module did not register').toBeTruthy();
   });
 });
+
+// Every reviewed snapshot in the repo, not just the pilot. Adding a snapshot
+// without its QA file fails here — "built" and "reviewed" stay distinct.
+const FLEET = [
+  { json: 'standards_snapshots/ma-science-grade-5.json', qa: 'LEARNING_COMMONS_MA_SCIENCE_G5_PILOT_QA.json' },
+  { json: 'standards_snapshots/ccss-math.json', qa: 'LEARNING_COMMONS_CCSS_MATH_QA.json' },
+  { json: 'standards_snapshots/ccss-ela.json', qa: 'LEARNING_COMMONS_CCSS_ELA_QA.json' },
+];
+
+describe.each(FLEET)('reviewed snapshot fleet: $json', ({ json, qa: qaPath }) => {
+  const load = () => ({
+    snap: JSON.parse(readFileSync(resolve(process.cwd(), json), 'utf8')),
+    review: JSON.parse(readFileSync(resolve(process.cwd(), qaPath), 'utf8')),
+  });
+
+  it('has a passing QA review with matching digest and counts', () => {
+    const { snap, review } = load();
+    const d = snap.dataset || snap;
+    expect(review.ok, `${qaPath} did not pass`).toBe(true);
+    expect(review.failures).toEqual([]);
+    expect(d.contentDigest).toBe(review.snapshot.contentDigest);
+    expect(snap.standards.length).toBe(review.counts.records);
+    expect(snap.relationships.length).toBe(review.counts.relationships);
+  });
+
+  it('is pinned to the reviewed dataset version with attribution intact', () => {
+    const { snap } = load();
+    const d = snap.dataset || snap;
+    expect(d.datasetVersion).toBe(manifest.exportVersion);
+    expect(d.attribution).toContain('Learning Commons');
+    expect(statSync(resolve(process.cwd(), json)).size).toBeLessThan(3 * 1024 * 1024);
+  });
+});
+
+describe('CCSS carries progression structure', () => {
+  // The reason CCSS was prioritised: unlike the science pilot (hasChild only),
+  // the math framework ships buildsTowards/relatesTo edges — the data that
+  // getPrerequisites/getRelatedStandards will stand on. If an upstream rev
+  // drops these, the Learning Web loses its progression source and we need to
+  // know before anything consumes it.
+  it('math snapshot has buildsTowards and relatesTo edges', () => {
+    const snap = JSON.parse(readFileSync(resolve(process.cwd(), 'standards_snapshots/ccss-math.json'), 'utf8'));
+    const types = {};
+    for (const r of snap.relationships) types[r.type] = (types[r.type] || 0) + 1;
+    expect(types.buildsTowards, 'buildsTowards edges missing').toBeGreaterThan(500);
+    expect(types.relatesTo, 'relatesTo edges missing').toBeGreaterThan(100);
+    // every progression edge must join two nodes that exist in the snapshot
+    const ids = new Set(snap.standards.map((s) => s.id || s.identifier));
+    const dangling = snap.relationships.filter((r) => !ids.has(r.fromId) || !ids.has(r.toId));
+    expect(dangling.length, 'progression edges pointing outside the snapshot').toBe(0);
+  });
+});
