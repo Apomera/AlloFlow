@@ -24784,6 +24784,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // stale in a Canvas iframe and leave the panel narrower than the row,
   // opening the gap on the right. matchMedia keeps this in lockstep.
   const [isWide, setIsWide] = useState(() => (typeof window !== 'undefined' && !!window.innerWidth && window.innerWidth >= 768));
+  // <main> used to hard-code h-[calc(100vh-80px)], but the hero header is
+  // several hundred px tall (and grows when the toolbar wraps or the app
+  // font-size setting rises), so the workspace bottom always started well
+  // below the fold and needed a page-scroll before the panel scrollbars
+  // could reach everything. Track main's real page offset instead and size
+  // it to the remaining viewport (measured post-mount; 80 is only the
+  // first-paint fallback).
+  const [mainTopOffset, setMainTopOffset] = useState(80);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isOutputHeaderCollapsed, setIsOutputHeaderCollapsed] = useState(false);
@@ -25494,6 +25502,33 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     return () => {
       if (mq.removeEventListener) { mq.removeEventListener('change', sync); }
       else if (mq.removeListener) { mq.removeListener(sync); }
+    };
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    const measureMainTopOffset = () => {
+      const el = mainContainerRef.current;
+      if (!el) return;
+      const pageTop = el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop || 0);
+      const top = Math.max(0, Math.round(pageTop));
+      // Functional compare so the ResizeObserver below can't feed back:
+      // main's own height change re-fires the observer, but its page offset
+      // is unchanged, so this bails without a re-render.
+      setMainTopOffset(prev => (prev === top ? prev : top));
+    };
+    measureMainTopOffset();
+    let observer = null;
+    if (window.ResizeObserver) {
+      // Header wrap, banners, and font-size changes all move main's offset;
+      // observing the body catches every one of them (and the initial mount
+      // when main renders after this effect first runs).
+      observer = new ResizeObserver(measureMainTopOffset);
+      observer.observe(document.body);
+    }
+    window.addEventListener('resize', measureMainTopOffset);
+    return () => {
+      if (observer) observer.disconnect();
+      window.removeEventListener('resize', measureMainTopOffset);
     };
   }, []);
   useEffect(() => {
@@ -42080,7 +42115,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       <main aria-label={t('common.main_content')}
         id="main-content"
         ref={mainContainerRef}
-        className={`allo-docsuite flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-${theme} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isZenMode ? 'h-screen p-0' : 'h-[calc(100vh-80px)] p-4 md:p-6'}`}
+        className={`allo-docsuite flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-${theme} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isZenMode ? 'h-screen p-0' : 'p-4 md:p-6'}`}
+        style={isZenMode ? undefined : { height: `calc(100vh - ${mainTopOffset}px)`, minHeight: '480px' }}
       >
         <h1 className="sr-only">AlloFlow</h1>
         {theme !== 'contrast' && (
