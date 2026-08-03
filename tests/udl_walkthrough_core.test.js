@@ -216,6 +216,38 @@ describe('udlwalkFeedbackFromSession', () => {
   });
 });
 
+describe('udlwalkTrend', () => {
+  it('buckets by month, excludes no_opp, and leaves gaps (null) not zeros', () => {
+    const t = W.udlwalkTrend([
+      session('s1', 't1', { eng_7_1: { rating: 'observed' }, eng_7_2: { rating: 'no_opp' } }, { date: '2026-08-10' }),
+      session('s2', 't1', { eng_7_1: { rating: 'not' }, rep_1_1: { rating: 'observed' } }, { date: '2026-09-02' }),
+    ]);
+    expect(t.buckets).toEqual(['2026-08', '2026-09']);
+    // Aug engagement: 1 rated (no_opp excluded), 1 observed → 1.0
+    expect(t.series.engagement[0]).toEqual({ rate: 1, n: 1 });
+    // Sep engagement: 1 rated, 0 observed → 0
+    expect(t.series.engagement[1]).toEqual({ rate: 0, n: 1 });
+    // Representation has no Aug data → gap, not zero
+    expect(t.series.representation[0]).toBe(null);
+    expect(t.series.representation[1]).toEqual({ rate: 1, n: 1 });
+    // Action & Expression never rated → all gaps
+    expect(t.series.action_expression).toEqual([null, null]);
+  });
+
+  it('ignores malformed dates and unknown look-for ids', () => {
+    const t = W.udlwalkTrend([
+      session('s1', 't1', { eng_7_1: { rating: 'observed' } }, { date: 'garbage' }),
+      session('s2', 't1', { zz_9_9: { rating: 'observed' } }, { date: '2026-08-10' }),
+    ]);
+    expect(t.buckets).toEqual([]);
+  });
+
+  it('formats month labels', () => {
+    expect(W.udlwalkMonthLabel('2026-08')).toMatch(/^Aug .?26$/);
+    expect(W.udlwalkMonthLabel('junk')).toBe('junk');
+  });
+});
+
 describe('archiving', () => {
   it('archived classrooms leave coverage but their sessions still count in the heatmap', () => {
     const withArchived = roster.map((r) => r.id === 't3' ? { ...r, archived: true } : r);

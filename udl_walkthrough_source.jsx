@@ -373,6 +373,39 @@ function udlwalkAggregate(sessions, roster) {
   return { grades, cells, totals, coverage, pdSignals, minN: MIN_N };
 }
 
+// Month-bucketed observed-rate per principle, for the Building trend chart.
+// Same validity rule as the heatmap: no_opp never enters a denominator; a
+// month with no rated items for a principle is null (a gap, not a zero).
+function udlwalkTrend(sessions) {
+  const bucketSet = new Set();
+  const acc = {}; // principle -> bucket -> {observed, rated}
+  UDLWALK_PRINCIPLES.forEach((p) => { acc[p.id] = {}; });
+  (sessions || []).forEach((s) => {
+    const bucket = String(s.date || '').slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(bucket)) return;
+    Object.keys(s.evidence || {}).forEach((lookForId) => {
+      const entry = s.evidence[lookForId];
+      const rating = entry && entry.rating;
+      if (!rating || rating === 'no_opp') return;
+      const lf = UDLWALK_LOOK_FORS.find((x) => x.id === lookForId);
+      if (!lf) return;
+      bucketSet.add(bucket);
+      const cell = acc[lf.principle][bucket] || (acc[lf.principle][bucket] = { observed: 0, rated: 0 });
+      cell.rated += 1;
+      if (rating === 'observed') cell.observed += 1;
+    });
+  });
+  const buckets = Array.from(bucketSet).sort();
+  const series = {};
+  UDLWALK_PRINCIPLES.forEach((p) => {
+    series[p.id] = buckets.map((b) => {
+      const cell = acc[p.id][b];
+      return cell ? { rate: cell.observed / cell.rated, n: cell.rated } : null;
+    });
+  });
+  return { buckets, series };
+}
+
 // Inter-rater agreement between two sessions of the SAME lesson recorded by
 // two observers. Exact-match on items BOTH observers rated (no_opp counts as
 // a rating — "nothing to see" is itself a judgment they can disagree on).
@@ -578,6 +611,121 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Building trend chart (module scope, stateless) ──
+// Literal hex only — SVG presentation attributes can't take CSS var().
+// Slots 1–3 of the validated categorical palette (all-pairs CVD-safe on
+// white); the aqua slot is sub-3:1 on white, so the relief rule applies:
+// direct end-labels + the data table below carry identity and values.
+const UDLWALK_TREND_COLORS = {
+  engagement: '#2a78d6',
+  representation: '#eb6834',
+  action_expression: '#1baf7a',
+};
+
+function udlwalkMonthLabel(bucket) {
+  const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const m = /^(\d{4})-(\d{2})$/.exec(String(bucket));
+  if (!m) return String(bucket);
+  return (names[parseInt(m[2], 10) - 1] || m[2]) + ' ’' + m[1].slice(2);
+}
+
+function UdlWalkTrendChart({ trend, tt }) {
+  const W = 630, H = 200, ML = 34, MR = 158, MT = 10, MB = 24;
+  const PW = W - ML - MR, PH = H - MT - MB;
+  const n = trend.buckets.length;
+  const px = (i) => ML + (n === 1 ? PW / 2 : (i * PW) / (n - 1));
+  const py = (rate) => MT + PH - rate * PH;
+  const tickEvery = Math.max(1, Math.ceil(n / 8));
+  // Direct end-labels: nudge apart if the last points sit too close.
+  const ends = UDLWALK_PRINCIPLES.map((p) => {
+    const arr = trend.series[p.id];
+    let last = -1;
+    for (let i = arr.length - 1; i >= 0; i -= 1) if (arr[i]) { last = i; break; }
+    return last === -1 ? null : { p, i: last, y: py(arr[last].rate), rate: arr[last].rate };
+  }).filter(Boolean).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i += 1) {
+    if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+  }
+  return (
+    <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
+      <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.trend_title', 'Trend by principle')}</h4>
+      <div className="flex flex-wrap gap-3 mt-1" aria-hidden="true">
+        {UDLWALK_PRINCIPLES.map((p) => (
+          <span key={p.id} className="inline-flex items-center gap-1.5 text-[11px] text-slate-600">
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: UDLWALK_TREND_COLORS[p.id] }} />
+            {tt('udlwalk.principle_' + p.id, p.label)}
+          </span>
+        ))}
+      </div>
+      <div className="overflow-x-auto">
+        <svg viewBox={'0 0 ' + W + ' ' + H} width="100%" style={{ minWidth: '480px', maxWidth: '640px' }} role="img"
+          aria-label={tt('udlwalk.trend_aria', 'Line chart of the share of look-fors rated observed, per UDL principle, by month. The full values are in the data table below.')}>
+          {[0, 0.25, 0.5, 0.75, 1].map((v) => (
+            <g key={v}>
+              <line x1={ML} x2={ML + PW} y1={py(v)} y2={py(v)} stroke={v === 0 ? '#c3c2b7' : '#e1e0d9'} strokeWidth="1" />
+              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#898781">{Math.round(v * 100)}%</text>
+            </g>
+          ))}
+          {trend.buckets.map((b, i) => (i % tickEvery === 0 || i === n - 1) ? (
+            <text key={b} x={px(i)} y={H - 6} textAnchor="middle" fontSize="10" fill="#898781">{udlwalkMonthLabel(b)}</text>
+          ) : null)}
+          {UDLWALK_PRINCIPLES.map((p) => {
+            const arr = trend.series[p.id];
+            const color = UDLWALK_TREND_COLORS[p.id];
+            const segments = [];
+            let current = [];
+            arr.forEach((cell, i) => {
+              if (cell) current.push([px(i), py(cell.rate)]);
+              else if (current.length) { segments.push(current); current = []; }
+            });
+            if (current.length) segments.push(current);
+            return (
+              <g key={p.id}>
+                {segments.map((seg, si) => seg.length > 1 ? (
+                  <polyline key={si} points={seg.map((pt) => pt[0] + ',' + pt[1]).join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                ) : null)}
+                {arr.map((cell, i) => cell ? (
+                  <circle key={i} cx={px(i)} cy={py(cell.rate)} r="4" fill={color} stroke="#ffffff" strokeWidth="2">
+                    <title>{p.label + ' · ' + udlwalkMonthLabel(trend.buckets[i]) + ' · ' + Math.round(cell.rate * 100) + '% (n=' + cell.n + ')'}</title>
+                  </circle>
+                ) : null)}
+              </g>
+            );
+          })}
+          {ends.map((e) => (
+            <text key={e.p.id} x={ML + PW + 8} y={e.y + 3.5} fontSize="11" fontWeight="600" fill="#52514e">
+              {tt('udlwalk.principle_' + e.p.id, e.p.label)} {Math.round(e.rate * 100)}%
+            </text>
+          ))}
+        </svg>
+      </div>
+      <details className="mt-1">
+        <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('udlwalk.trend_table', 'Data table')}</summary>
+        <table className="mt-1 text-[11px] border-collapse">
+          <thead>
+            <tr>
+              <th scope="col" className="text-left p-1 text-slate-600">{tt('udlwalk.trend_month', 'Month')}</th>
+              {UDLWALK_PRINCIPLES.map((p) => <th key={p.id} scope="col" className="text-left p-1 text-slate-600">{tt('udlwalk.principle_' + p.id, p.label)}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {trend.buckets.map((b, i) => (
+              <tr key={b} className="border-t border-slate-200">
+                <th scope="row" className="text-left p-1 font-normal text-slate-700">{udlwalkMonthLabel(b)}</th>
+                {UDLWALK_PRINCIPLES.map((p) => {
+                  const cell = trend.series[p.id][i];
+                  return <td key={p.id} className="p-1 text-slate-700">{cell ? (Math.round(cell.rate * 100) + '% (n=' + cell.n + ')') : '—'}</td>;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+      <p className="text-[10px] text-slate-500 mt-1">{tt('udlwalk.trend_note', 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')}</p>
     </div>
   );
 }
@@ -1166,6 +1314,14 @@ function UdlWalkthroughPanel(props) {
                       </table>
                     </div>
                     <p className="text-[10px] text-slate-500 mt-1.5">{tt('udlwalk.heatmap_note', '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')}</p>
+
+                    {(() => {
+                      const trend = udlwalkTrend(sessions);
+                      if (trend.buckets.length < 2) {
+                        return <p className="text-[10px] text-slate-500 mt-1">{tt('udlwalk.trend_pending', 'Trend lines appear once visits span two or more months.')}</p>;
+                      }
+                      return <UdlWalkTrendChart trend={trend} tt={tt} />;
+                    })()}
 
                     {agg.pdSignals.length > 0 && (
                       <div className="mt-3 bg-white border border-indigo-300 rounded-xl p-3">

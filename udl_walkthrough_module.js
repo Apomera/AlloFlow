@@ -480,6 +480,37 @@ function udlwalkAggregate(sessions, roster) {
   const pdSignals = UDLWALK_GUIDELINES.filter((g) => totals[g.id].rated >= MIN_N).map((g) => ({ id: g.id, rate: totals[g.id].observed / totals[g.id].rated, n: totals[g.id].rated })).sort((a, b) => a.rate - b.rate).slice(0, 3);
   return { grades, cells, totals, coverage, pdSignals, minN: MIN_N };
 }
+function udlwalkTrend(sessions) {
+  const bucketSet = /* @__PURE__ */ new Set();
+  const acc = {};
+  UDLWALK_PRINCIPLES.forEach((p) => {
+    acc[p.id] = {};
+  });
+  (sessions || []).forEach((s) => {
+    const bucket = String(s.date || "").slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(bucket)) return;
+    Object.keys(s.evidence || {}).forEach((lookForId) => {
+      const entry = s.evidence[lookForId];
+      const rating = entry && entry.rating;
+      if (!rating || rating === "no_opp") return;
+      const lf = UDLWALK_LOOK_FORS.find((x) => x.id === lookForId);
+      if (!lf) return;
+      bucketSet.add(bucket);
+      const cell = acc[lf.principle][bucket] || (acc[lf.principle][bucket] = { observed: 0, rated: 0 });
+      cell.rated += 1;
+      if (rating === "observed") cell.observed += 1;
+    });
+  });
+  const buckets = Array.from(bucketSet).sort();
+  const series = {};
+  UDLWALK_PRINCIPLES.forEach((p) => {
+    series[p.id] = buckets.map((b) => {
+      const cell = acc[p.id][b];
+      return cell ? { rate: cell.observed / cell.rated, n: cell.rated } : null;
+    });
+  });
+  return { buckets, series };
+}
 function udlwalkAgreement(sessionA, sessionB) {
   const evA = sessionA && sessionA.evidence || {};
   const evB = sessionB && sessionB.evidence || {};
@@ -645,6 +676,68 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       className: "mt-1.5 w-full text-xs border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   ))));
+}
+const UDLWALK_TREND_COLORS = {
+  engagement: "#2a78d6",
+  representation: "#eb6834",
+  action_expression: "#1baf7a"
+};
+function udlwalkMonthLabel(bucket) {
+  const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const m = /^(\d{4})-(\d{2})$/.exec(String(bucket));
+  if (!m) return String(bucket);
+  return (names[parseInt(m[2], 10) - 1] || m[2]) + " ’" + m[1].slice(2);
+}
+function UdlWalkTrendChart({ trend, tt }) {
+  const W = 630, H = 200, ML = 34, MR = 158, MT = 10, MB = 24;
+  const PW = W - ML - MR, PH = H - MT - MB;
+  const n = trend.buckets.length;
+  const px = (i) => ML + (n === 1 ? PW / 2 : i * PW / (n - 1));
+  const py = (rate) => MT + PH - rate * PH;
+  const tickEvery = Math.max(1, Math.ceil(n / 8));
+  const ends = UDLWALK_PRINCIPLES.map((p) => {
+    const arr = trend.series[p.id];
+    let last = -1;
+    for (let i = arr.length - 1; i >= 0; i -= 1) if (arr[i]) {
+      last = i;
+      break;
+    }
+    return last === -1 ? null : { p, i: last, y: py(arr[last].rate), rate: arr[last].rate };
+  }).filter(Boolean).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i += 1) {
+    if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+  }
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.trend_title", "Trend by principle")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 mt-1", "aria-hidden": "true" }, UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("span", { key: p.id, className: "inline-flex items-center gap-1.5 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-sm", style: { backgroundColor: UDLWALK_TREND_COLORS[p.id] } }), tt("udlwalk.principle_" + p.id, p.label)))), /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto" }, /* @__PURE__ */ React.createElement(
+    "svg",
+    {
+      viewBox: "0 0 " + W + " " + H,
+      width: "100%",
+      style: { minWidth: "480px", maxWidth: "640px" },
+      role: "img",
+      "aria-label": tt("udlwalk.trend_aria", "Line chart of the share of look-fors rated observed, per UDL principle, by month. The full values are in the data table below.")
+    },
+    [0, 0.25, 0.5, 0.75, 1].map((v) => /* @__PURE__ */ React.createElement("g", { key: v }, /* @__PURE__ */ React.createElement("line", { x1: ML, x2: ML + PW, y1: py(v), y2: py(v), stroke: v === 0 ? "#c3c2b7" : "#e1e0d9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { x: ML - 5, y: py(v) + 3.5, textAnchor: "end", fontSize: "10", fill: "#898781" }, Math.round(v * 100), "%"))),
+    trend.buckets.map((b, i) => i % tickEvery === 0 || i === n - 1 ? /* @__PURE__ */ React.createElement("text", { key: b, x: px(i), y: H - 6, textAnchor: "middle", fontSize: "10", fill: "#898781" }, udlwalkMonthLabel(b)) : null),
+    UDLWALK_PRINCIPLES.map((p) => {
+      const arr = trend.series[p.id];
+      const color = UDLWALK_TREND_COLORS[p.id];
+      const segments = [];
+      let current = [];
+      arr.forEach((cell, i) => {
+        if (cell) current.push([px(i), py(cell.rate)]);
+        else if (current.length) {
+          segments.push(current);
+          current = [];
+        }
+      });
+      if (current.length) segments.push(current);
+      return /* @__PURE__ */ React.createElement("g", { key: p.id }, segments.map((seg, si) => seg.length > 1 ? /* @__PURE__ */ React.createElement("polyline", { key: si, points: seg.map((pt) => pt[0] + "," + pt[1]).join(" "), fill: "none", stroke: color, strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) : null), arr.map((cell, i) => cell ? /* @__PURE__ */ React.createElement("circle", { key: i, cx: px(i), cy: py(cell.rate), r: "4", fill: color, stroke: "#ffffff", strokeWidth: "2" }, /* @__PURE__ */ React.createElement("title", null, p.label + " · " + udlwalkMonthLabel(trend.buckets[i]) + " · " + Math.round(cell.rate * 100) + "% (n=" + cell.n + ")")) : null));
+    }),
+    ends.map((e) => /* @__PURE__ */ React.createElement("text", { key: e.p.id, x: ML + PW + 8, y: e.y + 3.5, fontSize: "11", fontWeight: "600", fill: "#52514e" }, tt("udlwalk.principle_" + e.p.id, e.p.label), " ", Math.round(e.rate * 100), "%"))
+  )), /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center" }, tt("udlwalk.trend_table", "Data table")), /* @__PURE__ */ React.createElement("table", { className: "mt-1 text-[11px] border-collapse" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.trend_month", "Month")), UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("th", { key: p.id, scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.principle_" + p.id, p.label))))), /* @__PURE__ */ React.createElement("tbody", null, trend.buckets.map((b, i) => /* @__PURE__ */ React.createElement("tr", { key: b, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1 font-normal text-slate-700" }, udlwalkMonthLabel(b)), UDLWALK_PRINCIPLES.map((p) => {
+    const cell = trend.series[p.id][i];
+    return /* @__PURE__ */ React.createElement("td", { key: p.id, className: "p-1 text-slate-700" }, cell ? Math.round(cell.rate * 100) + "% (n=" + cell.n + ")" : "—");
+  })))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("udlwalk.trend_note", 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')));
 }
 function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete, onEdit, onToggleShared }) {
   const [armDelete, setArmDelete] = React.useState(false);
@@ -1125,7 +1218,13 @@ function UdlWalkthroughPanel(props) {
         const v = cellView(agg.cells[g.id][grade]);
         return /* @__PURE__ */ React.createElement("td", { key: grade, className: "p-1.5 text-center rounded " + v.cls }, v.text, v.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px] opacity-75" }, " (n=", v.n, ")") : null);
       }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold rounded " + total.cls }, total.text, total.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px] opacity-75" }, " (n=", total.n, ")") : null));
-    })))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, tt("udlwalk.heatmap_note", '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')), agg.pdSignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-indigo-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, tt("udlwalk.pd_title", "PD signals")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.pd_note", "Lowest observed-rates with at least " + agg.minN + " rated observations building-wide — framed as PD topics, not verdicts.")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agg.pdSignals.map((sig) => {
+    })))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, tt("udlwalk.heatmap_note", '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')), (() => {
+      const trend = udlwalkTrend(sessions);
+      if (trend.buckets.length < 2) {
+        return /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("udlwalk.trend_pending", "Trend lines appear once visits span two or more months."));
+      }
+      return /* @__PURE__ */ React.createElement(UdlWalkTrendChart, { trend, tt });
+    })(), agg.pdSignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-indigo-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, tt("udlwalk.pd_title", "PD signals")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.pd_note", "Lowest observed-rates with at least " + agg.minN + " rated observations building-wide — framed as PD topics, not verdicts.")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agg.pdSignals.map((sig) => {
       const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
       return /* @__PURE__ */ React.createElement("li", { key: sig.id, className: "text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g ? g.label : sig.id), " — ", Math.round(sig.rate * 100), "% ", tt("udlwalk.observed_short", "observed"), " (n=", sig.n, "). ", UDLWALK_SUGGESTIONS[g ? g.principle : ""] || "");
     }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.coverage_title", "Coverage")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.coverage_note", "Walkthrough initiatives die from uneven coverage — who has not had a visit lately?")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1" }, agg.coverage.map((c) => {
@@ -1264,6 +1363,9 @@ function UdlWalkthroughPanel(props) {
       udlwalkResearchRows: udlwalkResearchRows,
       udlwalkCsv: udlwalkCsv,
       udlwalkGuidelineOf: udlwalkGuidelineOf,
+      udlwalkTrend: udlwalkTrend,
+      udlwalkMonthLabel: udlwalkMonthLabel,
+      UdlWalkTrendChart: UdlWalkTrendChart,
       UDLWALK_LOOK_FORS: UDLWALK_LOOK_FORS,
       UDLWALK_STUDENT_INDICATORS: UDLWALK_STUDENT_INDICATORS,
       UDLWALK_GUIDELINES: UDLWALK_GUIDELINES
