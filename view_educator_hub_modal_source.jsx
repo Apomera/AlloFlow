@@ -112,6 +112,9 @@ function EducatorHubModal(props) {
     // UDL Walkthrough launcher (2026-08-03): admin/coach classroom-visit tool.
     // Optional default so a host that hasn't wired the setter still renders the hub.
     setIsUdlWalkthroughOpen = (() => {}),
+    // Disproportionality Analyzer launcher (2026-08-03): admin equity metrics.
+    // Optional default so a host that hasn't wired the setter still renders the hub.
+    setIsDisproAnalyzerOpen = (() => {}),
     // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
     // retain the popup handle for two-way postMessage (Save-to-resources + future
     // AI assist). Optional default so a host that hasn't wired it still renders.
@@ -409,6 +412,15 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-cyan-800">{t('educator_hub.udl_walkthrough_title') || 'UDL Walkthrough'}</h3>
                   <p className="text-xs text-cyan-700 mt-1">{t('educator_hub.udl_walkthrough_desc') || 'Growth-framed classroom visits for admins and coaches: tap UDL look-fors from the doorway, log student moments, and share a strengths-first feedback card. Data never leaves this device.'}</p>
+                </div>
+              </button>
+              {/* Disproportionality Analyzer (2026-08-03): risk ratios from aggregate
+                  counts, computed locally — no student-level data ever entered. */}
+              <button type="button" data-help-key="educator_hub_dispro_analyzer_card" onClick={() => { setShowEducatorHub(false); setIsDisproAnalyzerOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-slate-50 to-indigo-50 border border-slate-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">⚖️</span>
+                <div>
+                  <h3 className="font-bold text-slate-800">{t('educator_hub.dispro_analyzer_title') || 'Disproportionality Analyzer'}</h3>
+                  <p className="text-xs text-slate-600 mt-1">{t('educator_hub.dispro_analyzer_desc') || 'Risk indexes, risk ratios, and composition from aggregate discipline or identification counts — with stability cautions, computed entirely on this device. Descriptive analytics for root-cause review, not a compliance verdict.'}</p>
                 </div>
               </button>
               <button type="button" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
