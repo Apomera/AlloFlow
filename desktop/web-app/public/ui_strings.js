@@ -9394,7 +9394,7 @@
     "stop_run_hint": "Finishes the step in progress, then stops. Finished resources are kept.",
     "wait_for_run": "Wait for the run to finish (or stop it) before editing.",
     "fail_threw": "This step hit an error.",
-    "fail_empty": "This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.",
+    "fail_empty": "This step produced nothing. If there is no source text yet, add or generate one and rebuild. If a source is present, the generator was likely blocked or rate-limited — wait a moment and rebuild.",
     "what_is_this": "What does this resource do?",
     "template_step_count_one": "step",
     "archive_title": "Previous plans:",

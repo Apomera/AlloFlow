@@ -694,7 +694,20 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         const stepConfig = {
             customInstructions: aiDirective,
             historyOverride: currentBlueprintHistory,
-            lessonDNA: lessonDNA
+            lessonDNA: lessonDNA,
+            // A blueprint is already a batch. Without this, a leveled-text step
+            // with a differentiation range set entered the dispatcher's per-grade
+            // fan-out, whose outer call returns undefined — so the row was marked
+            // FAILED while its differentiated texts landed in history. Full Pack
+            // sets the same flag for the same reason.
+            skipDifferentiation: true,
+            // The dispatcher's catch swallows generation errors (toast + banner,
+            // no rethrow), which this runner could only record as "returned no
+            // resource (it did not throw)" — hiding safety blocks and throttle
+            // failures behind copy that guesses "no source text". With this flag
+            // the dispatcher rethrows after its own UI handling, so failReason
+            // carries the real message.
+            rethrowErrors: true
         };
         // The standards audit is post-hoc: it audits whatever it can find. Left
         // to itself, selectCurriculumArtifacts GUESSES its own scope — by

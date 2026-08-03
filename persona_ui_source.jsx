@@ -640,7 +640,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   <span className="font-bold">
                                       {String(_rowRun.failReason).indexOf('threw:') === 0
                                           ? (t('blueprint.fail_threw') || 'This step hit an error.')
-                                          : (t('blueprint.fail_empty') || 'This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.')}
+                                          : (t('blueprint.fail_empty') || 'This step produced nothing. If there is no source text yet, add or generate one and rebuild. If a source is present, the generator was likely blocked or rate-limited — wait a moment and rebuild.')}
                                   </span>
                                   <span className="block mt-1 opacity-80 break-words">{_rowRun.failReason}</span>
                               </p>

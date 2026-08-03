@@ -1692,6 +1692,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange, differentiationCustomGrades);
         if (gradesToGen.length > 1) {
             setIsProcessing(true);
+            // Return the last landed item instead of undefined. Programmatic
+            // callers judge success by the return value (the blueprint runner
+            // marks a falsy return FAILED), and this path generates real
+            // resources — a bare return reported that work as "produced nothing".
+            let _lastDiffItem = null;
             try {
                 for (let i = 0; i < gradesToGen.length; i++) {
                     const grade = gradesToGen[i];
@@ -1701,7 +1706,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     // (e.g. Reading Library generating in the book's language)
                     // must not have differentiated versions silently revert to
                     // the leveledTextLanguage dropdown.
-                    await handleGenerate(type, langOverride, !isLast, textToProcess, Object.assign({}, configOverride, { grade: grade }), false, deps);
+                    _lastDiffItem = (await handleGenerate(type, langOverride, !isLast, textToProcess, Object.assign({}, configOverride, { grade: grade }), false, deps)) || _lastDiffItem;
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
@@ -1711,7 +1716,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             } finally {
                 setIsProcessing(false);
             }
-            return;
+            return _lastDiffItem;
         }
     }
     if (type === 'simplified') {
@@ -1804,10 +1809,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             'sentence-frames', 'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
             'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona'];
         if (!MULTILINGUAL_FANOUT_TYPES.includes(type)) {
-            await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
-            return;
+            return await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
         }
         setIsProcessing(true);
+        // Same contract as the differentiation fan-out: batch paths must not
+        // return undefined after landing real resources.
+        let _lastLangItem = null;
         try {
             const langsToGen = ['English', ...selectedLanguages];
             const uniqueLangs = [...new Set(langsToGen)];
@@ -1816,7 +1823,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 const isLastLang = i === uniqueLangs.length - 1;
                 const batchKeepLoading = !isLastLang || keepLoading;
                 setGenerationStep(`${t('status.generating')} ${type} (${lang})...`);
-                await handleGenerate(type, lang, batchKeepLoading, textToProcess, configOverride, switchView, deps);
+                _lastLangItem = (await handleGenerate(type, lang, batchKeepLoading, textToProcess, configOverride, switchView, deps)) || _lastLangItem;
                 await new Promise(r => setTimeout(r, 500));
             }
             addToast(`All ${type} resources generated!`, "success");
@@ -1832,7 +1839,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } finally {
             if (!keepLoading) setIsProcessing(false);
         }
-        return;
+        return _lastLangItem;
     }
     setIsProcessing(true);
     setGenerationStep(t('status_steps.initializing'));
@@ -5816,6 +5823,13 @@ Return ONLY JSON:
           const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
           alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
       }
+      // Unattended callers (blueprint runs) opt in to seeing the real failure.
+      // Swallowing here left them one indistinguishable outcome — undefined —
+      // for safety blocks, throttle exhaustion, and network drops alike, which
+      // their run record could only label "returned no resource (it did not
+      // throw)". The rethrow happens AFTER the toast/banner/bot handling above,
+      // so interactive surfaces behave exactly as before.
+      if (configOverride && configOverride.rethrowErrors) throw err;
     } finally {
       if (!keepLoading) setIsProcessing(false);
       setProcessingProgress({ current: 0, total: 0 });

@@ -712,7 +712,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-bold"
-    }, String(_rowRun.failReason).indexOf('threw:') === 0 ? t('blueprint.fail_threw') || 'This step hit an error.' : t('blueprint.fail_empty') || 'This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.'), /*#__PURE__*/React.createElement("span", {
+    }, String(_rowRun.failReason).indexOf('threw:') === 0 ? t('blueprint.fail_threw') || 'This step hit an error.' : t('blueprint.fail_empty') || 'This step produced nothing. If there is no source text yet, add or generate one and rebuild. If a source is present, the generator was likely blocked or rate-limited — wait a moment and rebuild.'), /*#__PURE__*/React.createElement("span", {
       className: "block mt-1 opacity-80 break-words"
     }, _rowRun.failReason)), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
