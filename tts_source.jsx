@@ -207,6 +207,47 @@ const createTTS = (deps) => {
     // background joiners must not inherit a zombie either.
     const CALLTTS_JOIN_MAX_AGE_MS = 20000;
 
+    // Some Canvas host/proxy fetch implementations do not settle when their
+    // AbortSignal fires. An abort-only watchdog therefore left the serialized
+    // TTS lane occupied until the proxy's own ~60s 401 response, even though
+    // playback had already moved on. Race the request against a real rejecting
+    // deadline so the queue is always released on time. The original promise
+    // remains observed by this wrapper, so a late rejection cannot become an
+    // unhandled promise rejection or mutate the settled caller.
+    const awaitTtsHardDeadline = (promise, timeoutMs, onTimeout, message, signal) => new Promise((resolve, reject) => {
+        let settled = false;
+        let timer = null;
+        const cleanup = () => {
+            if (timer !== null) clearTimeout(timer);
+            try { signal?.removeEventListener?.('abort', rejectAborted); } catch (_) {}
+        };
+        const finish = (fn, value) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            fn(value);
+        };
+        const rejectAborted = () => {
+            const error = new Error('TTS request aborted');
+            error.name = 'AbortError';
+            finish(reject, error);
+        };
+        timer = setTimeout(() => {
+            if (settled) return;
+            try { if (typeof onTimeout === 'function') onTimeout(); } catch (_) {}
+            finish(reject, new Error(message || ('TTS request timed out after ' + timeoutMs + 'ms')));
+        }, timeoutMs);
+        if (signal) {
+            try {
+                if (signal.aborted) rejectAborted();
+                else signal.addEventListener('abort', rejectAborted, { once: true });
+            } catch (_) {}
+        }
+        Promise.resolve(promise).then(
+            value => finish(resolve, value),
+            error => finish(reject, error)
+        );
+    });
     const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal') => {
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
         const safeVoice = _resolveGeminiVoice(voiceName);
@@ -236,12 +277,6 @@ const createTTS = (deps) => {
             const fetchTimeoutMs = requestPriority === 'interactive' ? TTS_FETCH_TIMEOUT_INTERACTIVE_MS : TTS_FETCH_TIMEOUT_MS;
             let watchdogFired = false;
             const watchdogController = typeof AbortController !== 'undefined' ? new AbortController() : null;
-            const watchdogTimer = watchdogController
-                ? setTimeout(() => {
-                    watchdogFired = true;
-                    try { watchdogController.abort(); } catch (_) {}
-                }, fetchTimeoutMs)
-                : null;
             const callerAbortHandler = () => { try { watchdogController?.abort(); } catch (_) {} };
             if (signal && watchdogController) {
                 try {
@@ -327,12 +362,15 @@ const createTTS = (deps) => {
               throw err;
             }
             try {
-              const response = await fetch(url, {
+              const response = await awaitTtsHardDeadline(fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
                 signal: fetchSignal
-              });
+              }), fetchTimeoutMs, () => {
+                watchdogFired = true;
+                try { watchdogController?.abort(); } catch (_) {}
+              }, 'TTS Transient Error (timeout after ' + Math.round(fetchTimeoutMs / 1000) + 's)', signal);
               if (!response.ok) {
                 if (response.status === 429) {
                   state.rateLimitedUntil = Date.now() + 60000;
@@ -389,7 +427,6 @@ const createTTS = (deps) => {
                 });
                 throw mapped;
             } finally {
-                if (watchdogTimer) clearTimeout(watchdogTimer);
                 try { signal?.removeEventListener?.('abort', callerAbortHandler); } catch (_) {}
             }
         });
@@ -1242,24 +1279,22 @@ const createTTS = (deps) => {
                     let fetchTimedOut = false;
                     const onDirectAbort = () => { try { fetchController.abort(); } catch (_) {} };
                     try { _directSignal?.addEventListener?.('abort', onDirectAbort, { once: true }); } catch (_) {}
-                    const fetchTimer = setTimeout(() => {
-                        fetchTimedOut = true;
-                        try { fetchController.abort(); } catch (_) {}
-                    }, TTS_FETCH_TIMEOUT_INTERACTIVE_MS);
                     let response;
                     try {
-                        response = await fetch(url, {
+                        response = await awaitTtsHardDeadline(fetch(url, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify(payload),
                           signal: fetchController.signal,
-                        });
+                        }), TTS_FETCH_TIMEOUT_INTERACTIVE_MS, () => {
+                            fetchTimedOut = true;
+                            try { fetchController.abort(); } catch (_) {}
+                        }, 'Direct TTS request timed out', _directSignal);
                     } catch (fetchError) {
                         if (_directSignal?.aborted) { fetchError.name = 'AbortError'; throw fetchError; }
                         if (fetchTimedOut) throw new Error('Direct TTS request timed out');
                         throw fetchError;
                     } finally {
-                        clearTimeout(fetchTimer);
                         try { _directSignal?.removeEventListener?.('abort', onDirectAbort); } catch (_) {}
                     }
                     console.log("[TTS-Bot] API response status:", response.status, response.statusText);

@@ -283,6 +283,126 @@ describe('playSequence silent-unit and look-ahead resilience', () => {
   });
 });
 
+describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
+  // Field trace 2026-08-03 (non-English leveled text): a speculative preload
+  // whose provider fetch wedged made the ACTIVE sentence wait the full audio
+  // timeout, then playback advanced — which read as "speaks the first
+  // sentence, skips the rest". The sequencer must promote a stalled preload
+  // to a fresh interactive request for the SAME sentence, and a terminal
+  // no-audio failure must stop playback visibly instead of advancing.
+  function makeSpanishDeps(overrides = {}) {
+    return makePlaySequenceDeps({
+      leveledTextLanguage: 'Spanish',
+      setIsPaused: vi.fn(),
+      setPlayingContentId: vi.fn(),
+      isPlayingRef: { current: true },
+      isSystemAudioActiveRef: { current: true },
+      ...overrides,
+    });
+  }
+
+  it('promotes a stalled speculative preload to a fresh request for the SAME sentence', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makeSpanishDeps();
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+    const stalledPreload = new Promise(() => {});
+
+    const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, stalledPreload, 0, null, deps, 'leveled-es');
+    await vi.advanceTimersByTimeAsync(2100); // just past READ_ALOUD_PRELOAD_PROMOTION_MS
+    await run;
+
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(0); // same sentence — promotion, not a skip
+    expect(handoff[1]).toBe(sentences);
+    expect(handoff[2]).toBe(17); // same session id
+    expect(handoff[6]).toBeNull(); // stalled preload dropped
+    expect(handoff[7]).toBe(1); // single promotion — cannot loop
+    expect(handoff[10]).toBe('leveled-es'); // same content id
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(0);
+  });
+
+  it('promotes a stalled sequence-buffer promise and clears the wedged buffer entry', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makeSpanishDeps();
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+    // Language is part of the buffer identity: 1x speed + Spanish lane.
+    const bufferKey = PK.sequenceBufferKey(0, 'Kore', 'Primera frase.', '1\u241fSpanish');
+    deps.audioBufferRef.current[bufferKey] = new Promise(() => {});
+
+    const run = PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'leveled-es');
+    await vi.advanceTimersByTimeAsync(2100);
+    await run;
+
+    expect(deps.audioBufferRef.current[bufferKey]).toBeUndefined(); // wedged buffer deleted
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(0);
+    expect(handoff[6]).toBeNull();
+    expect(handoff[7]).toBe(1);
+    expect(deps.callTTS).not.toHaveBeenCalled(); // promotion hands off; it does not double-request
+  });
+
+  it('re-requests the promoted sentence on the interactive lane preserving the non-English language', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn(async (text) => 'blob:' + text);
+    const deps = makeSpanishDeps({ callTTS });
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+
+    // retryCount 1 is exactly the promoted re-entry the previous tests hand off to.
+    await PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 1, null, deps, 'leveled-es');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const active = callTTS.mock.calls[0];
+    expect(active[0]).toBe('Primera frase.');
+    expect(active[3]).toMatchObject({
+      language: 'Spanish',
+      priority: 'interactive',
+      reason: 'read-aloud-active',
+      maxRetries: 1,
+    });
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:Primera frase.']);
+
+    // The look-ahead for the NEXT sentence stays speculative: background lane,
+    // zero retry budget, same language.
+    const preload = callTTS.mock.calls.find((call) => call[0] === 'Segunda frase.');
+    expect(preload).toBeTruthy();
+    expect(preload[3]).toMatchObject({
+      language: 'Spanish',
+      priority: 'normal',
+      reason: 'read-aloud-preload',
+      maxRetries: 0,
+    });
+  });
+
+  it('stops playback instead of skipping when synthesis yields no audio and browser fallback is off', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    localStorage.removeItem('alloflow_ai_config'); // provider default, browser fallback OFF
+    const callTTS = vi.fn(async () => null);
+    const deps = makeSpanishDeps({ callTTS });
+    const sentences = ['Primera frase.', 'Segunda frase.'];
+
+    await PK.playSequence(0, sentences, 17, 'standard', {}, null, null, 1, null, deps, 'leveled-es');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(deps.playSequence).not.toHaveBeenCalled(); // never advanced to the next sentence
+    expect(deps.stopPlayback).toHaveBeenCalledWith('tts-unavailable', 'leveled-es', 17);
+    expect(deps.setIsPlaying).toHaveBeenCalledWith(false);
+    expect(deps.setIsGeneratingAudio).toHaveBeenCalledWith(false);
+    expect(deps.isPlayingRef.current).toBe(false);
+    expect(audioInstances).toHaveLength(0); // no Audio(null) ghost element
+  });
+});
+
 describe('adventure prewarm/live request parity', () => {
   it('warms with the sanitized text and the exact voice playback will resolve', () => {
     const PH = window.AlloModules.PureHelpers;

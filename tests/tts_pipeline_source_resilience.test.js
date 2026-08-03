@@ -94,6 +94,38 @@ describe('source resilience contracts', () => {
     expect(phase).toContain('Math.max(playbackRuntime.sessionCounter, Number(playbackSessionRef.current) || 0) + 1');
   });
 
+  it('pins the multilingual resilience contracts (2026-08-03 hard deadline + promotion)', () => {
+    const tts = read('tts_source.jsx');
+    // Both cloud fetch sites race the request against a REAL rejecting
+    // deadline: a host fetch that ignores AbortSignal cannot hold a lane.
+    expect(tts).toContain('const awaitTtsHardDeadline');
+    expect(tts.match(/awaitTtsHardDeadline\(fetch\(url, \{/g) || []).toHaveLength(2);
+    expect(tts).toContain('TTS_FETCH_TIMEOUT_INTERACTIVE_MS = 12000');
+    expect(tts).toContain('TTS_FETCH_TIMEOUT_MS = 25000');
+
+    const phase = read('phase_k_helpers_source.jsx');
+    expect(phase).toContain('READ_ALOUD_PRELOAD_PROMOTION_MS = 2000');
+    expect(phase).toContain("'pk:preload-promoted'");
+    // Caller cancellation terminates; it must never masquerade as a promotion.
+    expect(phase).toContain("String(e && e.name || '') !== 'AbortError'");
+    // Speculative look-aheads carry no retry budget.
+    expect(phase).toMatch(/reason: 'read-aloud-preload',[\s\S]{0,120}maxRetries: 0,/);
+    // Terminal no-audio failure stops playback instead of silently advancing.
+    expect(phase).toContain("terminatePlayback('tts-refused', err)");
+    expect(phase).toContain("terminatePlayback('tts-unavailable', err)");
+
+    const service = read('read_aloud_audio_service_source.jsx');
+    // The legacy bridge honors the caller's per-entry descriptors.
+    expect(service).toContain('Array.isArray(options.entries) && options.entries.length');
+    expect(service).toContain('function descriptorSynthesisProfile');
+
+    const host = read('AlloFlowANTI.txt');
+    // Host enumerator labels lanes: adapted language for source/body/FAQ,
+    // explicit English for the side-by-side translation lane.
+    expect(host).toContain("leveledTextLanguage || currentUiLanguage || 'English'");
+    expect(host).toContain("addPart(part, 'target/' + paragraphIndex, 'English')");
+  });
+
   it('keeps Leveled Text download cancellation and sentence accessibility available', () => {
     const view = read('view_simplified_source.jsx');
     expect(view).toContain('window.__alloCancelAudioDownload?.()');

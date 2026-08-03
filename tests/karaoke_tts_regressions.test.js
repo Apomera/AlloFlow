@@ -589,6 +589,104 @@ describe('complete clip and shared-request contracts', () => {
   });
 });
 
+describe('multilingual hard-deadline queue release (2026-08-03)', () => {
+  // Field trace 2026-08-03: some Canvas host/proxy fetches IGNORE their
+  // AbortSignal and stay pending until their own ~60s 401. The abort-only
+  // watchdog left the serialized TTS lane occupied that whole time, so every
+  // following sentence timed out in the UI and playback looked like it was
+  // "skipping every line". Language-agnostic non-English coverage (Spanish).
+  function makeCanvasTTS(state) {
+    return createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Puck'],
+      _isCanvasEnv: true,
+      languageToTTSCode: (language) => (/^spanish$/i.test(String(language || '').trim()) ? 'es' : 'en'),
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'Spanish',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+  }
+
+  function stubZombieThenAudioFetch(secondUrl) {
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true, writable: true, value: vi.fn(() => secondUrl),
+    });
+    const fetchMock = vi.fn()
+      // First request ignores its AbortSignal and never settles.
+      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockImplementation(async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ inlineData: { data: 'AQI=' } }] } }],
+        }),
+      }));
+    vi.stubGlobal('fetch', fetchMock);
+    // A stub local engine with no Spanish voice: the cloud failure must
+    // resolve null instead of hanging on a Piper loader.
+    window._piperTTS = { supportsLanguage: () => false, speak: vi.fn() };
+    return fetchMock;
+  }
+
+  it('settles a zombie non-English fetch at the app deadline and frees the lane for the next sentence', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubZombieThenAudioFetch('blob:segunda-frase');
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const { callTTS } = makeCanvasTTS(state);
+
+    let firstSettled = false;
+    let firstUrl = 'unset';
+    callTTS('Primera frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 })
+      .then((url) => { firstSettled = true; firstUrl = url; });
+
+    await vi.advanceTimersByTimeAsync(11900);
+    expect(firstSettled).toBe(false); // still inside the 12s interactive budget
+    await vi.advanceTimersByTimeAsync(300);
+    expect(firstSettled).toBe(true); // settled at ~12s, NOT at the provider's ~60s response
+    expect(firstUrl).toBeNull();
+
+    let secondUrl = null;
+    const second = callTTS('Segunda frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 })
+      .then((url) => { secondUrl = url; return url; });
+    await vi.advanceTimersByTimeAsync(300); // 150ms lane settle gap + margin
+    await second;
+    expect(secondUrl).toBe('blob:segunda-frase');
+    expect(fetchMock).toHaveBeenCalledTimes(2); // the zombie never blocked the fresh request
+  });
+
+  it('caller cancellation releases the request and the lane promptly as AbortError', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubZombieThenAudioFetch('blob:despues-de-cancelar');
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const { callTTS } = makeCanvasTTS(state);
+
+    const controller = new AbortController();
+    let cancelError = null;
+    const first = callTTS('Cancela esta frase.', 'Puck', 1, {
+      language: 'Spanish', priority: 'interactive', maxRetries: 0, signal: controller.signal,
+    }).catch((error) => { cancelError = error; });
+    await vi.advanceTimersByTimeAsync(50); // request is in flight, well before the 12s budget
+    controller.abort();
+    await vi.advanceTimersByTimeAsync(10);
+    await first;
+    expect(cancelError).toBeTruthy();
+    expect(cancelError.name).toBe('AbortError');
+
+    // The lane is free after the 150ms settle gap — no 12s/60s wait.
+    const second = callTTS('Sigue esta frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 });
+    await vi.advanceTimersByTimeAsync(300);
+    await expect(second).resolves.toBe('blob:despues-de-cancelar');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('Canvas callTTS URL cache', () => {
   it('reuses the first synthesized URL and avoids a second fetch', async () => {
     const fetchMock = vi.fn(async () => ({

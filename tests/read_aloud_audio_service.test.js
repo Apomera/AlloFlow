@@ -1019,3 +1019,86 @@ describe('ReadAloudAudioService legacy bridge identity safety', () => {
     });
   });
 });
+
+describe('Save TTS bilingual per-entry profiles (2026-08-03)', () => {
+  // Field report 2026-08-03: Save TTS on a non-English adapted text with a
+  // side-by-side English translation. view_simplified_source supplies
+  // per-entry { text, language, occurrence, identity } descriptors, but the
+  // legacy bridge rebuilt segments from the plain sentence strings, dropping
+  // the source-lane language override. Language-agnostic coverage (Spanish
+  // as the representative adapted language).
+  const bilingualCanonical = () => [
+    { text: 'Hola clase.', segmentId: 'source/0/0', scopeId: 'main', language: 'Spanish' },
+    { text: 'AlloFlow.', segmentId: 'source/1/0', scopeId: 'main', language: 'Spanish' },
+    { text: 'Hello class.', segmentId: 'target/0/0', scopeId: 'main', language: 'English' },
+    { text: 'AlloFlow.', segmentId: 'target/1/0', scopeId: 'main', language: 'English' },
+  ];
+  // Entry shape mirrors view_simplified_source.jsx: occurrence is scoped to
+  // identical spoken text ACROSS both lanes, so the duplicated brand word is
+  // occurrence 0 in the source lane and occurrence 1 in the target lane.
+  const bilingualEntries = () => [
+    { text: 'Hola clase.', language: 'Spanish', occurrence: 0, identity: 'source:0:0' },
+    { text: 'AlloFlow.', language: 'Spanish', occurrence: 0, identity: 'source:1:0' },
+    { text: 'Hello class.', language: 'English', occurrence: 0, identity: 'target:0:0' },
+    { text: 'AlloFlow.', language: 'English', occurrence: 1, identity: 'target:1:0' },
+  ];
+
+  it('prepare(options.entries) synthesizes each lane under its own language profile', async () => {
+    const synthesize = vi.fn(async ({ text }) => ({
+      url: 'blob:bilingual-' + text,
+      b64: clipB64('bilingual-' + text),
+      mime: 'audio/mpeg',
+    }));
+    // The global profile is ENGLISH: the Spanish source entries only speak
+    // Spanish if the per-entry override actually reaches synthesis.
+    const harness = makeLegacyBridgeHarness({
+      synthesize,
+      enumerateResourceSegments: bilingualCanonical,
+    });
+    const entries = bilingualEntries();
+
+    const result = await harness.bridge.prepare(
+      entries.map((entry) => entry.text),
+      vi.fn(),
+      { entries },
+    );
+
+    expect(result).toMatchObject({ ok: true, generated: 4, total: 4, remaining: 0 });
+    expect(synthesize).toHaveBeenCalledTimes(4);
+    expect(synthesize.mock.calls.map((call) => [call[0].text, call[0].profile.language])).toEqual([
+      ['Hola clase.', 'Spanish'],
+      ['AlloFlow.', 'Spanish'],
+      ['Hello class.', 'English'],
+      ['AlloFlow.', 'English'],
+    ]);
+  });
+
+  it('stores each entry under its canonical segment id with the matching synthesis profile', async () => {
+    const harness = makeLegacyBridgeHarness({
+      enumerateResourceSegments: bilingualCanonical,
+    });
+    const entries = bilingualEntries();
+
+    const result = await harness.bridge.prepare(
+      entries.map((entry) => entry.text),
+      vi.fn(),
+      { entries },
+    );
+    expect(result).toMatchObject({ ok: true, generated: 4, remaining: 0 });
+
+    const stored = Object.values(harness.referenceStore.serialize().entries);
+    expect(stored).toHaveLength(4);
+    const byId = new Map(stored.map((entry) => [entry.identity.segmentId, entry]));
+    expect(Array.from(byId.keys()).sort()).toEqual([
+      'source/0/0', 'source/1/0', 'target/0/0', 'target/1/0',
+    ]);
+    // The duplicated text landed in BOTH canonical twins (no reuse/off-by-one),
+    // each labeled with its own lane language.
+    expect(byId.get('source/1/0').identity.spokenText).toBe('AlloFlow.');
+    expect(byId.get('target/1/0').identity.spokenText).toBe('AlloFlow.');
+    expect(byId.get('source/0/0').synthesisProfile).toMatchObject({ language: 'Spanish' });
+    expect(byId.get('source/1/0').synthesisProfile).toMatchObject({ language: 'Spanish' });
+    expect(byId.get('target/0/0').synthesisProfile).toMatchObject({ language: 'English' });
+    expect(byId.get('target/1/0').synthesisProfile).toMatchObject({ language: 'English' });
+  });
+});

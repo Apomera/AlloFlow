@@ -820,6 +820,21 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         return 'txt-' + value.length.toString(36) + '-' + (hash >>> 0).toString(36);
     }
 
+    function descriptorSynthesisProfile(value) {
+        if (!value || typeof value !== 'object') return null;
+        const profile = Object.assign({},
+            value.synthesisProfile && typeof value.synthesisProfile === 'object' ? value.synthesisProfile : {},
+            value.profile && typeof value.profile === 'object' ? value.profile : {}
+        );
+        ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion',
+            'speed', 'synthesisRate', 'directionFingerprint', 'voiceResolverVersion'].forEach((key) => {
+            if (value[key] != null) profile[key] = value[key];
+        });
+        if (profile.synthesisRate == null && profile.speed != null) profile.synthesisRate = profile.speed;
+        if (profile.speed == null && profile.synthesisRate != null) profile.speed = profile.synthesisRate;
+        return Object.keys(profile).length ? profile : null;
+    }
+
     function segmentDescriptor(value, index, context, fallbackSegmentId) {
         const spokenText = cleanText(value, Object.assign({ index }, context || {}));
         if (!spokenText) return null;
@@ -831,6 +846,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             ? String(value.scopeId).trim()
             : '';
         const original = value && typeof value === 'object' ? value : null;
+        const synthesisProfile = descriptorSynthesisProfile(original);
         return {
             spokenText,
             fingerprint,
@@ -840,6 +856,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             scopeId: suppliedScopeId || 'main',
             kind: original && original.kind,
             faqIndex: original && original.faqIndex,
+            occurrence: original && original.occurrence != null && Number.isInteger(Number(original.occurrence)) ? Math.max(0, Number(original.occurrence)) : null,
+            identity: original && original.identity != null ? original.identity : null,
+            synthesisProfile,
         };
     }
 
@@ -899,19 +918,30 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         // every duplicate's resolve/capture and the saved counter stayed short.
         const useOccurrence = supplied.length === 1 && Number.isInteger(occurrence) && occurrence >= 0;
         return supplied.map((value, index) => {
-            const spokenText = cleanText(value, Object.assign({ index }, context || {}));
+            const suppliedDescriptor = segmentDescriptor(value, index, context);
+            const spokenText = suppliedDescriptor && suppliedDescriptor.spokenText;
             if (!spokenText) return null;
             const matches = availableByText.get(spokenText);
             if (matches && matches.length) {
+                const explicitOccurrence = suppliedDescriptor && Number.isInteger(suppliedDescriptor.occurrence)
+                    ? suppliedDescriptor.occurrence
+                    : null;
                 const descriptor = useOccurrence
                     ? matches[occurrence]
-                    : matches.shift();
+                    : (explicitOccurrence != null
+                        ? matches[explicitOccurrence]
+                        : matches.shift());
                 if (!descriptor) return null;
-                return Object.assign({}, descriptor, { suppliedIndex: index });
+                return Object.assign({}, descriptor, {
+                    suppliedIndex: index,
+                    occurrence: suppliedDescriptor.occurrence != null ? suppliedDescriptor.occurrence : descriptor.occurrence,
+                    identity: suppliedDescriptor.identity != null ? suppliedDescriptor.identity : descriptor.identity,
+                    synthesisProfile: suppliedDescriptor.synthesisProfile || descriptor.synthesisProfile,
+                });
             }
             // A sentence that is genuinely outside the resource has no stable
             // semantic locator; retain the legacy text-derived fallback.
-            return segmentDescriptor(value, index, context, 'text/' + textFingerprint(spokenText));
+            return Object.assign({}, suppliedDescriptor, { segmentId: 'text/' + textFingerprint(spokenText) });
         }).filter(Boolean);
     }
 
@@ -955,6 +985,8 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                     scopeId: identity.scopeId,
                     kind: segment.kind,
                     faqIndex: segment.faqIndex,
+                    occurrence: segment.occurrence,
+                    synthesisProfile: segment.synthesisProfile || undefined,
                 };
             },
         };
@@ -1089,7 +1121,10 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     }
 
     async function prepare(sentences, onProgress, options = {}) {
-        const binding = bindingFor(Array.isArray(sentences) ? sentences : null, 'reference');
+        const suppliedSegments = Array.isArray(options.entries) && options.entries.length
+            ? options.entries
+            : (Array.isArray(sentences) ? sentences : null);
+        const binding = bindingFor(suppliedSegments, 'reference');
         if (!binding) {
             return { ok: false, generated: 0, failed: 0, remaining: 0, cancelled: false, attempted: 0, total: 0, bytes: 0, failure: null };
         }

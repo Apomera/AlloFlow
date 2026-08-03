@@ -337,9 +337,10 @@ const _pkTraceId = (value) => {
 const _pkAudioLoadTimeoutMs = () => {
     try {
         if (window._kokoroTTS && window._kokoroTTS.ready) return 90000;
-        return (window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 15000;
-    } catch (_) { return 15000; }
+        return (window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 30000;
+    } catch (_) { return 30000; }
 };
+const READ_ALOUD_PRELOAD_PROMOTION_MS = 2000;
 
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
     if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
@@ -860,7 +861,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               }
               if (isRefusal) {
                   if (_browserTtsFallbackEnabled) speakViaBrowserFallback('refusal');
-                  else advance();
+                  else terminatePlayback('tts-refused', err);
                   return;
               }
               if (canRetryMedia) {
@@ -877,7 +878,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               } else if (_browserTtsFallbackEnabled) {
                   speakViaBrowserFallback('retries-exhausted');
               } else {
-                  advance();
+                  terminatePlayback('tts-unavailable', err);
               }
           };
           sequenceErrorHandler = handlePlaybackError;
@@ -886,15 +887,27 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               audio = preloadedAudio;
               if (audio instanceof Promise) {
                   try {
-                      const _tOut = _pkAudioLoadTimeoutMs();
+                      const _tOut = Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
                       audio = await _pkAwaitWithTimeout(audio, _tOut, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'preloaded' });
+                      if (retryCount < 1 && String(e && e.name || '') !== 'AbortError') {
+                          delete audioBufferRef.current[bufferKey];
+                          _pkTrace('pk:preload-promoted', { idx: index, source: 'preloaded' });
+                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
+                          return;
+                      }
                       handlePlaybackError(e);
                       return;
                   }
               }
               if (!audio || audio.error) {
+                   if (retryCount < 1) {
+                       delete audioBufferRef.current[bufferKey];
+                       _pkTrace('pk:preload-promoted', { idx: index, source: 'preloaded-empty' });
+                       playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
+                       return;
+                   }
                    handlePlaybackError(new Error("Preloaded audio was invalid"));
                    return;
               }
@@ -913,11 +926,23 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               } else if (audioBufferRef.current[bufferKey]) {
                   _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'buffer' });
                   try {
-                      const _tOut2 = _pkAudioLoadTimeoutMs();
+                      const _tOut2 = Math.min(_pkAudioLoadTimeoutMs(), READ_ALOUD_PRELOAD_PROMOTION_MS);
                       audioUrl = await _pkAwaitWithTimeout(audioBufferRef.current[bufferKey], _tOut2, sessionSignal);
                   } catch (e) {
                       _pkTrace('pk:resolve-timeout', { idx: index, source: 'buffer' });
+                      if (retryCount < 1 && String(e && e.name || '') !== 'AbortError') {
+                          delete audioBufferRef.current[bufferKey];
+                          _pkTrace('pk:preload-promoted', { idx: index, source: 'buffer' });
+                          playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
+                          return;
+                      }
                       handlePlaybackError(e);
+                      return;
+                  }
+                  if (!audioUrl && retryCount < 1) {
+                      delete audioBufferRef.current[bufferKey];
+                      _pkTrace('pk:preload-promoted', { idx: index, source: 'buffer-empty' });
+                      playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, null, retryCount + 1, speakerName, deps, contentId);
                       return;
                   }
               } else {
@@ -1093,6 +1118,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       priority: 'normal',
                       reason: 'read-aloud-preload',
                       signal: sessionSignal,
+                      maxRetries: 0,
                   };
                   audioBufferRef.current[nextBufferKey] = Promise.resolve().then(() => callTTS(
                       textToPreload,
