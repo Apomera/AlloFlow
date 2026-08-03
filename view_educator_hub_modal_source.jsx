@@ -109,11 +109,12 @@ function EducatorHubModal(props) {
     // bridge feature is reachable from the hub, not only the History sidebar tab.
     // Optional default so a host that hasn't wired the setter still renders the hub.
     setBridgeSendOpen = (() => {}),
-    // UDL Walkthrough launcher (2026-08-03): admin/coach classroom-visit tool.
-    // Optional default so a host that hasn't wired the setter still renders the hub.
+    // Leadership Hub launcher (2026-08-03): ONE card for the admin tool suite
+    // (walkthrough, dispro analyzer, meeting docs) — the container pattern.
+    // The per-tool setters below stay accepted (unused) so hosts that still
+    // pass them render unchanged.
+    setIsAdminHubOpen = (() => {}),
     setIsUdlWalkthroughOpen = (() => {}),
-    // Disproportionality Analyzer launcher (2026-08-03): admin equity metrics.
-    // Optional default so a host that hasn't wired the setter still renders the hub.
     setIsDisproAnalyzerOpen = (() => {}),
     // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
     // retain the popup handle for two-way postMessage (Save-to-resources + future
@@ -405,22 +406,14 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
                 </div>
               </button>
-              {/* UDL Walkthrough (2026-08-03): the first admin-facing tool — growth-framed
-                  classroom visits scored against UDL 3.0 look-fors, local-only data. */}
-              <button type="button" data-help-key="educator_hub_udl_walkthrough_card" onClick={() => { setShowEducatorHub(false); setIsUdlWalkthroughOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🚪</span>
+              {/* Leadership Hub (2026-08-03): container card for the admin suite —
+                  UDL Walkthrough, Disproportionality Analyzer, Meeting Documentation.
+                  Mirrors the STEM Lab / SEL Hub container pattern. */}
+              <button type="button" data-help-key="educator_hub_admin_hub_card" onClick={() => { setShowEducatorHub(false); setIsAdminHubOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🏛️</span>
                 <div>
-                  <h3 className="font-bold text-cyan-800">{t('educator_hub.udl_walkthrough_title') || 'UDL Walkthrough'}</h3>
-                  <p className="text-xs text-cyan-700 mt-1">{t('educator_hub.udl_walkthrough_desc') || 'Growth-framed classroom visits for admins and coaches: tap UDL look-fors from the doorway, log student moments, and share a strengths-first feedback card. Data never leaves this device.'}</p>
-                </div>
-              </button>
-              {/* Disproportionality Analyzer (2026-08-03): risk ratios from aggregate
-                  counts, computed locally — no student-level data ever entered. */}
-              <button type="button" data-help-key="educator_hub_dispro_analyzer_card" onClick={() => { setShowEducatorHub(false); setIsDisproAnalyzerOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-slate-50 to-indigo-50 border border-slate-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">⚖️</span>
-                <div>
-                  <h3 className="font-bold text-slate-800">{t('educator_hub.dispro_analyzer_title') || 'Disproportionality Analyzer'}</h3>
-                  <p className="text-xs text-slate-600 mt-1">{t('educator_hub.dispro_analyzer_desc') || 'Risk indexes, risk ratios, and composition from aggregate discipline or identification counts — with stability cautions, computed entirely on this device. Descriptive analytics for root-cause review, not a compliance verdict.'}</p>
+                  <h3 className="font-bold text-cyan-900">{t('educator_hub.admin_hub_title') || 'Leadership Hub'}</h3>
+                  <p className="text-xs text-cyan-800 mt-1">{t('educator_hub.admin_hub_desc') || 'Tools for principals, coaches, and student-services leaders: UDL classroom walkthroughs, disproportionality analytics, and meeting documentation — aggregate or de-identified data, computed on this device, descriptive not evaluative.'}</p>
                 </div>
               </button>
               <button type="button" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
