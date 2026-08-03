@@ -128,6 +128,32 @@ describe('udlwalkAgreement', () => {
     const r = W.udlwalkAgreement(session('a', 't1', {}), session('b', 't1', {}));
     expect(r.bothRated).toBe(0);
     expect(r.pct).toBe(null);
+    expect(r.kappa).toBe(null);
+  });
+
+  it('computes Cohen’s kappa against a hand-worked example', () => {
+    // 4 items both rated: A = obs,obs,not,obs; B = obs,obs,not,not.
+    // po = 3/4. Marginals A: obs 3/4, not 1/4; B: obs 2/4, not 2/4.
+    // pe = (3/4)(2/4) + (1/4)(2/4) = 0.5 → kappa = (0.75-0.5)/(1-0.5) = 0.5.
+    const a = session('a', 't1', {
+      eng_7_1: { rating: 'observed' }, eng_7_2: { rating: 'observed' },
+      eng_7_3: { rating: 'not' }, eng_8_1: { rating: 'observed' },
+    });
+    const b = session('b', 't1', {
+      eng_7_1: { rating: 'observed' }, eng_7_2: { rating: 'observed' },
+      eng_7_3: { rating: 'not' }, eng_8_1: { rating: 'not' },
+    });
+    const r = W.udlwalkAgreement(a, b);
+    expect(r.pct).toBeCloseTo(0.75);
+    expect(r.kappa).toBeCloseTo(0.5);
+  });
+
+  it('kappa is null (not NaN/Infinity) when expected agreement is 1', () => {
+    // Both observers rate everything 'observed': po = 1, pe = 1 → undefined.
+    const ev = { eng_7_1: { rating: 'observed' }, eng_7_2: { rating: 'observed' } };
+    const r = W.udlwalkAgreement(session('a', 't1', ev), session('b', 't1', ev));
+    expect(r.pct).toBe(1);
+    expect(r.kappa).toBe(null);
   });
 });
 
@@ -179,5 +205,24 @@ describe('udlwalkFeedbackFromSession', () => {
   it('never surfaces no_opp as a consider', () => {
     const fb = W.udlwalkFeedbackFromSession(session('s1', 't1', { eng_7_1: { rating: 'no_opp' } }));
     expect(fb.consider).toBe(null);
+  });
+
+  it('prefers an annotated "not" over an earlier bare one (no instrument-order bias)', () => {
+    const fb = W.udlwalkFeedbackFromSession(session('s1', 't1', {
+      eng_7_1: { rating: 'not' },                                  // first in instrument order, no note
+      act_5_1: { rating: 'not', note: 'no second format offered' }, // annotated — must win
+    }));
+    expect(fb.consider.id).toBe('act_5_1');
+  });
+});
+
+describe('observer stamping', () => {
+  it('research rows carry the observer initials (empty when unstamped)', () => {
+    const rows = W.udlwalkResearchRows([
+      session('s1', 't1', { eng_7_1: { rating: 'observed' } }, { observer: { initials: 'AP', role: 'specialist' } }),
+      session('s2', 't2', { eng_7_1: { rating: 'observed' } }),
+    ], roster);
+    expect(rows.find((r) => r.session_id === 's1').observer).toBe('AP');
+    expect(rows.find((r) => r.session_id === 's2').observer).toBe('');
   });
 });

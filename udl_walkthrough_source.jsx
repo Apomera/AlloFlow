@@ -17,6 +17,7 @@
 const UDLWALK_CONFIG_KEY = 'allo_udlwalk_config_v1';
 const UDLWALK_ROSTER_KEY = 'allo_udlwalk_roster_v1';
 const UDLWALK_SESSIONS_KEY = 'allo_udlwalk_sessions_v1';
+const UDLWALK_DRAFT_KEY = 'allo_udlwalk_draft_v1';
 const UDLWALK_FRAMEWORK = 'udl-3.0';
 
 const UDLWALK_PRINCIPLES = [
@@ -219,7 +220,12 @@ function udlwalkFeedbackFromSession(session) {
   observed.forEach((x) => {
     if (strengths.length < 3 && strengths.indexOf(x.lf) === -1) strengths.push(x.lf);
   });
-  const gap = rated.find((x) => x.entry.rating === 'not') || rated.find((x) => x.entry.rating === 'partial') || null;
+  // Prefer a gap the observer annotated (they clearly cared about it), then
+  // fall back to instrument order — otherwise "consider" systematically
+  // biases toward whatever guideline happens to come first (Engagement 7).
+  const nots = rated.filter((x) => x.entry.rating === 'not');
+  const partials = rated.filter((x) => x.entry.rating === 'partial');
+  const gap = nots.find((x) => x.entry.note) || nots[0] || partials.find((x) => x.entry.note) || partials[0] || null;
   return {
     strengths,
     consider: gap ? gap.lf : null,
@@ -232,7 +238,7 @@ function udlwalkFeedbackText(session, teacher, anonymize) {
   const fb = udlwalkFeedbackFromSession(session);
   const lines = [];
   lines.push('UDL Walkthrough feedback — ' + udlwalkTeacherDisplay(teacher, anonymize));
-  lines.push('Date: ' + (session.date || '') + ' · ' + (session.durationMin != null ? session.durationMin + ' min' : ''));
+  lines.push('Date: ' + (session.date || '') + ' · ' + (session.durationMin != null ? session.durationMin + ' min' : '') + ((session.observer && session.observer.initials) ? (' · Observer: ' + session.observer.initials) : ''));
   lines.push('');
   if (fb.strengths.length) {
     lines.push('Strengths observed:');
@@ -373,18 +379,32 @@ function udlwalkAgreement(sessionA, sessionB) {
   const evB = (sessionB && sessionB.evidence) || {};
   let bothRated = 0, agree = 0, onlyOne = 0;
   const disagreements = [];
+  const marginA = {}, marginB = {};
   UDLWALK_LOOK_FORS.forEach((lf) => {
     const a = evA[lf.id] && evA[lf.id].rating;
     const b = evB[lf.id] && evB[lf.id].rating;
     if (a && b) {
       bothRated += 1;
+      marginA[a] = (marginA[a] || 0) + 1;
+      marginB[b] = (marginB[b] || 0) + 1;
       if (a === b) agree += 1;
       else disagreements.push({ id: lf.id, guideline: lf.guideline, a, b });
     } else if (a || b) {
       onlyOne += 1;
     }
   });
-  return { bothRated, agree, onlyOne, pct: bothRated ? agree / bothRated : null, disagreements };
+  // Cohen's kappa (unweighted): raw percent agreement overstates reliability
+  // when ratings are skewed, so report the chance-corrected statistic too.
+  // null when undefined (no overlap, or expected agreement is exactly 1).
+  let kappa = null;
+  if (bothRated > 0) {
+    const po = agree / bothRated;
+    let pe = 0;
+    const cats = ['observed', 'partial', 'not', 'no_opp'];
+    cats.forEach((c) => { pe += ((marginA[c] || 0) / bothRated) * ((marginB[c] || 0) / bothRated); });
+    if (pe < 1) kappa = (po - pe) / (1 - pe);
+  }
+  return { bothRated, agree, onlyOne, pct: bothRated ? agree / bothRated : null, kappa, disagreements };
 }
 
 // De-identified long-format rows for research export: one row per rated
@@ -404,6 +424,7 @@ function udlwalkResearchRows(sessions, roster) {
       const lf = UDLWALK_LOOK_FORS.find((x) => x.id === lookForId);
       rows.push({
         session_id: s.id,
+        observer: (s.observer && s.observer.initials) || '',
         teacher_code: teacher ? teacher.code : 'unknown',
         grade: teacher ? ((teacher.grade && String(teacher.grade).trim()) || '') : '',
         date: s.date || '',
@@ -502,7 +523,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
 }
 
 // ── Feedback card view for one saved session ──
-function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete }) {
+function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete, onEdit }) {
   const [armDelete, setArmDelete] = React.useState(false);
   const fb = udlwalkFeedbackFromSession(session);
   const text = udlwalkFeedbackText(session, teacher, anonymize);
@@ -516,6 +537,9 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
           <button type="button" onClick={() => udlwalkCopyText(text, addToast)} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">
             <span aria-hidden="true">📋</span> {tt('udlwalk.copy_feedback', 'Copy feedback')}
           </button>
+          <button type="button" onClick={onEdit} className="min-h-11 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50">
+            <span aria-hidden="true">✏️</span> {tt('udlwalk.edit_visit', 'Edit')}
+          </button>
           <button type="button"
             onClick={() => { if (armDelete) { onDelete(); } else { setArmDelete(true); udlwalkAnnounce(tt('udlwalk.delete_arm_announce', 'Activate delete again to permanently remove this visit.')); } }}
             className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDelete ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
@@ -526,6 +550,7 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
         <h4 className="font-bold text-slate-800">{udlwalkTeacherDisplay(teacher, anonymize)}</h4>
         <p className="text-xs text-slate-600 mt-0.5">
           {session.date} · {session.durationMin != null ? (session.durationMin + ' ' + tt('udlwalk.minutes', 'min')) : ''} ·{' '}
+          {(session.observer && session.observer.initials) ? (tt('udlwalk.observer_short', 'obs.') + ' ' + session.observer.initials + ' · ') : ''}
           {(UDLWALK_GROUPINGS.find((g) => g.id === (session.context && session.context.grouping)) || {}).label || ''} ·{' '}
           {(UDLWALK_PHASES.find((p) => p.id === (session.context && session.context.lessonPhase)) || {}).label || ''}
         </p>
@@ -584,11 +609,19 @@ function UdlWalkthroughPanel(props) {
     return fallback;
   }, [t]);
 
-  const [config, setConfig] = React.useState(() => udlwalkLoad(UDLWALK_CONFIG_KEY, { buildingName: '', anonymizeTeachers: false, frameworkVersion: UDLWALK_FRAMEWORK }));
+  const [config, setConfig] = React.useState(() => {
+    const c = udlwalkLoad(UDLWALK_CONFIG_KEY, {});
+    return { buildingName: '', anonymizeTeachers: false, frameworkVersion: UDLWALK_FRAMEWORK, observerInitials: '', observerRole: 'admin', ...(c && typeof c === 'object' ? c : {}) };
+  });
   const [roster, setRoster] = React.useState(() => { const r = udlwalkLoad(UDLWALK_ROSTER_KEY, []); return Array.isArray(r) ? r : []; });
   const [sessions, setSessions] = React.useState(() => { const s = udlwalkLoad(UDLWALK_SESSIONS_KEY, []); return Array.isArray(s) ? s : []; });
   const [tab, setTab] = React.useState('observe');
-  const [draft, setDraft] = React.useState(null);
+  // A dropped tablet or an accidental Escape must not eat a half-done visit:
+  // the draft persists to localStorage and is resumed on reopen.
+  const [draft, setDraft] = React.useState(() => {
+    const d = udlwalkLoad(UDLWALK_DRAFT_KEY, null);
+    return (d && typeof d === 'object' && d.teacherId && d.evidence && typeof d.evidence === 'object') ? d : null;
+  });
   const [openPrinciple, setOpenPrinciple] = React.useState('engagement');
   const [momentPickerOpen, setMomentPickerOpen] = React.useState(false);
   const [viewSessionId, setViewSessionId] = React.useState(null);
@@ -603,10 +636,15 @@ function UdlWalkthroughPanel(props) {
   React.useEffect(() => { udlwalkStore(UDLWALK_CONFIG_KEY, config); }, [config]);
   React.useEffect(() => { udlwalkStore(UDLWALK_ROSTER_KEY, roster); }, [roster]);
   React.useEffect(() => { udlwalkStore(UDLWALK_SESSIONS_KEY, sessions); }, [sessions]);
+  React.useEffect(() => {
+    if (draft) udlwalkStore(UDLWALK_DRAFT_KEY, draft);
+    else { try { localStorage.removeItem(UDLWALK_DRAFT_KEY); } catch (_) {} }
+  }, [draft]);
 
   // Elapsed-time readout: a 30s interval, not RAF — coarse is fine for minutes.
+  // Editing a saved visit keeps its original duration; no live timer.
   React.useEffect(() => {
-    if (!draft || !draft.startedAt) { setElapsedMin(0); return undefined; }
+    if (!draft || !draft.startedAt || draft.editingId) { setElapsedMin(0); return undefined; }
     const update = () => setElapsedMin(Math.max(0, Math.round((Date.now() - draft.startedAt) / 60000)));
     update();
     const iv = setInterval(update, 30000);
@@ -701,6 +739,22 @@ function UdlWalkthroughPanel(props) {
 
   const saveDraft = () => {
     if (!draft) return;
+    if (draft.editingId) {
+      // Editing a saved visit: update content, keep identity fields (id,
+      // date, duration, original observer stamp) exactly as recorded.
+      setSessions((s) => s.map((x) => x.id === draft.editingId ? {
+        ...x,
+        context: draft.context,
+        evidence: draft.evidence,
+        studentIndicators: draft.studentIndicators,
+        summaryNote: draft.summaryNote,
+      } : x));
+      setDraft(null);
+      setTab('sessions');
+      setViewSessionId(draft.editingId);
+      addToast(tt('udlwalk.updated_toast', 'Visit updated.'), 'success');
+      return;
+    }
     const now = new Date();
     const session = {
       id: udlwalkNextId('wt'),
@@ -713,6 +767,7 @@ function UdlWalkthroughPanel(props) {
       studentIndicators: draft.studentIndicators,
       summaryNote: draft.summaryNote,
       frameworkVersion: config.frameworkVersion || UDLWALK_FRAMEWORK,
+      observer: { initials: (config.observerInitials || '').trim(), role: config.observerRole || '' },
       sharedWithTeacher: false,
     };
     setSessions((s) => [session, ...s]);
@@ -720,6 +775,21 @@ function UdlWalkthroughPanel(props) {
     setTab('sessions');
     setViewSessionId(session.id);
     addToast(tt('udlwalk.saved_toast', 'Walkthrough saved.'), 'success');
+  };
+
+  const editSession = (session) => {
+    setDraft({
+      teacherId: session.teacherId,
+      startedAt: session.startedAt,
+      editingId: session.id,
+      context: { grouping: 'whole', lessonPhase: 'instruction', ...(session.context || {}) },
+      evidence: { ...(session.evidence || {}) },
+      studentIndicators: [...(session.studentIndicators || [])],
+      summaryNote: session.summaryNote || '',
+    });
+    setOpenPrinciple('engagement');
+    setTab('observe');
+    udlwalkAnnounce(tt('udlwalk.editing_announce', 'Editing a saved visit. Save to apply changes.'));
   };
 
   const discardDraft = () => { setDraft(null); udlwalkAnnounce(tt('udlwalk.discarded_announce', 'Walkthrough discarded.')); };
@@ -848,11 +918,16 @@ function UdlWalkthroughPanel(props) {
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div className="min-w-0">
                   <p className="font-bold text-slate-800 text-sm">{udlwalkTeacherDisplay(teacherById(draft.teacherId), config.anonymizeTeachers)}</p>
-                  <p className="text-xs text-slate-600" aria-live="off">{elapsedMin} {tt('udlwalk.minutes_elapsed', 'min elapsed')} · {ratedCount}/{UDLWALK_LOOK_FORS.length} {tt('udlwalk.rated', 'rated')}</p>
+                  <p className="text-xs text-slate-600" aria-live="off">
+                    {draft.editingId
+                      ? (tt('udlwalk.editing_saved', 'Editing saved visit') + ' · ' + (((sessions.find((s) => s.id === draft.editingId)) || {}).date || ''))
+                      : (elapsedMin + ' ' + tt('udlwalk.minutes_elapsed', 'min elapsed'))}
+                    {' · '}{ratedCount}/{UDLWALK_LOOK_FORS.length} {tt('udlwalk.rated', 'rated')}
+                  </p>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={discardDraft} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{tt('udlwalk.discard', 'Discard')}</button>
-                  <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">{tt('udlwalk.save', 'Save visit')}</button>
+                  <button type="button" onClick={discardDraft} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{draft.editingId ? tt('udlwalk.discard_edits', 'Discard edits') : tt('udlwalk.discard', 'Discard')}</button>
+                  <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">{draft.editingId ? tt('udlwalk.save_edits', 'Save changes') : tt('udlwalk.save', 'Save visit')}</button>
                 </div>
               </div>
 
@@ -934,6 +1009,10 @@ function UdlWalkthroughPanel(props) {
             <UdlWalkFeedbackCard session={viewSession} teacher={teacherById(viewSession.teacherId)}
               anonymize={config.anonymizeTeachers} addToast={addToast} tt={tt}
               onBack={() => setViewSessionId(null)}
+              onEdit={() => {
+                if (draft && !draft.editingId) { addToast(tt('udlwalk.edit_blocked', 'Finish or discard the walkthrough in progress first.'), 'warning'); return; }
+                editSession(viewSession);
+              }}
               onDelete={() => { setSessions((s) => s.filter((x) => x.id !== viewSession.id)); setViewSessionId(null); addToast(tt('udlwalk.deleted_toast', 'Visit deleted.'), 'info'); }} />
           )}
 
@@ -953,7 +1032,7 @@ function UdlWalkthroughPanel(props) {
                       >
                         <span className="min-w-0">
                           <span className="block font-bold text-sm text-slate-800">{udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)}</span>
-                          <span className="block text-[10px] text-slate-500">{s.date} · {s.durationMin} {tt('udlwalk.minutes', 'min')} · {(s.studentIndicators || []).length} {tt('udlwalk.moments_short', 'moments')}</span>
+                          <span className="block text-[10px] text-slate-500">{s.date} · {s.durationMin} {tt('udlwalk.minutes', 'min')}{(s.observer && s.observer.initials) ? (' · ' + tt('udlwalk.observer_short', 'obs.') + ' ' + s.observer.initials) : ''} · {(s.studentIndicators || []).length} {tt('udlwalk.moments_short', 'moments')}</span>
                         </span>
                         <span className="shrink-0 text-xs font-bold text-green-700">{obs}/{rated.length} <span className="font-normal text-slate-500">{tt('udlwalk.observed_short', 'observed')}</span></span>
                       </button>
@@ -966,7 +1045,7 @@ function UdlWalkthroughPanel(props) {
 
           {tab === 'building' && (() => {
             const agg = udlwalkAggregate(sessions, roster);
-            const sessionLabel = (s) => udlwalkTeacherDisplay(teacherById(s.teacherId), config.anonymizeTeachers) + ' · ' + s.date + ' · ' + s.durationMin + ' ' + tt('udlwalk.minutes', 'min');
+            const sessionLabel = (s) => udlwalkTeacherDisplay(teacherById(s.teacherId), config.anonymizeTeachers) + ' · ' + s.date + ' · ' + s.durationMin + ' ' + tt('udlwalk.minutes', 'min') + ((s.observer && s.observer.initials) ? (' · ' + s.observer.initials) : '');
             const sessA = sessions.find((s) => s.id === irA) || null;
             const sessB = sessions.find((s) => s.id === irB) || null;
             const agreement = (sessA && sessB && sessA.id !== sessB.id) ? udlwalkAgreement(sessA, sessB) : null;
@@ -1090,7 +1169,8 @@ function UdlWalkthroughPanel(props) {
                             <p className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">{tt('udlwalk.ir_none', 'These two visits have no look-fors that both observers rated.')}</p>
                           ) : (
                             <div>
-                              <p className="font-bold text-slate-800">{Math.round(agreement.pct * 100)}% {tt('udlwalk.ir_agree', 'agreement')} ({agreement.agree}/{agreement.bothRated} {tt('udlwalk.ir_both', 'items both rated')}{agreement.onlyOne ? ('; ' + agreement.onlyOne + ' ' + tt('udlwalk.ir_only_one', 'rated by only one observer')) : ''})</p>
+                              <p className="font-bold text-slate-800">{Math.round(agreement.pct * 100)}% {tt('udlwalk.ir_agree', 'agreement')} ({agreement.agree}/{agreement.bothRated} {tt('udlwalk.ir_both', 'items both rated')}{agreement.onlyOne ? ('; ' + agreement.onlyOne + ' ' + tt('udlwalk.ir_only_one', 'rated by only one observer')) : ''}){agreement.kappa != null ? (' · κ = ' + agreement.kappa.toFixed(2)) : ''}</p>
+                              {agreement.kappa != null && <p className="text-[10px] text-slate-500 mt-0.5">{tt('udlwalk.ir_kappa_note', 'κ is Cohen’s kappa — agreement corrected for chance. Raw percent agreement overstates reliability when most ratings fall in one category; report κ for research use.')}</p>}
                               {agreement.disagreements.length > 0 && (
                                 <ul className="mt-1.5 space-y-1">
                                   {agreement.disagreements.map((d) => (
@@ -1114,6 +1194,26 @@ function UdlWalkthroughPanel(props) {
           {tab === 'setup' && (
             <div>
               <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
+                <div className="flex gap-2 items-end mb-2">
+                  <div className="w-28">
+                    <label htmlFor="udlwalk-observer" className="block text-xs font-bold text-slate-600 mb-1">{tt('udlwalk.observer_label', 'Your initials')}</label>
+                    <input id="udlwalk-observer" type="text" maxLength={6} value={config.observerInitials || ''}
+                      onChange={(e) => setConfig((c) => ({ ...c, observerInitials: e.target.value }))}
+                      className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label htmlFor="udlwalk-observer-role" className="block text-xs font-bold text-slate-600 mb-1">{tt('udlwalk.observer_role_label', 'Role')}</label>
+                    <select id="udlwalk-observer-role" value={config.observerRole || 'admin'}
+                      onChange={(e) => setConfig((c) => ({ ...c, observerRole: e.target.value }))}
+                      className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      <option value="admin">{tt('udlwalk.role_admin', 'Administrator')}</option>
+                      <option value="coach">{tt('udlwalk.role_coach', 'Instructional coach')}</option>
+                      <option value="specialist">{tt('udlwalk.role_specialist', 'Specialist / clinician')}</option>
+                      <option value="other">{tt('udlwalk.role_other', 'Other')}</option>
+                    </select>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 mb-2">{tt('udlwalk.observer_note', 'Stamped on each saved visit so merged data from two observers stays attributable — required for the inter-rater check.')}</p>
                 <label htmlFor="udlwalk-building" className="block text-xs font-bold text-slate-600 mb-1">{tt('udlwalk.building_label', 'Building name (appears on exports only)')}</label>
                 <input id="udlwalk-building" type="text" value={config.buildingName}
                   onChange={(e) => setConfig((c) => ({ ...c, buildingName: e.target.value }))}
