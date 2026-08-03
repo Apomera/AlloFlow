@@ -313,6 +313,10 @@ var d = labToolData || {};
 
           if ((d.smDay || 0) >= 30) econAchievements.push({ icon: '\uD83D\uDCC5', title: t('stem.economicslab.seasoned_trader', 'Seasoned Trader'), desc: t('stem.economicslab.30_trading_days', '30+ trading days') });
 
+          if (d.paQuizDone) econAchievements.push({ icon: '\uD83E\uDDED', title: t('stem.economicslab.know_thyself', 'Know Thyself'), desc: t('stem.economicslab.completed_investor_profile', 'Completed the investor profile quiz') });
+
+          if (d.mcRanRetire) econAchievements.push({ icon: '\uD83D\uDEE1\uFE0F', title: t('stem.economicslab.stress_tested', 'Stress-Tested'), desc: t('stem.economicslab.ran_retirement_sim', 'Ran a retirement simulation') });
+
           if ((d.enBizDay || 0) >= 20) econAchievements.push({ icon: '\uD83C\uDFC6', title: t('stem.economicslab.business_survivor', 'Business Survivor'), desc: t('stem.economicslab.20_days_in_business', '20+ days in business') });
 
           if ((d.enBizCash || 0) >= 50000) econAchievements.push({ icon: '\uD83D\uDCBC', title: t('stem.economicslab.tycoon', 'Tycoon'), desc: t('stem.economicslab.business_cash_50k', 'Business cash $50K+') });
@@ -382,7 +386,11 @@ var d = labToolData || {};
             { id: 'marketFailure', name: t('stem.economicslab.market_failure', 'Market Failure'), icon: '\u274C', def: 'When free markets fail to allocate resources efficiently.', example: 'Monopolies, externalities, public goods, information asymmetry.', category: 'micro' },
             { id: 'compoundInterest', name: t('stem.economicslab.compound_interest', 'Compound Interest'), icon: '\uD83D\uDCCA', def: 'Interest earned on interest. The most powerful force in finance.', example: '$1,000 at 7% for 30 years = $7,612. Time is your greatest asset!', category: 'finance' },
             { id: 'riskReturn', name: t('stem.economicslab.risk_vs_return', 'Risk vs Return'), icon: '\u2696\uFE0F', def: 'Higher potential returns require accepting higher risk.', example: 'Stocks: ~10% return, high risk. Bonds: ~4% return, low risk.', category: 'finance' },
-            { id: 'diversification', name: t('stem.economicslab.diversification', 'Diversification'), icon: '\uD83E\uDDE9', def: 'Spreading investments across many assets to reduce risk.', example: '"Don\'t put all your eggs in one basket." Index funds diversify automatically.', category: 'finance' }
+            { id: 'diversification', name: t('stem.economicslab.diversification', 'Diversification'), icon: '\uD83E\uDDE9', def: 'Spreading investments across many assets to reduce risk.', example: '"Don\'t put all your eggs in one basket." Index funds diversify automatically.', category: 'finance' },
+            { id: 'assetAllocation', name: t('stem.economicslab.asset_allocation', 'Asset Allocation'), icon: '\uD83E\uDD67', def: 'How you split money across asset types (stocks, bonds, cash). Drives most of a portfolio\'s risk and return.', example: 'A classic balanced mix: 60% stocks, 30% bonds, 10% cash. Try it in the Portfolio Builder.', category: 'finance' },
+            { id: 'rebalancing', name: t('stem.economicslab.rebalancing', 'Rebalancing'), icon: '\uD83D\uDD04', def: 'Selling a little of what grew and buying what shrank, to return to your target mix.', example: 'A 60/30/10 mix left alone for years drifts stock-heavy \u2014 riskier than what you chose.', category: 'finance' },
+            { id: 'expenseRatio', name: t('stem.economicslab.expense_ratio', 'Expense Ratio'), icon: '\uD83D\uDCB8', def: 'The yearly fee a fund charges, as a percent of your money. It compounds against you.', example: 'Index funds charge ~0.05%; many active funds ~1%. Over decades that gap compounds into a serious share of your ending balance.', category: 'finance' },
+            { id: 'sequenceRisk', name: t('stem.economicslab.sequence_risk', 'Sequence-of-Returns Risk'), icon: '\uD83C\uDFA2', def: 'The order of good and bad years matters whenever money is being added or withdrawn.', example: 'Two retirees with the same average return: the one who hits a crash first can run out of money.', category: 'finance' }
           ];
 
           // === Wave 1: FAMOUS_ECONOMISTS ===
@@ -4449,41 +4457,79 @@ var d = labToolData || {};
 
                 // ── Panel 3: Range of Outcomes (Monte Carlo, seeded/deterministic) ──
                 var mcYears = d.mcYears || 30;
+                var mcMode = d.mcMode || 'grow';
+                var mcContrib = d.mcContrib !== undefined ? d.mcContrib : 1000;
+                var mcSpend = d.mcSpend !== undefined ? d.mcSpend : 20000;
+                var mcFee = d.mcFee !== undefined ? d.mcFee : 0.2;
+                var mcStart = mcMode === 'retire' ? 500000 : 10000;
                 var mcPanel = null;
                 if (d.mcOpen) {
                   var mcN = 200;
-                  var mcSeedState = (((d.mcSeed || 1) * 7919 + 104729 + paStocks * 31 + paBonds * 7) % 2147483647) || 1;
+                  var mcSeedState = (((d.mcSeed || 1) * 7919 + 104729 + paStocks * 31 + paBonds * 7 + (mcMode === 'retire' ? 17 : 0)) % 2147483647) || 1;
                   var mcRnd = function () { mcSeedState = (mcSeedState * 16807) % 2147483647; return mcSeedState / 2147483647; };
                   var mcNorm = function () { var u = mcRnd(), v2 = mcRnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v2); };
+                  // Fee drags the average return; the volatility is untouched.
+                  var mcNetMean = ivMean - mcFee;
+                  // retire: withdraw at the START of the year, then growth acts on
+                  // the remainder — this ordering is what makes bad EARLY years
+                  // deadly (the sequence-of-returns mechanism itself).
+                  var mcStep = function (val, r) {
+                    if (mcMode === 'retire') { val = val - mcSpend; if (val <= 0) return 0; return val * (1 + r); }
+                    return val * (1 + r) + mcContrib;
+                  };
                   var mcPerYear = [];
                   for (var my = 0; my <= mcYears; my++) mcPerYear.push([]);
                   for (var ms = 0; ms < mcN; ms++) {
-                    var mv = 10000;
+                    var mv = mcStart;
                     mcPerYear[0].push(mv);
                     for (var yy = 1; yy <= mcYears; yy++) {
-                      var mr = ivMean / 100 + ivVol / 100 * mcNorm();
+                      var mr = mcNetMean / 100 + ivVol / 100 * mcNorm();
                       if (mr < -0.9) mr = -0.9;
-                      mv *= 1 + mr;
+                      mv = mv > 0 ? mcStep(mv, mr) : 0;
                       mcPerYear[yy].push(mv);
                     }
                   }
                   var mcPct = function (arr, q) { var s2 = arr.slice().sort(function (a, b) { return a - b; }); return s2[Math.min(s2.length - 1, Math.floor(q * s2.length))]; };
-                  var mcP10 = [], mcP50 = [], mcP90 = [], mcCst = [];
+                  var mcP10 = [], mcP50 = [], mcP90 = [], mcCst = [mcStart];
+                  for (var cy = 1; cy <= mcYears; cy++) mcCst.push(mcStep(mcCst[cy - 1], mcNetMean / 100));
                   for (var py = 0; py <= mcYears; py++) {
                     mcP10.push(mcPct(mcPerYear[py], 0.1));
                     mcP50.push(mcPct(mcPerYear[py], 0.5));
                     mcP90.push(mcPct(mcPerYear[py], 0.9));
-                    mcCst.push(10000 * Math.pow(1 + ivMean / 100, py));
                   }
-                  var mcMax = Math.max(mcP90[mcYears], mcCst[mcYears]);
+                  var mcAlive = mcPerYear[mcYears].filter(function (v) { return v > 0; }).length;
+                  var mcMax = mcP90.concat(mcCst).reduce(function (m, v) { return Math.max(m, v); }, 1);
+                  // Straight-line endings at the chosen fee vs a cheap 0.05% index —
+                  // the "fees compound too" comparison shown in grow mode.
+                  var mcCstAt = function (feePct) { var fv = mcStart; for (var fy = 1; fy <= mcYears; fy++) fv = fv * (1 + (ivMean - feePct) / 100) + mcContrib; return fv; };
                   var mcX = function (yi) { return 20 + yi / mcYears * 285; };
                   var mcY = function (v) { return (150 - v / mcMax * 135).toFixed(1); };
                   var mcBand = mcP90.map(function (v, yi) { return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ') + ' ' + mcP10.slice().reverse().map(function (v, ri) { var yi = mcYears - ri; return mcX(yi).toFixed(1) + ',' + mcY(v); }).join(' ');
                   mcPanel = React.createElement('div', null,
-                    React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_mc_intro', 'The Compound Interest calculator draws ONE smooth line. Real markets deliver a range. Here are 200 simulated futures for $10,000 in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + ').'),
+                    React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' },
+                      mcMode === 'retire'
+                        ? t('stem.economicslab.iv_mc_intro_retire', '200 simulated retirements: a $500,000 nest egg in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + '), ' + t('stem.economicslab.iv_mc_intro_retire2', 'spending') + ' ' + ivFmt(mcSpend) + t('stem.economicslab.iv_mc_intro_retire3', '/yr. Will it last?')
+                        : t('stem.economicslab.iv_mc_intro', 'The Compound Interest calculator draws ONE smooth line. Real markets deliver a range. Here are 200 simulated futures for $10,000 in your mix') + ' (' + paStocks + '/' + paBonds + '/' + paCash + ')' + (mcContrib > 0 ? ' + ' + ivFmt(mcContrib) + t('stem.economicslab.iv_mc_intro_contrib', '/yr added') : '') + '.'),
+                    React.createElement('div', { className: 'flex gap-1 mb-2', role: 'group', 'aria-label': t('stem.economicslab.iv_mc_mode_aria', 'Simulation mode') },
+                      [{ id: 'grow', label: t('stem.economicslab.iv_mc_mode_grow', '🌱 Growing') }, { id: 'retire', label: t('stem.economicslab.iv_mc_mode_retire', '🏖️ Retiring') }].map(function (mm) {
+                        var msel = mcMode === mm.id;
+                        return React.createElement('button', {
+                          key: mm.id,
+                          'aria-pressed': msel,
+                          onClick: function () { upd('mcMode', mm.id); if (mm.id === 'retire' && !d.mcRanRetire) { upd('mcRanRetire', true); addXP(5, 'Retirement stress test'); } },
+                          className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ' + (msel ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-600 border-slate-300')
+                        }, mm.label);
+                      })),
                     React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2 items-center' },
                       React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_years', 'Years') + ': ' + mcYears,
                         React.createElement('input', { type: 'range', min: 10, max: 40, step: 5, value: mcYears, 'aria-label': t('stem.economicslab.iv_mc_years_aria', 'Simulation years'), onChange: function (e) { upd('mcYears', +e.target.value); }, className: 'w-full' })),
+                      mcMode === 'retire'
+                        ? React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_spend', 'Spending/yr') + ': ' + ivFmt(mcSpend) + ' (' + (mcSpend / 5000).toFixed(1) + '%)',
+                            React.createElement('input', { type: 'range', min: 10000, max: 40000, step: 2500, value: mcSpend, 'aria-label': t('stem.economicslab.iv_mc_spend_aria', 'Yearly spending in retirement'), onChange: function (e) { upd('mcSpend', +e.target.value); }, className: 'w-full' }))
+                        : React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_contrib', 'Added/yr') + ': ' + ivFmt(mcContrib),
+                            React.createElement('input', { type: 'range', min: 0, max: 5000, step: 250, value: mcContrib, 'aria-label': t('stem.economicslab.iv_mc_contrib_aria', 'Yearly contribution'), onChange: function (e) { upd('mcContrib', +e.target.value); }, className: 'w-full' })),
+                      React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('stem.economicslab.iv_mc_fee', 'Fund fee') + ': ' + mcFee.toFixed(2) + '%/yr',
+                        React.createElement('input', { type: 'range', min: 0, max: 1.5, step: 0.05, value: mcFee, 'aria-label': t('stem.economicslab.iv_mc_fee_aria', 'Yearly fund fee percent'), onChange: function (e) { upd('mcFee', +e.target.value); }, className: 'w-full' })),
                       React.createElement('button', {
                         onClick: function () { upd('mcSeed', (d.mcSeed || 1) + 1); if (announceToSR) announceToSR(t('stem.economicslab.iv_mc_rerolled', 'New simulation run generated.')); },
                         className: 'px-3 py-2 rounded-xl text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200'
@@ -4512,8 +4558,14 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-200' },
                         React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_mc_lucky', 'Lucky (90th pct)')),
                         React.createElement('div', { className: 'text-sm font-bold text-green-600' }, ivFmt(mcP90[mcYears])))),
+                    mcMode === 'retire' && React.createElement('div', { className: 'mt-2 text-[11px] font-bold rounded-lg p-2 border ' + (mcAlive / mcN >= 0.9 ? 'text-green-700 bg-green-50 border-green-200' : mcAlive / mcN >= 0.75 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200') },
+                      '🛡️ ' + mcAlive + ' ' + t('stem.economicslab.iv_mc_alive1', 'of 200 simulated retirements still had money after') + ' ' + mcYears + ' ' + t('stem.economicslab.iv_mc_alive2', 'years') + ' (' + (mcAlive / mcN * 100).toFixed(0) + '%).'),
+                    mcMode === 'grow' && mcFee > 0.1 && React.createElement('div', { className: 'mt-2 text-[11px] text-rose-700 bg-rose-50 rounded-lg p-2 border border-rose-100' },
+                      '💸 ' + t('stem.economicslab.iv_mc_fee_cost1', 'Fees compound too: at') + ' ' + mcFee.toFixed(2) + '% ' + t('stem.economicslab.iv_mc_fee_cost2', 'the straight-line path ends near') + ' ' + ivFmt(mcCstAt(mcFee)) + '; ' + t('stem.economicslab.iv_mc_fee_cost3', 'at 0.05% (a cheap index fund) it ends near') + ' ' + ivFmt(mcCstAt(0.05)) + ' — ' + t('stem.economicslab.iv_mc_fee_cost4', 'a gap of') + ' ' + ivFmt(mcCstAt(0.05) - mcCstAt(mcFee)) + '.'),
                     React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
-                      t('stem.economicslab.iv_mc_lesson', '📚 The dashed line is what a constant-rate calculator promises — the median simulated run usually lands below it, because the average is pulled up by a few lucky runs. And two savers with the same average return can end in very different places: the ORDER of good and bad years matters (sequence-of-returns risk), especially near retirement.')));
+                      mcMode === 'retire'
+                        ? t('stem.economicslab.iv_mc_lesson_retire', '📚 Sequence-of-returns risk, live: every run here has the SAME average return — the runs that went broke just met their bad years FIRST, while withdrawals kept draining the pot. This is why retirees hold more bonds, and why the "4% rule" is a guideline, not a guarantee.')
+                        : t('stem.economicslab.iv_mc_lesson', '📚 The dashed line is what a constant-rate calculator promises — the median simulated run usually lands below it, because the average is pulled up by a few lucky runs. And two savers with the same average return can end in very different places: the ORDER of good and bad years matters (sequence-of-returns risk), especially near retirement.')));
                 }
 
                 return React.createElement('div', { className: 'mt-4' },

@@ -46,4 +46,35 @@ describe('Economics Lab investing deep-dives', () => {
     expect(slice).toContain('iv_disclaimer');
     expect(slice).toContain('Not a prediction and not financial advice');
   });
+
+  it('withdraws before growth in retire mode — the sequence-risk mechanism', () => {
+    // mcStep must subtract spending BEFORE applying the year's return. If the
+    // order flips, early crashes stop being deadlier than late ones and the
+    // whole retirement demo teaches the wrong thing.
+    const stepStart = slice.indexOf('var mcStep');
+    expect(stepStart).toBeGreaterThan(-1);
+    const stepBody = slice.slice(stepStart, slice.indexOf('};', stepStart));
+    const withdrawAt = stepBody.indexOf('val - mcSpend');
+    const growAt = stepBody.indexOf('* (1 + r)');
+    expect(withdrawAt).toBeGreaterThan(-1);
+    expect(growAt).toBeGreaterThan(withdrawAt);
+  });
+
+  it('applies the fund fee to the mean return, not the volatility', () => {
+    expect(slice).toContain('ivMean - mcFee');
+    expect(slice).not.toContain('ivVol - mcFee');
+  });
+
+  it('registers the new finance glossary concepts', () => {
+    const financeCount = [...source.matchAll(/category: 'finance'/g)].length;
+    expect(financeCount).toBeGreaterThanOrEqual(7);
+    for (const id of ['assetAllocation', 'rebalancing', 'expenseRatio', 'sequenceRisk']) {
+      expect(source).toContain(`id: '${id}'`);
+    }
+  });
+
+  it('wires the deep-dive achievements to real state flags', () => {
+    expect(source).toMatch(/if \(d\.paQuizDone\) econAchievements\.push/);
+    expect(source).toMatch(/if \(d\.mcRanRetire\) econAchievements\.push/);
+  });
 });
