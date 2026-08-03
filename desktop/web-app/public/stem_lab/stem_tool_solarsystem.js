@@ -3573,7 +3573,7 @@ const d = labToolData.solarSystem || {};
             h("span", { id: liveId || undefined, style: { fontFamily: "monospace", fontWeight: 700, color: fg } }, value)
           );
         };
-        var comparisonBlock = h("div", { key: "compare", style: { marginTop: "12px", paddingTop: "10px", borderTop: "1px solid " + (isDark ? "#334155" : "#e2e8f0") } },
+        var comparisonBlock = h("div", { key: "compare", role: "region", "aria-label": "Orbital comparison for " + sb.name + (compareBody ? " with " + compareBody.name : ""), style: { marginTop: "12px", paddingTop: "10px", borderTop: "1px solid " + (isDark ? "#334155" : "#e2e8f0") } },
           h("div", { style: { fontSize: "11px", fontWeight: 700, color: fg, marginBottom: "7px" } }, "Compare orbits"),
           h("label", { htmlFor: "orrery-compare-body", style: { display: "block", fontSize: "11px", color: mutedFg, fontWeight: 600, marginBottom: "5px" } }, "Compare " + sb.name + " with"),
           h("select", {
@@ -3670,8 +3670,8 @@ const d = labToolData.solarSystem || {};
             style: { marginTop: "8px", width: "100%", justifyContent: "center", borderColor: sb.color + "66", color: fg }
           }, followBodyId === sb.id ? "Release camera follow" : "Follow camera"),
 
-          evidenceBlock,
           comparisonBlock,
+          evidenceBlock,
         ], { marginTop: "10px", borderLeft: "4px solid " + sb.color });
       }
     }
