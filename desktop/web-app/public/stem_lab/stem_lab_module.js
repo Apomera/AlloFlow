@@ -4072,8 +4072,8 @@
                 areamodel: ['Area Model', '\uD83D\uDFE7'], base10: ['Manipulatives', '\uD83E\uDDEE'],
                 coordinate: ['Coordinates', '\uD83D\uDCCD'], protractor: ['Angles', '\uD83D\uDCD0'],
                 geoSandbox: ['Geo Sandbox', '\uD83D\uDD37'], moneyMath: ['Money Math', '\uD83D\uDCB5'],
-                multtable: ['Times Table', '\u2716\uFE0F'], dataPlot: ['Data Plot', '\uD83D\uDCCA'],
-                dataStudio: ['Data Studio', '\uD83D\uDCC8'], funcGrapher: ['Graphing', '\uD83D\uDCC9'],
+                multtable: ['Times Table', '\u2716\uFE0F'], dataPlot: ['Regression', '\uD83D\uDCC8'],
+                dataStudio: ['Charts & Graphs', '\uD83D\uDCCA'], funcGrapher: ['Graphing', '\uD83D\uDCC9'],
                 geometryProver: ['Geometry', '\uD83D\uDCD0'], logicLab: ['Logic Lab', '\uD83E\uDDE0'],
                 probability: ['Probability', '\uD83C\uDFB2'], unitConvert: ['Unit Convert', '\uD83D\uDD04'],
                 ecosystem: ['Ecosystem', '\uD83C\uDF3F'], waterCycle: ['Water Cycle', '\uD83D\uDCA7'],
@@ -4708,14 +4708,15 @@
                 color: 'sky', ready: true
               },
               {
-                // @tool dataPlot
-                id: 'dataPlot', icon: '📊', label: t('stem.tools_menu.data_plotter'),
-                desc: t('stem.tools_menu.plot_data_points_fit_trend'),
-                color: 'teal', ready: true
-              },
-              {
-                id: 'dataStudio', icon: '📉', label: 'Data Studio',
-                desc: 'Bar charts, pie charts, line graphs & histograms. Import CSV data or enter your own. Statistical analysis included.',
+                // @tool dataStudio — Data Plotter (dataPlot) was merged in here on
+                // 2026-08-03 as the "Regression" mode. dataPlot is still registered as a
+                // plugin (rendered by this tool) but intentionally has no tile of its
+                // own; it is listed in intentionallyHiddenRegisteredIds in
+                // dev-tools/check_stem_tile_catalog.cjs. The alias keeps deep links and
+                // searches for the old name working.
+                id: 'dataStudio', icon: '📊', label: 'Charts & Graphs',
+                aliases: ['dataPlot'],
+                desc: 'Bar, pie, line, scatter, box & histogram charts. Import CSV or enter your own data. Switch to Regression mode for curve fitting, R², residuals and outlier analysis.',
                 color: 'cyan', ready: true
               },
               {
@@ -5187,6 +5188,7 @@
               // Tools renamed 2026-08-03 keep their FORMER labels as aliases so an
               // existing lesson plan or a teacher's memory still finds them.
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
+              dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
               molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
               rockCycle: 'rock cycle earth science igneous sedimentary metamorphic shale slate limestone marble granite gneiss metamorphism weathering erosion melting cooling cross section specimen transformation',
               behaviorLab: 'operant conditioning skinner box skinner reinforcement schedules fixed ratio variable ratio fixed interval variable interval chaining chained sequences dro classical conditioning pavlov aba applied behavior analysis fba functional behavior assessment attention escape tangible sensory cumulative record',
@@ -6896,6 +6898,11 @@
             activeSessionCode: activeSessionCode || null,
             studentNickname: studentNickname || null,
             isTeacherMode: !!isTeacherMode,
+            // False when the host launches a tool from its own tile. A tool that is
+            // rendered INSIDE another tool (Data Plotter inside Charts & Graphs)
+            // receives embedded: true via Object.assign on this ctx, and suppresses
+            // its own Back button and title so the host owns the chrome.
+            embedded: false,
             // ── Theme ──
             isDark: isDark,
             isContrast: isContrast,

@@ -223,6 +223,11 @@ window.StemLab = window.StemLab || {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      // Data Plotter is now a MODE inside Data Studio (Charts & Graphs) rather than
+      // its own catalog tile. When Data Studio hosts it, the host already renders the
+      // mode switcher and the Back control, so suppress ours to avoid two back buttons
+      // and a nested title. Standalone rendering is unchanged.
+      var embedded = !!ctx.embedded;
 
       // ── State ──
       var d = (ctx.toolData && ctx.toolData.dataPlot) || {};
@@ -835,8 +840,10 @@ window.StemLab = window.StemLab || {
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.dataplot.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-slate-800' }, t('stem.dataplot.data_plotter', '\uD83D\uDCCA Data Plotter')),
+          !embedded && h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.dataplot.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+          h('h3', { className: 'text-lg font-bold text-slate-800' }, embedded
+            ? t('stem.dataplot.regression_mode', '\uD83D\uDCC8 Regression & Residuals')
+            : t('stem.dataplot.data_plotter', '\uD83D\uDCCA Data Plotter')),
           h('span', { className: 'text-xs text-slate-600' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },

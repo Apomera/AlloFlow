@@ -128,8 +128,8 @@ window.StemLab = window.StemLab || {
 
   window.StemLab.registerTool('dataStudio', {
     icon: "📊",
-    label: "Data Studio",
-    desc: "Build bar, pie, line, scatter, and histogram charts from your data and explore stats like mean, median, and trendlines.",
+    label: "Charts & Graphs",
+    desc: "Build bar, pie, line, scatter, box and histogram charts from your data, explore stats like mean, median and trendlines, then switch to Regression mode for curve fits, R², residuals and outlier analysis.",
     color: 'slate',
     category: 'creative',
     questHooks: [
@@ -200,6 +200,61 @@ var d = (labToolData && labToolData._dataStudio) || {};
               return Object.assign({}, prev, { _dataStudio: ds });
             });
           };
+
+          // ── Studio mode switch (Data Plotter merged in, 2026-08-03) ──
+          // Data Plotter and Data Studio were two tiles doing the same job — author a
+          // chart from your data — with five chart types in common. They already shared
+          // the computation kernel (data_kernel_loader.js), so only the UI was
+          // duplicated. Data Plotter is now the "Regression" mode here and no longer
+          // has its own tile; its plugin stays registered and is rendered as-is, so its
+          // nonlinear fits, residuals and outlier analysis are preserved untouched
+          // rather than reimplemented. See STEM_LAB_CATEGORY_AUDIT.md.
+          var studioMode = d.studioMode === 'regression' ? 'regression' : 'charts';
+          var switchMode = function (mode) {
+            updDS('studioMode', mode);
+            if (typeof announceToSR === 'function') {
+              announceToSR(mode === 'regression'
+                ? t('stem.datastudio.mode_regression_on', 'Regression and residuals mode.')
+                : t('stem.datastudio.mode_charts_on', 'Chart builder mode.'));
+            }
+          };
+          var modeSwitcher = React.createElement("div", {
+            className: "flex items-center gap-2 flex-wrap mb-3",
+            role: "group", "aria-label": t('stem.datastudio.mode_group', 'Choose a workspace')
+          },
+            [
+              { id: 'charts', label: t('stem.datastudio.mode_charts', '📊 Chart Builder') },
+              { id: 'regression', label: t('stem.datastudio.mode_regression', '📈 Regression') }
+            ].map(function (m) {
+              var on = studioMode === m.id;
+              return React.createElement("button", {
+                key: m.id,
+                onClick: function () { if (!on) switchMode(m.id); },
+                "aria-pressed": on,
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors " +
+                  (on ? "bg-cyan-700 text-white border-cyan-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50")
+              }, m.label);
+            })
+          );
+
+          if (studioMode === 'regression') {
+            var _plotter = window.StemLab && window.StemLab._registry && window.StemLab._registry.dataPlot;
+            if (_plotter && typeof _plotter.render === 'function') {
+              return React.createElement("div", { className: "p-4" },
+                React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-3" },
+                  React.createElement("button", {
+                    onClick: function () { setStemLabTool(null); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold border bg-white text-slate-700 border-slate-300 hover:bg-slate-50",
+                    "aria-label": t('stem.datastudio.back', 'Back')
+                  }, t('stem.datastudio.back_2', '← Back')),
+                  modeSwitcher
+                ),
+                _plotter.render(Object.assign({}, ctx, { embedded: true }))
+              );
+            }
+            // Plugin not loaded yet — fall through to the chart builder rather than
+            // rendering an empty pane.
+          }
 
           var chartType = d.chartType || 'bar';
 
@@ -627,9 +682,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", null,
 
-                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, t('stem.datastudio.data_studio', "📈 Data Studio")),
+                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, t('stem.datastudio.data_studio', "📊 Charts & Graphs")),
 
-                React.createElement("p", { className: "text-xs", style: { color: _muted } }, t('stem.datastudio.create_charts_import_data_explore_stat', "Create charts, import data & explore statistics"))
+                React.createElement("p", { className: "text-xs", style: { color: _muted } }, t('stem.datastudio.create_charts_import_data_explore_stat', "Create charts, import data & explore statistics")),
+
+                modeSwitcher
 
               ),
 

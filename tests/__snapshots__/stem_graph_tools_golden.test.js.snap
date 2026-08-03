@@ -38,12 +38,12 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for dataStudio 1`] = `
 {
-  "buttons": 33,
+  "buttons": 36,
   "circles": 0,
   "inputs": 21,
-  "lengthBucket": 89,
+  "lengthBucket": 97,
   "paths": 0,
-  "sha": "b42c35555531202f",
+  "sha": "8fc2c38fcf6eb585",
   "svgs": 1,
 }
 `;
