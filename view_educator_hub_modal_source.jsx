@@ -109,6 +109,9 @@ function EducatorHubModal(props) {
     // bridge feature is reachable from the hub, not only the History sidebar tab.
     // Optional default so a host that hasn't wired the setter still renders the hub.
     setBridgeSendOpen = (() => {}),
+    // UDL Walkthrough launcher (2026-08-03): admin/coach classroom-visit tool.
+    // Optional default so a host that hasn't wired the setter still renders the hub.
+    setIsUdlWalkthroughOpen = (() => {}),
     // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
     // retain the popup handle for two-way postMessage (Save-to-resources + future
     // AI assist). Optional default so a host that hasn't wired it still renders.
@@ -397,6 +400,15 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
+                </div>
+              </button>
+              {/* UDL Walkthrough (2026-08-03): the first admin-facing tool — growth-framed
+                  classroom visits scored against UDL 3.0 look-fors, local-only data. */}
+              <button type="button" data-help-key="educator_hub_udl_walkthrough_card" onClick={() => { setShowEducatorHub(false); setIsUdlWalkthroughOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🚪</span>
+                <div>
+                  <h3 className="font-bold text-cyan-800">{t('educator_hub.udl_walkthrough_title') || 'UDL Walkthrough'}</h3>
+                  <p className="text-xs text-cyan-700 mt-1">{t('educator_hub.udl_walkthrough_desc') || 'Growth-framed classroom visits for admins and coaches: tap UDL look-fors from the doorway, log student moments, and share a strengths-first feedback card. Data never leaves this device.'}</p>
                 </div>
               </button>
               <button type="button" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
