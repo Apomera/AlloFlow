@@ -110,9 +110,20 @@ experience is carried by `!isTeacherMode` + `activeSessionCode` + the link-entry
 name promises more than it does, and any future "student mode" work should key off the same
 signals the link paths use, not this flag.
 
-## Recommended order
+## Status (2026-08-03, same day)
 
-1. **F1** header + host parent exclusions — small diff, closes the real exposure.
-2. **F2** independent system prompt — one prompt + a three-way branch.
-3. **F3** decision, then either curated list or explicit blessing (docs + toast copy).
-4. **F4/F5** decisions only, no code until wanted.
+1. **F1 FIXED.** Parent mode now excludes: class session start, Family Bridge send (it
+   broadcasts to session students), QTI/IMS exports and their "LMS Integration" section
+   label (which independent mode had been seeing orphaned and empty — also fixed),
+   TeacherHistoryTab, and the roster target-group selector. **Kept for parents by
+   decision:** the teacher/student view toggle (the hand-the-device-to-your-child
+   affordance), Class Analytics, and the password-gated Educator Tools.
+   Bonus: `X` and `History` icons in the header were bare globals-by-luck; now declared
+   like every other icon (check_free_vars green).
+2. **F2 FIXED.** `independentSystemPrompt` added (study-coach voice: plan, self-test,
+   shrink the next step); prompt branch and the Phase-1 probing examples are three-way.
+3. **F3 BLESSED.** Aaron's call: parent mode keeps the full relabeled toolset —
+   home-schooling parents effectively are the teacher. The "simplified" framing refers to
+   the relabeled surfaces and presets, and F1 removed the class-professional surfaces that
+   actually contradicted it. No curated tool list.
+4. **F4/F5** remain open decisions; no code.

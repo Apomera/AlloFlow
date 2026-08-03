@@ -17,6 +17,8 @@ const _headerUseFocusTrap = typeof window !== "undefined" && window.__alloHooks 
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
+  const X = window.X || noop;
+  const History = window.History || noop;
   const ArrowRight = window.ArrowRight || noop;
   const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
@@ -63,7 +65,7 @@ function HeaderBar(props) {
   const _roleCtx = React.useContext(window.AlloRoleContext) || {};
   const _themeCtx = React.useContext(window.AlloThemeContext) || {};
   const { activeView } = _activeViewCtx;
-  const { isTeacherMode, isIndependentMode, setIsTeacherMode } = _roleCtx;
+  const { isTeacherMode, isIndependentMode, isParentMode, setIsTeacherMode } = _roleCtx;
   const {
     theme,
     colorOverlay,
@@ -788,7 +790,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_learn") || "Learn")
-  ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !isIndependentMode && !isParentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -800,7 +802,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_bridge") || "Bridge")
-  ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1075,7 +1077,7 @@ function HeaderBar(props) {
   )), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-violet-800" }, "Separate labels with |. Leave blank to show numbers only. Results are aggregate-only and never scored.")), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Reveal after", /* @__PURE__ */ React.createElement("select", { value: Number(sharedAssignmentActivity?.minParticipants) || 3, onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, minParticipants: Number(event.target.value) || 3 })), className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" }, /* @__PURE__ */ React.createElement("option", { value: 3 }, "3 contributions received"), /* @__PURE__ */ React.createElement("option", { value: 5 }, "5 contributions received"), /* @__PURE__ */ React.createElement("option", { value: 8 }, "8 contributions received"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-sky-800" }, "Uses your Class Mailbox so students can contribute while you are offline.", sharedAssignmentActivity?.type === "rating" ? " The distribution appears automatically after the threshold." : " Automatic publishing cannot replace teacher review."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     if (typeof openRecentQrShares === "function") openRecentQrShares();
     setShowExportMenu(false);
-  }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1090,7 +1092,7 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement(FolderDown, { size: 14 }),
     " ",
     t("export_menu.qti")
-  ), !isIndependentMode && /* @__PURE__ */ React.createElement(
+  ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

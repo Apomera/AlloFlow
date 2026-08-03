@@ -18,6 +18,11 @@ const _headerUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
+  // X and History were referenced BARE and resolved only because the host
+  // Object.assign()s lucide icons onto window — check_free_vars flags them.
+  // Declaring them matches every other icon here; behavior is unchanged.
+  const X = window.X || noop;
+  const History = window.History || noop;
   const ArrowRight = window.ArrowRight || noop;
   const BookOpen = window.BookOpen || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
@@ -71,7 +76,12 @@ function HeaderBar(props) {
   const _roleCtx = React.useContext(window.AlloRoleContext) || {};
   const _themeCtx = React.useContext(window.AlloThemeContext) || {};
   const { activeView } = _activeViewCtx;
-  const { isTeacherMode, isIndependentMode, setIsTeacherMode } = _roleCtx;
+  // Parent mode runs with isTeacherMode: true, so professional/class surfaces
+  // must exclude it EXPLICITLY, exactly as isIndependentMode already does.
+  // Kept for parents on purpose: the teacher/student view toggle (the
+  // hand-the-device-to-your-child affordance), Class Analytics, and the
+  // password-gated Educator Tools. See MODE_AUDIT_2026-08-03.md F1.
+  const { isTeacherMode, isIndependentMode, isParentMode, setIsTeacherMode } = _roleCtx;
   const {
     theme, colorOverlay, readingTheme, focusMode, disableAnimations,
     baseFontSize, lineHeight, letterSpacing, selectedFont,
@@ -854,7 +864,7 @@ function HeaderBar(props) {
                           <span className="hidden lg:inline">{t('header.nav_learn') || 'Learn'}</span>
                         </button>
                         )}
-                        {isTeacherMode && !isIndependentMode && setBridgeSendOpen && (
+                        {isTeacherMode && !isIndependentMode && !isParentMode && setBridgeSendOpen && (
                         <button type="button"
                           onClick={() => setBridgeSendOpen(true)}
                           data-help-key="header_bridge"
@@ -869,7 +879,7 @@ function HeaderBar(props) {
                         <div className="w-px h-5 bg-white/10 mx-0.5"></div>
                         <div className="relative">
                             {isTeacherMode ? (
-                                !isIndependentMode && (<>
+                                !isIndependentMode && !isParentMode && (<>
                                 <button type="button"
                                     aria-label={t('common.connect')}
                                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
@@ -1185,8 +1195,13 @@ function HeaderBar(props) {
                                       </button>
                                     </div>
                                     <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.' : 'Teacher-prepared resources open for students with AI generation off.'}</p>
+                                    {/* Section label shares the buttons' gate \u2014 an excluded mode
+                                        must not see an empty "LMS Integration" heading (independent
+                                        mode did, before parent exclusions were added). */}
+                                    {!isIndependentMode && !isParentMode && (
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
-                                    {activeView === 'quiz' && !isIndependentMode && (
+                                    )}
+                                    {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
                                         <button type="button" role="menuitem"
                                             onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
                                             className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-teal-50 text-teal-700 text-xs font-bold transition-colors"
@@ -1195,7 +1210,7 @@ function HeaderBar(props) {
                                             <FolderDown size={14} /> {t('export_menu.qti')}
                                         </button>
                                     )}
-                                    {!isIndependentMode && (
+                                    {!isIndependentMode && !isParentMode && (
                                     <button type="button" role="menuitem"
                                         onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
                                         className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-yellow-50 text-yellow-700 text-xs font-bold transition-colors"

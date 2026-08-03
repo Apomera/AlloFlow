@@ -35245,8 +35245,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               : inputText;
           const truncatedInput = sourceText.length > 1500 ? sourceText.substring(0, 1500) + "..." : sourceText;
           const parentSystemPrompt = "You are a helpful Family Tutor and Child Development Guide. Explain concepts simply. Focus on fun, bonding activities, and reinforcement rather than strict assessment. If the parent mentions an IEP, explain the goals in plain English.";
+          // Independent mode previously fell through to the TEACHER prompt, so the
+          // guide asked self-study learners what barrier "their students" faced.
+          // Voice here is a study coach speaking to the learner directly.
+          const independentSystemPrompt = "You are a supportive Study Coach for a self-directed learner working through this material on their own. Speak to them directly. Help them plan their study, check their own understanding (self-testing beats re-reading), break big goals into steps, and reflect on what is and is not working. Encourage without inflating; when they are stuck, shrink the next step.";
           const teacherSystemPrompt = "You are a Universal Design for Learning (UDL) specialist and supportive pedagogical coach. Your goal is to partner with educators to design accessible, engaging, and rigorous learning experiences.";
-          const systemPrompt = isParentMode ? parentSystemPrompt : teacherSystemPrompt;
+          const systemPrompt = isParentMode ? parentSystemPrompt : (isIndependentMode ? independentSystemPrompt : teacherSystemPrompt);
           const fullPrompt = `${systemPrompt}
           Respond to the user in ${currentUiLanguage}.
           Current Lesson Context:
@@ -35258,8 +35262,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           INTERACTION PROTOCOL (Follow these phases strictly):
           **PHASE 1: DISCOVERY & COACHING**
           If the user's request is broad or lacks specific context, do NOT provide a list of strategies yet.
-          - Ask 1-2 probing questions to help the ${isParentMode ? 'parent' : 'teacher'} clarify their goal, student barrier, or specific need.
-          - Example: "${isParentMode ? 'That sounds fun! What part does your child find tricky?' : 'That sounds like a great topic. What is the specific barrier your students are facing?'}",
+          - Ask 1-2 probing questions to help the ${isParentMode ? 'parent' : (isIndependentMode ? 'learner' : 'teacher')} clarify their goal, ${isIndependentMode ? 'sticking point' : 'student barrier'}, or specific need.
+          - Example: "${isParentMode ? 'That sounds fun! What part does your child find tricky?' : (isIndependentMode ? 'Great goal! Which part of this topic feels shakiest when you try to explain it out loud?' : 'That sounds like a great topic. What is the specific barrier your students are facing?')}",
           **PHASE 2: CONFIRMATION**
           Once you feel you have sufficient context from the conversation, explicitly ASK the user if they are ready for the solution.
           - Example: "I have a clear picture now. Shall I generate the specific actionable steps for you?",
@@ -42944,7 +42948,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             <option value="All">{t('fullpack.option_all')}</option>
                         </select>
                     )}
-                    {isTeacherMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && (
+                    {isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && (
                         <select
                             value={fullPackTargetGroup}
                             onChange={(e) => setFullPackTargetGroup(e.target.value)}
@@ -43015,7 +43019,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 </div>
             )}
             {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
-            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
+            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </aside>
         {!isFullscreen && !isZenMode && (
