@@ -125,6 +125,52 @@ def read_plan(path: Path) -> Dict[str, Any]:
     return value
 
 
+RUN_STYLES = {"normal", "emphasis", "strong"}
+MAX_RUNS = 200
+
+
+def validate_runs(
+    value: Any, text: str, where: str, errors: List[str]
+) -> Optional[List[Dict[str, str]]]:
+    """Validate an inline-styling overlay for one text block.
+
+    `runs` is STRICTLY ADDITIVE: `text` remains the authoritative content, and
+    the concatenation of the runs must reproduce it exactly. That invariant is
+    the point - styling can never add, drop, or alter a character, so recall
+    and verification keep measuring the same text whether or not styling is
+    present. Rejects rather than silently ignoring a mismatch.
+    """
+    if not isinstance(value, list) or not value:
+        errors.append(where + " must be a non-empty array of runs.")
+        return None
+    if len(value) > MAX_RUNS:
+        errors.append(where + f" exceeds {MAX_RUNS} runs.")
+        return None
+    runs: List[Dict[str, str]] = []
+    for index, entry in enumerate(value):
+        at = f"{where}[{index}]"
+        if not isinstance(entry, dict):
+            errors.append(at + " must be an object.")
+            return None
+        expect_keys(entry, {"text", "style"}, at, errors)
+        run_text = entry.get("text")
+        if not isinstance(run_text, str) or not run_text:
+            errors.append(at + ".text must be a non-empty string.")
+            return None
+        style = entry.get("style", "normal")
+        if style not in RUN_STYLES:
+            errors.append(at + ".style must be one of: " + ", ".join(sorted(RUN_STYLES)) + ".")
+            return None
+        runs.append({"text": run_text, "style": style})
+    if "".join(run["text"] for run in runs) != text:
+        errors.append(
+            where + " must reproduce the block's text exactly when concatenated; "
+            "inline styling may not change content."
+        )
+        return None
+    return runs
+
+
 def expect_keys(obj: Dict[str, Any], allowed: Iterable[str], where: str, errors: List[str]) -> None:
     extras = sorted(set(obj) - set(allowed))
     if extras:
@@ -301,9 +347,9 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
     embedded_image_chars = 0
     allowed_by_type = {
         "heading": {"type", "level", "text", "source_page"},
-        "paragraph": {"type", "text", "source_page"},
-        "blockquote": {"type", "text", "cite", "source_page"},
-        "list": {"type", "ordered", "items", "source_page"},
+        "paragraph": {"type", "text", "runs", "source_page"},
+        "blockquote": {"type", "text", "cite", "runs", "source_page"},
+        "list": {"type", "ordered", "items", "item_runs", "source_page"},
         "table": {"type", "caption", "columns", "rows", "row_headers", "source_page"},
         "image": {"type", "alt", "decorative", "path", "caption", "source_page"},
         "link": {"type", "text", "url", "source_page"},
@@ -335,6 +381,10 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
             block["text"] = expect_text(raw.get("text"), where + ".text", errors)
             if "cite" in raw:
                 block["cite"] = expect_text(raw.get("cite"), where + ".cite", errors, minimum=0, maximum=2000)
+            if "runs" in raw:
+                block["runs"] = validate_runs(
+                    raw.get("runs"), block["text"], where + ".runs", errors
+                )
         elif kind == "list":
             if not isinstance(raw.get("ordered"), bool):
                 errors.append(where + ".ordered must be boolean.")
@@ -348,6 +398,19 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
                 expect_text(item, f"{where}.items[{item_index}]", errors, maximum=20_000)
                 for item_index, item in enumerate(items)
             ]
+            if "item_runs" in raw:
+                item_runs = raw.get("item_runs")
+                if not isinstance(item_runs, list) or len(item_runs) != len(block["items"]):
+                    errors.append(
+                        where + ".item_runs must have exactly one entry per item."
+                    )
+                else:
+                    block["item_runs"] = [
+                        validate_runs(
+                            entry, block["items"][run_index], f"{where}.item_runs[{run_index}]", errors
+                        )
+                        for run_index, entry in enumerate(item_runs)
+                    ]
         elif kind == "table":
             block["caption"] = expect_text(raw.get("caption"), where + ".caption", errors, maximum=2000)
             columns = raw.get("columns")
@@ -491,6 +554,25 @@ def esc_lines(value: Any) -> str:
     return "<br>".join(esc(line) for line in str(value or "").split("\n"))
 
 
+_RUN_TAGS = {"emphasis": "em", "strong": "strong"}
+
+
+def render_inline(text: str, runs: Optional[List[Dict[str, str]]]) -> str:
+    """Render a text block, applying inline styling when the plan supplies it.
+
+    Falls back to the plain escaped text when there are no runs, so a plan
+    without styling renders exactly as before.
+    """
+    if not runs:
+        return esc_lines(text)
+    pieces: List[str] = []
+    for run in runs:
+        tag = _RUN_TAGS.get(run.get("style", "normal"))
+        body = esc_lines(run["text"])
+        pieces.append(f"<{tag}>{body}</{tag}>" if tag else body)
+    return "".join(pieces)
+
+
 def render_html(validated: Dict[str, Any]) -> str:
     document = validated["document"]
     parts: List[str] = []
@@ -503,13 +585,22 @@ def render_html(validated: Dict[str, Any]) -> str:
             level = int(block["level"])
             parts.append(f"<h{level}{source_attr}>{esc(block['text'])}</h{level}>")
         elif kind == "paragraph":
-            parts.append(f"<p{source_attr}>{esc_lines(block['text'])}</p>")
+            parts.append(f"<p{source_attr}>{render_inline(block['text'], block.get('runs'))}</p>")
         elif kind == "blockquote":
             cite = f"<cite>{esc(block.get('cite'))}</cite>" if block.get("cite") else ""
-            parts.append(f"<blockquote{source_attr}><p>{esc_lines(block['text'])}</p>{cite}</blockquote>")
+            parts.append(
+                f"<blockquote{source_attr}><p>"
+                f"{render_inline(block['text'], block.get('runs'))}</p>{cite}</blockquote>"
+            )
         elif kind == "list":
             tag = "ol" if block.get("ordered") else "ul"
-            items = "".join(f"<li>{esc_lines(item)}</li>" for item in block.get("items") or [])
+            item_runs = block.get("item_runs") or []
+            items = "".join(
+                "<li>"
+                + render_inline(item, item_runs[item_index] if item_index < len(item_runs) else None)
+                + "</li>"
+                for item_index, item in enumerate(block.get("items") or [])
+            )
             parts.append(f"<{tag}{source_attr}>{items}</{tag}>")
         elif kind == "table":
             headers = "".join(f'<th scope="col">{esc(value)}</th>' for value in block["columns"])
@@ -789,6 +880,7 @@ def capabilities() -> Dict[str, Any]:
         "sourceImageExtraction": True,
         "sourceTextExtraction": True,
         "independentVerification": True,
+        "inlineStyling": sorted(RUN_STYLES),
         "officeTextExtraction": True,
         "officeInput": True,
         "batchRemediation": True,
@@ -1451,6 +1543,65 @@ def _png_chunk(tag: bytes, payload: bytes) -> bytes:
     )
 
 
+def _undo_png_predictor(data: bytes, colors: int, bits: int, columns: int) -> bytes:
+    """Reverse PNG row filters (Predictor >= 10) applied before Flate encoding.
+
+    Each row is prefixed by a filter-type byte. Without this, predictor-encoded
+    images cannot be decoded at all and were skipped outright.
+    """
+    bpp = max(1, (colors * bits + 7) // 8)
+    stride = (columns * colors * bits + 7) // 8
+    out = bytearray()
+    previous = bytearray(stride)
+    position = 0
+    while position + 1 + stride <= len(data):
+        filter_type = data[position]
+        row = bytearray(data[position + 1:position + 1 + stride])
+        position += 1 + stride
+        if filter_type == 1:  # Sub
+            for i in range(bpp, stride):
+                row[i] = (row[i] + row[i - bpp]) & 0xFF
+        elif filter_type == 2:  # Up
+            for i in range(stride):
+                row[i] = (row[i] + previous[i]) & 0xFF
+        elif filter_type == 3:  # Average
+            for i in range(stride):
+                left = row[i - bpp] if i >= bpp else 0
+                row[i] = (row[i] + ((left + previous[i]) >> 1)) & 0xFF
+        elif filter_type == 4:  # Paeth
+            for i in range(stride):
+                left = row[i - bpp] if i >= bpp else 0
+                up = previous[i]
+                upper_left = previous[i - bpp] if i >= bpp else 0
+                estimate = left + up - upper_left
+                da, db, dc = abs(estimate - left), abs(estimate - up), abs(estimate - upper_left)
+                predictor = left if (da <= db and da <= dc) else (up if db <= dc else upper_left)
+                row[i] = (row[i] + predictor) & 0xFF
+        elif filter_type != 0:
+            raise PortableError(f"Unsupported PNG row filter {filter_type}.")
+        out.extend(row)
+        previous = row
+    return bytes(out)
+
+
+def _decode_parms(dictionary: bytes) -> Dict[str, int]:
+    """Read /DecodeParms. /Predictor defaults to 1 (no prediction) when absent -
+    treating any DecodeParms as unsupported skipped perfectly plain images."""
+    blob = re.search(rb"/DecodeParms\s*<<(.{0,300}?)>>", dictionary, re.S)
+    body = blob.group(1) if blob else b""
+
+    def value(key: str, default: int) -> int:
+        found = re.search(rb"/" + key.encode("ascii") + rb"\s+(\d+)", body)
+        return int(found.group(1)) if found else default
+
+    return {
+        "predictor": value("Predictor", 1),
+        "colors": value("Colors", 1),
+        "bits": value("BitsPerComponent", 8),
+        "columns": value("Columns", 1),
+    }
+
+
 def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes) -> None:
     """Wrap already-decoded 8-bit scanlines (gray=0 or rgb=2) as a PNG."""
     import struct
@@ -1527,7 +1678,7 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                 with target.open("xb") as handle:
                     handle.write(raw)
                 entry.update({"file": target.name, "format": "jpeg2000"})
-            elif b"FlateDecode" in filters and not re.search(rb"/DecodeParms", dictionary):
+            elif b"FlateDecode" in filters:
                 bits_match = re.search(rb"/BitsPerComponent\s+(\d+)", dictionary)
                 bits = int(bits_match.group(1)) if bits_match else 8
                 if bits != 8:
@@ -1538,8 +1689,21 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                     color_type = 0
                 else:
                     raise PortableError("Unsupported color space for deterministic decode.")
+                parms = _decode_parms(dictionary)
+                pixels = _zlib.decompress(raw)
+                if parms["predictor"] >= 10:
+                    pixels = _undo_png_predictor(
+                        pixels,
+                        parms["colors"] or (3 if color_type == 2 else 1),
+                        parms["bits"],
+                        parms["columns"] or width,
+                    )
+                elif parms["predictor"] != 1:
+                    raise PortableError(
+                        f"Unsupported predictor {parms['predictor']} (TIFF prediction)."
+                    )
                 target = out_dir / f"{name}.png"
-                _write_png(target, width, height, color_type, _zlib.decompress(raw))
+                _write_png(target, width, height, color_type, pixels)
                 entry.update({"file": target.name, "format": "png"})
             else:
                 raise PortableError(
@@ -2259,9 +2423,26 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
             "rebuild (or covered by a disclosed omission in the review notes).",
             source_page=page,
         )
-    counters = {"heading": 0, "table": 0, "list": 0, "image": 0}
+    counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "emphasis": 0}
     for block in validated["blocks"]:
         kind = block.get("type")
+        styled = block.get("runs") or block.get("item_runs")
+        if styled:
+            counters["emphasis"] += 1
+            emphasised = [
+                run["text"]
+                for group in (block["item_runs"] if block.get("item_runs") else [block["runs"]])
+                for run in (group or [])
+                if run.get("style") in {"emphasis", "strong"}
+            ]
+            add(
+                f"emphasis-{counters['emphasis']:03d}",
+                "inline_style",
+                "Check the source's character formatting for this block: are exactly these "
+                "spans emphasised (and none missed), and does the emphasis type match?",
+                emphasised=emphasised[:20],
+                source_page=block.get("source_page"),
+            )
         if kind == "heading":
             counters["heading"] += 1
             add(

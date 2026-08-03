@@ -10,105 +10,481 @@
     "variant": "original"
   },
   "blocks": [
-    { "type": "heading", "level": 1, "text": "Response to PREA Non-Compliance Letter — NDA 021957, NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral", "source_page": 1 },
-    { "type": "image", "alt": "AstraZeneca logo", "decorative": false, "path": "assets/astrazeneca-logo.jpg", "source_page": 1 },
-    { "type": "paragraph", "text": "Regulatory Affairs\nAstraZeneca Pharmaceuticals LP\nOne MedImmune Way Gaithersburg, MD 20878", "source_page": 1 },
-    { "type": "paragraph", "text": "Date: 03 Oct 2019", "source_page": 1 },
-    { "type": "paragraph", "text": "Dragos Roman, M.D., Acting Director\nDivision of Gastroenterology and Inborn Errors Products\nFood and Drug Administration\nCenter for Drug Evaluation and Research\n5901-B Ammendale Road\nBeltsville, MD 20705-1266", "source_page": 1 },
-    { "type": "paragraph", "text": "Re: NDA 021957, eCTD Sequence No. 0192\nNEXIUM® (esomeprazole magnesium) suspension, delayed-release oral", "source_page": 1 },
-    { "type": "paragraph", "text": "DEFERRAL EXTENSION REQUESTED\nRESPONSE TO PREA NON-COMPLIANCE LETTER (dated 21 August 2019)", "source_page": 1 },
-    { "type": "paragraph", "text": "Dear Dr. Roman:", "source_page": 1 },
-    { "type": "paragraph", "text": "Reference is made to the New Drug Application (NDA) 021957 NEXIUM® (esomeprazole magnesium) suspension 2.5 mg, 5 mg, 20 mg and 40 mg, delayed-release oral, submitted under 505(b)(1) by AstraZeneca Pharmaceuticals LP (AstraZeneca) and approved by FDA on 20 October 2006.", "source_page": 1 },
-    { "type": "paragraph", "text": "Reference is made to the FDA’s Deferral Extension Request Denial letter dated 15 August 2019. Further reference is also made to the agency’s notification of PREA Non-Compliance letter dated 21 August 2019.", "source_page": 1 },
-    { "type": "paragraph", "text": "The purpose of this letter is to respond to the FDA’s notification of PREA Non-Compliance letter dated 21 August 2019.", "source_page": 1 },
-
-    { "type": "heading", "level": 2, "text": "Background", "source_page": 1 },
-    { "type": "paragraph", "text": "NDA 021957 for Nexium granules for oral suspension (sachet) was submitted on 22 December 2005 as an alternative oral dosage form to Nexium capsules. The following Pediatric study commitment (PMR 59-1) was deferred with approval of NDA 021957 received on 20 October 2006 as:", "source_page": 1 },
-    { "type": "blockquote", "text": "“We are deferring pediatric studies (Birth- 11 years) for Gastroesophageal Reflux Disease (GERD): Healing of Erosive Esophagitis, Maintenance of Healing of Erosive Esophagitis, Symptomatic Gastroesophageal Reflux Disease for this application. Pediatric studies (ages 12- 17) for this indication have been already completed.”", "source_page": 1 },
-    { "type": "paragraph", "text": "Reference is made to approval of NDA 022101 on 27 February 2008 which provided for the use of Nexium (esomeprazole magnesium) For Delayed-Release Oral Suspension, 10 mg for short-term treatment of GERD and healing of erosive esophagitis in pediatric patients aged 1-11 years. In addition, it provided a new dosing schedule for pediatric patients. This fulfilled the GERD treatment and healing of erosive esophagitis portions of PMR 59-1.", "source_page": 1 },
-    { "type": "paragraph", "text": "With this letter AstraZeneca is requesting a Deferral Extension until May 31, 2024 for the maintenance portion of PMR 59-1. The corresponding justification is provided in this letter.", "source_page": 2 },
-    { "type": "paragraph", "text": "Since the approval of NDA 022101 AstraZeneca has been closely interacting with the Division of Gastroenterology and Inborn Errors Products (DGIEP) with the objective to come to an agreement regarding the conduct and fulfilment of the maintenance of healing portion of the pediatric commitment under the PREA.", "source_page": 2 },
-    { "type": "paragraph", "text": "Please find below a summary of the regulatory history on this matter:", "source_page": 2 },
-    { "type": "paragraph", "text": "On 10 Oct 2008, FDA gave 2 options to fulfill the maintenance of healing portion of the pediatric commitment under the PREA:", "source_page": 2 },
-    { "type": "list", "ordered": false, "items": [
-      "a) reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; or",
-      "b) completing a prospectively designed, randomized, controlled clinical trial in these indications."
-    ], "source_page": 2 },
-    { "type": "paragraph", "text": "On 18 Dec 2008, AstraZeneca submitted a supplement to NDA 021957, selected option a) and conducted a literature review of the use of proton pump inhibitors and their long-term efficacy and safety in children. The summary of the literature review is as follows-", "source_page": 2 },
-    { "type": "list", "ordered": false, "items": [
-      "Endoscopic description of reflux esophagitis and studies of its healing with esomeprazole and other PPIs provided evidence that EE is the same disease in pediatric patients and in adults. The available sparse data showed that in pediatric patients who need it, maintenance therapy with PPIs is effective in preventing relapse of reflux esophagitis and is well tolerated.",
-      "A review article by Croxtall, Perry, and Keating (Croxtall et al 2008) formed the basis for the review of the medical literature on the use of esomeprazole in pediatric patients. It concluded that there were no findings raising any safety concerns in these children.",
-      "The use of long-term PPI therapy in children is indirectly associated with mild gastric ECL cell hyperplasia. The lack of more severe gastric ECL cell findings, even with the sensitive immunohistochemical techniques used by Hassall and colleagues (Hassall et al 2008), gives additional support to this conclusion that pediatric patients treated with PPIs are not at any increased risk of proliferative changes in gastric ECL cells."
-    ], "source_page": 2 },
-    { "type": "paragraph", "text": "This supplement also included pharmacokinetic reports and reports from studies conducted in infants with GERD, aged from birth to 11 months. The summary of study results are as follows-", "source_page": 2 },
-    { "type": "list", "ordered": false, "items": [
-      "The majority of patients (>80%) showed improvements in their GERD symptoms compared to baseline, notably in the vomiting-regurgitation, irritability and feeding difficulty symptom classes.",
-      "Safety data on esomeprazole did not raise specific safety concerns in the 0 to 11 months pediatric population, on the use of esomeprazole in this age group."
-    ], "source_page": 2 },
-    { "type": "paragraph", "text": "In addition, to address the long-term safety in pediatric patients AstraZeneca also conducted a prospective epidemiology study in pediatric patients which fulfilled a post-approval commitment in the EU.", "source_page": 3 },
-    { "type": "paragraph", "text": "On 27 April 2010, AstraZeneca held a teleconference with the DGIEP to discuss the long-term safety assessment in pediatric patients. On 4 May 2010, AstraZeneca submitted the pharmacoepidemiological study Protocol entitled, “A pharmacoepidemiological study to examine characteristics of children who use esomeprazole and the occurrence of certain outcomes” to FDA. The main objective of that study was to assess long-term safety in pediatric patients.", "source_page": 3 },
-    { "type": "paragraph", "text": "On 29 June 2010, AstraZeneca received an FDA correspondence under NDA 021957 which concluded the following:", "source_page": 3 },
-    { "type": "list", "ordered": true, "items": [
-      "The following parts of the above requirement have been fulfilled: Healing of Erosive Esophagitis ages 1 to 11 years old, and for the treatment of Symptomatic Gastroesophageal Reflux Disease in pediatric patients ages birth to 11 years old.",
-      "We are waiving the pediatric study requirement for Healing of Erosive Esophagitis and Maintenance of Healing of Erosive Esophagitis in patients aged birth to 11 months and you are released from that portion of the above requirement because the necessary studies are impossible or highly impractical and the number of pediatric patients with erosive esophagitis in this age group would be limited.",
-      "The following part of the above requirements has not been fulfilled and is considered delayed: Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years. Because of the nature of this indication and the potential for use of Nexium for long periods of time, you must study the long-term safety in pediatric patients."
-    ], "source_page": 3 },
-    { "type": "paragraph", "text": "Following the letter, AstraZeneca has since tracked PMR 59-1 as a requirement to study the safety and efficacy of esomeprazole in children 1 to 11 years of age. AstraZeneca notes that the wording of the PMR under NDA 021957 posted on the FDA website has not been updated according to point 2.", "source_page": 3 },
-    { "type": "paragraph", "text": "On 22 June 2011, AstraZeneca sent a letter to the FDA asking whether the literature review submitted to NDA 021957 on 18 December 2008 and the epidemiological study protocol submitted to NDA 021957 on 04 May 2010 would fulfil the outstanding portion of the pediatric PMR under PREA.", "source_page": 3 },
-    { "type": "paragraph", "text": "On 21 November 2012, AstraZeneca sent another letter to the FDA which requested the FDA comments on the plan proposed on 22 June 2011 and informed the agency about the additional database (PHARMO Record Linkage System (RLS) in the Netherlands), which resulted in the Study D9612N00016.", "source_page": 3 },
-    { "type": "paragraph", "text": "On 1 October 2014, FDA responded to AstraZeneca’s proposal by recommending AstraZeneca to perform a pediatric clinical study to evaluate the efficacy and safety of esomeprazole magnesium for the maintenance of healing of erosive esophagitis (EE) in patients ages 1 year to 11 years, FDA recommended a 6-month randomized withdrawal study.", "source_page": 4 },
-    { "type": "paragraph", "text": "During 2015 and 2016, AstraZeneca undertook assessment work, including feasibility study for conducting the FDA proposed study, a systematic literature review, and the epidemiological studies.", "source_page": 4 },
-    { "type": "paragraph", "text": "On 04 Nov 2016, AstraZeneca requested FDA that the commitment be extended until 30 June 2017 (i) to finalize the feasibility report for the conduct of a pediatric clinical study using the design recommended by FDA per the letter dated 1 October 2014, (ii) to update the systematic literature search, and (iii) to complete the epidemiological studies fulfilling option a) proposed by the FDA in October 2008.", "source_page": 4 },
-    { "type": "paragraph", "text": "On 04 April 2017, AstraZeneca submitted a PREA waiver request to the FDA for the maintenance of healing portion of the pediatric PMR for children 1-11 years of age. It included the results from the assessment of the feasibility of the pediatric clinical study which included the Feasibility report, Systematic literature reviews, and an update on the Pharmacoepidemiologic studies. According to the FDA draft guidance entitled “Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry” pediatric extrapolation for maintenance of healing of erosive esophagitis in the age group 1 month to 17 years of age is currently unlikely to be accepted by the FDA, because it is uncertain whether pediatric patients require a maintenance period. AstraZeneca’s understanding was that a powered placebo-controlled study was required and concluded that such a study was not feasible and requested a waiver for the corresponding assessment.", "source_page": 4 },
-    { "type": "paragraph", "text": "On 18 Dec 2018, in the absence of a response to our 4 April 2017 submission and at FDA’s request AstraZeneca submitted a Type C meeting request (written response only) with the same rationale for the waiver and in order to obtain a response from the agency.", "source_page": 4 },
-    { "type": "paragraph", "text": "On 15 Feb 2019, FDA denied the PREA waiver request citing the following two reasons:", "source_page": 4 },
-    { "type": "list", "ordered": false, "items": [
-      "“You have not provided evidence that necessary studies are impossible or highly impracticable”, and",
-      "“you have not provided justification to support that this product is not likely to be used by a substantial number of pediatric patients in the 1 to 11 year age group for maintenance of healing of erosive esophagitis”."
-    ], "source_page": 4 },
-    { "type": "paragraph", "text": "The letter also states, “Further discussion of your pediatric drug development plan addressing the indication of maintenance of healing of erosive esophagitis in patients 1 to 11 years of age is planned per your meeting request dated December 18, 2018”.", "source_page": 4 },
-    { "type": "paragraph", "text": "On 10 April 2019, FDA provided the response letter to the type C meeting (WRO) with an alternate proposed study design and stated that an approach that would include partial extrapolation would be acceptable.", "source_page": 4 },
-    { "type": "paragraph", "text": "The above regulatory history provides evidence that AstraZeneca has considered several options over time to fulfil the maintenance portion of the PMR 59-1 and has engaged with the DGIEP on several occasions before submitting the PREA waiver request in April 2017. Since we received the waiver denial letter in February 2019 and following the new approach proposed by the FDA in April 2019, AstraZeneca has been working diligently on the FDA recommended study design and its feasibility.", "source_page": 5 },
-
-    { "type": "heading", "level": 2, "text": "Clinical study design and timing", "source_page": 5 },
-    { "type": "paragraph", "text": "AstraZeneca agrees that the clinical study design proposed by the FDA in their Type C WRO advice dated 10 April 2019 could constitute a reasonable approach to the evaluation of the maintenance of healing effect and safety of esomeprazole in patients 1 to 11 years of age. However, as also recognized by the FDA in their written response, there are potential challenges with enrolling patients into the study.", "source_page": 5 },
-    { "type": "paragraph", "text": "AstraZeneca has initiated early engagement activities with the potential study vendors to understand their ability to recruit and perform a study evaluating maintenance of healing in line with the draft study design recommended by FDA letter dated 10 April 2019.", "source_page": 5 },
-    { "type": "paragraph", "text": "The results from first feasibility show that there are significant challenges to consider when setting the timelines for the study:", "source_page": 5 },
-    { "type": "paragraph", "text": "[Redacted content. In the source, four bulleted items appear here. Their text is withheld in the published document under Freedom of Information Act exemption 4 and is shown as a blank grey block marked “(b) (4)”. The bullet markers are visible; the wording of the four items is not available in this document.]", "source_page": 5 },
-    { "type": "paragraph", "text": "Despite the challenges, AstraZeneca is fully committed to deliver the study.", "source_page": 5 },
-    { "type": "paragraph", "text": "Based on the approach proposed by the FDA in April 2019 to fulfil the maintenance portion of the PMR the sponsor proposes the following new Pediatric study timelines, pending the results from full feasibility, for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years-", "source_page": 5 },
-    { "type": "table", "caption": "Proposed pediatric study timelines for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years.", "columns": ["S. No.", "Study", "Timelines"], "row_headers": false, "rows": [
-      ["1.", "Final Protocol Submission*", "Jul 31, 2020"],
-      ["2.", "Study Initiation", "Nov 30, 2020"],
-      ["3.", "Study Completion", "Nov 30, 2023"],
-      ["4.", "Clinical Study Report (CSR) Submission", "May 31, 2024"]
-    ], "source_page": 6 },
-    { "type": "paragraph", "text": "* The draft study design concept which is prepared in-line with the FDA letter dated 10 April 2019 where the agency recommended the study design for the 1-11 years age group is included in this submission (section 5.3.1.1) for the agency’s review.", "source_page": 6 },
-    { "type": "paragraph", "text": "Astra Zeneca anticipates being able to send a final draft of the study protocol to the FDA for review during the first quarter of 2020 upon completion of the full feasibility assessment.", "source_page": 6 },
-
-    { "type": "heading", "level": 2, "text": "Deferral Extension Request", "source_page": 6 },
-    { "type": "paragraph", "text": "AstraZeneca is committed to working with the FDA in fulfilling the totality of the PREA commitment 59-1. Hence AstraZeneca is requesting a deferral extension to May 31, 2024 in order to complete the clinical study as outlined in this response letter. During the time this deferral extension request is pending, AstraZeneca respectfully requests the agency not to publish the PREA Non-Compliance Letter nor this response.", "source_page": 6 },
-    { "type": "paragraph", "text": "This submission includes:", "source_page": 6 },
-    { "type": "heading", "level": 3, "text": "Submission Information:", "source_page": 6 },
-    { "type": "paragraph", "text": "Completed and signed Form FDA 356h", "source_page": 6 },
-    { "type": "heading", "level": 3, "text": "Module 1:", "source_page": 6 },
-    { "type": "paragraph", "text": "1.2: Cover Letter", "source_page": 6 },
-    { "type": "heading", "level": 3, "text": "Module 5:", "source_page": 6 },
-    { "type": "paragraph", "text": "5.3.1.1: Draft Study Design Concept", "source_page": 6 },
-    { "type": "paragraph", "text": "This electronic submission has been scanned using Symantec Endpoint Protection, Version 14.0. No viruses were detected, and AstraZeneca certifies that the submission is virus-free.", "source_page": 6 },
-    { "type": "paragraph", "text": "This submission contains trade secrets and confidential commercial information exempt from public disclosure pursuant to exemption 4 of the Freedom of Information Act and FDA regulations, and the disclosure of which is prohibited by the Federal Food, Drug, and Cosmetic Act, the Trade Secrets Act, and other applicable law. Pursuant to FDA regulations, AstraZeneca is entitled to notice, an opportunity to object, and an opportunity to seek pre-release judicial review in the event that FDA determines that all or any part of this submission may be disclosed.", "source_page": 6 },
-    { "type": "paragraph", "text": "For issues/problems associated with the technical processing of this electronic submission, please contact AstraZeneca at: AZTech-Subissues@astrazeneca.com.", "source_page": 7 },
-    { "type": "paragraph", "text": "Please direct any questions or requests for additional information to me, or in my absence to Krishna Joshi, Regulatory Project Manager, e-mail krishna.joshi@astrazeneca.com.", "source_page": 7 },
-    { "type": "paragraph", "text": "Sincerely,", "source_page": 7 },
-    { "type": "paragraph", "text": "Emery Gigger\nDirector-Regulatory affairs\nTelephone: (301) 398-0648\nFax: (301) 398-4018\nE-mail: emery.gigger@astrazeneca.com", "source_page": 7 },
-    { "type": "paragraph", "text": "EG/kj", "source_page": 7 }
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Response to PREA Non-Compliance Letter — NDA 021957, NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral",
+      "source_page": 1
+    },
+    {
+      "type": "image",
+      "alt": "AstraZeneca logo",
+      "decorative": false,
+      "path": "assets/astrazeneca-logo.jpg",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Regulatory Affairs\nAstraZeneca Pharmaceuticals LP\nOne MedImmune Way Gaithersburg, MD 20878",
+      "source_page": 1,
+      "runs": [
+        {
+          "text": "Regulatory Affairs\nAstraZeneca Pharmaceuticals LP\n",
+          "style": "strong"
+        },
+        {
+          "text": "One MedImmune Way Gaithersburg, MD 20878",
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Date: 03 Oct 2019",
+      "source_page": 1,
+      "runs": [
+        {
+          "text": "Date:",
+          "style": "strong"
+        },
+        {
+          "text": " 03 Oct 2019",
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Dragos Roman, M.D., Acting Director\nDivision of Gastroenterology and Inborn Errors Products\nFood and Drug Administration\nCenter for Drug Evaluation and Research\n5901-B Ammendale Road\nBeltsville, MD 20705-1266",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Re: NDA 021957, eCTD Sequence No. 0192\nNEXIUM® (esomeprazole magnesium) suspension, delayed-release oral",
+      "source_page": 1,
+      "runs": [
+        {
+          "text": "Re: NDA 021957, eCTD Sequence No. 0192\nNEXIUM® (esomeprazole magnesium) suspension, delayed-release oral",
+          "style": "strong"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "DEFERRAL EXTENSION REQUESTED\nRESPONSE TO PREA NON-COMPLIANCE LETTER (dated 21 August 2019)",
+      "source_page": 1,
+      "runs": [
+        {
+          "text": "DEFERRAL EXTENSION REQUESTED\nRESPONSE TO PREA NON-COMPLIANCE LETTER (dated 21 August 2019)",
+          "style": "strong"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Dear Dr. Roman:",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Reference is made to the New Drug Application (NDA) 021957 NEXIUM® (esomeprazole magnesium) suspension 2.5 mg, 5 mg, 20 mg and 40 mg, delayed-release oral, submitted under 505(b)(1) by AstraZeneca Pharmaceuticals LP (AstraZeneca) and approved by FDA on 20 October 2006.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "Reference is made to the FDA’s Deferral Extension Request Denial letter dated 15 August 2019. Further reference is also made to the agency’s notification of PREA Non-Compliance letter dated 21 August 2019.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "The purpose of this letter is to respond to the FDA’s notification of PREA Non-Compliance letter dated 21 August 2019.",
+      "source_page": 1
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Background",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "NDA 021957 for Nexium granules for oral suspension (sachet) was submitted on 22 December 2005 as an alternative oral dosage form to Nexium capsules. The following Pediatric study commitment (PMR 59-1) was deferred with approval of NDA 021957 received on 20 October 2006 as:",
+      "source_page": 1
+    },
+    {
+      "type": "blockquote",
+      "text": "“We are deferring pediatric studies (Birth- 11 years) for Gastroesophageal Reflux Disease (GERD): Healing of Erosive Esophagitis, Maintenance of Healing of Erosive Esophagitis, Symptomatic Gastroesophageal Reflux Disease for this application. Pediatric studies (ages 12- 17) for this indication have been already completed.”",
+      "source_page": 1,
+      "runs": [
+        {
+          "text": "“We are deferring pediatric studies (Birth- 11 years) for Gastroesophageal Reflux Disease (GERD): Healing of Erosive Esophagitis, Maintenance of Healing of Erosive Esophagitis, Symptomatic Gastroesophageal Reflux Disease for this application. Pediatric studies (ages 12- 17) for this indication have been already completed.”",
+          "style": "emphasis"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Reference is made to approval of NDA 022101 on 27 February 2008 which provided for the use of Nexium (esomeprazole magnesium) For Delayed-Release Oral Suspension, 10 mg for short-term treatment of GERD and healing of erosive esophagitis in pediatric patients aged 1-11 years. In addition, it provided a new dosing schedule for pediatric patients. This fulfilled the GERD treatment and healing of erosive esophagitis portions of PMR 59-1.",
+      "source_page": 1
+    },
+    {
+      "type": "paragraph",
+      "text": "With this letter AstraZeneca is requesting a Deferral Extension until May 31, 2024 for the maintenance portion of PMR 59-1. The corresponding justification is provided in this letter.",
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "Since the approval of NDA 022101 AstraZeneca has been closely interacting with the Division of Gastroenterology and Inborn Errors Products (DGIEP) with the objective to come to an agreement regarding the conduct and fulfilment of the maintenance of healing portion of the pediatric commitment under the PREA.",
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "Please find below a summary of the regulatory history on this matter:",
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "On 10 Oct 2008, FDA gave 2 options to fulfill the maintenance of healing portion of the pediatric commitment under the PREA:",
+      "source_page": 2
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "a) reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; or",
+        "b) completing a prospectively designed, randomized, controlled clinical trial in these indications."
+      ],
+      "source_page": 2,
+      "item_runs": [
+        [
+          {
+            "text": "a) ",
+            "style": "strong"
+          },
+          {
+            "text": "reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; or",
+            "style": "emphasis"
+          }
+        ],
+        [
+          {
+            "text": "b) ",
+            "style": "strong"
+          },
+          {
+            "text": "completing a prospectively designed, randomized, controlled clinical trial in these indications.",
+            "style": "emphasis"
+          }
+        ]
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "On 18 Dec 2008, AstraZeneca submitted a supplement to NDA 021957, selected option a) and conducted a literature review of the use of proton pump inhibitors and their long-term efficacy and safety in children. The summary of the literature review is as follows-",
+      "source_page": 2
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Endoscopic description of reflux esophagitis and studies of its healing with esomeprazole and other PPIs provided evidence that EE is the same disease in pediatric patients and in adults. The available sparse data showed that in pediatric patients who need it, maintenance therapy with PPIs is effective in preventing relapse of reflux esophagitis and is well tolerated.",
+        "A review article by Croxtall, Perry, and Keating (Croxtall et al 2008) formed the basis for the review of the medical literature on the use of esomeprazole in pediatric patients. It concluded that there were no findings raising any safety concerns in these children.",
+        "The use of long-term PPI therapy in children is indirectly associated with mild gastric ECL cell hyperplasia. The lack of more severe gastric ECL cell findings, even with the sensitive immunohistochemical techniques used by Hassall and colleagues (Hassall et al 2008), gives additional support to this conclusion that pediatric patients treated with PPIs are not at any increased risk of proliferative changes in gastric ECL cells."
+      ],
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "This supplement also included pharmacokinetic reports and reports from studies conducted in infants with GERD, aged from birth to 11 months. The summary of study results are as follows-",
+      "source_page": 2
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "The majority of patients (>80%) showed improvements in their GERD symptoms compared to baseline, notably in the vomiting-regurgitation, irritability and feeding difficulty symptom classes.",
+        "Safety data on esomeprazole did not raise specific safety concerns in the 0 to 11 months pediatric population, on the use of esomeprazole in this age group."
+      ],
+      "source_page": 2
+    },
+    {
+      "type": "paragraph",
+      "text": "In addition, to address the long-term safety in pediatric patients AstraZeneca also conducted a prospective epidemiology study in pediatric patients which fulfilled a post-approval commitment in the EU.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "On 27 April 2010, AstraZeneca held a teleconference with the DGIEP to discuss the long-term safety assessment in pediatric patients. On 4 May 2010, AstraZeneca submitted the pharmacoepidemiological study Protocol entitled, “A pharmacoepidemiological study to examine characteristics of children who use esomeprazole and the occurrence of certain outcomes” to FDA. The main objective of that study was to assess long-term safety in pediatric patients.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "On 29 June 2010, AstraZeneca received an FDA correspondence under NDA 021957 which concluded the following:",
+      "source_page": 3
+    },
+    {
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "The following parts of the above requirement have been fulfilled: Healing of Erosive Esophagitis ages 1 to 11 years old, and for the treatment of Symptomatic Gastroesophageal Reflux Disease in pediatric patients ages birth to 11 years old.",
+        "We are waiving the pediatric study requirement for Healing of Erosive Esophagitis and Maintenance of Healing of Erosive Esophagitis in patients aged birth to 11 months and you are released from that portion of the above requirement because the necessary studies are impossible or highly impractical and the number of pediatric patients with erosive esophagitis in this age group would be limited.",
+        "The following part of the above requirements has not been fulfilled and is considered delayed: Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years. Because of the nature of this indication and the potential for use of Nexium for long periods of time, you must study the long-term safety in pediatric patients."
+      ],
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "Following the letter, AstraZeneca has since tracked PMR 59-1 as a requirement to study the safety and efficacy of esomeprazole in children 1 to 11 years of age. AstraZeneca notes that the wording of the PMR under NDA 021957 posted on the FDA website has not been updated according to point 2.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "On 22 June 2011, AstraZeneca sent a letter to the FDA asking whether the literature review submitted to NDA 021957 on 18 December 2008 and the epidemiological study protocol submitted to NDA 021957 on 04 May 2010 would fulfil the outstanding portion of the pediatric PMR under PREA.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "On 21 November 2012, AstraZeneca sent another letter to the FDA which requested the FDA comments on the plan proposed on 22 June 2011 and informed the agency about the additional database (PHARMO Record Linkage System (RLS) in the Netherlands), which resulted in the Study D9612N00016.",
+      "source_page": 3
+    },
+    {
+      "type": "paragraph",
+      "text": "On 1 October 2014, FDA responded to AstraZeneca’s proposal by recommending AstraZeneca to perform a pediatric clinical study to evaluate the efficacy and safety of esomeprazole magnesium for the maintenance of healing of erosive esophagitis (EE) in patients ages 1 year to 11 years, FDA recommended a 6-month randomized withdrawal study.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "During 2015 and 2016, AstraZeneca undertook assessment work, including feasibility study for conducting the FDA proposed study, a systematic literature review, and the epidemiological studies.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "On 04 Nov 2016, AstraZeneca requested FDA that the commitment be extended until 30 June 2017 (i) to finalize the feasibility report for the conduct of a pediatric clinical study using the design recommended by FDA per the letter dated 1 October 2014, (ii) to update the systematic literature search, and (iii) to complete the epidemiological studies fulfilling option a) proposed by the FDA in October 2008.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "On 04 April 2017, AstraZeneca submitted a PREA waiver request to the FDA for the maintenance of healing portion of the pediatric PMR for children 1-11 years of age. It included the results from the assessment of the feasibility of the pediatric clinical study which included the Feasibility report, Systematic literature reviews, and an update on the Pharmacoepidemiologic studies. According to the FDA draft guidance entitled “Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry” pediatric extrapolation for maintenance of healing of erosive esophagitis in the age group 1 month to 17 years of age is currently unlikely to be accepted by the FDA, because it is uncertain whether pediatric patients require a maintenance period. AstraZeneca’s understanding was that a powered placebo-controlled study was required and concluded that such a study was not feasible and requested a waiver for the corresponding assessment.",
+      "source_page": 4,
+      "runs": [
+        {
+          "text": "On 04 April 2017, AstraZeneca submitted a PREA waiver request to the FDA for the maintenance of healing portion of the pediatric PMR for children 1-11 years of age. It included the results from the assessment of the feasibility of the pediatric clinical study which included the Feasibility report, Systematic literature reviews, and an update on the Pharmacoepidemiologic studies. According to the FDA draft guidance entitled “Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry” ",
+          "style": "normal"
+        },
+        {
+          "text": "pediatric extrapolation for maintenance of healing of erosive esophagitis in the age group 1 month to 17 years of age is currently unlikely to be accepted by the FDA, because it is uncertain whether pediatric patients require a maintenance period",
+          "style": "emphasis"
+        },
+        {
+          "text": ". AstraZeneca’s understanding was that a powered placebo-controlled study was required and concluded that such a study was not feasible and requested a waiver for the corresponding assessment.",
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "On 18 Dec 2018, in the absence of a response to our 4 April 2017 submission and at FDA’s request AstraZeneca submitted a Type C meeting request (written response only) with the same rationale for the waiver and in order to obtain a response from the agency.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "On 15 Feb 2019, FDA denied the PREA waiver request citing the following two reasons:",
+      "source_page": 4
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "“You have not provided evidence that necessary studies are impossible or highly impracticable”, and",
+        "“you have not provided justification to support that this product is not likely to be used by a substantial number of pediatric patients in the 1 to 11 year age group for maintenance of healing of erosive esophagitis”."
+      ],
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "The letter also states, “Further discussion of your pediatric drug development plan addressing the indication of maintenance of healing of erosive esophagitis in patients 1 to 11 years of age is planned per your meeting request dated December 18, 2018”.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "On 10 April 2019, FDA provided the response letter to the type C meeting (WRO) with an alternate proposed study design and stated that an approach that would include partial extrapolation would be acceptable.",
+      "source_page": 4
+    },
+    {
+      "type": "paragraph",
+      "text": "The above regulatory history provides evidence that AstraZeneca has considered several options over time to fulfil the maintenance portion of the PMR 59-1 and has engaged with the DGIEP on several occasions before submitting the PREA waiver request in April 2017. Since we received the waiver denial letter in February 2019 and following the new approach proposed by the FDA in April 2019, AstraZeneca has been working diligently on the FDA recommended study design and its feasibility.",
+      "source_page": 5
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Clinical study design and timing",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "AstraZeneca agrees that the clinical study design proposed by the FDA in their Type C WRO advice dated 10 April 2019 could constitute a reasonable approach to the evaluation of the maintenance of healing effect and safety of esomeprazole in patients 1 to 11 years of age. However, as also recognized by the FDA in their written response, there are potential challenges with enrolling patients into the study.",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "AstraZeneca has initiated early engagement activities with the potential study vendors to understand their ability to recruit and perform a study evaluating maintenance of healing in line with the draft study design recommended by FDA letter dated 10 April 2019.",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "The results from first feasibility show that there are significant challenges to consider when setting the timelines for the study:",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "[Redacted content. In the source, four bulleted items appear here. Their text is withheld in the published document under Freedom of Information Act exemption 4 and is shown as a blank grey block marked “(b) (4)”. The bullet markers are visible; the wording of the four items is not available in this document.]",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Despite the challenges, AstraZeneca is fully committed to deliver the study.",
+      "source_page": 5
+    },
+    {
+      "type": "paragraph",
+      "text": "Based on the approach proposed by the FDA in April 2019 to fulfil the maintenance portion of the PMR the sponsor proposes the following new Pediatric study timelines, pending the results from full feasibility, for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years-",
+      "source_page": 5
+    },
+    {
+      "type": "table",
+      "caption": "Proposed pediatric study timelines for the Maintenance of Healing of Erosive Esophagitis in patients ages 1 to 11 years.",
+      "columns": [
+        "S. No.",
+        "Study",
+        "Timelines"
+      ],
+      "row_headers": false,
+      "rows": [
+        [
+          "1.",
+          "Final Protocol Submission*",
+          "Jul 31, 2020"
+        ],
+        [
+          "2.",
+          "Study Initiation",
+          "Nov 30, 2020"
+        ],
+        [
+          "3.",
+          "Study Completion",
+          "Nov 30, 2023"
+        ],
+        [
+          "4.",
+          "Clinical Study Report (CSR) Submission",
+          "May 31, 2024"
+        ]
+      ],
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "* The draft study design concept which is prepared in-line with the FDA letter dated 10 April 2019 where the agency recommended the study design for the 1-11 years age group is included in this submission (section 5.3.1.1) for the agency’s review.",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "Astra Zeneca anticipates being able to send a final draft of the study protocol to the FDA for review during the first quarter of 2020 upon completion of the full feasibility assessment.",
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Deferral Extension Request",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "AstraZeneca is committed to working with the FDA in fulfilling the totality of the PREA commitment 59-1. Hence AstraZeneca is requesting a deferral extension to May 31, 2024 in order to complete the clinical study as outlined in this response letter. During the time this deferral extension request is pending, AstraZeneca respectfully requests the agency not to publish the PREA Non-Compliance Letter nor this response.",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "This submission includes:",
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Submission Information:",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "Completed and signed Form FDA 356h",
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Module 1:",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "1.2: Cover Letter",
+      "source_page": 6
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Module 5:",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "5.3.1.1: Draft Study Design Concept",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "This electronic submission has been scanned using Symantec Endpoint Protection, Version 14.0. No viruses were detected, and AstraZeneca certifies that the submission is virus-free.",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "This submission contains trade secrets and confidential commercial information exempt from public disclosure pursuant to exemption 4 of the Freedom of Information Act and FDA regulations, and the disclosure of which is prohibited by the Federal Food, Drug, and Cosmetic Act, the Trade Secrets Act, and other applicable law. Pursuant to FDA regulations, AstraZeneca is entitled to notice, an opportunity to object, and an opportunity to seek pre-release judicial review in the event that FDA determines that all or any part of this submission may be disclosed.",
+      "source_page": 6
+    },
+    {
+      "type": "paragraph",
+      "text": "For issues/problems associated with the technical processing of this electronic submission, please contact AstraZeneca at: AZTech-Subissues@astrazeneca.com.",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Please direct any questions or requests for additional information to me, or in my absence to Krishna Joshi, Regulatory Project Manager, e-mail krishna.joshi@astrazeneca.com.",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Sincerely,",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "Emery Gigger\nDirector-Regulatory affairs\nTelephone: (301) 398-0648\nFax: (301) 398-4018\nE-mail: emery.gigger@astrazeneca.com",
+      "source_page": 7
+    },
+    {
+      "type": "paragraph",
+      "text": "EG/kj",
+      "source_page": 7
+    }
   ],
   "review_notes": [
     "REDACTED CONTENT MARKED, NOT INVENTED. Page 5 contains a blank grey block marked “(b) (4)” covering four bulleted items withheld under Freedom of Information Act exemption 4. The rebuild states plainly that four items exist and that their wording is unavailable. Nothing was guessed or reconstructed.",
     "LETTERHEAD RELOCATED. The sender's address block (“Regulatory Affairs / AstraZeneca Pharmaceuticals LP / One MedImmune Way Gaithersburg, MD 20878”) is printed at the FOOT of page 1 in the source as letterhead design. It is placed immediately after the logo here so a screen-reader user encounters sender identity at the start of the letter, as in any correspondence.",
     "LOGO GIVEN ALT TEXT. The AstraZeneca logo is embedded with alt text “AstraZeneca logo” rather than marked decorative, because it is the primary sender identification at the top of a business letter. The image was extracted from the source PDF itself (400x104 JPEG), not recreated.",
     "LETTERED LIST MARKERS FOLDED INTO TEXT. The source's a) / b) options on page 2 use alphabetic markers. The plan format supports only ordered (numeric) and unordered lists, so these are an unordered list with the “a)” and “b)” markers preserved inside the item text. No wording changed.",
-    "INLINE CHARACTER STYLING IS NOT CARRIED. The plan format has no inline bold or italic, so ALL of the source's character-level emphasis is dropped, everywhere it occurs. This list is illustrative, not exhaustive: bold on the page 1 letterhead lines, “Date:”, the “Re:” block and the capitalised subject lines; italics on the a) and b) options on page 2; and italics on the passage beginning “pediatric extrapolation for maintenance of healing…” on page 4. The consequence to weigh is that where italics alone marked quoted external language and no quotation marks accompany them — the page 2 options and the page 4 passage are both examples — the rebuild reads that text as ordinary narration. A reader who needs to know exactly which words the source set as quotations must consult the original. No wording was changed anywhere.",
+    "INLINE CHARACTER STYLING IS CARRIED, WITH TWO EXCEPTIONS. The source’s character formatting is reproduced as inline emphasis: bold on the two Arial-bold letterhead lines, the “Date:” label, the “Re:” block and the two capitalised subject lines; italics on the quoted PMR passage, on the a) and b) options (whose markers are bold-italic in the source and are marked strong here), and on the page 4 passage beginning “pediatric extrapolation for maintenance of healing”. Two exceptions remain, both disclosed rather than hidden: table cells cannot carry inline styling in this format, and heading-level bold/underline is conveyed by heading semantics rather than reproduced as character formatting. Styling never changes content — the format requires the styled runs to reproduce the block text exactly, and validation rejects any plan where they do not.",
     "DOCUMENT SUMMARY IS AUTHORED. The rebuild carries a one-sentence summary of the letter in its document metadata (used as the HTML meta description). It is written for this rebuild, is not printed anywhere in the source, and introduces no facts absent from the letter.",
     "E-MAIL ADDRESSES ARE NOT LINKS IN THE SOURCE. All three e-mail addresses on page 7 are coloured blue, and two of them (AZTech-Subissues@ and krishna.joshi@) are also underlined by a drawn rule; emery.gigger@ in the signature block is blue but not underlined. None is a hyperlink: the source PDF contains no link annotations at all (no /Annots, /Link, or /URI anywhere in the file). They are preserved as readable text, and no clickable behaviour was lost. Separately, the plan format has no inline-link construct inside paragraph text, so a document that did carry real inline links would lose them.",
     "RUNNING HEAD DROPPED. Pages 2 through 7 repeat the running head “NDA 021957: NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral”. It is page furniture and is not reproduced as body text; the same information appears in the document title and the Re: line.",

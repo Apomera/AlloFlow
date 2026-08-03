@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 
 // Independent-verification and deterministic-recall layer of the portable
@@ -13,6 +14,9 @@ const PLAN = resolve(ROOT, 'tests/fixtures/alloflow-portable-plan.json');
 const SOURCE = resolve(ROOT, 'test-assets/multi-column-scrambled.pdf');
 const BORN_DIGITAL = resolve(ROOT, 'test-assets/multi-column-sample.pdf');
 const PYTHON = process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+// Real digest of SOURCE: a placeholder would fail the plan/source binding check
+// first, so a validation test would pass for the wrong reason.
+const SOURCE_SHA256 = createHash('sha256').update(readFileSync(SOURCE)).digest('hex');
 
 const scratch = mkdtempSync(join(tmpdir(), 'alloflow-portable-verify-'));
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
@@ -142,5 +146,76 @@ describe('independent verification', () => {
     expect(result.status).toBe(9);
     expect(result.json.result).toBe('discrepancies-found');
     expect(result.json.discrepancies).toHaveLength(1);
+  });
+});
+
+describe('inline styling (runs)', () => {
+  const planWith = (blocks) => {
+    const plan = {
+      schema_version: '1.0',
+      document: {
+        title: 'Runs fixture',
+        language: 'en',
+        source_page_count: 1,
+        source_sha256: SOURCE_SHA256,
+        document_type: 'report',
+      },
+      blocks: [{ type: 'heading', level: 1, text: 'H', source_page: 1 }, ...blocks],
+      review_notes: ['fixture'],
+    };
+    const file = join(scratch, `runs-${Math.abs(JSON.stringify(blocks).length)}-${blocks[0].type}.json`);
+    writeFileSync(file, JSON.stringify(plan));
+    return file;
+  };
+  const lint = (planFile) => {
+    // remediate --pdf never exercises full plan validation without a browser.
+    const out = join(scratch, `runs-out-${Math.random().toString(36).slice(2, 10)}`);
+    return runPortable(['remediate', '--source', SOURCE, '--plan', planFile, '--out-dir', out, '--pdf', 'never']);
+  };
+
+  it('rejects runs that do not reproduce the block text', () => {
+    const file = planWith([{
+      type: 'paragraph',
+      text: 'Hello brave world',
+      runs: [{ text: 'Hello ', style: 'normal' }, { text: 'BRAVE', style: 'emphasis' }],
+      source_page: 1,
+    }]);
+    const result = lint(file);
+    expect(result.status).not.toBe(0);
+    expect(result.json?.error).toMatch(/reproduce the block's text exactly/i);
+  });
+
+  it('rejects an unknown run style and a mismatched item_runs length', () => {
+    const badStyle = lint(planWith([{
+      type: 'paragraph', text: 'ab', runs: [{ text: 'ab', style: 'shouty' }], source_page: 1,
+    }]));
+    expect(badStyle.status).not.toBe(0);
+    expect(badStyle.json?.error).toMatch(/style must be one of/i);
+
+    const badLength = lint(planWith([{
+      type: 'list', ordered: false, items: ['a', 'b'],
+      item_runs: [[{ text: 'a', style: 'emphasis' }]], source_page: 1,
+    }]));
+    expect(badLength.status).not.toBe(0);
+    expect(badLength.json?.error).toMatch(/one entry per item/i);
+  });
+
+  it('renders emphasis and strong, and leaves unstyled plans unchanged', () => {
+    const output = join(scratch, 'runs-render');
+    const file = planWith([{
+      type: 'paragraph',
+      text: 'plain then loud',
+      runs: [{ text: 'plain then ', style: 'normal' }, { text: 'loud', style: 'strong' }],
+      source_page: 1,
+    }, {
+      type: 'list', ordered: false, items: ['a) opt'],
+      item_runs: [[{ text: 'a) ', style: 'strong' }, { text: 'opt', style: 'emphasis' }]],
+      source_page: 1,
+    }]);
+    const result = runPortable(['remediate', '--source', SOURCE, '--plan', file, '--out-dir', output, '--pdf', 'never']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const html = readFileSync(join(output, 'multi-column-scrambled-accessible.html'), 'utf8');
+    expect(html).toContain('plain then <strong>loud</strong>');
+    expect(html).toContain('<li><strong>a) </strong><em>opt</em></li>');
   });
 });

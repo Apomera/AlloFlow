@@ -339,7 +339,89 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart) {
     wrappedStreams += 1;
   }
 
-  const metadataNum = size;
+  /*
+   * PDF/UA-1 clause 7.1-5: every non-standard structure type must be mapped to
+   * a standard one via the StructTreeRoot's /RoleMap. Chromium emits HTML
+   * <em> and <strong> as literal /Em and /Strong types and writes no RoleMap,
+   * so inline emphasis failed validation until this existed (corpus round 5).
+   */
+  const NON_STANDARD_ROLES = { Em: 'Span', Strong: 'Span' };
+  const rolesPresent = Object.keys(NON_STANDARD_ROLES).filter(
+    (role) => new RegExp(`/S\\s*/${role}\\b`).test(text),
+  );
+  if (rolesPresent.length) {
+    const structRef = /\/StructTreeRoot\s+(\d+)\s+0\s+R/.exec(catalogSource);
+    if (!structRef) throw new Error('Finalize found non-standard roles but no StructTreeRoot.');
+    const structNum = Number(structRef[1]);
+    const structSpan = objectSpans.get(structNum);
+    if (!structSpan) throw new Error('Finalize could not locate the StructTreeRoot object.');
+    const structSource = text.slice(structSpan.start, structSpan.end);
+    if (!/\/RoleMap\b/.test(structSource)) {
+      const roleMap = rolesPresent.map((role) => `/${role} /${NON_STANDARD_ROLES[role]}`).join(' ');
+      replacements.push({
+        num: structNum,
+        body: Buffer.from(
+          structSource.replace('/Type /StructTreeRoot', `/Type /StructTreeRoot\n/RoleMap <<${roleMap}>>`) + '\n',
+          'latin1',
+        ),
+      });
+    }
+  }
+
+  /*
+   * PDF/UA-1 clause 7.2-20: an LI element may contain only Lbl and LBody.
+   * Chromium never emits LBody at all - with plain text that is benign, but
+   * any inline element inside <li> (from inline emphasis) becomes a direct
+   * child of LI and fails validation, and no HTML wrapper avoids it. Insert
+   * the missing LBody: move every non-Lbl child into a new LBody element and
+   * re-parent it. Structure only - no content, MCIDs, or ParentTree entries
+   * move, so the page content stream is untouched (corpus round 5).
+   */
+  let nextObjectNumber = size;
+  const structTypeOf = (objNum) => {
+    const span = objectSpans.get(objNum);
+    if (!span) return null;
+    const found = /\/S\s*\/(\w+)/.exec(text.slice(span.start, span.end));
+    return found ? found[1] : null;
+  };
+  for (const [num, span] of objectSpans) {
+    const body = text.slice(span.start, span.end);
+    if (!/\/S\s*\/LI\b/.test(body)) continue;
+    const kids = /\/K\s*\[([^\]]*)\]/.exec(body);
+    if (!kids) continue;
+    const refs = [...kids[1].matchAll(/(\d+)\s+0\s+R/g)].map((m) => Number(m[1]));
+    const labels = refs.filter((ref) => structTypeOf(ref) === 'Lbl');
+    const rest = refs.filter((ref) => {
+      const type = structTypeOf(ref);
+      return type !== 'Lbl' && type !== 'LBody';
+    });
+    if (!rest.length) continue;
+    const bodyNum = nextObjectNumber++;
+    replacements.push({
+      num: bodyNum,
+      body: Buffer.from(
+        `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R\n` +
+          `/K [${rest.map((ref) => `${ref} 0 R`).join(' ')}]>>\nendobj\n`,
+        'latin1',
+      ),
+    });
+    const newKids = [...labels.map((ref) => `${ref} 0 R`), `${bodyNum} 0 R`].join(' ');
+    replacements.push({
+      num,
+      body: Buffer.from(body.replace(/\/K\s*\[[^\]]*\]/, `/K [${newKids}]`) + '\n', 'latin1'),
+    });
+    for (const ref of rest) {
+      const childSpan = objectSpans.get(ref);
+      if (!childSpan) continue;
+      const childBody = text.slice(childSpan.start, childSpan.end);
+      replacements.push({
+        num: ref,
+        body: Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'),
+      });
+    }
+  }
+
+  const metadataNum = nextObjectNumber++;
   const xmp = buildXmpPacket(title, pdfuaPart);
   replacements.push({
     num: metadataNum,
@@ -386,7 +468,7 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart) {
   }
   flushRun();
 
-  const newSize = Math.max(size, metadataNum + 1);
+  const newSize = Math.max(size, nextObjectNumber);
   let trailer = `trailer\n<</Size ${newSize}\n/Root ${rootNum} 0 R\n`;
   if (infoMatch) trailer += `/Info ${Number(infoMatch[1])} 0 R\n`;
   trailer += `/Prev ${prevStart}>>\nstartxref\n${cursor}\n%%EOF\n`;

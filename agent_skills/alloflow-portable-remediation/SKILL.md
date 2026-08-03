@@ -62,6 +62,17 @@ conversation working directory is the Skill directory.
 5. Write `repair-plan.json` that conforms to
    [references/repair-plan.schema.json](references/repair-plan.schema.json).
    Record uncertainty in `review_notes`; never invent unreadable content.
+
+   Carry the source's **inline emphasis** where it changes meaning. Paragraphs
+   and blockquotes take an optional `runs` array, and lists take `item_runs`
+   (one entry per item); each run is `{"text": ..., "style": "normal" |
+   "emphasis" | "strong"}`. Styling is strictly additive: the runs must
+   concatenate to the block's `text` exactly, and validation rejects a plan
+   where they do not, so styling can never add, drop, or alter content. This
+   matters most where italics alone mark quoted external language with no
+   quotation marks — without `runs` such a passage reads as ordinary narration.
+   Where a heading already conveys the emphasis, do not restate it. Table cells
+   cannot carry inline styling; disclose that if a styled cell matters.
 6. Run one command:
 
    ```text

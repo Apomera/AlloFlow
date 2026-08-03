@@ -13,7 +13,7 @@ The workflow has exactly two moving parts, and neither is Claude-specific:
 
 | Capability | Requires | Without it |
 | --- | --- | --- |
-| Plan validation, semantic HTML, HTML audit, reports, receipts | Python 3 only | — |
+| Plan validation, semantic HTML (incl. inline emphasis), HTML audit, reports, receipts | Python 3 only | — |
 | `audit-source`, `extract-images`, `extract-text`, `extract-office`, `batch-remediate` | Python 3 only | — |
 | `verify-init` / `verify-check` (independent verification) | Python 3 + a second, fresh-context reader | rebuild rests on the author's self-report |
 | Tagged PDF + PDF/UA finalization | Node + Playwright + Chromium | verdict `html_only_review_required` |
