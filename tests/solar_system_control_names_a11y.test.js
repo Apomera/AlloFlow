@@ -295,6 +295,7 @@ describe('Solar System control accessible names', () => {
     expect(document.getElementById('orrery-stage-readout')?.getAttribute('aria-live')).toBe('polite');
     expect(document.getElementById('orrery-stage-readout-body')?.textContent).toContain('Earth');
     expect(document.getElementById('orrery-stage-readout-values')?.textContent).toContain('Distance');
+    expect(document.querySelector('[role="region"][aria-label="Orbital comparison for Earth with Mars"]')).not.toBeNull();
   });  it('groups Orrery controls for responsive keyboard scanning', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {

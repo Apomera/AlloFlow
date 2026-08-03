@@ -1008,6 +1008,20 @@ test('keeps comparison distance and speed evidence live', async ({ page }) => {
   }, undefined, { expectCanvas: false });
 
   await expect(page.locator('table[aria-label*="Earth"][aria-label*="Mars"]')).toBeVisible();
+  const comparisonRegion = page.getByRole('region', { name: 'Orbital comparison for Earth with Mars', exact: true });
+  await expect(comparisonRegion).toBeVisible();
+  const comparisonOrder = await page.evaluate(() => {
+    const follow = document.querySelector('button[aria-label="Follow Earth with the camera"]');
+    const comparison = document.querySelector('[role="region"][aria-label="Orbital comparison for Earth with Mars"]');
+    const evidence = document.querySelector('[role="region"][aria-label="A/B orbital evidence for Earth"]');
+    if (!follow || !comparison || !evidence) return { followBeforeComparison: false, comparisonBeforeEvidence: false };
+    return {
+      followBeforeComparison: !!(follow.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING),
+      comparisonBeforeEvidence: !!(comparison.compareDocumentPosition(evidence) & Node.DOCUMENT_POSITION_FOLLOWING),
+    };
+  });
+  expect(comparisonOrder.followBeforeComparison).toBe(true);
+  expect(comparisonOrder.comparisonBeforeEvidence).toBe(true);
   await expect(page.locator('#orrery-compare-interpretation')).toContainText('Earth is currently');
   await expect(page.locator('#orrery-compare-interpretation')).toContainText('Kepler III: Mars has the larger orbit and the longer period.');
   const beforeDistance = await page.locator('#orrery-live-compare-primary-distance').textContent();
@@ -1141,6 +1155,13 @@ test('lets keyboard and touch users toggle camera follow', async ({ page }) => {
   }, undefined, { expectCanvas: false });
 
   const follow = page.getByRole('button', { name: 'Follow Earth with the camera', exact: true });
+  const followBeforeEvidence = await page.evaluate(() => {
+    const followAction = document.querySelector('button[aria-label="Follow Earth with the camera"]');
+    const evidence = document.querySelector('[aria-label="A/B orbital evidence for Earth"]');
+    if (!followAction || !evidence) return false;
+    return !!(followAction.compareDocumentPosition(evidence) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(followBeforeEvidence).toBe(true);
   await expect(follow).toHaveAttribute('aria-pressed', 'false');
   await follow.click();
 
