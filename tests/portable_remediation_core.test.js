@@ -20,12 +20,12 @@ const PYTHON = process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32'
 
 let scratch;
 
-function runPortable(args) {
+function runPortable(args, extraEnv = {}) {
   const result = spawnSync(PYTHON, [ENGINE, ...args], {
     cwd: ROOT,
     encoding: 'utf8',
     timeout: 240_000,
-    env: { ...process.env },
+    env: { ...process.env, ...extraEnv },
   });
   let json;
   try {
@@ -274,6 +274,9 @@ describe('AlloFlow portable remediation core', () => {
     expect(capability.status, capability.stderr).toBe(0);
     if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) return;
 
+    // The finalizer now repairs Chromium's UA-1 defects, so a normal run
+    // passes validation. Disable it to exercise the strict-mode contract
+    // against a PDF that genuinely fails PDF/UA-1.
     const output = join(scratch, 'strict-output');
     const result = runPortable([
       'remediate',
@@ -282,11 +285,30 @@ describe('AlloFlow portable remediation core', () => {
       '--out-dir', output,
       '--pdf', 'required',
       '--verapdf', 'required',
-    ]);
+    ], { ALLOFLOW_PORTABLE_DISABLE_UA_FINALIZE: '1' });
     expect(result.status).not.toBe(0);
     expect(result.json).toMatchObject({ ok: false, code: 6 });
     expect(readdirSync(output)).toEqual([]);
-  }, 30_000);
+  }, 60_000);
+
+  it('passes strict PDF/UA mode when the finalizer runs', () => {
+    const capability = runPortable(['capabilities', '--json']);
+    expect(capability.status, capability.stderr).toBe(0);
+    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) return;
+
+    const output = join(scratch, 'strict-pass-output');
+    const result = runPortable([
+      'remediate',
+      '--source', SOURCE,
+      '--plan', PLAN,
+      '--out-dir', output,
+      '--pdf', 'required',
+      '--verapdf', 'required',
+    ]);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.json?.verdict).toBe('pdf_generated_validation_passed_review_required');
+    expect(result.json?.pdfUaCompliant).toBe(true);
+  }, 60_000);
 
   it('rejects meta refresh in standalone lint mode', () => {
     const unsafe = join(scratch, 'meta-refresh.html');

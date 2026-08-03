@@ -24,6 +24,7 @@ const DIST = path.join(ROOT, 'dist', 'portable-remediation');
 const ROOT_LICENSE = path.join(ROOT, 'LICENSE');
 
 const SKILL_FILES = [
+  'HARNESSES.md',
   'PRIVACY.md',
   'SKILL.md',
   'agents/openai.yaml',

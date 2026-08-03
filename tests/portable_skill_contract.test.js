@@ -24,6 +24,11 @@ let checkReceipt;
 const requireCjs = createRequire(import.meta.url);
 const { packageBuffers } = requireCjs(resolve(ROOT, 'dev-tools/build_alloflow_portable_packages.cjs'));
 const PYTHON = process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+// The single source of truth for the portable version is the engine; the
+// builder enforces that both plugin manifests match it, so the contract test
+// derives the expectation instead of pinning a copy that drifts.
+const ENGINE_VERSION = readFileSync(join(CANONICAL, 'scripts/alloflow_portable.py'), 'utf8')
+  .match(/^VERSION = "([^"]+)"/m)[1];
 const scratchDirectories = [];
 
 async function extractZip(buffer, destination) {
@@ -92,7 +97,7 @@ describe('AlloFlow portable skill distribution contract', () => {
     const openai = JSON.parse(readFileSync(join(OPENAI_PLUGIN, '.codex-plugin/plugin.json'), 'utf8'));
     expect(openai).toMatchObject({
       name: 'alloflow-pdf-remediation',
-      version: '0.1.0',
+      version: ENGINE_VERSION,
       skills: './skills/',
     });
     expect(openai.description).toMatch(/active file sandbox/i);
@@ -103,7 +108,7 @@ describe('AlloFlow portable skill distribution contract', () => {
     const claude = JSON.parse(readFileSync(join(CLAUDE_PLUGIN, '.claude-plugin/plugin.json'), 'utf8'));
     expect(claude).toMatchObject({
       name: 'alloflow',
-      version: '0.1.0',
+      version: ENGINE_VERSION,
     });
     expect(claude.description).toMatch(/no AlloFlow document service/i);
 
@@ -111,13 +116,13 @@ describe('AlloFlow portable skill distribution contract', () => {
       mode: 'check',
       wroteFiles: false,
       bundledVeraPdf: false,
-      version: '0.1.0',
+      version: ENGINE_VERSION,
     });
     expect(checkReceipt.packages).toHaveLength(3);
     for (const item of checkReceipt.packages) {
       expect(item.bytes).toBeGreaterThan(500);
       expect(item.sha256).toMatch(/^[a-f0-9]{64}$/);
-      expect(item.file).toContain('v0.1.0.zip');
+      expect(item.file).toContain(`v${ENGINE_VERSION}.zip`);
     }
   });
 

@@ -26,8 +26,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.1.0"
-MAX_SOURCE_BYTES = 30 * 1024 * 1024
+VERSION = "0.2.0"
+MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_BYTES = 3 * 1024 * 1024
@@ -43,7 +43,10 @@ DOCUMENT_KEYS = {
     "source_sha256",
     "document_type",
     "subject",
+    "variant",
 }
+PLAN_VARIANTS = {"original", "translated", "simplified"}
+OFFICE_SUFFIXES = {".docx", ".pptx"}
 SAFE_IMAGE_TYPES = {
     ".gif": "image/gif",
     ".jpeg": "image/jpeg",
@@ -69,7 +72,11 @@ def compact_error(value: Any, limit: int = 500) -> str:
 
 
 def emit_json(value: Any) -> None:
-    sys.stdout.write(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    # Write UTF-8 bytes directly: console encodings differ per host (Windows
+    # cp1252 raised UnicodeEncodeError on emoji in extracted document text).
+    payload = json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    sys.stdout.buffer.write(payload.encode("utf-8"))
+    sys.stdout.buffer.flush()
 
 
 def write_json_new(path: Path, value: Any) -> None:
@@ -256,6 +263,8 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         )
     if "subject" in document:
         expect_text(document.get("subject"), "document.subject", errors, minimum=0, maximum=1000)
+    if "variant" in document and document.get("variant") not in PLAN_VARIANTS:
+        errors.append("document.variant must be one of: " + ", ".join(sorted(PLAN_VARIANTS)) + ".")
 
     source_pages = plan.get("source_pages")
     if source_pages is not None:
@@ -745,8 +754,17 @@ def capabilities() -> Dict[str, Any]:
         "version": VERSION,
         "semanticHtml": True,
         "staticHtmlAudit": True,
+        "sourceStructuralAudit": True,
+        "sourceImageExtraction": True,
+        "sourceTextExtraction": True,
+        "independentVerification": True,
+        "officeTextExtraction": True,
+        "officeInput": True,
+        "batchRemediation": True,
+        "planVariants": sorted(PLAN_VARIANTS),
         "taggedPdfGeneration": renderer.get("available") is True,
         "taggedPdfDetail": renderer,
+        "pdfUaFinalization": renderer.get("available") is True,
         "pdfUaValidation": validator.get("available") is True,
         "pdfUaDetail": validator,
         "networkPolicy": "deny",
@@ -755,13 +773,22 @@ def capabilities() -> Dict[str, Any]:
     }
 
 
-def render_pdf(html_path: Path, pdf_path: Path) -> Dict[str, Any]:
+def render_pdf(html_path: Path, pdf_path: Path, pdfua_id: str = "none") -> Dict[str, Any]:
     node = shutil.which("node")
     if not node:
         return {"status": "not_run", "reason": "Node.js is unavailable."}
     try:
         result = subprocess.run(
-            [node, str(renderer_helper()), "--html", str(html_path), "--pdf", str(pdf_path)],
+            [
+                node,
+                str(renderer_helper()),
+                "--html",
+                str(html_path),
+                "--pdf",
+                str(pdf_path),
+                "--pdfua-id",
+                pdfua_id,
+            ],
             capture_output=True,
             encoding="utf-8",
             errors="replace",
@@ -774,10 +801,13 @@ def render_pdf(html_path: Path, pdf_path: Path) -> Dict[str, Any]:
                 "status": "failed",
                 "reason": compact_error(data.get("error") or result.stderr or "Tagged-PDF renderer failed."),
             }
+        finalization = data.get("pdfUaFinalization") or {}
         return {
             "status": "completed",
             "bytes": int(data.get("bytes") or 0),
             "structuralMarkers": data.get("structuralMarkers") or {},
+            "pdfUaFinalization": finalization,
+            "pdfUaIdentifierClaimed": finalization.get("pdfuaIdentifierClaimed") is True,
             "blockedNetworkRequests": int(data.get("blockedNetworkRequests") or 0),
         }
     except (OSError, subprocess.SubprocessError, json.JSONDecodeError) as exc:
@@ -876,16 +906,29 @@ def validate_pdf_ua(pdf_path: Path) -> Dict[str, Any]:
         return {"status": "failed", "reason": compact_error(exc), "processExitCode": result.returncode}
 
 
-def ensure_source_pdf(path: Path) -> Dict[str, Any]:
+def ensure_source_document(path: Path) -> Dict[str, Any]:
+    """Accept a local .pdf, .docx, or .pptx source and return its binding receipt."""
     if not path.is_file():
-        raise PortableError("Source PDF not found.")
+        raise PortableError("Source document not found.")
     size = path.stat().st_size
     if size < 5 or size > MAX_SOURCE_BYTES:
-        raise PortableError("Source PDF is empty or exceeds the 30 MiB limit.")
+        raise PortableError("Source document is empty or exceeds the 200 MB limit.")
     with path.open("rb") as handle:
-        if handle.read(5) != b"%PDF-":
-            raise PortableError("Source file does not have a PDF signature.")
-    return {"basename": path.name, "bytes": size, "sha256": sha256_file(path)}
+        signature = handle.read(5)
+    if signature == b"%PDF-":
+        kind = "pdf"
+    elif signature[:4] == b"PK\x03\x04" and path.suffix.lower() in OFFICE_SUFFIXES:
+        kind = path.suffix.lower().lstrip(".")
+    else:
+        raise PortableError("Source file must be a PDF, .docx, or .pptx (signature check failed).")
+    return {"basename": path.name, "bytes": size, "kind": kind, "sha256": sha256_file(path)}
+
+
+def ensure_source_pdf(path: Path) -> Dict[str, Any]:
+    receipt = ensure_source_document(path)
+    if receipt["kind"] != "pdf":
+        raise PortableError("This command requires a PDF source.")
+    return receipt
 
 
 def publish_staged(pairs: List[Tuple[Path, Path]]) -> None:
@@ -914,7 +957,7 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     out_dir = Path(args.out_dir).resolve()
     if args.verapdf == "required" and args.pdf == "never":
         raise PortableError("--verapdf required cannot be combined with --pdf never.", 2)
-    source_receipt = ensure_source_pdf(source)
+    source_receipt = ensure_source_document(source)
     plan = read_plan(plan_path)
     validated = validate_plan(plan, plan_path.parent)
     if not validated["ok"]:
@@ -943,6 +986,37 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     existing = [path.name for path in planned_paths if path.exists()]
     if existing:
         raise PortableError("Refusing to overwrite existing output: " + ", ".join(existing))
+
+    # Independent ground truth where the source allows it: extract the source
+    # PDF's own text layer and measure how much of it the plan carries. This
+    # does not trust the plan author. Scanned or out-of-scope encodings report
+    # null with a reason rather than a flattering number.
+    source_recall: Optional[float] = None
+    source_recall_detail: Dict[str, Any] = {"status": "not_run"}
+    if source_receipt["kind"] == "pdf":
+        try:
+            extraction = _pdf_extract_text(source.read_bytes())
+            source_tokens = _tokens(extraction["text"])
+            token_total = sum(source_tokens.values())
+            if token_total >= MIN_RECALL_TOKENS:
+                source_recall = _token_recall(source_tokens, _tokens(_plan_text(validated)))
+                source_recall_detail = {
+                    "status": "completed",
+                    "sourceTokens": token_total,
+                    "recall": source_recall,
+                }
+            else:
+                source_recall_detail = {
+                    "status": "not_measurable",
+                    "sourceTokens": token_total,
+                    "reason": (
+                        "The source has no usable extractable text layer (scanned pages or an "
+                        "encoding outside deterministic scope); fidelity rests on the plan "
+                        "author's reading plus independent verification."
+                    ),
+                }
+        except Exception as exc:  # extraction must never sink a remediation
+            source_recall_detail = {"status": "failed", "reason": compact_error(exc)}
 
     rendered = render_html(validated)
     if len(rendered.encode("utf-8")) > MAX_HTML_BYTES:
@@ -973,7 +1047,7 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                     )
                 pdf_result = {"status": "not_run", "reason": compact_error(pdf_cap.get("reason"))}
             else:
-                pdf_result = render_pdf(staged_paths["html"], staged_paths["pdf"])
+                pdf_result = render_pdf(staged_paths["html"], staged_paths["pdf"], pdfua_id="1")
                 if args.pdf == "required" and pdf_result.get("status") != "completed":
                     raise PortableError(
                         "Tagged-PDF generation failed: " + compact_error(pdf_result.get("reason")),
@@ -987,6 +1061,32 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                 pdf_ua = validate_pdf_ua(staged_paths["pdf"])
         else:
             pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
+
+        # Honesty pass: the file initially carries the PDF/UA-1 identifier so a
+        # fully conforming result is machine-identifiable. If validation found
+        # unresolved rules, the file has not earned that claim — rebuild it
+        # without the identifier (the same withholding convention the main
+        # pipeline uses) and report the withheld state.
+        pdf_ua_identifier_withheld = False
+        if (
+            pdf_result.get("status") == "completed"
+            and pdf_result.get("pdfUaIdentifierClaimed") is True
+            and pdf_ua.get("status") == "completed"
+            and pdf_ua.get("compliant") is False
+        ):
+            staged_paths["pdf"].unlink()
+            retry = render_pdf(staged_paths["html"], staged_paths["pdf"], pdfua_id="none")
+            if retry.get("status") == "completed":
+                pdf_result = retry
+                pdf_ua = validate_pdf_ua(staged_paths["pdf"])
+                pdf_ua_identifier_withheld = True
+            else:
+                pdf_result = {
+                    "status": "failed",
+                    "reason": "Rebuilding the PDF without the PDF/UA identifier failed: "
+                    + compact_error(retry.get("reason")),
+                }
+                pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
 
         if args.verapdf == "required":
             if pdf_ua.get("status") != "completed":
@@ -1009,6 +1109,42 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             manual_review.append("veraPDF found unresolved PDF/UA-1 rules; review the failedRules list.")
         elif pdf_ua.get("status") != "completed":
             manual_review.append("PDF/UA validation did not run to completion.")
+        if pdf_ua_identifier_withheld:
+            manual_review.append(
+                "The PDF/UA identifier was deliberately withheld because validation found unresolved "
+                "rules. A missing-identification failure in failedRules reflects that withholding, "
+                "not an additional defect."
+            )
+
+        # Output-side check, always computable when a PDF was generated: the
+        # tagged PDF's own extractable text must carry the plan. This catches a
+        # rendering path that silently drops content.
+        output_recall_detail: Dict[str, Any] = {"status": "not_run"}
+        if pdf_result.get("status") == "completed":
+            try:
+                pdf_extraction = _pdf_extract_text(staged_paths["pdf"].read_bytes())
+                plan_tokens = _tokens(_plan_text(validated))
+                output_recall = _token_recall(plan_tokens, _tokens(pdf_extraction["text"]))
+                output_recall_detail = {
+                    "status": "completed",
+                    "planTokens": sum(plan_tokens.values()),
+                    "recall": output_recall,
+                }
+                if output_recall is not None and output_recall < 0.98:
+                    manual_review.append(
+                        "The tagged PDF's extractable text does not fully carry the plan "
+                        f"(recall {output_recall}); compare the PDF against the HTML before "
+                        "distributing the PDF."
+                    )
+            except Exception as exc:
+                output_recall_detail = {"status": "failed", "reason": compact_error(exc)}
+        if source_recall_detail.get("status") == "completed" and source_recall is not None:
+            if source_recall < 0.9:
+                manual_review.append(
+                    "Deterministic source-text recall is "
+                    f"{source_recall}: a measurable share of the source PDF's own text layer "
+                    "is absent from the plan. Re-read the source before trusting this rebuild."
+                )
 
         if pdf_result.get("status") != "completed":
             verdict = "html_only_review_required"
@@ -1037,13 +1173,25 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                     "warnings": validated["warnings"],
                     "metrics": validated["metrics"],
                 },
+                "sourceTextRecall": source_recall_detail,
+                "outputTextRecall": output_recall_detail,
+                "independentVerification": {
+                    "status": "not_run",
+                    "how": (
+                        "Run verify-init to derive a worksheet, have a fresh-context reader "
+                        "fill it, then verify-check to stamp the verification report."
+                    ),
+                },
                 "semanticHtml": {"status": "completed"},
                 "staticHtmlAudit": {
                     "status": "completed",
                     **html_audit,
                 },
                 "taggedPdfGeneration": pdf_result,
-                "pdfUaValidation": pdf_ua,
+                "pdfUaValidation": {
+                    **pdf_ua,
+                    "identifierWithheld": pdf_ua_identifier_withheld,
+                },
                 "humanSourceComparison": {"status": "required"},
             },
             "manualReview": manual_review,
@@ -1089,6 +1237,1126 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Source-side commands (deterministic, stdlib-only, no network).
+#
+# These close the gap between "the host model reads the pages" and what the
+# keyed pipeline extracts mechanically: raw image XObjects for figure reuse,
+# structural before-facts for an honest baseline, and Office text so a .docx
+# or .pptx can be planned without vision.
+# ---------------------------------------------------------------------------
+
+_PDF_OBJ_HEADER = re.compile(rb"(\d+)\s+0\s+obj\b")
+_PDF_WHITESPACE = b" \t\r\n\f\x00"
+
+
+def _pdf_iter_stream_objects(data: bytes):
+    """Yield (object_number, dict_bytes, raw_stream_bytes_or_None).
+
+    A byte-level scan rather than a full xref parse: it works identically on
+    classic-xref and xref-stream files, and image/content streams can never
+    hide inside object streams. Dictionaries are captured with balanced
+    <<...>> scanning (a lazy regex truncates any dict containing a nested
+    dict, silently losing keys like /Contents). Streams are sliced to
+    `endstream`; when the dictionary carries a direct /Length that disagrees,
+    /Length wins. Stream bodies are skipped over, never scanned for headers.
+    """
+    position = 0
+    length = len(data)
+    while True:
+        header = _PDF_OBJ_HEADER.search(data, position)
+        if not header:
+            return
+        number = int(header.group(1))
+        i = header.end()
+        while i < length and data[i:i + 1] in _PDF_WHITESPACE:
+            i += 1
+        if data[i:i + 2] != b"<<":
+            position = header.end()
+            continue
+        dictionary = _balanced_dict(data, i)
+        if dictionary is None:
+            position = header.end()
+            continue
+        j = i + len(dictionary)
+        while j < length and data[j:j + 1] in _PDF_WHITESPACE:
+            j += 1
+        if data[j:j + 6] != b"stream":
+            yield number, dictionary, None
+            position = j
+            continue
+        start = j + 6
+        if data[start:start + 1] == b"\r":
+            start += 1
+        if data[start:start + 1] == b"\n":
+            start += 1
+        end = data.find(b"endstream", start)
+        if end < 0:
+            return
+        raw = data[start:end]
+        length_match = re.search(rb"/Length\s+(\d+)(?![\d\s]*0\s+R)", dictionary)
+        if length_match:
+            declared = int(length_match.group(1))
+            if 0 < declared <= len(raw):
+                raw = raw[:declared]
+        else:
+            raw = raw.rstrip(b"\r\n")
+        yield number, dictionary, raw
+        # PDF 1.5+ object streams: non-stream objects (page dicts, fonts,
+        # the catalog) can live compressed inside /ObjStm containers, where a
+        # raw byte walk never sees them (corpus round 1: a 77 MB NIST handbook
+        # reported 0 pages). Expand each container and yield its embedded
+        # dictionary objects. Embedded objects cannot themselves be streams.
+        if re.search(rb"/Type\s*/ObjStm\b", dictionary):
+            expanded = _decompress_stream(dictionary, raw)
+            count_match = re.search(rb"/N\s+(\d+)", dictionary)
+            first_match = re.search(rb"/First\s+(\d+)", dictionary)
+            if expanded and count_match and first_match:
+                count = int(count_match.group(1))
+                first = int(first_match.group(1))
+                header = expanded[:first].split()
+                pairs = []
+                for i in range(0, min(len(header) - 1, count * 2), 2):
+                    try:
+                        pairs.append((int(header[i]), int(header[i + 1])))
+                    except ValueError:
+                        break
+                for idx, (embedded_num, offset) in enumerate(pairs):
+                    body_start = first + offset
+                    body_end = first + pairs[idx + 1][1] if idx + 1 < len(pairs) else len(expanded)
+                    body = expanded[body_start:body_end].strip()
+                    if body.startswith(b"<<"):
+                        yield embedded_num, _balanced_dict(body, 0) or body, None
+        position = end
+
+
+def _png_chunk(tag: bytes, payload: bytes) -> bytes:
+    import struct
+    import zlib as _zlib
+
+    return (
+        struct.pack(">I", len(payload))
+        + tag
+        + payload
+        + struct.pack(">I", _zlib.crc32(tag + payload) & 0xFFFFFFFF)
+    )
+
+
+def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes) -> None:
+    """Wrap already-decoded 8-bit scanlines (gray=0 or rgb=2) as a PNG."""
+    import struct
+    import zlib as _zlib
+
+    channels = 3 if color_type == 2 else 1
+    stride = width * channels
+    if len(raw) < stride * height:
+        raise PortableError("Decoded image data is shorter than its declared dimensions.")
+    rows = bytearray()
+    for row in range(height):
+        rows.append(0)
+        rows.extend(raw[row * stride:(row + 1) * stride])
+    header = struct.pack(">IIBBBBB", width, height, 8, color_type, 0, 0, 0)
+    body = (
+        b"\x89PNG\r\n\x1a\n"
+        + _png_chunk(b"IHDR", header)
+        + _png_chunk(b"IDAT", _zlib.compress(bytes(rows), 9))
+        + _png_chunk(b"IEND", b"")
+    )
+    with path.open("xb") as handle:
+        handle.write(body)
+
+
+def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
+    import zlib as _zlib
+
+    source = Path(args.source).resolve()
+    receipt = ensure_source_pdf(source)
+    out_dir = Path(args.out_dir).resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    min_pixels = max(0, int(args.min_pixels))
+    data = source.read_bytes()
+
+    extracted: List[Dict[str, Any]] = []
+    skipped: List[Dict[str, Any]] = []
+    index = 0
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        if raw is None or b"/Subtype" not in dictionary or b"/Image" not in dictionary:
+            continue
+        if not re.search(rb"/Subtype\s*/Image\b", dictionary):
+            continue
+        width_match = re.search(rb"/Width\s+(\d+)", dictionary)
+        height_match = re.search(rb"/Height\s+(\d+)", dictionary)
+        if not width_match or not height_match:
+            continue
+        width = int(width_match.group(1))
+        height = int(height_match.group(1))
+        index += 1
+        entry: Dict[str, Any] = {
+            "object": number,
+            "width": width,
+            "height": height,
+            "softMask": bool(re.search(rb"/SMask\s+\d+\s+0\s+R", dictionary)),
+        }
+        if re.search(rb"/ImageMask\s+true", dictionary):
+            entry["reason"] = "Stencil image mask (no standalone pixel data)."
+            skipped.append(entry)
+            continue
+        if width * height < min_pixels:
+            entry["reason"] = f"Below the {min_pixels}-pixel floor (likely decorative)."
+            skipped.append(entry)
+            continue
+        filters = b"".join(re.findall(rb"/(?:Filter)\s*(/\w+|\[[^\]]*\])", dictionary))
+        name = f"image-{index:03d}-obj{number}"
+        try:
+            if b"DCTDecode" in filters:
+                target = out_dir / f"{name}.jpg"
+                with target.open("xb") as handle:
+                    handle.write(raw)
+                entry.update({"file": target.name, "format": "jpeg"})
+            elif b"JPXDecode" in filters:
+                target = out_dir / f"{name}.jp2"
+                with target.open("xb") as handle:
+                    handle.write(raw)
+                entry.update({"file": target.name, "format": "jpeg2000"})
+            elif b"FlateDecode" in filters and not re.search(rb"/DecodeParms", dictionary):
+                bits_match = re.search(rb"/BitsPerComponent\s+(\d+)", dictionary)
+                bits = int(bits_match.group(1)) if bits_match else 8
+                if bits != 8:
+                    raise PortableError(f"Unsupported bit depth {bits}.")
+                if re.search(rb"/ColorSpace\s*/DeviceRGB\b", dictionary):
+                    color_type = 2
+                elif re.search(rb"/ColorSpace\s*/DeviceGray\b", dictionary):
+                    color_type = 0
+                else:
+                    raise PortableError("Unsupported color space for deterministic decode.")
+                target = out_dir / f"{name}.png"
+                _write_png(target, width, height, color_type, _zlib.decompress(raw))
+                entry.update({"file": target.name, "format": "png"})
+            else:
+                raise PortableError(
+                    "Unsupported filter chain: " + (filters.decode("latin1") or "none")
+                )
+        except (PortableError, _zlib.error, OSError) as exc:
+            entry["reason"] = compact_error(exc)
+            skipped.append(entry)
+            continue
+        extracted.append(entry)
+
+    inventory = {
+        "ok": True,
+        "source": receipt,
+        "extracted": extracted,
+        "skipped": skipped,
+        "note": (
+            "Object numbers identify images; page mapping requires reading the document. "
+            "JPEG 2000 (.jp2) files may need conversion before embedding. Reuse an image in "
+            "a repair plan by copying it next to the plan and referencing its relative path."
+        ),
+    }
+    inventory_path = out_dir / "image-inventory.json"
+    if inventory_path.exists():
+        raise PortableError("Refusing to overwrite an existing image inventory.")
+    write_json_new(inventory_path, inventory)
+    return {**inventory, "inventory": inventory_path.name, "outputDirectory": out_dir.name}
+
+
+def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
+    import zlib as _zlib
+
+    source = Path(args.source).resolve()
+    receipt = ensure_source_pdf(source)
+    data = source.read_bytes()
+
+    # Count pages by walking real objects and deduplicating by object number:
+    # a raw byte regex over-counts on incrementally-updated files, where a
+    # revised page object appears twice (corpus round 1: an 8-page UDHR PDF
+    # with two revised pages reported 10).
+    page_numbers = set()
+    for number, dictionary, _raw in _pdf_iter_stream_objects(data):
+        if re.search(rb"/Type\s*/Page\b", dictionary) and not re.search(rb"/Type\s*/Pages\b", dictionary):
+            page_numbers.add(number)
+    page_count = len(page_numbers)
+    image_count = len(re.findall(rb"/Subtype\s*/Image\b", data))
+    font_count = len(re.findall(rb"/Type\s*/Font\b", data))
+    tagged = b"/StructTreeRoot" in data and re.search(rb"/Marked\s+true", data) is not None
+    has_lang = re.search(rb"/Lang\s*\(", data) is not None or re.search(rb"/Lang\s*<", data) is not None
+    has_xmp = re.search(rb"/Type\s*/Metadata\b", data) is not None
+    claims_pdfua = b"pdfuaid:part" in data or b"http://www.aiim.org/pdfua/ns/id/" in data
+    encrypted = re.search(rb"/Encrypt\s+\d+\s+0\s+R", data) is not None
+    has_acroform = b"/AcroForm" in data
+    has_outline = b"/Outlines" in data
+    has_title = re.search(rb"/Title\s*[(<]", data) is not None or b"<dc:title>" in data
+
+    # Text detection: inflate content streams (not image streams) and look for
+    # ACTUAL text-showing operators - a string or array operand followed by
+    # Tj/TJ/'/". Requiring the operand matters: a bare \bBT\b matched vector
+    # line-work in a pure page scan (corpus round 1, 1913 Form 1040) and
+    # reported searchable text on a document with none.
+    has_text = False
+    inflate_failures = 0
+    text_pattern = re.compile(rb"[)>]\s*(?:Tj|'|\")|\]\s*TJ")
+    for _, dictionary, raw in _pdf_iter_stream_objects(data):
+        if has_text or raw is None or b"/Image" in dictionary:
+            continue
+        if b"/FlateDecode" in dictionary:
+            try:
+                if text_pattern.search(_zlib.decompress(raw)):
+                    has_text = True
+            except _zlib.error:
+                inflate_failures += 1
+        elif b"/Filter" not in dictionary:
+            if text_pattern.search(raw):
+                has_text = True
+    is_scanned = not has_text and image_count >= max(1, page_count)
+
+    issues: List[Dict[str, str]] = []
+
+    def issue(identifier: str, severity: str, description: str) -> None:
+        issues.append({"id": identifier, "severity": severity, "description": description})
+
+    if encrypted:
+        issue("encrypted", "serious", "The document is encrypted; assistive access and rebuild may be restricted.")
+    if not has_text:
+        issue(
+            "no-text-layer",
+            "critical",
+            "No text-showing operators were found; screen readers have nothing to read.",
+        )
+    if not tagged:
+        issue("untagged", "critical", "The document has no structure tree; it is not a tagged PDF.")
+    if not has_lang:
+        issue("no-language", "serious", "No document language is declared.")
+    if not has_title:
+        issue("no-title", "moderate", "No document title was found in Info or XMP metadata.")
+    if not has_xmp:
+        issue("no-xmp-metadata", "minor", "No XMP metadata stream is present.")
+    if has_acroform:
+        issue(
+            "form-fields",
+            "review",
+            "Interactive form fields are present; the portable rebuild deliberately blocks forms.",
+        )
+
+    return {
+        "ok": True,
+        "source": receipt,
+        "structuralFindings": {
+            "pageCount": page_count,
+            "imageXObjects": image_count,
+            "fontObjects": font_count,
+            "hasSearchableText": has_text,
+            "isScannedLikely": is_scanned,
+            "tagged": tagged,
+            "declaresLanguage": has_lang,
+            "hasTitle": has_title,
+            "hasXmpMetadata": has_xmp,
+            "claimsPdfUa": claims_pdfua,
+            "encrypted": encrypted,
+            "hasFormFields": has_acroform,
+            "hasOutline": has_outline,
+            "contentStreamInflateFailures": inflate_failures,
+        },
+        "issues": issues,
+        "note": (
+            "Deterministic byte-level facts only: no rendering, no OCR, no semantic judgement, "
+            "and no score. Semantic quality (alt text, reading order, table structure) still "
+            "requires the host model to read the document."
+        ),
+    }
+
+
+def _docx_paragraphs(document_xml: bytes) -> List[Dict[str, Any]]:
+    import xml.etree.ElementTree as ET
+
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    root = ET.fromstring(document_xml)
+    paragraphs: List[Dict[str, Any]] = []
+    for paragraph in root.iter(f"{{{ns['w']}}}p"):
+        text = "".join(node.text or "" for node in paragraph.iter(f"{{{ns['w']}}}t"))
+        if not text.strip():
+            continue
+        style_node = paragraph.find(f"{{{ns['w']}}}pPr/{{{ns['w']}}}pStyle")
+        style = style_node.get(f"{{{ns['w']}}}val") if style_node is not None else None
+        entry: Dict[str, Any] = {"text": text}
+        if style:
+            entry["style"] = style
+        if paragraph.find(f"{{{ns['w']}}}pPr/{{{ns['w']}}}numPr") is not None:
+            entry["listItem"] = True
+        paragraphs.append(entry)
+    return paragraphs
+
+
+def extract_office_command(args: argparse.Namespace) -> Dict[str, Any]:
+    import zipfile
+
+    source = Path(args.source).resolve()
+    receipt = ensure_source_document(source)
+    if receipt["kind"] not in {"docx", "pptx"}:
+        raise PortableError("extract-office requires a .docx or .pptx source.")
+
+    total_chars = 0
+
+    def budget(text: str) -> str:
+        nonlocal total_chars
+        total_chars += len(text)
+        if total_chars > MAX_TEXT_CHARS:
+            raise PortableError("Extracted text exceeds the 2,000,000 character budget.")
+        return text
+
+    try:
+        with zipfile.ZipFile(source) as archive:
+            if receipt["kind"] == "docx":
+                with archive.open("word/document.xml") as handle:
+                    paragraphs = _docx_paragraphs(handle.read())
+                for entry in paragraphs:
+                    budget(entry["text"])
+                return {
+                    "ok": True,
+                    "source": receipt,
+                    "kind": "docx",
+                    "paragraphs": paragraphs,
+                    "characters": total_chars,
+                    "note": (
+                        "Styles named Heading1-Heading6 (or localized equivalents) mark headings; "
+                        "listItem marks numbered/bulleted paragraphs. Tables, images, and text "
+                        "boxes are not extracted here - read the document for them."
+                    ),
+                }
+            import xml.etree.ElementTree as ET
+
+            slide_names = sorted(
+                (name for name in archive.namelist()
+                 if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)),
+                key=lambda name: int(re.search(r"\d+", name).group()),
+            )
+            a_ns = "http://schemas.openxmlformats.org/drawingml/2006/main"
+            slides = []
+            for slide_number, name in enumerate(slide_names, start=1):
+                with archive.open(name) as handle:
+                    root = ET.fromstring(handle.read())
+                texts = []
+                for paragraph in root.iter(f"{{{a_ns}}}p"):
+                    text = "".join(node.text or "" for node in paragraph.iter(f"{{{a_ns}}}t"))
+                    if text.strip():
+                        texts.append(budget(text))
+                slides.append({"slide": slide_number, "texts": texts})
+            return {
+                "ok": True,
+                "source": receipt,
+                "kind": "pptx",
+                "slides": slides,
+                "characters": total_chars,
+                "note": "Speaker notes, images, and charts are not extracted here - read the document for them.",
+            }
+    except (zipfile.BadZipFile, KeyError) as exc:
+        raise PortableError("Could not read the Office archive: " + compact_error(exc)) from exc
+
+
+MAX_BATCH_ITEMS = 60
+
+
+def batch_remediate_command(args: argparse.Namespace) -> Dict[str, Any]:
+    manifest_path = Path(args.manifest).resolve()
+    if not manifest_path.is_file():
+        raise PortableError("Batch manifest not found.")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PortableError("Could not parse the batch manifest: " + compact_error(exc)) from exc
+    items = manifest.get("items") if isinstance(manifest, dict) else manifest
+    if not isinstance(items, list) or not items:
+        raise PortableError('The manifest must be {"items": [{"source": ..., "plan": ...}, ...]}.')
+    if len(items) > MAX_BATCH_ITEMS:
+        raise PortableError(f"The manifest exceeds the {MAX_BATCH_ITEMS}-document batch limit.")
+
+    out_root = Path(args.out_dir).resolve()
+    out_root.mkdir(parents=True, exist_ok=True)
+    scoreboard: List[Dict[str, Any]] = []
+    completed = 0
+    for index, item in enumerate(items):
+        if not isinstance(item, dict) or "source" not in item or "plan" not in item:
+            scoreboard.append({"index": index, "ok": False, "error": "Item needs source and plan."})
+            continue
+        source_path = Path(str(item["source"])).resolve()
+        entry: Dict[str, Any] = {"index": index, "source": source_path.name}
+        item_out = out_root / f"{index + 1:02d}-{safe_stem(source_path.name)}"
+        try:
+            result = remediate(argparse.Namespace(
+                source=str(source_path),
+                plan=str(item["plan"]),
+                out_dir=str(item_out),
+                pdf=args.pdf,
+                verapdf=args.verapdf,
+            ))
+            entry.update({
+                "ok": True,
+                "verdict": result["verdict"],
+                "pdfUaCompliant": result.get("pdfUaCompliant"),
+                "outputDirectory": item_out.name,
+            })
+            completed += 1
+        except PortableError as exc:
+            entry.update({"ok": False, "error": str(exc)})
+        except Exception as exc:  # continue the batch; fail only this item
+            entry.update({"ok": False, "error": "Unexpected failure: " + compact_error(exc)})
+        scoreboard.append(entry)
+
+    summary = {
+        "ok": completed == len(items),
+        "total": len(items),
+        "completed": completed,
+        "failed": len(items) - completed,
+        "outputDirectory": out_root.name,
+        "items": scoreboard,
+    }
+    summary_path = out_root / "batch-scoreboard.json"
+    if not summary_path.exists():
+        write_json_new(summary_path, summary)
+    return summary
+
+
+# ---------------------------------------------------------------------------
+# Deterministic PDF text extraction (stdlib-only).
+#
+# Purpose: independent ground truth. When a source PDF has a text layer, the
+# script itself can measure how much of that text a repair plan carries -
+# without trusting the model that wrote the plan. Handles the two encodings
+# that dominate born-digital PDFs: literal strings (PDFDoc/WinAnsi, read as
+# latin-1) and hex strings decoded through each font's /ToUnicode CMap
+# (Identity-H subset fonts, as produced by Word, Chrome, and LaTeX).
+# Known limits, by design: no CID fonts without ToUnicode, no Type3 glyph
+# programs, no encrypted files. Extraction that finds too little text reports
+# that honestly instead of guessing.
+# ---------------------------------------------------------------------------
+
+_LITERAL_ESCAPES = {
+    b"n": "\n", b"r": "\r", b"t": "\t", b"b": "\b", b"f": "\f",
+    b"(": "(", b")": ")", b"\\": "\\",
+}
+
+
+def _decode_literal_string(body: bytes, font: Optional[Dict[str, Any]] = None) -> str:
+    # Literal strings are byte codes in the CURRENT FONT's encoding, not
+    # latin-1. Subset fonts remap them arbitrarily - corpus round 2: the
+    # Spanish UDHR types every accented letter through a 6-glyph subset font
+    # whose literal "(!)" means 'ó' via its ToUnicode CMap. Decode through the
+    # font's single-byte CMap when it has one; latin-1 otherwise.
+    codes: List[int] = []
+    i = 0
+    while i < len(body):
+        char = body[i:i + 1]
+        if char != b"\\":
+            codes.append(body[i])
+            i += 1
+            continue
+        nxt = body[i + 1:i + 2]
+        octal = re.match(rb"[0-7]{1,3}", body[i + 1:i + 4] or b"")
+        if octal:
+            codes.append(int(octal.group(), 8) & 0xFF)
+            i += 1 + len(octal.group())
+        elif nxt in (b"\r", b"\n"):
+            i += 2
+            if nxt == b"\r" and body[i:i + 1] == b"\n":
+                i += 1
+        else:
+            replacement = _LITERAL_ESCAPES.get(nxt)
+            codes.append(ord(replacement) if replacement else (nxt[0] if nxt else 0))
+            i += 2
+    mapping = font.get("map") if font else None
+    if mapping and (font.get("codeLen") or 1) == 1:
+        return "".join(mapping[c] if c in mapping else chr(c) for c in codes)
+    return "".join(chr(c) for c in codes)
+
+
+def _bfrange_target(dst_hex: bytes, offset: int) -> str:
+    text = bytes.fromhex(dst_hex.decode("ascii")).decode("utf-16-be", "ignore")
+    if not text:
+        return ""
+    return text[:-1] + chr(ord(text[-1]) + offset)
+
+
+def _parse_tounicode(cmap_bytes: bytes) -> Dict[str, Any]:
+    mapping: Dict[int, str] = {}
+    code_len = 2
+    space = re.search(rb"begincodespacerange\s*<([0-9A-Fa-f]+)>", cmap_bytes)
+    if space:
+        code_len = max(1, len(space.group(1)) // 2)
+    for section in re.findall(rb"beginbfchar(.*?)endbfchar", cmap_bytes, re.S):
+        for src, dst in re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", section):
+            mapping[int(src, 16)] = bytes.fromhex(dst.decode("ascii")).decode("utf-16-be", "ignore")
+    for section in re.findall(rb"beginbfrange(.*?)endbfrange", cmap_bytes, re.S):
+        for low, high, arr in re.findall(
+            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[(.*?)\]", section, re.S
+        ):
+            targets = re.findall(rb"<([0-9A-Fa-f]+)>", arr)
+            for offset, dst in enumerate(targets):
+                mapping[int(low, 16) + offset] = bytes.fromhex(dst.decode("ascii")).decode(
+                    "utf-16-be", "ignore"
+                )
+        for low, high, dst in re.findall(
+            rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", section
+        ):
+            low_i, high_i = int(low, 16), int(high, 16)
+            for offset in range(min(high_i - low_i, 0xFFFF) + 1):
+                mapping[low_i + offset] = _bfrange_target(dst, offset)
+    return {"map": mapping, "codeLen": code_len}
+
+
+def _balanced_dict(data: bytes, start: int) -> Optional[bytes]:
+    depth = 0
+    i = start
+    while i < len(data) - 1:
+        pair = data[i:i + 2]
+        if pair == b"<<":
+            depth += 1
+            i += 2
+        elif pair == b">>":
+            depth -= 1
+            i += 2
+            if depth == 0:
+                return data[start:i]
+        else:
+            i += 1
+    return None
+
+
+def _dict_value(index: Dict[int, Tuple[bytes, Optional[bytes]]], container: Optional[bytes], key: str) -> Optional[bytes]:
+    """Resolve /Key as an inline dictionary or a single indirect reference."""
+    if not container:
+        return None
+    inline = re.search(rb"/" + key.encode("ascii") + rb"\s*<<", container)
+    if inline:
+        return _balanced_dict(container, inline.end() - 2)
+    ref = re.search(rb"/" + key.encode("ascii") + rb"\s+(\d+)\s+0\s+R", container)
+    if ref:
+        entry = index.get(int(ref.group(1)))
+        return entry[0] if entry else None
+    return None
+
+
+_TEXT_OPS = re.compile(
+    rb"/(\w+)\s+[\d.+-]+\s+Tf"
+    rb"|\(((?:[^()\\]|\\.)*)\)\s*(Tj|'|\")"
+    rb"|<([0-9A-Fa-f\s]+)>\s*Tj"
+    rb"|\[((?:[^\]\\]|\\.)*)\]\s*TJ"
+    rb"|\b(ET|T\*)\b",
+    re.S,
+)
+_TJ_PIECES = re.compile(
+    rb"\(((?:[^()\\]|\\.)*)\)|<([0-9A-Fa-f\s]+)>|(-?\d+(?:\.\d+)?)"
+)
+# A TJ kern this large (thousandths of an em) is a synthesized word gap.
+_TJ_SPACE_THRESHOLD = 150
+
+
+def _decode_hex_string(hex_bytes: bytes, font: Optional[Dict[str, Any]]) -> str:
+    digits = re.sub(rb"\s+", b"", hex_bytes).decode("ascii")
+    if len(digits) % 2:
+        digits += "0"
+    raw = bytes.fromhex(digits)
+    if font and font.get("map"):
+        code_len = font.get("codeLen") or 2
+        out = []
+        for i in range(0, len(raw) - (len(raw) % code_len), code_len):
+            code = int.from_bytes(raw[i:i + code_len], "big")
+            out.append(font["map"].get(code, ""))
+        return "".join(out)
+    return raw.decode("latin1")
+
+
+def _page_content_text(content: bytes, fonts: Dict[str, Dict[str, Any]]) -> str:
+    # Consecutive show operators are glyph runs of the same visual line (word
+    # gaps arrive as explicit space glyphs or large TJ kerns), so they join
+    # without a separator; only true line operators (ET, T*, ', ") break.
+    pieces: List[str] = []
+    current: Optional[Dict[str, Any]] = None
+    for match in _TEXT_OPS.finditer(content):
+        font_name, literal, literal_op, hex_str, tj_array, line_op = match.groups()
+        if font_name is not None:
+            current = fonts.get(font_name.decode("latin1"))
+        elif literal is not None:
+            if literal_op in (b"'", b'"'):
+                pieces.append("\n")
+            pieces.append(_decode_literal_string(literal, current))
+        elif hex_str is not None:
+            pieces.append(_decode_hex_string(hex_str, current))
+        elif tj_array is not None:
+            for lit, hexs, number in _TJ_PIECES.findall(tj_array):
+                if lit:
+                    pieces.append(_decode_literal_string(lit, current))
+                elif hexs:
+                    pieces.append(_decode_hex_string(hexs, current))
+                elif number and abs(float(number)) >= _TJ_SPACE_THRESHOLD:
+                    pieces.append(" ")
+        elif line_op is not None:
+            pieces.append("\n")
+    return "".join(pieces)
+
+
+def _decompress_stream(dictionary: bytes, raw: bytes) -> Optional[bytes]:
+    import zlib as _zlib
+
+    if b"/FlateDecode" in dictionary:
+        # decompressobj tolerates trailing bytes after the deflate stream,
+        # which occur whenever /Length is an indirect reference and the slice
+        # runs to `endstream` (corpus round 1: every content stream of the
+        # 1913 Form 1040 failed strict zlib.decompress this way).
+        try:
+            decompressor = _zlib.decompressobj()
+            out = decompressor.decompress(raw)
+            return out if out else None
+        except _zlib.error:
+            return None
+    if b"/Filter" not in dictionary:
+        return raw
+    return None
+
+
+def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
+    index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for number, dictionary, raw in _pdf_iter_stream_objects(data):
+        index[number] = (dictionary, raw)
+
+    def page_fonts(page_dict: bytes) -> Dict[str, Dict[str, Any]]:
+        resources = _dict_value(index, page_dict, "Resources")
+        seen_parents = 0
+        node = page_dict
+        while resources is None and seen_parents < 8:
+            parent = re.search(rb"/Parent\s+(\d+)\s+0\s+R", node)
+            if not parent:
+                break
+            entry = index.get(int(parent.group(1)))
+            if not entry:
+                break
+            node = entry[0]
+            resources = _dict_value(index, node, "Resources")
+            seen_parents += 1
+        font_dict = _dict_value(index, resources, "Font")
+        fonts: Dict[str, Dict[str, Any]] = {}
+        if font_dict:
+            for name, ref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", font_dict):
+                entry = index.get(int(ref))
+                if not entry:
+                    continue
+                unicode_ref = re.search(rb"/ToUnicode\s+(\d+)\s+0\s+R", entry[0])
+                parsed: Dict[str, Any] = {}
+                if unicode_ref:
+                    cmap_entry = index.get(int(unicode_ref.group(1)))
+                    if cmap_entry and cmap_entry[1] is not None:
+                        cmap_bytes = _decompress_stream(cmap_entry[0], cmap_entry[1])
+                        if cmap_bytes:
+                            parsed = _parse_tounicode(cmap_bytes)
+                fonts[name.decode("latin1")] = parsed
+        return fonts
+
+    pages: List[str] = []
+    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
+        if not re.search(rb"/Type\s*/Page\b", dictionary) or re.search(rb"/Type\s*/Pages\b", dictionary):
+            continue
+        content_refs: List[int] = []
+        direct = re.search(rb"/Contents\s+(\d+)\s+0\s+R", dictionary)
+        if direct:
+            ref = int(direct.group(1))
+            if ref in index:
+                content_refs.append(ref)
+            else:
+                # /Contents may reference an ARRAY OBJECT of stream refs
+                # ("3 0 obj [139 0 R 5 0 R ...]"), which the dict-only object
+                # walk never yields (corpus round 1: the 1913 Form 1040 keeps
+                # every page's streams behind one). Resolve it from raw bytes.
+                array_obj = re.search(
+                    rb"(?:^|[\r\n])" + str(ref).encode("ascii") + rb"\s+0\s+obj\s*\[([^\]]*)\]",
+                    data,
+                )
+                if array_obj:
+                    content_refs.extend(
+                        int(item) for item in re.findall(rb"(\d+)\s+0\s+R", array_obj.group(1))
+                    )
+        else:
+            array = re.search(rb"/Contents\s*\[([^\]]*)\]", dictionary)
+            if array:
+                content_refs.extend(int(ref) for ref in re.findall(rb"(\d+)\s+0\s+R", array.group(1)))
+        fonts = page_fonts(dictionary)
+        page_text: List[str] = []
+
+        def collect(stream_num: int, inherited_fonts: Dict[str, Dict[str, Any]], depth: int) -> None:
+            """Extract a content stream, then recurse into the Form XObjects it
+            references — text layers routinely live inside Form XObjects, not
+            the page's direct content stream (corpus round 1: the 1913 Form
+            1040's hidden print-production text layer)."""
+            if depth > 3:
+                return
+            entry = index.get(stream_num)
+            if not entry or entry[1] is None:
+                return
+            content = _decompress_stream(entry[0], entry[1])
+            if not content:
+                return
+            own_resources = _dict_value(index, entry[0], "Resources")
+            own_fonts = inherited_fonts
+            if own_resources is not None:
+                own_font_dict = _dict_value(index, own_resources, "Font")
+                if own_font_dict:
+                    own_fonts = dict(inherited_fonts)
+                    for fname, fref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", own_font_dict):
+                        fentry = index.get(int(fref))
+                        if not fentry:
+                            continue
+                        uref = re.search(rb"/ToUnicode\s+(\d+)\s+0\s+R", fentry[0])
+                        parsed: Dict[str, Any] = {}
+                        if uref:
+                            centry = index.get(int(uref.group(1)))
+                            if centry and centry[1] is not None:
+                                cbytes = _decompress_stream(centry[0], centry[1])
+                                if cbytes:
+                                    parsed = _parse_tounicode(cbytes)
+                        own_fonts[fname.decode("latin1")] = parsed
+            page_text.append(_page_content_text(content, own_fonts))
+            # Recurse into referenced Form XObjects (from the stream's own
+            # resources when present, else the page's).
+            resources = own_resources if own_resources is not None else _dict_value(index, dictionary, "Resources")
+            xobjects = _dict_value(index, resources, "XObject")
+            if not xobjects:
+                return
+            for _xname, xref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", xobjects):
+                xentry = index.get(int(xref))
+                if xentry and re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                    collect(int(xref), own_fonts, depth + 1)
+
+        for ref in content_refs:
+            collect(ref, fonts, 0)
+        pages.append("".join(page_text))
+
+    text = "\n".join(pages)
+    return {"pages": len(pages), "characters": len(text), "text": text[:MAX_TEXT_CHARS]}
+
+
+def _tokens(text: str) -> "Counter[str]":
+    from collections import Counter
+
+    return Counter(re.findall(r"[^\W_]+", text.lower(), re.UNICODE))
+
+
+def _plan_text(validated: Dict[str, Any]) -> str:
+    # Ordered-list numbering is carried structurally by <ol>, but in a source
+    # text layer the numerals are literal glyphs; emit them here so recall
+    # compares semantics, not markup choices (corpus round 1: UDHR's clause
+    # numbers were the entire 1.8% "missing" share).
+    pieces: List[str] = []
+    for block in validated["blocks"]:
+        if block.get("type") == "list" and block.get("ordered"):
+            for position, item in enumerate(block["items"], start=1):
+                pieces.append(f"{position}. {item}")
+        else:
+            pieces.append(block_text(block))
+    return "\n".join(pieces)
+
+
+def _token_recall(reference: "Counter[str]", candidate: "Counter[str]") -> Optional[float]:
+    total = sum(reference.values())
+    if not total:
+        return None
+    matched = sum(min(count, candidate.get(token, 0)) for token, count in reference.items())
+    return round(matched / total, 4)
+
+
+MIN_RECALL_TOKENS = 50
+
+
+def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
+    source = Path(args.source).resolve()
+    receipt = ensure_source_pdf(source)
+    extraction = _pdf_extract_text(source.read_bytes())
+    token_count = sum(_tokens(extraction["text"]).values())
+    result = {
+        "ok": True,
+        "source": receipt,
+        "pages": extraction["pages"],
+        "characters": extraction["characters"],
+        "tokens": token_count,
+        "note": (
+            "Deterministic extraction (literal strings + ToUnicode CMaps). Low counts on a "
+            "document that visibly contains text mean the encoding is out of scope, not that "
+            "the document is empty - fall back to reading it."
+        ),
+    }
+    if args.include_text:
+        result["text"] = extraction["text"]
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Independent verification (two-model rule).
+#
+# The model that wrote the repair plan graded its own fidelity; these commands
+# make a SECOND, fresh-context reader grade it instead. verify-init derives a
+# worksheet from the plan deterministically - one attestation per source page,
+# heading, table, list, and image, plus global items. The verifier (a model or
+# a person who did NOT author the plan) reads the source document and the
+# rebuilt HTML directly and fills every item. verify-check then enforces
+# completeness and bindings, and stamps a verification report. The script
+# cannot prove the verifier's independence; it records the attestation and
+# refuses to stamp without it.
+# ---------------------------------------------------------------------------
+
+VERIFY_STATUSES = {"verified", "discrepancy", "unreadable"}
+MIN_DISCREPANCY_NOTE = 20
+MIN_VERIFIER_STATEMENT = 40
+
+
+def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+
+    def add(identifier: str, kind: str, instruction: str, **extra: Any) -> None:
+        items.append({
+            "id": identifier,
+            "kind": kind,
+            "instruction": instruction,
+            **extra,
+            "status": None,
+            "note": "",
+        })
+
+    for page in range(1, validated["document"]["source_page_count"] + 1):
+        add(
+            f"page-{page:03d}",
+            "page",
+            "Read source page "
+            f"{page} in full and confirm every piece of its content is represented in the "
+            "rebuild (or covered by a disclosed omission in the review notes).",
+            source_page=page,
+        )
+    counters = {"heading": 0, "table": 0, "list": 0, "image": 0}
+    for block in validated["blocks"]:
+        kind = block.get("type")
+        if kind == "heading":
+            counters["heading"] += 1
+            add(
+                f"heading-{counters['heading']:03d}",
+                "heading",
+                "Confirm this heading exists in the source with this meaning and that its "
+                "level reflects the document's actual hierarchy.",
+                level=block["level"],
+                text=block["text"],
+                source_page=block["source_page"],
+            )
+        elif kind == "table":
+            counters["table"] += 1
+            add(
+                f"table-{counters['table']:03d}",
+                "table",
+                "Compare EVERY cell of this table against the source, including header "
+                "assignment and row/column order.",
+                caption=block["caption"],
+                columns=len(block["columns"]),
+                rows=len(block["rows"]),
+                source_page=block["source_page"],
+            )
+        elif kind == "list":
+            counters["list"] += 1
+            add(
+                f"list-{counters['list']:03d}",
+                "list",
+                "Confirm the list has exactly these items in the source's order, none "
+                "dropped, merged, or invented.",
+                items=len(block["items"]),
+                ordered=block["ordered"],
+                source_page=block["source_page"],
+            )
+        elif kind == "image" and not block.get("decorative"):
+            counters["image"] += 1
+            add(
+                f"image-{counters['image']:03d}",
+                "image_alt",
+                "Look at the source image and judge whether this alt text is accurate and "
+                "sufficient (not merely plausible).",
+                alt=block.get("alt", ""),
+                source_page=block["source_page"],
+            )
+    add(
+        "global-completeness",
+        "global",
+        "After reading all pages: is any source content absent from the rebuild without a "
+        "disclosed review note?",
+    )
+    add(
+        "global-no-invention",
+        "global",
+        "Is there any content in the rebuild that does not exist in the source?",
+    )
+    add(
+        "global-reading-order",
+        "global",
+        "Does the rebuild's linear order preserve or improve the source's logical reading "
+        "order, with any relocation disclosed?",
+    )
+    add(
+        "global-review-notes",
+        "global",
+        "Does every transformation you observed (moved content, dropped furniture, rejoined "
+        "sentences) appear in the review notes, and is every note accurate?",
+    )
+    return items
+
+
+def _verify_bindings(plan_path: Path, source_path: Path, html_path: Path) -> Dict[str, str]:
+    return {
+        "source_sha256": sha256_file(source_path),
+        "plan_sha256": sha256_file(plan_path),
+        "html_sha256": sha256_file(html_path),
+    }
+
+
+def _load_validated_plan(plan_path: Path) -> Dict[str, Any]:
+    plan = read_plan(plan_path)
+    validated = validate_plan(plan, plan_path.parent)
+    if not validated["ok"]:
+        raise PortableError(
+            "Repair plan validation failed:\n- " + "\n- ".join(validated["errors"]), 3
+        )
+    return validated
+
+
+def verify_init_command(args: argparse.Namespace) -> Dict[str, Any]:
+    plan_path = Path(args.plan).resolve()
+    source_path = Path(args.source).resolve()
+    html_path = Path(args.html).resolve()
+    ensure_source_document(source_path)
+    if not html_path.is_file():
+        raise PortableError("Rebuilt HTML not found.")
+    validated = _load_validated_plan(plan_path)
+    worksheet = {
+        "schemaVersion": "1.0",
+        "createdAt": utc_now(),
+        "binding": _verify_bindings(plan_path, source_path, html_path),
+        "verifier": {
+            "model": "",
+            "context_isolation": "",
+            "read_source_directly": None,
+            "statement": "",
+        },
+        "instructions": (
+            "You are the independent verifier. You must NOT be the model instance that "
+            "authored the repair plan, and you must read the source document and the rebuilt "
+            "HTML directly. Fill status for every item: 'verified', 'discrepancy', or "
+            "'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note "
+            f"(>= {MIN_DISCREPANCY_NOTE} characters) naming what and where. Then fill the "
+            "verifier block: model, context_isolation='fresh-context', "
+            "read_source_directly=true, and a statement (>= "
+            f"{MIN_VERIFIER_STATEMENT} characters) of what you read and how."
+        ),
+        "items": _worksheet_items(validated),
+    }
+    out_path = Path(args.out).resolve()
+    if out_path.exists():
+        raise PortableError("Refusing to overwrite an existing worksheet.")
+    write_json_new(out_path, worksheet)
+    return {
+        "ok": True,
+        "worksheet": out_path.name,
+        "items": len(worksheet["items"]),
+        "nextStep": "Have a fresh-context reader fill the worksheet, then run verify-check.",
+    }
+
+
+def verify_check_command(args: argparse.Namespace) -> Dict[str, Any]:
+    worksheet_path = Path(args.worksheet).resolve()
+    if not worksheet_path.is_file():
+        raise PortableError("Worksheet not found.")
+    try:
+        worksheet = json.loads(worksheet_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PortableError("Could not parse the worksheet: " + compact_error(exc)) from exc
+
+    plan_path = Path(args.plan).resolve()
+    source_path = Path(args.source).resolve()
+    html_path = Path(args.html).resolve()
+    problems: List[str] = []
+
+    expected_binding = _verify_bindings(plan_path, source_path, html_path)
+    actual_binding = worksheet.get("binding") or {}
+    for key, value in expected_binding.items():
+        if actual_binding.get(key) != value:
+            problems.append(f"binding.{key} does not match the supplied file.")
+
+    validated = _load_validated_plan(plan_path)
+    expected_ids = [item["id"] for item in _worksheet_items(validated)]
+    actual_items = worksheet.get("items") or []
+    actual_ids = [item.get("id") for item in actual_items if isinstance(item, dict)]
+    if sorted(actual_ids) != sorted(expected_ids):
+        problems.append(
+            "Worksheet items do not match the plan (missing, duplicated, or invented ids)."
+        )
+
+    discrepancies: List[Dict[str, Any]] = []
+    unreadable: List[Dict[str, Any]] = []
+    for item in actual_items:
+        if not isinstance(item, dict):
+            problems.append("A worksheet item is not an object.")
+            continue
+        status = item.get("status")
+        note = str(item.get("note") or "")
+        if status not in VERIFY_STATUSES:
+            problems.append(f"Item {item.get('id')} has no valid status.")
+            continue
+        if status in {"discrepancy", "unreadable"}:
+            if len(note.strip()) < MIN_DISCREPANCY_NOTE:
+                problems.append(
+                    f"Item {item.get('id')} is '{status}' but its note is too short to act on."
+                )
+            record = {"id": item.get("id"), "kind": item.get("kind"), "note": note}
+            (discrepancies if status == "discrepancy" else unreadable).append(record)
+
+    verifier = worksheet.get("verifier") or {}
+    if not str(verifier.get("model") or "").strip():
+        problems.append("verifier.model is empty.")
+    if verifier.get("context_isolation") != "fresh-context":
+        problems.append("verifier.context_isolation must be exactly 'fresh-context'.")
+    if verifier.get("read_source_directly") is not True:
+        problems.append("verifier.read_source_directly must be true.")
+    if len(str(verifier.get("statement") or "").strip()) < MIN_VERIFIER_STATEMENT:
+        problems.append("verifier.statement is missing or too short.")
+
+    if problems:
+        raise PortableError(
+            "Verification worksheet is incomplete or invalid:\n- " + "\n- ".join(problems), 3
+        )
+
+    result = "verified" if not discrepancies and not unreadable else "discrepancies-found"
+    report = {
+        "schemaVersion": "1.0",
+        "createdAt": utc_now(),
+        "result": result,
+        "binding": expected_binding,
+        "verifier": {
+            "model": verifier.get("model"),
+            "context_isolation": verifier.get("context_isolation"),
+            "statement": verifier.get("statement"),
+        },
+        "counts": {
+            "items": len(actual_items),
+            "verified": len(actual_items) - len(discrepancies) - len(unreadable),
+            "discrepancies": len(discrepancies),
+            "unreadable": len(unreadable),
+        },
+        "discrepancies": discrepancies,
+        "unreadable": unreadable,
+        "meaning": (
+            "'verified' means an independent reader attested every item against the source. "
+            "It does not upgrade any compliance claim, and the script cannot prove the "
+            "reader's independence - it records the attestation."
+        ),
+    }
+    if args.out:
+        out_path = Path(args.out).resolve()
+        if out_path.exists():
+            raise PortableError("Refusing to overwrite an existing verification report.")
+        write_json_new(out_path, report)
+        report["reportFile"] = out_path.name
+    report["ok"] = True
+    return report
+
+
 def lint_command(args: argparse.Namespace) -> Dict[str, Any]:
     input_path = Path(args.html).resolve()
     if not input_path.is_file():
@@ -1118,7 +2386,7 @@ def validate_pdf_command(args: argparse.Namespace) -> Dict[str, Any]:
 
 
 def source_info_command(args: argparse.Namespace) -> Dict[str, Any]:
-    return ensure_source_pdf(Path(args.source).resolve())
+    return ensure_source_document(Path(args.source).resolve())
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1149,6 +2417,61 @@ def build_parser() -> argparse.ArgumentParser:
     pdf_parser = subparsers.add_parser("validate-pdf", help="Run local veraPDF PDF/UA-1 validation.")
     pdf_parser.add_argument("--pdf", required=True)
     pdf_parser.add_argument("--out")
+
+    audit_parser = subparsers.add_parser(
+        "audit-source",
+        help="Deterministic structural before-facts for a source PDF (no rendering, no score).",
+    )
+    audit_parser.add_argument("--source", required=True)
+
+    images_parser = subparsers.add_parser(
+        "extract-images",
+        help="Extract image XObjects from a source PDF for reuse in a repair plan.",
+    )
+    images_parser.add_argument("--source", required=True)
+    images_parser.add_argument("--out-dir", required=True)
+    images_parser.add_argument("--min-pixels", type=int, default=4096)
+
+    office_parser = subparsers.add_parser(
+        "extract-office",
+        help="Extract text from a .docx or .pptx so a repair plan can be authored without vision.",
+    )
+    office_parser.add_argument("--source", required=True)
+
+    batch_parser = subparsers.add_parser(
+        "batch-remediate",
+        help="Remediate up to 60 (source, plan) pairs from a manifest; emits a per-file scoreboard.",
+    )
+    batch_parser.add_argument("--manifest", required=True)
+    batch_parser.add_argument("--out-dir", required=True)
+    batch_parser.add_argument("--pdf", choices=("auto", "never", "required"), default="auto")
+    batch_parser.add_argument("--verapdf", choices=("auto", "never", "required"), default="auto")
+
+    text_parser = subparsers.add_parser(
+        "extract-text",
+        help="Deterministically extract a PDF's text layer (literal strings + ToUnicode CMaps).",
+    )
+    text_parser.add_argument("--source", required=True)
+    text_parser.add_argument("--include-text", action="store_true")
+
+    verify_init = subparsers.add_parser(
+        "verify-init",
+        help="Derive an independent-verification worksheet from a repair plan.",
+    )
+    verify_init.add_argument("--plan", required=True)
+    verify_init.add_argument("--source", required=True)
+    verify_init.add_argument("--html", required=True)
+    verify_init.add_argument("--out", required=True)
+
+    verify_check = subparsers.add_parser(
+        "verify-check",
+        help="Validate a filled worksheet and stamp the verification report.",
+    )
+    verify_check.add_argument("--worksheet", required=True)
+    verify_check.add_argument("--plan", required=True)
+    verify_check.add_argument("--source", required=True)
+    verify_check.add_argument("--html", required=True)
+    verify_check.add_argument("--out")
     return parser
 
 
@@ -1173,6 +2496,24 @@ def main() -> int:
                 exit_code = 5
             elif result.get("compliant") is not True:
                 exit_code = 6
+        elif args.command == "audit-source":
+            result = audit_source_command(args)
+        elif args.command == "extract-images":
+            result = extract_images_command(args)
+        elif args.command == "extract-office":
+            result = extract_office_command(args)
+        elif args.command == "batch-remediate":
+            result = batch_remediate_command(args)
+            if result.get("ok") is not True:
+                exit_code = 8
+        elif args.command == "extract-text":
+            result = extract_text_command(args)
+        elif args.command == "verify-init":
+            result = verify_init_command(args)
+        elif args.command == "verify-check":
+            result = verify_check_command(args)
+            if result.get("result") == "discrepancies-found":
+                exit_code = 9
         else:
             parser.error("Unknown command.")
             return 2

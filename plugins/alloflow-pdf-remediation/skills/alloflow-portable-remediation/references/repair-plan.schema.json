@@ -40,6 +40,10 @@
         "subject": {
           "type": "string",
           "maxLength": 1000
+        },
+        "variant": {
+          "enum": ["original", "translated", "simplified"],
+          "description": "Marks a plan that deliberately transforms the source: 'translated' (document.language differs from the source language) or 'simplified' (plain-language rewrite). Both require a review_notes entry describing the transformation. Default: original."
         }
       }
     },
