@@ -20,7 +20,7 @@ const TMP = path.join(ROOT, '_tmp_dispro_analyzer_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__disproAnalyzerExports = { DisproAnalyzerPanel, DisproChart, DisproResults, disproCompute, disproParsePaste, disproResultCsv, disproFmtPct, disproFmtRatio, DISPRO_OUTCOME_PRESETS };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__disproAnalyzerExports = { DisproAnalyzerPanel, DisproChart, DisproResults, DisproTrendChart, disproCompute, disproParsePaste, disproResultCsv, disproFmtPct, disproFmtRatio, disproTrendSeries, disproNormalizeAlt, DISPRO_OUTCOME_PRESETS };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling dispro_analyzer_source.jsx with esbuild...');
@@ -84,6 +84,9 @@ ${compiled}
       disproFmtRatio: disproFmtRatio,
       DisproChart: DisproChart,
       DisproResults: DisproResults,
+      DisproTrendChart: DisproTrendChart,
+      disproTrendSeries: disproTrendSeries,
+      disproNormalizeAlt: disproNormalizeAlt,
       DISPRO_OUTCOME_PRESETS: DISPRO_OUTCOME_PRESETS
     }
   };

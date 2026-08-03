@@ -57,9 +57,23 @@ function disproDateStamp() {
 
 // ── Pure metric engine ──────────────────────────────────────────────
 
+// Optional alternate comparison (34 CFR 300.647(b)(1)(iv) pattern): when the
+// in-district comparison group is too small to be reliable, states compare
+// the group's risk against ALL OTHER STUDENTS IN THE STATE instead. The
+// admin supplies those two statewide numbers; validation mirrors group rows.
+function disproNormalizeAlt(altComparison) {
+  if (!altComparison) return null;
+  const enrollment = Number(altComparison.enrollment);
+  const students = Number(altComparison.students);
+  if (!Number.isFinite(enrollment) || enrollment <= 0 || Math.floor(enrollment) !== enrollment) return null;
+  if (!Number.isFinite(students) || students < 0 || Math.floor(students) !== students) return null;
+  if (students > enrollment) return null;
+  return { label: String(altComparison.label || 'All other students statewide'), enrollment, students, risk: students / enrollment };
+}
+
 // groups: [{name, enrollment, students}] with numbers already coerced.
 // Returns per-group metrics + validation errors. Never throws on junk.
-function disproCompute(groups) {
+function disproCompute(groups, altComparison) {
   const errors = [];
   const clean = [];
   (groups || []).forEach((g, i) => {
@@ -98,7 +112,53 @@ function disproCompute(groups) {
     const outcomeShare = totals.students > 0 ? g.students / totals.students : null;
     return { name: g.name, enrollment: g.enrollment, students: g.students, risk, riskOthers, riskRatio, enrollShare, outcomeShare, flags };
   });
-  return { rows, totals, errors, valid: rows.length >= 2 && errors.length === 0 };
+  const alt = disproNormalizeAlt(altComparison);
+  if (alt) {
+    rows.forEach((r) => {
+      // Alternate RR is defined for every row when alt data is present; the
+      // UI surfaces it only where the in-district comparison is unstable.
+      r.altRiskRatio = (r.risk != null && alt.risk > 0) ? r.risk / alt.risk : null;
+    });
+  }
+  return { rows, totals, errors, valid: rows.length >= 2 && errors.length === 0, altComparison: alt };
+}
+
+// Multi-period trend across SAVED analyses: analyses sharing an outcome
+// label, sorted by date, become x-positions; each group name (exact match,
+// first-seen order) becomes a series of risk ratios. Groups beyond the
+// 8-slot categorical palette are listed as omitted, never silently dropped.
+function disproTrendSeries(analyses) {
+  const byOutcome = {};
+  (analyses || []).forEach((a) => {
+    if (!a || !Array.isArray(a.groups)) return;
+    const key = String(a.outcomeLabel || '').trim() || '(no outcome label)';
+    (byOutcome[key] = byOutcome[key] || []).push(a);
+  });
+  const out = [];
+  Object.keys(byOutcome).forEach((outcomeLabel) => {
+    const list = byOutcome[outcomeLabel].slice().sort((x, y) => String(x.date || '').localeCompare(String(y.date || '')));
+    if (list.length < 2) return;
+    const groupOrder = [];
+    list.forEach((a) => {
+      a.groups.forEach((g) => {
+        const name = String((g && g.name) || '').trim();
+        if (name && groupOrder.indexOf(name) === -1) groupOrder.push(name);
+      });
+    });
+    const groups = groupOrder.slice(0, 8);
+    const omitted = groupOrder.slice(8);
+    const points = list.map((a) => ({ id: a.id, date: a.date || '', title: a.title || '' }));
+    const series = {};
+    groups.forEach((name) => {
+      series[name] = list.map((a) => {
+        const res = disproCompute(a.groups, a.altComparison);
+        const row = res.rows.find((r) => r.name === name);
+        return row && row.riskRatio != null ? row.riskRatio : null;
+      });
+    });
+    out.push({ outcomeLabel, points, groups, omitted, series });
+  });
+  return out;
 }
 
 // Paste parser: comma / tab / semicolon separated lines of
@@ -137,19 +197,24 @@ function disproResultCsv(analysis, result) {
     const s = v == null ? '' : String(v);
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
-  const head = ['group', 'enrollment', 'students_with_outcome', 'risk_index', 'risk_ratio_vs_all_others', 'enrollment_share', 'outcome_share', 'flags'];
+  const head = ['group', 'enrollment', 'students_with_outcome', 'risk_index', 'risk_ratio_vs_all_others', 'alternate_risk_ratio', 'enrollment_share', 'outcome_share', 'flags'];
   const lines = [head.join(',')];
   result.rows.forEach((r) => {
     lines.push([
       esc(r.name), r.enrollment, r.students,
       r.risk == null ? '' : r.risk.toFixed(4),
       r.riskRatio == null ? '' : r.riskRatio.toFixed(4),
+      r.altRiskRatio == null ? '' : r.altRiskRatio.toFixed(4),
       r.enrollShare == null ? '' : r.enrollShare.toFixed(4),
       r.outcomeShare == null ? '' : r.outcomeShare.toFixed(4),
       esc(r.flags.join('|')),
     ].join(','));
   });
-  lines.push(['TOTAL', result.totals.enrollment, result.totals.students, '', '', '', '', ''].join(','));
+  lines.push(['TOTAL', result.totals.enrollment, result.totals.students, '', '', '', '', '', ''].join(','));
+  if (result.altComparison) {
+    lines.push('');
+    lines.push(esc('Alternate comparison: ' + result.altComparison.label + ' — ' + result.altComparison.students + '/' + result.altComparison.enrollment + ' (risk ' + (result.altComparison.risk * 100).toFixed(2) + '%). Alternate risk ratio = group risk / this risk; used when the in-district comparison is too small to be reliable.'));
+  }
   lines.push('');
   lines.push(esc('Outcome: ' + (analysis.outcomeLabel || '')));
   lines.push(esc('Date: ' + (analysis.date || '')));
@@ -229,6 +294,111 @@ function DisproChart({ rows, tt }) {
   );
 }
 
+// ── Multi-period trend chart (module scope, stateless) ──────────────
+// Validated 8-slot categorical order (adjacent-pairlist safe for lines);
+// literal hex — SVG attrs can't take var(). Legend always; direct end-labels
+// only up to 4 series (palette relief rule); table below is the a11y path.
+const DISPRO_TREND_COLORS = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
+
+function DisproTrendChart({ trend, tt }) {
+  const n = trend.points.length;
+  const labelable = trend.groups.length <= 4;
+  const W = 630, H = 230, ML = 40, MR = labelable ? 158 : 24, MT = 12, MB = 26;
+  const PW = W - ML - MR, PH = H - MT - MB;
+  const allRR = trend.groups.flatMap((g) => trend.series[g]).filter((v) => v != null);
+  const axisMax = Math.max(2, Math.ceil(Math.max(1, ...allRR) * 2) / 2 + 0.5);
+  const px = (i) => ML + (n === 1 ? PW / 2 : (i * PW) / (n - 1));
+  const py = (v) => MT + PH - (Math.min(v, axisMax) / axisMax) * PH;
+  const yTicks = [];
+  for (let v = 0; v <= axisMax + 0.001; v += (axisMax > 4 ? 1 : 0.5)) yTicks.push(Math.round(v * 2) / 2);
+  const ends = labelable ? trend.groups.map((g, gi) => {
+    const arr = trend.series[g];
+    let last = -1;
+    for (let i = arr.length - 1; i >= 0; i -= 1) if (arr[i] != null) { last = i; break; }
+    return last === -1 ? null : { g, gi, y: py(arr[last]), v: arr[last] };
+  }).filter(Boolean).sort((a, b) => a.y - b.y) : [];
+  for (let i = 1; i < ends.length; i += 1) {
+    if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+  }
+  return (
+    <div>
+      <div className="flex flex-wrap gap-3 mt-1" aria-hidden="true">
+        {trend.groups.map((g, gi) => (
+          <span key={g} className="inline-flex items-center gap-1.5 text-[11px] text-slate-600">
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: DISPRO_TREND_COLORS[gi] }} />
+            {g}
+          </span>
+        ))}
+      </div>
+      <div className="overflow-x-auto">
+        <svg viewBox={'0 0 ' + W + ' ' + H} width="100%" style={{ minWidth: '480px', maxWidth: '660px' }} role="img"
+          aria-label={tt('dispro.trend_aria', 'Line chart of each group’s risk ratio across saved analyses. Exact values are in the data table below.')}>
+          {yTicks.map((v) => (
+            <g key={v}>
+              <line x1={ML} x2={ML + PW} y1={py(v)} y2={py(v)} stroke={v === 1 ? '#898781' : '#e1e0d9'} strokeWidth={v === 1 ? '1.5' : '1'} strokeDasharray={v === 1 ? '4 3' : 'none'} />
+              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#898781">{v}</text>
+            </g>
+          ))}
+          <text x={ML + 4} y={py(1) - 4} fontSize="9" fill="#52514e">{tt('dispro.chart_parity', 'parity (1.0)')}</text>
+          {trend.points.map((p, i) => (
+            <text key={p.id} x={px(i)} y={H - 8} textAnchor="middle" fontSize="10" fill="#898781">{p.date}</text>
+          ))}
+          {trend.groups.map((g, gi) => {
+            const arr = trend.series[g];
+            const color = DISPRO_TREND_COLORS[gi];
+            const segments = [];
+            let current = [];
+            arr.forEach((v, i) => {
+              if (v != null) current.push([px(i), py(v)]);
+              else if (current.length) { segments.push(current); current = []; }
+            });
+            if (current.length) segments.push(current);
+            return (
+              <g key={g}>
+                {segments.map((seg, si) => seg.length > 1 ? (
+                  <polyline key={si} points={seg.map((pt) => pt[0] + ',' + pt[1]).join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                ) : null)}
+                {arr.map((v, i) => v != null ? (
+                  <circle key={i} cx={px(i)} cy={py(v)} r="4" fill={color} stroke="#ffffff" strokeWidth="2">
+                    <title>{g + ' · ' + trend.points[i].date + ' · RR ' + v.toFixed(2)}</title>
+                  </circle>
+                ) : null)}
+              </g>
+            );
+          })}
+          {ends.map((e) => (
+            <text key={e.g} x={ML + PW + 8} y={e.y + 3.5} fontSize="11" fontWeight="600" fill="#52514e">{(e.g.length > 14 ? e.g.slice(0, 13) + '…' : e.g)} {e.v.toFixed(2)}</text>
+          ))}
+        </svg>
+      </div>
+      <details className="mt-1">
+        <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('dispro.trend_table', 'Data table')}</summary>
+        <div className="overflow-x-auto">
+          <table className="mt-1 text-[11px] border-collapse">
+            <thead>
+              <tr>
+                <th scope="col" className="text-left p-1 text-slate-600">{tt('dispro.col_group', 'Group')}</th>
+                {trend.points.map((p) => <th key={p.id} scope="col" className="text-left p-1 text-slate-600">{p.date}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {trend.groups.map((g) => (
+                <tr key={g} className="border-t border-slate-200">
+                  <th scope="row" className="text-left p-1 font-normal text-slate-700">{g}</th>
+                  {trend.series[g].map((v, i) => <td key={i} className="p-1 text-slate-700">{v == null ? '—' : v.toFixed(2)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+      {trend.omitted.length > 0 && (
+        <p className="text-[10px] text-amber-800 mt-1">{tt('dispro.trend_omitted', 'Not charted (over the 8-series limit):')} {trend.omitted.join(', ')} — {tt('dispro.trend_omitted_hint', 'still present in each saved analysis.')}</p>
+      )}
+    </div>
+  );
+}
+
 // ── Results block (shared by live analysis and saved view) ──────────
 function DisproResults({ analysis, result, tt }) {
   const flagged = result.rows.filter((r) => r.flags.length > 0);
@@ -254,7 +424,12 @@ function DisproResults({ analysis, result, tt }) {
                 <td className="p-1.5 text-center text-slate-700">{r.enrollment}</td>
                 <td className="p-1.5 text-center text-slate-700">{r.students}</td>
                 <td className="p-1.5 text-center text-slate-700">{disproFmtPct(r.risk)}</td>
-                <td className={'p-1.5 text-center font-bold ' + (r.riskRatio != null && r.riskRatio >= 2 ? 'text-rose-800' : 'text-slate-800')}>{disproFmtRatio(r.riskRatio)}</td>
+                <td className={'p-1.5 text-center font-bold ' + (r.riskRatio != null && r.riskRatio >= 2 ? 'text-rose-800' : 'text-slate-800')}>
+                  {disproFmtRatio(r.riskRatio)}
+                  {r.altRiskRatio != null && (r.flags.indexOf('small_comparison') !== -1 || r.flags.indexOf('zero_comparison_risk') !== -1) && (
+                    <span className="block text-[10px] font-normal text-slate-600">{tt('dispro.alt_short', 'alt')} {r.altRiskRatio.toFixed(2)}</span>
+                  )}
+                </td>
                 <td className="p-1.5 text-center text-slate-700">{disproFmtPct(r.outcomeShare)} vs {disproFmtPct(r.enrollShare)}</td>
               </tr>
             ))}
@@ -270,6 +445,13 @@ function DisproResults({ analysis, result, tt }) {
         </table>
       </div>
       <DisproChart rows={result.rows} tt={tt} />
+      {result.altComparison && (
+        <p className="mt-2 text-[10px] text-slate-600 bg-slate-100 border border-slate-200 rounded-lg p-2">
+          <span className="font-bold">{tt('dispro.alt_note_title', 'Alternate comparison on file:')}</span>{' '}
+          {result.altComparison.label} — {result.altComparison.students}/{result.altComparison.enrollment} ({disproFmtPct(result.altComparison.risk, 2)}).{' '}
+          {tt('dispro.alt_note', 'Where the in-district comparison is flagged unstable, the table shows the alternate risk ratio (group risk ÷ this risk) beneath the standard one — the 34 CFR 300.647 pattern for small comparison groups.')}
+        </p>
+      )}
       {flagged.length > 0 && (
         <div className="mt-2 bg-amber-50 border border-amber-300 rounded-xl p-3">
           <h4 className="text-xs font-bold text-amber-900">{tt('dispro.flags_title', '† Stability cautions')}</h4>
@@ -305,6 +487,7 @@ function DisproAnalyzerPanel(props) {
       { name: '', enrollment: '', students: '' },
       { name: '', enrollment: '', students: '' },
     ],
+    altComparison: { label: 'All other students statewide', enrollment: '', students: '' },
   });
   const [analyses, setAnalyses] = React.useState(() => { const a = disproLoad(DISPRO_ANALYSES_KEY, []); return Array.isArray(a) ? a : []; });
   const [draft, setDraft] = React.useState(() => {
@@ -355,7 +538,7 @@ function DisproAnalyzerPanel(props) {
     };
   }, [onClose]);
 
-  const result = disproCompute(draft.groups);
+  const result = disproCompute(draft.groups, draft.altComparison);
 
   const setGroup = (i, field, value) => {
     setDraft((d) => ({ ...d, groups: d.groups.map((g, gi) => gi === i ? { ...g, [field]: value } : g) }));
@@ -383,6 +566,7 @@ function DisproAnalyzerPanel(props) {
       date: draft.date,
       savedAt: Date.now(),
       groups: result.rows.map((r) => ({ name: r.name, enrollment: r.enrollment, students: r.students })),
+      altComparison: result.altComparison ? { label: result.altComparison.label, enrollment: result.altComparison.enrollment, students: result.altComparison.students } : null,
     };
     setAnalyses((a) => [record, ...a]);
     setTab('saved');
@@ -391,7 +575,7 @@ function DisproAnalyzerPanel(props) {
   };
 
   const exportCsvFor = (analysis) => {
-    const res = disproCompute(analysis.groups);
+    const res = disproCompute(analysis.groups, analysis.altComparison);
     disproDownload(
       'disproportionality-' + (analysis.date || disproDateStamp()) + '.csv',
       'text/csv;charset=utf-8',
@@ -407,6 +591,7 @@ function DisproAnalyzerPanel(props) {
   const tabs = [
     { id: 'analyze', label: tt('dispro.tab_analyze', 'Analyze'), icon: '⚖️' },
     { id: 'saved', label: tt('dispro.tab_saved', 'Saved'), icon: '🗂️' },
+    { id: 'trends', label: tt('dispro.tab_trends', 'Trends'), icon: '📈' },
   ];
 
   return (
@@ -507,6 +692,30 @@ function DisproAnalyzerPanel(props) {
                     <button type="button" onClick={applyPaste} className="mt-1 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('dispro.paste_apply', 'Load rows')}</button>
                   </div>
                 )}
+                <details className="mt-2">
+                  <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('dispro.alt_toggle', 'Alternate comparison (optional — for small comparison groups)')}</summary>
+                  <div className="mt-1 flex flex-wrap gap-2 items-end">
+                    <div className="flex-1 min-w-40">
+                      <label htmlFor="dispro-alt-label" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.alt_label', 'Comparison population')}</label>
+                      <input id="dispro-alt-label" type="text" value={(draft.altComparison && draft.altComparison.label) || ''}
+                        onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), label: e.target.value } }))}
+                        className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div className="w-28">
+                      <label htmlFor="dispro-alt-enroll" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.col_enrollment', 'Enrollment')}</label>
+                      <input id="dispro-alt-enroll" type="text" inputMode="numeric" value={(draft.altComparison && draft.altComparison.enrollment) || ''}
+                        onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), enrollment: e.target.value } }))}
+                        className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div className="w-32">
+                      <label htmlFor="dispro-alt-students" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.col_students_short2', 'Students w/ outcome')}</label>
+                      <input id="dispro-alt-students" type="text" inputMode="numeric" value={(draft.altComparison && draft.altComparison.students) || ''}
+                        onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), students: e.target.value } }))}
+                        className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">{tt('dispro.alt_hint', 'When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio.')}</p>
+                </details>
                 {result.errors.length > 0 && (
                   <ul className="mt-2 space-y-0.5 text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5" role="alert">
                     {result.errors.map((e, i) => <li key={i}>{e.message}</li>)}
@@ -543,9 +752,26 @@ function DisproAnalyzerPanel(props) {
                 </div>
               </div>
               <h3 className="text-sm font-bold text-slate-800">{viewAnalysis.title}</h3>
-              <DisproResults analysis={viewAnalysis} result={disproCompute(viewAnalysis.groups)} tt={tt} />
+              <DisproResults analysis={viewAnalysis} result={disproCompute(viewAnalysis.groups, viewAnalysis.altComparison)} tt={tt} />
             </div>
           )}
+
+          {tab === 'trends' && (() => {
+            const trends = disproTrendSeries(analyses);
+            return (
+              <div>
+                <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('dispro.trends_title', 'Risk ratios over time')}</h3>
+                <p className="text-[11px] text-slate-500 mb-2">{tt('dispro.trends_hint', 'Save analyses of the same outcome across periods (semesters, years) with matching group names — each outcome with two or more saved analyses charts here. States typically evaluate significant disproportionality over multiple years, so a single elevated point is a prompt to keep measuring, not a pattern.')}</p>
+                {trends.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('dispro.trends_empty', 'No outcome has two or more saved analyses yet. Save at least two (same outcome label, different dates) on the Analyze tab.')}</p>}
+                {trends.map((trend) => (
+                  <div key={trend.outcomeLabel} className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
+                    <h4 className="text-sm font-bold text-slate-800">{trend.outcomeLabel}</h4>
+                    <DisproTrendChart trend={trend} tt={tt} />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {tab === 'saved' && !viewAnalysis && (
             <div>

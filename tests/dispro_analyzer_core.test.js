@@ -154,6 +154,73 @@ describe('disproParsePaste', () => {
   });
 });
 
+describe('alternate risk ratio (34 CFR 300.647 pattern)', () => {
+  it('computes alt RR from statewide counts against a hand-worked example', () => {
+    // Group risk 18/120 = 0.15; statewide all-others 5,000/100,000 = 0.05
+    // → alternate RR = 3.0 regardless of the tiny in-district comparison.
+    const r = D.disproCompute([
+      { name: 'Students with IEPs', enrollment: 120, students: 18 },
+      { name: 'Tiny rest', enrollment: 8, students: 1 },
+    ], { label: 'Statewide', enrollment: 100000, students: 5000 });
+    expect(r.rows[0].flags).toContain('small_comparison');
+    expect(r.rows[0].altRiskRatio).toBeCloseTo(3.0);
+    expect(r.altComparison.risk).toBeCloseTo(0.05);
+  });
+
+  it('rejects invalid alt data silently (no alt column, no crash)', () => {
+    for (const bad of [null, {}, { enrollment: '', students: '' }, { enrollment: 100, students: 200 }, { enrollment: -5, students: 1 }]) {
+      const r = D.disproCompute([
+        { name: 'A', enrollment: 100, students: 5 },
+        { name: 'B', enrollment: 100, students: 5 },
+      ], bad);
+      expect(r.altComparison || null).toBe(null);
+      expect(r.rows[0].altRiskRatio == null).toBe(true);
+    }
+  });
+});
+
+describe('disproTrendSeries', () => {
+  const mk = (id, date, outcomeLabel, iepStudents) => ({
+    id, date, outcomeLabel, title: id,
+    groups: [
+      { name: 'Students with IEPs', enrollment: 120, students: iepStudents },
+      { name: 'All other students', enrollment: 880, students: 44 },
+    ],
+  });
+
+  it('groups by outcome, sorts by date, and yields RR series', () => {
+    const trends = D.disproTrendSeries([
+      mk('a2', '2026-06-01', 'ODRs', 12),
+      mk('a1', '2025-06-01', 'ODRs', 18),
+      mk('b1', '2026-06-01', 'Suspensions', 6), // only one — excluded
+    ]);
+    expect(trends.length).toBe(1);
+    const t = trends[0];
+    expect(t.outcomeLabel).toBe('ODRs');
+    expect(t.points.map((p) => p.id)).toEqual(['a1', 'a2']);
+    expect(t.series['Students with IEPs'][0]).toBeCloseTo(3.0);   // 0.15/0.05
+    expect(t.series['Students with IEPs'][1]).toBeCloseTo(2.0);   // 0.10/0.05
+  });
+
+  it('leaves gaps for groups missing from a period and reports omitted beyond 8', () => {
+    const a1 = mk('a1', '2025-06-01', 'ODRs', 18);
+    const a2 = {
+      id: 'a2', date: '2026-06-01', outcomeLabel: 'ODRs', title: 'a2',
+      groups: [{ name: 'All other students', enrollment: 880, students: 44 },
+               { name: 'Brand new group', enrollment: 100, students: 5 }],
+    };
+    const t = D.disproTrendSeries([a1, a2])[0];
+    expect(t.series['Students with IEPs']).toEqual([expect.any(Number), null]);
+    const many = ['2025-06-01', '2026-06-01'].map((date, di) => ({
+      id: 'm' + di, date, outcomeLabel: 'Many', title: 'm',
+      groups: Array.from({ length: 10 }, (_, i) => ({ name: 'G' + i, enrollment: 100, students: 5 + i })),
+    }));
+    const tm = D.disproTrendSeries(many)[0];
+    expect(tm.groups.length).toBe(8);
+    expect(tm.omitted).toEqual(['G8', 'G9']);
+  });
+});
+
 describe('disproResultCsv', () => {
   it('exports rows, totals, and the descriptive-only method note', () => {
     const groups = [

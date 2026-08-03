@@ -12074,7 +12074,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080305'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
-    window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080301'); }; })();
+    window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080302'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
