@@ -3672,8 +3672,11 @@ function TestPrepHub(props) {
   React.useEffect(() => {
     if (!isOpen) return void 0;
     const prior = document.activeElement;
-    const oldOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    if (++scrollLock.count === 1) {
+      scrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     if (dialogRef.current) dialogRef.current.focus();
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -3699,7 +3702,8 @@ function TestPrepHub(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = oldOverflow;
+      scrollLock.count = Math.max(0, scrollLock.count - 1);
+      if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
       if (prior && typeof prior.focus === "function") prior.focus();
     };
   }, [isOpen, onClose]);

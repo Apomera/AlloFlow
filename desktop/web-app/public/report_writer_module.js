@@ -4685,15 +4685,17 @@ Return ONLY valid JSON:
         const closeDialog = () => { if (typeof onClose === 'function') onClose(); };
         useEffect(() => {
             previousFocusRef.current = document.activeElement;
-            const previousOverflow = document.body.style.overflow;
-            document.body.style.overflow = 'hidden';
+            // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
+            const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+            if (++scrollLock.count === 1) { scrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
             const timer = setTimeout(() => {
                 if (closeButtonRef.current && typeof closeButtonRef.current.focus === 'function') closeButtonRef.current.focus();
                 else if (dialogRef.current && typeof dialogRef.current.focus === 'function') dialogRef.current.focus();
             }, 0);
             return () => {
                 clearTimeout(timer);
-                document.body.style.overflow = previousOverflow;
+                scrollLock.count = Math.max(0, scrollLock.count - 1);
+                if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
                 const previous = previousFocusRef.current;
                 if (previous && document.contains(previous) && typeof previous.focus === 'function') previous.focus();
             };

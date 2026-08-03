@@ -3778,13 +3778,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const onPresentationKey = (event) => {
       if (event.key === "Escape" && presenting && !getFullscreenElement()) setPresenting(false);
     };
-    const previousOverflow = document.body.style.overflow;
-    if (presenting) document.body.style.overflow = "hidden";
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    if (presenting && ++scrollLock.count === 1) {
+      scrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     document.addEventListener("fullscreenchange", onFullscreenChange);
     document.addEventListener("webkitfullscreenchange", onFullscreenChange);
     window.addEventListener("keydown", onPresentationKey);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      if (presenting) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+      }
       document.removeEventListener("fullscreenchange", onFullscreenChange);
       document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
       window.removeEventListener("keydown", onPresentationKey);

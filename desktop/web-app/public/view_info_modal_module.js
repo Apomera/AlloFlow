@@ -1351,8 +1351,11 @@ function InfoModal({
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
     const body = document.body;
-    const previousBodyOverflow = body?.style.overflow || "";
-    if (body) body.style.overflow = "hidden";
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    if (body && ++scrollLock.count === 1) {
+      scrollLock.prev = body.style.overflow;
+      body.style.overflow = "hidden";
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
       'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
@@ -1394,7 +1397,10 @@ function InfoModal({
     dialog.addEventListener("keydown", onKeyDown);
     return () => {
       dialog.removeEventListener("keydown", onKeyDown);
-      if (body) body.style.overflow = previousBodyOverflow;
+      if (body) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+      }
       if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);

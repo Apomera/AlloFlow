@@ -1977,8 +1977,9 @@
       return function(){synth.removeEventListener('voiceschanged',refreshVoices);};
     },[]);
     useEffect(function(){
-      var previousFocus=document.activeElement,previousOverflow=document.body.style.overflow;
-      document.body.style.overflow='hidden';
+      var previousFocus=document.activeElement;
+      var scrollLock=window.__alloScrollLockState||(window.__alloScrollLockState={count:0,prev:''});
+      if(++scrollLock.count===1){scrollLock.prev=document.body.style.overflow;document.body.style.overflow='hidden';}
       if(dialogRef.current)dialogRef.current.focus();
       function key(x){
         if(x.key==='Escape'){if(props.onClose)props.onClose();return;}
@@ -1990,7 +1991,7 @@
         else if(!x.shiftKey&&document.activeElement===last){x.preventDefault();first.focus();}
       }
       document.addEventListener('keydown',key);
-      return function(){document.removeEventListener('keydown',key);generationRequestRef.current++;coachRequestRef.current++;chatRequestRef.current++;studioRequestRef.current++;uiTransReqRef.current++;packReqRef.current++;imageReqRef.current++;sceneReqRef.current++;pictureReqRef.current++;reviewImgReqRef.current++;document.body.style.overflow=previousOverflow;if(voiceRef.current)voiceRef.current.stop();if(chatVoiceRef.current)chatVoiceRef.current.stop();if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus();};
+      return function(){document.removeEventListener('keydown',key);generationRequestRef.current++;coachRequestRef.current++;chatRequestRef.current++;studioRequestRef.current++;uiTransReqRef.current++;packReqRef.current++;imageReqRef.current++;sceneReqRef.current++;pictureReqRef.current++;reviewImgReqRef.current++;scrollLock.count=Math.max(0,scrollLock.count-1);if(scrollLock.count===0)document.body.style.overflow=scrollLock.prev;if(voiceRef.current)voiceRef.current.stop();if(chatVoiceRef.current)chatVoiceRef.current.stop();if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus();};
     },[]);
     useEffect(function(){
       if(!destructiveConfirm)return;

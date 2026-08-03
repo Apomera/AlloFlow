@@ -164,14 +164,24 @@
     var body = document.body;
     var html = document.documentElement;
     if (!body || !html) return;
-    var previousBodyOverflow = body.style.overflow;
+    // Ref-counted shared body scroll lock (window.__alloScrollLockState):
+    // save/restore of body.style.overflow strands the page at
+    // overflow:hidden when two modules interleave open/close non-LIFO.
+    var scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    });
+    if (++scrollLock.count === 1) {
+      scrollLock.prev = body.style.overflow;
+      body.style.overflow = 'hidden';
+    }
     var previousHtmlOverflow = html.style.overflow;
     body.classList.add('alloflow-launchpad-active');
-    body.style.overflow = 'hidden';
     html.style.overflow = 'hidden';
     return function () {
       body.classList.remove('alloflow-launchpad-active');
-      body.style.overflow = previousBodyOverflow;
+      scrollLock.count = Math.max(0, scrollLock.count - 1);
+      if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
       html.style.overflow = previousHtmlOverflow;
     };
   }, []);

@@ -15032,9 +15032,13 @@
     // on close.
     useEffect(function() {
       if (!printPreviewing || typeof document === 'undefined') return;
-      var prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return function() { document.body.style.overflow = prev; };
+      // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
+      var scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+      if (++scrollLock.count === 1) { scrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
+      return function() {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+      };
     }, [printPreviewing]);
     useEffect(function() {
       if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.subscribeToVoiceProgress !== 'function') return;

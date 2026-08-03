@@ -1138,9 +1138,16 @@ function GuidedModeBanner({
     if (!showAiPlanner) return;
     _aiPlannerReturnRef.current = typeof document !== "undefined" ? document.activeElement : null;
     const root = _aiPlannerDialogRef.current;
-    const priorOverflow = typeof document !== "undefined" ? document.body.style.overflow : "";
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
     try {
-      if (typeof document !== "undefined") document.body.style.overflow = "hidden";
+      if (typeof document !== "undefined") {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = document.body.style.overflow;
+          document.body.style.overflow = "hidden";
+        }
+      }
       if (root) root.focus();
     } catch (_) {
     }
@@ -1179,7 +1186,10 @@ function GuidedModeBanner({
     return () => {
       document.removeEventListener("keydown", onKey, true);
       try {
-        document.body.style.overflow = priorOverflow;
+        if (scrollLocked) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+        }
         const opener = _aiPlannerReturnRef.current;
         if (opener?.focus && document.contains(opener)) opener.focus();
       } catch (_) {
