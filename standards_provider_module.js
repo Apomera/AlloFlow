@@ -463,14 +463,107 @@
             };
         }
 
+        // Directed progression lookups over buildsTowards / relatesTo edges.
+        //
+        // Direction semantics were verified empirically against the CCSS Math
+        // snapshot before this was written: across all 757 buildsTowards edges,
+        // fromId is never a later grade than toId (370 ascend a grade, 387 are
+        // within-grade, 0 descend). So "A buildsTowards B" reads "A comes
+        // before B", and the prerequisites of X are the SOURCES of X's
+        // incoming buildsTowards edges. relatesTo carries no direction and is
+        // surfaced symmetrically.
+        //
+        // Teacher-facing lists contain only resolvable records — structural
+        // grouping/framework nodes stay traversal-only, same rule as
+        // resolveStandard. Results are bounded and deterministically ordered.
+        function neighborsByType(record, type, direction, maxResults) {
+            const out = [];
+            let truncated = false;
+            for (const entry of adjacency.get(idToken(record.id)) || []) {
+                if (entry.relationship.type !== type) continue;
+                if (direction && entry.direction !== direction) continue;
+                const other = byId.get(entry.otherId);
+                if (!other || other.resolvable === false) continue;
+                if (out.length >= maxResults) { truncated = true; break; }
+                out.push(publicRecord(other));
+            }
+            out.sort((a, b) => compareRecords({ record: a }, { record: b }));
+            return { records: out, truncated };
+        }
+
+        function boundedMax(options) {
+            const inputOptions = isObject(options) ? options : {};
+            return Math.max(1, Math.min(Number(inputOptions.maxResults) || MAX_RESULTS, MAX_RESULTS));
+        }
+
+        function getPrerequisites(id, options) {
+            const record = getRecord(id);
+            if (!record || record.resolvable === false) return null;
+            const maxResults = boundedMax(options);
+            const before = neighborsByType(record, 'buildsTowards', 'incoming', maxResults);
+            const after = neighborsByType(record, 'buildsTowards', 'outgoing', maxResults);
+            return {
+                standard: publicRecord(record),
+                prerequisites: before.records,
+                leadsTo: after.records,
+                truncated: before.truncated || after.truncated,
+                // Provenance, not certification: these edges come from the
+                // snapshot's source dataset, and consumers must keep the
+                // manifest's usage boundary (no high-stakes use) visible.
+                edgeSource: 'buildsTowards',
+                dataset: cloneManifest(value.dataset)
+            };
+        }
+
+        function getRelatedStandards(id, options) {
+            const record = getRecord(id);
+            if (!record || record.resolvable === false) return null;
+            const maxResults = boundedMax(options);
+            const related = neighborsByType(record, 'relatesTo', null, maxResults);
+            return {
+                standard: publicRecord(record),
+                related: related.records,
+                truncated: related.truncated,
+                edgeSource: 'relatesTo',
+                dataset: cloneManifest(value.dataset)
+            };
+        }
+
+        function getLearningComponents(id, options) {
+            // The Academic Standards dataset represents a standard's component
+            // statements as its hasChild children (cluster -> standard ->
+            // component parts). This returns DIRECT children only, and only
+            // resolvable ones; it deliberately does not synthesize components
+            // that the source data does not contain. When a dedicated
+            // learning-components dataset is imported later, this method is
+            // where it surfaces, under the same shape.
+            const record = getRecord(id);
+            if (!record) return null;
+            const maxResults = boundedMax(options);
+            const children = neighborsByType(record, 'hasChild', 'outgoing', maxResults);
+            return {
+                standard: record.resolvable === false ? null : publicRecord(record),
+                components: children.records,
+                truncated: children.truncated,
+                edgeSource: 'hasChild',
+                dataset: cloneManifest(value.dataset)
+            };
+        }
+
         return {
             VERSION,
             getManifest: () => cloneManifest(value.dataset),
+            // Contract name from the Learning Web plan; same object as
+            // getManifest, kept as an alias rather than a second code path.
+            getDatasetManifest: () => cloneManifest(value.dataset),
             getValidationReport: () => ({ ok: report.ok, errors: report.errors.slice(), warnings: report.warnings.slice() }),
             searchStandards,
             resolveStandard,
             getStandardContext,
-            getNeighborhood
+            getNeighborhood,
+            getPrerequisites,
+            getRelatedStandards,
+            getLearningComponents
         };
     }
 
