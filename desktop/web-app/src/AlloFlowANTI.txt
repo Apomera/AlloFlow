@@ -12408,6 +12408,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Aug 4 2026: Education Law Navigator — verbatim IDEA Part B / Section 504
         // text from law_corpus/ (ingested by dev-tools/build_law_corpus.cjs).
         'stem_lab/stem_tool_lawnavigator.js',
+        // Aug 4 2026: Diagnosis vs. Eligibility — quotes the 13 IDEA categories
+        // from law_corpus/ (34 CFR 300.8). No DSM text: that is APA-copyrighted.
+        'stem_lab/stem_tool_eligibility.js',
         // Aug 4 2026: PaperTrail - field-level official-document trainer;
         // transition-skill companion to the Law Navigator and Parenting Lab M9.
         'stem_lab/stem_tool_papertrail.js',
