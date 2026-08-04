@@ -35894,7 +35894,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       voiceActive: alloVoiceActive,
       voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition) || _isDesktopBundledApp,
       setVoiceActive: setAlloVoiceActive,
-      voiceLang: 'en-US',
+      // Voice recognition follows the UI language when the slug is a real
+      // BCP-47 code ('es', 'fr', 'pt-BR'…); nonstandard pack slugs (karen,
+      // chin_falam…) fall back to en-US rather than erroring the recognizer.
+      voiceLang: (() => { const s = String(currentUiLanguage || '').replace('_', '-'); if (!s || s === 'en') return 'en-US'; return /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(s) ? s : 'en-US'; })(),
+      voiceSpeakReplies: (() => { try { return localStorage.getItem('allo_voice_speak_replies') !== 'off'; } catch (_) { return true; } })(),
       startVoiceLoop: () => {
         const AC = window.AlloModules && window.AlloModules.AlloCommands;
         if (!AC || !AC.createVoiceLoop) { addToast(t('toasts.voice_module_missing') || 'Voice control is still loading — try again in a moment.', 'info'); return; }

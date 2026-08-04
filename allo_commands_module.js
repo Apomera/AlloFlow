@@ -1093,6 +1093,14 @@ function buildAlloCommands(ctx, opts = {}) {
       c.stopVoiceLoop();
       return t("cmd.voice_stop_done", "Voice control off \u2014 the microphone is released.");
     } },
+    { id: "toggle_voice_replies", icon: "\u{1F50A}", roles: "all", when: (c) => c.voiceAvailable, label: t("cmd.toggle_voice_replies", "Toggle spoken replies"), aliases: ["spoken replies", "speak replies", "voice replies", "talk back"], hint: t("cmd.toggle_voice_replies_hint", "Voice control speaks its answers out loud (on by default)"), run: () => {
+      let next = "off";
+      try {
+        next = localStorage.getItem("allo_voice_speak_replies") === "off" ? "on" : "off";
+        localStorage.setItem("allo_voice_speak_replies", next);
+      } catch (_) {}
+      return next === "off" ? t("cmd.voice_replies_off", "Spoken replies off \u2014 answers appear on screen only.") : t("cmd.voice_replies_on", "Spoken replies on \u2014 voice control will answer out loud.");
+    } },
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
     //    (verified by symbol in AlloFlowANTI.txt). Grouped via CMD_GROUP / CMD_CONTEXT above. ──
     { id: "stop_reading", icon: "\u23F9\uFE0F", roles: "all", label: t("cmd.stop_reading", "Stop reading aloud"), aliases: ["stop reading", "stop talking", "be quiet", "silence", "stop speech", "stop the voice"], hint: t("cmd.stop_reading_hint", "Interrupt the current text-to-speech"), run: (c) => {
@@ -1614,6 +1622,38 @@ function createVoiceLoop(getCtx) {
       }
     }
   };
+  let speaking = false, speakSerial = 0;
+  // Spoken replies close the hands-free loop: across the room a toast is
+  // invisible. The mic is stopped for the duration of the utterance so the
+  // recognizer never transcribes our own reply back into a command, then
+  // restarted by the utterance's end handler (rec.onend skips its usual
+  // restart while `speaking`). speechSynthesis is on-device — no audio
+  // leaves the machine for replies. Opt-out via the toggle_voice_replies
+  // command (localStorage allo_voice_speak_replies = "off").
+  const speakReply = (msg, c) => {
+    if (!c || c.voiceSpeakReplies === false) return;
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function") return;
+    try {
+      const my = ++speakSerial;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(msg || "").slice(0, 300));
+      u.lang = (c && c.voiceLang) || "en-US";
+      const resume = () => {
+        if (speakSerial !== my || !speaking) return;
+        speaking = false;
+        if (active && rec) { try { rec.start(); } catch (_) {} }
+      };
+      u.onend = resume;
+      u.onerror = resume;
+      speaking = true;
+      if (active && rec) { try { rec.stop(); } catch (_) {} }
+      window.speechSynthesis.speak(u);
+      // Some engines drop end events; never leave the mic dead.
+      setTimeout(resume, 15e3);
+    } catch (_) {
+      speaking = false;
+    }
+  };
   const announce = (msg) => {
     const c = getCtx();
     try {
@@ -1624,6 +1664,7 @@ function createVoiceLoop(getCtx) {
       if (c && c.addToast) c.addToast(msg, "info");
     } catch (_) {
     }
+    speakReply(msg, c);
   };
   const stop = (reason) => {
     cancelRoute();
@@ -1706,7 +1747,9 @@ function createVoiceLoop(getCtx) {
         if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
       };
       rec.onend = () => {
-        if (active) {
+        if (active && !speaking) {
+          // While `speaking`, the restart belongs to the utterance's end
+          // handler — restarting here would transcribe our own reply.
           try {
             rec.start();
           } catch (_) {

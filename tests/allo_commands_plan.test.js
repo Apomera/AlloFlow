@@ -554,6 +554,53 @@ describe('AlloBot hands-free agent button', () => {
   });
 });
 
+// Voice loop enhancements (2026-08-04): spoken replies + language-follows-UI.
+describe('voice loop spoken replies and language', () => {
+  it('toggle_voice_replies flips the persisted preference and says so', () => {
+    const { ctx } = mkCtx({ voiceAvailable: true });
+    try { localStorage.removeItem('allo_voice_speak_replies'); } catch (_) {}
+    const off = AC.runCommandById(ctx, 'toggle_voice_replies', {}, {});
+    expect(off.handled).toBe(true);
+    expect(off.narration).toContain('off');
+    expect(localStorage.getItem('allo_voice_speak_replies')).toBe('off');
+    const on = AC.runCommandById(ctx, 'toggle_voice_replies', {}, {});
+    expect(on.narration).toContain('out loud');
+    expect(localStorage.getItem('allo_voice_speak_replies')).toBe('on');
+  });
+
+  it('the mic is muted while a reply is spoken, and the utterance restarts it', () => {
+    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    // rec.onend must NOT restart during speech; the utterance's end handler owns it.
+    expect(mod).toMatch(/if \(active && !speaking\) \{/);
+    const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
+    expect(speak).toMatch(/speaking = true;\s*if \(active && rec\) \{ try \{ rec\.stop\(\); \} catch \(_\) \{\} \}/);
+    expect(speak).toContain('u.onend = resume');
+    expect(speak).toContain('setTimeout(resume, 15e3)'); // mic never left dead
+    expect(speak).toContain('c.voiceSpeakReplies === false'); // opt-out respected
+    expect(speak).toMatch(/speakSerial !== my/); // a cancelled utterance cannot restart mid-speech
+    // Root and desktop copies stay identical.
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+  });
+
+  it('both ANTI copies derive voiceLang from the UI language with a safe fallback', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app, path).toContain("const s = String(currentUiLanguage || '').replace('_', '-');");
+      expect(app, path).toMatch(/\^\[a-z\]\{2,3\}/); // BCP-47 shape guard, nonstandard slugs fall back
+      expect(app, path).toContain("localStorage.getItem('allo_voice_speak_replies') !== 'off'");
+      expect(app, path).not.toContain("voiceLang: 'en-US',"); // the hardcode is gone
+    }
+  });
+
+  it('the enable hint now carries the privacy disclosure', () => {
+    for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js']) {
+      const code = readFileSync(path, 'utf-8');
+      expect(code, path).toContain('sends microphone audio to your browser');
+      expect(code, path).toContain('Spoken replies are generated on this device');
+    }
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

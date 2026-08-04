@@ -528,7 +528,7 @@ function UDLGuideModal(props) {
             localStorage.setItem("allo_agent_voice_hint_v1", "1");
           } catch (_) {
           }
-          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.agent_voice_hint") || "Hands-free agent is on. Say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D \u2014 and I\u2019ll drive AlloFlow. Say \u201Cstop listening\u201D to finish. Typing works the same way: single actions get a confirm chip, multi-step asks get a plan card you review before anything runs." }]);
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.agent_voice_hint") || "Hands-free agent is on. Say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D \u2014 and I\u2019ll drive AlloFlow. Say \u201Cstop listening\u201D to finish, or \u201Ctoggle spoken replies\u201D if you don\u2019t want answers read aloud. Typing works the same way: single actions get a confirm chip, multi-step asks get a plan card you review before anything runs. Privacy note: speech recognition sends microphone audio to your browser\u2019s speech service (Google on Chrome) while listening \u2014 best to keep it off during student conversations. Spoken replies are generated on this device." }]);
         }
       },
       title: alloVoiceActive ? t("chat_guide.agent_voice_stop_title") || "Listening for commands \u2014 click to stop" : t("chat_guide.agent_voice_start_title") || "Hands-free agent: speak commands to drive AlloFlow",
