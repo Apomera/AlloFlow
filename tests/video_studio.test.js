@@ -3323,3 +3323,46 @@ describe('demo objective audit', () => {
     expect(read('desktop/web-app/public/video_studio_module.js')).toContain('vsSanitizeDemoAudit');
   });
 });
+
+// ─── Screen Coach (2026-08-04): advisory guidance over ANY captured tab ─────
+describe('screen coach', () => {
+  const coachHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  const coachMod = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+
+  it('sanitizer clamps the target box and drops unusable ones to null', () => {
+    expect(VS.vsSanitizeCoachAdvice(null)).toEqual({ guidance: '', target: null, done: false });
+    const good = VS.vsSanitizeCoachAdvice({ guidance: 'Click Export.', target: { x: 0.9, y: 0.5, w: 0.4, h: 0.1 }, done: 'yes' });
+    expect(good.guidance).toBe('Click Export.');
+    expect(good.done).toBe(false); // only boolean true counts
+    expect(good.target.x).toBe(0.9);
+    expect(good.target.w).toBeCloseTo(0.1, 10); // clamped to stay inside the frame
+    // Degenerate or non-numeric boxes become null — no wrong arrows.
+    expect(VS.vsSanitizeCoachAdvice({ guidance: 'g', target: { x: 0.5, y: 0.5, w: 0.001, h: 0.5 } }).target).toBeNull();
+    expect(VS.vsSanitizeCoachAdvice({ guidance: 'g', target: { x: 'a', y: 0, w: 1, h: 1 } }).target).toBeNull();
+    expect(VS.vsSanitizeCoachAdvice({ guidance: 'x'.repeat(900) }).guidance).toHaveLength(400);
+  });
+
+  it('module handler is registered, advisory by prompt, and refuses without vision', () => {
+    expect(coachMod).toContain("'allostudio-coach-request',"); // in VS_AI_BRIDGE_TYPES
+    const handler = coachMod.slice(coachMod.indexOf("ev.data.type === 'allostudio-coach-request'"), coachMod.indexOf("ev.data.type === 'allostudio-lesson-request'"));
+    expect(handler).toContain('never claim you performed or will perform anything');
+    expect(handler).toContain('use null when unsure rather than guessing');
+    expect(handler).toContain("coachRespond({ error: 'vision-unavailable' })");
+    expect(handler).toContain('vsSanitizeCoachAdvice(cParsed)');
+  });
+
+  it('popup gates on consent, states the advisory contract, and cleans up with the capture', () => {
+    expect(coachHtml).toContain('advise — you do the clicking');
+    expect(coachHtml).toContain('highlight positions are AI estimates');
+    expect(coachHtml).toContain('sends ONE downscaled frame');
+    // Consent checked before any frame leaves.
+    const run = coachHtml.slice(coachHtml.indexOf('async function runCoachSuggest'), coachHtml.indexOf("$('coachSuggestBtn').addEventListener"));
+    expect(run.indexOf("coachPrivacyAck').checked")).toBeLessThan(run.indexOf('grabCoachFrame()'));
+    expect(run).toContain("bridgeRequest('allostudio-coach-request'");
+    // Capture teardown silences the coach and clears the overlay.
+    const teardown = coachHtml.slice(coachHtml.indexOf('function teardownStreams'), coachHtml.indexOf('function finalizeTake'));
+    expect(teardown).toContain('stopCoachAuto(); hideCoachOverlay();');
+    // Overlay never intercepts clicks meant for the popup.
+    expect(coachHtml).toContain('id="coachOverlay" hidden aria-hidden="true" style="position:absolute;left:0;top:0;max-width:none;max-height:none;pointer-events:none');
+  });
+});

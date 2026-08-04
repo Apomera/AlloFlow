@@ -491,9 +491,23 @@
       </div>
       <div class="status" id="demoStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
+    <details id="coachPanel" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
+      <summary style="cursor:pointer;font-weight:700">🧭 Screen Coach (beta) — AI guidance for ANY captured tab</summary>
+      <p class="status" style="margin-top:8px">Capture any tab or window with Start recording (you can discard the take afterward), tell the coach your goal, and it suggests the next step with a highlight drawn on the preview. The coach can only <strong>advise — you do the clicking</strong>; it cannot touch the other page, and highlight positions are AI estimates. Each suggestion sends ONE downscaled frame of the captured surface to Gemini.</p>
+      <label class="status" style="display:block;margin:6px 0"><input type="checkbox" id="coachPrivacyAck"> I checked that the captured surface shows no student-identifying information</label>
+      <div class="row" style="margin-top:6px">
+        <input type="text" id="coachGoal" maxlength="300" placeholder="What are you trying to do? e.g. export grades as a CSV" aria-label="Screen Coach goal" style="flex-grow:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+        <button class="action" id="coachSuggestBtn">💡 Suggest next step</button>
+        <label><input type="checkbox" id="coachAutoChk"> Auto every 12s</label>
+        <label><input type="checkbox" id="coachSpeakChk" checked> Speak guidance</label>
+      </div>
+      <div class="status" id="coachStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+      <ol id="coachSteps" style="margin:6px 0 0 18px;padding:0"></ol>
+    </details>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
       <video id="previewVideo" autoplay muted playsinline hidden></video>
+      <canvas id="coachOverlay" hidden aria-hidden="true" style="position:absolute;left:0;top:0;max-width:none;max-height:none;pointer-events:none;z-index:5"></canvas>
       <canvas id="pipCanvas" hidden></canvas>
       <div class="caption-preview caption-style-clean-card" id="liveCap" hidden><span id="liveCapText"></span></div>
     </div>
@@ -5401,6 +5415,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   function teardownStreams() {
     cancelAnimationFrame(pipRaf); pipRaf = 0;
+    // Capture is gone: the coach has nothing to watch or point at.
+    try { stopCoachAuto(); hideCoachOverlay(); } catch (_) {}
     recStreams.forEach(function (s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} });
     recStreams = [];
     activeMicStream = null;
@@ -14152,6 +14168,122 @@ function buildContactSheet(t, count, shouldCancel) {
     // recover locally rather than leaving the panel wedged.
     setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);
   });
+
+  // ── Screen Coach (beta) ──
+  // Watches the LIVE capture (any tab the teacher picked) and suggests the
+  // next step toward a stated goal, drawing the AI's target estimate on the
+  // preview. Advisory only: it can never act on the other page, and the
+  // consent checkbox + one-frame-per-suggestion contract mirror the other
+  // frame features. Speech uses the popup's speechSynthesis (Kokoro lives in
+  // the app window, not here).
+  var coachAutoTimer = null;
+  var coachBusy = false;
+  var coachHistory = [];
+  function coachCaptureActive() {
+    var v = $('previewVideo');
+    return !!(v && v.srcObject && v.videoWidth > 0 && rec && rec.state !== 'inactive');
+  }
+  function hideCoachOverlay() {
+    var o = $('coachOverlay');
+    o.hidden = true;
+    try { o.getContext('2d').clearRect(0, 0, o.width, o.height); } catch (_) {}
+  }
+  function drawCoachTarget(box) {
+    var v = $('previewVideo');
+    var o = $('coachOverlay');
+    if (!box || !coachCaptureActive()) { hideCoachOverlay(); return; }
+    // Align the overlay to the video element's on-screen box. Coordinates are
+    // normalized to the frame; object-fit letterboxing can shift them a bit —
+    // the card says plainly these are estimates.
+    o.style.left = v.offsetLeft + 'px';
+    o.style.top = v.offsetTop + 'px';
+    o.width = v.clientWidth;
+    o.height = v.clientHeight;
+    o.hidden = false;
+    var g = o.getContext('2d');
+    g.clearRect(0, 0, o.width, o.height);
+    var x = box.x * o.width, y = box.y * o.height, w = box.w * o.width, h = box.h * o.height;
+    g.strokeStyle = '#f59e0b';
+    g.lineWidth = 3;
+    g.strokeRect(x, y, w, h);
+    g.fillStyle = 'rgba(245,158,11,0.15)';
+    g.fillRect(x, y, w, h);
+  }
+  function grabCoachFrame() {
+    var v = $('previewVideo');
+    if (!coachCaptureActive()) return null;
+    var scale = Math.min(1, 1280 / v.videoWidth);
+    var c = document.createElement('canvas');
+    c.width = Math.max(2, Math.round(v.videoWidth * scale));
+    c.height = Math.max(2, Math.round(v.videoHeight * scale));
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    var dataUrl = c.toDataURL('image/jpeg', 0.7);
+    return dataUrl.split(',')[1] || null;
+  }
+  function speakCoach(text) {
+    if (!$('coachSpeakChk').checked) return;
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function') return;
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(String(text || '').slice(0, 300)));
+    } catch (_) {}
+  }
+  function stopCoachAuto() {
+    if (coachAutoTimer) { clearInterval(coachAutoTimer); coachAutoTimer = null; }
+    $('coachAutoChk').checked = false;
+  }
+  async function runCoachSuggest(fromAuto) {
+    if (coachBusy) return;
+    if (!$('coachPrivacyAck').checked) {
+      setStatus($('coachStatus'), 'Tick the privacy check first — you are about to send a frame of the captured surface to Gemini.', 'warn');
+      if (!fromAuto) { try { $('coachPrivacyAck').focus(); } catch (_) {} }
+      return;
+    }
+    if (!coachCaptureActive()) {
+      setStatus($('coachStatus'), 'Start a recording first and pick the tab or window you want coaching on — the take can be discarded afterward.', 'warn');
+      stopCoachAuto();
+      return;
+    }
+    var frame = grabCoachFrame();
+    if (!frame) { setStatus($('coachStatus'), 'Could not read a frame from the capture.', 'warn'); return; }
+    coachBusy = true;
+    setStatus($('coachStatus'), 'Asking the coach…');
+    var resp = await bridgeRequest('allostudio-coach-request', {
+      goal: String($('coachGoal').value || '').slice(0, 300),
+      imageBase64: frame,
+      mimeType: 'image/jpeg',
+      history: coachHistory.slice(-3).join('\n')
+    }, 45000);
+    coachBusy = false;
+    if (resp.error) {
+      setStatus($('coachStatus'), 'Coach unavailable: ' + String(resp.error).slice(0, 140), 'warn');
+      return;
+    }
+    var guidance = String(resp.guidance || '').slice(0, 400);
+    if (!guidance) { setStatus($('coachStatus'), 'The coach had no suggestion for this screen.', 'warn'); return; }
+    coachHistory.push(guidance);
+    var li = document.createElement('li');
+    li.className = 'status';
+    li.textContent = guidance;
+    $('coachSteps').appendChild(li);
+    while ($('coachSteps').children.length > 8) $('coachSteps').removeChild($('coachSteps').firstChild);
+    setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (resp.target ? ' (highlighted on the preview — AI estimate)' : ''), resp.done ? 'ok' : undefined);
+    drawCoachTarget(resp.target);
+    announce('Coach: ' + guidance);
+    speakCoach(guidance);
+    if (resp.done) stopCoachAuto();
+  }
+  $('coachSuggestBtn').addEventListener('click', function () { runCoachSuggest(false); });
+  $('coachAutoChk').addEventListener('change', function () {
+    if (this.checked) {
+      if (!coachCaptureActive()) { this.checked = false; setStatus($('coachStatus'), 'Start a capture first, then turn on auto-coaching.', 'warn'); return; }
+      coachAutoTimer = setInterval(function () { runCoachSuggest(true); }, 12000);
+      runCoachSuggest(true);
+    } else {
+      stopCoachAuto();
+    }
+  });
+  $('coachGoal').addEventListener('change', function () { coachHistory = []; });
 
   // ── Export ──
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}

@@ -2921,6 +2921,28 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
+  // Clamp a Screen Coach reply. Advisory by contract: guidance is a short
+  // instruction for the HUMAN, the target box is normalized 0-1 or null —
+  // a malformed box becomes null (no annotation) rather than a wrong arrow.
+  function vsSanitizeCoachAdvice(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var target = null;
+    var tb = raw.target;
+    if (tb && typeof tb === 'object') {
+      var x = Number(tb.x), y = Number(tb.y), w = Number(tb.w), h = Number(tb.h);
+      if (isFinite(x) && isFinite(y) && isFinite(w) && isFinite(h)) {
+        x = Math.max(0, Math.min(1, x)); y = Math.max(0, Math.min(1, y));
+        w = Math.max(0, Math.min(1 - x, w)); h = Math.max(0, Math.min(1 - y, h));
+        if (w >= 0.005 && h >= 0.005) target = { x: x, y: y, w: w, h: h };
+      }
+    }
+    return {
+      guidance: String(raw.guidance || '').trim().slice(0, 400),
+      target: target,
+      done: raw.done === true
+    };
+  }
+
   // Clamp a Gemini objective-audit reply to the exact shape the popup renders.
   // The verdict is advisory; anything malformed collapses to the conservative
   // answer ('no') rather than an invented success.
@@ -2938,7 +2960,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit, vsSanitizeCoachAdvice: vsSanitizeCoachAdvice };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3540,6 +3562,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-script-generate-request',
     'allostudio-narrate-request',
     'allostudio-describe-request',
+    'allostudio-coach-request',
     'allostudio-lesson-request',
     'allostudio-localize-request',
     'allostudio-teaching-inserts-request',
@@ -3784,6 +3807,44 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         }).catch(function (e) {
           if (dAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(dreq.id); return; }
           dRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-coach-request') {
+        // Screen Coach: ONE downscaled frame of whatever tab/window the
+        // teacher chose to capture, plus their stated goal. The reply is
+        // ADVISORY guidance for the HUMAN to act on — the coach can never
+        // touch the other page, and the prompt forbids claiming otherwise.
+        // Same trust/consent path as every other frame feature.
+        var creq = ev.data;
+        var coachAbort = vsAiBeginRequest(creq.id);
+        var coachReplyTo = studioWinRef.current;
+        var coachRespond = function (payload) {
+          if (coachAbort.signal.aborted) { vsAiForgetRequest(creq.id); return; }
+          vsAiForgetRequest(creq.id);
+          postToStudio(coachReplyTo, Object.assign({ type: 'allostudio-coach-response', id: creq.id }, payload));
+        };
+        var coachVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
+        if (typeof coachVisionFn !== 'function') { coachRespond({ error: 'vision-unavailable' }); return; }
+        var coachGoal = String(creq.goal || '').slice(0, 300);
+        var coachPrompt = 'You are a patient screen coach helping a user operate software they can see but you cannot touch.\n' +
+          'The image is ONE screenshot of the screen surface the user chose to share (it may be any website or application).\n' +
+          'USER GOAL: ' + (coachGoal || 'not stated — suggest the most useful next step visible on this screen') + '\n' +
+          (creq.history ? ('GUIDANCE ALREADY GIVEN (do not repeat it):\n' + String(creq.history).slice(0, 1200) + '\n') : '') +
+          'Give the SINGLE best next step the user should take THEMSELVES. You cannot click, type, or navigate — never claim you performed or will perform anything. ' +
+          'If the goal appears complete, say so. If this screen cannot progress the goal, say what to open first. If you cannot tell what is on screen, say that honestly.\n' +
+          'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false}. ' +
+          '"target" is a normalized box around the ONE element the user should act on next — use null when unsure rather than guessing.';
+        Promise.resolve().then(function () { return coachVisionFn(coachPrompt, creq.imageBase64, creq.mimeType || 'image/jpeg', { signal: coachAbort.signal }); }).then(function (res) {
+          var cText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+          var cParsed = null;
+          try { cParsed = JSON.parse(cText); } catch (_) {
+            var cm = /\{[\s\S]*\}/.exec(String(cText || ''));
+            if (cm) { try { cParsed = JSON.parse(cm[0]); } catch (_2) {} }
+          }
+          if (!cParsed || typeof cParsed !== 'object') { coachRespond({ error: 'the AI reply was not readable' }); return; }
+          coachRespond(vsSanitizeCoachAdvice(cParsed));
+        }).catch(function (e) {
+          if (coachAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(creq.id); return; }
+          coachRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-lesson-request') {
         // Lesson assistant: sampled frames + captions become editable
