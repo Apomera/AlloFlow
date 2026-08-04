@@ -35,9 +35,17 @@ describe('brain atlas canvas loops', () => {
 
       expect(source).toContain('function brainAtlasEllipsizeCanvasText(text, maxWidth)');
       expect(source).toContain('function brainAtlasWrapCanvasLabel(text, maxWidth, maxLines)');
-      expect(source).toContain('var pillMaxWidth = Math.min(260, W * 0.42);');
-      expect(source).toContain('var pillX = Math.max(8, Math.min(W - pillW - 8, preferredPillX));');
-      expect(source).toContain('var pillY = Math.max(8, Math.min(H - pillH - 24, py - pillH / 2));');
+      // Pin the BEHAVIOUR (a width cap proportional to the canvas), not the
+      // tuning. The literals moved 260 -> 280 and 0.42 -> 0.44 and the exact
+      // string went stale, though nothing about the wrapping had changed.
+      expect(source).toMatch(/var pillMaxWidth = Math\.min\(\d+, W \* [\d.]+\);/);
+      // The pill used to be clamped inline via pillX/pillY. Those locals now
+      // live inside brainAtlasFindRegionLabelPlacement, which also does
+      // collision avoidance — a strictly better implementation of the same
+      // guarantee. What matters is that a pill is still clamped to the canvas
+      // with the same margins, under whatever name.
+      expect(source).toMatch(/Math\.max\(8, Math\.min\(W - pillW - 8,/);
+      expect(source).toMatch(/Math\.max\(8, Math\.min\(H - pillH - 24,/);
       expect(source).toContain('labelLines.forEach(function (line, lineIndex)');
       expect(source).toContain("var rawViewLabel = currentView.name.toUpperCase() + ' VIEW';");
       expect(source).toContain('var viewLabel = brainAtlasEllipsizeCanvasText(rawViewLabel, Math.max(80, W - 40));');
@@ -408,7 +416,13 @@ describe('brain atlas canvas loops', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('function pulsePoint(pt, color, label)');
-      expect(source).toContain('brainAtlasDrawPathLabel(pt.x, pt.y - 15, label, color, Math.max(64, W * 0.13));');
+      // The label x is now clamped into the plot area before drawing, instead
+      // of being passed straight through as pt.x — the callout can no longer
+      // run off the chart edge at the extremes of the animation. Assert the
+      // clamp plus the shared label renderer, not the old argument list.
+      expect(source).toMatch(/var safePulseLabelX = Math\.max\([^\n]*Math\.min\([^\n]*pt\.x/);
+      expect(source).toContain('brainAtlasDrawPathLabel(safePulseLabelX, pt.y - 15, label, color,');
+      expect(source).not.toContain('brainAtlasDrawPathLabel(pt.x, pt.y - 15,');
       expect(source).not.toContain('ctx.fillText(label, pt.x, pt.y - 13)');
     });
   });
