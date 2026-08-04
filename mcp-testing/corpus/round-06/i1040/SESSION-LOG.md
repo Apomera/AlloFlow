@@ -102,19 +102,58 @@ before the gutter search runs — its own measured round, not a patch.
 Meanwhile: for any page whose layout changes down the page, author from the
 render, and use the content-stream text as the recall baseline.
 
-### Sessions 4+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 4 (2026-08-04) — pages 12-16 · tranche-04 · 127 blocks · VALIDATED (merged)
+
+The start of "Line Instructions for Forms 1040 and 1040-SR": Name and Address,
+Social Security Number, Filing Status (all five statuses), Digital Assets, and
+the Dependents lead-in. `merge-plans t01..t04` → 275 blocks, `ok: true`,
+pages 1-16 covered. Recall 0.9856, every shortfall furniture: the "Page N of
+126" markers, the standing footer on all five pages, and `employ12`/`ment` —
+"employment" split across the 12→13 break with the page number between the
+halves, the same artifact tranche 2 saw.
+
+**Scope narrowed from the planned 12-22.** Pages 12-16 are prose; pages 17+
+are the qualifying-child decision charts, a different structure that earns its
+own session. 16/17 is a clean semantic boundary.
+
+Two things worth carrying forward:
+
+* **Five heading levels, from the printed type sizes.** 23pt → level 2
+  (the section), 16pt → level 3 (Name and Address, SSN, Filing Status,
+  Digital Assets, Dependents), the subsection heads → level 4 (Single,
+  Head of Household, …), and bold run-in topics → level 5 (Test 1,
+  Joint and several tax liability, Adopted child, …). Level 1 stays the
+  document title in tranche 1. Final counts: 1 h2, 7 h3, 15 h4, 15 h5.
+* **Inline-markup helper.** This tranche has ~40 italic cross-references
+  ("see Who Qualifies as Your Dependent, later"). Hand-building that many run
+  arrays is error-prone, so the generator writes text with markers —
+  `«…»` emphasis, `‹…›` strong, `[[text|url]]` link — and a
+  `rich()` function expands them, asserting the runs concatenate back to the
+  plain text. Reuse it for later tranches; the output was checked for marker
+  leakage.
+
+Cross-references are deliberately NOT turned into links: the source has no
+link annotations for them and their destinations live in later tranches, so
+anchors invented now would risk pointing at nothing. Revisit after the merge.
+
+**Page 12 hit the same mixed-layout trap as page 9** (full-width title block
+above three columns → detector says one column → the title interleaves into
+the body). Reading order rebuilt from the render. That is now two of sixteen
+pages; the vertical-segmentation fix is looking more worthwhile.
+
+### Sessions 5+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 04 | 12-22 | Name/SSN, Filing Status, Dependents | includes flowchart-like boxes; expect review notes |
-| 05 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
-| 06 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
-| 07 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
-| 08 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
-| 09 | 81-87 | General Info, Tax Help, Refund Info | |
-| 10 | 88-110 | Schedule 1 + 1-A instructions | |
-| 11 | 111-117 | Schedules 2-3 instructions | |
-| 12 | 118-126 | Tax Topics, Disclosure, Outlays, Index | index = long reference list; consider list-per-letter |
+| 05 | 17-22 | Who Qualifies as Your Dependent | DECISION CHARTS (flowcharts with yes/no branches) — the new structure to solve; expect to author each chart as a nested list or a step table, and to disclose the linearisation |
+| 06 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
+| 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
+| 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
+| 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
+| 10 | 81-87 | General Info, Tax Help, Refund Info | |
+| 11 | 88-110 | Schedule 1 + 1-A instructions | |
+| 12 | 111-117 | Schedules 2-3 instructions | |
+| 13 | 118-126 | Tax Topics, Disclosure, Outlays, Index | index = long reference list; consider list-per-letter |
 
 After the last tranche: `merge-plans` (expect `pagesWithoutBlocks` ≈ [] plus known
 blanks) → `remediate` → recall channels → `verify-init` → independent verifier
