@@ -8,20 +8,20 @@ exports[`science-sim + studio render goldens > renders + pins a digest for a11yA
   "lengthBucket": 35,
   "paths": 0,
   "selects": 0,
-  "sha": "7c9fbd625a31af58",
+  "sha": "c57d2398c38f95c0",
   "svgs": 0,
 }
 `;
 
 exports[`science-sim + studio render goldens > renders + pins a digest for anatomy [ssr] 1`] = `
 {
-  "buttons": 87,
+  "buttons": 93,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 220,
+  "lengthBucket": 231,
   "paths": 0,
   "selects": 0,
-  "sha": "df319e94843e2195",
+  "sha": "f734d45d4a69ebdf",
   "svgs": 0,
 }
 `;
@@ -34,7 +34,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for archS
   "lengthBucket": 131,
   "paths": 0,
   "selects": 0,
-  "sha": "6a9a4891ecab9218",
+  "sha": "62fa64d5e1c0e99a",
   "svgs": 0,
 }
 `;
@@ -44,10 +44,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for artSt
   "buttons": 24,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 44,
+  "lengthBucket": 51,
   "paths": 0,
   "selects": 0,
-  "sha": "0152e3786a5a6721",
+  "sha": "e5a0b169e6de9a01",
   "svgs": 0,
 }
 `;
@@ -60,7 +60,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for astro
   "lengthBucket": 76,
   "paths": 0,
   "selects": 0,
-  "sha": "070fd4fd0b77fe5a",
+  "sha": "922653145f4e20e5",
   "svgs": 0,
 }
 `;
@@ -86,7 +86,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
   "lengthBucket": 233,
   "paths": 6,
   "selects": 0,
-  "sha": "4c8f7606cbaecdeb",
+  "sha": "2755315e7f05b864",
   "svgs": 2,
 }
 `;
@@ -99,7 +99,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cell 
   "lengthBucket": 114,
   "paths": 0,
   "selects": 0,
-  "sha": "3dc5839c18f4dc04",
+  "sha": "aa7207c27ae62a23",
   "svgs": 0,
 }
 `;
@@ -112,7 +112,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for chemB
   "lengthBucket": 43,
   "paths": 0,
   "selects": 0,
-  "sha": "1dab9031385b7a32",
+  "sha": "d25a16895be6b512",
   "svgs": 0,
 }
 `;
@@ -138,7 +138,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for echoT
   "lengthBucket": 145,
   "paths": 6,
   "selects": 0,
-  "sha": "be346561ccf6f0a0",
+  "sha": "8ac798ff64d57e05",
   "svgs": 2,
 }
 `;
@@ -161,10 +161,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for epide
   "buttons": 21,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 452,
+  "lengthBucket": 453,
   "paths": 6,
   "selects": 0,
-  "sha": "fb8f9bdc2423e824",
+  "sha": "8657ad5a37026fa2",
   "svgs": 1,
 }
 `;
@@ -177,7 +177,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fireE
   "lengthBucket": 128,
   "paths": 0,
   "selects": 0,
-  "sha": "c6e4b92db6cfffc8",
+  "sha": "30d6db8e857caa09",
   "svgs": 0,
 }
 `;
@@ -203,7 +203,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for galax
   "lengthBucket": 223,
   "paths": 1,
   "selects": 0,
-  "sha": "2f0f3e589b3ae28b",
+  "sha": "25211586b3de3495",
   "svgs": 3,
 }
 `;
@@ -239,10 +239,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for micro
   "buttons": 14,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 226,
+  "lengthBucket": 227,
   "paths": 0,
   "selects": 0,
-  "sha": "52c78f2d70893c2e",
+  "sha": "f35c2ba4f2e00687",
   "svgs": 0,
 }
 `;
@@ -268,7 +268,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
   "lengthBucket": 70,
   "paths": 0,
   "selects": 0,
-  "sha": "ef28306143c98c18",
+  "sha": "2a682f808b4057f5",
   "svgs": 0,
 }
 `;
@@ -281,7 +281,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for physi
   "lengthBucket": 101,
   "paths": 0,
   "selects": 0,
-  "sha": "20160ba6fbce7681",
+  "sha": "1a5d8cb53884aef3",
   "svgs": 0,
 }
 `;
@@ -294,7 +294,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for punne
   "lengthBucket": 107,
   "paths": 0,
   "selects": 2,
-  "sha": "1dfb407e9aac36ad",
+  "sha": "91bd2fd5049bc408",
   "svgs": 0,
 }
 `;
@@ -304,10 +304,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rockC
   "buttons": 16,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 170,
+  "lengthBucket": 165,
   "paths": 22,
   "selects": 1,
-  "sha": "52e771d89f8f7dfb",
+  "sha": "ee4db903a0cf7faf",
   "svgs": 13,
 }
 `;
@@ -320,20 +320,20 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rocks
   "lengthBucket": 31,
   "paths": 0,
   "selects": 0,
-  "sha": "2051c26ca8be84a2",
+  "sha": "d9fb647a0671a369",
   "svgs": 0,
 }
 `;
 
 exports[`science-sim + studio render goldens > renders + pins a digest for semiconductor [mount] 1`] = `
 {
-  "buttons": 63,
+  "buttons": 18,
   "canvases": 1,
   "inputs": 2,
-  "lengthBucket": 96,
+  "lengthBucket": 98,
   "paths": 0,
-  "selects": 0,
-  "sha": "5e9f148f0bd2ebdf",
+  "selects": 2,
+  "sha": "6baf090421d281a4",
   "svgs": 0,
 }
 `;
@@ -372,7 +372,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for throw
   "lengthBucket": 265,
   "paths": 0,
   "selects": 0,
-  "sha": "7d81a2778062260b",
+  "sha": "3b94588650cf7858",
   "svgs": 0,
 }
 `;
@@ -392,13 +392,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for titra
 
 exports[`science-sim + studio render goldens > renders + pins a digest for waterCycle [ssr] 1`] = `
 {
-  "buttons": 30,
+  "buttons": 35,
   "canvases": 1,
   "inputs": 6,
-  "lengthBucket": 107,
+  "lengthBucket": 168,
   "paths": 0,
-  "selects": 0,
-  "sha": "a7449547020e1019",
+  "selects": 1,
+  "sha": "58a309ff1c4eb26e",
   "svgs": 0,
 }
 `;
@@ -411,7 +411,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for wave 
   "lengthBucket": 105,
   "paths": 0,
   "selects": 0,
-  "sha": "ca80d23db62629d8",
+  "sha": "4bd22cad0f96d874",
   "svgs": 0,
 }
 `;
