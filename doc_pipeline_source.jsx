@@ -2533,6 +2533,52 @@ function _alloOrderTextItems(items, opts) {
   return _multi;
 }
 
+// ── Geometry-aware item join (cross-validation find, 2026-08-04) ─────────────
+// `items.map(i => i.str).join(' ')` put a space between EVERY pdf.js text item,
+// but pdf.js emits separate items for kerned glyph runs INSIDE a word — so any
+// kerned pair split: "legal p ermanent resident of the U nited S tates" (44
+// split words in one 11-page USCIS document; an independent extractor produced
+// 0 on the same file). This joins two items with NO separator only when their
+// geometry PROVES a mid-word continuation, and defaults to the legacy space in
+// every uncertain case — different line, missing transform/width, or a gap big
+// enough to be real spacing — so the only possible change vs join(' ') is the
+// removal of a bogus intra-word space. Callers keep their trailing
+// .replace(/\s+/g, ' '), so newline-vs-space choices here are invisible
+// downstream; only separator-vs-none matters.
+function _alloJoinOrderedTextItems(items, rtl) {
+  var out = '';
+  var prev = null;
+  // A real word space is ≥ ~0.2em in virtually all fonts; kern adjustments are
+  // well under 0.1em. 0.14em splits the difference conservatively: a too-small
+  // threshold re-introduces fragments, a too-large one glues real words.
+  var KERN_MAX_EM = 0.14;
+  for (var i = 0; i < (items || []).length; i++) {
+    var it = items[i];
+    var s = it ? String(it.str || '') : '';
+    if (!s) continue;
+    if (prev) {
+      var sep = ' '; // legacy default: space, unless proven mid-word
+      var pt = prev.transform, ct = it.transform;
+      if (pt && ct && typeof prev.width === 'number' && isFinite(prev.width)) {
+        var sameLine = Math.abs(ct[5] - pt[5]) <= 2; // same tolerance as the line sort above
+        if (sameLine && !prev.hasEOL) {
+          var gap = rtl
+            ? pt[4] - (ct[4] + (typeof it.width === 'number' && isFinite(it.width) ? it.width : 0))
+            : ct[4] - (pt[4] + prev.width);
+          var fontSize = Math.max(Math.abs(ct[0] || 0), Math.abs(ct[3] || 0), Math.abs(pt[0] || 0), 1);
+          // Negative gap = overlap (kerning pulls glyphs together); small positive
+          // gap = advance-width rounding. Both are the same word.
+          if (gap < KERN_MAX_EM * fontSize) sep = '';
+        }
+      }
+      out += sep;
+    }
+    out += s;
+    prev = it;
+  }
+  return out;
+}
+
 // ── Column-aware OCR ground truth (H-5's scanned half, 2026-07-13) ──────────
 // _alloOrderTextItems repairs multi-column reading order on the pdf.js TEXT-LAYER
 // path only; scanned documents relied on Tesseract's internal layout analysis,
@@ -10508,7 +10554,10 @@ var createDocPipeline = function(deps) {
           // H12: a reversed RTL line reads as perfect fidelity to every net in the pipeline
           // (they are all count/set based), so the only way anyone finds out is this line.
           if (_ordered.rtl && !_rtlOrderLogged) { _rtlOrderLogged = true; try { warnLog('[PDF Det] right-to-left script detected — reading each line right-to-left (logical order)'); } catch (_) {} }
-          const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
+          // Geometry-aware join (2026-08-04): join(' ') fragmented kerned words —
+          // see _alloJoinOrderedTextItems. The trailing whitespace collapse is
+          // unchanged, so this can only REMOVE bogus intra-word spaces.
+          const pageText = _alloJoinOrderedTextItems(items, _ordered.rtl).replace(/\s+/g, ' ').trim();
           pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);

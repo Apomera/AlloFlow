@@ -158,4 +158,22 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     // A canary that never calls the model would pass while proving nothing.
     expect(report.modelCalls).toBeGreaterThan(0);
   }, 180000);
+
+  // Geometry-aware item join (2026-08-04). The old items.join(' ') put a space
+  // between EVERY pdf.js text item, and this fixture's heavily kerned title is
+  // emitted as per-glyph items — so extraction used to read "W a t e r C y c l e".
+  // The join may only SUPPRESS a separator when geometry proves a mid-word
+  // continuation, so both directions are asserted: no fragmentation, and real
+  // word boundaries preserved.
+  it('deterministic PDF extraction does not fragment kerned words (geometry-aware join)', async () => {
+    const out = await driver.extractDocumentText({
+      filePath: resolve(process.cwd(), 'test-assets/multi-column-sample.pdf'),
+    });
+    expect(out.error).toBeFalsy();
+    const text = out.text || '';
+    expect(text).toContain('Water Cycle');            // fragmentation direction
+    expect(text).not.toMatch(/W\s+a\s+t\s+e\s+r/);    // the old failure verbatim
+    expect(text).toContain('reading order');           // gluing direction: real spaces survive
+    expect(text).not.toMatch(/readingorder|WaterCycle/);
+  }, 120000);
 });
