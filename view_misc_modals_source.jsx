@@ -27,6 +27,7 @@ function UDLGuideModal(props) {
     setAiStandardQuery, setAiStandardRegion, setIsBotVisible, setIsConversationMode,
     setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
     setUdlStandardFramework, setUdlStandardGrade, showStemLab, showUDLGuide, suggestedStandards,
+    alloVoiceActive, voiceAvailable, onToggleVoiceAgent,
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
@@ -565,6 +566,37 @@ function UDLGuideModal(props) {
              </label>
           </div>
           <div className="flex gap-2">
+             {/* Hands-free agent: one tap starts the existing opt-in voice
+                 command loop (singleton on window; "stop listening" or the
+                 global pill ends it). Typed agentic control needs NO mode —
+                 every message already routes through the command router with
+                 confirm chips / plan cards — so this button is the ACCESS
+                 point for voice and the discoverability hook for both. */}
+             {!!voiceAvailable && typeof onToggleVoiceAgent === 'function' && (
+             <button
+                aria-label={alloVoiceActive ? (t('chat_guide.agent_voice_stop_aria') || 'Stop hands-free agent listening') : (t('chat_guide.agent_voice_start_aria') || 'Start hands-free agent: speak commands to drive AlloFlow')}
+                aria-pressed={!!alloVoiceActive}
+                onClick={() => {
+                    const turningOn = !alloVoiceActive;
+                    onToggleVoiceAgent();
+                    let seenHint = false;
+                    try { seenHint = !!localStorage.getItem('allo_agent_voice_hint_v1'); } catch (_) {}
+                    if (turningOn && !seenHint) {
+                        try { localStorage.setItem('allo_agent_voice_hint_v1', '1'); } catch (_) {}
+                        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.agent_voice_hint') || 'Hands-free agent is on. Say what you want done — “open the learning hub”, “simplify this to grade 3 then make a quiz”, or “where is the export button?” — and I’ll drive AlloFlow. Say “stop listening” to finish. Typing works the same way: single actions get a confirm chip, multi-step asks get a plan card you review before anything runs.' }]);
+                    }
+                }}
+                title={alloVoiceActive ? (t('chat_guide.agent_voice_stop_title') || 'Listening for commands — click to stop') : (t('chat_guide.agent_voice_start_title') || 'Hands-free agent: speak commands to drive AlloFlow')}
+                className={`p-2 rounded-lg transition-colors border ${alloVoiceActive
+                    ? 'bg-red-600 text-white border-red-700 hover:bg-red-700 animate-pulse'
+                    : theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800'
+                    : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900'
+                    : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
+                data-help-key="chat_agent_voice"
+             >
+                <span aria-hidden="true">{alloVoiceActive ? '🔴' : '🤖'}</span>
+             </button>
+             )}
              <input aria-label={t('common.enter_udl_input')}
                 ref={udlInputRef}
                 type="text"

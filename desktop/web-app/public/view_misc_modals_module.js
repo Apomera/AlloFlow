@@ -109,6 +109,9 @@ function UDLGuideModal(props) {
     showStemLab,
     showUDLGuide,
     suggestedStandards,
+    alloVoiceActive,
+    voiceAvailable,
+    onToggleVoiceAgent,
     t,
     theme,
     udlInput,
@@ -507,7 +510,33 @@ function UDLGuideModal(props) {
       id: "udl-autofill-check",
       "data-help-key": "chat_autofill"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.autofill_label"), !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.autofill_label"), !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, !!voiceAvailable && typeof onToggleVoiceAgent === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": alloVoiceActive ? t("chat_guide.agent_voice_stop_aria") || "Stop hands-free agent listening" : t("chat_guide.agent_voice_start_aria") || "Start hands-free agent: speak commands to drive AlloFlow",
+      "aria-pressed": !!alloVoiceActive,
+      onClick: () => {
+        const turningOn = !alloVoiceActive;
+        onToggleVoiceAgent();
+        let seenHint = false;
+        try {
+          seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
+        } catch (_) {
+        }
+        if (turningOn && !seenHint) {
+          try {
+            localStorage.setItem("allo_agent_voice_hint_v1", "1");
+          } catch (_) {
+          }
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.agent_voice_hint") || "Hands-free agent is on. Say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D \u2014 and I\u2019ll drive AlloFlow. Say \u201Cstop listening\u201D to finish. Typing works the same way: single actions get a confirm chip, multi-step asks get a plan card you review before anything runs." }]);
+        }
+      },
+      title: alloVoiceActive ? t("chat_guide.agent_voice_stop_title") || "Listening for commands \u2014 click to stop" : t("chat_guide.agent_voice_start_title") || "Hands-free agent: speak commands to drive AlloFlow",
+      className: `p-2 rounded-lg transition-colors border ${alloVoiceActive ? "bg-red-600 text-white border-red-700 hover:bg-red-700 animate-pulse" : theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
+      "data-help-key": "chat_agent_voice"
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, alloVoiceActive ? "\u{1F534}" : "\u{1F916}")
+  ), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_udl_input"),

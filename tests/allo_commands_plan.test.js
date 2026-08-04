@@ -523,6 +523,37 @@ describe('honest failure attribution for generation steps', () => {
   });
 });
 
+// Hands-free agent button (2026-08-04): the chat composer's access point for
+// the voice command loop. Typed agentic control needs no mode — every chat
+// message already routes through the command router — so the button's jobs are
+// voice access and discoverability.
+describe('AlloBot hands-free agent button', () => {
+  it('both ANTI copies pass the voice-loop props to the chat modal', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app, path).toContain('onToggleVoiceAgent: () => { const c = _alloCmdCtx(); if (alloVoiceActive) c.stopVoiceLoop(); else c.startVoiceLoop(); }');
+      expect(app, path).toMatch(/voiceAvailable: !!\(window\.SpeechRecognition \|\| window\.webkitSpeechRecognition\) \|\| _isDesktopBundledApp/);
+    }
+  });
+  it('the button is accessible, guarded, and present in source AND built module', () => {
+    for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js', 'desktop/web-app/public/view_misc_modals_module.js']) {
+      const code = readFileSync(path, 'utf-8');
+      expect(code, path).toContain('chat_agent_voice');       // help-key = spotlight/where-is reachable
+      expect(code, path).toContain('aria-pressed');           // toggle semantics for AT
+      expect(code, path).toContain('agent_voice_stop_aria');  // distinct label per state
+      // One-time hint (the compiler normalizes quote style, so match either).
+      expect(code, path).toMatch(/localStorage\.getItem\(["']allo_agent_voice_hint_v1["']\)/);
+      // Hidden when speech recognition is unavailable, never a dead control.
+      expect(code, path).toMatch(/!!voiceAvailable && typeof onToggleVoiceAgent === ["']function["']/);
+    }
+  });
+  it('the first-enable hint teaches both voice and typed agentic control', () => {
+    const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    expect(src).toContain('stop listening');
+    expect(src).toContain('plan card you review before anything runs');
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

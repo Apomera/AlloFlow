@@ -42196,7 +42196,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setIsConversationMode, setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
           setUdlStandardFramework, setUdlStandardGrade, showStemLab, showUDLGuide, suggestedStandards, t,
           theme, udlInput, udlInputRef, udlMessages, udlScrollRef,
-          udlStandardFramework, udlStandardGrade
+          udlStandardFramework, udlStandardGrade,
+          // Hands-free agent button: reuses the ctx voice-loop capabilities so
+          // the chat and the command palette share ONE loop singleton.
+          alloVoiceActive,
+          voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition) || _isDesktopBundledApp,
+          onToggleVoiceAgent: () => { const c = _alloCmdCtx(); if (alloVoiceActive) c.stopVoiceLoop(); else c.startVoiceLoop(); }
         })}
       <main aria-label={t('common.main_content')}
         id="main-content"
