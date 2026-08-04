@@ -680,6 +680,80 @@ describe('coverage batch commands', () => {
   });
 });
 
+// On-device model cache (2026-08-04): Whisper weights in the DURABLE device
+// storage bridge (the namespace shows up in the Storage & recovery manager),
+// one-time download behind an explicit consent policy.
+describe('model cache', () => {
+  const store = new Map();
+  const fakeDs = {
+    ready: () => Promise.resolve(),
+    get: (ns, key) => Promise.resolve(store.has(ns + '|' + key) ? store.get(ns + '|' + key) : null),
+    set: (ns, key, value) => { store.set(ns + '|' + key, value); return Promise.resolve(true); },
+    clearNamespace: (ns) => {
+      let n = 0;
+      for (const k of [...store.keys()]) if (k.startsWith(ns + '|')) { store.delete(k); n++; }
+      return Promise.resolve(n);
+    },
+  };
+  beforeAll(() => { window.alloDeviceStorage = fakeDs; });
+
+  it('prefetch chunks big files into the bridge, tolerates a 404, and match() restores bytes exactly', async () => {
+    store.clear();
+    const big = new Uint8Array(6.5 * 1024 * 1024); // forces 2 chunks at the 6 MB ceiling
+    big[0] = 7; big[big.length - 1] = 9;
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      if (url.includes('encoder_model')) return new Response('nope', { status: 404 });
+      if (url.includes("decoder_model")) return new Response(big, { status: 200 });
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    }));
+    const r = await AC.modelCache.prefetchWhisper();
+    expect(r.files).toBe(6); // 7 minus the tolerated 404
+    expect(r.bytes).toBeGreaterThan(6 * 1024 * 1024);
+    expect(await AC.modelCache.hasWhisper()).toBe(true);
+    const res = await AC.modelCache.match('https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/onnx/decoder_model_merged_quantized.onnx');
+    const back = new Uint8Array(await res.arrayBuffer());
+    expect(back.length).toBe(big.length);
+    expect(back[0]).toBe(7);
+    expect(back[back.length - 1]).toBe(9);
+    // The 404'd file is absent, honestly.
+    expect(await AC.modelCache.match('https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/onnx/encoder_model_quantized.onnx')).toBeNull();
+    vi.unstubAllGlobals();
+  }, 20000);
+
+  it('transformers.js adapter installs a Cache-API-shaped custom cache', async () => {
+    const env = {};
+    expect(AC.modelCache.installTransformersCache(env)).toBe(true);
+    expect(env.useBrowserCache).toBe(false);
+    expect(env.useCustomCache).toBe(true);
+    await env.customCache.put("https://example.test/model.onnx", new Response(new Uint8Array([1, 2, 3]), { status: 200 }));
+    const hit = await env.customCache.match('https://example.test/model.onnx');
+    expect(new Uint8Array(await hit.arrayBuffer())).toEqual(new Uint8Array([1, 2, 3]));
+  });
+
+  it('policy is ask by default, settable by command, and gates the download command', () => {
+    try { localStorage.removeItem('allo_model_downloads'); } catch (_) {}
+    expect(AC.modelCache.policy()).toBe('ask');
+    const { ctx } = mkCtx();
+    expect(AC.runCommandById(ctx, 'set_model_download_policy', { policy: 'auto' }, {}).narration).toContain('auto');
+    expect(AC.modelCache.policy()).toBe('auto');
+    AC.runCommandById(ctx, 'set_model_download_policy', { policy: 'garbage' }, {});
+    expect(AC.modelCache.policy()).toBe('ask'); // whitelist fallback
+    AC.runCommandById(ctx, 'set_model_download_policy', { policy: 'off' }, {});
+    expect(AC.buildAlloCommands(ctx).find((c) => c.id === 'download_voice_models')).toBeUndefined(); // off hides it
+    AC.modelCache.setPolicy('ask');
+    expect(AC.getCommandContract('download_voice_models').demoSafe).toBe(false); // never auto-runs in a demo
+  });
+
+  it('voice loop auto-policy hook exists and stays silent on failure', () => {
+    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const hook = mod.slice(mod.indexOf('Policy \'auto\': first voice use'), mod.indexOf('Policy \'auto\': first voice use') + 900);
+    expect(hook).toContain('_modelPolicy() === "auto"');
+    expect(hook).toContain('modelCache.hasWhisper()');
+    expect(hook).toMatch(/catch\(function \(_\) \{\}\)/);
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

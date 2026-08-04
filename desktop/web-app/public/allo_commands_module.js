@@ -364,6 +364,8 @@ const PLAN_CONTRACTS = Object.freeze({
   start_crossword_game: { requires: ["glossary"] },
   start_word_scramble: { requires: ["glossary"] },
   filter_glossary: { requires: ["glossary"], params: ["tier"] },
+  download_voice_models: { demoSafe: false, interaction: "external", reason: "Starts a ~40 MB network download into durable device storage." },
+  set_model_download_policy: { params: ["policy"] },
   export_pack: {
     demoSafe: false,
     requires: ["source"],
@@ -1110,6 +1112,11 @@ function buildAlloCommands(ctx, opts = {}) {
       } catch (_) {}
       return next === "off" ? t("cmd.voice_replies_off", "Spoken replies off \u2014 answers appear on screen only.") : t("cmd.voice_replies_on", "Spoken replies on \u2014 voice control will answer out loud.");
     } },
+    { id: "download_voice_models", icon: "\u2b07\ufe0f", roles: "all", when: () => typeof fetch === "function" && _modelPolicy() !== "off", label: t("cmd.download_voice_models", "Download the on-device speech model"), aliases: ["download voice models", "download whisper", "offline voice", "install speech model", "on device voice"], hint: t("cmd.download_voice_models_hint", "One-time ~40 MB download to this device's durable storage; the on-device recognition engine will use it so no audio has to leave the device"), pendingNarration: t("cmd.download_voice_models_working", "Downloading the on-device speech model \u2014 it goes into this device's durable storage, visible in the Storage manager..."), runAsync: () => modelCache.prefetchWhisper().then((r) => t("cmd.download_voice_models_ready", "On-device speech model cached (") + Math.max(1, Math.round(r.bytes / 1048576)) + t("cmd.download_voice_models_ready2", " MB, in the model_cache storage area). The on-device engine will pick it up automatically once it ships.")) },
+    { id: "set_model_download_policy", icon: "\u2699\ufe0f", roles: "all", when: () => true, label: t("cmd.set_model_download_policy", "Set model download policy"), aliases: ["model download policy", "auto download models", "stop model downloads"], hint: t("cmd.set_model_download_policy_hint", "ask (default), auto (fetch on first voice use), or off"), run: (c, p) => {
+      var v = modelCache.setPolicy(p && p.policy);
+      return t("cmd.set_model_download_policy_done", "Model downloads: ") + v + ".";
+    } },
     // \u2500\u2500 Coverage batch (2026-08-04, from audit_command_coverage.cjs) \u2014 each is a
     //    thin wrapper on an existing host handler, same as every command above. \u2500\u2500
     { id: "generate_note_taking", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateNoteTaking === "function", label: t("cmd.generate_note_taking", "Create a note-taking guide"), aliases: ["note taking", "guided notes", "notes template", "cornell notes"], hint: t("cmd.generate_note_taking_hint", "Generate a structured note-taking guide from the current content"), runAsync: (c) => Promise.resolve(c.generateNoteTaking()).then(() => t("cmd.generate_note_taking_ready", "Note-taking guide ready \u2014 it\u2019s in the output panel.")) },
@@ -1633,6 +1640,134 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   }
   return { ok: true, results, remainingSteps: [] };
 }
+// ── On-device model cache ───────────────────────────────────────────────────
+// Whisper (and later Kokoro) weights in the DURABLE device-storage bridge —
+// the same store the Storage & recovery manager shows, so the cache appears
+// there as a named namespace users can inspect and clear. One-time download,
+// automatic afterward. Policy: 'ask' (default) | 'auto' | 'off', persisted.
+// The on-device recognition ENGINE lands in a follow-up; this is the cache +
+// consent layer it will read from.
+var MODEL_NS = "model_cache";
+var MODEL_POLICY_KEY = "allo_model_downloads";
+var MODEL_CHUNK_BYTES = 6 * 1024 * 1024; // stay well under any bridge message ceiling
+var DEVICE_STORAGE_URL = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds3-storage-manager";
+var WHISPER_BASE = "https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/";
+// The exact set transformers.js@3.3.1 requests for this pin (the Video Studio
+// popup uses the same model id). 404s are tolerated so a repo layout change
+// degrades to a partial prefetch, never a hard failure.
+var WHISPER_FILES = [
+  WHISPER_BASE + "config.json",
+  WHISPER_BASE + "generation_config.json",
+  WHISPER_BASE + "preprocessor_config.json",
+  WHISPER_BASE + "tokenizer.json",
+  WHISPER_BASE + "tokenizer_config.json",
+  WHISPER_BASE + "onnx/encoder_model_quantized.onnx",
+  WHISPER_BASE + "onnx/decoder_model_merged_quantized.onnx"
+];
+function _modelPolicy() {
+  try { var v = localStorage.getItem(MODEL_POLICY_KEY); return v === "auto" || v === "off" ? v : "ask"; } catch (_) { return "ask"; }
+}
+function _deviceStorage() {
+  if (window.alloDeviceStorage) {
+    var ds0 = window.alloDeviceStorage;
+    return Promise.resolve(ds0.ready()).then(function () { return ds0; });
+  }
+  if (!window.__alloDeviceStoragePromise) {
+    window.__alloDeviceStoragePromise = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = DEVICE_STORAGE_URL;
+      s.onload = function () { resolve(window.alloDeviceStorage); };
+      s.onerror = function () { reject(new Error("Device storage module failed to load.")); };
+      document.head.appendChild(s);
+    });
+  }
+  return Promise.resolve(window.__alloDeviceStoragePromise).then(function (ds) {
+    if (!ds || typeof ds.ready !== "function") throw new Error("Device storage is unavailable.");
+    return Promise.resolve(ds.ready()).then(function () { return ds; });
+  });
+}
+async function _mcStoreBuffer(url, buf, contentType) {
+  var ds = await _deviceStorage();
+  var chunks = Math.max(1, Math.ceil(buf.byteLength / MODEL_CHUNK_BYTES));
+  for (var i = 0; i < chunks; i++) {
+    await ds.set(MODEL_NS, "c:" + i + ":" + url, buf.slice(i * MODEL_CHUNK_BYTES, (i + 1) * MODEL_CHUNK_BYTES));
+  }
+  await ds.set(MODEL_NS, "u:" + url, { bytes: buf.byteLength, chunks: chunks, contentType: contentType || "application/octet-stream", storedAt: new Date().toISOString() });
+  return buf.byteLength;
+}
+async function _mcFetchInto(url, onProgress) {
+  var res = await fetch(url);
+  if (!res.ok) { var httpErr = new Error("HTTP " + res.status + " for " + url); httpErr.status = res.status; throw httpErr; }
+  var buf = await res.arrayBuffer();
+  var bytes = await _mcStoreBuffer(url, buf, res.headers.get("content-type"));
+  if (onProgress) { try { onProgress(url, bytes); } catch (_) {} }
+  return bytes;
+}
+async function _mcMatch(url) {
+  try {
+    var ds = await _deviceStorage();
+    var meta = await ds.get(MODEL_NS, "u:" + url);
+    if (!meta || !meta.chunks) return null;
+    var parts = [], total = 0;
+    for (var i = 0; i < meta.chunks; i++) {
+      var part = await ds.get(MODEL_NS, "c:" + i + ":" + url);
+      if (part == null) return null; // torn cache: treat as absent, refetch
+      var view = part instanceof ArrayBuffer ? new Uint8Array(part) : new Uint8Array(part.buffer || part);
+      parts.push(view);
+      total += view.byteLength;
+    }
+    var merged = new Uint8Array(total);
+    var offset = 0;
+    for (var j = 0; j < parts.length; j++) { merged.set(parts[j], offset); offset += parts[j].byteLength; }
+    return new Response(merged, { status: 200, headers: { "content-type": meta.contentType || "application/octet-stream" } });
+  } catch (_) { return null; }
+}
+var modelCache = {
+  policy: _modelPolicy,
+  setPolicy: function (v) {
+    var next = v === "auto" || v === "off" ? v : "ask";
+    try { localStorage.setItem(MODEL_POLICY_KEY, next); } catch (_) {}
+    return next;
+  },
+  // "Downloaded" = the big decoder is present; configs alone don't count.
+  hasWhisper: async function () {
+    try {
+      var ds = await _deviceStorage();
+      return !!(await ds.get(MODEL_NS, "u:" + WHISPER_FILES[WHISPER_FILES.length - 1]));
+    } catch (_) { return false; }
+  },
+  prefetchWhisper: async function (onProgress) {
+    var bytes = 0, files = 0;
+    for (var i = 0; i < WHISPER_FILES.length; i++) {
+      try { bytes += await _mcFetchInto(WHISPER_FILES[i], onProgress); files++; }
+      catch (e) { if (!(e && (e.status === 404 || e.status === 403))) throw e; }
+    }
+    if (!files) throw new Error("No model files could be downloaded — check the connection.");
+    return { files: files, bytes: bytes };
+  },
+  match: _mcMatch,
+  clear: async function () { var ds = await _deviceStorage(); return ds.clearNamespace(MODEL_NS); },
+  // Point transformers.js at this cache instead of the (partitioned,
+  // unreliable-in-Canvas) HTTP cache. Cache-API-shaped adapter.
+  installTransformersCache: function (env) {
+    if (!env) return false;
+    env.useBrowserCache = false;
+    env.useCustomCache = true;
+    env.customCache = {
+      match: function (req) { return _mcMatch(typeof req === "string" ? req : req && req.url); },
+      put: async function (req, response) {
+        try {
+          var url = typeof req === "string" ? req : req && req.url;
+          if (!url || !response) return;
+          var buf = await response.clone().arrayBuffer();
+          await _mcStoreBuffer(url, buf, response.headers && response.headers.get ? response.headers.get("content-type") : null);
+        } catch (_) { /* a failed cache write must never fail the download */ }
+      }
+    };
+    return true;
+  }
+};
+
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
   const cancelRoute = () => {
@@ -1784,6 +1919,21 @@ function createVoiceLoop(getCtx) {
       rec.start();
       active = true;
       errStreak = 0;
+      // Policy 'auto': first voice use quietly fetches the on-device speech
+      // model in the background so the local engine is ready when it ships.
+      // Never blocks the loop; failures stay silent (the explicit
+      // download_voice_models command reports errors properly).
+      try {
+        if (_modelPolicy() === "auto") {
+          modelCache.hasWhisper().then(function (has) {
+            if (has) return;
+            announce("Downloading the on-device speech model in the background (one time).");
+            return modelCache.prefetchWhisper().then(function (r) {
+              announce("On-device speech model ready — " + Math.max(1, Math.round(r.bytes / 1048576)) + " MB cached on this device.");
+            });
+          }).catch(function (_) {});
+        }
+      } catch (_) {}
       try {
         if (c && c.setVoiceActive) c.setVoiceActive(true);
       } catch (_) {
@@ -2562,6 +2712,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();
