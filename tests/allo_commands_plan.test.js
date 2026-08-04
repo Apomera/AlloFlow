@@ -450,6 +450,79 @@ describe('CommandWorkflow plan-card integration', () => {
   });
 });
 
+// Demo Autopilot premature-end fix (2026-08-04). Root cause: handleGenerate
+// swallowed every failure (toast + resolve undefined) unless the caller passed
+// rethrowErrors — which only blueprints did. A failed generation step therefore
+// reported SUCCESS ("Quiz ready" in the demo captions), and the run died one
+// step LATER on a when-guard with "isn't available right now" instead of the
+// real reason. The ctx bindings in both ANTI copies now opt in.
+describe('honest failure attribution for generation steps', () => {
+  it('a rejecting generation step fails the plan AT that step with the real reason', async () => {
+    const { ctx, log } = mkCtx({
+      generateGlossary: () => Promise.reject(new Error('Daily Usage Limit Reached. Please try again later.')),
+    });
+    const pr = await AC.runPlan(ctx, [
+      { commandId: 'generate_glossary', params: {} },
+      { commandId: 'generate_quiz', params: {} },
+    ]);
+    expect(pr.ok).toBe(false);
+    expect(pr.failedStep).toBe(0);
+    expect(pr.reason).toContain('Daily Usage Limit Reached');
+    expect(pr.remainingSteps.map((s) => s.commandId)).toEqual(['generate_glossary', 'generate_quiz']);
+    expect(log).not.toContain('quiz-finished'); // the next step never started
+  });
+
+  it('the same failure SWALLOWED is misattributed to the next step — the bug rethrowErrors closes', async () => {
+    // generateGlossary "succeeds" without producing anything, like the old
+    // handleGenerate did on error. The plan dies at step 2's when-guard with a
+    // message that blames the wrong step. This pins WHY the ANTI ctx bindings
+    // must rethrow; if this test ever fails, the guard semantics changed.
+    const getCtx = () => mkCtx({
+      contentIsGlossary: false,
+      generateGlossary: () => Promise.resolve(), // swallow: no rejection, no content
+      launchFlashcards: () => {},
+    }).ctx;
+    const pr = await AC.runPlan(getCtx, [
+      { commandId: 'generate_glossary', params: {} },
+      { commandId: 'launch_flashcards', params: {} },
+    ]);
+    expect(pr.ok).toBe(false);
+    expect(pr.failedStep).toBe(1);
+    expect(pr.reason).toContain("isn’t available right now"); // the misleading message
+  });
+
+  it('both ANTI copies pass rethrowErrors from every generation ctx binding', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app, path).toContain("generateQuiz: () => handleGenerate('quiz', null, false, null, { rethrowErrors: true })");
+      expect(app, path).toContain("generateGlossary: () => handleGenerate('glossary', null, false, null, { rethrowErrors: true })");
+      expect(app, path).toContain("generateSimplified: (cfg) => handleGenerate('simplified', null, false, null, Object.assign({ rethrowErrors: true }, cfg || {}))");
+      expect(app, path).toContain("generateSentenceFrames: () => handleGenerate('sentence-frames', null, false, null, { rethrowErrors: true })");
+      expect(app, path).toContain("generateAnalysis: () => handleGenerate('analysis', null, false, null, { rethrowErrors: true })");
+      // Demo steps get 5 minutes, not the 3-minute default that killed
+      // slow-but-honest generations mid-recording.
+      expect(app, path).toContain('timeoutMs: 300000');
+    }
+  });
+
+  it('the dispatcher rethrows on BOTH its catch paths, in source and both built copies', () => {
+    // The multi-language batch path had its own catch that ignored
+    // rethrowErrors entirely, so a teacher with several languages selected
+    // kept the silent swallow. Count 2 = batch + single-language paths.
+    // Checking the built module AND its mirror also guards the
+    // forgot-to-rebuild trap (verify:source-pair does not catch it).
+    for (const path of [
+      'generate_dispatcher_source.jsx',
+      'generate_dispatcher_module.js',
+      'desktop/web-app/public/generate_dispatcher_module.js',
+    ]) {
+      const code = readFileSync(path, 'utf-8');
+      const rethrows = code.match(/if \(configOverride && configOverride\.rethrowErrors\) throw err;/g) || [];
+      expect(rethrows.length, path).toBe(2);
+    }
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

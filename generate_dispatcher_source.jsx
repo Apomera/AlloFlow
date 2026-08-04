@@ -1833,6 +1833,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             warnLog("Unhandled error:", err);
             setError(t('errors.batch_generation_failed'));
             if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+            // Same contract as the single-language path below: unattended callers
+            // (blueprints, Demo Autopilot command steps) opt in to seeing the real
+            // failure. A teacher with several languages selected routes through THIS
+            // catch, so without the rethrow their demo steps still reported success
+            // on a failed generation.
+            if (configOverride && configOverride.rethrowErrors) throw err;
         } finally {
             if (!keepLoading) setIsProcessing(false);
         }

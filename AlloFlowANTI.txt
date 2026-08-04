@@ -35805,11 +35805,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // (~23395) gates the generate commands; isTeacherMode (~3434) gates the student submit command.
       hasSourceOrAnalysis,
       isTeacherMode,
-      generateQuiz: () => handleGenerate('quiz'),
-      generateGlossary: () => handleGenerate('glossary'),
-      generateSimplified: (cfg) => handleGenerate('simplified', null, false, null, cfg || {}),
-      generateSentenceFrames: () => handleGenerate('sentence-frames'),
-      generateAnalysis: () => handleGenerate('analysis'),
+      // rethrowErrors: without it handleGenerate swallows every failure (toast +
+      // resolve undefined), so a failed generation reported SUCCESS to the command
+      // layer — AlloBot spoke "Quiz ready" over an error banner, and a Demo
+      // Autopilot run died one step LATER on a when-guard with a misleading
+      // "isn't available right now" instead of the real reason. executeCommand
+      // already converts rejections into honest step failures.
+      generateQuiz: () => handleGenerate('quiz', null, false, null, { rethrowErrors: true }),
+      generateGlossary: () => handleGenerate('glossary', null, false, null, { rethrowErrors: true }),
+      generateSimplified: (cfg) => handleGenerate('simplified', null, false, null, Object.assign({ rethrowErrors: true }, cfg || {})),
+      generateSentenceFrames: () => handleGenerate('sentence-frames', null, false, null, { rethrowErrors: true }),
+      generateAnalysis: () => handleGenerate('analysis', null, false, null, { rethrowErrors: true }),
       submitWork: handleSetShowSubmitModalToTrue,
       hasAssignmentDirections: !!assignmentDirections,
       openAssignmentDirections: () => { if (assignmentDirections) handleRestoreView(assignmentDirections); },
@@ -47557,6 +47563,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             // so the ref tracks live state.
                             const r = await AC.runPlan(() => (_alloCmdCtxRef.current || _alloCmdCtx()), [list[i]], {
                                 shouldStop: stopWanted,
+                                // Recording runs can afford patience: the default 3-minute
+                                // completion ceiling killed demos whose generation step was
+                                // slow-but-honest (image gen, throttle retries). The popup's
+                                // bridge waits 30 minutes and its continuation flow handles
+                                // genuine timeouts, so give steps 5 minutes here.
+                                timeoutMs: 300000,
                                 signal: options && options.signal,
                                 onStep: (j, phase, cmd, narr) => {
                                     const label = (cmd && cmd.label) || list[i].commandId;
