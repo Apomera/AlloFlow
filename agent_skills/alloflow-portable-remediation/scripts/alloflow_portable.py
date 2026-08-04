@@ -2316,6 +2316,12 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
         pages.append("".join(page_text))
 
     text = "\n".join(pages)
+    # A document with no text layer yields only the per-page newline joins. Reporting
+    # "3 characters extracted" for a pure scan overstates what was recovered, so collapse
+    # a whitespace-only result to a true zero (cross-check against the MCP connector's
+    # independent extractor, which reports 0 for the same file).
+    if not text.strip():
+        return {"pages": len(pages), "characters": 0, "text": ""}
     return {"pages": len(pages), "characters": len(text), "text": text[:MAX_TEXT_CHARS]}
 
 
