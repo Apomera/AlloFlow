@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -2158,6 +2158,74 @@ def _decode_literal_string(body: bytes, font: Optional[Dict[str, Any]] = None) -
     return _decode_font_bytes(bytes(code & 0xFF for code in codes), font)
 
 
+# Ligature presentation forms expanded to their letter sequences: a ToUnicode
+# that maps a glyph to U+FB01 is correct PDF, but the text layer this feeds is
+# compared against pdf.js output, which expands them (corpus round 7: 'qualified'
+# vs 'qualiﬁed' read as a recall miss).
+_LIGATURE_EXPANSIONS = {
+    "ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl",
+    "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st",
+}
+
+# The Adobe Glyph List entries that actually occur in subset-font /Differences
+# arrays, plus the algorithmic uniXXXX / uXXXXXX forms handled in
+# _glyph_to_unicode. Deliberately small: an unknown name resolves to None and
+# the byte falls through to the raw-char path, same as before.
+_AGL_SUBSET = {
+    "fi": "fi", "fl": "fl", "ff": "ff", "ffi": "ffi", "ffl": "ffl",
+    "space": " ", "exclam": "!", "quotedbl": '"', "numbersign": "#",
+    "dollar": "$", "percent": "%", "ampersand": "&", "quotesingle": "'",
+    "parenleft": "(", "parenright": ")", "asterisk": "*", "plus": "+",
+    "comma": ",", "hyphen": "-", "period": ".", "slash": "/",
+    "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+    "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9",
+    "colon": ":", "semicolon": ";", "less": "<", "equal": "=", "greater": ">",
+    "question": "?", "at": "@", "bracketleft": "[", "backslash": "\\",
+    "bracketright": "]", "asciicircum": "^", "underscore": "_",
+    "grave": "`", "braceleft": "{", "bar": "|", "braceright": "}",
+    "asciitilde": "~", "quoteleft": "‘", "quoteright": "’",
+    "quotedblleft": "“", "quotedblright": "”",
+    "endash": "–", "emdash": "—", "bullet": "•",
+    "ellipsis": "…", "degree": "°", "cent": "¢",
+    "section": "§", "paragraph": "¶", "dagger": "†",
+    "daggerdbl": "‡", "trademark": "™", "registered": "®",
+    "copyright": "©",
+}
+
+
+def _glyph_to_unicode(name: str) -> Optional[str]:
+    """Resolve a glyph NAME to text (AGL subset + AGL algorithmic rules)."""
+    if "." in name:  # variant suffix: 'fi.alt' names a variant OF 'fi'
+        name = name.split(".", 1)[0]
+        if not name:
+            return None
+    if name in _AGL_SUBSET:
+        return _AGL_SUBSET[name]
+    if len(name) == 1 and name.isalpha():
+        return name
+    m = re.fullmatch(r"uni((?:[0-9A-Fa-f]{4})+)", name)
+    if m:
+        hexes = m.group(1)
+        return "".join(chr(int(hexes[i:i + 4], 16)) for i in range(0, len(hexes), 4))
+    m = re.fullmatch(r"u([0-9A-Fa-f]{4,6})", name)
+    if m:
+        try:
+            return chr(int(m.group(1), 16))
+        except ValueError:
+            return None
+    if "_" in name:  # AGL ligature convention: 'f_i' joins its components
+        parts = [_glyph_to_unicode(part) for part in name.split("_")]
+        if parts and all(parts):
+            return "".join(parts)
+    return None
+
+
+def _expand_ligatures(text: str) -> str:
+    if not any(ch in _LIGATURE_EXPANSIONS for ch in text):
+        return text
+    return "".join(_LIGATURE_EXPANSIONS.get(ch, ch) for ch in text)
+
+
 def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
     """Decode raw string bytes through the current font's ToUnicode CMap.
 
@@ -2172,12 +2240,12 @@ def _decode_font_bytes(raw: bytes, font: Optional[Dict[str, Any]]) -> str:
         return raw.decode("latin1")
     code_len = font.get("codeLen") or 1
     if code_len <= 1:
-        return "".join(mapping.get(byte, chr(byte)) for byte in raw)
+        return _expand_ligatures("".join(mapping.get(byte, chr(byte)) for byte in raw))
     out: List[str] = []
     for index in range(0, len(raw) - (len(raw) % code_len), code_len):
         code = int.from_bytes(raw[index:index + code_len], "big")
         out.append(mapping.get(code, ""))
-    return "".join(out)
+    return _expand_ligatures("".join(out))
 
 
 def _bfrange_target(dst_hex: bytes, offset: int) -> str:
@@ -2316,6 +2384,196 @@ def _decompress_stream(dictionary: bytes, raw: bytes) -> Optional[bytes]:
     return None
 
 
+# ── CFF (Type1C) built-in encoding (corpus round 7, i1040) ───────────────────
+# A subset CFF font with no /ToUnicode and no /Differences keeps its code→glyph
+# assignment ONLY inside the font program: the i1040's HelveticaNeueLTStd
+# subsets park fi at code 0x1F this way, and 25 words per document decoded with
+# a raw control char in the middle. The CFF charset names every glyph by SID,
+# so code→GID→SID→name is fully deterministic — same class of stdlib parsing as
+# the ObjStm/CMap/predictor readers above. Any structural surprise returns {}
+# and the caller keeps the existing raw-byte behaviour.
+
+# Standard-strings SIDs 1..95 are the ASCII printables in order, with Adobe's
+# two quote quirks; these are the non-ASCII entries above 95 that occur in
+# text fonts. SIDs ≥ 391 come from the font's own String INDEX.
+_CFF_SID_EXTRA = {
+    96: "¡", 97: "¢", 98: "£", 100: "¥", 102: "§", 104: "'", 105: "“",
+    106: "«", 109: "fi", 110: "fl", 111: "–", 112: "†", 113: "‡", 114: "·",
+    115: "¶", 116: "•", 119: "”", 120: "»", 121: "…", 123: "¿", 124: "`",
+    137: "—", 138: "Æ", 141: "ª", 145: "æ", 149: "ı", 152: "ø", 153: "œ",
+    155: "º", 158: "Ø", 159: "Œ",
+}
+
+
+def _cff_sid_to_text(sid: int, strings: List[bytes]) -> Optional[str]:
+    if sid <= 0:
+        return None
+    if sid <= 95:
+        if sid == 8:
+            return "’"  # quoteright sits where ASCII has the apostrophe
+        if sid == 65:
+            return "‘"  # quoteleft sits where ASCII has the grave accent
+        return chr(0x20 + sid - 1)
+    if sid in _CFF_SID_EXTRA:
+        return _CFF_SID_EXTRA[sid]
+    if sid >= 391 and sid - 391 < len(strings):
+        return _glyph_to_unicode(strings[sid - 391].decode("latin1", "replace"))
+    return None
+
+
+def _cff_read_index(data: bytes, pos: int) -> Tuple[List[bytes], int]:
+    count = int.from_bytes(data[pos:pos + 2], "big")
+    pos += 2
+    if count == 0:
+        return [], pos
+    off_size = data[pos]
+    pos += 1
+    if not 1 <= off_size <= 4:
+        raise ValueError("bad offSize")
+    offsets = []
+    for _ in range(count + 1):
+        offsets.append(int.from_bytes(data[pos:pos + off_size], "big"))
+        pos += off_size
+    base = pos - 1
+    items = [data[base + offsets[i]:base + offsets[i + 1]] for i in range(count)]
+    return items, base + offsets[-1]
+
+
+def _cff_parse_dict(blob: bytes) -> Dict[int, List[int]]:
+    out: Dict[int, List[int]] = {}
+    operands: List[int] = []
+    i = 0
+    while i < len(blob):
+        b0 = blob[i]
+        if b0 <= 21:
+            op = b0
+            i += 1
+            if b0 == 12:
+                op = 1200 + blob[i]
+                i += 1
+            out[op] = operands
+            operands = []
+        elif b0 == 28:
+            operands.append(int.from_bytes(blob[i + 1:i + 3], "big", signed=True))
+            i += 3
+        elif b0 == 29:
+            operands.append(int.from_bytes(blob[i + 1:i + 5], "big", signed=True))
+            i += 5
+        elif b0 == 30:  # real number: nibble stream, 0xF nibble terminates
+            i += 1
+            while i < len(blob):
+                v = blob[i]
+                i += 1
+                if (v & 0x0F) == 0x0F or (v >> 4) == 0x0F:
+                    break
+            operands.append(0)
+        elif 32 <= b0 <= 246:
+            operands.append(b0 - 139)
+            i += 1
+        elif 247 <= b0 <= 250:
+            operands.append((b0 - 247) * 256 + blob[i + 1] + 108)
+            i += 2
+        elif 251 <= b0 <= 254:
+            operands.append(-(b0 - 251) * 256 - blob[i + 1] - 108)
+            i += 2
+        else:
+            i += 1
+    return out
+
+
+def _cff_code_map(cff: bytes) -> Dict[int, str]:
+    """code → text from a CFF font program's own encoding + charset."""
+    try:
+        pos = cff[2]  # header size
+        _, pos = _cff_read_index(cff, pos)  # Name INDEX
+        top_dicts, pos = _cff_read_index(cff, pos)  # Top DICT INDEX
+        strings, pos = _cff_read_index(cff, pos)  # String INDEX
+        if not top_dicts:
+            return {}
+        top = _cff_parse_dict(top_dicts[0])
+        charstrings_off = (top.get(17) or [0])[-1]
+        if charstrings_off <= 0 or charstrings_off + 2 > len(cff):
+            return {}
+        n_glyphs = int.from_bytes(cff[charstrings_off:charstrings_off + 2], "big")
+        if not n_glyphs:
+            return {}
+        # charset: GID → SID. 0 = ISOAdobe identity; 1/2 = expert (not text).
+        charset_off = (top.get(15) or [0])[-1]
+        if charset_off in (1, 2):
+            return {}
+        gid_to_sid = list(range(n_glyphs))
+        if charset_off > 2:
+            sids = [0]
+            p = charset_off
+            fmt = cff[p]
+            p += 1
+            if fmt == 0:
+                for _ in range(n_glyphs - 1):
+                    sids.append(int.from_bytes(cff[p:p + 2], "big"))
+                    p += 2
+            elif fmt in (1, 2):
+                left_size = 1 if fmt == 1 else 2
+                while len(sids) < n_glyphs:
+                    first = int.from_bytes(cff[p:p + 2], "big")
+                    p += 2
+                    n_left = int.from_bytes(cff[p:p + left_size], "big")
+                    p += left_size
+                    for k in range(n_left + 1):
+                        if len(sids) < n_glyphs:
+                            sids.append(first + k)
+            else:
+                return {}
+            gid_to_sid = sids
+        # encoding: code → GID. 0/1 predefined (standard/expert): nothing to
+        # repair — the raw-byte fallback already matches standard codes.
+        enc_off = (top.get(16) or [0])[-1]
+        if enc_off <= 1:
+            return {}
+        p = enc_off
+        fmt = cff[p]
+        p += 1
+        code_to_gid: Dict[int, int] = {}
+        supplements: List[Tuple[int, int]] = []
+        base_fmt = fmt & 0x7F
+        if base_fmt == 0:
+            n_codes = cff[p]
+            p += 1
+            for gid in range(1, n_codes + 1):
+                code_to_gid[cff[p]] = gid
+                p += 1
+        elif base_fmt == 1:
+            n_ranges = cff[p]
+            p += 1
+            gid = 1
+            for _ in range(n_ranges):
+                first, n_left = cff[p], cff[p + 1]
+                p += 2
+                for k in range(n_left + 1):
+                    code_to_gid[first + k] = gid
+                    gid += 1
+        else:
+            return {}
+        if fmt & 0x80:
+            n_sups = cff[p]
+            p += 1
+            for _ in range(n_sups):
+                supplements.append((cff[p], int.from_bytes(cff[p + 1:p + 3], "big")))
+                p += 3
+        out: Dict[int, str] = {}
+        for code, gid in code_to_gid.items():
+            if 0 <= gid < len(gid_to_sid):
+                text = _cff_sid_to_text(gid_to_sid[gid], strings)
+                if text:
+                    out[code] = text
+        for code, sid in supplements:
+            text = _cff_sid_to_text(sid, strings)
+            if text:
+                out[code] = text
+        return out
+    except Exception:
+        return {}
+
+
 def _fonts_from_resources(
     index: Dict[int, Tuple[bytes, Optional[bytes]]], resources: Optional[bytes]
 ) -> Dict[str, Dict[str, Any]]:
@@ -2345,6 +2603,54 @@ def _fonts_from_resources(
                     parsed = _parse_tounicode(cmap_bytes)
         composite = re.search(rb"/Subtype\s*/Type0\b", entry[0]) is not None
         parsed["codeLen"] = 2 if composite else 1
+        # /Encoding /Differences supplement (corpus round 7, i1040): subset
+        # fonts park ligature glyphs at otherwise-unmapped codes with no
+        # ToUnicode entry — HelveticaNeueLTStd puts fi at 0x1F, so the decoder
+        # emitted a raw control char and 'qualified' read as 'qualied'. The
+        # Differences array NAMES the glyph, which is deterministic. ToUnicode
+        # still wins wherever it speaks; simple fonts only (Type0 has none).
+        if not composite:
+            encoding = _dict_value(index, entry[0], "Encoding")
+            differences = (
+                re.search(rb"/Differences\s*\[(.*?)\]", encoding, re.S)
+                if encoding
+                else None
+            )
+            if differences:
+                mapping = parsed.setdefault("map", {})
+                code = 0
+                for num, glyph in re.findall(
+                    rb"(\d+)|/([^\s/\[\]<>()]+)", differences.group(1)
+                ):
+                    if num:
+                        code = int(num)
+                        continue
+                    if code not in mapping:
+                        uni = _glyph_to_unicode(glyph.decode("latin1"))
+                        if uni:
+                            mapping[code] = uni
+                    code += 1
+            # Last in precedence: the CFF program's own encoding, for codes
+            # neither ToUnicode nor Differences spoke for (fill-only-missing
+            # keeps the precedence order, so attempting it is always safe).
+            descriptor = _dict_value(index, entry[0], "FontDescriptor")
+            file_ref = (
+                re.search(rb"/FontFile3\s+(\d+)\s+0\s+R", descriptor)
+                if descriptor
+                else None
+            )
+            file_entry = index.get(int(file_ref.group(1))) if file_ref else None
+            if file_entry and file_entry[1] is not None and re.search(
+                rb"/Subtype\s*/Type1C\b", file_entry[0]
+            ):
+                cff = _decompress_stream(file_entry[0], file_entry[1])
+                if cff:
+                    cff_map = _cff_code_map(cff)
+                    if cff_map:
+                        mapping = parsed.setdefault("map", {})
+                        for code, text in cff_map.items():
+                            if code not in mapping:
+                                mapping[code] = text
         fonts[name.decode("latin1")] = parsed
     return fonts
 

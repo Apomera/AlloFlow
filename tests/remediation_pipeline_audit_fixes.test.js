@@ -8,6 +8,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { buildLigatureFixturePdf } from './helpers/ligature_fixture.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
@@ -1460,5 +1461,119 @@ describe('M4 follow-up — the batch listener reads a LIVE target score', () => 
     // That effect re-runs on pdfFixResult, so its capture is fresh; only the batch listener needed
     // the ref. Pinning this keeps someone from "consistently" changing the wrong one.
     expect(anti).toContain('_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Corpus round 7 — the table discriminator vetoed real prose columns.
+//
+// The i1040's justified 3-column "What's New" shares one baseline grid, so
+// 67-89% of left-column baselines match the right side and the ≥0.55 aligned-
+// rows veto read the whole page as a table: extraction interleaved the three
+// columns mid-sentence. The override splits only when both sides READ as prose
+// columns (lines that fill their column, few items and ≥18 chars per line) —
+// thresholds with measured daylight to the i1040 p68 tax table (fill 0.72,
+// 8.1 items/line) and NIST HB44's 9-char device-code column.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('R7 — prose columns on a shared baseline grid still split', () => {
+  let orderTextItems;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    orderTextItems = window.AlloModules.createDocPipeline.orderTextItems;
+  });
+
+  const LONG = 'sentence text that runs long enough to be prose';
+  const item = (str, x, y, w) => ({ str, width: w, transform: [9, 0, 0, 9, x, y] });
+  const LINES = 30;
+
+  function proseColumns() {
+    // Three justified columns at x 40/230/420, width 150, one shared baseline
+    // grid — every line of every column sits on the same y as its neighbours.
+    const items = [];
+    for (let line = 0; line < LINES; line++) {
+      const y = 700 - line * 15;
+      for (let col = 0; col < 3; col++) {
+        items.push(item(`c${col} l${line} ${LONG}`, 40 + col * 190, y, 150));
+      }
+    }
+    return items;
+  }
+
+  it('a 3-column baseline-aligned prose page is split into 3 columns', () => {
+    const ord = orderTextItems(proseColumns(), {});
+    expect(ord.applied).toBe(true);
+    expect(ord.columns).toBe(3);
+    // Reading order: ALL of column 0, then all of column 1, then column 2.
+    const cols = ord.items.map((i) => i.str[1]);
+    const firstC1 = cols.indexOf('1');
+    const firstC2 = cols.indexOf('2');
+    expect(cols.lastIndexOf('0')).toBeLessThan(firstC1);
+    expect(cols.lastIndexOf('1')).toBeLessThan(firstC2);
+  });
+
+  it('a short-code table column is NOT split away from its row labels (HB44 class)', () => {
+    // Code column fills its narrow side (fill ≈0.82 — past the fill gate) with
+    // one item per line, but its lines are ~8 chars: only medianChars stops it.
+    const items = [];
+    for (let line = 0; line < LINES; line++) {
+      const y = 700 - line * 15;
+      items.push(item('VTM-21.1', 40, y, 80));
+      items.push(item(`Diversion of Measured Liquid ${line}`, 150, y, 300));
+    }
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(false);
+    expect(ord.columns).toBe(1);
+    // Row-major: each code stays adjacent to its own row's label.
+    const strs = ord.items.map((i) => i.str);
+    expect(strs[0]).toBe('VTM-21.1');
+    expect(strs[1]).toContain('Diversion');
+  });
+
+  it('a numeric grid stays row-major (tax-table class)', () => {
+    const items = [];
+    for (let line = 0; line < LINES; line++) {
+      const y = 700 - line * 15;
+      for (let cell = 0; cell < 8; cell++) {
+        items.push(item(String(1000 + line * 8 + cell), 40 + cell * 62, y, 30));
+      }
+    }
+    const ord = orderTextItems(items, {});
+    expect(ord.columns).toBe(1);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Corpus round 7 — simple-font code→text precedence in the CS extractor.
+//
+// The i1040's HelveticaNeueLTStd subsets park fi at code 0x1F with no
+// ToUnicode entry; the glyph is named only in /Encoding /Differences — and as
+// /f_i, the AGL underscore convention. The decoder emitted a raw control char
+// and 'qualified' read as 'quali␟ed' (68 sites per document). Three layers,
+// ToUnicode first: ToUnicode → Differences glyph names → the embedded CFF
+// program's own encoding+charset. Ligature presentation forms (U+FB00-06) are
+// expanded so the CS text compares cleanly against pdf.js output.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('R7 — Differences /f_i, ligature expansion, and CFF built-in encoding', () => {
+  let pages;
+  beforeAll(async () => {
+    loadAlloModule('doc_pipeline_module.js');
+    const pdf = buildLigatureFixturePdf();
+    pages = await window.__alloCsPageTexts(new Uint8Array(pdf.buffer, pdf.byteOffset, pdf.length));
+  });
+
+  it('a /Differences [31 /f_i] glyph decodes through the AGL underscore rule', () => {
+    expect(pages.join('\n')).toContain('qualified');
+  });
+
+  it('a ToUnicode hit on U+FB01 is expanded to plain "fi"', () => {
+    expect(pages.join('\n')).toContain('benefit');
+  });
+
+  it('with no ToUnicode and no Differences, the CFF program encoding speaks', () => {
+    expect(pages.join('\n')).toContain('confirm');
+  });
+
+  it('no raw control characters survive in the fixture text', () => {
+    expect(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(pages.join(''))).toBe(false);
   });
 });

@@ -2463,6 +2463,32 @@ function _alloOrderTextItems(items, opts) {
     var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
     _rtl = _rtlCount > 20 && _rtlCount > _latCount;
   }
+  // Per-side line statistics for the table-vs-prose-columns call below (2026-08-04).
+  // Lines are 3pt baseline buckets; fill is how much of the side's width a line spans.
+  var _sideLines = function (side, x0, x1) {
+    var lines = Object.create(null), nLines = 0, nItems = 0;
+    for (var iS = 0; iS < side.length; iS++) {
+      var kL = Math.round(_y(side[iS]) / 3);
+      var line = lines[kL];
+      if (!line) { line = lines[kL] = { lo: Infinity, hi: -Infinity, chars: 0 }; nLines++; }
+      var xa = _x(side[iS]), xb = xa + _w(side[iS]);
+      if (xa < line.lo) line.lo = xa;
+      if (xb > line.hi) line.hi = xb;
+      line.chars += String(side[iS].str || '').length;
+      nItems++;
+    }
+    var fills = [], charCounts = [];
+    var width = Math.max(1, x1 - x0);
+    for (var kF in lines) { fills.push((lines[kF].hi - lines[kF].lo) / width); charCounts.push(lines[kF].chars); }
+    fills.sort(function (a, b) { return a - b; });
+    charCounts.sort(function (a, b) { return a - b; });
+    return {
+      lines: nLines,
+      medianFill: nLines ? fills[Math.floor(nLines / 2)] : 0,
+      itemsPerLine: nLines ? nItems / nLines : 0,
+      medianChars: nLines ? charCounts[Math.floor(nLines / 2)] : 0,
+    };
+  };
   var MAX_DEPTH = 2;
   var split = function (arr, depth) {
     if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
@@ -2510,7 +2536,25 @@ function _alloOrderTextItems(items, opts) {
       var ky = Math.round(_y(right[i6]) / 3);
       if (leftY[ky] && !rightSeen[ky]) { rightSeen[ky] = true; matches++; }
     }
-    if (lY > 0 && matches / lY >= 0.55) return { cols: [arr], gutters: [] }; // aligned rows → table/grid, keep row-major
+    if (lY > 0 && matches / lY >= 0.55) {
+      // Aligned baselines usually mean a table/grid, where row-major reading is correct —
+      // that veto stands. But dense prose columns share a baseline grid too: the i1040's
+      // justified 3-column "What's New" matches at 0.67-0.89 and was read as one
+      // interleaved column (corpus round 7). The measured separation (i1040 p6/p7/p100
+      // vs its p68 tax table): a prose column's lines each FILL the column — left median
+      // fill 0.89-0.95 with 1-2.2 items per line — while a table's baselines are rows of
+      // many short cells (left fill 0.72, right 8.1 items/line). Split only when both
+      // sides read as prose columns; every threshold has daylight to both measured sides.
+      // medianChars separates a prose column (lines of ~35+ characters) from a
+      // TABLE column that also fills its narrow width — NIST HB44's device-code
+      // cross-reference column ('VTM-21.1', ~9 chars/line) passed the fill and
+      // items-per-line gates and was peeled away from its row labels.
+      var LS = _sideLines(left, minX, best.xCut), RS = _sideLines(right, best.xCut, maxX);
+      var proseColumns = LS.lines >= 8 && RS.lines >= 8 &&
+        LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
+        LS.medianChars >= 18 && RS.medianChars >= 18;
+      if (!proseColumns) return { cols: [arr], gutters: [] };
+    }
     var L = split(left, depth + 1), R = split(right, depth + 1);
     return { cols: L.cols.concat(R.cols), gutters: L.gutters.concat([best.xCut]).concat(R.gutters) };
   };
@@ -2714,6 +2758,213 @@ function _csParseToUnicode(cmapStr) {
   return { map: map, codeLen: codeLen };
 }
 
+// ── Glyph-name and CFF built-in-encoding decoding (corpus round 7) ───────────
+// Port of the portable extractor's three-layer code→text precedence for simple
+// fonts: ToUnicode wins, then /Encoding /Differences glyph names, then the
+// embedded CFF program's own encoding+charset. The i1040's subset fonts park
+// fi at code 0x1F, named only as /f_i in a Differences array (AGL underscore
+// convention) — the decoder emitted a bare control char mid-word ("qualied").
+var _CS_LIG_MAP = { 'ﬀ': 'ff', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬃ': 'ffi', 'ﬄ': 'ffl', 'ﬅ': 'st', 'ﬆ': 'st' };
+
+function _csExpandLigatures(text) {
+  if (!/[ﬀ-ﬆ]/.test(text)) return text;
+  return text.replace(/[ﬀ-ﬆ]/g, function (ch) { return _CS_LIG_MAP[ch] || ch; });
+}
+
+var _CS_AGL = { fi: 'fi', fl: 'fl', ff: 'ff', ffi: 'ffi', ffl: 'ffl', space: ' ', exclam: '!', quotedbl: '"', numbersign: '#', dollar: '$', percent: '%', ampersand: '&', quotesingle: "'", parenleft: '(', parenright: ')', asterisk: '*', plus: '+', comma: ',', hyphen: '-', period: '.', slash: '/', zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', colon: ':', semicolon: ';', less: '<', equal: '=', greater: '>', question: '?', at: '@', bracketleft: '[', backslash: '\\', bracketright: ']', asciicircum: '^', underscore: '_', grave: '`', braceleft: '{', bar: '|', braceright: '}', asciitilde: '~', quoteleft: '‘', quoteright: '’', quotedblleft: '“', quotedblright: '”', endash: '–', emdash: '—', bullet: '•', ellipsis: '…', degree: '°', cent: '¢', section: '§', paragraph: '¶', dagger: '†', daggerdbl: '‡', trademark: '™', registered: '®', copyright: '©' };
+
+function _csGlyphToUnicode(name) {
+  if (name.indexOf('.') >= 0) { // variant suffix: 'fi.alt' names a variant OF 'fi'
+    name = name.split('.')[0];
+    if (!name) return null;
+  }
+  if (Object.prototype.hasOwnProperty.call(_CS_AGL, name)) return _CS_AGL[name];
+  if (name.length === 1 && /[A-Za-z]/.test(name)) return name;
+  var m = /^uni((?:[0-9A-Fa-f]{4})+)$/.exec(name);
+  if (m) {
+    var uni = '';
+    for (var i = 0; i < m[1].length; i += 4) uni += String.fromCharCode(parseInt(m[1].substr(i, 4), 16));
+    return uni;
+  }
+  m = /^u([0-9A-Fa-f]{4,6})$/.exec(name);
+  if (m) {
+    var cp = parseInt(m[1], 16);
+    return cp <= 0x10FFFF ? String.fromCodePoint(cp) : null;
+  }
+  if (name.indexOf('_') >= 0) { // AGL ligature convention: 'f_i' joins its components
+    var parts = name.split('_');
+    var joined = '';
+    for (var p = 0; p < parts.length; p++) {
+      var part = _csGlyphToUnicode(parts[p]);
+      if (!part) return null;
+      joined += part;
+    }
+    return joined;
+  }
+  return null;
+}
+
+// Standard-strings SIDs 1..95 are the ASCII printables in order (with Adobe's
+// two quote quirks); these are the non-ASCII entries above 95 that occur in
+// text fonts. SIDs ≥ 391 come from the font's own String INDEX.
+var _CS_CFF_SID_EXTRA = { 96: '¡', 97: '¢', 98: '£', 100: '¥', 102: '§', 104: "'", 105: '“', 106: '«', 109: 'fi', 110: 'fl', 111: '–', 112: '†', 113: '‡', 114: '·', 115: '¶', 116: '•', 119: '”', 120: '»', 121: '…', 123: '¿', 124: '`', 137: '—', 138: 'Æ', 141: 'ª', 145: 'æ', 149: 'ı', 152: 'ø', 153: 'œ', 155: 'º', 158: 'Ø', 159: 'Œ' };
+
+function _csCffSidToText(sid, strings) {
+  if (sid <= 0) return null;
+  if (sid <= 95) {
+    if (sid === 8) return '’'; // quoteright sits where ASCII has the apostrophe
+    if (sid === 65) return '‘'; // quoteleft sits where ASCII has the grave accent
+    return String.fromCharCode(0x20 + sid - 1);
+  }
+  if (_CS_CFF_SID_EXTRA[sid] !== undefined) return _CS_CFF_SID_EXTRA[sid];
+  if (sid >= 391 && sid - 391 < strings.length) return _csGlyphToUnicode(strings[sid - 391]);
+  return null;
+}
+
+function _csCffReadIndex(u8, pos) {
+  var count = (u8[pos] << 8) | u8[pos + 1];
+  pos += 2;
+  if (!count) return { items: [], pos: pos };
+  var offSize = u8[pos];
+  pos += 1;
+  if (offSize < 1 || offSize > 4) throw new Error('bad offSize');
+  var offsets = [];
+  for (var i = 0; i <= count; i++) {
+    var v = 0;
+    for (var b = 0; b < offSize; b++) v = v * 256 + u8[pos + b];
+    offsets.push(v);
+    pos += offSize;
+  }
+  var base = pos - 1;
+  var items = [];
+  for (var j = 0; j < count; j++) items.push(u8.subarray(base + offsets[j], base + offsets[j + 1]));
+  return { items: items, pos: base + offsets[count] };
+}
+
+function _csCffParseDict(blob) {
+  var out = {};
+  var operands = [];
+  var i = 0;
+  while (i < blob.length) {
+    var b0 = blob[i];
+    if (b0 <= 21) {
+      var op = b0;
+      i += 1;
+      if (b0 === 12) { op = 1200 + blob[i]; i += 1; }
+      out[op] = operands;
+      operands = [];
+    } else if (b0 === 28) {
+      var v16 = (blob[i + 1] << 8) | blob[i + 2];
+      operands.push(v16 > 0x7FFF ? v16 - 0x10000 : v16);
+      i += 3;
+    } else if (b0 === 29) {
+      operands.push((blob[i + 1] << 24) | (blob[i + 2] << 16) | (blob[i + 3] << 8) | blob[i + 4]);
+      i += 5;
+    } else if (b0 === 30) { // real number: nibble stream, 0xF nibble terminates
+      i += 1;
+      while (i < blob.length) { var nib = blob[i]; i += 1; if ((nib & 0x0F) === 0x0F || (nib >> 4) === 0x0F) break; }
+      operands.push(0);
+    } else if (b0 >= 32 && b0 <= 246) { operands.push(b0 - 139); i += 1; }
+    else if (b0 >= 247 && b0 <= 250) { operands.push((b0 - 247) * 256 + blob[i + 1] + 108); i += 2; }
+    else if (b0 >= 251 && b0 <= 254) { operands.push(-(b0 - 251) * 256 - blob[i + 1] - 108); i += 2; }
+    else { i += 1; }
+  }
+  return out;
+}
+
+function _csCffCodeMap(cff) {
+  // code → text from a CFF font program's own encoding + charset. Any
+  // structural surprise returns null and the caller keeps raw-byte decoding.
+  try {
+    var idx = _csCffReadIndex(cff, cff[2]); // Name INDEX (skipped)
+    idx = _csCffReadIndex(cff, idx.pos); // Top DICT INDEX
+    var topDicts = idx.items;
+    idx = _csCffReadIndex(cff, idx.pos); // String INDEX
+    var strings = [];
+    for (var s = 0; s < idx.items.length; s++) strings.push(_csLatin1(idx.items[s]));
+    if (!topDicts.length) return null;
+    var top = _csCffParseDict(topDicts[0]);
+    var csOff = top[17] && top[17].length ? top[17][top[17].length - 1] : 0;
+    if (!(csOff > 0) || csOff + 2 > cff.length) return null;
+    var nGlyphs = (cff[csOff] << 8) | cff[csOff + 1];
+    if (!nGlyphs) return null;
+    // charset: GID → SID. 0 = identity; 1/2 = expert charsets (not text fonts).
+    var charsetOff = top[15] && top[15].length ? top[15][top[15].length - 1] : 0;
+    if (charsetOff === 1 || charsetOff === 2) return null;
+    var gidToSid = [];
+    var p, fmt, k;
+    if (charsetOff > 2) {
+      gidToSid = [0];
+      p = charsetOff;
+      fmt = cff[p];
+      p += 1;
+      if (fmt === 0) {
+        while (gidToSid.length < nGlyphs) { gidToSid.push((cff[p] << 8) | cff[p + 1]); p += 2; }
+      } else if (fmt === 1 || fmt === 2) {
+        var leftSize = fmt === 1 ? 1 : 2;
+        while (gidToSid.length < nGlyphs) {
+          var first = (cff[p] << 8) | cff[p + 1];
+          p += 2;
+          var nLeft = leftSize === 1 ? cff[p] : ((cff[p] << 8) | cff[p + 1]);
+          p += leftSize;
+          for (k = 0; k <= nLeft && gidToSid.length < nGlyphs; k++) gidToSid.push(first + k);
+        }
+      } else {
+        return null;
+      }
+    } else {
+      for (k = 0; k < nGlyphs; k++) gidToSid.push(k);
+    }
+    // encoding: code → GID. 0/1 predefined (standard/expert): nothing to
+    // repair — the raw-byte fallback already matches standard codes.
+    var encOff = top[16] && top[16].length ? top[16][top[16].length - 1] : 0;
+    if (!(encOff > 1)) return null;
+    p = encOff;
+    fmt = cff[p];
+    p += 1;
+    var codeToGid = {};
+    var baseFmt = fmt & 0x7F;
+    var gid;
+    if (baseFmt === 0) {
+      var nCodes = cff[p];
+      p += 1;
+      for (gid = 1; gid <= nCodes; gid++) { codeToGid[cff[p]] = gid; p += 1; }
+    } else if (baseFmt === 1) {
+      var nRanges = cff[p];
+      p += 1;
+      gid = 1;
+      for (var r = 0; r < nRanges; r++) {
+        var firstCode = cff[p], nLeft1 = cff[p + 1];
+        p += 2;
+        for (k = 0; k <= nLeft1; k++) { codeToGid[firstCode + k] = gid; gid++; }
+      }
+    } else {
+      return null;
+    }
+    var out = {};
+    for (var codeKey in codeToGid) {
+      if (!Object.prototype.hasOwnProperty.call(codeToGid, codeKey)) continue;
+      var g = codeToGid[codeKey];
+      if (g >= 0 && g < gidToSid.length) {
+        var text = _csCffSidToText(gidToSid[g], strings);
+        if (text) out[parseInt(codeKey, 10)] = text;
+      }
+    }
+    if (fmt & 0x80) { // supplements map codes straight to SIDs
+      var nSups = cff[p];
+      p += 1;
+      for (var s2 = 0; s2 < nSups; s2++) {
+        var supText = _csCffSidToText((cff[p + 1] << 8) | cff[p + 2], strings);
+        if (supText) out[cff[p]] = supText;
+        p += 3;
+      }
+    }
+    return out;
+  } catch (e) {
+    return null;
+  }
+}
+
 function _csDictValue(index, container, key) {
   if (!container) return null;
   var inline = new RegExp('\\/' + key + '\\s*<<').exec(container);
@@ -2734,7 +2985,7 @@ function _csDecodeCodes(codes, font) {
         var c2 = (codes[i2] << 8) | codes[i2 + 1];
         out2 += (map[c2] !== undefined ? map[c2] : '');
       }
-      return out2;
+      return _csExpandLigatures(out2);
     }
     var s = '';
     for (var j = 0; j < codes.length; j++) s += String.fromCharCode(codes[j]);
@@ -2742,7 +2993,7 @@ function _csDecodeCodes(codes, font) {
   }
   var out = '';
   for (var i = 0; i < codes.length; i++) out += (map[codes[i]] !== undefined ? map[codes[i]] : String.fromCharCode(codes[i]));
-  return out;
+  return _csExpandLigatures(out);
 }
 
 function _csLiteralCodes(body) {
@@ -2889,6 +3140,40 @@ async function _alloContentStreamPageTexts(u8) {
               var parsedMap = _csParseToUnicode(_csLatin1(cRaw));
               parsed.map = parsedMap.map;
               parsed.codeLen = parsedMap.codeLen === 1 && parsed.codeLen === 1 ? 1 : parsed.codeLen;
+            }
+          }
+        }
+        if (parsed.codeLen === 1) {
+          // Simple fonts: layer /Encoding /Differences glyph names, then the
+          // CFF program's own encoding, under whatever ToUnicode provided —
+          // fill-only-missing keeps the precedence order (corpus round 7).
+          var encDict = _csDictValue(index, fe.dict, 'Encoding');
+          var dM = encDict ? /\/Differences\s*\[([\s\S]*?)\]/.exec(encDict) : null;
+          if (dM) {
+            if (!parsed.map) parsed.map = {};
+            var tokRe = /(\d+)|\/([^\s/\[\]<>()]+)/g;
+            var tok;
+            var codeAt = 0;
+            while ((tok = tokRe.exec(dM[1])) !== null) {
+              if (tok[1] !== undefined) { codeAt = parseInt(tok[1], 10); continue; }
+              if (parsed.map[codeAt] === undefined) {
+                var uniName = _csGlyphToUnicode(tok[2]);
+                if (uniName) parsed.map[codeAt] = uniName;
+              }
+              codeAt++;
+            }
+          }
+          var descDict = _csDictValue(index, fe.dict, 'FontDescriptor');
+          var ff3 = descDict ? /\/FontFile3\s+(\d+)\s+0\s+R/.exec(descDict) : null;
+          var ffe = ff3 ? index[parseInt(ff3[1], 10)] : null;
+          if (ffe && ffe.rawStart >= 0 && /\/Subtype\s*\/Type1C\b/.test(ffe.dict)) {
+            var cffRaw = /\/FlateDecode\b/.test(ffe.dict) ? await _csInflate(u8.subarray(ffe.rawStart, ffe.rawEnd)) : u8.subarray(ffe.rawStart, ffe.rawEnd);
+            var cffMap = cffRaw ? _csCffCodeMap(cffRaw) : null;
+            if (cffMap) {
+              if (!parsed.map) parsed.map = {};
+              for (var cffKey in cffMap) {
+                if (Object.prototype.hasOwnProperty.call(cffMap, cffKey) && parsed.map[cffKey] === undefined) parsed.map[cffKey] = cffMap[cffKey];
+              }
             }
           }
         }

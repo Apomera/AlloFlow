@@ -57,20 +57,30 @@ shortfall to explain: the hidden per-page print-control lines (see findings).
 
 ## Findings for the wider project (surfaced by this document)
 
-1. **Column detector misses i1040's 3-column pages.** `_alloOrderTextItems`
-   reported 1 column on page 6 (a dense 3-column What's New page), so the
-   connector's extraction interleaves those pages mid-sentence. The
-   content-stream pass reads them correctly (writing order). Candidate fix:
-   feed the gutter detector the drawn column rules, or lower the min-item
-   threshold; needs its own measured round against the corpus.
+1. **Column detector misses i1040's 3-column pages — FIXED (round 7,
+   2026-08-04).** The gutter search found the columns all along; the aligned-
+   rows table veto killed the split, because justified prose columns share a
+   baseline grid. The fix overrides the veto only when both sides READ as
+   prose columns (median line fill ≥0.8, ≤2.5 items and ≥18 chars per line —
+   the chars gate protects HB44's device-code table column). Measured across
+   the corpus: 15 pages changed (13 i1040, 2 NSF brief), referee bigram
+   agreement vs CS writing order improved on ALL 15 (typ. 0.80 → 0.99),
+   0 regressions.
 2. **Hidden print-control text layer.** Every page carries invisible
    production text ('Fileid: ... MUST be removed before printing' + cycle/date)
    — same class as the 1913 print-master's hidden layer. Any recall metric on
    this document must expect that uncovered share; tranche review notes
-   disclose the omission once.
-3. **fi-ligature divergence between extractors.** The byte-level pass emits
-   'qualied'/'le' where pdf.js decodes the ligature ('qualified'/'file').
-   Recall comparisons between the two must tolerate it; authored text follows
-   pdf.js.
-4. Embedded fonts in this PDF do not rasterize in headless Chromium
-   (tofu boxes) — structure reading must go through textContent, not images.
+   disclose the omission once. (Document property, not a bug.)
+3. **fi-ligature loss — FIXED (round 7).** Root cause was not the ligature
+   itself: the subset fonts park fi at code 0x1F with no ToUnicode entry,
+   named /f_i (AGL underscore rule) in /Encoding /Differences — or only inside
+   the CFF program. Both extractors (Python portable + JS CS oracle) now
+   layer ToUnicode → Differences glyph names → CFF built-in encoding, and
+   expand U+FB00-06 presentation forms. The two ports agree byte-for-byte on
+   this document (649,183 chars, 0 control chars).
+4. **Tofu renders — FIXED (round 7).** Chromium's OpenType Sanitizer rejects
+   these subsets ('cmap: Non zero cmap subtable segment padding'); the
+   vendored pdf.js 3.11.174 cannot repair them. render_pages.cjs now prefers
+   modern pdfjs-dist (`npm i pdfjs-dist --no-save`, does not persist) which
+   rebuilds the cmap — i1040 pages render fully readable — and falls back to
+   the vendored build (layout only) with a stderr hint.

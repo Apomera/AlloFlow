@@ -335,3 +335,21 @@ describe('merge-plans (multi-session tranches)', () => {
     expect(mismatch.json?.error).toMatch(/different document header/i);
   });
 });
+
+// Corpus round 7 — simple-font code-to-text precedence layers, Python port.
+// Same runtime-generated fixture as the JS side (tests/helpers/ligature_fixture.js):
+// Differences /f_i (AGL underscore rule), ToUnicode U+FB01 expansion, and the
+// synthetic-CFF built-in encoding that fires when nothing else names the glyph.
+describe('simple-font decoding layers (ligature fixture)', () => {
+  it('extract-text resolves all three layers with no control-char residue', async () => {
+    const { buildLigatureFixturePdf } = await import('./helpers/ligature_fixture.js');
+    const fixture = join(scratch, 'ligature-fixture.pdf');
+    writeFileSync(fixture, buildLigatureFixturePdf());
+    const result = runPortable(['extract-text', '--source', fixture, '--include-text']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.json.text).toContain('qualified'); // /Differences [31 /f_i]
+    expect(result.json.text).toContain('benefit'); // ToUnicode -> U+FB01 -> 'fi'
+    expect(result.json.text).toContain('confirm'); // CFF program encoding
+    expect(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(result.json.text)).toBe(false);
+  });
+});
