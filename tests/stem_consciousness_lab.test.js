@@ -640,3 +640,52 @@ describe('Accessibility regressions', () => {
     expect(sheet.textContent).toContain('.cns-sources a{display:inline-block;padding:3px 0;min-height:24px}');
   });
 });
+
+describe('Case to bench cross-links', () => {
+  const link = (caseId, grade) => config.testHooks.benchLinkFor(caseId, grade || '11th Grade');
+
+  it('links only cases whose mechanism the toy actually models', () => {
+    expect(link('masking').presetId).toBe('masked');
+    expect(link('green-light').presetId).toBe('threshold');
+    expect(link('dream').presetId).toBe('sedated');
+    expect(link('jspace').presetId).toBe('non-verbalizable');
+
+    // A conceivability argument and a cross-species inference are not things
+    // this model speaks to. Linking them would imply the run bears on them.
+    expect(link('zombie')).toBe(null);
+    expect(link('animal-moral-patient')).toBe(null);
+  });
+
+  it('sends the AI-emotion case to the model lane, where its point lives', () => {
+    const l = link('ai-emotion');
+    expect(l.presetId).toBe('clear');
+    expect(l.config.substrate).toBe('model');
+  });
+
+  it('hides a link when its preset is not offered at that reading path', () => {
+    // non-verbalizable is high+; threshold is middle+
+    expect(link('jspace', '7th Grade')).toBe(null);
+    expect(link('green-light', '1st Grade')).toBe(null);
+    expect(link('masking', '1st Grade').presetId).toBe('masked');
+  });
+
+  it('hands the bench a complete control state, not a partial patch', () => {
+    ['masking', 'green-light', 'dream', 'jspace', 'ai-emotion'].forEach((id) => {
+      const c = link(id).config;
+      ['substrate', 'strength', 'interference', 'topDown', 'reportRequired', 'bypass']
+        .forEach((k) => expect(c[k], id + '.' + k).toBeDefined());
+    });
+  });
+
+  it('renders the button with the toy-model caveat attached', () => {
+    const html = renderView('11th Grade', 'cases', { selectedCase: 'masking' });
+    expect(html).toContain('See the mechanism on the bench');
+    expect(html).toContain('Open the bench with the Backward masking setup');
+    expect(html).toContain('Watching it is not evidence about the case.');
+  });
+
+  it('shows no bench button on a case the model cannot represent', () => {
+    const html = renderView('11th Grade', 'cases', { selectedCase: 'zombie' });
+    expect(html).not.toContain('See the mechanism on the bench');
+  });
+});

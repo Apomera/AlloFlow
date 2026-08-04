@@ -891,6 +891,28 @@
     return SIM_PRESETS.filter(function (preset) { return levelAtLeast(profile.id, preset.minLevel || 'early'); });
   }
 
+  // Cases that have a bench setup showing the SAME mechanism. Only cases whose
+  // mechanism the toy actually models are listed — a link from a case the bench
+  // cannot represent would imply the run says something about it. The zombie and
+  // animal-patient cases are deliberately absent for that reason: one is a
+  // conceivability argument and the other is cross-species inference, and this
+  // model speaks to neither.
+  var CASE_BENCH_LINKS = {
+    'green-light': { presetId: 'threshold', why: 'The case turns on a target near the detection threshold. The bench has a setting that sits just under ignition, so you can watch the transition it describes.' },
+    masking: { presetId: 'masked', why: 'The bench has a masking setting: the feedforward sweep survives while everything after it collapses, which is the dissociation this case asks you to interpret.' },
+    dream: { presetId: 'sedated', why: 'The bench can lower global coupling while local processing continues, which is the state-versus-content split this case raises.' },
+    jspace: { presetId: 'non-verbalizable', why: 'The bench can hide content from the verbalizable lens while downstream computation continues, which is the method limitation this case turns on.' },
+    'ai-emotion': { presetId: 'clear', substrate: 'model', why: 'Run the clear signal on the model lane, then switch lanes: identical markers, and the felt-experience row still reads Not measured. That contrast is what this case is about.' }
+  };
+
+  function benchLinkForCase(caseId, profile) {
+    var link = CASE_BENCH_LINKS[caseId];
+    if (!link) return null;
+    var preset = presetsForProfile(profile).filter(function (p) { return p.id === link.presetId; })[0];
+    if (!preset) return null;   // preset not offered at this reading path
+    return { preset: preset, config: Object.assign({}, preset.config, link.substrate ? { substrate: link.substrate } : {}), why: link.why };
+  }
+
   function simPhenomenalVerdict(simple) {
     return simple
       ? 'Nobody measured a feeling here. All these numbers came from arithmetic we wrote to help us ask questions. They cannot tell us whether anything felt like something.'
@@ -1110,6 +1132,10 @@
       runWorkspaceSim: runWorkspaceSim,
       simTheoryReadoutFor: function (theoryId, config) { return simTheoryReadout(THEORIES[theoryId], runWorkspaceSim(config)); },
       simSubstrateIds: Object.keys(SIM_SUBSTRATES),
+      benchLinkFor: function (caseId, grade) {
+        var link = benchLinkForCase(caseId, resolveProfile(grade));
+        return link ? { presetId: link.preset.id, config: link.config } : null;
+      },
       networkNodesFor: function (substrate) { return buildNetworkNodes(substrate); },
       networkLevelsFor: function (substrate, config, step) {
         var run = runWorkspaceSim(config);
@@ -1890,6 +1916,7 @@
       var debateMinimum = debateMinimumForProfile(profile);
       var debateGuide = debateGuideForProfile(profile);
       var debateReady = debateReadyForProfile(Object.assign({}, debate, { theoryA: debateA, theoryB: debateB }), profile);
+      var benchLink = benchLinkForCase(selectedCaseId, profile);
 
       function updateDebate(field, value) {
         patchState(function (current) {
@@ -1961,6 +1988,26 @@
           ),
           h('div', { className: 'cns-lens-pair' }, selectedCase.lenses.map(function (lens, index) { return h('div', { key: index, style: { background: C.panel, borderColor: C.border } }, h('strong', null, 'Lens ' + (index + 1)), h('p', null, lens)); })),
           epistemicBox('caution', 'Calibration', selectedCase.guard),
+          benchLink && h('div', { className: 'cns-case-bench', style: { background: C.panel, borderColor: C.accent } },
+            h('h4', null, 'See the mechanism on the bench'),
+            h('p', null, benchLink.why),
+            h('button', {
+              type: 'button', className: 'cns-case-bench-go',
+              onClick: function () {
+                patchState({
+                  activeView: 'bench',
+                  sim: Object.assign({}, benchLink.config),
+                  // Clear the scrubber so the new run opens on its own busiest
+                  // tick instead of wherever the last run happened to be parked.
+                  simStep: null
+                }, 'Workspace Bench opened with the ' + benchLink.preset.label + ' setup. ' + benchLink.preset.note);
+                awardOnce('case-to-bench', 3, 'Followed a case through to the Workspace Bench');
+              },
+              style: { background: C.accent, color: C.accentText, borderColor: C.accent }
+            }, 'Open the bench with the ' + benchLink.preset.label + ' setup'),
+            h('p', { className: 'cns-case-bench-guard', style: { color: C.muted } },
+              'The bench is a toy model built to make this comparison legible. Watching it is not evidence about the case.')
+          ),
           selectedCase.source && h('p', { className: 'cns-source-inline' }, h('a', { href: selectedCase.source, target: '_blank', rel: 'noopener noreferrer' }, 'Read the 2026 primary preprint'), ' (advanced source; opens in a new tab).'),
           selectedCase.id === 'ai-emotion' && h('div', { className: 'cns-reflection' },
             h('label', { htmlFor: 'cns-ai-reflection' }, h('strong', null, 'Your evidence-calibrated response'), h('span', null, profile.id === 'early' ? 'Tell what we can see and what we do not know.' : 'Represent both views fairly. Separate observed functions from claims about felt experience.')),
@@ -2010,13 +2057,18 @@
         return Object.keys(preset.config).every(function (key) { return cfg[key] === preset.config[key]; });
       })[0] || null;
 
-      function updateSim(patch, announcement) {
+      // resetStep is set when a whole control state is swapped in (a preset), so
+      // the scrubber lands on the new run's busiest tick rather than staying
+      // parked wherever the previous run left it — where the new run may be flat.
+      function updateSim(patch, announcement, resetStep) {
         patchState(function (current) {
           var nextSim = Object.assign({}, normalizeSimConfig(current.sim), patch);
           var flags = Object.assign({}, current.simFlags || {});
           flags[nextSim.substrate] = true;
           if (!nextSim.reportRequired) flags.noReport = true;
-          return { sim: nextSim, simFlags: flags };
+          var next = { sim: nextSim, simFlags: flags };
+          if (resetStep) next.simStep = null;
+          return next;
         }, announcement);
         if (simCrosscheckDone({ simFlags: Object.assign({}, d.simFlags, patchFlags(patch)) })) {
           awardOnce('bench-crosscheck', 6, 'Compared workspace markers across substrates');
@@ -2127,19 +2179,22 @@
             h('div', null,
               h('span', { className: 'cns-step' }, 'SAME FIVE NUMBERS, DRAWN AS A NETWORK'),
               h('h4', { id: 'cns-net-title' }, 'Watch it propagate')),
-            h('span', { className: 'cns-count' }, 'Step ' + stepIndex + ' of ' + (stepCount - 1))
+            // 1-indexed for display: "Step 1 of 13" alongside a slider that reaches
+            // 13 reads as an off-by-one, because there are 14 ticks.
+            h('span', { className: 'cns-count' }, 'Step ' + (stepIndex + 1) + ' of ' + stepCount)
           ),
           h('p', { className: 'cns-sim-hint' }, layoutNote),
           h('div', { className: 'cns-net-stage', ref: netRefCallback,
                      role: 'img', 'aria-label': 'Schematic three-dimensional network for ' + substrate.label
-                       + ' at step ' + stepIndex + '. The table above the diagram carries the same values as text.' }),
+                       + ' at step ' + (stepIndex + 1) + ' of ' + stepCount
+                       + '. The table above the diagram carries the same values as text.' }),
           h('div', { className: 'cns-net-controls' },
             h('label', { htmlFor: 'cns-net-step' }, 'Step through the run'),
             h('input', {
               id: 'cns-net-step', type: 'range', min: 0, max: stepCount - 1, step: 1, value: stepIndex,
               onChange: function (e) {
                 var next = parseInt(e.target.value, 10) || 0;
-                patchState({ simStep: next }, 'Step ' + next + '. ' + describeTick(run.ticks[next]));
+                patchState({ simStep: next }, 'Step ' + (next + 1) + ' of ' + stepCount + '. ' + describeTick(run.ticks[next]));
               }
             }),
             h('p', { className: 'cns-net-readout', role: 'status' }, describeTick(stepTick))
@@ -2206,7 +2261,7 @@
             return h('button', {
               key: preset.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
               onClick: function () {
-                updateSim(Object.assign({}, preset.config), presetLabel + ' loaded. ' + presetNote);
+                updateSim(Object.assign({}, preset.config), presetLabel + ' loaded. ' + presetNote, true);
                 awardOnce('bench-preset-' + preset.id, 2, 'Ran a named comparison on the Workspace Bench');
               },
               style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border }
@@ -2490,6 +2545,7 @@
       '.cns-case-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}.cns-case-tabs button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:8px 11px;border:1px solid;border-radius:9px;font-size:11px;font-weight:850}.cns-case{padding:18px;border:1px solid;border-radius:13px}.cns-case-heading h3{margin:5px 0;font-size:20px}.cns-case-setup{font-size:14px}.cns-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.cns-lens-pair>div{padding:12px;border:1px solid;border-radius:9px}.cns-lens-pair p{margin:4px 0 0;color:var(--cns-muted);font-size:12px}.cns-source-inline{font-size:11px}.cns-source-inline a,.cns-sources a{color:var(--cns-link);font-weight:800}.cns-sources a{display:inline-block;padding:3px 0;min-height:24px}.cns-reflection{margin-top:14px}.cns-reflection label span{display:block;margin:3px 0 7px;color:var(--cns-muted);font-size:11px}.cns-objective-anchor{margin-top:9px;padding:9px;border:1px solid;border-radius:8px;font-size:12px}',
       '.cns-case-theories{margin:13px 0;padding:14px;border:1px solid;border-radius:11px}.cns-case-theories h4{margin:2px 0 0;font-size:18px}.cns-case-theories-intro{margin:7px 0 11px;color:var(--cns-muted);font-size:11px}.cns-case-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.cns-case-interpretation{padding:11px;border-left:4px solid;border-radius:8px}.cns-case-interpretation h5{margin:5px 0 2px;font-size:13px}.cns-case-interpretation p{margin:4px 0;color:var(--cns-muted);font-size:11px}.cns-guided-debate{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-guided-debate>p{color:var(--cns-muted);font-size:12px}.cns-debate-pickers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}.cns-debate-pickers label>span{display:block;margin-bottom:4px;font-size:10px;font-weight:850}.cns-debate-pickers select{width:100%;padding:8px;border:1px solid;border-radius:8px}.cns-debate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-debate-grid label{display:block}.cns-debate-grid label>strong,.cns-debate-grid label>span{display:block}.cns-debate-grid label>span{min-height:30px;margin:2px 0 5px;color:var(--cns-muted);font-size:10px}.cns-debate-requirement{margin:8px 0 0;font-size:10px!important}.cns-debate-finish{margin-top:12px;padding:8px 13px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900}.cns-debate-finish:disabled{cursor:not-allowed;opacity:.7}.cns-debate-complete{margin:8px 0 0;font-size:11px;font-weight:750}',
       '.cns-sim-substrates{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.cns-sim-substrates button{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}.cns-sim-substrates button>span:first-child{font-size:19px}.cns-sim-blurb{margin:0 0 14px;color:var(--cns-muted);font-size:12px}',
+      '.cns-case-bench{margin:12px 0 0;padding:13px;border:1px solid;border-left-width:4px;border-radius:10px}.cns-case-bench h4{margin:0 0 5px;font-size:14px}.cns-case-bench p{margin:0 0 9px;font-size:12px;line-height:1.5}.cns-case-bench-go{padding:9px 14px;border:1px solid;border-radius:9px;font-size:12px;font-weight:850}.cns-case-bench-guard{margin:9px 0 0!important;font-size:11px!important}',
       '.cns-net{margin:14px 0 0;padding:13px;border:1px solid;border-radius:11px}.cns-net h4{margin:2px 0 0;font-size:16px}.cns-net-stage{position:relative;width:100%;height:300px;margin:10px 0;border:1px solid var(--cns-border);border-radius:10px;overflow:hidden;background:var(--cns-panel)}.cns-net-controls label{display:block;margin-bottom:4px;font-size:11px;font-weight:850}.cns-net-controls input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-net-readout{margin:6px 0 0;color:var(--cns-muted);font-size:11px;line-height:1.5}.cns-net-key{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 0;padding:0;list-style:none}.cns-net-key li{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700}.cns-net-swatch{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid var(--cns-border)}',
       '.cns-sim-presets{margin:0 0 16px;padding:13px;border:1px solid;border-radius:11px}.cns-sim-presets h3{margin:0 0 5px;font-size:15px}.cns-sim-preset-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.cns-sim-preset-row button{padding:7px 12px;border:1px solid;border-radius:999px;font-size:11px;font-weight:850}.cns-sim-preset-detail{margin-top:10px;padding:10px 12px;border:1px solid;border-left-width:4px;border-radius:9px}.cns-sim-preset-detail p{margin:0 0 5px;font-size:12px;line-height:1.5}.cns-sim-preset-detail p:last-child{margin-bottom:0}',
       '.cns-sim-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px}.cns-sim-control label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:12px}.cns-sim-value{font-variant-numeric:tabular-nums;font-weight:850;color:var(--cns-muted)}.cns-sim-control input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-sim-hint{display:block;margin-top:4px;color:var(--cns-muted);font-size:11px;line-height:1.45}',
