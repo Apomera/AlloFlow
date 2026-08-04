@@ -7,7 +7,7 @@
     "taggedPdf": "fda-nexium-prea-letter-alloflow-accessible.pdf"
   },
   "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
-  "createdAt": "2026-08-03T17:39:01Z",
+  "createdAt": "2026-08-04T00:23:14Z",
   "documentNetworkPolicy": "deny",
   "documentRequestsBlockedByRenderer": 0,
   "documentTextLoggedByScripts": false,

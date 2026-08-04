@@ -162,8 +162,12 @@
             "style": "strong"
           },
           {
-            "text": "reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; or",
+            "text": "reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; ",
             "style": "emphasis"
+          },
+          {
+            "text": "or",
+            "style": "strong"
           }
         ],
         [
@@ -215,7 +219,21 @@
     {
       "type": "paragraph",
       "text": "On 27 April 2010, AstraZeneca held a teleconference with the DGIEP to discuss the long-term safety assessment in pediatric patients. On 4 May 2010, AstraZeneca submitted the pharmacoepidemiological study Protocol entitled, “A pharmacoepidemiological study to examine characteristics of children who use esomeprazole and the occurrence of certain outcomes” to FDA. The main objective of that study was to assess long-term safety in pediatric patients.",
-      "source_page": 3
+      "source_page": 3,
+      "runs": [
+        {
+          "text": "On 27 April 2010, AstraZeneca held a teleconference with the DGIEP to discuss the long-term safety assessment in pediatric patients. On 4 May 2010, AstraZeneca submitted the pharmacoepidemiological study Protocol entitled, “",
+          "style": "normal"
+        },
+        {
+          "text": "A pharmacoepidemiological study to examine characteristics of children who use esomeprazole and the occurrence of certain outcomes",
+          "style": "emphasis"
+        },
+        {
+          "text": "” to FDA. The main objective of that study was to assess long-term safety in pediatric patients.",
+          "style": "normal"
+        }
+      ]
     },
     {
       "type": "paragraph",
@@ -268,7 +286,15 @@
       "source_page": 4,
       "runs": [
         {
-          "text": "On 04 April 2017, AstraZeneca submitted a PREA waiver request to the FDA for the maintenance of healing portion of the pediatric PMR for children 1-11 years of age. It included the results from the assessment of the feasibility of the pediatric clinical study which included the Feasibility report, Systematic literature reviews, and an update on the Pharmacoepidemiologic studies. According to the FDA draft guidance entitled “Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry” ",
+          "text": "On 04 April 2017, AstraZeneca submitted a PREA waiver request to the FDA for the maintenance of healing portion of the pediatric PMR for children 1-11 years of age. It included the results from the assessment of the feasibility of the pediatric clinical study which included the Feasibility report, Systematic literature reviews, and an update on the Pharmacoepidemiologic studies. According to the FDA draft guidance entitled “",
+          "style": "normal"
+        },
+        {
+          "text": "Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry",
+          "style": "emphasis"
+        },
+        {
+          "text": "” ",
           "style": "normal"
         },
         {
@@ -298,12 +324,56 @@
         "“You have not provided evidence that necessary studies are impossible or highly impracticable”, and",
         "“you have not provided justification to support that this product is not likely to be used by a substantial number of pediatric patients in the 1 to 11 year age group for maintenance of healing of erosive esophagitis”."
       ],
-      "source_page": 4
+      "source_page": 4,
+      "item_runs": [
+        [
+          {
+            "text": "“",
+            "style": "normal"
+          },
+          {
+            "text": "You have not provided evidence that necessary studies are impossible or highly impracticable",
+            "style": "emphasis"
+          },
+          {
+            "text": "”, and",
+            "style": "normal"
+          }
+        ],
+        [
+          {
+            "text": "“",
+            "style": "normal"
+          },
+          {
+            "text": "you have not provided justification to support that this product is not likely to be used by a substantial number of pediatric patients in the 1 to 11 year age group for maintenance of healing of erosive esophagitis”",
+            "style": "emphasis"
+          },
+          {
+            "text": ".",
+            "style": "normal"
+          }
+        ]
+      ]
     },
     {
       "type": "paragraph",
       "text": "The letter also states, “Further discussion of your pediatric drug development plan addressing the indication of maintenance of healing of erosive esophagitis in patients 1 to 11 years of age is planned per your meeting request dated December 18, 2018”.",
-      "source_page": 4
+      "source_page": 4,
+      "runs": [
+        {
+          "text": "The letter also states, “",
+          "style": "normal"
+        },
+        {
+          "text": "Further discussion of your pediatric drug development plan addressing the indication of maintenance of healing of erosive esophagitis in patients 1 to 11 years of age is planned per your meeting request dated December 18, 2018",
+          "style": "emphasis"
+        },
+        {
+          "text": "”.",
+          "style": "normal"
+        }
+      ]
     },
     {
       "type": "paragraph",
@@ -484,7 +554,7 @@
     "LETTERHEAD RELOCATED. The sender's address block (“Regulatory Affairs / AstraZeneca Pharmaceuticals LP / One MedImmune Way Gaithersburg, MD 20878”) is printed at the FOOT of page 1 in the source as letterhead design. It is placed immediately after the logo here so a screen-reader user encounters sender identity at the start of the letter, as in any correspondence.",
     "LOGO GIVEN ALT TEXT. The AstraZeneca logo is embedded with alt text “AstraZeneca logo” rather than marked decorative, because it is the primary sender identification at the top of a business letter. The image was extracted from the source PDF itself (400x104 JPEG), not recreated.",
     "LETTERED LIST MARKERS FOLDED INTO TEXT. The source's a) / b) options on page 2 use alphabetic markers. The plan format supports only ordered (numeric) and unordered lists, so these are an unordered list with the “a)” and “b)” markers preserved inside the item text. No wording changed.",
-    "INLINE CHARACTER STYLING IS CARRIED, WITH TWO EXCEPTIONS. The source’s character formatting is reproduced as inline emphasis: bold on the two Arial-bold letterhead lines, the “Date:” label, the “Re:” block and the two capitalised subject lines; italics on the quoted PMR passage, on the a) and b) options (whose markers are bold-italic in the source and are marked strong here), and on the page 4 passage beginning “pediatric extrapolation for maintenance of healing”. Two exceptions remain, both disclosed rather than hidden: table cells cannot carry inline styling in this format, and heading-level bold/underline is conveyed by heading semantics rather than reproduced as character formatting. Styling never changes content — the format requires the styled runs to reproduce the block text exactly, and validation rejects any plan where they do not.",
+    "INLINE CHARACTER STYLING IS CARRIED. Every character-level emphasis run in the source body text is reproduced, and nothing is styled that the source leaves unstyled: bold on the two Arial-bold letterhead lines, the “Date:” label, the “Re:” block and the two capitalised subject lines; italics on the quoted PMR passage (page 1), the a) and b) option texts (page 2), the quoted protocol title (page 3), and on page 4 the quoted FDA guidance title, the “pediatric extrapolation…” clause, the quoted words of both waiver-denial reasons, and the quoted “Further discussion…” statement. Span boundaries follow the source character by character, including where it sets punctuation next to a styled run in roman: the closing quote, comma and “and” after “impracticable” are the letter author’s own connective, not FDA’s quoted words, and are left unstyled accordingly. Superscript raise is not reproduced: the two superscript registered-mark glyphs on page 1 and the table footnote asterisk on page 6 are rendered at normal size and position, though the characters themselves are preserved. Three further deliberate qualifications: (1) bold-italic reduces to bold, because the format offers bold or italic and not both — this affects the a) and b) markers and the “or” closing option a); (2) table cells cannot carry inline styling, and the table’s only styled text is its bold header row, conveyed by header-cell semantics; (3) heading bold and underline are conveyed by heading semantics rather than reproduced as character formatting. Styling never changes content: the format requires styled runs to reproduce the block text exactly and validation rejects a plan where they do not.",
     "DOCUMENT SUMMARY IS AUTHORED. The rebuild carries a one-sentence summary of the letter in its document metadata (used as the HTML meta description). It is written for this rebuild, is not printed anywhere in the source, and introduces no facts absent from the letter.",
     "E-MAIL ADDRESSES ARE NOT LINKS IN THE SOURCE. All three e-mail addresses on page 7 are coloured blue, and two of them (AZTech-Subissues@ and krishna.joshi@) are also underlined by a drawn rule; emery.gigger@ in the signature block is blue but not underlined. None is a hyperlink: the source PDF contains no link annotations at all (no /Annots, /Link, or /URI anywhere in the file). They are preserved as readable text, and no clickable behaviour was lost. Separately, the plan format has no inline-link construct inside paragraph text, so a document that did carry real inline links would lose them.",
     "RUNNING HEAD DROPPED. Pages 2 through 7 repeat the running head “NDA 021957: NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral”. It is page furniture and is not reproduced as body text; the same information appears in the document title and the Re: line.",

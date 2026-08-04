@@ -75,6 +75,35 @@ reason is worse than no test.
 | 18 | PDF/UA `/LBody` insertion so list items may carry inline markup |
 | 19 | PNG predictor support + correct `/Predictor` default, recovering 19 Artemis figures |
 
+## Verification: three more passes, and the error class inverted
+
+Styling had to be verified like everything else, and the verifier ran three more
+passes on the FDA letter before converging:
+
+| Pass | What it caught |
+| --- | --- |
+| A | **Five italic runs silently dropped** — a page-3 quoted protocol title, a page-4 quoted FDA guidance title, both page-4 quoted waiver-denial reasons, and a page-4 quoted statement. Plus one paragraph containing *two* italic runs where only one was styled, and a bold-italic "or" folded into an italic run. The note claiming completeness was false again. |
+| B | Confirmed every emphasis run now reproduced — then caught the **opposite** error: spans were **over-inclusive**. The page-4 bullets italicised `", and`, which is the letter author's own connective, making it read as part of FDA's quoted words. Three quoted titles absorbed enclosing quote marks the source sets in roman. |
+| C | Both fixed; caught the last one — the **opening** curly quotes of both waiver bullets are roman in the source and were still inside the `<em>`. |
+| D | **35/35 verified, 0 discrepancies**, checked in both directions from a per-character font dump. |
+
+The error class inverting from *under*- to *over*-inclusive is the useful signal:
+after the first correction the remaining defects were no longer "content lost"
+but "meaning added" — styling the author's own words as though they were quoted.
+That is exactly the kind of subtle fidelity error a structural checker cannot
+see and a second reader can.
+
+The verifier also surfaced an undisclosed loss no one had asked about:
+**superscript raise is not reproduced** (two registered-mark glyphs and the table
+footnote asterisk render at normal size; characters preserved). Now disclosed.
+
+**Open wording item, carried forward:** the final pass noted, without scoring it
+a discrepancy, that the styling note says heading "bold and underline" are
+conveyed by heading semantics, while `Module 1:` and `Module 5:` are bold with no
+underline. Nothing is lost or added — the note is over-general. It is recorded
+here rather than silently fixed, because correcting it changes the plan and would
+invalidate the 35/35 stamp taken against these exact bytes.
+
 ## Flagship re-run: FDA PREA letter, now with styling
 
 ```
@@ -83,9 +112,13 @@ veraPDF PDF/UA-1:  PASS, 0 failed rules, identifier earned
 structure:         12 LBody inserted, RoleMap present, pdfuaid present
 sourceTextRecall:  0.9099 (unchanged — styling is additive, as designed)
 outputTextRecall:  1.0    (unchanged)
-styled blocks:     7 (letterhead, Date:, Re:, subject lines, blockquote,
-                       a)/b) options, page-4 italic passage)
+styled blocks:     10, covering every emphasis run in the source body text
+verification:      35/35 verified, 0 discrepancies (pass D)
 ```
+
+Recall is byte-identical before and after styling, which is the additive design
+working: styling changed how 10 blocks render without changing a character of
+what they contain.
 
 The review note that previously disclosed the styling *loss* was itself now
 false and was rewritten to state what is carried and to name the two remaining

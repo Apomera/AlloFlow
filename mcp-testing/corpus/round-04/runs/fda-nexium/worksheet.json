@@ -1,17 +1,17 @@
 {
   "binding": {
-    "html_sha256": "b342b7ace0acc32ebf8cbc84cc96f3d47c4ab1a026acd3d12f347fc3abcce56a",
-    "plan_sha256": "cbbff2c38ff5935a31459bacaabda94400417f5a12acf9761f6a5e74138d8100",
+    "html_sha256": "763c7f438808ad2fe74f6564bc8a52421836331dc348931fa68c8013189d52d3",
+    "plan_sha256": "1c2118b97c8f8e6da0369d7fb748fb89e6e3810c65b10df52dd33b880387624e",
     "source_sha256": "c2c6b405b820fce4ea338ebb2f62de3b3696bd68d465f19d480038a903c5c7b1"
   },
-  "createdAt": "2026-08-03T17:39:02Z",
+  "createdAt": "2026-08-04T00:23:37Z",
   "instructions": "You are the independent verifier. You must NOT be the model instance that authored the repair plan, and you must read the source document and the rebuilt HTML directly. Fill status for every item: 'verified', 'discrepancy', or 'unreadable'. Every 'discrepancy' or 'unreadable' needs a specific note (>= 20 characters) naming what and where. Then fill the verifier block: model, context_isolation='fresh-context', read_source_directly=true, and a statement (>= 40 characters) of what you read and how.",
   "items": [
     {
       "id": "page-001",
       "instruction": "Read source page 1 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "All page-1 content present: logo, letterhead (relocated from page foot, disclosed), Date, recipient block, bold Re:/subject lines, salutation, three intro paragraphs, Background heading, italic PMR quote, and the NDA 022101 paragraph rejoined across the 1/2 break (disclosed).",
       "source_page": 1,
       "status": "verified"
     },
@@ -19,7 +19,7 @@
       "id": "page-002",
       "instruction": "Read source page 2 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "Running head dropped (disclosed). Rejoined sentence opener, deferral request, DGIEP paragraph, a)/b) option list, literature-review 3-bullet list, and the first of the two study-result bullets all present.",
       "source_page": 2,
       "status": "verified"
     },
@@ -27,7 +27,7 @@
       "id": "page-003",
       "instruction": "Read source page 3 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "Second study-result bullet (merged into the page-2 list, disclosed), EU epidemiology paragraph, italic protocol title, numbered 3-item FDA conclusion list, and the three following paragraphs all present.",
       "source_page": 3,
       "status": "verified"
     },
@@ -35,7 +35,7 @@
       "id": "page-004",
       "instruction": "Read source page 4 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "All seven paragraphs plus the two waiver-denial bullets present; italic guidance title, extrapolation clause and 'Further discussion' quote reproduced with source-exact span boundaries.",
       "source_page": 4,
       "status": "verified"
     },
@@ -43,7 +43,7 @@
       "id": "page-005",
       "instruction": "Read source page 5 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "All body text present; the four redacted bullets are represented by a marked disclosure paragraph, not invented text. Source grey block (fill 0.667) spans x118-543, top 374-645, with '(b) (4)' in Helvetica 6pt at its top right and four Symbol bullet markers at x102 outside the block.",
       "source_page": 5,
       "status": "verified"
     },
@@ -51,7 +51,7 @@
       "id": "page-006",
       "instruction": "Read source page 6 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "Table (header plus 4 data rows), asterisk footnote, Astra Zeneca paragraph, Deferral Extension Request heading and paragraph, the three bold submission labels with their content lines, virus-scan paragraph and trade-secrets paragraph all present.",
       "source_page": 6,
       "status": "verified"
     },
@@ -59,7 +59,7 @@
       "id": "page-007",
       "instruction": "Read source page 7 in full and confirm every piece of its content is represented in the rebuild (or covered by a disclosed omission in the review notes).",
       "kind": "page",
-      "note": "",
+      "note": "Both contact paragraphs with all three e-mail addresses, 'Sincerely,', the five-line signature block and 'EG/kj' all present.",
       "source_page": 7,
       "status": "verified"
     },
@@ -68,7 +68,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 1,
-      "note": "",
+      "note": "Synthesised title, disclosed as editorial; its components verified against the source (the bold 'RESPONSE TO PREA NON-COMPLIANCE LETTER' subject line recased, plus the Re: product identification verbatim).",
       "source_page": 1,
       "status": "verified",
       "text": "Response to PREA Non-Compliance Letter — NDA 021957, NEXIUM® (esomeprazole magnesium) suspension, delayed-release oral"
@@ -78,7 +78,51 @@
       "id": "image-001",
       "instruction": "Look at the source image and judge whether this alt text is accurate and sufficient (not merely plausible).",
       "kind": "image_alt",
-      "note": "",
+      "note": "Viewed the extracted 400x104 JPEG: AstraZeneca wordmark in purple with the gold ribbon device. Alt 'AstraZeneca logo' is accurate and sufficient; the image is the source's own embedded image (srcsize 400x104, DeviceRGB).",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "Regulatory Affairs\nAstraZeneca Pharmaceuticals LP\n"
+      ],
+      "id": "emphasis-001",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Source: Arial,Bold 9.1pt on 'Regulatory Affairs' and 'AstraZeneca Pharmaceuticals LP' only; 'One MedImmune Way Gaithersburg, MD 20878' is Arial regular 7.9pt and is left unstyled in the rebuild.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "Date:"
+      ],
+      "id": "emphasis-002",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "'Date:' is TimesNewRoman,Bold 12pt; the following ' 03 Oct 2019' is regular and is unstyled in the rebuild.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "Re: NDA 021957, eCTD Sequence No. 0192\nNEXIUM® (esomeprazole magnesium) suspension, delayed-release oral"
+      ],
+      "id": "emphasis-003",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "The entire Re: block including the superscript registered mark is TimesNewRoman,Bold; bold carried, superscript raise not reproduced (disclosed).",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "DEFERRAL EXTENSION REQUESTED\nRESPONSE TO PREA NON-COMPLIANCE LETTER (dated 21 August 2019)"
+      ],
+      "id": "emphasis-004",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Both capitalised subject lines including '(dated 21 August 2019)' are TimesNewRoman,Bold in the source and are fully inside the strong element.",
       "source_page": 1,
       "status": "verified"
     },
@@ -87,17 +131,43 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 2,
-      "note": "",
+      "note": "'Background' is TimesNewRoman,Bold 12pt with a drawn underline rule (x85-148, top 532.6); bold and underline conveyed by heading semantics.",
       "source_page": 1,
       "status": "verified",
       "text": "Background"
+    },
+    {
+      "emphasised": [
+        "“We are deferring pediatric studies (Birth- 11 years) for Gastroesophageal Reflux Disease (GERD): Healing of Erosive Esophagitis, Maintenance of Healing of Erosive Esophagitis, Symptomatic Gastroesophageal Reflux Disease for this application. Pediatric studies (ages 12- 17) for this indication have been already completed.”"
+      ],
+      "id": "emphasis-005",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "The whole quotation, both curly quotes included, is TimesNewRoman,Italic in the source; the rebuild's em boundaries match exactly.",
+      "source_page": 1,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "a) ",
+        "reviewing, assessing, and submitting the available published information for the use of esomeprazole magnesium in these patient populations and considering whether for the pediatric population or any portion of the pediatric population the disease and drug effects in those pediatric patients are similar as in adults; ",
+        "or",
+        "b) ",
+        "completing a prospectively designed, randomized, controlled clinical trial in these indications."
+      ],
+      "id": "emphasis-006",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Source runs: BoldItalic 'a)', Italic '...adults; ', BoldItalic 'or', BoldItalic 'b) ', Italic '...indications.' The rebuild reduces the three bold-italic runs to bold (disclosed) and keeps the semicolon and the terminal period inside the italics as the source does.",
+      "source_page": 2,
+      "status": "verified"
     },
     {
       "id": "list-001",
       "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
       "items": 2,
       "kind": "list",
-      "note": "",
+      "note": "Two items in the source's order (a) then b)); the 'or' closing option a) is kept at the end of item 1 as printed.",
       "ordered": false,
       "source_page": 2,
       "status": "verified"
@@ -107,7 +177,7 @@
       "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
       "items": 3,
       "kind": "list",
-      "note": "",
+      "note": "Three Symbol-bulleted literature-review items, verbatim and in order.",
       "ordered": false,
       "source_page": 2,
       "status": "verified"
@@ -117,9 +187,20 @@
       "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
       "items": 2,
       "kind": "list",
-      "note": "",
+      "note": "Two study-result bullets, split across the page 2/3 boundary in the source and merged into one list (disclosed).",
       "ordered": false,
       "source_page": 2,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "A pharmacoepidemiological study to examine characteristics of children who use esomeprazole and the occurrence of certain outcomes"
+      ],
+      "id": "emphasis-007",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "The opening and closing curly quotes around the protocol title are roman in the source and are correctly outside the em element.",
+      "source_page": 3,
       "status": "verified"
     },
     {
@@ -127,9 +208,33 @@
       "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
       "items": 3,
       "kind": "list",
-      "note": "",
+      "note": "Three numbered FDA conclusions, verbatim and in order; the literal '1.'/'2.'/'3.' markers are generated by the ol element rather than repeated as text.",
       "ordered": true,
       "source_page": 3,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "Pediatric Gastroesophageal Reflux Disease: Developing Drugs for Treatment Guidance for Industry",
+        "pediatric extrapolation for maintenance of healing of erosive esophagitis in the age group 1 month to 17 years of age is currently unlikely to be accepted by the FDA, because it is uncertain whether pediatric patients require a maintenance period"
+      ],
+      "id": "emphasis-008",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Both italic runs verified; the closing quote after 'Industry', the space before 'pediatric extrapolation', and the terminal period after 'maintenance period' are roman in the source and are all correctly outside the em elements.",
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "You have not provided evidence that necessary studies are impossible or highly impracticable",
+        "you have not provided justification to support that this product is not likely to be used by a substantial number of pediatric patients in the 1 to 11 year age group for maintenance of healing of erosive esophagitis”"
+      ],
+      "id": "emphasis-009",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "Checked character by character: bullet 1's opening quote is roman and its closing quote, comma and 'and' are roman (all outside the em); bullet 2's opening quote is roman but its closing quote IS italic in the source and is correctly inside the em, with the terminal period roman outside.",
+      "source_page": 4,
       "status": "verified"
     },
     {
@@ -137,8 +242,19 @@
       "instruction": "Confirm the list has exactly these items in the source's order, none dropped, merged, or invented.",
       "items": 2,
       "kind": "list",
-      "note": "",
+      "note": "Two waiver-denial bullets in the source's order, verbatim.",
       "ordered": false,
+      "source_page": 4,
+      "status": "verified"
+    },
+    {
+      "emphasised": [
+        "Further discussion of your pediatric drug development plan addressing the indication of maintenance of healing of erosive esophagitis in patients 1 to 11 years of age is planned per your meeting request dated December 18, 2018"
+      ],
+      "id": "emphasis-010",
+      "instruction": "Check the source's character formatting for this block: are exactly these spans emphasised (and none missed), and does the emphasis type match?",
+      "kind": "inline_style",
+      "note": "'The letter also states, [open-quote]' is roman, the quoted sentence is italic, and the closing quote plus period are roman - the rebuild matches exactly.",
       "source_page": 4,
       "status": "verified"
     },
@@ -147,7 +263,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 2,
-      "note": "",
+      "note": "'Clinical study design and timing' is bold with a drawn underline rule (x84-250, top 196.3).",
       "source_page": 5,
       "status": "verified",
       "text": "Clinical study design and timing"
@@ -158,7 +274,7 @@
       "id": "table-001",
       "instruction": "Compare EVERY cell of this table against the source, including header assignment and row/column order.",
       "kind": "table",
-      "note": "",
+      "note": "Every cell matches: header S. No./Study/Timelines (bold in source, conveyed as th scope=col); rows 1 Final Protocol Submission* Jul 31, 2020; 2 Study Initiation Nov 30, 2020; 3 Study Completion Nov 30, 2023; 4 Clinical Study Report (CSR) Submission May 31, 2024. Body cells carry no bold or italic in the source. Footnote asterisk kept in cell; superscript raise not reproduced (disclosed).",
       "rows": 4,
       "source_page": 6,
       "status": "verified"
@@ -168,7 +284,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 2,
-      "note": "",
+      "note": "'Deferral Extension Request' is bold with an underline rule (x84-226, top 315.8).",
       "source_page": 6,
       "status": "verified",
       "text": "Deferral Extension Request"
@@ -178,7 +294,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 3,
-      "note": "",
+      "note": "'Submission Information:' is bold with an underline rule (x85-213, top 467.8); trailing colon kept.",
       "source_page": 6,
       "status": "verified",
       "text": "Submission Information:"
@@ -188,7 +304,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 3,
-      "note": "",
+      "note": "'Module 1:' is bold in the source. Unlike the other headings it carries no drawn underline, so the styling note's blanket 'heading bold and underline' is slightly over-general; nothing is lost or added.",
       "source_page": 6,
       "status": "verified",
       "text": "Module 1:"
@@ -198,7 +314,7 @@
       "instruction": "Confirm this heading exists in the source with this meaning and that its level reflects the document's actual hierarchy.",
       "kind": "heading",
       "level": 3,
-      "note": "",
+      "note": "'Module 5:' is bold in the source and, like 'Module 1:', is not underlined; heading semantics carry the emphasis.",
       "source_page": 6,
       "status": "verified",
       "text": "Module 5:"
@@ -207,36 +323,36 @@
       "id": "global-completeness",
       "instruction": "After reading all pages: is any source content absent from the rebuild without a disclosed review note?",
       "kind": "global",
-      "note": "",
+      "note": "Token-level comparison of all 7 pages against the rebuild: the only absent source tokens are word-join extraction artefacts ('ofthe', 'approvalof', etc.) whose components are present, plus the literal '3.' ordered-list marker now generated by the ol element. The running head and the redacted bullet text are the only real omissions, and both are disclosed.",
       "status": "verified"
     },
     {
       "id": "global-no-invention",
       "instruction": "Is there any content in the rebuild that does not exist in the source?",
       "kind": "global",
-      "note": "",
+      "note": "The only text not printed in the source is the synthesised h1, the meta description, the table caption, the skip link and the bracketed redaction disclosure - each disclosed in the review notes and each factually consistent with the source.",
       "status": "verified"
     },
     {
       "id": "global-reading-order",
       "instruction": "Does the rebuild's linear order preserve or improve the source's logical reading order, with any relocation disclosed?",
       "kind": "global",
-      "note": "",
+      "note": "Linear order follows the source throughout; the two relocations/merges (letterhead moved from the page foot to after the logo, and the page 2/3 bullet list merged) are both disclosed.",
       "status": "verified"
     },
     {
       "id": "global-review-notes",
       "instruction": "Does every transformation you observed (moved content, dropped furniture, rejoined sentences) appear in the review notes, and is every note accurate?",
       "kind": "global",
-      "note": "",
+      "note": "All 16 notes checked against the source and hold: letterhead sits at top 732-755 of 792 on page 1; the PDF contains zero occurrences of /Annots, /Link and /URI; the three e-mails are blue with drawn underline rules only under AZTech-Subissues@ (x300-484) and krishna.joshi@ (x91-246); the logo is a 400x104 DeviceRGB JPEG taken from the source; the redaction block and its four bullet markers are as described; only one mid-sentence page break exists (pages 1/2). The single imprecision is that 'Module 1:' and 'Module 5:' are bold but not underlined, so the heading note's 'bold and underline' does not apply to every heading.",
       "status": "verified"
     }
   ],
   "schemaVersion": "1.0",
   "verifier": {
     "context_isolation": "fresh-context",
-    "model": "claude-fable-5 (subagent, sixth pass)",
+    "model": "claude-fable-5 (subagent, final span pass)",
     "read_source_directly": true,
-    "statement": "I read the source PDF directly rather than the repair plan: I extracted all seven pages with pdftotext -layout, then decompressed every page content stream and decoded the Identity-H text through each font’s ToUnicode CMap, so I could see the exact font (Times New Roman regular/Bold/Italic/BoldItalic, Arial and Arial Bold, Symbol), fill colour and x/y position of every run. I carved the DCTDecode image out of the PDF and looked at it (400x104 JPEG, sha256 1058ce9b..., byte-identical to the base64 embedded in the HTML). I decoded the page 5 form XObject and read its operators (0.666656 g grey fill from 117,146 to 542,417 plus 6pt Helvetica “(b) (4)”) and counted exactly four Symbol bullet markers with no accompanying text. I compared every page 6 table cell against the content stream, scanned all 101 objects including those inside object streams for /Annots, /Link and /URI (zero hits), and ran a word-level in-order diff of source text against the rebuilt HTML. Source sha256 c2c6b405... and HTML sha256 b342b7ac... both match the worksheet binding."
+    "statement": "I opened the source PDF directly and dumped its per-character font runs with pdfplumber for all seven pages, grouping every glyph by fontname and size, and also dumped page geometry (drawn rules, rects, image bounding boxes and glyph colours) to check heading underlines, the page-5 redaction block and the e-mail styling. I then read the rebuilt HTML in full and compared every emphasis run in both directions - source to rebuild for anything missed, rebuild to source for anything over-styled - checking span boundaries character by character at every quotation mark, comma, conjunction and terminal period. I extracted and viewed the embedded logo image, and ran a token-level completeness and no-invention comparison across all seven pages."
   }
 }
