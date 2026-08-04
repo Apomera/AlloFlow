@@ -3014,6 +3014,7 @@ try {
     window.__alloCsPageTexts = _alloContentStreamPageTexts;
     window.__alloOrderTextItems = _alloOrderTextItems;
     window.__alloJoinOrderedTextItems = _alloJoinOrderedTextItems;
+    window.__alloRepairSpacesWithCs = _alloRepairSpacesWithCs;
   }
 } catch (_) {}
 
