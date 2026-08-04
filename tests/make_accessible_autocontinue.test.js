@@ -30,7 +30,9 @@ describe('Make Accessible — fix runs even when audit state has not propagated'
   });
 
   it('anti-drift: the handler captures the audit result and passes it to fixAndVerifyPdf', () => {
-    expect(viewSrc).toContain('_audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name });');
+    // Invariant: the handler awaits the audit into _audit from the live pendingPdfBase64.
+    // (Was an exact-string pin; broke when the call gained `mimeType: _inputMimeType`.)
+    expect(viewSrc).toMatch(/_audit = await runPdfAccessibilityAudit\(pendingPdfBase64, \{ fileName: pendingPdfFile\?\.name[^}]*\}\);/);
     expect(viewSrc).toContain('auditResult: _audit });');
     expect(viewSrc).toContain('const _auditChooserSnapshot = pdfAuditResult;');
     expect(viewSrc).toContain('setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));');

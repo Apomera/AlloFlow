@@ -67,7 +67,10 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
     // The opening audit's proactive reset+pacing (added 2026-07-15) initially reset the breaker
     // UNCONDITIONALLY — in a batch, file B's opening audit zeroed file A's live storm state and
     // fanned both runs into the active throttle. It must skip the reset while the gate is busy.
-    const auditIdx = pipe.indexOf("label: 'the opening PDF audit'");
+    // Pin the invariant, not the spelling: the label became a ternary when image inputs got
+    // their own wording (`label: _imageInputMime ? 'the opening image audit' : 'the opening
+    // PDF audit'`), which broke the old exact-string pin.
+    const auditIdx = pipe.indexOf("'the opening PDF audit'");
     expect(auditIdx).toBeGreaterThan(0);
     const before = pipe.slice(Math.max(0, auditIdx - 900), auditIdx);
     expect(before).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
