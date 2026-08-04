@@ -660,7 +660,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       id: 'help-school',
       title: 'The school side: IEPs, 504s, and how to ask',
       evidence: null,
-      body: 'Plain-English version, from the school-psych side of the table. A 504 PLAN provides accommodations — changes to HOW a child learns (extra time, preferential seating, breaks) — for a disability that limits a major life activity. An IEP provides specialized instruction — changes to WHAT and HOW a child is taught — under IDEA, and comes with measurable goals the team must track. You can request an evaluation AT ANY TIME, in writing, to the principal or special-education office; the district must respond within a legally defined timeline (the exact clock varies by state — ask for yours in the same letter). You are a full member of the team, you may bring anyone to the meeting, and you may ask for anything to be explained again in plain language. Procedures vary by state and district; this is orientation, not legal advice.'
+      body: 'Plain-English version, from the school-psych side of the table. A 504 PLAN provides accommodations — changes to HOW a child learns (extra time, preferential seating, breaks) — for a disability that limits a major life activity. An IEP provides specialized instruction — changes to WHAT and HOW a child is taught — under IDEA, and comes with measurable goals the team must track. You can request an evaluation AT ANY TIME, in writing, to the principal or special-education office; the district must respond within a legally defined timeline (the exact clock varies by state — ask for yours in the same letter). You are a full member of the team, you may bring anyone to the meeting, and you may ask for anything to be explained again in plain language. In Parent Mode, AlloFlow\'s chat assistant will also explain IEP goals in plain English — paste a goal and ask. Procedures vary by state and district; this is orientation, not legal advice.'
+    },
+    {
+      id: 'help-rights',
+      title: 'The rights nobody mentions until you ask',
+      evidence: null,
+      body: [
+        'These are the load-bearing rights parents most often learn late. Same disclaimer as above: orientation, not legal advice, and details vary by state.',
+        'IT IS ALL FREE. Evaluations, the IEP, the services on it — provided at no cost to you. This is the meaning of FAPE: a free appropriate public education. Never let cost fear stop a request.',
+        'NOTHING STARTS WITHOUT YOUR CONSENT. The district needs your informed written consent to evaluate and again to begin services — and consent is yours to revoke.',
+        'THE DUTY RUNS TOWARD YOUR CHILD. Under Child Find, districts must actively identify children who may have disabilities. You are not asking a favor; you are triggering an obligation.',
+        'SUPPORT PROGRAMS CANNOT STALL AN EVALUATION. Response-to-intervention or MTSS tiers are good practice, but they cannot be used to delay or deny an evaluation you have requested.',
+        'GET EVERY NO IN WRITING. If the district refuses to evaluate or to provide a service, it owes you PRIOR WRITTEN NOTICE — the decision and its reasons, on paper. A written no is the beginning of a process, not the end of one.',
+        'YOU CAN GET A SECOND OPINION. If you disagree with the district\'s evaluation, you may request an INDEPENDENT EDUCATIONAL EVALUATION (IEE), generally at public expense.',
+        'DISAGREEMENT HAS A LADDER. You must be given a procedural-safeguards document explaining your options — asking for another meeting, mediation, a state complaint, a due-process hearing. Most disagreements resolve on the bottom rungs.',
+        'THE PAPER TRAIL IS YOURS. You have the right to inspect your child\'s education records and to request corrections.',
+        'IT IS NEVER SET IN STONE. The IEP is reviewed at least annually, your child is reevaluated at least every three years, and you can request an IEP meeting at any time in between. A 504 plan carries its own protections and grievance path.'
+      ]
     },
     {
       id: 'help-meeting',
@@ -683,7 +700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     { id: 'p4', text: 'My request history: when I asked for what, in writing, and any responses' },
     { id: 'p5', text: 'Asked who will BE at the meeting, and invited anyone I want with me' },
     { id: 'p6', text: 'Decided what a good outcome looks like to me before walking in' },
-    { id: 'p7', text: 'Reminder to self: I can ask for plain language, and I can ask for time to think before signing' }
+    { id: 'p7', text: 'Reminder to self: I can ask for plain language, and I can ask for time to think before signing' },
+    { id: 'p8', text: 'I have the procedural-safeguards document (or asked for it) and know my disagreement options' }
   ];
 
   function srAnnounce(msg) {
@@ -820,7 +838,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
                 ev.badge ? badgeChip(ev.badge, 'sm') : null
               ),
               h('div', { className: 'px-4 pb-4' },
-                h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
+                // body may be a string or an array of paragraphs (rights lists
+                // and other enumerations read badly as one wall of text).
+                (Array.isArray(c.body) ? c.body : [c.body]).map(function(par, pi) {
+                  return h('p', { key: pi, className: 'text-sm leading-relaxed' + (pi > 0 ? ' mt-2' : ''), style: { color: pal.text } }, par);
+                }),
                 // Guidance cards (practical how-to, e.g., meeting prep) carry no
                 // evidence entry on purpose — a source line would imply one study
                 // "proves" what is really synthesized practice guidance.
@@ -845,7 +867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             m1Done && h('span', { className: 'text-[11px] font-bold rounded-full px-2 py-0.5', style: { background: 'rgba(5,150,105,0.15)', color: '#059669', border: '1px solid rgba(5,150,105,0.4)' } }, __alloT('stem.parentingLab.m1_done', 'Module 1 complete'))
           ),
           h('p', { className: 'text-sm mb-4', style: { color: pal.muted } },
-            __alloT('stem.parentingLab.intro', 'What the parenting literature actually says, with the strength of each claim labeled honestly. Built to be strengths-based: nothing here diagnoses or scores your family.')),
+            __alloT('stem.parentingLab.intro', 'What the parenting literature actually says, with the strength of each claim labeled honestly. Built to be strengths-based: nothing here diagnoses or scores your family — education, not clinical or legal advice.')),
           reviewBanner,
           badgeLegend(),
           h('button', {

@@ -86,7 +86,30 @@ describe('Science of Parenting Lab — shell + M1', () => {
     expect(html).toContain('varies by state');
     // The checklist renders with all items uncheckable/checkable.
     expect(html).toContain('Meeting-prep checklist');
-    expect((html.match(/role="checkbox"/g) || []).length).toBe(7);
+    expect((html.match(/role="checkbox"/g) || []).length).toBe(8);
+  });
+
+  it('M9 rights card carries the load-bearing rights parents learn late', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm9' } });
+    // The 2026-08-03 editorial pass found these missing; each is pinned so a
+    // future rewrite cannot silently drop one.
+    for (const right of [
+      'IT IS ALL FREE',                       // FAPE / no cost
+      'WITHOUT YOUR CONSENT',                 // informed consent + revocable
+      'Child Find',                           // affirmative duty
+      'cannot be used to delay',              // RTI/MTSS stalling
+      'PRIOR WRITTEN NOTICE',                 // refusals in writing
+      'INDEPENDENT EDUCATIONAL EVALUATION',   // IEE at public expense
+      'procedural-safeguards document',       // the disagreement ladder
+      'inspect your child',                   // records access
+      'at least annually',                    // review cycle
+    ]) {
+      expect(html).toContain(right);
+    }
+    // And the tool-level scope line on the menu:
+    const menu = renderTool('parentingLab', {});
+    expect(menu).toContain('not clinical or legal advice');
   });
 
   it('M6/M7/M8 quiz answers are distributed, not single-option-biased', () => {
