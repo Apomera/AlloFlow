@@ -880,6 +880,9 @@ function GroupSessionModal(props) {
   } = props;
   const groupDialogRef = React.useRef(null);
   const groupCloseRef = React.useRef(null);
+  // Component scope: the "Active groups" column and the per-resource group
+  // chips both render this list; a narrower declaration is a ReferenceError.
+  const activeSessionGroups = Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null);
   const containGroupFocus = (event) => {
     if (!event || !groupDialogRef.current) return;
     if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse(); return; }
@@ -1061,7 +1064,6 @@ function GroupSessionModal(props) {
                                         const isDragOver = dragOverResourceId === res.id;
                                         const language = getResourceLanguage(res);
                                         const dateStr = formatResourceDate(res);
-                                        const activeSessionGroups = Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null);
                                         return (
                                             <div
                                                 key={res.id}
@@ -1799,6 +1801,113 @@ function FluencyModePanel(props) {
 }
 
 // ── SourceGenPanel: JSX from AlloFlowANTI.txt L22863-L23109 ──
+// ── SurpriseTopicLauncher: Surprise Me entry at the topic field ──
+// Peer entry to the resolver flow in UniversalSettingsPanel, sharing
+// AlloModules.SurpriseMeEngine so both surfaces keep the same division of
+// labor: the GRAPH supplies what is true (source edges from reviewed
+// snapshots), the MODEL proposes, the TEACHER chooses. Renders nothing when
+// the engine, a registered local snapshot provider, or an AI backend is
+// unavailable — absence of data never renders as a broken affordance.
+function SurpriseTopicLauncher(props) {
+  const { addToast, gradeLevel, setSourceTopic, setStandardInputValue } = props;
+  const [surpriseQuery, setSurpriseQuery] = React.useState('');
+  const [resolution, setResolution] = React.useState(null);
+  const [surpriseState, setSurpriseState] = React.useState('idle'); // idle | loading | ready | error
+  const [directions, setDirections] = React.useState([]);
+  const [hood, setHood] = React.useState(null);
+  const engine = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.SurpriseMeEngine : null;
+  const providerApi = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.StandardsProvider : null;
+  const provider = providerApi && typeof providerApi.getRegisteredProvider === 'function' ? providerApi.getRegisteredProvider() : null;
+  const surpriseAi = props.callGemini || (typeof window !== 'undefined' ? window.callGemini : null);
+  if (!engine || !provider || !surpriseAi) return null;
+  const proposeFor = async (match) => {
+    setSurpriseState('loading');
+    setDirections([]);
+    try {
+      const nextHood = engine.buildHood(provider, match.id);
+      setHood(nextHood);
+      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel }), false, false, 0.8);
+      setDirections(engine.parseDirections(raw));
+      setSurpriseState('ready');
+    } catch (error) {
+      setSurpriseState('error');
+      if (addToast) addToast('Could not propose lesson directions. Try again.', 'error');
+    }
+  };
+  const resolveAndPropose = () => {
+    const query = String(surpriseQuery || '').trim();
+    if (!query) return;
+    try {
+      const next = provider.resolveStandard(query);
+      setResolution(next);
+      if (next && next.status === 'resolved' && next.match) proposeFor(next.match);
+    } catch (e) {
+      setResolution({ status: 'error', match: null, candidates: [] });
+    }
+  };
+  const chooseCandidate = (candidate) => {
+    setResolution({ status: 'resolved', match: candidate, candidates: [] });
+    proposeFor(candidate);
+  };
+  const useDirection = (direction) => {
+    if (typeof setSourceTopic === 'function') setSourceTopic(engine.directionBrief(direction));
+    const match = resolution && resolution.match;
+    // Prefill the resolver in Universal Settings with the code so attaching
+    // the standard is one click away — this launcher never attaches silently.
+    if (match && match.code && typeof setStandardInputValue === 'function') setStandardInputValue(match.code);
+    if (addToast) addToast('Topic seeded with this direction. The standard code is prefilled in Universal Settings.', 'success');
+  };
+  const resolvedMatch = resolution && resolution.status === 'resolved' && resolution.match;
+  return (
+    <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
+      <div className="font-bold text-violet-900">Not sure what to write? Surprise me from a standard</div>
+      <div className="mt-1 flex gap-1">
+        <input
+          type="text"
+          value={surpriseQuery}
+          onChange={(e) => setSurpriseQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && resolveAndPropose()}
+          placeholder="Standard code, e.g. 3.OA.A.1"
+          aria-label="Standard code for surprise lesson directions"
+          className="flex-grow rounded border border-violet-300 p-1.5 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none"
+        />
+        <button type="button" onClick={resolveAndPropose} disabled={surpriseState === 'loading' || !surpriseQuery.trim()}
+          className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
+          {surpriseState === 'loading' ? 'Proposing…' : '✨ Propose 3 directions'}
+        </button>
+      </div>
+      {resolution && resolution.status === 'ambiguous' && (
+        <div role="status" className="mt-1">Multiple exact matches — choose one:
+          {(resolution.candidates || []).slice(0, 4).map((candidate) => (
+            <button type="button" key={candidate.id} onClick={() => chooseCandidate(candidate)}
+              className="ml-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 font-bold hover:bg-violet-100">
+              {candidate.code} · {candidate.framework || candidate.jurisdiction || candidate.id}
+            </button>
+          ))}
+        </div>
+      )}
+      {resolution && resolution.status === 'not-found' && <div role="status" className="mt-1">No exact local match for that code in the loaded snapshots.</div>}
+      {resolution && resolution.status === 'error' && <div role="alert" className="mt-1 text-red-700">The local snapshot could not resolve this entry.</div>}
+      {surpriseState === 'ready' && resolvedMatch && hood && (
+        <p className="mt-1 text-violet-900">Graph context: {hood.prerequisites.length} prerequisite(s), {hood.leadsTo.length} next, {hood.related.length} related{hood.dataset && hood.dataset.provider ? ' — ' + hood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
+      )}
+      {surpriseState === 'ready' && directions.map(function (direction, index) {
+        return <div key={index} className="mt-2 rounded border border-violet-200 bg-white p-2">
+          <div className="font-bold text-violet-950">{direction.title}</div>
+          <div className="mt-0.5 italic">{direction.essentialQuestion}</div>
+          <div className="mt-0.5">{direction.phenomenon}</div>
+          <div className="mt-0.5"><span className="font-bold">Activity:</span> {direction.activity}</div>
+          <div className="mt-0.5"><span className="font-bold">Evidence:</span> {direction.evidence}</div>
+          {direction.udlSupports.length > 0 && <div className="mt-0.5"><span className="font-bold">UDL:</span> {direction.udlSupports.join(' · ')}</div>}
+          {hood && hood.prerequisites.length > 0 && <div className="mt-0.5 text-[10px] text-slate-600">Prerequisites (from source data): {hood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ')}</div>}
+          <button type="button" onClick={function () { useDirection(direction); }}
+            className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
+        </div>;
+      })}
+    </div>
+  );
+}
+
 function SourceGenPanel(props) {
   const {
     addToast, aiStandardQuery, aiStandardRegion, gradeLevel,
@@ -1829,6 +1938,7 @@ function SourceGenPanel(props) {
                           autoFocus
                         />
                       </div>
+                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={gradeLevel} setSourceTopic={setSourceTopic} setStandardInputValue={setStandardInputValue} />
                       <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.tone')}</label>

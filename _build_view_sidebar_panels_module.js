@@ -100,6 +100,7 @@ window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefi
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
+window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');

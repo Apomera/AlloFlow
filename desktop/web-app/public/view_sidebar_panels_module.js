@@ -143,6 +143,79 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
     }
   ));
 }
+const SurpriseMeEngine = {
+  brief: function(rec) {
+    return (rec.code ? rec.code + " " : "") + String(rec.label || rec.text || "").slice(0, 160);
+  },
+  buildHood: function(provider, id) {
+    const grab = (fn, key) => {
+      try {
+        const r = provider[fn](id, { maxResults: 6 });
+        return r && r[key] || [];
+      } catch (e) {
+        return [];
+      }
+    };
+    const pre = (() => {
+      try {
+        return provider.getPrerequisites(id, { maxResults: 6 });
+      } catch (e) {
+        return null;
+      }
+    })();
+    return {
+      prerequisites: pre && pre.prerequisites || [],
+      leadsTo: pre && pre.leadsTo || [],
+      related: grab("getRelatedStandards", "related"),
+      components: grab("getLearningComponents", "components"),
+      dataset: pre && pre.dataset || null
+    };
+  },
+  buildPrompt: function(match, hood, opts) {
+    const brief = SurpriseMeEngine.brief;
+    return [
+      "You are a lesson-design partner for a K-12 teacher. Propose exactly 3 distinct lesson DIRECTIONS for the standard below.",
+      "Ground every direction in the standard and its graph context ONLY \u2014 do not target other standards, and do not claim prerequisite relationships beyond those listed.",
+      "TARGET STANDARD: " + brief(match),
+      "GRAPH CONTEXT (source-provided; the only relationships you may reference):",
+      "- Prerequisites: " + (hood.prerequisites.map(brief).join("; ") || "none listed"),
+      "- Builds toward: " + (hood.leadsTo.map(brief).join("; ") || "none listed"),
+      "- Related: " + (hood.related.map(brief).join("; ") || "none listed"),
+      opts && opts.gradeLevel ? "Grade level: " + opts.gradeLevel : "",
+      opts && opts.studentInterests && opts.studentInterests.length ? "Student interests to consider: " + opts.studentInterests.slice(0, 6).join(", ") : "",
+      "Each direction must be meaningfully different (different phenomenon or entry point).",
+      "Return ONLY a JSON array of exactly 3 objects, no prose, each with keys: ",
+      '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
+      '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
+      '"udlSupports" (array of 2-3 short supports).'
+    ].filter(Boolean).join("\n");
+  },
+  parseDirections: function(raw) {
+    const jsonText = String(raw || "").replace(/^[\s\S]*?(\[)/, "$1").replace(/(\])[\s\S]*$/, "$1");
+    const parsed = JSON.parse(jsonText);
+    const clamp = (v, n) => String(v || "").slice(0, n);
+    const directions = (Array.isArray(parsed) ? parsed : []).slice(0, 3).map((d) => ({
+      title: clamp(d.title, 90),
+      phenomenon: clamp(d.phenomenon, 220),
+      essentialQuestion: clamp(d.essentialQuestion, 180),
+      activity: clamp(d.activity, 300),
+      evidence: clamp(d.evidence, 220),
+      udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90))
+    })).filter((d) => d.title && d.essentialQuestion);
+    if (!directions.length) throw new Error("no usable directions");
+    return directions;
+  },
+  directionBrief: function(direction) {
+    return [
+      direction.title,
+      "Phenomenon: " + direction.phenomenon,
+      "Essential question: " + direction.essentialQuestion,
+      "Activity: " + direction.activity,
+      "Evidence of learning: " + direction.evidence,
+      direction.udlSupports.length ? "UDL supports: " + direction.udlSupports.join("; ") : ""
+    ].filter(Boolean).join("\n");
+  }
+};
 function UniversalSettingsPanel(props) {
   const {
     InfoTooltip,
@@ -206,69 +279,16 @@ function UniversalSettingsPanel(props) {
   const localStandardsProvider = standardsProviderApi && typeof standardsProviderApi.getRegisteredProvider === "function" ? standardsProviderApi.getRegisteredProvider() : null;
   const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === "function" ? localStandardsProvider.getManifest() : null;
   const surpriseAi = props.callGemini || (typeof window !== "undefined" ? window.callGemini : null);
-  const buildSurpriseHood = (provider, id) => {
-    const grab = (fn, key) => {
-      try {
-        const r = provider[fn](id, { maxResults: 6 });
-        return r && r[key] || [];
-      } catch (e) {
-        return [];
-      }
-    };
-    const pre = (() => {
-      try {
-        return provider.getPrerequisites(id, { maxResults: 6 });
-      } catch (e) {
-        return null;
-      }
-    })();
-    return {
-      prerequisites: pre && pre.prerequisites || [],
-      leadsTo: pre && pre.leadsTo || [],
-      related: grab("getRelatedStandards", "related"),
-      components: grab("getLearningComponents", "components"),
-      dataset: pre && pre.dataset || null
-    };
-  };
-  const surpriseBrief = (rec) => (rec.code ? rec.code + " " : "") + String(rec.label || rec.text || "").slice(0, 160);
   const runSurpriseMe = async () => {
     const match = localResolution && localResolution.match;
     if (!match || !localStandardsProvider || !surpriseAi) return;
     setSurpriseState("loading");
     setSurpriseDirections([]);
     try {
-      const hood = buildSurpriseHood(localStandardsProvider, match.id);
+      const hood = SurpriseMeEngine.buildHood(localStandardsProvider, match.id);
       setSurpriseHood(hood);
-      const prompt = [
-        "You are a lesson-design partner for a K-12 teacher. Propose exactly 3 distinct lesson DIRECTIONS for the standard below.",
-        "Ground every direction in the standard and its graph context ONLY \u2014 do not target other standards, and do not claim prerequisite relationships beyond those listed.",
-        "TARGET STANDARD: " + surpriseBrief(match),
-        "GRAPH CONTEXT (source-provided; the only relationships you may reference):",
-        "- Prerequisites: " + (hood.prerequisites.map(surpriseBrief).join("; ") || "none listed"),
-        "- Builds toward: " + (hood.leadsTo.map(surpriseBrief).join("; ") || "none listed"),
-        "- Related: " + (hood.related.map(surpriseBrief).join("; ") || "none listed"),
-        gradeLevel ? "Grade level: " + gradeLevel : "",
-        studentInterests && studentInterests.length ? "Student interests to consider: " + studentInterests.slice(0, 6).join(", ") : "",
-        "Each direction must be meaningfully different (different phenomenon or entry point).",
-        "Return ONLY a JSON array of exactly 3 objects, no prose, each with keys: ",
-        '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
-        '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
-        '"udlSupports" (array of 2-3 short supports).'
-      ].filter(Boolean).join("\n");
-      const raw = await surpriseAi(prompt, false, false, 0.8);
-      const jsonText = String(raw || "").replace(/^[\s\S]*?(\[)/, "$1").replace(/(\])[\s\S]*$/, "$1");
-      const parsed = JSON.parse(jsonText);
-      const clamp = (v, n) => String(v || "").slice(0, n);
-      const directions = (Array.isArray(parsed) ? parsed : []).slice(0, 3).map((d) => ({
-        title: clamp(d.title, 90),
-        phenomenon: clamp(d.phenomenon, 220),
-        essentialQuestion: clamp(d.essentialQuestion, 180),
-        activity: clamp(d.activity, 300),
-        evidence: clamp(d.evidence, 220),
-        udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90))
-      })).filter((d) => d.title && d.essentialQuestion);
-      if (!directions.length) throw new Error("no usable directions");
-      setSurpriseDirections(directions);
+      const raw = await surpriseAi(SurpriseMeEngine.buildPrompt(match, hood, { gradeLevel, studentInterests }), false, false, 0.8);
+      setSurpriseDirections(SurpriseMeEngine.parseDirections(raw));
       setSurpriseState("ready");
     } catch (error) {
       setSurpriseState("error");
@@ -277,14 +297,7 @@ function UniversalSettingsPanel(props) {
   };
   const useSurpriseDirection = (direction) => {
     if (typeof handleUseResolvedStandard === "function" && localResolution) handleUseResolvedStandard(localResolution);
-    const brief = [
-      direction.title,
-      "Phenomenon: " + direction.phenomenon,
-      "Essential question: " + direction.essentialQuestion,
-      "Activity: " + direction.activity,
-      "Evidence of learning: " + direction.evidence,
-      direction.udlSupports.length ? "UDL supports: " + direction.udlSupports.join("; ") : ""
-    ].filter(Boolean).join("\n");
+    const brief = SurpriseMeEngine.directionBrief(direction);
     if (typeof setSourceTopic === "function") {
       setSourceTopic(brief);
       addToast("Standard attached and topic seeded with this direction.", "success");
@@ -3097,6 +3110,7 @@ window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefi
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
+window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
