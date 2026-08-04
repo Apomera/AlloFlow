@@ -70,8 +70,8 @@
       "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
       "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
       "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
-      "learningLibrarySha256": "ba387121324c470d47e58007aaa641bc3d259769d627af510b93df2caf50d621",
-      "learningLibraryQaSha256": "63b0544e41b62cada5effb60354dfe0de646c81b5fe1e001fedda01128657c35",
+      "learningLibrarySha256": "2bd491a1b0637db880879348a517e4f45761cd1c24270588da560492297c46fb",
+      "learningLibraryQaSha256": "fea4aa82f83bb9426c87283e6c8620a03968b86d3ac110bce9615d1ce980dc1d",
       "nativeQaSha256": "ce09c34c824f446c5899fd87a311349a55038bcf73162493c25136c59651cf8d"
     },
     {
@@ -130,9 +130,9 @@
       "learningLibraryUrl": "./test_prep/parapro_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/parapro_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/parapro_native_qa.json",
-      "learningLibrarySha256": "df71d51a6a880d992316a382dbef0ac08bbfdefa2f893d79ca1626ec6ec534f7",
-      "learningLibraryQaSha256": "ed2b37e8d8d897b865c34ae16e4d12a833a3e65eb88057b752948a5ccbe20f24",
-      "nativeQaSha256": "5775f4daf987d8e01dd5f67cdee99288b2401886906b03c2e25a972237222b98"
+      "learningLibrarySha256": "b7778c51dd74e33c940f884308c3e90783dce334a72fa2771888eeb6821fc5e9",
+      "learningLibraryQaSha256": "326452b998fcb5a51f6cff73a6b71874917f89acd48b16fbd614c77ff3f226b6",
+      "nativeQaSha256": "760f4d284984c3b47cf68b4210d4f90fc4ad77c1228f263e4ea68d8b2e0f2807"
     },
     {
       "id": "praxis-special-education-5355",
@@ -141,9 +141,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Foundational Knowledge (5355) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Foundational Knowledge (5355) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "Special Education 5355 diagnostics",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 457 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5355 test currently has 120 selected-response questions in two hours; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5355 test currently has 120 selected-response questions in two hours; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS. The official Praxis Special Education: Foundational Knowledge (5355) test currently has 120 selected-response questions in two hours; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, licenses, legal advice, or substitutes for current federal, state, and local requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -161,9 +161,9 @@
       "learningLibraryUrl": "./test_prep/special_education_5355_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_5355_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_5355_native_qa.json",
-      "learningLibrarySha256": "5fa9a41a5511e08b278498862f37b4421148262831aba666cccccde071b15aa2",
-      "learningLibraryQaSha256": "34d579bd14001bff2f97637a765077846aeb6f8bb0467cd6b30b744fc9d40392",
-      "nativeQaSha256": "d814c2631549f3f975bbf456bc993a6c343b64d42204cbac054c4235db9203ed"
+      "learningLibrarySha256": "549beac5980946b3eeb6d637a9cc2f9d03760e4a4c6bb600c7d4933f6df90260",
+      "learningLibraryQaSha256": "23fa937039814f591ce4fefce7faf4c7aa5257a8371213a66f788855cb084e50",
+      "nativeQaSha256": "438629a9e051845c07f10da09065c76426ecb7967eae62019d61eda956375d72"
     },
     {
       "id": "praxis-school-counselor-5422",
@@ -174,7 +174,7 @@
       ],
       "title": "Praxis School Counselor (5422) — 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "School Counselor 5422 diagnostics",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 266 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5422 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 200 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5422 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASCA. The official Praxis School Counselor (5422) test currently has 120 selected-response questions in 120 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, mental-health treatment, legal advice, or substitutes for current federal, state, local, district, crisis, mandated-reporting, and ethical requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -192,9 +192,9 @@
       "learningLibraryUrl": "./test_prep/school_counselor_5422_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_counselor_5422_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_counselor_5422_native_qa.json",
-      "learningLibrarySha256": "5bbcfce6fa5104ea3b916c0380671c661ee06bf7f8b23d2d961acb56c632d175",
-      "learningLibraryQaSha256": "faa7e0a7e1ad92c646a40695878d7ac8655951d8d10372f174fe896bc44d7604",
-      "nativeQaSha256": "d8a05050b391e2cbcb76d01ff93060b1765d579ffebeb46bc7d01033f4ea5622"
+      "learningLibrarySha256": "3c6b914274ebd4f6cad3c98d410d57c692a0f872ff8f60fc4d06985e225062c0",
+      "learningLibraryQaSha256": "7daedf8effc0f3772fa0ecde2649820639fcd64e8471a92c927628fde48cf4b3",
+      "nativeQaSha256": "da2a712753817f57b333f2582f3d959a0fe5cbc24625863f65ba5c8db995ed6b"
     },
     {
       "id": "praxis-school-psychologist-5403",
@@ -205,7 +205,7 @@
       ],
       "title": "Praxis School Psychologist (5403) — 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "School Psychologist 5403 diagnostics",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 252 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 125-question timed simulation. The official 5403 test currently has 125 selected-response questions in 125 minutes; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 200 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 125-question timed simulation. The official 5403 test currently has 125 selected-response questions in 125 minutes; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or NASP. The official Praxis School Psychologist (5403) test currently has 125 selected-response questions in 125 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, psychological evaluations, diagnoses, mental-health treatment, legal advice, or substitutes for current federal, state, local, district, credential, ethical, crisis, consent, and mandated-reporting requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -223,9 +223,9 @@
       "learningLibraryUrl": "./test_prep/school_psychologist_5403_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_psychologist_5403_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_psychologist_5403_native_qa.json",
-      "learningLibrarySha256": "19186d061bf843fec24da312220347199894ba79bf8ef6d749d35c7bb34802b3",
-      "learningLibraryQaSha256": "e97d3b2824d2d9a3ad9bbbba2e19f4dabb2bfccb6185505c1161c2375c21e852",
-      "nativeQaSha256": "c5e6a6b2289a73f5efec7eba86f80597fff9b84d1b3aad8e65e21d68b65ba822"
+      "learningLibrarySha256": "b5edc0a8ac4b390be4291e417d5e6b028fde4d3c056ceb531fffa13f75d9f36f",
+      "learningLibraryQaSha256": "62b42b49833d13029d55114a3966c91fe1308f8a95d2b5f2142ec685d40a06ca",
+      "nativeQaSha256": "8d66058a9eaf709fa3bf09b1edcdff64ad916f24be731e088564056fd81e67a2"
     },
     {
       "id": "praxis-speech-language-pathology-5331",
@@ -234,9 +234,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Speech-Language Pathology (5331) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Speech-Language Pathology (5331) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "Speech-Language Pathology 5331 diagnostics",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 462 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Speech-Language Pathology (5331) test currently has 132 selected-response questions in 150 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or swallowing-safety decisions, treatment, legal advice, or substitutes for qualified supervision and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -254,9 +254,9 @@
       "learningLibraryUrl": "./test_prep/speech_language_pathology_5331_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/speech_language_pathology_5331_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/speech_language_pathology_5331_native_qa.json",
-      "learningLibrarySha256": "dcb2f058d433845f8ba41b9946f4ede483c918d0f7851ab886964dec1e95e441",
-      "learningLibraryQaSha256": "79d9846a298c98b0309ea2cac8dfbfc1527da801beb678ee1cc336a2ba9ce26c",
-      "nativeQaSha256": "a93c48bf3e40d0f327d5bf1f70cea6727e115546f663dffe271b0cfbe005d338"
+      "learningLibrarySha256": "2946166e28eb68535cdac5c598483ed0f0e385d97696cbbdf3873b903314b480",
+      "learningLibraryQaSha256": "84998d7fc4e359cb916dbf5b4454679ff6eefed59eda37b994dc58db694629d4",
+      "nativeQaSha256": "6f0b2f0b3d3579b1fa304ff434d247b0a80e3c1f62d782e33def3c2140b8ad01"
     },
     {
       "id": "praxis-audiology-5343",
@@ -267,7 +267,7 @@
       ],
       "title": "Praxis Audiology (5343) — 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "Audiology 5343 diagnostics",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 265 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5343 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 204 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5343 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Audiology (5343) test currently has 120 selected-response questions in 120 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or vestibular decisions, device fittings, treatment, legal advice, or substitutes for qualified supervision, urgent medical care, and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -285,9 +285,9 @@
       "learningLibraryUrl": "./test_prep/audiology_5343_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/audiology_5343_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/audiology_5343_native_qa.json",
-      "learningLibrarySha256": "7902cb764c537639ef3b489660ed43d9f61198756fc6992cb12460a6729835a5",
-      "learningLibraryQaSha256": "952fc66fef5ff9eecc655f7cc8584359542b1bc3b03adf22367b366082bb5e8a",
-      "nativeQaSha256": "f795694149fdfd05bf03242ec039925ea920c4196eb32c3aa99d78799db6d06d"
+      "learningLibrarySha256": "f76d43e289e0acf3ab97288c945aa39320884f905482e89afa1ce5d9fd786966",
+      "learningLibraryQaSha256": "c0ae2d36d2208e520d1231896eef1512f6dc17f36230fe2c7519ab1821ab0943",
+      "nativeQaSha256": "33f8fe7369bb12497a83cd6c1494b8e2c052b6b1c77404f241fa9837b822aadb"
     },
     {
       "id": "praxis-reading-specialist-5302",
@@ -296,9 +296,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Reading Specialist (5302) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Reading Specialist (5302) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "Reading Specialist 5302 diagnostics",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 471 distinct independent content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or the International Literacy Association. The official Praxis Reading Specialist (5302) test currently has 95 selected-response and 2 constructed-response questions in 150 minutes; the 100-item diagnostics and 95-item timed segment are not official forms. Practice results and self-checks are not official or scaled Praxis scores, constructed-response scores, pass predictions, credentials, diagnoses of dyslexia or disability, special-education eligibility decisions, legal advice, or substitutes for qualified multidisciplinary evaluation, supervision, and current federal, state, local, certification, licensure, privacy, consent, assessment, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -316,9 +316,9 @@
       "learningLibraryUrl": "./test_prep/reading_specialist_5302_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/reading_specialist_5302_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/reading_specialist_5302_native_qa.json",
-      "learningLibrarySha256": "acc650af0f90209323cc4979075cafe6ca6c1a80048fb960496d6a335b7e98b8",
-      "learningLibraryQaSha256": "aaa2d620d9b97f51f68c2ca389dcb011907588c3f4972434ec8cfbb979b3e349",
-      "nativeQaSha256": "1a0b8bad4d978e84b6f0038c650ddaa4924426731ab2c9061f969cb904b95b8f"
+      "learningLibrarySha256": "9e2b6a409b47b52440066b61d0d08caf90116fe6935aec3533460040e02baf76",
+      "learningLibraryQaSha256": "a158fc2a2128fb0ee3d4f0485d69e4061370c54803d4ade27579b065ca6555c1",
+      "nativeQaSha256": "c3e5f8d2806e342d4304b50accfc1e0d1bd792ca7d9d71346dee4d8247ac9a46"
     },
     {
       "id": "praxis-educational-leadership-5412",
@@ -329,7 +329,7 @@
       ],
       "title": "Praxis Educational Leadership: Administration and Supervision (5412) — 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "Educational Leadership (5412)",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 252 distinct independent content kernels. Two independently authored 100-question diagnostic batches aligned to the six current 5412 leadership categories, linked to a 12-chapter learning library, targeted practice, diagnostics, and an optional 120-question timed simulation.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 200 distinct independent content kernels. Two independently authored 100-question diagnostic batches aligned to the six current 5412 leadership categories, linked to a 12-chapter learning library, targeted practice, diagnostics, and an optional 120-question timed simulation.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or NPBEA. The official Praxis Educational Leadership: Administration and Supervision (5412) test currently has 120 selected-response questions in 165 minutes; these diagnostics and the simulation are not official forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, employment or licensure decisions, legal advice, personnel findings, disciplinary determinations, emergency directives, or substitutes for qualified leadership judgment and current federal, state, local, board, contract, certification, privacy, civil-rights, safety, procurement, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -347,9 +347,9 @@
       "learningLibraryUrl": "./test_prep/educational_leadership_5412_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/educational_leadership_5412_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/educational_leadership_5412_native_qa.json",
-      "learningLibrarySha256": "294f1cbc34b1d07b7a70644c0c12bd703ddd69e103ee24db6a51a31535b42f77",
-      "learningLibraryQaSha256": "2e045e021ba01f744109c5eb339a0802d60d0b82701a1f39375c9acc6989be08",
-      "nativeQaSha256": "98f86ef314646651109a19b4ec2b66b19769afec8a19038fddd08444f279fb25"
+      "learningLibrarySha256": "b93731348050e1fbbdc5168d7dcb61a8f85ac1d9b2d18d9a67446f45da7db2b3",
+      "learningLibraryQaSha256": "428a0e4d37151cd5cf75a7ab736fac221c99edb85a47dfbfda83c0563867db21",
+      "nativeQaSha256": "881875ae809eeb18899a68687291731f97003664180a43312203bfd03a772d34"
     },
     {
       "id": "praxis-plt-k6-5622",
@@ -358,9 +358,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Principles of Learning and Teaching: Grades K–6 (5622) — 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Principles of Learning and Teaching: Grades K–6 (5622) — 200 Source Questions + 300 Guided Review",
       "shortTitle": "PLT K–6 (5622)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 474 distinct independent content kernels. Two independently authored 100-question diagnostic batches aligned to the four selected-response categories, linked to a 12-chapter learning library, eight case-analysis workshops, targeted practice, diagnostics, and a 70-minute selected-response pacing simulation.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches aligned to the four selected-response categories, linked to a 12-chapter learning library, eight case-analysis workshops, targeted practice, diagnostics, and a 70-minute selected-response pacing simulation.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or CCSSO. The official Praxis Principles of Learning and Teaching: Grades K–6 (5622) test currently has 70 selected-response questions and four constructed-response questions in 120 minutes; the 100-item diagnostics and 70-minute selected-response segment are not official forms. Practice results and workshop self-checks are not official or scaled Praxis scores, constructed-response scores, pass predictions, credentials, diagnoses, disability or accommodation decisions, legal advice, mandated-reporting determinations, or substitutes for qualified supervision and current federal, state, local, certification, licensure, privacy, civil-rights, safety, assessment, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -378,9 +378,9 @@
       "learningLibraryUrl": "./test_prep/plt_k6_5622_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_k6_5622_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_k6_5622_native_qa.json",
-      "learningLibrarySha256": "207a9a6736dc093f5a88af5a9afee77da87cb568034deb0ddb9df34db1e15070",
-      "learningLibraryQaSha256": "5463d33cef8d83cbe06107db4ebf4e42e76d9c8fda3259c70e2445a264cec360",
-      "nativeQaSha256": "d425019f7c556db36b72905ac4ff44dcfbf933822a7d331408ac7698e3c396ed"
+      "learningLibrarySha256": "9daac4dabbf07e98cea38e59f6c6b08f19cae962b13dff86b69974a5e2206d99",
+      "learningLibraryQaSha256": "e6fb6647039908eed732bb439353225b5d46700fbaad41f9943120286ab06b6d",
+      "nativeQaSha256": "885d21aa36a9fb41238520aaca0db6647ebb056966778fc80cdc8c5b3e4db497"
     },
     {
       "id": "praxis-core-5752",
@@ -389,9 +389,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Core Academic Skills for Educators: Combined (5752) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Core Academic Skills for Educators: Combined (5752) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Praxis Core (5752)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 435 distinct independent content kernels. Two independent 100-question diagnostic banks spanning Reading 5713, Writing 5723, and Mathematics 5733, linked to a 12-chapter learning library, essay workshops, targeted practice, diagnostics, and a full 152-question selected-response pacing simulation.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 107 distinct independent content kernels. Two independent 100-question diagnostic banks spanning Reading 5713, Writing 5723, and Mathematics 5733, linked to a 12-chapter learning library, essay workshops, targeted practice, diagnostics, and a full 152-question selected-response pacing simulation.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS. The official Praxis Core Combined (5752) session currently combines Reading 5713, Writing 5723, and Mathematics 5733 for 152 selected-response questions plus two essays across 275 minutes of separately timed sections. The 100-item diagnostics, 152-item selected-response simulation, essay planning workshops, and results are not official Praxis forms, scaled scores, essay scores, pass predictions, admission or licensure decisions, accommodations decisions, or substitutes for current state, program, testing, accessibility, or credential requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -409,9 +409,9 @@
       "learningLibraryUrl": "./test_prep/praxis_core_5752_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/praxis_core_5752_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/praxis_core_5752_native_qa.json",
-      "learningLibrarySha256": "10e61ea222ba09e29a3c87ed765fa890942a4a98f0384c312ce88dfe1cd66118",
-      "learningLibraryQaSha256": "21793f6718ad021e875724444f64debc747816ea4d3698004d461b9afadc2bd8",
-      "nativeQaSha256": "098505645f6c9e84d5af24ea04590e4302efb94dbf4080532f13b7540117e1ec"
+      "learningLibrarySha256": "6774624d740104008a61e97411349b0c75d0b39761f0555274f58f2344c6d22f",
+      "learningLibraryQaSha256": "c231da7656a06cfdc0004fa192dae234f6a5d7d4068a1841f7e1924636480cfa",
+      "nativeQaSha256": "e3e80bae0b5f0ec2077802e57d169869406fde61c1e78579031bd566a1825dd3"
     },
     {
       "id": "praxis-esol-5362",
@@ -420,9 +420,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis English to Speakers of Other Languages (5362) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis English to Speakers of Other Languages (5362) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Praxis ESOL (5362)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 460 distinct independent content kernels. Two independent 100-question diagnostics aligned exactly to the six official categories, linked to a 12-chapter learning library, audio and classroom-analysis workshops, targeted practice, feedback, and a 120-question timed simulation.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independent 100-question diagnostics aligned exactly to the six official categories, linked to a 12-chapter learning library, audio and classroom-analysis workshops, targeted practice, feedback, and a 120-question timed simulation.",
       "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS, TESOL International Association, WIDA, NCELA, or the U.S. Department of Education. The official Praxis ESOL 5362 test currently has 120 selected-response questions in 120 minutes and may include audio and select-more-than-one items. These diagnostics, the text-only single-choice simulation, workshop self-checks, and results are not official forms, scaled scores, pass predictions, licenses, language-proficiency determinations, EL identification or exit decisions, disability or accommodation decisions, legal advice, civil-rights findings, or substitutes for current state, local, program, testing, privacy, or educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -440,9 +440,9 @@
       "learningLibraryUrl": "./test_prep/esol_5362_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/esol_5362_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/esol_5362_native_qa.json",
-      "learningLibrarySha256": "602962309ec64e85967d3ee7f40e25ee9f5ae80c12a937e6e22505b21e7a3132",
-      "learningLibraryQaSha256": "8df2435197e64f728d180a5600af9572758178abbf6b8029cd3102ec5f72515c",
-      "nativeQaSha256": "2e111949ae19e20fe28a6522e77ea9e29e8ed221615ffa6f0742eec7ea17f3e7"
+      "learningLibrarySha256": "caa268b7cb00fe9a594e332a6785bd98b72306e13c00058c6e502647c9b519df",
+      "learningLibraryQaSha256": "7e9174d8c1091e719f9a5bf1592846a678c4c169779634b9c160f0ccad9236fd",
+      "nativeQaSha256": "d5472623b980106f2c7b1deebff87e2f85624275e3f8b97acfa9612d19b34416"
     },
     {
       "id": "praxis-teaching-reading-5205",
@@ -451,9 +451,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Teaching Reading: Elementary (5205) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Teaching Reading: Elementary (5205) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Teaching Reading: Elementary (5205)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 477 distinct independent content kernels. Two 100-item diagnostics, a 90-item selected-response simulation, three constructed-response task families, native learning resources, and detailed feedback for beginning K–6 reading teachers.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, a 90-item selected-response simulation, three constructed-response task families, native learning resources, and detailed feedback for beginning K–6 reading teachers.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS, ILA, IDA, or IES. These original questions, workshop self-checks, and results are not official forms, constructed-response scores, scaled scores, pass predictions, licenses, dyslexia diagnoses, disability or accommodation decisions, intervention placements, or substitutes for current state, program, testing, accessibility, privacy, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -471,9 +471,9 @@
       "learningLibraryUrl": "./test_prep/teaching_reading_5205_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/teaching_reading_5205_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/teaching_reading_5205_native_qa.json",
-      "learningLibrarySha256": "ab83e6d309c32a7e8b68813910e0f587180bd2bf2a44af9a1c7baec43d4b8d63",
-      "learningLibraryQaSha256": "649ac8ad257495aeb8605ffa1a347f265df09e7a14d72ea318087673c9574d81",
-      "nativeQaSha256": "4b1a3fc06dea79ca0930f19f8dbcac72f762de7ee7592756e21ea01f86b2f32d"
+      "learningLibrarySha256": "9ddfbc8bbfc31db85a6e44fafb49883a1d2e97e9aa77e2f4bbe2f4139834ea08",
+      "learningLibraryQaSha256": "979f3a77159a64b5873f1815a7d33346740f3104b7925377d8fc4f8cb048255c",
+      "nativeQaSha256": "d4cb8faf34394d71f838fb3777bfaa886a8d438c1c0257bf0f3b149c740abcff"
     },
     {
       "id": "praxis-early-childhood-5025",
@@ -484,7 +484,7 @@
       ],
       "title": "Praxis Early Childhood Education (5025) - 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "Early Childhood Education (5025)",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 232 distinct independent content kernels. Two 100-item diagnostics and an exact 120-item simulation spanning language and literacy, mathematics, social studies, science, health, physical education, and the arts.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 205 distinct independent content kernels. Two 100-item diagnostics and an exact 120-item simulation spanning language and literacy, mathematics, social studies, science, health, physical education, and the arts.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS, NAEYC, NGSS, NCSS, SHAPE America, or the National Core Arts Standards. Results are not official forms, scaled scores, pass predictions, licenses, developmental screenings, diagnoses, disability or accommodation decisions, health advice, or substitutes for current state, program, testing, safety, accessibility, and educational requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -502,9 +502,9 @@
       "learningLibraryUrl": "./test_prep/early_childhood_5025_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/early_childhood_5025_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
-      "learningLibrarySha256": "3a589c9b60edd2a35fe4ac3dd829958ceba050fea642e18e5575e660036bea89",
-      "learningLibraryQaSha256": "1af259d2feec9824a2e6e04674d2062a42c818b0a0bdcf1eadd19119950e1d9c",
-      "nativeQaSha256": "f8bff901884ce69ea07275fc7e85a01f9d86fcdd14ea11489a8020513f5a2924"
+      "learningLibrarySha256": "c1f42e21c8cf43c43662e1da1896c824687dbbaf0644ccb2b0a7b2a092159257",
+      "learningLibraryQaSha256": "5df23adfb890803ac309df1a43e89be54e09550f0ae32845d679ffa714ce5fe9",
+      "nativeQaSha256": "adf0f4bf3b314bcd4a2a47d088272c5b6419844a4f571f9cc58fa9900b169d6c"
     },
     {
       "id": "praxis-plt-early-childhood-5621",
@@ -513,9 +513,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis PLT: Early Childhood (5621) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis PLT: Early Childhood (5621) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "PLT: Early Childhood (5621)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 473 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, four case-response workshops, and native learning support for beginning early-childhood educators.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, four case-response workshops, and native learning support for beginning early-childhood educators.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS, CCSSO, or NAEYC. Results and workshop self-checks are not official forms, constructed-response scores, scaled scores, pass predictions, licenses, developmental screenings, diagnoses, disability or accommodation decisions, legal advice, or substitutes for current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -533,9 +533,9 @@
       "learningLibraryUrl": "./test_prep/plt_early_childhood_5621_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_early_childhood_5621_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_early_childhood_5621_native_qa.json",
-      "learningLibrarySha256": "bc3d9be5023581e8b31856902cf31e2d1c628c6acdfc9c24388c807b1b30b8e0",
-      "learningLibraryQaSha256": "e11386f6561a633d0f6ae720ce291599193cfa60dd79ed8e8a245bed2cf91190",
-      "nativeQaSha256": "7603e4420da368e189ee133ce0038c2c3cd75286b9eb18a9156d87ddd185510c"
+      "learningLibrarySha256": "bed3b4845fb5aa05cc4c1e73c6aef0e68196ab624bbe9360c4b20f0612b5d326",
+      "learningLibraryQaSha256": "e54698d0cf3f0a0aae9f0cd906d1838e85c1ca037008b624d0d0c656f03f24f2",
+      "nativeQaSha256": "20f774359a691cf10748dd4b4294e3d1345963045b709301e2f7e23d544e41ca"
     },
     {
       "id": "praxis-special-education-early-childhood-5692",
@@ -544,9 +544,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Early Childhood/Early Intervention (5692) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Early Childhood/Early Intervention (5692) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Special Education EC/EI (5692)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 457 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item timed simulation, targeted feedback, and a native learning library for birth-through-age-eight early intervention and early childhood special education practice.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item timed simulation, targeted feedback, and a native learning library for birth-through-age-eight early intervention and early childhood special education practice.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS. Results are not official forms, scaled scores, pass predictions, licenses, screenings, diagnoses, eligibility or placement decisions, legal advice, or substitutes for current federal, state, local, tribal, or program requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -564,9 +564,9 @@
       "learningLibraryUrl": "./test_prep/special_education_early_childhood_5692_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_early_childhood_5692_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_early_childhood_5692_native_qa.json",
-      "learningLibrarySha256": "08cda2acfa0a109ec851ba0b939b9a63ab992b38395792f47aec883bbbfa66e2",
-      "learningLibraryQaSha256": "3af77497d3caa7d91beddfdbbc750a69b70508c0c76614c7c27156434e58c7ba",
-      "nativeQaSha256": "5824ac24bbec9e1a3c95e51b3e23d3a21722a0360e58bddf14a552567a25bd43"
+      "learningLibrarySha256": "c9637bc1a851e9bb685038a1f5c3e4ddbb1596eb83009e6db48da0b85259fb5b",
+      "learningLibraryQaSha256": "28327fe7b58cc942028c263b72555bbc41083cf2a8837d10bd40161a9cce281e",
+      "nativeQaSha256": "df1e0ece63fd064cfc92229dc542438dc27d09fa2927e71d91e5c5705d1f6357"
     },
     {
       "id": "praxis-special-education-severe-profound-5547",
@@ -575,9 +575,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Severe to Profound (5547) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Severe to Profound (5547) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Special Education Severe to Profound (5547)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 468 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item timed simulation, detailed option feedback, and native learning support for K-12 educators serving learners with severe or profound disabilities.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 103 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item timed simulation, detailed option feedback, and native learning support for K-12 educators serving learners with severe or profound disabilities.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS or CEC. Results are not official forms, scaled scores, pass predictions, licenses, diagnoses, eligibility or placement decisions, medical or legal advice, crisis plans, or substitutes for individualized assessment and current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -595,9 +595,9 @@
       "learningLibraryUrl": "./test_prep/special_education_severe_profound_5547_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_severe_profound_5547_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_severe_profound_5547_native_qa.json",
-      "learningLibrarySha256": "80b527b0d3aeb98353c1a5cd6f8dcd31b2fa0a374f5c25775f248a108a66e30e",
-      "learningLibraryQaSha256": "63d9d6234ae0747baa7662038f9ea2ff5d5753244fec9fab7c6d4289918fb1e3",
-      "nativeQaSha256": "bb51a6ba11b08b9cb999d5837591bf539f5ddb6cf85e2f3f1a701c6d5190fc56"
+      "learningLibrarySha256": "95df1db1b6c7d6349104c7f55fa431f7ca741764128a2dd0f3f8e3ab285a86e9",
+      "learningLibraryQaSha256": "bf089ad38d97d4c2b085ce2f97b26385117108d2b35bd7fc23767f1b80140e08",
+      "nativeQaSha256": "68a9e6d1729baab9f790cc755ed20a21835acee50776e557bb75c0b45dda15af"
     },
     {
       "id": "praxis-special-education-learning-disabilities-5383",
@@ -606,9 +606,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Teaching Students with Learning Disabilities (5383) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Teaching Students with Learning Disabilities (5383) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Teaching Students with Learning Disabilities (5383)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 471 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed option feedback, and native learning support for K-12 learning-disabilities specialists.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 111 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed option feedback, and native learning support for K-12 learning-disabilities specialists.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS. Results are not official forms, scaled scores, pass predictions, licenses, diagnoses, eligibility or placement decisions, legal advice, or substitutes for individualized assessment and current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -626,9 +626,9 @@
       "learningLibraryUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_learning_disabilities_5383_native_qa.json",
-      "learningLibrarySha256": "6ba938329773bd9e91d9a8b5b77b2561ec57b1651b0cbd61824f5709df20407d",
-      "learningLibraryQaSha256": "8f9d26e390143a5f123126174af0112c4ec17c37938e3b76862d7d0a1c3ef3a3",
-      "nativeQaSha256": "7413b36c02c0a0c2827752604a6b62dbf812d77753e448da0598bd99d812c494"
+      "learningLibrarySha256": "188aa9b18e1a04e0b1d9168b206c7db2038899a0cb0cca1abeb72686dd3095b7",
+      "learningLibraryQaSha256": "2f27069c82d9d4678b20429f9a719071b92014835d95930eb30914d8fea5ad47",
+      "nativeQaSha256": "0c1483757c714ca440e8430a786bea4d3b3b3821c0401a8511c3e8d89f39a2b8"
     },
     {
       "id": "praxis-special-education-behavior-emotional-5372",
@@ -637,9 +637,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Teaching Students with Behavioral Disorders and Emotional Disturbances (5372) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Teaching Students with Behavioral Disorders and Emotional Disturbances (5372) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Behavioral Disorders and Emotional Disturbances (5372)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 472 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed feedback, and native learning support for K-12 EBD specialists.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 103 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed feedback, and native learning support for K-12 EBD specialists.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS. Results are not official forms, scaled scores, pass predictions, licenses, diagnoses, eligibility, placement, FBA or BIP determinations, mental-health or crisis services, medical or legal advice, or substitutes for individualized assessment and current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -657,9 +657,9 @@
       "learningLibraryUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_behavior_emotional_5372_native_qa.json",
-      "learningLibrarySha256": "060637aa1332deb7d0e999383d5d5b1d9f9db8e1ba97d4dd081be0289ec04af3",
-      "learningLibraryQaSha256": "229c06766c3d0d69d923c1beee38d72ec21d6d190ade4b330d4d7116ca35aeee",
-      "nativeQaSha256": "f50e58c8eb583e949ab6f5161f469e8dbd50a4ee0c4af15555fd85048783aea5"
+      "learningLibrarySha256": "49f1d1ab108b3748c3b7c8250907f95625d12ada59b57275ef27d09577cdabd2",
+      "learningLibraryQaSha256": "e2187c23ebba6174a8c9801bb4e1738da721f01b9256e1131495e1635c33475f",
+      "nativeQaSha256": "7762c1fc605d81037cd3ae95c29f9bcb79b3d7e5b5deb80a12c4e4c51ca16f69"
     },
     {
       "id": "praxis-special-education-intellectual-disabilities-5322",
@@ -668,9 +668,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "Teaching Students with Intellectual Disabilities (5322)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 476 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed feedback, native learning support, and case-study decision practice for preschool-through-grade-12 ID specialists.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 103 distinct independent content kernels. Two 100-item diagnostics, an exact-blueprint 120-item simulation, detailed feedback, native learning support, and case-study decision practice for preschool-through-grade-12 ID specialists.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS or AAIDD. Results are not official forms, scaled scores, pass predictions, licenses, diagnoses, eligibility, placement, adaptive-behavior determinations, medical or legal advice, or substitutes for individualized assessment and current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -688,9 +688,9 @@
       "learningLibraryUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_native_qa.json",
-      "learningLibrarySha256": "2a6036ad20e88faddb236b6355e3aec489ef51083ecaf6a7e7a8366c2eda1b20",
-      "learningLibraryQaSha256": "9e5f2e3494abd5cc338cb508eccd37782b23081c4ee6bd88c2adca98e16e8dfb",
-      "nativeQaSha256": "bfb7b8739e92b17da9e340ccc6b6f0a604745c8aacd3c8c53b82fc3530ba2245"
+      "learningLibrarySha256": "528d69c646c010fa22a0f641853f9365dc2f2480e2e3bdabd292fb1bfaaf82a0",
+      "learningLibraryQaSha256": "67b751bb8820acad68b15c2d4db82d7113bbd0288dfcbf5364d17480b9149efa",
+      "nativeQaSha256": "7a488adea2d362dd36bff99ed4731d03095fc7d23ed209d3e07f610aaff931da"
     },
     {
       "id": "praxis-plt-grades-5-9-5623",
@@ -699,9 +699,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis PLT: Grades 5–9 (5623) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis PLT: Grades 5–9 (5623) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "PLT: Grades 5–9 (5623)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 472 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning middle-grades educators.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning middle-grades educators.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS or CCSSO. Results and workshop self-checks are not official forms, constructed-response scores, scaled scores, pass predictions, licenses, diagnoses, disability or accommodation decisions, legal advice, or substitutes for current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -719,9 +719,9 @@
       "learningLibraryUrl": "./test_prep/plt_5_9_5623_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_5_9_5623_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
-      "learningLibrarySha256": "aa86c98a6376e4404474a772eba1d2e1073bf90c48e2012fb4eb541d3d83b098",
-      "learningLibraryQaSha256": "f6411b6aa87dacff671f6846390d1510b9871a26b5f13e20f806ef934a8f86be",
-      "nativeQaSha256": "141047da8ef49a0f6c02cbf55153c16ab979cddb3d1cc72754369826147ace1e"
+      "learningLibrarySha256": "d7e202d373337b7da166de7cff4770bf3ee7439235e4ca0aa447e66d5708e787",
+      "learningLibraryQaSha256": "f6672bb4af6cce82fd0b8ca23463cb0ae5c746d1df2893978f04ba717a3d67c6",
+      "nativeQaSha256": "f71c28796d256d9e015c703cd44e4e26fd136a909f1ae5a6cfb56491182229e9"
     },
     {
       "id": "praxis-plt-grades-7-12-5624",
@@ -730,9 +730,9 @@
       "portfolioCategories": [
         "professional-school-personnel"
       ],
-      "title": "Praxis PLT: Grades 7–12 (5624) - 200 Source Questions + 300 Independent Practice Questions",
+      "title": "Praxis PLT: Grades 7–12 (5624) - 200 Source Questions + 300 Guided Review",
       "shortTitle": "PLT: Grades 7–12 (5624)",
-      "description": "Contains 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. The assistant audit found 472 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning secondary educators.",
+      "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning secondary educators.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS or CCSSO. Results and workshop self-checks are not official forms, constructed-response scores, scaled scores, pass predictions, licenses, diagnoses, disability or accommodation decisions, legal advice, or substitutes for current requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -750,9 +750,9 @@
       "learningLibraryUrl": "./test_prep/plt_7_12_5624_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_7_12_5624_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_7_12_5624_native_qa.json",
-      "learningLibrarySha256": "960b6282170beec63c061915aac4506460484940771d8868730fe25da18f58a3",
-      "learningLibraryQaSha256": "f1d5631647fe83191824380ba2d93ae4271ac7fd198f32adc2ff11ce0af04dde",
-      "nativeQaSha256": "261d9d815135877c5477c27f70a25bb6cf4b122760ba2cc0a1fb6a219040af8d"
+      "learningLibrarySha256": "50d2009f9043ce40e37823d009cd3a4a76f778ca42176efa3b26ce4d822588e4",
+      "learningLibraryQaSha256": "2127a1152fa5925635f8245f8ed31444824432e22f72ab69c20a3aa722e4282c",
+      "nativeQaSha256": "9aee2bc2f4d160241e9e5279442f40c7709368ec118a58af47dd4df07d880951"
     },
     {
       "id": "praxis-school-librarian-5312",
@@ -763,7 +763,7 @@
       ],
       "title": "Praxis School Librarian (5312) - 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "School Librarian (5312)",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 258 distinct independent content kernels. Two 100-item diagnostics and a 120-item simulation with source-rich feedback and learning support for beginning school librarians.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 126 distinct independent content kernels. Two 100-item diagnostics and a 120-item simulation with source-rich feedback and learning support for beginning school librarians.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS, AASL, or ALA. Results are not official forms, scaled scores, pass predictions, licenses, legal advice, copyright determinations, privacy determinations, or substitutes for current state and local requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -781,9 +781,9 @@
       "learningLibraryUrl": "./test_prep/school_librarian_5312_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_librarian_5312_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_librarian_5312_native_qa.json",
-      "learningLibrarySha256": "1ec162ae62d2abc2a94a97fe88313266c827ee1799ef10624931cc646f7f9b92",
-      "learningLibraryQaSha256": "e6b5ab9cbbcf2804e7cc8383442f2e35cc76988bc7f8aa4ec5502de4ea80926e",
-      "nativeQaSha256": "a672477f92aaa682497539696017501bbbc119f43cbc07c31e8fd5f8f613f33e"
+      "learningLibrarySha256": "62bcbca1279a22a73c6d90e25bba701a598e4d6283624b88b26cae87d7e08dad",
+      "learningLibraryQaSha256": "0291484a7682563848d7a27cba8eea4f63aecbc7b15b66b83662367d338d9e72",
+      "nativeQaSha256": "1558001a230c0b0021e7262188abf3660060414b721b2d389631e40b9f8bfa92"
     },
     {
       "id": "ap-psychology-pilot",
@@ -812,12 +812,12 @@
         "fully-digital"
       ],
       "packUrl": "./test_prep/ap_psychology_pilot.json",
-      "sha256": "2fd7e0c5846b959d1f341225d1c0e9a0261ea644bd0917d8167deab7077adca7",
+      "sha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445",
       "learningLibraryUrl": "./test_prep/ap_psychology_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_psychology_pilot_qa.json",
-      "learningLibrarySha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc",
-      "nativeQaSha256": "6cdcdc65c97d35015439f18532bd66c8d7aef0ac524ca4a81e8f198a69ffed87"
+      "learningLibrarySha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
+      "nativeQaSha256": "ed967dd60b6efae032dc3190d3c3e506e0bff8bccf63e31c5b55daea34371c77"
     }
   ]
 }

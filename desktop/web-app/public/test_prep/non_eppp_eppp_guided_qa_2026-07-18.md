@@ -8,11 +8,11 @@ Status: **assistant-reviewed-pass-with-declared-content-gaps**
 
 - Packs reviewed: **22**
 - Learning activities structurally reviewed: **11,000**
-- Independent-practice items reviewed: **9,800**
-- Distinct independent content kernels: **9,022**
-- Guided-review activities reviewed: **1,200**
-- Remaining distinct-question gap: **1,978**
-- Exact response-option kernels shared across different packs: **1,093**
+- Independent-practice items reviewed: **5,300**
+- Distinct independent content kernels: **3,162**
+- Guided-review activities reviewed: **5,700**
+- Remaining distinct-question gap: **7,838**
+- Exact response-option kernels shared across different packs: **324**
 - Hard findings: **0**
 - Libraries: **22** with 264 chapters, 1056 lessons, 1320 checks, 1650 flashcards, and 440 memory aids
 - Unique learner-visible sources reviewed: **136**
@@ -23,28 +23,28 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 
 | Pack | Independent practice | Distinct kernels | Guided review | New independent questions needed | Hard findings | Warning items |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Audiology 5343 diagnostics | 300 | 265 | 200 | 235 | 0 | 0 |
-| Early Childhood Education (5025) | 300 | 232 | 200 | 268 | 0 | 0 |
-| Educational Leadership (5412) | 300 | 252 | 200 | 248 | 0 | 0 |
-| Praxis ESOL (5362) | 500 | 460 | 0 | 40 | 0 | 0 |
-| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 0 |
-| PLT: Grades 5–9 (5623) | 500 | 472 | 0 | 28 | 0 | 0 |
-| PLT: Grades 7–12 (5624) | 500 | 472 | 0 | 28 | 0 | 0 |
-| PLT: Early Childhood (5621) | 500 | 473 | 0 | 27 | 0 | 0 |
-| PLT K–6 (5622) | 500 | 474 | 0 | 26 | 0 | 0 |
-| Praxis Core (5752) | 500 | 435 | 0 | 65 | 0 | 0 |
-| Reading Specialist 5302 diagnostics | 500 | 471 | 0 | 29 | 0 | 0 |
-| School Counselor 5422 diagnostics | 300 | 266 | 200 | 234 | 0 | 0 |
-| School Librarian (5312) | 300 | 258 | 200 | 242 | 0 | 0 |
-| School Psychologist 5403 diagnostics | 300 | 252 | 200 | 248 | 0 | 0 |
-| Special Education 5355 diagnostics | 500 | 457 | 0 | 43 | 0 | 0 |
-| Behavioral Disorders and Emotional Disturbances (5372) | 500 | 472 | 0 | 28 | 0 | 0 |
-| Special Education EC/EI (5692) | 500 | 457 | 0 | 43 | 0 | 0 |
-| Teaching Students with Intellectual Disabilities (5322) | 500 | 476 | 0 | 24 | 0 | 0 |
-| Teaching Students with Learning Disabilities (5383) | 500 | 471 | 0 | 29 | 0 | 0 |
-| Special Education Severe to Profound (5547) | 500 | 468 | 0 | 32 | 0 | 0 |
-| Speech-Language Pathology 5331 diagnostics | 500 | 462 | 0 | 38 | 0 | 0 |
-| Teaching Reading: Elementary (5205) | 500 | 477 | 0 | 23 | 0 | 0 |
+| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 0 | 222 |
+| Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 0 | 216 |
+| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 0 | 233 |
+| Praxis ESOL (5362) | 200 | 100 | 300 | 400 | 0 | 198 |
+| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 420 |
+| PLT: Grades 5–9 (5623) | 200 | 100 | 300 | 400 | 0 | 198 |
+| PLT: Grades 7–12 (5624) | 200 | 100 | 300 | 400 | 0 | 198 |
+| PLT: Early Childhood (5621) | 200 | 100 | 300 | 400 | 0 | 198 |
+| PLT K–6 (5622) | 200 | 100 | 300 | 400 | 0 | 198 |
+| Praxis Core (5752) | 200 | 107 | 300 | 393 | 0 | 72 |
+| Reading Specialist 5302 diagnostics | 200 | 100 | 300 | 400 | 0 | 191 |
+| School Counselor 5422 diagnostics | 300 | 200 | 200 | 300 | 0 | 209 |
+| School Librarian (5312) | 300 | 126 | 200 | 374 | 0 | 194 |
+| School Psychologist 5403 diagnostics | 300 | 200 | 200 | 300 | 0 | 213 |
+| Special Education 5355 diagnostics | 200 | 100 | 300 | 400 | 0 | 175 |
+| Behavioral Disorders and Emotional Disturbances (5372) | 200 | 103 | 300 | 397 | 0 | 174 |
+| Special Education EC/EI (5692) | 200 | 100 | 300 | 400 | 0 | 166 |
+| Teaching Students with Intellectual Disabilities (5322) | 200 | 103 | 300 | 397 | 0 | 173 |
+| Teaching Students with Learning Disabilities (5383) | 200 | 111 | 300 | 389 | 0 | 153 |
+| Special Education Severe to Profound (5547) | 200 | 103 | 300 | 397 | 0 | 182 |
+| Speech-Language Pathology 5331 diagnostics | 200 | 100 | 300 | 400 | 0 | 185 |
+| Teaching Reading: Elementary (5205) | 200 | 100 | 300 | 400 | 0 | 185 |
 
 ## Boundary
 

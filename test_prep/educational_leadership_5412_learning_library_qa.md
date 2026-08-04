@@ -1,6 +1,6 @@
 # Praxis Educational Leadership (5412) learning-library QA
 
-Generated: 2026-08-01T21:24:56.626Z
+Generated: 2026-07-23T17:24:36.302Z
 
 - Status: **PASS**
 - Chapters: 12

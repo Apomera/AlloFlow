@@ -1,8 +1,7 @@
 {
-  "packId": "praxis-school-counselor-5422",
-  "version": "1.0.0",
-  "visibility": "public",
+  "packId": "praxis-school-counselor-5422", "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
+  "generatedAt": "2026-07-23T17:24:11.690Z",
   "libraryId": "praxis-school-counselor-5422-learning-library",
   "standard": {
     "label": "AlloFlow Praxis School Counselor 5422 learning-library source and editorial review v1",
@@ -151,8 +150,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "a485078d335548ad601ae271ace0daf80d7eb238d77dcc80476a8a29f74f3951",
-    "learningLibrarySha256": "5bbcfce6fa5104ea3b916c0380671c661ee06bf7f8b23d2d961acb56c632d175",
+    "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
+    "learningLibrarySha256": "32bf459fa5310ec0c04dd83b841c9f244b7f5928446d5f47213c4f5b7a424e1d",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

@@ -15,10 +15,10 @@
     "answerIndex": 2,
     "rationale": "The subject is the singular collective noun \"team,\" so it takes the singular verb \"is.\" The intervening phrase \"along with its two advisers\" does not change the number of the subject.",
     "choiceRationales": [
-      "\"Are\" incorrectly treats the plural noun in the intervening phrase as the subject. The item-specific principle is also clear from the rationale: The subject is the singular collective noun \"team,\" so it takes the singular verb \"is.\" The intervening phrase \"along with its two advisers\" does not change the number of the subject.",
-      "\"Were\" is plural and also conflicts with the present-time cue in today's agenda. The item-specific principle is also clear from the rationale: The subject is the singular collective noun \"team,\" so it takes the singular verb \"is.\" The intervening phrase \"along with its two advisers\" does not change the number of the subject.",
+      "\"Are\" incorrectly treats the plural noun in the intervening phrase as the subject.",
+      "\"Were\" is plural and also conflicts with the present-time cue in today's agenda.",
       "\"Is\" agrees with the singular subject \"team\" and fits the sentence's present context.",
-      "\"Have\" is a plural verb form and cannot complete the passive construction before \"scheduled.\" The item-specific principle is also clear from the rationale: The subject is the singular collective noun \"team,\" so it takes the singular verb \"is.\" The intervening phrase \"along with its two advisers\" does not change the number of the subject."
+      "\"Have\" is a plural verb form and cannot complete the passive construction before \"scheduled.\""
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -37,8 +37,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-002",
@@ -57,9 +56,9 @@
     "rationale": "The transitive verb \"lay\" means to place something, and its simple past form is \"laid.\" Here, \"the new mats\" is the direct object that the custodian placed beside the stage.",
     "choiceRationales": [
       "\"Laid\" is the correct simple past form of \"lay\" when an object is placed somewhere.",
-      "\"Layed\" is not a standard English past-tense spelling of \"lay.\" The item-specific principle is also clear from the rationale: The transitive verb \"lay\" means to place something, and its simple past form is \"laid.\" Here, \"the new mats\" is the direct object that the custodian placed beside the stage.",
-      "\"Lain\" is the past participle of the intransitive verb \"lie\" and does not take a direct object. The item-specific principle is also clear from the rationale: The transitive verb \"lay\" means to place something, and its simple past form is \"laid.\" Here, \"the new mats\" is the direct object that the custodian placed beside the stage.",
-      "\"Lied\" means made an untrue statement and does not express placing the mats. The item-specific principle is also clear from the rationale: The transitive verb \"lay\" means to place something, and its simple past form is \"laid.\" Here, \"the new mats\" is the direct object that the custodian placed beside the stage."
+      "\"Layed\" is not a standard English past-tense spelling of \"lay.\"",
+      "\"Lain\" is the past participle of the intransitive verb \"lie\" and does not take a direct object.",
+      "\"Lied\" means made an untrue statement and does not express placing the mats."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -78,8 +77,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-003",
@@ -89,10 +87,10 @@
     "difficulty": "developing",
     "prompt": "The clause \"which won the recycling contest\" is nonessential in the sentence \"Ms. Patel's class which won the recycling contest will lead the assembly.\" Which punctuation change is correct?",
     "choices": [
-      "Place a comma primarily after \"contest.\" (in the context of contest class)",
-      "Place a comma primarily after \"class.\" (in the context of contest class) as presented",
-      "Place a comma primarily after \"lead.\" (in the context of contest class) for this item",
-      "Place one comma after \"class\" and a second comma after \"contest.\" in context"
+      "Place a comma only after \"contest.\"",
+      "Place a comma only after \"class.\"",
+      "Place a comma only after \"lead.\"",
+      "Place one comma after \"class\" and a second comma after \"contest.\""
     ],
     "answerIndex": 3,
     "rationale": "A nonessential clause must be set off from the main clause on both sides. A comma after \"class\" opens the interruption, and a comma after \"contest\" closes it.",
@@ -119,8 +117,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-004",
@@ -138,10 +135,10 @@
     "answerIndex": 1,
     "rationale": "Within the relative clause, the pronoun performs the action \"designed\" and therefore functions as its subject. The subjective form \"who\" is correct for a person in that role.",
     "choiceRationales": [
-      "\"Whom\" is an objective form, but the missing pronoun is the subject of \"designed.\" The item-specific principle is also clear from the rationale: Within the relative clause, the pronoun performs the action \"designed\" and therefore functions as its subject. The subjective form \"who\" is correct for a person in that role.",
+      "\"Whom\" is an objective form, but the missing pronoun is the subject of \"designed.\"",
       "\"Who\" is the subjective form used for the person performing the designing action.",
-      "\"Whose\" shows possession and would require a noun after it, such as \"whose design.\" The item-specific principle is also clear from the rationale: Within the relative clause, the pronoun performs the action \"designed\" and therefore functions as its subject. The subjective form \"who\" is correct for a person in that role.",
-      "\"Which\" generally refers to things, not to the student who performed the action. The item-specific principle is also clear from the rationale: Within the relative clause, the pronoun performs the action \"designed\" and therefore functions as its subject. The subjective form \"who\" is correct for a person in that role."
+      "\"Whose\" shows possession and would require a noun after it, such as \"whose design.\"",
+      "\"Which\" generally refers to things, not to the student who performed the action."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -160,8 +157,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-005",
@@ -171,18 +167,18 @@
     "difficulty": "foundation",
     "prompt": "Where should a colon be inserted in the sentence \"The emergency kit included three supplies bandages, gloves, and a flashlight\"?",
     "choices": [
-      "After \"included\" (in the context of supplies)",
-      "After \"kit\" (in the context of supplies) as presented",
-      "After \"supplies\" for this item in context under these facts",
-      "After \"three\" (in the context of supplies) in context"
+      "After \"included\"",
+      "After \"kit\"",
+      "After \"supplies\"",
+      "After \"three\""
     ],
     "answerIndex": 2,
     "rationale": "A colon may follow the complete independent clause \"The emergency kit included three supplies\" to introduce the list naming those supplies. It should therefore appear after \"supplies.\"",
     "choiceRationales": [
-      "A colon after \"included\" would separate the verb from the words that complete its meaning. The item-specific principle is also clear from the rationale: A colon may follow the complete independent clause \"The emergency kit included three supplies\" to introduce the list naming those supplies. It should therefore appear after \"supplies.\"",
-      "A colon after \"kit\" would separate the subject from its predicate. The item-specific principle is also clear from the rationale: A colon may follow the complete independent clause \"The emergency kit included three supplies\" to introduce the list naming those supplies. It should therefore appear after \"supplies.\"",
+      "A colon after \"included\" would separate the verb from the words that complete its meaning.",
+      "A colon after \"kit\" would separate the subject from its predicate.",
       "A colon after \"supplies\" would follow a complete clause and correctly introduce the list.",
-      "A colon after \"three\" would interrupt the noun phrase \"three supplies.\" The item-specific principle is also clear from the rationale: A colon may follow the complete independent clause \"The emergency kit included three supplies\" to introduce the list naming those supplies. It should therefore appear after \"supplies.\""
+      "A colon after \"three\" would interrupt the noun phrase \"three supplies.\""
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -201,9 +197,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-006",
@@ -213,17 +207,17 @@
     "difficulty": "foundation",
     "prompt": "Which sentence correctly hyphenates a compound modifier before a noun?",
     "choices": [
-      "The class read a well known poem in this case",
-      "We adopted a five week schedule as presented",
-      "The after school program begins Monday for this item",
+      "The class read a well known poem.",
+      "We adopted a five week schedule.",
+      "The after school program begins Monday.",
       "Mara submitted a well-organized portfolio."
     ],
     "answerIndex": 3,
     "rationale": "In \"well-organized portfolio,\" the two words work together before the noun as one modifier, so the hyphen clarifies their connection. Each other option omits a needed hyphen.",
     "choiceRationales": [
-      "\"Well known\" should be hyphenated when the combined modifier appears before \"poem.\" The item-specific principle is also clear from the rationale: In \"well-organized portfolio,\" the two words work together before the noun as one modifier, so the hyphen clarifies their connection. Each other option omits a needed hyphen.",
-      "The measurement used before \"schedule\" should be written \"five-week.\" The item-specific principle is also clear from the rationale: In \"well-organized portfolio,\" the two words work together before the noun as one modifier, so the hyphen clarifies their connection. Each other option omits a needed hyphen.",
-      "The compound modifier before \"program\" should be written \"after-school.\" The item-specific principle is also clear from the rationale: In \"well-organized portfolio,\" the two words work together before the noun as one modifier, so the hyphen clarifies their connection. Each other option omits a needed hyphen.",
+      "\"Well known\" should be hyphenated when the combined modifier appears before \"poem.\"",
+      "The measurement used before \"schedule\" should be written \"five-week.\"",
+      "The compound modifier before \"program\" should be written \"after-school.\"",
       "\"Well-organized\" is correctly hyphenated because it jointly modifies \"portfolio.\""
     ],
     "skillIds": [
@@ -243,9 +237,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-007",
@@ -264,9 +256,9 @@
     "rationale": "The students took their seats before another past event, the bus's arrival, so the past perfect \"had taken\" expresses the sequence. \"Taken\" is the required past participle after \"had.\"",
     "choiceRationales": [
       "\"Had taken\" correctly uses past perfect for an action completed before another past event.",
-      "The auxiliary \"had\" requires the participle \"taken,\" not the simple past \"took.\" The item-specific principle is also clear from the rationale: The students took their seats before another past event, the bus's arrival, so the past perfect the option stating had took expresses the sequence. \"Taken\" is the required past participle after \"had.\"",
-      "This form mismatches the present auxiliary \"have\" with the incorrect participle \"took.\" The item-specific principle is also clear from the rationale: The students took their seats before another past event, the bus's arrival, so the past perfect the option stating have took expresses the sequence. \"Taken\" is the required past participle after \"had.\"",
-      "\"Taking\" cannot serve as the complete finite verb phrase required by the sentence. The item-specific principle is also clear from the rationale: The students took their seats before another past event, the bus's arrival, so the past perfect the option stating taking expresses the sequence. \"Taken\" is the required past participle after \"had.\""
+      "The auxiliary \"had\" requires the participle \"taken,\" not the simple past \"took.\"",
+      "This form mismatches the present auxiliary \"have\" with the incorrect participle \"took.\"",
+      "\"Taking\" cannot serve as the complete finite verb phrase required by the sentence."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -285,8 +277,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-008",
@@ -296,18 +287,18 @@
     "difficulty": "foundation",
     "prompt": "Which revision turns the fragment \"Although the alarm rang before sunrise\" into a complete sentence?",
     "choices": [
-      "The alarm although ringing before sunrise (in the context of alarm rang) in this case as presented",
-      "Although the alarm rang before sunrise, the volunteers reached the site by seven as presented",
-      "Although the alarm rang. Before sunrise the volunteers arrived for this item in context",
-      "The volunteers reaching the site, although before sunrise (in the context of alarm rang)"
+      "The alarm although ringing before sunrise.",
+      "Although the alarm rang before sunrise, the volunteers reached the site by seven.",
+      "Although the alarm rang. Before sunrise the volunteers arrived.",
+      "The volunteers reaching the site, although before sunrise."
     ],
     "answerIndex": 1,
     "rationale": "The word \"although\" makes the original clause dependent, so it cannot stand alone. Adding the independent clause \"the volunteers reached the site by seven\" completes the contrast and the sentence.",
     "choiceRationales": [
-      "This group lacks a finite main verb and remains a fragment. The item-specific principle is also clear from the rationale: The word the option stating The alarm although ringing before sunrise makes the original clause dependent, so it cannot stand alone. Adding the independent clause \"the volunteers reached the site by seven\" completes the contrast and the sentence.",
+      "This group lacks a finite main verb and remains a fragment.",
       "The dependent opening clause is correctly joined to an independent clause that completes its meaning.",
-      "Ending after \"rang\" leaves the dependent clause as a fragment despite the second sentence. The item-specific principle is also clear from the rationale: The word \"although\" makes the original clause dependent, so it cannot stand alone. Adding the independent clause \"the volunteers reached the site by seven\" completes the contrast and the sentence.",
-      "This word group has no finite main verb and therefore remains a fragment. The item-specific principle is also clear from the rationale: The word the option stating The volunteers reaching the site, although before sunrise makes the original clause dependent, so it cannot stand alone. Adding the independent clause \"the volunteers reached the site by seven\" completes the contrast and the sentence."
+      "Ending after \"rang\" leaves the dependent clause as a fragment despite the second sentence.",
+      "This word group has no finite main verb and therefore remains a fragment."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -326,9 +317,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-009",
@@ -338,17 +327,17 @@
     "difficulty": "developing",
     "prompt": "Which revision correctly fixes the comma splice? \"The microscope lens was dusty, Ava cleaned it with lens paper.\"",
     "choices": [
-      "The microscope lens was dusty, Ava wiped it with lens paper (in the context of cleaned)",
-      "The microscope lens was dusty; because Ava cleaned it with lens paper as presented for this item",
-      "Because the microscope lens was dusty. Ava cleaned it with lens paper for this item in context",
-      "The microscope lens was dusty, so Ava cleaned it with lens paper in context under these facts"
+      "The microscope lens was dusty, Ava wiped it with lens paper.",
+      "The microscope lens was dusty; because Ava cleaned it with lens paper.",
+      "Because the microscope lens was dusty. Ava cleaned it with lens paper.",
+      "The microscope lens was dusty, so Ava cleaned it with lens paper."
     ],
     "answerIndex": 3,
     "rationale": "The original joins two independent clauses with only a comma. Adding the coordinating conjunction \"so\" after the comma creates a correct compound sentence and preserves the cause-and-result relationship.",
     "choiceRationales": [
-      "This revision still joins two independent clauses with only a comma, so the comma splice remains. The item-specific principle is also clear from the rationale: The original joins two independent clauses with only a comma. Adding the coordinating conjunction \"so\" after the comma creates a correct compound sentence and preserves the cause-and-result relationship.",
+      "This revision still joins two independent clauses with only a comma, so the comma splice remains.",
       "A semicolon cannot introduce the dependent \"because\" clause, and this wording also reverses the intended cause-and-result relationship.",
-      "The period incorrectly separates the dependent \"Because\" clause from the independent clause it modifies. The item-specific principle is also clear from the rationale: The original joins two independent clauses with only a comma. Adding the coordinating conjunction \"so\" after the comma creates a correct compound sentence and preserves the cause-and-result relationship.",
+      "The period incorrectly separates the dependent \"Because\" clause from the independent clause it modifies.",
       "The comma plus \"so\" correctly joins the independent clauses and signals the result."
     ],
     "skillIds": [
@@ -368,9 +357,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-010",
@@ -380,18 +367,18 @@
     "difficulty": "developing",
     "prompt": "Which revision makes the comparison logical? \"The attendance at Friday's concert was larger than Thursday.\"",
     "choices": [
-      "Friday's concert was larger in attendance than Thursday was a day in this case as presented",
+      "Friday's concert was larger in attendance than Thursday was a day.",
       "The attendance at Friday's concert was larger than the concert occurred Thursday.",
-      "Friday's concert attendance was greater than Thursday's concert attendance for this item",
-      "Compared with Thursday, Friday's concert was attendance that was larger in context"
+      "Friday's concert attendance was greater than Thursday's concert attendance.",
+      "Compared with Thursday, Friday's concert was attendance that was larger."
     ],
     "answerIndex": 2,
     "rationale": "The revision compares the attendance for one concert with the attendance for the other concert. The original illogically compares a number of attendees with a day of the week.",
     "choiceRationales": [
-      "This wording compares a concert with a day and adds an irrelevant observation. The item-specific principle is also clear from the rationale: The revision compares the attendance for one concert with the attendance for the other concert. The original illogically compares a number of attendees with a day of the week.",
-      "This construction is ungrammatical and still does not compare like measures. The item-specific principle is also clear from the rationale: The revision compares the attendance for one concert with the attendance for the other concert. The original illogically compares a number of attendees with a day of the week.",
+      "This wording compares a concert with a day and adds an irrelevant observation.",
+      "This construction is ungrammatical and still does not compare like measures.",
       "This option clearly compares Friday's attendance with Thursday's attendance.",
-      "This wording is awkward and treats \"attendance\" incorrectly as a complement. The item-specific principle is also clear from the rationale: The revision compares the attendance for one concert with the attendance for the other concert. The original illogically compares a number of attendees with a day of the week."
+      "This wording is awkward and treats \"attendance\" incorrectly as a complement."
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -411,9 +398,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-011",
@@ -423,18 +408,18 @@
     "difficulty": "foundation",
     "prompt": "A supply request reads, \"Please order separate containers for the laboratory equipment and cleaning acessories.\" Which word is misspelled?",
     "choices": [
-      "separate (in the context of acessories) in this case",
-      "acessories as presented for this item in context",
-      "laboratory (in the context of acessories)",
-      "equipment (in the context of acessories) in context"
+      "separate",
+      "acessories",
+      "laboratory",
+      "equipment"
     ],
     "answerIndex": 1,
     "rationale": "The word \"acessories\" is missing the second c. The standard spelling is \"accessories.\" The other three words are spelled correctly.",
     "choiceRationales": [
-      "the option stating separate is spelled correctly. The item-specific principle is also clear from the rationale: The word the option stating separate is missing the second c. The standard spelling is \"accessories.\" The other three words are spelled correctly.",
+      "\"Separate\" is spelled correctly.",
       "\"Acessories\" is misspelled; the correct spelling is \"accessories.\"",
-      "the option stating laboratory is spelled correctly. The item-specific principle is also clear from the rationale: The word the option stating laboratory is missing the second c. The standard spelling is \"accessories.\" The other three words are spelled correctly.",
-      "the option stating equipment is spelled correctly. The item-specific principle is also clear from the rationale: The word the option stating equipment is missing the second c. The standard spelling is \"accessories.\" The other three words are spelled correctly."
+      "\"Laboratory\" is spelled correctly.",
+      "\"Equipment\" is spelled correctly."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -453,9 +438,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-012",
@@ -465,18 +448,18 @@
     "difficulty": "developing",
     "prompt": "A procedure begins, \"First, measure 20 milliliters of water. Next, record the temperature.\" Which sentence best maintains the same point of view and style?",
     "choices": [
-      "Then enter the measurement in the first row of the table in this case as presented",
-      "Then you should have the measurement entered in the first row of the table as presented",
+      "Then enter the measurement in the first row of the table.",
+      "Then you should have the measurement entered in the first row of the table.",
       "Then the measurement was entered by the student in the first row of the table.",
-      "Then we enter your measurement in the first row of their table in context under these facts"
+      "Then we enter your measurement in the first row of their table."
     ],
     "answerIndex": 0,
     "rationale": "The first two directions use concise imperative verbs with the understood subject \"you.\" \"Then enter\" continues that viewpoint and grammatical pattern without an unnecessary shift.",
     "choiceRationales": [
       "The imperative \"enter\" matches the earlier imperative verbs \"measure\" and \"record.\"",
-      "This shifts to an indirect second-person construction and is unnecessarily wordy. The item-specific principle is also clear from the rationale: The first two directions use concise imperative verbs with the understood subject \"you.\" the option stating Then you should have the measurement entered in continues that viewpoint and grammatical pattern without an unnecessary shift.",
-      "This shifts to past tense and passive voice, unlike the preceding directions. The item-specific principle is also clear from the rationale: The first two directions use concise imperative verbs with the understood subject \"you.\" the option stating Then the measurement was entered by the student continues that viewpoint and grammatical pattern without an unnecessary shift.",
-      "This sentence shifts inconsistently among \"we,\" \"your,\" and \"their.\" The item-specific principle is also clear from the rationale: The first two directions use concise imperative verbs with the understood subject \"you.\" the option stating Then we enter your measurement in the first continues that viewpoint and grammatical pattern without an unnecessary shift."
+      "This shifts to an indirect second-person construction and is unnecessarily wordy.",
+      "This shifts to past tense and passive voice, unlike the preceding directions.",
+      "This sentence shifts inconsistently among \"we,\" \"your,\" and \"their.\""
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -496,9 +479,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-013",
@@ -516,8 +497,8 @@
     "answerIndex": 3,
     "rationale": "Placing \"almost\" immediately before \"every page\" shows that the number of pages was nearly complete. In the original position, \"almost read\" can suggest that the reading did not occur.",
     "choiceRationales": [
-      "Placing \"almost\" before the subject is unidiomatic and does not clarify what was nearly complete. The item-specific principle is also clear from the rationale: Placing \"almost\" immediately before \"every page\" shows that the number of pages was nearly complete. In the original position, \"almost read\" can suggest that the reading did not occur.",
-      "This placement breaks apart the phrase \"every page of the packet.\" The item-specific principle is also clear from the rationale: Placing \"almost\" immediately before \"every page\" shows that the number of pages was nearly complete. In the original position, \"almost read\" can suggest that the reading did not occur.",
+      "Placing \"almost\" before the subject is unidiomatic and does not clarify what was nearly complete.",
+      "This placement breaks apart the phrase \"every page of the packet.\"",
       "This placement suggests that the reading was not quite aloud rather than that a few pages were omitted.",
       "This placement makes \"almost\" modify \"every page,\" which conveys the intended quantity."
     ],
@@ -539,8 +520,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-014",
@@ -550,17 +530,17 @@
     "difficulty": "foundation",
     "prompt": "Which sentence most clearly combines the ideas and shows their cause-and-effect relationship? \"The grow light was unplugged. The seedlings wilted.\"",
     "choices": [
-      "The grow light was unplugged, the seedlings wilted in this case as presented",
-      "The seedlings wilted because the grow light was unplugged as presented for this item",
-      "The grow light was unplugged, although the seedlings wilted for this item in context",
+      "The grow light was unplugged, the seedlings wilted.",
+      "The seedlings wilted because the grow light was unplugged.",
+      "The grow light was unplugged, although the seedlings wilted.",
       "The seedlings wilted; however, the grow light was unplugged because of them."
     ],
     "answerIndex": 1,
     "rationale": "The conjunction \"because\" explicitly identifies the unplugged grow light as the cause of the seedlings' wilting. The revision is grammatical and preserves the intended sequence of ideas.",
     "choiceRationales": [
-      "This is a comma splice and merely places the events side by side without a valid connector. The item-specific principle is also clear from the rationale: The conjunction \"because\" explicitly identifies the unplugged grow light as the cause of the seedlings' wilting. The revision is grammatical and preserves the intended sequence of ideas.",
+      "This is a comma splice and merely places the events side by side without a valid connector.",
       "\"Because\" clearly and grammatically links the seedlings' condition to its cause.",
-      "\"Although\" signals contrast rather than the intended causal relationship. The item-specific principle is also clear from the rationale: The conjunction \"because\" explicitly identifies the unplugged grow light as the cause of the seedlings' wilting. The revision is grammatical and preserves the intended sequence of ideas.",
+      "\"Although\" signals contrast rather than the intended causal relationship.",
       "This wording reverses the causal logic by suggesting the seedlings caused the light to be unplugged."
     ],
     "skillIds": [
@@ -581,9 +561,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-015",
@@ -593,18 +571,18 @@
     "difficulty": "foundation",
     "prompt": "Which replacement for the underlined words makes the observation most precise? \"After two minutes on the hot plate, the beaker's contents DID SOMETHING STRANGE.\"",
     "choices": [
-      "went along in this case as presented",
-      "acted differently as presented",
+      "went along",
+      "acted differently",
       "began to bubble vigorously",
-      "were quite interesting in context"
+      "were quite interesting"
     ],
     "answerIndex": 2,
     "rationale": "\"Began to bubble vigorously\" names an observable action and its intensity, giving the reader useful information. The other choices rely on vague judgments or nonspecific verbs.",
     "choiceRationales": [
-      "the option stating went along does not identify what changed in the beaker. The item-specific principle is also clear from the rationale: the option stating went along names an observable action and its intensity, giving the reader useful information. The other choices rely on vague judgments or nonspecific verbs.",
-      "the option stating acted differently signals a change but does not describe any observable behavior. The item-specific principle is also clear from the rationale: the option stating acted differently names an observable action and its intensity, giving the reader useful information. The other choices rely on vague judgments or nonspecific verbs.",
+      "\"Went along\" does not identify what changed in the beaker.",
+      "\"Acted differently\" signals a change but does not describe any observable behavior.",
       "This wording reports a specific, observable change and how strongly it occurred.",
-      "\"Interesting\" expresses an opinion rather than describing what the contents did. The item-specific principle is also clear from the rationale: the option stating were quite interesting names an observable action and its intensity, giving the reader useful information. The other choices rely on vague judgments or nonspecific verbs."
+      "\"Interesting\" expresses an opinion rather than describing what the contents did."
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -624,9 +602,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-016",
@@ -636,18 +612,18 @@
     "difficulty": "developing",
     "prompt": "Which revision uses parallel structure for all three orientation tasks?",
     "choices": [
-      "The orientation asks volunteers to sign in, collect a badge, and report to the gym in this case as presented",
-      "The orientation asks volunteers to sign in, collecting a badge, and that they report to the gym as presented",
-      "The orientation asks volunteers for signing in, to collect a badge, and reporting to the gym for this item",
+      "The orientation asks volunteers to sign in, collect a badge, and report to the gym.",
+      "The orientation asks volunteers to sign in, collecting a badge, and that they report to the gym.",
+      "The orientation asks volunteers for signing in, to collect a badge, and reporting to the gym.",
       "The orientation asks that volunteers sign in, a badge should be collected, and to report to the gym."
     ],
     "answerIndex": 0,
     "rationale": "The correct revision presents each task with the same verb pattern: \"to sign,\" \"collect,\" and \"report,\" all governed by the first \"to.\" This makes the series easy to follow.",
     "choiceRationales": [
       "All three tasks use coordinate base-form verbs governed by \"to,\" creating a parallel series.",
-      "This shifts from an infinitive to a participle and then to a clause. The item-specific principle is also clear from the rationale: The correct revision presents each task with the same verb pattern: \"to sign,\" \"collect,\" and \"report,\" all governed by the first \"to.\" This makes the series easy to follow.",
-      "This mixes a gerund, an infinitive, and another gerund instead of using one pattern. The item-specific principle is also clear from the rationale: The correct revision presents each task with the same verb pattern: \"to sign,\" \"collect,\" and \"report,\" all governed by the first \"to.\" This makes the series easy to follow.",
-      "This mixes an active clause, a passive clause, and an infinitive phrase. The item-specific principle is also clear from the rationale: The correct revision presents each task with the same verb pattern: \"to sign,\" \"collect,\" and \"report,\" all governed by the first \"to.\" This makes the series easy to follow."
+      "This shifts from an infinitive to a participle and then to a clause.",
+      "This mixes a gerund, an infinitive, and another gerund instead of using one pattern.",
+      "This mixes an active clause, a passive clause, and an infinitive phrase."
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -667,9 +643,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-017",
@@ -679,10 +653,10 @@
     "difficulty": "developing",
     "prompt": "In the sentence “After rehearsal, the drama students stored the costumes,” which words form the complete predicate?",
     "choices": [
-      "the drama students stored (in the context of stored costumes) in this case",
-      "stored the costumes as presented for this item in context under these facts",
-      "the costumes (in the context of stored costumes) for this item in context",
-      "After rehearsal, the drama students (in the context of stored costumes)"
+      "the drama students stored",
+      "stored the costumes",
+      "the costumes",
+      "After rehearsal, the drama students"
     ],
     "answerIndex": 1,
     "rationale": "The complete predicate contains the verb and the words that complete its meaning. In this sentence, stored the costumes tells what the complete subject, the drama students, did.",
@@ -709,8 +683,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-018",
@@ -728,9 +701,9 @@
     "answerIndex": 3,
     "rationale": "\"Efficiently\" modifies the verb \"sorted\" by telling how the volunteers performed the action. A word that modifies a verb in this way is an adverb.",
     "choiceRationales": [
-      "A noun names a person, place, thing, or idea; \"efficiently\" does not name one here. The item-specific principle is also clear from the rationale: \"Efficiently\" modifies the verb \"sorted\" by telling how the volunteers performed the action. A word that modifies a verb in this way is an adverb.",
-      "An adjective modifies a noun or pronoun, but \"efficiently\" modifies the verb \"sorted.\" The item-specific principle is also clear from the rationale: \"Efficiently\" modifies the verb \"sorted\" by telling how the volunteers performed the action. A word that modifies a verb in this way is an adverb.",
-      "A preposition introduces a phrase and shows a relationship; \"efficiently\" does not perform that function. The item-specific principle is also clear from the rationale: \"Efficiently\" modifies the verb \"sorted\" by telling how the volunteers performed the action. A word that modifies a verb in this way is an adverb.",
+      "A noun names a person, place, thing, or idea; \"efficiently\" does not name one here.",
+      "An adjective modifies a noun or pronoun, but \"efficiently\" modifies the verb \"sorted.\"",
+      "A preposition introduces a phrase and shows a relationship; \"efficiently\" does not perform that function.",
       "\"Efficiently\" is an adverb because it tells how the action \"sorted\" was performed."
     ],
     "skillIds": [
@@ -750,8 +723,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-019",
@@ -761,10 +733,10 @@
     "difficulty": "developing",
     "prompt": "A writer claims that ten minutes of daily partner reading improved fluency in a fifth-grade class. Which evidence would most directly support the claim?",
     "choices": [
-      "A student survey reports that partner reading is the most enjoyable part of the literacy block for most classmates (in the context of fluency) in this case",
-      "A library inventory shows that the classroom offers six shelves containing both fiction and nonfiction titles (in the context of fluency) as presented for this item",
+      "A student survey reports that partner reading is the most enjoyable part of the literacy block for most classmates.",
+      "A library inventory shows that the classroom offers six shelves containing both fiction and nonfiction titles.",
       "Comparable one-minute checks increased from 104 to 118 correct words per minute after six weeks while the fluency routine otherwise remained unchanged.",
-      "A teacher log confirms that daily partner reading occurred for six weeks but includes no measurements of fluency or reading rate in context under these facts"
+      "A teacher log confirms that daily partner reading occurred for six weeks but includes no measurements of fluency or reading rate."
     ],
     "answerIndex": 2,
     "rationale": "The comparable checks document a class-level increase in the stated fluency measure, and the unchanged remainder of the routine makes the partner-reading explanation more plausible. The evidence supports the claim without proving that no other influence contributed.",
@@ -792,8 +764,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-020",
@@ -803,16 +774,16 @@
     "difficulty": "developing",
     "prompt": "A student is using a 2024 report by L. Nguyen that states native plants generally need less irrigation after they are established. Which sentence most effectively integrates and attributes that information?",
     "choices": [
-      "Nguyen's 2024 report explains that established native plants generally require less irrigation, a benefit that could lower the garden's water use in this case as presented for this item in context",
-      "Native plants need less water, and everyone already knows this important fact about gardens (in the context of 2024 report generally less irrigation established) as presented for this item in context",
-      "The source says, native plants generally need less irrigation after they are established, which proves the plan is perfect (in the context of 2024 report generally less irrigation established)",
-      "In 2024 there was a report, and gardens have plants that can be native and established (in the context of 2024 report generally less irrigation established) in context under these facts as described"
+      "Nguyen's 2024 report explains that established native plants generally require less irrigation, a benefit that could lower the garden's water use.",
+      "Native plants need less water, and everyone already knows this important fact about gardens.",
+      "The source says, native plants generally need less irrigation after they are established, which proves the plan is perfect.",
+      "In 2024 there was a report, and gardens have plants that can be native and established."
     ],
     "answerIndex": 0,
     "rationale": "The first sentence names the source, accurately paraphrases the reported finding, and explains its relevance to garden water use. It neither presents the source's idea as common knowledge nor overstates it.",
     "choiceRationales": [
       "This sentence provides attribution, an accurate paraphrase, and a relevant connection to the writer's point.",
-      "This option gives no attribution and substitutes an unsupported claim about what everyone knows. The item-specific principle is also clear from the rationale: The first sentence names the source, accurately paraphrases the reported finding, and explains its relevance to garden water use. It neither presents the source's idea as common knowledge nor overstates it.",
+      "This option gives no attribution and substitutes an unsupported claim about what everyone knows.",
       "This option lacks correct quotation punctuation and overstates the finding as proof of a perfect plan.",
       "This option mentions a report but does not communicate its useful information or identify its author."
     ],
@@ -834,9 +805,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-021",
@@ -854,9 +823,9 @@
     "answerIndex": 3,
     "rationale": "The second sentence contrasts an up-front cost with later savings. \"However\" signals that shift clearly, whereas the other transitions indicate result, illustration, or similarity.",
     "choiceRationales": [
-      "the option stating Therefore signals a result, but lower operating costs do not result from the initial expense itself.",
-      "the option stating For example would introduce an illustration rather than a contrasting long-term consideration. The item-specific principle is also clear from the rationale: The second sentence contrasts an up-front cost with later savings. \"However\" signals that shift clearly, whereas the other transitions indicate result, illustration, or similarity.",
-      "the option stating Similarly signals likeness, but the sentences present opposing cost considerations. The item-specific principle is also clear from the rationale: The second sentence contrasts an up-front cost with later savings. \"However\" signals that shift clearly, whereas the other transitions indicate result, illustration, or similarity.",
+      "\"Therefore\" signals a result, but lower operating costs do not result from the initial expense itself.",
+      "\"For example\" would introduce an illustration rather than a contrasting long-term consideration.",
+      "\"Similarly\" signals likeness, but the sentences present opposing cost considerations.",
       "\"However\" appropriately marks the contrast between initial expense and eventual savings."
     ],
     "skillIds": [
@@ -877,8 +846,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "knowledge-and-understanding",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-022",
@@ -888,17 +856,17 @@
     "difficulty": "developing",
     "prompt": "A report explains that 61 percent of surveyed bus riders arrive before the building opens and that one adjusted route could shorten the earliest students' wait without adding a bus. Which concluding sentence best synthesizes those findings?",
     "choices": [
-      "School buses come in several sizes and are usually painted yellow (in the context of route without) in this case as presented for this item",
-      "Together, the survey and route analysis support piloting the adjustment to reduce long waits without increasing the fleet as presented",
-      "Some students enjoy waiting with friends, while other students have different morning routines (in the context of route without)",
-      "The transportation office should promptly change every route in the district (in the context of route without) in context under these facts"
+      "School buses come in several sizes and are usually painted yellow.",
+      "Together, the survey and route analysis support piloting the adjustment to reduce long waits without increasing the fleet.",
+      "Some students enjoy waiting with friends, while other students have different morning routines.",
+      "The transportation office should immediately change every route in the district."
     ],
     "answerIndex": 1,
     "rationale": "The conclusion brings together both major findings and proposes a measured response that matches their scope. It does not introduce an unrelated detail or make a recommendation broader than the evidence.",
     "choiceRationales": [
-      "This general fact about buses does not synthesize either finding in the report. The item-specific principle is also clear from the rationale: The conclusion brings together both major findings and proposes a measured response that matches their scope. It does not introduce an unrelated detail or make a recommendation broader than the evidence.",
+      "This general fact about buses does not synthesize either finding in the report.",
       "This sentence connects the survey result and route analysis to a proportionate pilot recommendation.",
-      "This introduces unsupported preferences and does not address the route analysis. The item-specific principle is also clear from the rationale: The conclusion brings together both major findings and proposes a measured response that matches their scope. It does not introduce an unrelated detail or make a recommendation broader than the evidence.",
+      "This introduces unsupported preferences and does not address the route analysis.",
       "Changing every route goes far beyond evidence about one possible adjustment and one group of riders."
     ],
     "skillIds": [
@@ -919,9 +887,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-023",
@@ -931,18 +897,18 @@
     "difficulty": "applied",
     "prompt": "A student has listed six events for a personal narrative, but the events are out of order and the student cannot decide where the story should begin. Which support is most appropriate?",
     "choices": [
-      "Correct the spelling in the event list before the student plans the narrative in this case as presented for this item",
-      "Choose the most dramatic event and write the opening paragraph for the student as presented for this item in context",
+      "Correct the spelling in the event list before the student plans the narrative.",
+      "Choose the most dramatic event and write the opening paragraph for the student.",
       "Have the student arrange each event on a separate card, orally retell the sequence, and then choose an opening.",
-      "Ask the student to replace the narrative topic with one that requires fewer events in context under these facts"
+      "Ask the student to replace the narrative topic with one that requires fewer events."
     ],
     "answerIndex": 2,
     "rationale": "Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
     "choiceRationales": [
-      "Editing spelling does not resolve the current planning and sequencing problem. The item-specific principle is also clear from the rationale: Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
-      "Writing the opening for the student removes the key composition decision from the learner. The item-specific principle is also clear from the rationale: Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
+      "Editing spelling does not resolve the current planning and sequencing problem.",
+      "Writing the opening for the student removes the key composition decision from the learner.",
       "The cards make sequence visible, and oral rehearsal helps the student test the order before drafting.",
-      "Changing topics avoids rather than teaches the planning skill the student needs. The item-specific principle is also clear from the rationale: Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership."
+      "Changing topics avoids rather than teaches the planning skill the student needs."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -962,9 +928,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-024",
@@ -974,17 +938,17 @@
     "difficulty": "applied",
     "prompt": "A student's instructional plan permits speech-to-text for writing. The student can explain detailed ideas orally, but the motor demands of handwriting prevent the student from completing drafts. Which response best supports access while preserving authorship?",
     "choices": [
-      "Reduce every writing assignment to a single copied sentence (in the context of speech text student) in this case as presented for this item",
-      "Have a classmate decide which of the student's ideas should appear in the draft (in the context of speech text student) as presented",
-      "Ask the student to submit primarily an oral response and skip the writing process largely (in the context of speech text student)",
-      "Provide speech-to-text for drafting, then have the student review and revise the generated text in context under these facts as described"
+      "Reduce every writing assignment to a single copied sentence.",
+      "Have a classmate decide which of the student's ideas should appear in the draft.",
+      "Ask the student to submit only an oral response and skip the writing process entirely.",
+      "Provide speech-to-text for drafting, then have the student review and revise the generated text."
     ],
     "answerIndex": 3,
     "rationale": "Using the permitted speech-to-text support reduces the motor barrier without changing the composition goal. Having the student review and revise the transcription ensures that the ideas, wording choices, and final decisions remain the student's.",
     "choiceRationales": [
-      "Copying a reduced sentence changes the task and does not let the student express developed ideas. The item-specific principle is also clear from the rationale: Using the permitted speech-to-text support reduces the motor barrier without changing the composition goal. Having the student review and revise the transcription ensures that the ideas, wording choices, and final decisions remain the student's.",
-      "A classmate's content decisions would transfer authorship away from the student. The item-specific principle is also clear from the rationale: Using the permitted speech-to-text support reduces the motor barrier without changing the composition goal. Having the student review and revise the transcription ensures that the ideas, wording choices, and final decisions remain the student's.",
-      "An oral-only response bypasses opportunities to organize, revise, and edit written language. The item-specific principle is also clear from the rationale: Using the permitted speech-to-text support reduces the motor barrier without changing the composition goal. Having the student review and revise the transcription ensures that the ideas, wording choices, and final decisions remain the student's.",
+      "Copying a reduced sentence changes the task and does not let the student express developed ideas.",
+      "A classmate's content decisions would transfer authorship away from the student.",
+      "An oral-only response bypasses opportunities to organize, revise, and edit written language.",
       "Speech-to-text provides access, while student-led review keeps the written product under the student's control."
     ],
     "skillIds": [
@@ -1005,9 +969,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-025",
@@ -1018,17 +980,17 @@
     "prompt": "A student's science explanation includes accurate data after each claim but never explains how the data support the claim. Which instructional prompt would best target the missing reasoning?",
     "choices": [
       "Color-code each claim and its evidence, then add a sentence answering, \"Why does this evidence make the claim more likely?\"",
-      "Replace each data value with a general word so the explanation sounds less technical (in the context of claim) as presented",
-      "Copy the strongest claim three times at the end of the explanation for emphasis for this item in context under these facts",
-      "Correct all capitalization before discussing the relationship between claims and evidence (in the context of claim) in context"
+      "Replace each data value with a general word so the explanation sounds less technical.",
+      "Copy the strongest claim three times at the end of the explanation for emphasis.",
+      "Correct all capitalization before discussing the relationship between claims and evidence."
     ],
     "answerIndex": 0,
     "rationale": "The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
     "choiceRationales": [
       "This support identifies the relevant parts and directly elicits the reasoning that connects them.",
-      "Removing precise data would weaken the evidence and would not add an explanation of its relevance. The item-specific principle is also clear from the rationale: The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
-      "Repeating a claim adds emphasis but does not explain why the evidence supports it. The item-specific principle is also clear from the rationale: The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
-      "Capitalization is an editing concern and does not address the missing reasoning. The item-specific principle is also clear from the rationale: The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation."
+      "Removing precise data would weaken the evidence and would not add an explanation of its relevance.",
+      "Repeating a claim adds emphasis but does not explain why the evidence supports it.",
+      "Capitalization is an editing concern and does not address the missing reasoning."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1048,9 +1010,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-026",
@@ -1060,18 +1020,18 @@
     "difficulty": "applied",
     "prompt": "Before an explanatory-writing assignment, a student says, \"I have nothing to write about.\" Which response would best help the student generate a workable topic?",
     "choices": [
-      "Assign the student the same topic and thesis used by the nearest classmate in this case as presented for this item in context",
+      "Assign the student the same topic and thesis used by the nearest classmate.",
       "Invite the student to list familiar processes, identify a likely audience for each, and choose one process to explain.",
-      "Begin correcting sentence mechanics even though the student has not produced a draft for this item in context under these facts",
-      "Write an introduction for the student and require the student to copy it before continuing in context under these facts"
+      "Begin correcting sentence mechanics even though the student has not produced a draft.",
+      "Write an introduction for the student and require the student to copy it before continuing."
     ],
     "answerIndex": 1,
     "rationale": "Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
     "choiceRationales": [
-      "Using a classmate's topic and thesis removes choice and may not connect to the student's knowledge. The item-specific principle is also clear from the rationale: Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
+      "Using a classmate's topic and thesis removes choice and may not connect to the student's knowledge.",
       "The strategy activates prior knowledge, clarifies purpose, and preserves the student's decision-making.",
-      "Mechanics cannot be edited before ideas are generated and a draft exists. The item-specific principle is also clear from the rationale: Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
-      "Requiring a copied introduction substitutes adult composition for student authorship. The item-specific principle is also clear from the rationale: Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner."
+      "Mechanics cannot be edited before ideas are generated and a draft exists.",
+      "Requiring a copied introduction substitutes adult composition for student authorship."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1091,9 +1051,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-027",
@@ -1103,18 +1061,18 @@
     "difficulty": "applied",
     "prompt": "A student is preparing a report on changes in the town's population from 2000 to 2020 and has copied figures from an undated personal blog. Which guidance would best help the student choose and use an appropriate reference?",
     "choices": [
-      "Keep the blog figures because the page appeared first in the search results in this case as presented for this item in context",
-      "Replace the figures with estimates so no source information is needed as presented for this item in context under these facts",
+      "Keep the blog figures because the page appeared first in the search results.",
+      "Replace the figures with estimates so no source information is needed.",
       "Locate official census tables for both years, verify that the categories are comparable, and record the source information.",
-      "Use a recent social-media post that gives population figures but does not identify where they came from in context under these facts"
+      "Use a recent social-media post that gives population figures but does not identify where they came from."
     ],
     "answerIndex": 2,
     "rationale": "Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
     "choiceRationales": [
-      "Search-result order does not establish a source's authority, currency, or accuracy. The item-specific principle is also clear from the rationale: Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
-      "Inventing estimates removes verifiable evidence rather than solving the reference problem. The item-specific principle is also clear from the rationale: Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
+      "Search-result order does not establish a source's authority, currency, or accuracy.",
+      "Inventing estimates removes verifiable evidence rather than solving the reference problem.",
       "This guidance selects an authoritative source, checks comparability, and preserves the information needed for attribution.",
-      "A post with no traceable source does not provide reliable evidence for the report. The item-specific principle is also clear from the rationale: Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution."
+      "A post with no traceable source does not provide reliable evidence for the report."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1135,9 +1093,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-028",
@@ -1147,17 +1103,17 @@
     "difficulty": "applied",
     "prompt": "A student repeatedly writes fragments such as \"Because the temperature dropped overnight.\" Which support is most likely to build the student's ability to correct this pattern independently?",
     "choices": [
-      "Delete every sentence that begins with \"because\" from the student's draft (in the context of student) in this case as presented for this item",
-      "Tell the student that fragments are wrong without examining an example as presented for this item in context under these facts as described",
-      "Supply a fully corrected draft and ask the student to copy it neatly for this item in context under these facts as described for the scenario",
+      "Delete every sentence that begins with \"because\" from the student's draft.",
+      "Tell the student that fragments are wrong without examining an example.",
+      "Supply a fully corrected draft and ask the student to copy it neatly.",
       "Compare an example and nonexample, then have the student attach each \"because\" clause to a complete thought and explain the change."
     ],
     "answerIndex": 3,
     "rationale": "The comparison makes the sentence-boundary pattern explicit, while guided correction and explanation require the student to apply it. This teaches a transferable strategy rather than merely fixing the current page.",
     "choiceRationales": [
-      "Sentences may correctly begin with \"because,\" so deleting all of them teaches an inaccurate rule. The item-specific principle is also clear from the rationale: The comparison makes the sentence-boundary pattern explicit, while guided correction and explanation require the student to apply it. This teaches a transferable strategy rather than merely fixing the current page.",
-      "A judgment without a model or guided practice does not show the student how to revise the fragment. The item-specific principle is also clear from the rationale: The comparison makes the sentence-boundary pattern explicit, while guided correction and explanation require the student to apply it. This teaches a transferable strategy rather than merely fixing the current page.",
-      "Copying an adult's corrections produces a clean draft but little independent understanding. The item-specific principle is also clear from the rationale: The comparison makes the sentence-boundary pattern explicit, while guided correction and explanation require the student to apply it. This teaches a transferable strategy rather than merely fixing the current page.",
+      "Sentences may correctly begin with \"because,\" so deleting all of them teaches an inaccurate rule.",
+      "A judgment without a model or guided practice does not show the student how to revise the fragment.",
+      "Copying an adult's corrections produces a clean draft but little independent understanding.",
       "Examples, application, and explanation together develop recognition and independent correction of the pattern."
     ],
     "skillIds": [
@@ -1178,9 +1134,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-029",
@@ -1191,17 +1145,17 @@
     "prompt": "A student is revising a museum label about erosion for visitors in grades 1 and 2. The draft uses the terms \"sediment transport\" and \"abrasion\" without explanation. Which guidance best helps the student address the audience while preserving the science?",
     "choices": [
       "Ask the student to define or replace the technical terms, add a familiar example, and keep the explanation scientifically accurate.",
-      "Add several more technical terms so the label sounds more advanced (in the context of student terms explanation) as presented for this item",
-      "Remove the explanation of erosion and replace it with an unrelated joke (in the context of student terms explanation) for this item",
-      "Copy a paragraph from a college geology text without adapting or citing it (in the context of student terms explanation) in context"
+      "Add several more technical terms so the label sounds more advanced.",
+      "Remove the explanation of erosion and replace it with an unrelated joke.",
+      "Copy a paragraph from a college geology text without adapting or citing it."
     ],
     "answerIndex": 0,
     "rationale": "Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
     "choiceRationales": [
       "This guidance adjusts vocabulary and examples to the audience while retaining the scientific meaning.",
-      "More unexplained terminology would increase the mismatch between the label and its intended readers. The item-specific principle is also clear from the rationale: Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
-      "An unrelated joke would not communicate the label's scientific purpose. The item-specific principle is also clear from the rationale: Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
-      "Unadapted, unattributed college-level prose would be inappropriate for both the audience and responsible source use. The item-specific principle is also clear from the rationale: Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing."
+      "More unexplained terminology would increase the mismatch between the label and its intended readers.",
+      "An unrelated joke would not communicate the label's scientific purpose.",
+      "Unadapted, unattributed college-level prose would be inappropriate for both the audience and responsible source use."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1221,9 +1175,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-030",
@@ -1233,18 +1185,18 @@
     "difficulty": "applied",
     "prompt": "A student is asked to write a persuasive letter to the city council supporting or opposing a proposed crosswalk. The draft only narrates one walk to school. Which guidance best helps the student match the required form and purpose?",
     "choices": [
-      "Add more events in chronological order without stating a position on the crosswalk (in the context of letter council) in this case",
-      "Turn the account into a dialogue-primarily scene and omit any request to the council (in the context of letter council)",
-      "State a position, organize relevant reasons and evidence, and close the letter with a specific request to the council for this item",
-      "Replace each sentence with a list of words that rhyme with \"street.\" (in the context of letter council) in context under these facts"
+      "Add more events in chronological order without stating a position on the crosswalk.",
+      "Turn the account into a dialogue-only scene and omit any request to the council.",
+      "State a position, organize relevant reasons and evidence, and close the letter with a specific request to the council.",
+      "Replace each sentence with a list of words that rhyme with \"street.\""
     ],
     "answerIndex": 2,
     "rationale": "A persuasive letter needs a clear position, reasons and evidence suited to the decision-making audience, and an explicit request or conclusion. The keyed guidance retains any useful experience from the draft while redirecting it toward the assigned form and purpose.",
     "choiceRationales": [
-      "Additional events would extend the narrative but would not create a persuasive position or request. The item-specific principle is also clear from the rationale: A persuasive letter needs a clear position, reasons and evidence suited to the decision-making audience, and an explicit request or conclusion. The keyed guidance retains any useful experience from the draft while redirecting it toward the assigned form and purpose.",
-      "Dialogue alone does not supply the claim, support, and audience-directed conclusion the letter requires. The item-specific principle is also clear from the rationale: A persuasive letter needs a clear position, reasons and evidence suited to the decision-making audience, and an explicit request or conclusion. The keyed guidance retains any useful experience from the draft while redirecting it toward the assigned form and purpose.",
+      "Additional events would extend the narrative but would not create a persuasive position or request.",
+      "Dialogue alone does not supply the claim, support, and audience-directed conclusion the letter requires.",
       "This guidance addresses the persuasive purpose, the city-council audience, and the conventions of a letter.",
-      "A rhyming list is unrelated to the persuasive task and audience. The item-specific principle is also clear from the rationale: A persuasive letter needs a clear position, reasons and evidence suited to the decision-making audience, and an explicit request or conclusion. The keyed guidance retains any useful experience from the draft while redirecting it toward the assigned form and purpose."
+      "A rhyming list is unrelated to the persuasive task and audience."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1264,9 +1216,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-031",
@@ -1276,18 +1226,18 @@
     "difficulty": "applied",
     "prompt": "A multilingual learner can explain a comparison orally but pauses when turning the ideas into an English paragraph. Which scaffold best supports language development and student ownership?",
     "choices": [
-      "Replace the comparison task with copying vocabulary words alphabetically (in the context of comparison paragraph language student) in this case",
-      "Let the student rehearse with a comparison frame and a relevant word bank, then select and adapt the language for the paragraph as presented",
-      "Write the complete English paragraph while the student watches silently (in the context of comparison paragraph language student) for this item",
-      "Require the student to draft without discussion, models, or language resources (in the context of comparison paragraph language student)"
+      "Replace the comparison task with copying vocabulary words alphabetically.",
+      "Let the student rehearse with a comparison frame and a relevant word bank, then select and adapt the language for the paragraph.",
+      "Write the complete English paragraph while the student watches silently.",
+      "Require the student to draft without discussion, models, or language resources."
     ],
     "answerIndex": 1,
     "rationale": "Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
     "choiceRationales": [
-      "Copying an alphabetical list changes the writing purpose and removes the comparison task. The item-specific principle is also clear from the rationale: Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
+      "Copying an alphabetical list changes the writing purpose and removes the comparison task.",
       "This scaffold connects oral knowledge to written language while keeping decisions with the learner.",
-      "An adult-written paragraph would conceal what the student can express and remove authorship. The item-specific principle is also clear from the rationale: Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
-      "Withholding relevant scaffolds adds difficulty without developing a bridge from oral to written expression. The item-specific principle is also clear from the rationale: Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition."
+      "An adult-written paragraph would conceal what the student can express and remove authorship.",
+      "Withholding relevant scaffolds adds difficulty without developing a bridge from oral to written expression."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1307,9 +1257,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-032",
@@ -1319,17 +1267,17 @@
     "difficulty": "applied",
     "prompt": "During a small-group argument-writing task, one student supplies nearly all the ideas while the other three wait. Which paraeducator action best increases meaningful participation without composing for the group?",
     "choices": [
-      "Allow the fastest student to finish alone so the group can submit early (in the context of group ideas) in this case as presented for this item",
-      "Dictate a complete argument and assign each student one sentence to copy (in the context of group ideas) as presented for this item in context",
-      "Ask the quiet students to decorate the page while the first student continues writing (in the context of group ideas) for this item in context",
+      "Allow the fastest student to finish alone so the group can submit early.",
+      "Dictate a complete argument and assign each student one sentence to copy.",
+      "Ask the quiet students to decorate the page while the first student continues writing.",
       "Use a turn-taking structure in which each student proposes evidence and explains its relevance before the group selects and organizes ideas."
     ],
     "answerIndex": 3,
     "rationale": "Structured turns give every student an authentic reasoning role and generate material the group can evaluate together. The paraeducator facilitates participation while students retain responsibility for content and organization.",
     "choiceRationales": [
-      "Finishing quickly does not justify excluding most group members from the writing decisions. The item-specific principle is also clear from the rationale: Structured turns give every student an authentic reasoning role and generate material the group can evaluate together. The paraeducator facilitates participation while students retain responsibility for content and organization.",
-      "Dictation transfers authorship to the adult and reduces students' work to copying. The item-specific principle is also clear from the rationale: Structured turns give every student an authentic reasoning role and generate material the group can evaluate together. The paraeducator facilitates participation while students retain responsibility for content and organization.",
-      "Decoration is not equivalent to contributing claims, evidence, reasoning, or organization. The item-specific principle is also clear from the rationale: Structured turns give every student an authentic reasoning role and generate material the group can evaluate together. The paraeducator facilitates participation while students retain responsibility for content and organization.",
+      "Finishing quickly does not justify excluding most group members from the writing decisions.",
+      "Dictation transfers authorship to the adult and reduces students' work to copying.",
+      "Decoration is not equivalent to contributing claims, evidence, reasoning, or organization.",
       "The structure distributes substantive thinking and leaves selection and composition to the students."
     ],
     "skillIds": [
@@ -1350,9 +1298,7 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
-    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-033",
@@ -1362,10 +1308,10 @@
     "difficulty": "applied",
     "prompt": "The teacher asks a paraeducator to collect progress-monitoring data for a student's goal of organizing opinion paragraphs with a clear claim, two related reasons, and a conclusion. Which method would provide the most useful evidence of progress toward that goal?",
     "choices": [
-      "Score regular responses to teacher-provided prompts using the claim-reasons-conclusion rubric and graph results across dates in this case as presented for this item in context",
-      "Time responses to teacher-provided prompts and graph the minutes without scoring the claim, reasons, or conclusion as presented for this item in context under these facts as described",
-      "Count words in each opinion paragraph and record totals without examining how the claim and reasons are organized (in the context of teacher claim reasons conclusion) for this item",
-      "Ask the student to rate writing confidence after one paragraph and use that rating without collecting another response (in the context of teacher claim reasons conclusion)"
+      "Score regular responses to teacher-provided prompts using the claim-reasons-conclusion rubric and graph results across dates.",
+      "Time responses to teacher-provided prompts and graph the minutes without scoring the claim, reasons, or conclusion.",
+      "Count words in each opinion paragraph and record totals without examining how the claim and reasons are organized.",
+      "Ask the student to rate writing confidence after one paragraph and use that rating without collecting another response."
     ],
     "answerIndex": 0,
     "rationale": "Comparable writing samples scored with criteria that directly match the goal show whether the targeted organizational elements are improving. Graphing repeated rubric results makes change across time visible to the instructional team.",
@@ -1393,7 +1339,6 @@
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
     "authoredAt": "2026-07-16",
-    "cognitiveLevel": "application-and-analysis",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

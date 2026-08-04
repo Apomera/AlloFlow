@@ -1,8 +1,7 @@
 {
-  "packId": "praxis-school-psychologist-5403",
-  "version": "1.0.0",
-  "visibility": "public",
+  "packId": "praxis-school-psychologist-5403", "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
+  "generatedAt": "2026-07-23T17:24:12.045Z",
   "libraryId": "praxis-school-psychologist-5403-learning-library",
   "standard": {
     "label": "AlloFlow Praxis School Psychologist 5403 learning-library source and editorial review v1",
@@ -151,8 +150,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "59a59527f25fcdcc4cc4c31b53bc2039db66d276924916c00ce8f4544c47e7cd",
-    "learningLibrarySha256": "19186d061bf843fec24da312220347199894ba79bf8ef6d749d35c7bb34802b3",
+    "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
+    "learningLibrarySha256": "ef57f67e06d49bc3b7f201ec92d28940d76f20c4adb8373697e96d4ad1490f8e",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

@@ -289,12 +289,9 @@
         "lead5412-b3-088",
         "lead5412-b3-090"
       ],
-      "manualDisposition": "No short-prompt, feedback-detail, choice-restatement, or full-key-echo warnings remain after deterministic cleanup.",
+      "manualDisposition": "Every lexical-overlap advisory was checked against the complete response set and key. The overlap reflects necessary scenario or leadership vocabulary; no advisory creates a one-best-answer defect or a key-only giveaway.",
       "sharedHeuristicModule": "dev-tools/non_eppp_warning_checks.cjs",
-      "sharedHeuristicVerifiedAt": "2026-07-19",
-      "remainingNonblockingCounts": {},
-      "remainingNonblockingItemIds": [],
-      "highRiskWarningsRemaining": 0
+      "sharedHeuristicVerifiedAt": "2026-07-19"
     },
     "learningLinksAndNamedSources": {
       "status": "pass",
@@ -327,7 +324,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "caa6dbbe57a91bbafa9462656ec3b2d40d6f86fd76a7107195bcb60db7e8d2ef"
+    "sha256": "ab2019dc96de5719b07e09669f3c10eaf5b2731e483cd24787b740e4ac6fbd01"
   },
   "integration": {
     "packId": "praxis-educational-leadership-5412",
@@ -339,16 +336,5 @@
     "sourceBuilderMutated": false,
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
-  },
-  "sourceSha256": "caa6dbbe57a91bbafa9462656ec3b2d40d6f86fd76a7107195bcb60db7e8d2ef",
-  "clueResistanceReview": {
-    "version": "answer-choice-clue-normalization-v1",
-    "reviewedAt": "2026-08-01",
-    "answerKeyPolicy": "answerIndex values and keyed content claims were preserved"
-  },
-  "feedbackQualityReview": {
-    "version": "feedback-quality-normalization-v5",
-    "reviewedAt": "2026-08-02",
-    "answerKeyPolicy": "answerIndex values, choices, rationales, sources, and provenance were preserved"
   }
 }

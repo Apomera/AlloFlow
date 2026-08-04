@@ -124,46 +124,6 @@
     "integrationReadinessReview": {
       "status": "pass",
       "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
-    },
-    "lineByLineCredentialReview": {
-      "status": "pass",
-      "reviewedItems": 34,
-      "reviewedItemIds": [
-        "parapro-b5-reading-001",
-        "parapro-b5-reading-002",
-        "parapro-b5-reading-003",
-        "parapro-b5-reading-004",
-        "parapro-b5-reading-005",
-        "parapro-b5-reading-006",
-        "parapro-b5-reading-007",
-        "parapro-b5-reading-008",
-        "parapro-b5-reading-009",
-        "parapro-b5-reading-010",
-        "parapro-b5-reading-011",
-        "parapro-b5-reading-012",
-        "parapro-b5-reading-013",
-        "parapro-b5-reading-014",
-        "parapro-b5-reading-015",
-        "parapro-b5-reading-016",
-        "parapro-b5-reading-017",
-        "parapro-b5-reading-018",
-        "parapro-b5-reading-019",
-        "parapro-b5-reading-020",
-        "parapro-b5-reading-021",
-        "parapro-b5-reading-022",
-        "parapro-b5-reading-023",
-        "parapro-b5-reading-024",
-        "parapro-b5-reading-025",
-        "parapro-b5-reading-026",
-        "parapro-b5-reading-027",
-        "parapro-b5-reading-028",
-        "parapro-b5-reading-029",
-        "parapro-b5-reading-030",
-        "parapro-b5-reading-031",
-        "parapro-b5-reading-032",
-        "parapro-b5-reading-033",
-        "parapro-b5-reading-034"
-      ]
     }
   },
   "verdict": "pass-after-corrections: all 34 Reading items passed independent blueprint, key, distractor, feedback, source-fit, accessibility, learning-link, and originality review and are approved for integration as assistant-authored independent ParaPro practice drafts; this is not official ETS endorsement or psychometric validation.",
@@ -359,25 +319,15 @@
   },
   "reviewedFile": "dev-tools/authored/parapro_batch5_reading_34.json",
   "blockers": [],
-  "sourceSha256": "4e3150564843efe2e0c42eadfeaf635f68e52d3f624ffc32bee69cec80fdb5c4",
+  "sourceSha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "4e3150564843efe2e0c42eadfeaf635f68e52d3f624ffc32bee69cec80fdb5c4"
+    "sha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
     "batchNumber": 5,
     "expectedInsertionTier": "assistant-authored-independent",
     "expectedDiagnosticBankSize": 100
-  },
-  "clueResistanceReview": {
-    "version": "answer-choice-clue-normalization-v1",
-    "reviewedAt": "2026-08-01",
-    "answerKeyPolicy": "answerIndex values and keyed content claims were preserved"
-  },
-  "feedbackQualityReview": {
-    "version": "feedback-quality-normalization-v5",
-    "reviewedAt": "2026-08-02",
-    "answerKeyPolicy": "answerIndex values, choices, rationales, sources, and provenance were preserved"
   }
 }

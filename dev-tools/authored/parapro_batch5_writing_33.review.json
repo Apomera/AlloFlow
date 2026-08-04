@@ -59,45 +59,6 @@
     "integrationReadinessReview": {
       "status": "pass",
       "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
-    },
-    "lineByLineCredentialReview": {
-      "status": "pass",
-      "reviewedItems": 33,
-      "reviewedItemIds": [
-        "parapro-b5-writing-001",
-        "parapro-b5-writing-002",
-        "parapro-b5-writing-003",
-        "parapro-b5-writing-004",
-        "parapro-b5-writing-005",
-        "parapro-b5-writing-006",
-        "parapro-b5-writing-007",
-        "parapro-b5-writing-008",
-        "parapro-b5-writing-009",
-        "parapro-b5-writing-010",
-        "parapro-b5-writing-011",
-        "parapro-b5-writing-012",
-        "parapro-b5-writing-013",
-        "parapro-b5-writing-014",
-        "parapro-b5-writing-015",
-        "parapro-b5-writing-016",
-        "parapro-b5-writing-017",
-        "parapro-b5-writing-018",
-        "parapro-b5-writing-019",
-        "parapro-b5-writing-020",
-        "parapro-b5-writing-021",
-        "parapro-b5-writing-022",
-        "parapro-b5-writing-023",
-        "parapro-b5-writing-024",
-        "parapro-b5-writing-025",
-        "parapro-b5-writing-026",
-        "parapro-b5-writing-027",
-        "parapro-b5-writing-028",
-        "parapro-b5-writing-029",
-        "parapro-b5-writing-030",
-        "parapro-b5-writing-031",
-        "parapro-b5-writing-032",
-        "parapro-b5-writing-033"
-      ]
     }
   },
   "verdict": "pass-after-corrections",
@@ -231,25 +192,15 @@
     }
   },
   "blockers": [],
-  "sourceSha256": "7b41825316149999ae07d1b794a9576fbc6775ba32fbbb1343463d6ed7c518c1",
+  "sourceSha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "7b41825316149999ae07d1b794a9576fbc6775ba32fbbb1343463d6ed7c518c1"
+    "sha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
     "batchNumber": 5,
     "expectedInsertionTier": "assistant-authored-independent",
     "expectedDiagnosticBankSize": 100
-  },
-  "clueResistanceReview": {
-    "version": "answer-choice-clue-normalization-v1",
-    "reviewedAt": "2026-08-01",
-    "answerKeyPolicy": "answerIndex values and keyed content claims were preserved"
-  },
-  "feedbackQualityReview": {
-    "version": "feedback-quality-normalization-v5",
-    "reviewedAt": "2026-08-02",
-    "answerKeyPolicy": "answerIndex values, choices, rationales, sources, and provenance were preserved"
   }
 }

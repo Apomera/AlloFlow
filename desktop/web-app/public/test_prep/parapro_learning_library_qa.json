@@ -1,8 +1,7 @@
 {
-  "packId": "parapro-1755-practice-1",
-  "version": "0.7.0",
-  "visibility": "public",
+  "packId": "parapro-1755-practice-1", "version": "0.7.0", "visibility": "public",
   "schemaVersion": 1,
+  "generatedAt": "2026-07-23T17:24:11.022Z",
   "libraryId": "parapro-1755-learning-library",
   "standard": {
     "label": "AlloFlow ParaPro learning-library source and editorial review v1",
@@ -151,8 +150,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "48742f2971bf9971c7f42dc62ce2b510721ef05c440061d44cf321e30be017f4",
-    "learningLibrarySha256": "df71d51a6a880d992316a382dbef0ac08bbfdefa2f893d79ca1626ec6ec534f7",
+    "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
+    "learningLibrarySha256": "607971bddea562748afac7e95ee3be639af828f2a8e15d424a8265626de71177",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

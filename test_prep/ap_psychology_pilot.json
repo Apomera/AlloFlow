@@ -206,10 +206,10 @@
       "cognitiveDemand": "application",
       "prompt": "A sensory neuron receives progressively stronger stimulation. Once threshold is reached, individual action potentials remain about the same amplitude, while stronger stimulation produces more action potentials per second. Which explanation best fits this pattern?",
       "choices": [
-        "Reuptake makes every neurotransmitter produce an identical postsynaptic response in this case as presented",
-        "The refractory period changes each action potential amplitude in direct proportion to stimulus strength",
-        "The all-or-none principle fixes spike size, while firing frequency can represent stimulus intensity for this item",
-        "Inhibitory postsynaptic potentials cause the neuron to fire more rapidly as stimulation increases in context"
+        "Reuptake makes every neurotransmitter produce an identical postsynaptic response.",
+        "The refractory period changes each action potential amplitude in direct proportion to stimulus strength.",
+        "The all-or-none principle fixes spike size, while firing frequency can represent stimulus intensity.",
+        "Inhibitory postsynaptic potentials cause the neuron to fire more rapidly as stimulation increases."
       ],
       "answerIndex": 2,
       "rationale": "Once a neuron's threshold is crossed, an individual action potential follows the all-or-none principle rather than growing with the stimulus. Stronger input can nevertheless be represented by an increased rate of action potentials.",
@@ -263,8 +263,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u1-002",
@@ -281,10 +280,10 @@
       "cognitiveDemand": "research-analysis",
       "prompt": "Researchers ask 120 students to record their usual sleep times for two weeks and then complete an attention task. Students with more regular sleep schedules tend to earn higher attention scores. The researchers did not assign sleep schedules. Which conclusion is best supported?",
       "choices": [
-        "Regular sleep schedules improved attention because the association persisted across the two-week recording period (in the context of conclusion) in this case as presented for this item in context under these facts",
-        "Sleep regularity and attention were associated, but directionality and possible third variables prevent a causal conclusion Its application depends on the evidence, constraints, and decision context provided",
-        "Higher attention probably produced more regular sleep because attention was measured after the sleep records (in the context of conclusion) for this item in context under these facts as described for the scenario",
-        "Completing the same attention task controlled third variables well enough to attribute the score difference to sleep regularity (in the context of conclusion) in context under these facts as described for the scenario"
+        "Regular sleep schedules improved attention because the association persisted across the two-week recording period.",
+        "Sleep regularity and attention were associated, but directionality and possible third variables prevent a causal conclusion.",
+        "Higher attention probably produced more regular sleep because attention was measured after the sleep records.",
+        "Completing the same attention task controlled third variables well enough to attribute the score difference to sleep regularity."
       ],
       "answerIndex": 1,
       "rationale": "The study measured naturally occurring variables without manipulation or random assignment. It can establish an association, but directionality and possible third variables such as workload, health, or daily routines prevent a causal conclusion.",
@@ -338,8 +337,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u1-001",
@@ -356,10 +354,10 @@
       "cognitiveDemand": "application",
       "prompt": "Following a cortical injury, a patient can move normally and has healthy eyes and optic nerves but cannot consciously identify objects presented visually. Which damaged region best accounts for this pattern?",
       "choices": [
-        "The occipital cortex in this case",
-        "The cerebellum as presented",
+        "The occipital cortex",
+        "The cerebellum",
         "The primary motor cortex",
-        "The medulla in context under these facts"
+        "The medulla"
       ],
       "answerIndex": 0,
       "rationale": "The occipital cortex contains primary and associated visual-processing regions. When the eyes and optic nerves are intact, cortical damage in this region can disrupt conscious visual processing without directly impairing movement.",
@@ -412,8 +410,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u1-004",
@@ -430,10 +427,10 @@
       "cognitiveDemand": "application",
       "prompt": "A loud alarm startles a student, increasing heart rate and slowing digestion. After the student learns it was a false alarm, heart rate decreases and digestion resumes. Which division most directly supports this return toward baseline?",
       "choices": [
-        "The endocrine system (in the context of division) in this case",
-        "The somatic nervous system (in the context of division)",
-        "The sympathetic division for this item in context under these facts",
-        "The parasympathetic division in context under these facts"
+        "The endocrine system",
+        "The somatic nervous system",
+        "The sympathetic division",
+        "The parasympathetic division"
       ],
       "answerIndex": 3,
       "rationale": "The parasympathetic division supports rest-and-digest functions and helps restore bodily activity after sympathetic arousal. Slower heart rate and resumed digestion are characteristic of that recovery pattern.",
@@ -486,8 +483,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u2-001",
@@ -504,10 +500,10 @@
       "cognitiveDemand": "application",
       "prompt": "A student believes a late-night study app improves memory. The student saves every favorable testimonial but dismisses two controlled studies showing no advantage as unimportant. Which cognitive bias is most evident?",
       "choices": [
-        "The availability heuristic (in the context of bias) in this case",
-        "Confirmation bias as presented for this item in context",
-        "Hindsight bias for this item in context under these facts",
-        "The representativeness heuristic (in the context of bias)"
+        "The availability heuristic",
+        "Confirmation bias",
+        "Hindsight bias",
+        "The representativeness heuristic"
       ],
       "answerIndex": 1,
       "rationale": "Confirmation bias involves seeking, interpreting, or retaining information that supports an existing belief while discounting evidence that challenges it. The student's uneven treatment of testimonials and controlled studies fits that pattern.",
@@ -560,8 +556,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u2-002",
@@ -579,9 +574,9 @@
       "cognitiveDemand": "application",
       "prompt": "Two students spend equal time studying the same terms. One repeatedly rereads the list. The other alternates short review periods with attempts to recall the terms without looking. On a delayed test, the second student remembers more. Which process best explains the advantage?",
       "choices": [
-        "Sensory adaptation reduced the second student's awareness of the terms in this case",
+        "Sensory adaptation reduced the second student's awareness of the terms.",
         "Proactive interference prevented older memories from entering working memory.",
-        "Retrieval practice strengthened later access to the studied information for this item",
+        "Retrieval practice strengthened later access to the studied information.",
         "State-dependent memory ensured that study and test conditions were identical."
       ],
       "answerIndex": 2,
@@ -635,8 +630,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u2-004",
@@ -653,10 +647,10 @@
       "cognitiveDemand": "application",
       "prompt": "After using the same password for several years, a student changes it. For the next week, the student repeatedly types the old password when trying to sign in. Which memory process best explains the errors?",
       "choices": [
-        "Proactive interference in this case",
+        "Proactive interference",
         "Retroactive interference",
-        "Encoding specificity for this item",
-        "Chunking in context under these facts"
+        "Encoding specificity",
+        "Chunking"
       ],
       "answerIndex": 0,
       "rationale": "Proactive interference occurs when older information disrupts retrieval or use of newer information. The well-practiced old password is interfering with recall of the recently learned replacement.",
@@ -709,8 +703,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u2-003",
@@ -727,10 +720,10 @@
       "cognitiveDemand": "research-analysis",
       "prompt": "A study tests whether instrumental background music changes proofreading accuracy. Participants hear a standardized playlist or work in silence. Proofreading accuracy is recorded as the number of planted errors each participant correctly marks in ten minutes. Which statement gives the operational definition of proofreading accuracy?",
       "choices": [
-        "Proofreading accuracy is the general ability to notice mistakes in written work (in the context of errors correctly)",
-        "Proofreading accuracy is the effect that instrumental music has on attention (in the context of errors correctly) as presented",
-        "Proofreading accuracy is the condition to which each participant is assigned (in the context of errors correctly) for this item",
-        "Proofreading accuracy is errors marked correctly in the ten-minute task in context under these facts as described for the scenario"
+        "Proofreading accuracy is the general ability to notice mistakes in written work.",
+        "Proofreading accuracy is the effect that instrumental music has on attention.",
+        "Proofreading accuracy is the condition to which each participant is assigned.",
+        "Proofreading accuracy is errors marked correctly in the ten-minute task."
       ],
       "answerIndex": 3,
       "rationale": "An operational definition specifies the concrete procedure used to measure or manipulate a variable. Here, the measured count of correctly marked planted errors during a fixed interval defines proofreading accuracy for the study.",
@@ -783,8 +776,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u3-001",
@@ -801,10 +793,10 @@
       "cognitiveDemand": "research-analysis",
       "prompt": "During one semester, researchers compare separate groups of 8-year-olds, 12-year-olds, and 16-year-olds on the same planning task. No participant is tested at more than one age. Which design are the researchers using?",
       "choices": [
-        "A longitudinal design This response should be interpreted in the setting described by the item",
-        "A randomized experiment (in the context of design) as presented for this item in context under these facts",
-        "A cross-sectional design for this item in context under these facts as described for the scenario",
-        "A case study (in the context of design) in context under these facts as described for the scenario"
+        "A longitudinal design",
+        "A randomized experiment",
+        "A cross-sectional design",
+        "A case study"
       ],
       "answerIndex": 2,
       "rationale": "A cross-sectional design compares different age groups at one period in time. It can reveal age-group differences efficiently, although cohort differences can complicate developmental interpretation.",
@@ -857,8 +849,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u3-002",
@@ -875,10 +866,10 @@
       "cognitiveDemand": "application",
       "prompt": "For several days, a cafeteria chime is followed by an unannounced quiz, and a student begins feeling tense when the chime sounds. The chime then occurs repeatedly without quizzes until the tension fades. After a school break, the chime again produces a brief tense response. Which process best explains the response after the break?",
       "choices": [
-        "Stimulus generalization in this case as presented for this item in context under these facts",
-        "Stimulus discrimination as presented for this item in context under these facts as described",
-        "Shaping The claim should be evaluated against the facts and purpose stated in the question",
-        "Spontaneous recovery in context under these facts as described for the scenario in this case"
+        "Stimulus generalization",
+        "Stimulus discrimination",
+        "Shaping",
+        "Spontaneous recovery"
       ],
       "answerIndex": 3,
       "rationale": "Spontaneous recovery is the reappearance of an extinguished conditioned response after a rest period. The tension faded during extinction and briefly returned after the school break.",
@@ -932,8 +923,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u3-003",
@@ -952,8 +942,8 @@
       "choices": [
         "Negative reinforcement",
         "Positive reinforcement",
-        "Positive punishment for this item",
-        "Negative punishment in context"
+        "Positive punishment",
+        "Negative punishment"
       ],
       "answerIndex": 0,
       "rationale": "The behavior becomes more likely because it removes an aversive stimulus. Increasing a behavior through removal of something unpleasant is negative reinforcement.",
@@ -1006,8 +996,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u3-004",
@@ -1024,10 +1013,10 @@
       "cognitiveDemand": "application",
       "prompt": "A child who is initially hesitant around dogs watches an older sibling calmly approach a gentle dog, offer a hand to sniff, and pet it. The child then copies those actions. Which learning process is most directly illustrated?",
       "choices": [
-        "Latent learning This response should be interpreted in the setting described by the item",
-        "Observational learning as presented for this item in context under these facts as described",
-        "Habituation (in the context of learning) for this item in context under these facts as described",
-        "Instinctive drift (in the context of learning) in context under these facts as described for the scenario"
+        "Latent learning",
+        "Observational learning",
+        "Habituation",
+        "Instinctive drift"
       ],
       "answerIndex": 1,
       "rationale": "Observational learning occurs when behavior is acquired or changed by attending to a model and later reproducing the modeled actions. The child's sequence closely follows the sibling's example.",
@@ -1080,8 +1069,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u4-001",
@@ -1098,9 +1086,9 @@
       "cognitiveDemand": "application",
       "prompt": "A teacher sees a student arrive late once and immediately concludes that the student is irresponsible, without considering the documented train delay that affected the neighborhood. Which tendency is most evident?",
       "choices": [
-        "The self-serving bias in this case",
-        "The actor-observer bias as presented",
-        "The just-world hypothesis for this item",
+        "The self-serving bias",
+        "The actor-observer bias",
+        "The just-world hypothesis",
         "The fundamental attribution error"
       ],
       "answerIndex": 3,
@@ -1154,8 +1142,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u4-003",
@@ -1172,10 +1159,10 @@
       "cognitiveDemand": "research-analysis",
       "prompt": "A community survey asks students how much the school's wasteful phone policy has damaged their learning, then uses the responses to estimate opposition to the policy. Which design problem most directly threatens the estimate?",
       "choices": [
-        "Sampling or nonresponse bias because opponents may be underrepresented among completed surveys (in the context of policy)",
-        "Wording-induced response bias because the question labels the policy and presumes harm as presented for this item in context",
-        "An order effect because earlier questions may have primed concerns about school rules (in the context of policy) for this item",
-        "Acquiescence bias because respondents may habitually agree with a series of statements (in the context of policy) in context"
+        "Sampling or nonresponse bias because opponents may be underrepresented among completed surveys",
+        "Wording-induced response bias because the question labels the policy and presumes harm",
+        "An order effect because earlier questions may have primed concerns about school rules",
+        "Acquiescence bias because respondents may habitually agree with a series of statements"
       ],
       "answerIndex": 1,
       "rationale": "The question calls the policy wasteful and presumes it damaged learning, so its wording signals a preferred evaluation. Sampling, nonresponse, order, and acquiescence are possible survey threats, but the stem directly documents loaded wording.",
@@ -1228,8 +1215,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u4-002",
@@ -1246,10 +1232,10 @@
       "cognitiveDemand": "application",
       "prompt": "A student privately opposes a school policy but voluntarily records a video defending it in exchange for a very small amount of service credit. Later, the student reports viewing the policy somewhat more favorably. Which process best explains the attitude shift?",
       "choices": [
-        "Cognitive dissonance reduction through attitude change in this case as presented for this item",
-        "Self-perception from observing one's own advocacy (in the context of attitude) as presented",
-        "Peripheral-route persuasion from appealing presentation cues (in the context of attitude)",
-        "Informational social influence from accepting group judgment (in the context of attitude)"
+        "Cognitive dissonance reduction through attitude change",
+        "Self-perception from observing one's own advocacy",
+        "Peripheral-route persuasion from appealing presentation cues",
+        "Informational social influence from accepting group judgment"
       ],
       "answerIndex": 0,
       "rationale": "The prior attitude conflicts with the student's freely chosen advocacy. Because the service credit provides little external justification, shifting the attitude offers a way to reduce cognitive dissonance.",
@@ -1302,8 +1288,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u4-004",
@@ -1320,9 +1305,9 @@
       "cognitiveDemand": "application",
       "prompt": "Peer, teacher, and self-reports all describe a student as consistently organized, dependable, and careful across settings. A psychologist wants a framework that directly summarizes this recurring pattern. Which perspective best fits that goal?",
       "choices": [
-        "The humanistic perspective in this case",
-        "The psychodynamic perspective as presented",
-        "The trait perspective for this item",
+        "The humanistic perspective",
+        "The psychodynamic perspective",
+        "The trait perspective",
         "The social-cognitive perspective"
       ],
       "answerIndex": 2,
@@ -1376,8 +1361,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u5-001",
@@ -1394,10 +1378,10 @@
       "cognitiveDemand": "data-interpretation",
       "prompt": "In a randomized study of 800 students, a brief stress-management lesson produces a lower average stress score than a control lesson, with p = .01 and a standardized effect size of d = 0.12. The researchers set alpha = .05. Which interpretation is best supported?",
       "choices": [
-        "The average difference was statistically significant but small; neither result shows that every student benefited This response should be interpreted in the setting described by the item",
-        "The p value shows a 99 percent probability that individual students improved because of the lesson (in the context of average) as presented for this item in context under these facts as described",
-        "The lesson had a large practical effect because statistical significance makes the difference educationally important (in the context of average) for this item in context under these facts",
-        "Random assignment makes the result broadly generalizable even if the sample came from primarily one district (in the context of average) in context under these facts as described for the scenario"
+        "The average difference was statistically significant but small; neither result shows that every student benefited.",
+        "The p value shows a 99 percent probability that individual students improved because of the lesson.",
+        "The lesson had a large practical effect because statistical significance makes the difference educationally important.",
+        "Random assignment makes the result broadly generalizable even if the sample came from only one district."
       ],
       "answerIndex": 0,
       "rationale": "Because p = .01 is below alpha = .05, the average difference is statistically significant. The d of 0.12 indicates a small effect under the current course framework's general benchmarks, and neither statistic establishes universal individual benefit or unlimited generalizability.",
@@ -1451,8 +1435,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u5-002",
@@ -1469,10 +1452,10 @@
       "cognitiveDemand": "research-ethics",
       "prompt": "A researcher plans to collect identifiable stress surveys from 14-year-old students during a required class. The principal approves, but students and families receive no choice or study information. Which revision most directly addresses participant autonomy before data collection?",
       "choices": [
-        "Protect identities with coded records and restricted file access while keeping the required-class survey mandatory This response should be interpreted in the setting described by the item",
-        "Obtain ethics review and appropriate parental permission and student assent, with refusal allowed without penalty as presented for this item in context under these facts as described for the scenario",
-        "Permit students to decline after an assent explanation, relying on principal approval without parental permission or independent ethics review for this item in context under these facts as described",
-        "Obtain ethics review and parental permission, then have the teacher present participation as the expected classroom choice in context under these facts as described for the scenario in this case"
+        "Protect identities with coded records and restricted file access while keeping the required-class survey mandatory.",
+        "Obtain ethics review and appropriate parental permission and student assent, with refusal allowed without penalty.",
+        "Permit students to decline after an assent explanation, relying on principal approval without parental permission or independent ethics review.",
+        "Obtain ethics review and parental permission, then have the teacher present participation as the expected classroom choice."
       ],
       "answerIndex": 1,
       "rationale": "Research involving minors ordinarily requires appropriate review and age-appropriate permission and assent procedures. Voluntary participation must be meaningful, especially in a required classroom where authority and perceived penalties can create pressure.",
@@ -1525,8 +1508,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u5-003",
@@ -1543,9 +1525,9 @@
       "cognitiveDemand": "data-interpretation",
       "prompt": "Five participants in a fictional treatment study have symptom-reduction scores of 1, 2, 2, 3, and 12 points. Which statement correctly reports both the median and the mean?",
       "choices": [
-        "The median is 4 and the mean is 2 in this case",
+        "The median is 4 and the mean is 2.",
         "The median is 3 and the mean is 12.",
-        "The median is 2 and the mean is 4 for this item",
+        "The median is 2 and the mean is 4.",
         "The median is 12 and the mean is 3."
       ],
       "answerIndex": 2,
@@ -1599,8 +1581,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     },
     {
       "id": "ap-psych-u5-004",
@@ -1617,10 +1598,10 @@
       "cognitiveDemand": "application",
       "prompt": "In an educational treatment vignette, a clinician and client create a hierarchy of dog-related situations, practice relaxation, and gradually work from imagining a dog to being near a calm dog. Which approach is most directly illustrated?",
       "choices": [
-        "Free association in this case",
+        "Free association",
         "Unconditional positive regard",
-        "Aversive conditioning for this item",
-        "Systematic desensitization in context"
+        "Aversive conditioning",
+        "Systematic desensitization"
       ],
       "answerIndex": 3,
       "rationale": "Systematic desensitization uses gradual exposure organized by an anxiety hierarchy, traditionally paired with relaxation or another response incompatible with intense anxiety. The sequence described matches those elements.",
@@ -1673,15 +1654,7 @@
         "completeOptionFeedback": true,
         "ageAppropriate": true,
         "medicalSafety": true
-      },
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      }
     }
-  ],
-  "answerChoiceClueReview": {
-    "version": "answer-choice-clue-normalization-v1",
-    "reviewedAt": "2026-08-01",
-    "normalizedItems": 20,
-    "scope": "answer-length, key-stem lexical, and asymmetric-extreme distractor cues",
-    "answerKeyPolicy": "answerIndex values and keyed content claims were preserved"
-  }
+  ]
 }

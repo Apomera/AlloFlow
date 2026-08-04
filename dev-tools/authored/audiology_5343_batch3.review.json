@@ -3,7 +3,7 @@
   "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 100,
-  "sourceSha256": "80c0397cd2928a4123e70ce37e2ff4fd0eb3c0f05fb4c576a6e9851745e79135",
+  "sourceSha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da",
   "verdict": "pass — independently authored Audiology 5343 draft; structurally and editorially ready for integrated QA",
   "blockers": [],
   "correctionsMade": [
@@ -264,7 +264,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "80c0397cd2928a4123e70ce37e2ff4fd0eb3c0f05fb4c576a6e9851745e79135"
+    "sha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da"
   },
   "integration": {
     "packId": "praxis-audiology-5343",
@@ -274,15 +274,5 @@
     "sourceBuilderMutated": false,
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
-  },
-  "clueResistanceReview": {
-    "version": "answer-choice-clue-normalization-v1",
-    "reviewedAt": "2026-08-01",
-    "answerKeyPolicy": "answerIndex values and keyed content claims were preserved"
-  },
-  "feedbackQualityReview": {
-    "version": "feedback-quality-normalization-v5",
-    "reviewedAt": "2026-08-02",
-    "answerKeyPolicy": "answerIndex values, choices, rationales, sources, and provenance were preserved"
   }
 }

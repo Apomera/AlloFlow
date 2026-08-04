@@ -7,13 +7,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_psychology_pilot.json",
-      "byteLength": 86318,
-      "sha256": "2fd7e0c5846b959d1f341225d1c0e9a0261ea644bd0917d8167deab7077adca7"
+      "byteLength": 81274,
+      "sha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445"
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
-      "byteLength": 107301,
-      "sha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc"
+      "byteLength": 107332,
+      "sha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f"
     }
   },
   "standard": {
@@ -218,16 +218,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "2fd7e0c5846b959d1f341225d1c0e9a0261ea644bd0917d8167deab7077adca7",
-      "deploySha256": "2fd7e0c5846b959d1f341225d1c0e9a0261ea644bd0917d8167deab7077adca7",
+      "sourceSha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445",
+      "deploySha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc",
-      "deploySha256": "f874242e9fff4fefccff1c491cebbe03ae3d2d1a395125f462ed5b948f7378fc",
+      "sourceSha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
+      "deploySha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
       "note": "Source and deployment bytes are identical."
     }
   ],
@@ -347,130 +347,130 @@
       "accessibilityBoundaryItems": 20,
       "expertGateItems": 20,
       "psychometricBoundaryItems": 20,
-      "keyedOptionMeanWords": 13.3,
-      "distractorOptionMeanWords": 13.6,
+      "keyedOptionMeanWords": 6.65,
+      "distractorOptionMeanWords": 6.8,
       "keyedToDistractorMeanRatio": 0.978,
-      "uniquelyLongestKeyedOptions": 2,
+      "uniquelyLongestKeyedOptions": 1,
       "severeKeyedLengthCueItems": 0,
       "optionLengthMetrics": [
         {
           "id": "ap-psych-u1-003",
-          "keyedWords": 16,
-          "longestDistractorWords": 15,
+          "keyedWords": 13,
+          "longestDistractorWords": 14,
           "severeCue": false
         },
         {
           "id": "ap-psych-u1-002",
-          "keyedWords": 27,
-          "longestDistractorWords": 33,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u1-001",
-          "keyedWords": 6,
-          "longestDistractorWords": 7,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u1-004",
-          "keyedWords": 8,
-          "longestDistractorWords": 11,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u2-001",
-          "keyedWords": 9,
-          "longestDistractorWords": 11,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u2-002",
-          "keyedWords": 12,
-          "longestDistractorWords": 13,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u2-004",
-          "keyedWords": 5,
-          "longestDistractorWords": 6,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u2-003",
-          "keyedWords": 20,
-          "longestDistractorWords": 20,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u3-001",
           "keyedWords": 16,
           "longestDistractorWords": 18,
           "severeCue": false
         },
         {
+          "id": "ap-psych-u1-001",
+          "keyedWords": 3,
+          "longestDistractorWords": 4,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u1-004",
+          "keyedWords": 3,
+          "longestDistractorWords": 4,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-001",
+          "keyedWords": 2,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-002",
+          "keyedWords": 9,
+          "longestDistractorWords": 10,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-004",
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-003",
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u3-001",
+          "keyedWords": 3,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
           "id": "ap-psych-u3-002",
-          "keyedWords": 15,
-          "longestDistractorWords": 15,
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
           "id": "ap-psych-u3-003",
           "keyedWords": 2,
-          "longestDistractorWords": 5,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
           "id": "ap-psych-u3-004",
-          "keyedWords": 14,
-          "longestDistractorWords": 17,
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-001",
           "keyedWords": 4,
-          "longestDistractorWords": 6,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-003",
-          "keyedWords": 19,
-          "longestDistractorWords": 21,
-          "severeCue": false
-        },
-        {
-          "id": "ap-psych-u4-002",
-          "keyedWords": 14,
+          "keyedWords": 12,
           "longestDistractorWords": 13,
           "severeCue": false
         },
         {
-          "id": "ap-psych-u4-004",
+          "id": "ap-psych-u4-002",
           "keyedWords": 6,
-          "longestDistractorWords": 6,
+          "longestDistractorWords": 7,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u4-004",
+          "keyedWords": 3,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-001",
-          "keyedWords": 27,
-          "longestDistractorWords": 33,
+          "keyedWords": 15,
+          "longestDistractorWords": 16,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-002",
-          "keyedWords": 30,
-          "longestDistractorWords": 30,
+          "keyedWords": 15,
+          "longestDistractorWords": 19,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-003",
-          "keyedWords": 12,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-004",
-          "keyedWords": 4,
-          "longestDistractorWords": 5,
+          "keyedWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         }
       ],
@@ -583,7 +583,14 @@
           "keyedCueTerms": [
             "every"
           ],
-          "distractorCueChoices": [],
+          "distractorCueChoices": [
+            {
+              "index": 3,
+              "terms": [
+                "only"
+              ]
+            }
+          ],
           "advisory": false
         },
         {
@@ -617,16 +624,18 @@
         {
           "id": "ap-psych-u1-002",
           "keyedOverlap": 3,
-          "maxDistractorOverlap": 6,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [],
+          "maxDistractorOverlap": 5,
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [
+            "conclusion"
+          ],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-001",
           "keyedOverlap": 0,
-          "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": -1,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
           "uniqueStemKeyTerms": [],
           "advisory": false
         },
@@ -665,9 +674,12 @@
         {
           "id": "ap-psych-u2-003",
           "keyedOverlap": 4,
-          "maxDistractorOverlap": 6,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [],
+          "maxDistractorOverlap": 4,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "correctly",
+            "errors"
+          ],
           "advisory": false
         },
         {
@@ -713,17 +725,21 @@
         {
           "id": "ap-psych-u4-003",
           "keyedOverlap": 1,
-          "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [],
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "policy"
+          ],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-002",
           "keyedOverlap": 1,
-          "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [],
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 1,
+          "uniqueStemKeyTerms": [
+            "attitude"
+          ],
           "advisory": false
         },
         {
@@ -737,9 +753,11 @@
         {
           "id": "ap-psych-u5-001",
           "keyedOverlap": 1,
-          "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [],
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "average"
+          ],
           "advisory": false
         },
         {
