@@ -190,6 +190,11 @@ async function ingestEcfr(doc, upToDate) {
       slug: doc.slug, jurisdiction: doc.jurisdiction, jurisdictionName: doc.jurisdictionName || 'United States',
       display: doc.display, short: doc.short, citation: doc.citation,
       publisher: doc.publisher, sourceUrl: doc.sourceUrl,
+      // Carried so the tool can re-fetch THIS document's sections live from
+      // eCFR (title 34, part N). Absent for non-eCFR sources, which disables
+      // live mode for them rather than guessing an endpoint.
+      cfrTitle: doc.kind === 'ecfr' ? doc.title : null,
+      cfrPart: doc.kind === 'ecfr' ? String(doc.part) : null,
       status: status,
       currentAsOf: doc.kind === 'ecfr' ? upToDate : null,
       retrievedAt: retrievedAt,
@@ -202,6 +207,7 @@ async function ingestEcfr(doc, upToDate) {
       manifest.documents.push({
         slug: doc.slug, jurisdiction: doc.jurisdiction, jurisdictionName: payload.jurisdictionName,
         display: doc.display, short: doc.short, citation: doc.citation, sourceUrl: doc.sourceUrl,
+        cfrTitle: payload.cfrTitle, cfrPart: payload.cfrPart,
         status: status, currentAsOf: payload.currentAsOf, retrievedAt: retrievedAt,
         sectionCount: sections.length, bytes: bytes
       });

@@ -68,6 +68,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   var _docs = {};        // slug -> document object
   var _loading = {};     // slug -> true while in flight
 
+  // ── LIVE MODE ────────────────────────────────────────────────────────────
+  // eCFR serves CORS-open JSON/XML (Access-Control-Allow-Origin: *, verified
+  // 2026-08-04), so the browser can read the CURRENT text directly instead of
+  // trusting the baked copy. Live is tried first; the corpus is the fallback
+  // for offline use, blocked egress (some Canvas sessions), or an API outage.
+  //
+  // BOTH paths are publisher text — the cardinal rule is untouched. What
+  // changes is freshness, and the UI always says which one is on screen.
+  var ECFR_API = 'https://www.ecfr.gov/api/';
+  var _liveDate = null;        // eCFR "up_to_date_as_of" for title 34
+  var _liveDatePending = null;
+  var _liveSections = {};      // "part#section" -> { paragraphs, heading, fetchedAt }
+  var _liveFailed = {};        // "part#section" -> reason
+
+  function liveDate() {
+    if (_liveDate) return Promise.resolve(_liveDate);
+    if (_liveDatePending) return _liveDatePending;
+    _liveDatePending = fetch(ECFR_API + 'versioner/v1/titles.json', { cache: 'no-cache' })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(j) {
+        var t34 = (j.titles || []).filter(function(t) { return t.number === 34; })[0];
+        _liveDate = (t34 && t34.up_to_date_as_of) || null;
+        if (!_liveDate) throw new Error('no currency date');
+        return _liveDate;
+      })
+      .catch(function(e) { _liveDatePending = null; throw e; });
+    return _liveDatePending;
+  }
+
+  // Extract one section from eCFR XML. Mechanical extraction of published
+  // text — the same operation the ingestion script performs, never a rewrite.
+  function parseLiveSection(xml, number) {
+    var re = new RegExp('<DIV8[^>]*\\bN="' + number.replace('.', '\\.') + '"[^>]*>([\\s\\S]*?)<\\/DIV8>');
+    var m = xml.match(re);
+    if (!m) return null;
+    var body = m[1];
+    var headM = body.match(/<HEAD>([\s\S]*?)<\/HEAD>/);
+    var paras = [];
+    var pRe = /<P[^>]*>([\s\S]*?)<\/P>/g, p;
+    while ((p = pRe.exec(body)) !== null) {
+      var t = decodeXml(p[1]);
+      if (t) paras.push(t);
+    }
+    if (!paras.length) return null;
+    return { number: number, heading: headM ? decodeXml(headM[1]) : '', paragraphs: paras };
+  }
+  // Hex entities first: eCFR uses &#xA7; heavily and a decimal-only decoder
+  // leaves raw entities on screen (caught during ingestion).
+  function decodeXml(s) {
+    return String(s)
+      .replace(/<[^>]+>/g, '')
+      .replace(/&#x([0-9a-f]+);/gi, function(_, hx) { return String.fromCodePoint(parseInt(hx, 16)); })
+      .replace(/&#(\d+);/g, function(_, d) { return String.fromCodePoint(Number(d)); })
+      .replace(/&mdash;/gi, '—').replace(/&ndash;/gi, '–').replace(/&nbsp;/gi, ' ')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'").replace(/&amp;/g, '&')
+      .replace(/[ \t]+/g, ' ').trim();
+  }
+
+  function fetchLiveSection(part, number) {
+    var key = part + '#' + number;
+    if (_liveSections[key]) return Promise.resolve(_liveSections[key]);
+    return liveDate().then(function(date) {
+      var url = ECFR_API + 'versioner/v1/full/' + date + '/title-34.xml?part=' + part + '&section=' + number;
+      return fetch(url, { cache: 'no-cache' }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      }).then(function(xml) {
+        var sec = parseLiveSection(xml, number);
+        if (!sec) throw new Error('section not found in live response');
+        sec.currentAsOf = date;
+        sec.fetchedAt = new Date().toISOString();
+        _liveSections[key] = sec;
+        return sec;
+      });
+    });
+  }
+
   // How old a retrieval may be before the UI warns. Regulations change; a
   // silent stale corpus is the failure mode this tool must never have.
   var STALE_DAYS = 180;
@@ -180,6 +258,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var ai = aiState[0], setAi = aiState[1];
       var queryState = React.useState('');
       var query = queryState[0], setQuery = queryState[1];
+      var liveState = React.useState({ status: 'idle', section: '', sec: null, err: '' });
+      var live = liveState[0], setLive = liveState[1];
 
       React.useEffect(function() {
         if (_manifest) { setManifest(_manifest); return; }
@@ -452,8 +532,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       // ─────────────── SECTION (full verbatim text) ───────────────
       var smeta = docsMeta.filter(function(x) { return x.slug === activeSlug; })[0];
       var sdoc2 = _docs[activeSlug];
-      var sec = sdoc2 ? (sdoc2.sections || []).filter(function(s) { return s.number === activeSection; })[0] : null;
+      var cachedSec = sdoc2 ? (sdoc2.sections || []).filter(function(s) { return s.number === activeSection; })[0] : null;
       if (!sdoc2) ensureDoc(activeSlug);
+
+      // Live-first: if this document is an eCFR part, ask the publisher for
+      // the current text of THIS section. The cached copy renders meanwhile
+      // and remains the fallback if the fetch fails.
+      var canLive = !!(smeta && smeta.cfrPart);
+      var liveKey = canLive ? (smeta.cfrPart + '#' + activeSection) : '';
+      function refreshLive(force) {
+        if (!canLive || !activeSection) return;
+        if (force) { delete _liveSections[liveKey]; delete _liveFailed[liveKey]; }
+        if (_liveSections[liveKey]) {
+          setLive({ status: 'live', section: activeSection, sec: _liveSections[liveKey], err: '' });
+          return;
+        }
+        if (!force && _liveFailed[liveKey]) {
+          setLive({ status: 'failed', section: activeSection, sec: null, err: _liveFailed[liveKey] });
+          return;
+        }
+        setLive({ status: 'checking', section: activeSection, sec: null, err: '' });
+        fetchLiveSection(smeta.cfrPart, activeSection).then(function(sec) {
+          setLive({ status: 'live', section: activeSection, sec: sec, err: '' });
+          announceToSR(__alloT('stem.lawNav.live_ok_sr', 'Current text loaded from eCFR.'));
+        }).catch(function(e) {
+          _liveFailed[liveKey] = String(e.message || e);
+          setLive({ status: 'failed', section: activeSection, sec: null, err: String(e.message || e) });
+        });
+      }
+      React.useEffect(function() {
+        if (view !== 'section' || !canLive || !activeSection) return;
+        if (live.section === activeSection && (live.status === 'live' || live.status === 'checking')) return;
+        refreshLive(false);
+      }, [view, activeSlug, activeSection, canLive]);
+
+      var usingLive = live.status === 'live' && live.section === activeSection && live.sec;
+      var sec = usingLive ? live.sec : cachedSec;
 
       function explainSection() {
         if (!sec || !callGemini || ai.busy) return;
@@ -482,10 +596,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' }, backBtn,
           h('h2', { className: 'text-base font-black' }, sec ? (sec.heading || ('§ ' + activeSection)) : ('§ ' + activeSection))),
         smeta ? provenance(smeta) : null,
+        // Freshness badge — the reader must always know WHICH copy this is.
+        canLive ? h('div', {
+          className: 'rounded-xl px-3 py-2 mt-2 text-[11px] flex items-center gap-2 flex-wrap',
+          style: usingLive
+            ? { background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.4)', color: isDark ? '#6ee7b7' : '#065f46' }
+            : { background: pal.card, border: '1px solid ' + pal.border, color: pal.muted }
+        },
+          h('span', { className: 'font-bold' },
+            live.status === 'checking' ? __alloT('stem.lawNav.live_checking', '⟳ Checking eCFR for the current text…')
+              : usingLive ? '🟢 ' + __alloT('stem.lawNav.live_now', 'Live from eCFR right now')
+              : live.status === 'failed' ? '⚠ ' + __alloT('stem.lawNav.live_failed', 'Could not reach eCFR — showing the stored copy')
+              : __alloT('stem.lawNav.cached', 'Stored copy')),
+          usingLive && live.sec.currentAsOf ? h('span', null, __alloT('stem.lawNav.current_as_of', 'current as of') + ' ' + live.sec.currentAsOf) : null,
+          h('button', {
+            onClick: function() { refreshLive(true); },
+            className: 'ml-auto rounded-lg px-2 py-1 text-[11px] font-bold border',
+            style: { background: pal.panel, borderColor: pal.border, color: pal.text }
+          }, __alloT('stem.lawNav.recheck', 'Check again'))
+        ) : null,
         !sec ? h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
         h('div', { className: 'rounded-2xl p-4 mt-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
           h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
-            __alloT('stem.lawNav.verbatim', 'Verbatim text as published')),
+            usingLive ? __alloT('stem.lawNav.verbatim_live', 'Verbatim text, fetched live from eCFR')
+                      : __alloT('stem.lawNav.verbatim', 'Verbatim text as published')),
           sec.paragraphs.map(function(p, i) {
             return h('p', { key: i, className: 'text-sm leading-relaxed' + (i ? ' mt-2' : ''), style: { color: pal.text } }, p);
           })

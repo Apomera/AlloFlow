@@ -145,6 +145,70 @@ describe('Law Navigator no-fabrication contract', () => {
   });
 });
 
+describe('Law Navigator live mode', () => {
+  // Lift the SHIPPED parser/decoder out of the tool and exercise them directly,
+  // so these test the code that actually runs, not a copy.
+  const lifted = (() => {
+    const start = src.indexOf('function parseLiveSection');
+    const end = src.indexOf('function fetchLiveSection');
+    expect(start, 'parseLiveSection present').toBeGreaterThan(-1);
+    expect(end, 'fetchLiveSection present').toBeGreaterThan(start);
+    const box = {};
+    new Function('box', src.slice(start, end) + '\nbox.parseLiveSection = parseLiveSection; box.decodeXml = decodeXml;')(box);
+    return box;
+  })();
+
+  it('decodes hex entities, which eCFR uses heavily', () => {
+    // The bug caught during ingestion: a decimal-only decoder leaves "&#xA7;"
+    // on screen. Section signs and em dashes are everywhere in the CFR.
+    expect(lifted.decodeXml('&#xA7; 300.530')).toBe('§ 300.530');
+    expect(lifted.decodeXml('a &#x2014; b')).toBe('a — b');
+    expect(lifted.decodeXml('&#8212;')).toBe('—');
+    expect(lifted.decodeXml('<E T="03">emph</E> text')).toBe('emph text');
+    // &amp; decoded last so &amp;#xA7; does not double-decode into a §.
+    expect(lifted.decodeXml('AT&amp;T')).toBe('AT&T');
+    expect(lifted.decodeXml('&amp;#xA7;')).toBe('&#xA7;');
+  });
+
+  it('extracts exactly the requested section from eCFR XML', () => {
+    const xml = '<DIV8 N="300.530" TYPE="SECTION"><HEAD>&#xA7; 300.530 Authority.</HEAD>' +
+      '<P>(a) First.</P><P>(b) Second.</P></DIV8>' +
+      '<DIV8 N="300.531" TYPE="SECTION"><HEAD>Other</HEAD><P>(a) Not this one.</P></DIV8>';
+    const got = lifted.parseLiveSection(xml, '300.530');
+    expect(got.heading).toBe('§ 300.530 Authority.');
+    expect(got.paragraphs).toEqual(['(a) First.', '(b) Second.']);
+    expect(got.paragraphs.join(' ')).not.toMatch(/Not this one/);
+    expect(lifted.parseLiveSection(xml, '300.999')).toBeNull();
+  });
+
+  it('carries the CFR part so live lookups know where to fetch', () => {
+    for (const d of manifest.documents) {
+      if (d.status === 'ingested') {
+        expect(d.cfrPart, d.slug + ' cfrPart').toMatch(/^\d+$/);
+      } else {
+        // No endpoint may be guessed for a non-eCFR source.
+        expect(d.cfrPart, d.slug + ' pointer must not claim a CFR part').toBeFalsy();
+      }
+    }
+  });
+
+  it('tries live first and falls back to the stored copy, labeling which is shown', () => {
+    expect(src).toContain('Live from eCFR right now');
+    expect(src).toContain('Could not reach eCFR — showing the stored copy');
+    expect(src).toContain('Verbatim text, fetched live from eCFR');
+    // The fallback must be the CACHED section, never nothing and never invented.
+    expect(src).toMatch(/var sec = usingLive \? live\.sec : cachedSec/);
+    // A live failure is recorded so the UI can explain, not retried forever.
+    expect(src).toContain('_liveFailed[liveKey]');
+    // And the reader can force a re-check.
+    expect(src).toContain('Check again');
+  });
+
+  it('live mode is disabled rather than guessed for non-eCFR documents', () => {
+    expect(src).toMatch(/var canLive = !!\(smeta && smeta\.cfrPart\)/);
+  });
+});
+
 describe('Law Navigator renders without a network', () => {
   beforeEach(() => resetStemLab());
 
