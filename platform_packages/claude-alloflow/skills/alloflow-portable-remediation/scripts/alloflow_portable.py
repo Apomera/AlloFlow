@@ -152,7 +152,7 @@ def validate_runs(
         if not isinstance(entry, dict):
             errors.append(at + " must be an object.")
             return None
-        expect_keys(entry, {"text", "style"}, at, errors)
+        expect_keys(entry, {"text", "style", "href"}, at, errors)
         run_text = entry.get("text")
         if not isinstance(run_text, str) or not run_text:
             errors.append(at + ".text must be a non-empty string.")
@@ -161,7 +161,15 @@ def validate_runs(
         if style not in RUN_STYLES:
             errors.append(at + ".style must be one of: " + ", ".join(sorted(RUN_STYLES)) + ".")
             return None
-        runs.append({"text": run_text, "style": style})
+        run: Dict[str, str] = {"text": run_text, "style": style}
+        if "href" in entry:
+            href = entry.get("href")
+            # Same safe-scheme contract as the standalone link block.
+            if not isinstance(href, str) or not (1 <= len(href) <= 4000) or not safe_link(href):
+                errors.append(at + ".href must use a safe scheme (#, http(s):, mailto:, tel:).")
+                return None
+            run["href"] = href
+        runs.append(run)
     if "".join(run["text"] for run in runs) != text:
         errors.append(
             where + " must reproduce the block's text exactly when concatenated; "
@@ -569,7 +577,12 @@ def render_inline(text: str, runs: Optional[List[Dict[str, str]]]) -> str:
     for run in runs:
         tag = _RUN_TAGS.get(run.get("style", "normal"))
         body = esc_lines(run["text"])
-        pieces.append(f"<{tag}>{body}</{tag}>" if tag else body)
+        if tag:
+            body = f"<{tag}>{body}</{tag}>"
+        href = run.get("href")
+        if href:
+            body = f'<a href="{esc(href)}">{body}</a>'
+        pieces.append(body)
     return "".join(pieces)
 
 
@@ -881,6 +894,7 @@ def capabilities() -> Dict[str, Any]:
         "sourceTextExtraction": True,
         "independentVerification": True,
         "inlineStyling": sorted(RUN_STYLES),
+        "inlineLinks": True,
         "officeTextExtraction": True,
         "officeInput": True,
         "batchRemediation": True,
@@ -2429,9 +2443,26 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
             "rebuild (or covered by a disclosed omission in the review notes).",
             source_page=page,
         )
-    counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "emphasis": 0}
+    counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "emphasis": 0, "link": 0}
     for block in validated["blocks"]:
         kind = block.get("type")
+        all_runs = [
+            run
+            for group in (block["item_runs"] if block.get("item_runs") else [block.get("runs")])
+            for run in (group or [])
+        ]
+        linked = [run for run in all_runs if run.get("href")]
+        if linked:
+            counters["link"] += 1
+            add(
+                f"linkrun-{counters['link']:03d}",
+                "inline_link",
+                "For each linked span: does the source really carry a link here (annotation or "
+                "written-out URL), does the destination match, and is the link text meaningful "
+                "out of context?",
+                links=[{"text": run["text"][:80], "href": run["href"][:200]} for run in linked[:10]],
+                source_page=block.get("source_page"),
+            )
         styled = block.get("runs") or block.get("item_runs")
         if styled:
             counters["emphasis"] += 1

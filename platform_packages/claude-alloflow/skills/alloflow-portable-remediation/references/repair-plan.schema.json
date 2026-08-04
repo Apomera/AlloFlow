@@ -5,7 +5,12 @@
   "$comment": "Runtime validation additionally enforces page-count bounds, unique source pages, safe link schemes, exactly one h1, no skipped heading levels, blocked document types, and aggregate image/text budgets.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "document", "blocks", "review_notes"],
+  "required": [
+    "schema_version",
+    "document",
+    "blocks",
+    "review_notes"
+  ],
   "properties": {
     "schema_version": {
       "const": "1.0"
@@ -13,7 +18,13 @@
     "document": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "language", "source_page_count", "source_sha256", "document_type"],
+      "required": [
+        "title",
+        "language",
+        "source_page_count",
+        "source_sha256",
+        "document_type"
+      ],
       "properties": {
         "title": {
           "type": "string",
@@ -35,14 +46,27 @@
           "description": "SHA-256 returned by the packaged source-info command for the exact source PDF."
         },
         "document_type": {
-          "enum": ["handout", "report", "article", "booklet", "other", "form", "signed-record", "legal-record"]
+          "enum": [
+            "handout",
+            "report",
+            "article",
+            "booklet",
+            "other",
+            "form",
+            "signed-record",
+            "legal-record"
+          ]
         },
         "subject": {
           "type": "string",
           "maxLength": 1000
         },
         "variant": {
-          "enum": ["original", "translated", "simplified"],
+          "enum": [
+            "original",
+            "translated",
+            "simplified"
+          ],
           "description": "Marks a plan that deliberately transforms the source: 'translated' (document.language differs from the source language) or 'simplified' (plain-language rewrite). Both require a review_notes entry describing the transformation. Default: original."
         }
       }
@@ -54,7 +78,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["page", "text"],
+        "required": [
+          "page",
+          "text"
+        ],
         "properties": {
           "page": {
             "type": "integer",
@@ -76,71 +103,156 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "level", "text", "source_page"],
+            "required": [
+              "type",
+              "level",
+              "text",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "heading" },
-              "level": { "type": "integer", "minimum": 1, "maximum": 6 },
-              "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "type": {
+                "const": "heading"
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "text", "source_page"],
+            "required": [
+              "type",
+              "text",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "paragraph" },
-              "text": { "type": "string", "minLength": 1, "maxLength": 200000 },
-              "runs": { "$ref": "#/$defs/runs" },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "type": {
+                "const": "paragraph"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200000
+              },
+              "runs": {
+                "$ref": "#/$defs/runs"
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "text", "source_page"],
+            "required": [
+              "type",
+              "text",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "blockquote" },
-              "text": { "type": "string", "minLength": 1, "maxLength": 200000 },
-              "cite": { "type": "string", "maxLength": 2000 },
-              "runs": { "$ref": "#/$defs/runs" },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "type": {
+                "const": "blockquote"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200000
+              },
+              "cite": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "runs": {
+                "$ref": "#/$defs/runs"
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "ordered", "items", "source_page"],
+            "required": [
+              "type",
+              "ordered",
+              "items",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "list" },
-              "ordered": { "type": "boolean" },
+              "type": {
+                "const": "list"
+              },
+              "ordered": {
+                "type": "boolean"
+              },
               "items": {
                 "type": "array",
                 "minItems": 1,
                 "maxItems": 1000,
-                "items": { "type": "string", "minLength": 1, "maxLength": 20000 }
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20000
+                }
               },
               "item_runs": {
                 "type": "array",
                 "maxItems": 1000,
                 "description": "Optional inline styling, one entry per list item, in the same order.",
-                "items": { "$ref": "#/$defs/runs" }
+                "items": {
+                  "$ref": "#/$defs/runs"
+                }
               },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "caption", "columns", "rows", "source_page"],
+            "required": [
+              "type",
+              "caption",
+              "columns",
+              "rows",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "table" },
-              "caption": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "type": {
+                "const": "table"
+              },
+              "caption": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
               "columns": {
                 "type": "array",
                 "minItems": 1,
                 "maxItems": 100,
-                "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
               },
               "rows": {
                 "type": "array",
@@ -150,36 +262,71 @@
                   "type": "array",
                   "minItems": 1,
                   "maxItems": 100,
-                  "items": { "type": "string", "maxLength": 20000 }
+                  "items": {
+                    "type": "string",
+                    "maxLength": 20000
+                  }
                 }
               },
-              "row_headers": { "type": "boolean" },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "row_headers": {
+                "type": "boolean"
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "alt", "decorative", "source_page"],
+            "required": [
+              "type",
+              "alt",
+              "decorative",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "image" },
-              "alt": { "type": "string", "maxLength": 4000 },
-              "decorative": { "type": "boolean" },
-              "path": { "type": "string", "maxLength": 1000 },
-              "caption": { "type": "string", "maxLength": 4000 },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "type": {
+                "const": "image"
+              },
+              "alt": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "decorative": {
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "caption": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             },
             "allOf": [
               {
                 "if": {
-                  "required": ["decorative"],
+                  "required": [
+                    "decorative"
+                  ],
                   "properties": {
-                    "decorative": { "const": false }
+                    "decorative": {
+                      "const": false
+                    }
                   }
                 },
                 "then": {
                   "properties": {
-                    "alt": { "minLength": 1 }
+                    "alt": {
+                      "minLength": 1
+                    }
                   }
                 }
               }
@@ -188,22 +335,52 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "text", "url", "source_page"],
+            "required": [
+              "type",
+              "text",
+              "url",
+              "source_page"
+            ],
             "properties": {
-              "type": { "const": "link" },
-              "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
-              "url": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^(?:#|https?:|mailto:|tel:)" },
-              "source_page": { "type": "integer", "minimum": 1 }
+              "type": {
+                "const": "link"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000,
+                "pattern": "^(?:#|https?:|mailto:|tel:)"
+              },
+              "source_page": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           },
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["type", "page"],
+            "required": [
+              "type",
+              "page"
+            ],
             "properties": {
-              "type": { "const": "page_break" },
-              "page": { "type": "integer", "minimum": 1 },
-              "label": { "type": "string", "maxLength": 200 }
+              "type": {
+                "const": "page_break"
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 200
+              }
             }
           }
         ]
@@ -224,14 +401,34 @@
       "type": "array",
       "minItems": 1,
       "maxItems": 200,
-      "description": "Inline styling overlay. Strictly additive: concatenating every run's text MUST reproduce the block's text exactly, so styling can never add, drop, or alter content. Runtime validation rejects a mismatch.",
+      "description": "Inline styling and links overlay. Strictly additive: concatenating every run's text MUST reproduce the block's text exactly, so styling and links can never add, drop, or alter content. A run with href renders as a hyperlink (safe schemes only); style and href may combine. Runtime validation rejects a mismatch.",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["text"],
+        "required": [
+          "text"
+        ],
         "properties": {
-          "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
-          "style": { "enum": ["normal", "emphasis", "strong"], "default": "normal" }
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "style": {
+            "enum": [
+              "normal",
+              "emphasis",
+              "strong"
+            ],
+            "default": "normal"
+          },
+          "href": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "pattern": "^(?:#|https?:|mailto:|tel:)",
+            "description": "Optional link target for this run. Same safe-scheme rule as the link block."
+          }
         }
       }
     }

@@ -200,6 +200,31 @@ describe('inline styling (runs)', () => {
     expect(badLength.json?.error).toMatch(/one entry per item/i);
   });
 
+
+  it('renders linked runs and rejects unsafe href schemes', () => {
+    const output = join(scratch, 'runs-links');
+    const good = planWith([{
+      type: 'paragraph',
+      text: 'See the site now',
+      runs: [
+        { text: 'See ', style: 'normal' },
+        { text: 'the site', style: 'normal', href: 'https://example.org/x' },
+        { text: ' now', style: 'normal' },
+      ],
+      source_page: 1,
+    }]);
+    const result = runPortable(['remediate', '--source', SOURCE, '--plan', good, '--out-dir', output, '--pdf', 'never']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const html = readFileSync(join(output, 'multi-column-scrambled-accessible.html'), 'utf8');
+    expect(html).toContain('<a href="https://example.org/x">the site</a>');
+
+    const bad = lint(planWith([{
+      type: 'paragraph', text: 'x y', runs: [{ text: 'x y', href: 'javascript:alert(1)' }], source_page: 1,
+    }]));
+    expect(bad.status).not.toBe(0);
+    expect(bad.json?.error).toMatch(/safe scheme/i);
+  });
+
   it('renders emphasis and strong, and leaves unstyled plans unchanged', () => {
     const output = join(scratch, 'runs-render');
     const file = planWith([{

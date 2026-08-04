@@ -73,6 +73,14 @@ conversation working directory is the Skill directory.
    quotation marks — without `runs` such a passage reads as ordinary narration.
    Where a heading already conveys the emphasis, do not restate it. Table cells
    cannot carry inline styling; disclose that if a styled cell matters.
+
+   Carry the source's **inline hyperlinks** the same way: a run may take an
+   `href` (safe schemes only: `#`, `http(s):`, `mailto:`, `tel:`), and `style`
+   and `href` combine. The text contract is unchanged — a link can never alter
+   a character of content. Only add an `href` where the source really carries a
+   link (an annotation or a written-out URL); do not invent destinations, and
+   verify link text is meaningful out of context. The tagged PDF carries each
+   link as a real Link annotation with an alternate description.
 6. Run one command:
 
    ```text
@@ -124,7 +132,7 @@ review note describing the transformation, and (for translations)
 `document.language` set to the target language. Run `remediate` again into a
 separate output directory. A variant never replaces the faithful rebuild; it
 is delivered alongside it.
-8. Return every artifact listed in the final report:
+9. Return every artifact listed in the final report:
 
    - semantic accessible HTML;
    - the remediated tagged PDF when this sandbox proved it could generate one;

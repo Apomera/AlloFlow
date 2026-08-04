@@ -238,6 +238,38 @@ function buildXmpPacket(title, pdfuaPart) {
   return Buffer.from(xml, 'utf8');
 }
 
+function decodeEntities(text) {
+  return String(text || '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/*
+ * href -> visible anchor text, for Link-annotation alternate descriptions.
+ * PDF/UA-1 (veraPDF 7.18.1-2 / 7.18.5-2) requires an annotation to carry an
+ * alternate description in /Contents; Chromium writes none. The most useful
+ * description is the link's own visible text; the URI is the fallback.
+ */
+function extractAnchorTexts(html) {
+  const map = new Map();
+  const anchorPattern = /<a\s[^>]*href\s*=\s*"([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = anchorPattern.exec(html)) !== null) {
+    const text = decodeEntities(match[2].replace(/<[^>]+>/g, ''));
+    if (text && !map.has(match[1])) map.set(match[1], text);
+  }
+  return map;
+}
+
+/* PDF text string as UTF-16BE hex with BOM: immune to escaping and encoding. */
+function pdfTextString(value) {
+  const buf = Buffer.from('﻿' + String(value), 'utf16le');
+  buf.swap16(); // utf16le -> utf16be
+  return '<' + buf.toString('hex').toUpperCase() + '>';
+}
+
 function extractHtmlTitle(html) {
   const match = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
   if (!match) return 'Accessible document';
@@ -249,7 +281,7 @@ function extractHtmlTitle(html) {
   return text || 'Accessible document';
 }
 
-function finalizeTaggedPdf(pdfPath, title, pdfuaPart) {
+function finalizeTaggedPdf(pdfPath, title, pdfuaPart, anchorTexts) {
   const original = fs.readFileSync(pdfPath);
   const text = original.toString('latin1');
 
@@ -337,6 +369,29 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart) {
       ]),
     });
     wrappedStreams += 1;
+  }
+
+  /*
+   * PDF/UA-1 7.18.1-2 / 7.18.5-2: every annotation needs an alternate
+   * description in /Contents; Chromium writes Link annotations without one.
+   * Add /Contents carrying the link's own visible anchor text (fallback: its
+   * URI), as a UTF-16BE hex string so no escaping or encoding can corrupt it.
+   */
+  let linkContentsAdded = 0;
+  for (const [num, span] of objectSpans) {
+    const body = text.slice(span.start, span.end);
+    if (!/\/Subtype\s*\/Link\b/.test(body) || /\/Contents\b/.test(body)) continue;
+    const uri = /\/URI\s*\(((?:[^()\\]|\\.)*)\)/.exec(body);
+    const uriText = uri ? uri[1].replace(/\\([()\\])/g, '$1') : '';
+    const description = (anchorTexts && anchorTexts.get(uriText)) || uriText || 'Link';
+    replacements.push({
+      num,
+      body: Buffer.from(
+        body.replace(/\/Subtype\s*\/Link\b/, (m) => m + '\n/Contents ' + pdfTextString(description)) + '\n',
+        'latin1',
+      ),
+    });
+    linkContentsAdded += 1;
   }
 
   /*
@@ -478,6 +533,7 @@ function finalizeTaggedPdf(pdfPath, title, pdfuaPart) {
   return {
     wrappedContentStreams: wrappedStreams,
     metadataAdded: true,
+    linkContentsAdded,
     pdfuaIdentifierClaimed: Boolean(pdfuaPart),
   };
 }
@@ -578,7 +634,7 @@ async function render() {
     };
   } else {
     try {
-      finalize = finalizeTaggedPdf(input.pdfPath, extractHtmlTitle(input.html), pdfuaPart);
+      finalize = finalizeTaggedPdf(input.pdfPath, extractHtmlTitle(input.html), pdfuaPart, extractAnchorTexts(input.html));
       markers = structuralMarkers(input.pdfPath);
     } catch (error) {
       // The un-finalized PDF is still a valid tagged PDF; keep it and disclose.
