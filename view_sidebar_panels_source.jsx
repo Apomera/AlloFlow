@@ -168,6 +168,9 @@ function UniversalSettingsPanel(props) {
   const setIsOpen = setIsUniversalSettingsOpen;
   const [localResolution, setLocalResolution] = React.useState(null);
   const [isResolvingLocal, setIsResolvingLocal] = React.useState(false);
+  const [surpriseState, setSurpriseState] = React.useState('idle'); // idle | loading | ready | error
+  const [surpriseDirections, setSurpriseDirections] = React.useState([]);
+  const [surpriseHood, setSurpriseHood] = React.useState(null);
   const standardsProviderApi = typeof window !== 'undefined' && window.AlloModules
     ? window.AlloModules.StandardsProvider
     : null;
@@ -177,6 +180,79 @@ function UniversalSettingsPanel(props) {
   const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === 'function'
     ? localStandardsProvider.getManifest()
     : null;
+  // ── Surprise Me v1 ────────────────────────────────────────────────────
+  // Division of labor, enforced in code: the GRAPH supplies what is true
+  // (prerequisites, next standards, related standards, components — all
+  // source-provided edges from the reviewed snapshots), the MODEL proposes
+  // what might be worthwhile inside that space, the TEACHER chooses. The
+  // prerequisite/next/related lists rendered on each card come from the
+  // PROVIDER DATA — never from model output — so the model cannot invent
+  // graph facts. AI access uses the established CDN-module fallback
+  // (props.callGemini || window.callGemini), keeping this panel host-prop-free.
+  const surpriseAi = props.callGemini || (typeof window !== 'undefined' ? window.callGemini : null);
+  const buildSurpriseHood = (provider, id) => {
+    const grab = (fn, key) => { try { const r = provider[fn](id, { maxResults: 6 }); return (r && r[key]) || []; } catch (e) { return []; } };
+    const pre = (() => { try { return provider.getPrerequisites(id, { maxResults: 6 }); } catch (e) { return null; } })();
+    return {
+      prerequisites: (pre && pre.prerequisites) || [],
+      leadsTo: (pre && pre.leadsTo) || [],
+      related: grab('getRelatedStandards', 'related'),
+      components: grab('getLearningComponents', 'components'),
+      dataset: (pre && pre.dataset) || null
+    };
+  };
+  const surpriseBrief = (rec) => (rec.code ? rec.code + ' ' : '') + String(rec.label || rec.text || '').slice(0, 160);
+  const runSurpriseMe = async () => {
+    const match = localResolution && localResolution.match;
+    if (!match || !localStandardsProvider || !surpriseAi) return;
+    setSurpriseState('loading');
+    setSurpriseDirections([]);
+    try {
+      const hood = buildSurpriseHood(localStandardsProvider, match.id);
+      setSurpriseHood(hood);
+      const prompt = [
+        'You are a lesson-design partner for a K-12 teacher. Propose exactly 3 distinct lesson DIRECTIONS for the standard below.',
+        'Ground every direction in the standard and its graph context ONLY — do not target other standards, and do not claim prerequisite relationships beyond those listed.',
+        'TARGET STANDARD: ' + surpriseBrief(match),
+        'GRAPH CONTEXT (source-provided; the only relationships you may reference):',
+        '- Prerequisites: ' + (hood.prerequisites.map(surpriseBrief).join('; ') || 'none listed'),
+        '- Builds toward: ' + (hood.leadsTo.map(surpriseBrief).join('; ') || 'none listed'),
+        '- Related: ' + (hood.related.map(surpriseBrief).join('; ') || 'none listed'),
+        gradeLevel ? 'Grade level: ' + gradeLevel : '',
+        studentInterests && studentInterests.length ? 'Student interests to consider: ' + studentInterests.slice(0, 6).join(', ') : '',
+        'Each direction must be meaningfully different (different phenomenon or entry point).',
+        'Return ONLY a JSON array of exactly 3 objects, no prose, each with keys: ',
+        '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
+        '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
+        '"udlSupports" (array of 2-3 short supports).'
+      ].filter(Boolean).join('\n');
+      const raw = await surpriseAi(prompt, false, false, 0.8);
+      const jsonText = String(raw || '').replace(/^[\s\S]*?(\[)/, '$1').replace(/(\])[\s\S]*$/, '$1');
+      const parsed = JSON.parse(jsonText);
+      const clamp = (v, n) => String(v || '').slice(0, n);
+      const directions = (Array.isArray(parsed) ? parsed : []).slice(0, 3).map((d) => ({
+        title: clamp(d.title, 90), phenomenon: clamp(d.phenomenon, 220), essentialQuestion: clamp(d.essentialQuestion, 180),
+        activity: clamp(d.activity, 300), evidence: clamp(d.evidence, 220),
+        udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90))
+      })).filter((d) => d.title && d.essentialQuestion);
+      if (!directions.length) throw new Error('no usable directions');
+      setSurpriseDirections(directions);
+      setSurpriseState('ready');
+    } catch (error) {
+      setSurpriseState('error');
+      addToast('Could not propose lesson directions. Try again.', 'error');
+    }
+  };
+  const useSurpriseDirection = (direction) => {
+    if (typeof handleUseResolvedStandard === 'function' && localResolution) handleUseResolvedStandard(localResolution);
+    const brief = [direction.title, 'Phenomenon: ' + direction.phenomenon, 'Essential question: ' + direction.essentialQuestion,
+      'Activity: ' + direction.activity, 'Evidence of learning: ' + direction.evidence,
+      direction.udlSupports.length ? 'UDL supports: ' + direction.udlSupports.join('; ') : ''].filter(Boolean).join('\n');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
+      addToast('Standard attached; direction copied — paste it into your topic or source field.', 'success');
+    } catch (e) { addToast('Standard attached. Copy the direction text manually.', 'info'); }
+  };
   const resolveFromLocalSnapshot = () => {
     const query = String(standardInputValue || '').trim();
     if (!query || !localStandardsProvider) return;
@@ -464,6 +540,33 @@ function UniversalSettingsPanel(props) {
                                                         Use resolved standard
                                                     </button>
                                                     {targetStandards.length > 0 && <div className="mt-1 text-amber-800">Remove the current target standard before using a resolved local record.</div>}
+                                                </div>
+                                            )}
+                                            {localResolution && localResolution.status === 'resolved' && localResolution.match && surpriseAi && (
+                                                <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="font-bold text-violet-900">Surprise me: lessons in this learning space</span>
+                                                        <button type="button" onClick={runSurpriseMe} disabled={surpriseState === 'loading'}
+                                                            className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
+                                                            {surpriseState === 'loading' ? 'Proposing…' : surpriseState === 'ready' ? 'Propose again' : '✨ Propose 3 directions'}
+                                                        </button>
+                                                    </div>
+                                                    {surpriseState === 'ready' && surpriseHood && (
+                                                        <p className="mt-1 text-violet-900">Graph context: {surpriseHood.prerequisites.length} prerequisite(s), {surpriseHood.leadsTo.length} next, {surpriseHood.related.length} related{surpriseHood.dataset && surpriseHood.dataset.provider ? ' — ' + surpriseHood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
+                                                    )}
+                                                    {surpriseState === 'ready' && surpriseDirections.map(function (direction, index) {
+                                                        return <div key={index} className="mt-2 rounded border border-violet-200 bg-white p-2">
+                                                            <div className="font-bold text-violet-950">{direction.title}</div>
+                                                            <div className="mt-0.5 italic">{direction.essentialQuestion}</div>
+                                                            <div className="mt-0.5">{direction.phenomenon}</div>
+                                                            <div className="mt-0.5"><span className="font-bold">Activity:</span> {direction.activity}</div>
+                                                            <div className="mt-0.5"><span className="font-bold">Evidence:</span> {direction.evidence}</div>
+                                                            {direction.udlSupports.length > 0 && <div className="mt-0.5"><span className="font-bold">UDL:</span> {direction.udlSupports.join(' · ')}</div>}
+                                                            {surpriseHood && surpriseHood.prerequisites.length > 0 && <div className="mt-0.5 text-[10px] text-slate-600">Prerequisites (from source data): {surpriseHood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ')}</div>}
+                                                            <button type="button" onClick={function () { useSurpriseDirection(direction); }}
+                                                                className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
+                                                        </div>;
+                                                    })}
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'ambiguous' && (
