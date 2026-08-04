@@ -1,0 +1,479 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Definitions and Special Rules",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Adopted child",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "An adopted child is always treated as your own child. An adopted child includes a child lawfully placed with you for legal adoption.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Adoption taxpayer identification numbers (ATINs)",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have a dependent who was placed with you for legal adoption and you don’t know the dependent’s SSN, you must get an ATIN for the dependent from the IRS. See Form W-7A for details. If the dependent isn’t a U.S. citizen or resident alien, apply for an ITIN instead using Form W-7.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Children of divorced or separated parents",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "A child will be treated as the qualifying child or qualifying relative of the child’s noncustodial parent (defined later) if all of the following conditions apply.",
+   "source_page": 20
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "The parents are divorced, legally separated, separated under a written separation agreement, or lived apart at all times during the last 6 months of 2025 (whether or not they are or were married).",
+    "The child received over half of the child’s support for 2025 from the parents (and the rules on Multiple support agreements, later, don’t apply). Support of a child received from a parent’s spouse is treated as provided by the parent.",
+    "The child is in custody of one or both of the parents for more than half of 2025.",
+    "Either of the following applies. a. The custodial parent signs Form 8332 or a substantially similar statement that they won’t claim the child as a dependent for 2025, and the noncustodial parent includes a copy of the form or statement with their return. If the divorce decree or separation agreement went into effect after 1984 and before 2009, the noncustodial parent may be able to include certain pages from the decree or agreement instead of Form 8332. See Post-1984 and pre-2009 decree or agreement and Post-2008 decree or agreement. b. A pre-1985 decree of divorce or separate maintenance or written separation agreement between the parents provides that the noncustodial parent can claim the child as a dependent, and the noncustodial parent provides at least $600 for support of the child during 2025."
+   ],
+   "source_page": 20,
+   "item_runs": [
+    [
+     {
+      "text": "The parents are divorced, legally separated, separated under a written separation agreement, or lived apart at all times during the last 6 months of 2025 (whether or not they are or were married).",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The child received over half of the child’s support for 2025 from the parents (and the rules on ",
+      "style": "normal"
+     },
+     {
+      "text": "Multiple support agreements",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later, don’t apply). Support of a child received from a parent’s spouse is treated as provided by the parent.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The child is in custody of one or both of the parents for more than half of 2025.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Either of the following applies. a. The custodial parent signs Form 8332 or a substantially similar statement that they won’t claim the child as a dependent for 2025, and the noncustodial parent includes a copy of the form or statement with their return. If the divorce decree or separation agreement went into effect after 1984 and before 2009, the noncustodial parent may be able to include certain pages from the decree or agreement instead of Form 8332. See ",
+      "style": "normal"
+     },
+     {
+      "text": "Post-1984 and pre-2009 decree or agreement",
+      "style": "emphasis"
+     },
+     {
+      "text": " and ",
+      "style": "normal"
+     },
+     {
+      "text": "Post-2008 decree or agreement",
+      "style": "emphasis"
+     },
+     {
+      "text": ". b. A pre-1985 decree of divorce or separate maintenance or written separation agreement between the parents provides that the noncustodial parent can claim the child as a dependent, and the noncustodial parent provides at least $600 for support of the child during 2025.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If conditions (1) through (4) apply, only the noncustodial parent can claim the child for purposes of the child tax credit and credit for other dependents (lines 19 and 28). However, this doesn’t allow the noncustodial parent to claim head of household filing status, the credit for child and dependent care expenses, the exclusion for dependent care benefits, or the earned income credit. The custodial parent or another taxpayer, if eligible, can claim the child for the earned income credit and these other benefits. See Pub. 501 for details.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Custodial and noncustodial parents",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "The custodial parent is the parent with whom the child lived for the greater number of nights in 2025. The noncustodial parent is the other parent. If the child was with each parent for an equal number of nights, the custodial parent is the parent with the higher adjusted gross income. See Pub. 501 for an exception for a parent who works at night, rules for a child who is emancipated under state law, and other details.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Post-1984 and pre-2009 decree or agreement",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "The decree or agreement must state all three of the following.",
+   "source_page": 20
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "The noncustodial parent can claim the child as a dependent without regard to any condition, such as payment of support.",
+    "The other parent won’t claim the child as a dependent.",
+    "The years for which the claim is released."
+   ],
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "The noncustodial parent must include all of the following pages from the decree or agreement.",
+   "source_page": 20
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Cover page (include the other parent’s SSN on that page).",
+    "The pages that include all the information identified in (1) through (3) above.",
+    "Signature page with the other parent’s signature and date of agreement."
+   ],
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You must include the required information even if you filed it with your return in an earlier year.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You must include the required information even if you filed it with your return in an earlier year.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Post-2008 decree or agreement",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "If the divorce decree or separation agreement went into effect after 2008, the noncustodial parent can’t include pages from the decree or agreement instead of Form 8332. The custodial parent must sign either Form 8332 or a substantially similar statement the only purpose of which is to release the custodial parent’s claim to certain tax benefits for a child, and the noncustodial parent must include a copy with their return. The form or statement must release the custodial parent’s claim to the child without any conditions. For example, the release must not depend on the noncustodial parent paying support.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Release of certain tax benefits revoked",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "A custodial parent who has revoked their previous release of a claim to certain tax benefits for a child must include a copy of the revocation with their return. For details, see Form 8332.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception to citizen test",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are a U.S. citizen or U.S. national and your adopted child lived with you all year as a member of your household, that child meets the requirement to be a U.S. citizen in Step 2, question 1; Step 3, question 2; Step 4, question 2; and Step 5, question 3.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception to gross income test",
+   "source_page": 20
+  },
+  {
+   "type": "paragraph",
+   "text": "If your relative (including a person who lived with you all year as a member of your household) is permanently and totally disabled (defined later), certain income for services performed at a sheltered workshop may be excluded for this test. For details, see Pub. 501.",
+   "source_page": 20
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception to time lived with you",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "Temporary absences by you or the other person for special circumstances, such as school, vacation, business, medical care, military service, or detention in a juvenile facility, count as time the person lived with you. Also see Children of divorced or separated parents, earlier, or Kidnapped child, later.",
+   "source_page": 21,
+   "runs": [
+    {
+     "text": "Temporary absences by you or the other person for special circumstances, such as school, vacation, business, medical care, military service, or detention in a juvenile facility, count as time the person lived with you. Also see ",
+     "style": "normal"
+    },
+    {
+     "text": "Children of divorced or separated parents",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, or ",
+     "style": "normal"
+    },
+    {
+     "text": "Kidnapped child",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If the person meets all other requirements to be your qualifying child but was born or died in 2025, the person is considered to have lived with you for more than half of 2025 if your home was this person’s home for more than half the time the person was alive in 2025. If the person meets all other requirements to be your qualifying child but you adopted the person in 2025, the person was lawfully placed with you for legal adoption by you in 2025, or if the person was an eligible foster child placed with you during 2025, the person is considered to have lived with you for more than half of 2025 if your main home was this person’s main home for more than half the time since the person was adopted or placed with you in 2025.",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "Any other person is considered to have lived with you for all of 2025 if the person was born or died in 2025 and your home was this person’s home for the entire time the person was alive in 2025, or if you adopted the person in 2025, the person was lawfully placed with you for legal adoption by you in 2025, or the person was an eligible foster child placed with you during 2025 and your main home was the person’s main home for the entire time since the person was adopted or placed with you in 2025.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Foster child",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "A foster child is any child placed with you by an authorized placement agency or by judgment, decree, or other order of any court of competent jurisdiction.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Full-time student",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "A full-time student is a child who during any part of 5 calendar months of 2025 was enrolled as a full-time student at a school or took a full-time, on-farm training course given by a school or a state, county, or local government agency. A school includes a technical, trade, or mechanical school. It doesn’t include an on-the-job training course, correspondence school, or school offering courses only through the Internet.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Kidnapped child",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "If your child is presumed by law enforcement authorities to have been kidnapped by someone who isn’t a family member, you may be able to take the child into account in determining your eligibility for head of household or qualifying surviving spouse filing status, the child tax credit, the credit for other dependents, and the earned income credit (EIC). For details, see Pub. 501 (Pub. 596 for the EIC).",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Married person",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "If the person is married and files a joint return, you can’t claim that person as your dependent. However, if the person is married but doesn’t file a joint return or files a joint return only to claim a refund of withheld income tax or estimated tax paid, you may be able to claim that person as a dependent. (See Pub. 501 for details and examples.) In that case, go to Step 2, question 3 (for a qualifying child), or Step 4, question 4 (for a qualifying relative).",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Multiple support agreements",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "If no one person contributed over half of the support of your relative (or a person who lived with you all year as a member of your household) but you and another person(s) provided more than half of your relative’s support, special rules may apply that would treat you as having provided over half of the support. For details, see Pub. 501.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Permanently and totally disabled",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "A person is permanently and totally disabled if, at any time in 2025, the person can’t engage in any substantial gainful activity because of a physical or mental condition and a doctor has determined that this condition has lasted or can be expected to last continuously for at least a year or can be expected to lead to death.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Public assistance payments",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received payments under the Temporary Assistance for Needy Families (TANF) program or other public assistance program and you used the money to support another person, see Pub. 501.",
+   "source_page": 21
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Qualifying child of more than one person",
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "Even if a child meets the conditions to be the qualifying child of more than one person, only one person can claim the child as a qualifying child for all of the following tax benefits, unless the special rule for Children of divorced or separated parents, described earlier, applies.",
+   "source_page": 21,
+   "runs": [
+    {
+     "text": "Even if a child meets the conditions to be the qualifying child of more than one person, only one person can claim the child as a qualifying child for all of the following tax benefits, unless the special rule for ",
+     "style": "normal"
+    },
+    {
+     "text": "Children of divorced or separated parents",
+     "style": "emphasis"
+    },
+    {
+     "text": ", described earlier, applies.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Child tax credit and credit for other dependents (line 19) and additional child tax credit (line 28).",
+    "Head of household filing status.",
+    "Credit for child and dependent care expenses (Schedule 3, line 2).",
+    "Exclusion for dependent care benefits (Form 2441, Part III).",
+    "Earned income credit (line 27a)."
+   ],
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "No other person can take any of the five tax benefits just listed based on the qualifying child. If you and any other person can claim the child as a qualifying child, the following rules apply. For purposes of these rules, the term “parent” means a biological or adoptive parent of an individual. It doesn’t include a stepparent or foster parent unless that person has adopted the individual.",
+   "source_page": 21
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "If only one of the persons is the child’s parent, the child is treated as the qualifying child of the parent.",
+    "If the parents file a joint return together and can claim the child as a qualifying child, the child is treated as the qualifying child of the parents.",
+    "If the parents don’t file a joint return together but both parents claim the child as a qualifying child, the IRS will treat the child as the qualifying child of the parent with whom the child lived for the longer period of time in 2025. If the child lived with each parent for the same amount of time, the IRS will treat the child as the qualifying child of the parent who had the higher adjusted gross income (AGI) for 2025.",
+    "If no parent can claim the child as a qualifying child, the child is treated as the qualifying child of the person who had the highest AGI for 2025.",
+    "If a parent can claim the child as a qualifying child but no parent does so claim the child, the child is treated as the qualifying child of the person who had the highest AGI for 2025, but only if that person’s AGI is higher than the highest AGI of any parent of the child who can claim the child."
+   ],
+   "source_page": 21
+  },
+  {
+   "type": "paragraph",
+   "text": "Example. Your child meets the conditions to be a qualifying child for both you and your parent. Your child doesn’t meet the conditions to be a qualifying child of any other person, including your child’s other parent. Under the rules just described, you can claim your child as a qualifying child for all of the five tax benefits just listed for which you otherwise qualify. Your parent can’t claim any of those five tax benefits based on your child. However, if your parent’s AGI is higher than yours and you do not claim your child as a qualifying child, your child is the qualifying child of your parent. For more details and examples, see Pub. 501.",
+   "source_page": 22,
+   "runs": [
+    {
+     "text": "Example.",
+     "style": "strong"
+    },
+    {
+     "text": " Your child meets the conditions to be a qualifying child for both you and your parent. Your child doesn’t meet the conditions to be a qualifying child of any other person, including your child’s other parent. Under the rules just described, you can claim your child as a qualifying child for all of the five tax benefits just listed for which you otherwise qualify. Your parent can’t claim any of those five tax benefits based on your child. However, if your parent’s AGI is higher than yours and you do not claim your child as a qualifying child, your child is the qualifying child of your parent. For more details and examples, see Pub. 501.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you will be claiming the child as a qualifying child, go to Step 2. Otherwise, stop; you can’t claim any benefits based on this child.",
+   "source_page": 22
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Social security number",
+   "source_page": 22
+  },
+  {
+   "type": "paragraph",
+   "text": "You must enter each dependent’s social security number (SSN). Be sure the name and SSN entered agree with the dependent’s social security card. Otherwise, at the time we process your return, we may reduce or disallow any tax benefits (such as the child tax credit) based on that dependent. If the name or SSN on the dependent’s social security card isn’t correct or you need to get an SSN for your dependent, contact the Social Security Administration (SSA). See Social Security Number (SSN), earlier. If your dependent won’t have a number by the date your return is due, see What if You Can’t File on Time? earlier.",
+   "source_page": 22,
+   "runs": [
+    {
+     "text": "You must enter each dependent’s social security number (SSN). Be sure the name and SSN entered agree with the dependent’s social security card. Otherwise, at the time we process your return, we may reduce or disallow any tax benefits (such as the child tax credit) based on that dependent. If the name or SSN on the dependent’s social security card isn’t correct or you need to get an SSN for your dependent, contact the Social Security Administration (SSA). See ",
+     "style": "normal"
+    },
+    {
+     "text": "Social Security Number (SSN)",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier. If your dependent won’t have a number by the date your return is due, see ",
+     "style": "normal"
+    },
+    {
+     "text": "What if You Can’t File on Time?",
+     "style": "emphasis"
+    },
+    {
+     "text": " earlier.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "For the child tax credit, your child must have a valid SSN. A valid SSN is one that is valid for employment and that is issued by the SSA before the due date of your 2025 return (including extensions). If your child was a U.S. citizen when the child received the SSN, the SSN is valid for employment. If “Not Valid for Employment” is printed on your child’s social security card and your child’s immigration status has changed so that your child is now a U.S. citizen or permanent resident, ask the SSA for a new social security card without the legend. However, if “Valid for Work Only With DHS Authorization” is printed on your child’s social security card, your child has the required SSN only as long as the DHS authorization is valid.",
+   "source_page": 22
+  },
+  {
+   "type": "paragraph",
+   "text": "If your dependent child was born and died in 2025 and you do not have an SSN for the child, enter “Died” on row (3) of the Dependents section and include a copy of the child’s birth certificate, death certificate, or hospital records. The document must show the child was born alive.",
+   "source_page": 22
+  },
+  {
+   "type": "paragraph",
+   "text": "If you didn’t have an SSN that is valid for employment and issued before the due date of your 2025 return (including extensions), you can’t claim the child tax credit on your original or amended 2025 return. To claim the credit on a joint return, you or your spouse must have an SSN that is valid for employment and issued before the due date of your 2025 return (including extensions). The other spouse must have either an SSN or ITIN, and it must have been issued on or before the due date of the return (including extensions). If you, or your spouse if filing jointly, didn’t have either an SSN or ITIN issued on or before the due date of your 2025 return (including extensions), you can’t claim the credit for other dependents on your original or amended return. If you apply for an ITIN on or before the due date of your 2025 return (including extensions) and the IRS issues you an ITIN as a result of the application, the IRS will consider your ITIN as issued on or before the due date of your return.",
+   "source_page": 22
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 6 OF A MULTI-SESSION REBUILD. This plan covers printed pages 20-22 — “Definitions and Special Rules”, the glossary that closes “Who Qualifies as Your Dependent”. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "BOUNDARY WITH TRANCHE 5. Step 5’s question 3 begins on page 19 and its Yes/No branches print at the top of page 20. Tranche 5 authored that question whole; this tranche therefore starts at the “Definitions and Special Rules” heading and deliberately does not repeat it.",
+  "AUTHORED FROM THE TEXT LAYER, WHICH IS NEW. These three pages are two-column prose whose columns used to extract interleaved, so an earlier session would have had to rebuild them from page images. The round-8 column fix — a real two-column gutter is 10pt, narrower than the old 16.5pt minimum the detector could see — is what made the text layer usable here.",
+  "GLOSSARY ENTRIES AS HEADINGS. Every entry is a bold run-in term followed by its definition. Each is authored as a level-5 heading with the trailing period dropped, under the level-4 “Definitions and Special Rules” that is a sibling of the five Steps in tranche 5. That makes the glossary navigable term by term, which is how it is actually used: the Steps send readers here by name.",
+  "“EXAMPLE.” LEFT AS A RUN-IN. The worked example under “Qualifying child of more than one person” also prints as a bold run-in, but it is an illustration inside one entry rather than a defined term. It is marked strong at the head of its paragraph instead of being promoted to a heading, so the glossary’s heading level lists terms only.",
+  "NESTED SUB-ITEMS FOLDED, AS IN EARLIER TRANCHES. In “Children of divorced or separated parents”, condition 4 has printed sub-items “a.” and “b.”; they are kept verbatim inside item 4, so the enumeration is unchanged and the flat list schema is respected.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked. This section is dense with them (“see Multiple support agreements, later”, “See Social Security Number (SSN), earlier”). They are marked emphasis; pages 20-22 carry no link annotations at all, and several destinations live in tranches not yet authored, so inventing anchors now could point at nothing.",
+  "REPEATED DEFINITIONS ARE INTENTIONAL. “Adopted child”, “Foster child”, “Exception to time lived with you” and “Keeping up a home” also appear in tranche 4 under the filing statuses. Both copies are kept: the filing-status text and this glossary are separate reference points, and the wording differs between them.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (full-time, on-farm, pre-1985, Post-2008, on-the-job, Form W-7A, 1040-SR). PAGE FURNITURE OMITTED: printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines.",
+  "PAGE-BREAK SPANNING LIST. The five “which person can claim the child” bullets begin on page 21 and the worked example that follows them prints on page 22. The list is authored whole at page 21 and the example as its own paragraph at page 22, matching where each begins."
+ ]
+}

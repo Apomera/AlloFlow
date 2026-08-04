@@ -194,11 +194,38 @@ automatically authoring additions — check for stamps first; (2) following
 appended after the page text rather than interleaved. Needs its own measured
 round against the corpus, like the round-7 fixes.
 
-### Sessions 6+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 6 (2026-08-04) — pages 20-22 · tranche-06 · 55 blocks · VALIDATED (merged)
+
+"Definitions and Special Rules", the ~20-entry glossary closing "Who Qualifies
+as Your Dependent". `merge-plans t01..t06` → 380 blocks, `ok: true`, pages
+1-22 covered.
+
+**Recall 0.9989** — the best of the rebuild so far, and the first tranche where
+the only shortfall is the three printed page numbers. Getting an honest number
+here needed the baseline to account for the tranche boundary: pages 20-22 open
+with Step 5 question 3's Yes/No branches, which tranche 5 owns because the
+question begins on page 19. Scored naively that reads 0.9599; counting
+tranche 5's page-19 blocks as covered gives 0.9989. Worth reusing whenever a
+tranche starts mid-page.
+
+**These pages were authored from the TEXT LAYER, which round 8 made possible.**
+They are two-column prose whose columns used to extract interleaved — session 5
+recorded them as "author from renders". The 10pt-gutter fix means they now read
+in order, and the whole tranche was authored without a single page image. That
+is the round-8 work paying for itself immediately.
+
+Structure decisions: every glossary entry is a bold run-in term, authored as a
+level-5 heading (period dropped) under the level-4 "Definitions and Special
+Rules" that sits beside the five Steps — the Steps send readers here by name,
+so term-by-term navigation is the point. The worked "Example." under
+"Qualifying child of more than one person" is left as a strong run-in rather
+than a heading: it illustrates one entry rather than defining a term, so the
+heading level stays a clean list of terms.
+
+### Sessions 7+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 06 | 20-22 | Definitions and Special Rules | two-column glossary; extracts INTERLEAVED (author from renders); starts at the "Definitions and Special Rules" heading — Step 5 q3 is already in tranche 5 |
 | 07 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
