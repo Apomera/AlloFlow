@@ -676,7 +676,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         'YOU CAN GET A SECOND OPINION. If you disagree with the district\'s evaluation, you may request an INDEPENDENT EDUCATIONAL EVALUATION (IEE), generally at public expense.',
         'DISAGREEMENT HAS A LADDER. You must be given a procedural-safeguards document explaining your options — asking for another meeting, mediation, a state complaint, a due-process hearing. Most disagreements resolve on the bottom rungs.',
         'THE PAPER TRAIL IS YOURS. You have the right to inspect your child\'s education records and to request corrections.',
-        'IT IS NEVER SET IN STONE. The IEP is reviewed at least annually, your child is reevaluated at least every three years, and you can request an IEP meeting at any time in between. A 504 plan carries its own protections and grievance path.'
+        'IT IS NEVER SET IN STONE. The IEP is reviewed at least annually, your child is reevaluated at least every three years, and you can request an IEP meeting at any time in between. A 504 plan carries its own protections and grievance path.',
+        'DISCIPLINE HAS A GUARDRAIL. If a child with an IEP or 504 faces removal beyond ten school days, the team must hold a MANIFESTATION DETERMINATION: was the behavior substantially caused by the disability, or by the plan not being implemented? If yes, the child generally returns, and the team\'s job becomes fixing the plan — often with a functional behavior assessment — not extending the punishment.',
+        'THE IEP MUST LOOK PAST GRADUATION. By age 16 — earlier in many states — the IEP must include TRANSITION PLANNING: measurable goals for life after school (work, training, independent living) and the services to get there, built around the student\'s own stated interests. The student should be invited to these meetings; it is their future being planned.'
       ]
     },
     {

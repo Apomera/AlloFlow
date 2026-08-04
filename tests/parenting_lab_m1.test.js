@@ -104,6 +104,8 @@ describe('Science of Parenting Lab — shell + M1', () => {
       'procedural-safeguards document',       // the disagreement ladder
       'inspect your child',                   // records access
       'at least annually',                    // review cycle
+      'MANIFESTATION DETERMINATION',          // discipline guardrail (>10 days)
+      'TRANSITION PLANNING',                  // by 16, student-centered
     ]) {
       expect(html).toContain(right);
     }
