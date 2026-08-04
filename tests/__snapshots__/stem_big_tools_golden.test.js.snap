@@ -6,7 +6,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 5,
   "lengthBucket": 68,
   "selects": 0,
-  "sha": "50da3d9908dadee8",
+  "sha": "6e2097cae4265927",
   "svgs": 0,
 }
 `;
@@ -24,11 +24,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 85,
+  "buttons": 86,
   "inputs": 7,
-  "lengthBucket": 630,
+  "lengthBucket": 633,
   "selects": 0,
-  "sha": "1557d9d5a08666c7",
+  "sha": "416320b14a12c8d4",
   "svgs": 0,
 }
 `;
@@ -83,7 +83,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 5,
   "lengthBucket": 141,
   "selects": 0,
-  "sha": "a253d35d06b5e2cb",
+  "sha": "f3c93325f1c36e28",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 127,
   "selects": 0,
-  "sha": "6f5427af213dc16e",
+  "sha": "713398ef0b482344",
   "svgs": 1,
 }
 `;
@@ -123,11 +123,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 25,
+  "buttons": 24,
   "inputs": 1,
-  "lengthBucket": 83,
+  "lengthBucket": 80,
   "selects": 0,
-  "sha": "a44e059865eeec72",
+  "sha": "992cdbed9229e633",
   "svgs": 0,
 }
 `;

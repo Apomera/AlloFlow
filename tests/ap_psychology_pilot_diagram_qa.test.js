@@ -10,6 +10,22 @@ const packSource = resolve(root, 'test_prep/ap_psychology_pilot.json');
 const librarySource = resolve(root, 'test_prep/ap_psychology_pilot_learning_library.json');
 const temporaryRoots = [];
 
+// The generator is copied into a sandbox and run there, so its sibling helpers
+// have to travel with it. Pinning the copy-list to one filename went stale the
+// moment qa_ap_psychology_pilot.cjs picked up write_generated_file.cjs — the
+// script was fine, the sandbox just couldn't resolve the new require. Walk the
+// local `require('./x.cjs')` graph instead so future helpers come along too.
+function collectLocalDependencies(entrySource, seen = new Set()) {
+  const resolved = resolve(entrySource);
+  if (seen.has(resolved) || !fs.existsSync(resolved)) return seen;
+  seen.add(resolved);
+  const source = fs.readFileSync(resolved, 'utf8');
+  for (const match of source.matchAll(/require\(['"](\.\/[^'"]+)['"]\)/g)) {
+    collectLocalDependencies(resolve(path.dirname(resolved), match[1]), seen);
+  }
+  return seen;
+}
+
 function runWithLibraryMutation(mutate = () => {}) {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-ap-diagram-qa-'));
   temporaryRoots.push(temporaryRoot);
@@ -17,7 +33,9 @@ function runWithLibraryMutation(mutate = () => {}) {
   const testPrepDirectory = resolve(temporaryRoot, 'test_prep');
   fs.mkdirSync(devToolsDirectory, { recursive: true });
   fs.mkdirSync(testPrepDirectory, { recursive: true });
-  fs.copyFileSync(generatorSource, resolve(devToolsDirectory, 'qa_ap_psychology_pilot.cjs'));
+  for (const dependency of collectLocalDependencies(generatorSource)) {
+    fs.copyFileSync(dependency, resolve(devToolsDirectory, path.basename(dependency)));
+  }
   fs.copyFileSync(packSource, resolve(testPrepDirectory, 'ap_psychology_pilot.json'));
 
   const library = JSON.parse(fs.readFileSync(librarySource, 'utf8'));

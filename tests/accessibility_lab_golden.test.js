@@ -319,7 +319,15 @@ describe('authentic workspace host contract', () => {
     expect(handlerStart).toBeGreaterThan(-1);
     expect(handlerEnd).toBeGreaterThan(handlerStart);
     const handler = hostSource.slice(handlerStart, handlerEnd);
-    expect((handler.match(/!options\.suppressLiveFollow/g) || []).length).toBe(3);
+    // Assert the CONTRACT, not the head-count. The rule is that no live-follow
+    // call inside this handler may fire when suppressLiveFollow is set; the
+    // number of such calls is an implementation detail. Pinning it to 3 broke
+    // the moment a fourth — correctly guarded — path was added, reporting a
+    // defect where the code was right. This form is strictly stronger: it fails
+    // if ANY call site is left unguarded, however many there are.
+    const liveFollowCalls = handler.match(/[^\n]*_alloFollowResourceLive\s*\(/g) || [];
+    expect(liveFollowCalls.length).toBeGreaterThanOrEqual(3);
+    expect(liveFollowCalls.filter((call) => !/!options\.suppressLiveFollow/.test(call))).toEqual([]);
     expect(hostSource).toContain('onOpenAuthenticView: (item, reviewContext = {}) => {');
     expect(hostSource).toContain('handleRestoreView(item, { suppressLiveFollow: true })');
     expect(hostSource).toContain("const ACCESSIBILITY_REVIEW_SESSION_KEY = 'alloflow_accessibility_review_session_v1'");

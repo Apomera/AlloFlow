@@ -25,7 +25,11 @@ describe('water cycle canvas animation loop', () => {
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isWaterCycleHidden()');
       expect(source).toContain('function cancelWaterCycleFrame()');
-      expect(source).toContain('function scheduleWaterCycleFrame()');
+      // Match the declaration without pinning its parameter list. The literal
+      // 'function scheduleWaterCycleFrame()' went stale the moment the function
+      // gained a forceRender argument — the scheduling behaviour this test cares
+      // about was unchanged, but the assertion reported a failure anyway.
+      expect(source).toMatch(/function scheduleWaterCycleFrame\(/);
       expect(source).toContain('if (!wcAlive || canvasEl._wcAnim || isWaterCycleHidden()) return;');
       expect(source).toContain('canvasEl._wcAnim = requestAnimationFrame(draw);');
       expect(source).toContain('function cleanupWaterCycleCanvas()');

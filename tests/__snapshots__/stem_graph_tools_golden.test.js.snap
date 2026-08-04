@@ -5,9 +5,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 15,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 34,
+  "lengthBucket": 37,
   "paths": 0,
-  "sha": "046408a4bb26208d",
+  "sha": "bccad6396592d2cc",
   "svgs": 0,
 }
 `;
@@ -19,7 +19,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 125,
   "paths": 0,
-  "sha": "81bb5033ec4ace15",
+  "sha": "d147c9e9686afbc9",
   "svgs": 2,
 }
 `;
@@ -115,7 +115,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 124,
   "paths": 1,
-  "sha": "e95e0eee42374e8b",
+  "sha": "a05adb38a699c44b",
   "svgs": 1,
 }
 `;

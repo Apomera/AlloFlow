@@ -15,7 +15,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 24,
   "inputs": 4,
   "lengthBucket": 63,
-  "sha": "753d4f17ae09cd21",
+  "sha": "7bd06815a309130b",
   "svgs": 0,
 }
 `;
@@ -35,7 +35,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 45,
   "inputs": 0,
   "lengthBucket": 113,
-  "sha": "17d61ef3c51f4728",
+  "sha": "0b6f62e507f41d75",
   "svgs": 0,
 }
 `;
@@ -45,7 +45,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 20,
   "inputs": 0,
   "lengthBucket": 102,
-  "sha": "1f4c06f2243f5ae1",
+  "sha": "92e0055f99f32f59",
   "svgs": 0,
 }
 `;
@@ -92,10 +92,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for lifeSkills 1`] = `
 {
-  "buttons": 58,
+  "buttons": 65,
   "inputs": 1,
-  "lengthBucket": 241,
-  "sha": "b9159ca2cdade91f",
+  "lengthBucket": 311,
+  "sha": "7d0c0e23c2947784",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 13,
   "inputs": 0,
   "lengthBucket": 144,
-  "sha": "bb5e94ca266cc765",
+  "sha": "6cb8a4963a0c6c98",
   "svgs": 0,
 }
 `;
@@ -115,7 +115,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 16,
   "inputs": 6,
   "lengthBucket": 84,
-  "sha": "b19456d5340f2818",
+  "sha": "c01eccaf3682ed1e",
   "svgs": 0,
 }
 `;
@@ -134,8 +134,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 36,
   "inputs": 6,
-  "lengthBucket": 167,
-  "sha": "7669925cc6a6c9b2",
+  "lengthBucket": 169,
+  "sha": "071ce93ce029a6dc",
   "svgs": 1,
 }
 `;
@@ -145,7 +145,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 31,
   "inputs": 4,
   "lengthBucket": 92,
-  "sha": "5fcef3633db7ba60",
+  "sha": "b244699e7f5651db",
   "svgs": 0,
 }
 `;
@@ -182,10 +182,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for typingPractice 1`] = `
 {
-  "buttons": 36,
-  "inputs": 0,
-  "lengthBucket": 151,
-  "sha": "9db0d36134ffc24c",
+  "buttons": 45,
+  "inputs": 1,
+  "lengthBucket": 198,
+  "sha": "ae9b82291d700462",
   "svgs": 0,
 }
 `;

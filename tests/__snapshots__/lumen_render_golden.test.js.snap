@@ -15,7 +15,7 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -302,7 +302,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -579,7 +579,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -767,7 +767,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -937,7 +937,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
 <button aria-expanded="true" aria-controls="lumen-view-options" class="mt-1.5 text-xs underline text-slate-600">▾ View options — Formal · Trend</button>
 <div id="lumen-view-options">
@@ -1083,7 +1083,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </svg>
 <button class="mt-2 text-xs underline text-slate-600" aria-expanded="false" aria-controls="lumen-data-table">Show data table (the chart as a table)</button>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
-<button class="px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-500">Generate AI reading (hypotheses)</button>
+<button class="px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-700">Generate AI reading (hypotheses)</button>
 <span class="text-[10px] text-slate-500">AI reading · AI-generated — verify yourself.</span>
 </div>
 <div class="mt-2 p-2 rounded border" style="border-color:#b45309;background:#fffbeb">
@@ -1151,7 +1151,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -1328,7 +1328,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -1492,7 +1492,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -1629,7 +1629,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -1935,7 +1935,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2089,7 +2089,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2168,7 +2168,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2460,7 +2460,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2607,7 +2607,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2745,7 +2745,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2924,7 +2924,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -2995,7 +2995,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -3124,7 +3124,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -3207,7 +3207,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -3371,7 +3371,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
@@ -3537,7 +3537,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
-<button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L1 · Data only</button>
+<button aria-pressed="true" class="bg-amber-700 text-white border-amber-700 px-2 py-1 text-xs rounded border">L1 · Data only</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>

@@ -1051,6 +1051,10 @@ const MODULES = [
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
     'error_reporter_module.js',
+    'sped_timelines_module.js',
+    'standards_snapshots/ma-science-grade-5.js',
+    'standards_snapshots/ccss-math.js',
+    'standards_snapshots/ccss-ela.js',
     'ai_backend_module.js',
     'psychometric_probes.json',
     'psychometric_math_probes.json',
