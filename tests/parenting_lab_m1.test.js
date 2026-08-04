@@ -114,6 +114,21 @@ describe('Science of Parenting Lab — shell + M1', () => {
     expect(menu).toContain('not clinical or legal advice');
   });
 
+  it('M9 points readers at the actual regulation text, with real citations', () => {
+    loadTool(FILE, 'parentingLab');
+    const html = renderTool('parentingLab', { parentingLab: { view: 'm9' } });
+    expect(html).toContain('Education Law Navigator');
+    expect(html).toContain('Nothing there is paraphrased');
+    // Citations named here must exist in the ingested corpus — a dead
+    // citation in a rights card is worse than none.
+    const idea = JSON.parse(fs.readFileSync('law_corpus/idea-part-b.json', 'utf8'));
+    const have = new Set(idea.sections.map((s) => s.number));
+    for (const n of ['300.301', '300.503', '300.502', '300.530']) {
+      expect(html).toContain(n);
+      expect(have.has(n), 'corpus has § ' + n).toBe(true);
+    }
+  });
+
   it('M6/M7/M8 quiz answers are distributed, not single-option-biased', () => {
     for (const arrName of ['M6_CLAIMS', 'M7_CLAIMS', 'M8_SCENES']) {
       const seg = src.match(new RegExp('var ' + arrName + ' = \\[([\\s\\S]*?)\\n  \\];'))[1];

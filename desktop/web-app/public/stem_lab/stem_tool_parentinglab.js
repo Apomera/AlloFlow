@@ -683,6 +683,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       ]
     },
     {
+      id: 'help-readlaw',
+      title: 'Read the actual regulation',
+      evidence: null,
+      body: 'Every right on the card above is written down somewhere public, and you are allowed to read it. AlloFlow\'s Education Law Navigator carries the full published text of IDEA Part B and Section 504, pulled from the federal eCFR and stamped with the date it was retrieved — evaluations at § 300.301, prior written notice at § 300.503, independent evaluations at § 300.502, discipline and manifestation at § 300.530. Nothing there is paraphrased. When a meeting turns on what the rule says, reading the sentence together is often faster than arguing about it.'
+    },
+    {
       id: 'help-meeting',
       title: 'Walking into the meeting',
       evidence: null,
