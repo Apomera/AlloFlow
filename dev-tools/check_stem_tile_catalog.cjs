@@ -146,13 +146,32 @@ if (!declMatch) {
 }
 // bracketStart points at the `[` itself
 const bracketStart = declMatch.index + declMatch[0].length - 1;
-// Bracket-match to find the closing ]
+// Bracket-match to find the closing ].
+// Comment-aware as well as string-aware: this scanner used to treat a lone
+// apostrophe in a // comment ("Life Skills Lab's ...") as the start of a
+// string, swallow the rest of the array, and abort with "Could not
+// bracket-match closing ]" — a confusing failure that points nowhere near
+// the actual edit. Comments are skipped outright so their punctuation
+// cannot desync the depth counter.
 let depth = 0, bracketEnd = -1, inStr = null;
 for (let i = bracketStart; i < catalogSrc.length; i++) {
   const c = catalogSrc[i];
   if (inStr) {
     if (c === '\\') { i++; continue; }
     if (c === inStr) inStr = null;
+    continue;
+  }
+  // Skip comments before any quote handling.
+  if (c === '/' && catalogSrc[i + 1] === '/') {
+    const nl = catalogSrc.indexOf('\n', i);
+    if (nl === -1) break;
+    i = nl;
+    continue;
+  }
+  if (c === '/' && catalogSrc[i + 1] === '*') {
+    const close = catalogSrc.indexOf('*/', i + 2);
+    if (close === -1) break;
+    i = close + 1;
     continue;
   }
   if (c === "'" || c === '"' || c === '`') { inStr = c; continue; }
