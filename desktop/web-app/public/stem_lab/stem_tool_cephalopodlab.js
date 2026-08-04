@@ -53,6 +53,269 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   }
 
   // ───────────────────────────────────────────────────────────
+  // BODY PLAN 3D — schematic octopus anatomy on the shared viewer
+  // ───────────────────────────────────────────────────────────
+  // Part ids MIRROR the ANATOMY list rendered in the Body Plan tab, so a
+  // pick in 3D and a click in the region list drive the same
+  // `anatomyRegion` state and the same detail panel. No anatomy CLAIM
+  // lives here — the science text is unchanged in that list; this file
+  // only places shapes.
+  //
+  // Schematic on purpose: proportions are readable, not measured. What
+  // the arrangement is for is the part a flat diagram cannot carry —
+  // the brain as a RING the esophagus passes through, sitting between
+  // the eyes and BELOW the mantle (the sac most people read as the
+  // head), a branchial heart at the base of each gill with the systemic
+  // heart between them, and a nerve cord running the entire length of
+  // all eight arms, which is where two thirds of the neurons are.
+  //
+  // Chip labels are English because cfg.parts is fixed when the viewer
+  // is created, before ctx.t exists; the localized names ride the detail
+  // panel and the region buttons under the canvas. Same tradeoff as
+  // firstresponse's BODY_PARTS.
+  var CL_ANAT_PARTS = [
+    { id: 'mantle',        label: 'Mantle',          color: '#fb923c' },
+    { id: 'gills',         label: 'Gills (2)',       color: '#0ea5e9' },
+    { id: 'hearts',        label: 'Hearts (3)',      color: '#dc2626' },
+    { id: 'central-brain', label: 'Central brain',   color: '#a78bfa' },
+    { id: 'eye',           label: 'Eyes',            color: '#fbbf24' },
+    { id: 'siphon',        label: 'Siphon',          color: '#38bdf8' },
+    { id: 'beak',          label: 'Beak',            color: '#fca5a5' },
+    { id: 'arm-ganglion',  label: 'Arm ganglia (8)', color: '#86efac' },
+    { id: 'hectocotylus',  label: 'Hectocotylus',    color: '#f472b6' }
+  ];
+
+  function buildCephAnatomyScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var sp = api.sceneProps || {};
+    var xray = sp.xray !== false;              // seeing inside is the default
+
+    function partHex(id, fallback) {
+      for (var i = 0; i < api.parts.length; i++) {
+        if (api.parts[i].id === id) {
+          var n = parseInt(String(api.partColor(api.parts[i]) || '').replace('#', ''), 16);
+          return isNaN(n) ? fallback : n;
+        }
+      }
+      return fallback;
+    }
+
+    // api.trim() hands back a fresh Phong material (and forces white in
+    // contrast mode). Opacity is applied here so the viewer's frame loop
+    // records it as the base it dims from when another part is selected.
+    // Deep-translucent skin also stops writing depth — otherwise it hides
+    // the organs it exists to reveal.
+    function bodyMat(hex, shiny, opacity) {
+      var m = api.trim(hex, shiny);
+      if (opacity < 1) {
+        m.transparent = true;
+        m.opacity = opacity;
+        if (opacity < 0.6) m.depthWrite = false;
+      }
+      return m;
+    }
+    // X-ray skin. A simple low-opacity body still washes the organs out —
+    // it is a dim layer sitting IN FRONT of them. Drawing only the BACK
+    // faces removes that layer entirely: the shell reads as the animal's
+    // far wall and silhouette, and everything inside stays crisp.
+    function shellMat(hex, shiny) {
+      if (!xray) return bodyMat(hex, shiny, 1);
+      var m = api.trim(hex, shiny);
+      m.transparent = true;
+      m.opacity = 0.30;          // the far wall is context, not the subject
+      m.side = THREE.BackSide;
+      m.depthWrite = false;
+      return m;
+    }
+
+    // meshes[id] is what the label chip projects from (getWorldPosition),
+    // so each part group sits AT the structure it names and its children
+    // are offset back off that point.
+    function partGroup(id, x, y, z) {
+      var g = new THREE.Group();
+      g.position.set(x, y, z);
+      api.scene.add(g);
+      meshes[id] = g;
+      return g;
+    }
+    function addAt(g, mesh, x, y, z) {
+      mesh.position.set(x - g.position.x, y - g.position.y, z - g.position.z);
+      g.add(mesh);
+      return mesh;
+    }
+    // The viewer's raycaster reads userData.partId off the first hit.
+    function pickable(mesh, id) {
+      mesh.userData.partId = id;
+      picks.push(mesh);
+      return mesh;
+    }
+
+    var skinHex = api.contrast ? 0xffffff : 0x9c6f92;
+    // Skin view means skin: fully opaque, or the "outside" view still shows
+    // organs through it and the toggle teaches nothing.
+    var skinOp = xray ? 0.30 : 1;
+    var SPH = new THREE.SphereGeometry(1, 9, 7);    // ~180 meshes share this
+
+    // ── Mantle — the sac mistaken for a head. Everything else hangs below it.
+    var mantleG = partGroup('mantle', 0, 1.24, 0);
+    var mantle = new THREE.Mesh(SPH, shellMat(partHex('mantle', 0xfb923c), 26));
+    mantle.scale.set(0.60, 0.74, 0.56);
+    if (api.wantShadow) mantle.castShadow = true;
+    mantleG.add(pickable(mantle, 'mantle'));
+
+    // ── Gills — two feathery columns inside the mantle cavity.
+    var gillsG = partGroup('gills', 0, 1.06, 0.02);
+    var gillHex = partHex('gills', 0x0ea5e9);
+    var gillMat = bodyMat(gillHex, 18, 1);          // one material per part, not per mesh
+    for (var gs = 0; gs < 2; gs++) {
+      var gside = gs === 0 ? -1 : 1;
+      for (var f = 0; f < 11; f++) {
+        var ft = f / 10;
+        var fil = new THREE.Mesh(SPH, gillMat);
+        // Thin leaflets on a curved rachis — a gill is a feather, not a coil.
+        fil.scale.set(0.150 * (1 - 0.46 * ft), 0.026, 0.046);
+        fil.rotation.z = gside * 0.24;
+        gillsG.add(pickable(addAt(gillsG, fil,
+          gside * (0.245 + 0.055 * Math.sin(ft * 2.6)), 1.06 + 0.27 - ft * 0.58, 0.02), 'gills'));
+      }
+    }
+
+    // ── Hearts — a branchial heart at each gill base, systemic between them.
+    var heartsG = partGroup('hearts', 0, 0.90, 0);
+    var heartHex = partHex('hearts', 0xdc2626);
+    var heartMat = bodyMat(heartHex, 34, 1);
+    var HEARTS = [[-0.255, 0.80, 0.02, 0.100], [0.255, 0.80, 0.02, 0.100], [0, 0.94, -0.04, 0.120]];
+    for (var hi = 0; hi < HEARTS.length; hi++) {
+      var hm = new THREE.Mesh(SPH, heartMat);
+      hm.scale.setScalar(HEARTS[hi][3]);
+      heartsG.add(pickable(addAt(heartsG, hm, HEARTS[hi][0], HEARTS[hi][1], HEARTS[hi][2]), 'hearts'));
+    }
+
+    // ── Head — carries the eyes and the brain, BELOW the mantle.
+    var head = new THREE.Mesh(SPH, shellMat(skinHex, 20));
+    head.scale.set(0.44, 0.31, 0.42);
+    head.position.set(0, 0.50, 0);
+    api.scene.add(head);
+
+    // ── Eyes — with the horizontal slit pupil students recognise on sight.
+    var eyesG = partGroup('eye', 0, 0.54, 0.06);
+    var eyeHex = partHex('eye', 0xfbbf24);
+    var pupilHex = api.contrast ? 0x000000 : 0x1c1410;
+    var eyeMat = bodyMat(eyeHex, 60, 1);
+    var pupilMat = bodyMat(pupilHex, 50, 1);
+    for (var es = 0; es < 2; es++) {
+      var eside = es === 0 ? -1 : 1;
+      var eye = new THREE.Mesh(SPH, eyeMat);
+      eye.scale.setScalar(0.150);
+      eyesG.add(pickable(addAt(eyesG, eye, eside * 0.375, 0.54, 0.04), 'eye'));
+      var pupil = new THREE.Mesh(SPH, pupilMat);
+      pupil.scale.set(0.036, 0.036, 0.105);
+      addAt(eyesG, pupil, eside * 0.475, 0.54, 0.04);
+    }
+
+    // ── Central brain — a torus with a VERTICAL axis, so the esophagus
+    // running down through its hole is the shape you actually see.
+    var brainG = partGroup('central-brain', 0, 0.62, 0);
+    var brain = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.052, 10, 20),
+      bodyMat(partHex('central-brain', 0xa78bfa), 28, 1));
+    brain.rotation.x = Math.PI / 2;
+    brainG.add(pickable(brain, 'central-brain'));
+
+    // ── Siphon — the steerable funnel, emerging from the mantle opening at
+    // the mantle/head junction and clear of the head silhouette, because a
+    // funnel buried inside the head teaches nobody where the jet comes from.
+    var siphonG = partGroup('siphon', 0, 0.70, 0.50);
+    var siphon = new THREE.Mesh(new THREE.CylinderGeometry(0.080, 0.145, 0.44, 12, 1, true),
+      bodyMat(partHex('siphon', 0x38bdf8), 24, 1));
+    siphon.material.side = THREE.DoubleSide;      // open funnel, visible inside
+    siphon.rotation.x = Math.PI * 0.42;
+    siphonG.add(pickable(siphon, 'siphon'));
+
+    // ── Beak — the only hard part, at the centre of the arm crown.
+    var beakG = partGroup('beak', 0, 0.20, 0);
+    var beak = new THREE.Mesh(new THREE.ConeGeometry(0.095, 0.19, 8),
+      bodyMat(partHex('beak', 0xfca5a5), 40, 1));
+    beak.rotation.x = Math.PI;
+    beakG.add(pickable(beak, 'beak'));
+
+    // ── Eight arms, each with its nerve cord. The cord is its own part:
+    // clicking any arm selects the ganglia, so the answer to "where is
+    // the thinking done" is the thing that lights up.
+    var HECTO_ARM = 2;
+    var cordHex = partHex('arm-ganglion', 0x86efac);
+    var cordsG = partGroup('arm-ganglion', 0, -0.42, 0);
+    var armMat = shellMat(skinHex, 16);             // 144 arm segments, 1 material
+    var cordMat = bodyMat(cordHex, 30, 1);
+    var hectoMat = bodyMat(partHex('hectocotylus', 0xf472b6), 30, 1);
+
+    function armPoint(ang, t) {
+      var r = 0.15 + 1.18 * Math.pow(t, 0.90) + 0.16 * Math.sin(t * Math.PI);
+      var y = 0.16 - 1.52 * Math.pow(t, 1.28);
+      return new THREE.Vector3(Math.cos(ang) * r, y, Math.sin(ang) * r);
+    }
+
+    for (var a = 0; a < 8; a++) {
+      var ang = (a / 8) * Math.PI * 2 + 0.20;
+      var pts = [];
+      // Enough segments that consecutive spheres OVERLAP — at 11 they read as
+      // a string of beads instead of a tentacle (caught on the first render).
+      for (var s = 0; s <= 17; s++) {
+        var t = s / 17;
+        var p = armPoint(ang, t);
+        pts.push(p);
+        var seg = new THREE.Mesh(SPH, armMat);
+        seg.scale.setScalar(0.125 * (1 - 0.72 * t));
+        seg.position.copy(p);
+        // The arm skin picks as the ganglion inside it — selecting an arm
+        // should teach where its neurons are, not dead-end on skin.
+        api.scene.add(pickable(seg, 'arm-ganglion'));
+      }
+      var cord = new THREE.Mesh(
+        new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 22, 0.030, 6, false),
+        cordMat);
+      cord.position.set(-cordsG.position.x, -cordsG.position.y, -cordsG.position.z);
+      cordsG.add(pickable(cord, 'arm-ganglion'));
+      for (var gg = 1; gg <= 4; gg++) {
+        var bp = armPoint(ang, gg / 5);
+        var bead = new THREE.Mesh(SPH, cordMat);
+        bead.scale.setScalar(0.046);
+        cordsG.add(pickable(addAt(cordsG, bead, bp.x, bp.y, bp.z), 'arm-ganglion'));
+      }
+      // ── Hectocotylus — the modified tip of the third arm. Sits proud of
+      // the arm surface so it wins the raycast over the skin behind it.
+      if (a === HECTO_ARM) {
+        var tip = armPoint(ang, 0.84);
+        var hectoG = partGroup('hectocotylus', tip.x, tip.y, tip.z);
+        for (var ht = 0; ht < 4; ht++) {
+          var hp = armPoint(ang, 0.70 + ht * 0.10);
+          var hbead = new THREE.Mesh(SPH, hectoMat);
+          hbead.scale.setScalar(0.075 - ht * 0.008);
+          hectoG.add(pickable(addAt(hectoG, hbead, hp.x, hp.y, hp.z), 'hectocotylus'));
+        }
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: mantle };
+  }
+
+  // Null object so the Body Plan tab renders identically on a device with
+  // no WebGL and on the server — the 2D diagram carries the tab there.
+  var CL_NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  var CEPH3D = (function () {
+    var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) return CL_NULL_VIEWER;
+    return mk({
+      parts: CL_ANAT_PARTS,
+      buildScene: buildCephAnatomyScene,
+      home: { yaw: 0.42, pitch: 0.62, dist: 4.3 }
+    });
+  })();
+
+  // ───────────────────────────────────────────────────────────
   // SPECIES DATA — 10 cephalopod species with biology + behavior
   // ───────────────────────────────────────────────────────────
   // Each species has:
@@ -15685,51 +15948,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         ];
         var highlightedId = d.anatomyRegion || 'central-brain';
         var highlighted = ANATOMY.find(function(a) { return a.id === highlightedId; }) || ANATOMY[0];
+
+        // ── 3D body plan ──
+        // Same `anatomyRegion` state the region buttons write, so the 3D
+        // pick, the flat diagram and the list are three doors into one
+        // selection. X-ray is the default: the arrangement of the organs
+        // is the whole reason this view exists.
+        var anatXray = d.anatXray !== false;
+        var anat3d = (CEPH3D.status() === 'failed') ? 'failed' : (d.anat3dStatus || 'idle');
+        CEPH3D.sync({
+          selected: highlightedId,
+          sceneProps: { xray: anatXray },
+          sceneKey: anatXray ? 'xray' : 'skin',
+          showAllLabels: !!d.anatLabels,
+          dark: true,
+          contrast: !!(ctx && ctx.isContrast),
+          onPick: function(id) {
+            var got = null;
+            for (var pi = 0; pi < ANATOMY.length; pi++) if (ANATOMY[pi].id === id) got = ANATOMY[pi];
+            setCL({ anatomyRegion: id });
+            awardXP(1);
+            clAnnounce('Selected ' + (got ? got.name : id));
+          },
+          onStatus: function(n) { setCL({ anat3dStatus: n }); }
+        });
+        function anat3dBtn(label, glyph, fn) {
+          return h('button', { key: label, 'aria-label': label, onClick: fn, disabled: anat3d !== 'ready',
+            style: { padding: '6px 10px', minWidth: 34, fontSize: 12, borderRadius: 6, cursor: 'pointer',
+              background: 'rgba(15,23,42,0.6)', color: '#cbd5e1',
+              border: '1px solid rgba(100,116,139,0.35)', opacity: anat3d === 'ready' ? 1 : 0.45 } }, glyph);
+        }
+        // The flat diagram this tab shipped with is now the fallback: a
+        // Chromebook with WebGL disabled or a filtered CDN loses nothing.
+        var anatFlatDiagram = h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', role: 'img',
+            'aria-label': __alloT('stem.cephalopodlab.octopus_anatomy_accessible_summary', 'Octopus anatomy diagram') + '. Selected region: ' + highlighted.name + '. Use the All regions buttons below to explore.',
+            style: { background: 'rgba(15,23,42,0.5)', borderRadius: 12, border: '1px solid rgba(100,116,139,0.3)' } },
+          h('ellipse', { cx: 200, cy: 65, rx: 50, ry: 38, fill: 'rgba(251,146,60,0.15)', stroke: '#fb923c', strokeWidth: 1.5 }),
+          h('ellipse', { cx: 200, cy: 110, rx: 32, ry: 22, fill: 'rgba(167,139,250,0.15)', stroke: '#a78bfa', strokeWidth: 1.5 }),
+          h('circle', { cx: 175, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
+          h('circle', { cx: 175, cy: 105, r: 3, fill: '#1c1410' }),
+          h('circle', { cx: 225, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
+          h('circle', { cx: 225, cy: 105, r: 3, fill: '#1c1410' }),
+          [-50, -32, -14, 4, 22, 40, 58, 76].map(function(deg, i) {
+            var rad = deg * Math.PI / 180;
+            return h('path', { key: i,
+              d: 'M 200 145 Q ' + (200 + Math.sin(rad) * 50) + ' ' + (175 + Math.cos(rad) * 30) + ' ' + (200 + Math.sin(rad) * 90) + ' ' + (200 + Math.cos(rad) * 90),
+              fill: 'none', stroke: '#a78bfa', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.6 });
+          }),
+          ANATOMY.map(function(a) {
+            var isHighlighted = a.id === highlightedId;
+            return h('g', { key: a.id, style: { cursor: 'pointer' },
+              onClick: function() { setCL({ anatomyRegion: a.id }); awardXP(1); clAnnounce('Selected ' + a.name); } },
+              h('circle', { cx: a.cx, cy: a.cy, r: a.r + 8, fill: 'transparent' }),
+              h('circle', { cx: a.cx, cy: a.cy, r: a.r,
+                fill: isHighlighted ? a.color : 'rgba(15,23,42,0.7)',
+                stroke: a.color, strokeWidth: 2.5, opacity: isHighlighted ? 1 : 0.8 }),
+              h('text', { x: a.cx, y: a.cy + 4, textAnchor: 'middle', fontSize: 13, pointerEvents: 'none' }, a.emoji));
+          }));
+
         return h('div', null,
           panelHeader('🧠 Body Plan & 9 Brains',
             'Cephalopod anatomy is built around principles that look like a different evolutionary path entirely — distributed intelligence, multiple hearts, blue copper blood, a beak that\'s the only hard thing in the body, and a "mantle" that\'s both lung and engine. Click any labeled region.'),
 
           h('div', { style: cardStyle() },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 } },
-              // Anatomical diagram
+              // Anatomical model — 3D where the device allows it, the flat
+              // diagram where it does not. Both write the same selection.
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
-                  __alloT('stem.cephalopodlab.click_a_region', '🔍 Click a region')),
-                h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', role: 'img', 'aria-label': __alloT('stem.cephalopodlab.octopus_anatomy_accessible_summary', 'Octopus anatomy diagram') + '. Selected region: ' + highlighted.name + '. Use the All regions buttons below to explore.',
-                  style: { background: 'rgba(15,23,42,0.5)', borderRadius: 12, border: '1px solid rgba(100,116,139,0.3)' } },
-                  // Mantle (large oval, top)
-                  h('ellipse', { cx: 200, cy: 65, rx: 50, ry: 38, fill: 'rgba(251,146,60,0.15)', stroke: '#fb923c', strokeWidth: 1.5 }),
-                  // Head + eyes
-                  h('ellipse', { cx: 200, cy: 110, rx: 32, ry: 22, fill: 'rgba(167,139,250,0.15)', stroke: '#a78bfa', strokeWidth: 1.5 }),
-                  h('circle', { cx: 175, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
-                  h('circle', { cx: 175, cy: 105, r: 3, fill: '#1c1410' }),
-                  h('circle', { cx: 225, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
-                  h('circle', { cx: 225, cy: 105, r: 3, fill: '#1c1410' }),
-                  // Arms (8 spreading)
-                  [-50, -32, -14, 4, 22, 40, 58, 76].map(function(deg, i) {
-                    var rad = deg * Math.PI / 180;
-                    var endX = 200 + Math.sin(rad) * 90;
-                    var endY = 200 + Math.cos(rad) * 90;
-                    var ctrlX = 200 + Math.sin(rad) * 50;
-                    var ctrlY = 175 + Math.cos(rad) * 30;
-                    return h('path', { key: i,
-                      d: 'M 200 145 Q ' + ctrlX + ' ' + ctrlY + ' ' + endX + ' ' + endY,
-                      fill: 'none', stroke: '#a78bfa', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.6 });
-                  }),
-                  // Click targets (invisible larger circles for usability)
-                  ANATOMY.map(function(a) {
-                    var isHighlighted = a.id === highlightedId;
-                    return h('g', { key: a.id, style: { cursor: 'pointer' },
-                      onClick: function() { setCL({ anatomyRegion: a.id }); awardXP(1); clAnnounce('Selected ' + a.name); } },
-                      h('circle', { cx: a.cx, cy: a.cy, r: a.r + 8, fill: 'transparent' }),
-                      h('circle', { cx: a.cx, cy: a.cy, r: a.r,
-                        fill: isHighlighted ? a.color : 'rgba(15,23,42,0.7)',
-                        stroke: a.color, strokeWidth: 2.5,
-                        opacity: isHighlighted ? 1 : 0.8 }),
-                      h('text', { x: a.cx, y: a.cy + 4, textAnchor: 'middle', fontSize: 13, pointerEvents: 'none' },
-                        a.emoji));
-                  })
-                )),
+                  anat3d === 'failed'
+                    ? __alloT('stem.cephalopodlab.click_a_region', '🔍 Click a region')
+                    : __alloT('stem.cephalopodlab.rotate_and_click', '🔍 Drag to rotate · click a structure')),
+                anat3d === 'failed' ? anatFlatDiagram : h('div', {
+                    ref: CEPH3D.attach, tabIndex: 0, role: 'group',
+                    'aria-label': __alloT('stem.cephalopodlab.anat3d_label', 'Octopus anatomy, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every structure here is also a button in the All regions list below.'),
+                    onKeyDown: function(e) {
+                      var k = e.key, handled = true;
+                      if (k === 'ArrowLeft') CEPH3D.nudge(-0.16, 0);
+                      else if (k === 'ArrowRight') CEPH3D.nudge(0.16, 0);
+                      else if (k === 'ArrowUp') CEPH3D.nudge(0, 0.10);
+                      else if (k === 'ArrowDown') CEPH3D.nudge(0, -0.10);
+                      else if (k === '+' || k === '=') CEPH3D.zoom(-0.4);
+                      else if (k === '-' || k === '_') CEPH3D.zoom(0.4);
+                      else if (k === '0') CEPH3D.reset();
+                      else handled = false;
+                      if (handled) { e.preventDefault(); e.stopPropagation(); }
+                    },
+                    style: { position: 'relative', width: '100%', height: 320, borderRadius: 12,
+                      overflow: 'hidden', background: '#0b1220', border: '1px solid rgba(100,116,139,0.3)' } },
+                  anat3d !== 'ready' && h('div', { style: { position: 'absolute', inset: 0, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18,
+                      fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+                    __alloT('stem.cephalopodlab.anat3d_loading', 'Loading the 3D body plan…'))),
+                anat3d !== 'failed' && h('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' } },
+                  anat3dBtn(__alloT('stem.cephalopodlab.rotate_left', 'Rotate left'), '⟲', function() { CEPH3D.nudge(-0.28, 0); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.rotate_right', 'Rotate right'), '⟳', function() { CEPH3D.nudge(0.28, 0); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.tilt_up', 'Tilt up'), '▲', function() { CEPH3D.nudge(0, 0.16); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.tilt_down', 'Tilt down'), '▼', function() { CEPH3D.nudge(0, -0.16); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.zoom_in', 'Zoom in'), '＋', function() { CEPH3D.zoom(-0.5); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.zoom_out', 'Zoom out'), '－', function() { CEPH3D.zoom(0.5); }),
+                  anat3dBtn(__alloT('stem.cephalopodlab.reset_view', 'Reset the view'), '⌂', function() { CEPH3D.reset(); })),
+                anat3d !== 'failed' && h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
+                  h('button', { onClick: function() { setCL({ anatXray: !anatXray }); clAnnounce(anatXray ? 'Skin view' : 'X-ray view'); },
+                    'aria-pressed': anatXray ? 'true' : 'false',
+                    style: { padding: '6px 11px', fontSize: 11.5, fontWeight: 700, borderRadius: 6, cursor: 'pointer',
+                      background: anatXray ? 'rgba(99,102,241,0.35)' : 'rgba(15,23,42,0.6)',
+                      color: anatXray ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (anatXray ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.35)') } },
+                    anatXray ? __alloT('stem.cephalopodlab.xray_on', '👁️ X-ray: organs visible') : __alloT('stem.cephalopodlab.xray_off', '🐙 Skin view')),
+                  h('button', { onClick: function() { setCL({ anatLabels: !d.anatLabels }); },
+                    'aria-pressed': d.anatLabels ? 'true' : 'false',
+                    style: { padding: '6px 11px', fontSize: 11.5, fontWeight: 700, borderRadius: 6, cursor: 'pointer',
+                      background: d.anatLabels ? 'rgba(99,102,241,0.35)' : 'rgba(15,23,42,0.6)',
+                      color: d.anatLabels ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (d.anatLabels ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.35)') } },
+                    __alloT('stem.cephalopodlab.label_all', '🏷️ Label everything'))),
+                h('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', lineHeight: 1.5 } },
+                  anat3d === 'failed'
+                    ? __alloT('stem.cephalopodlab.anat3d_failed', '3D is unavailable on this device or network, so the flat diagram is shown. Every structure is also a button below — nothing here needs the 3D view.')
+                    : __alloT('stem.cephalopodlab.anat3d_hint', 'Schematic on purpose — a body plan you can walk around, not a scale model of one species. X-ray shows the organs in place; skin view shows the animal.'))),
 
               // Detail panel
               h('div', null,

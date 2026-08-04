@@ -36,6 +36,14 @@ interface ToolEntry {
   state?: Record<string, unknown>;
   /** Tools that also mount 2D canvases; the battery always targets the GL one. */
   note?: string;
+  /**
+   * Scripts loaded BEFORE the tool. The makeBayViewer family (cephalopodLab,
+   * autoRepair, firstResponse, weldLab, optics, heatLab, nuclearLab,
+   * consciousness, rocks) each capture window.StemLab.makeBayViewer at module
+   * load, so the real host has to be on the page first or they permanently
+   * fall back to their 2D view and the battery measures nothing.
+   */
+  preScripts?: string[];
 }
 
 // Verified by mounting each one: these reach a live GL canvas with no state at all.
@@ -57,6 +65,18 @@ const MANIFEST: ToolEntry[] = [
     file: 'stem_lab/stem_tool_roadready.js',
     state: { roadReady: { view: 'driving', scenario: 'residential', vehicle: 'sedan' } },
     note: 'also mounts 2D HUD//minimap canvases; needs state to reach the 3D view',
+  },
+  // First makeBayViewer tool in the battery. Its Body Plan tab builds a
+  // schematic octopus on the shared viewer, so the host must load first
+  // (preScripts) or CEPH3D captures nothing and the tab renders its 2D
+  // fallback instead — which would pass a blank-canvas check by not having
+  // a canvas at all.
+  {
+    id: 'cephalopodLab',
+    file: 'stem_lab/stem_tool_cephalopodlab.js',
+    state: { cephalopodLab: { activeSection: 'anatomy' } },
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'Body Plan 3D via StemLab.makeBayViewer; needs the host preloaded',
   },
 ];
 
@@ -113,6 +133,7 @@ for (const tool of MANIFEST) {
   test.describe(`${tool.id} — WebGL conformance`, () => {
     const harness = new GlHarness({
       toolFile: tool.file, toolId: tool.id, width: 1280, height: 820, probes: PROBES,
+      preScripts: tool.preScripts,
     });
 
     test.beforeAll(async () => { await harness.start(); });
