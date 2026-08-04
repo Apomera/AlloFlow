@@ -3127,3 +3127,199 @@ expect(html).toContain("var recordingMicWarning = '';");
     expect(html).toContain("$('exportCancelBtn').textContent = active ? 'Cancel export' : 'Cancel MP4 conversion';");
   });
 });
+
+// ─── Steering junctures + objective audit (2026-08-04) ──────────────────────
+// A failed step no longer hard-ends a demo: the runner asks the popup, the
+// popup pauses the recording (the pause never reaches the video), and the
+// teacher picks retry / skip / stop. After every run, an advisory AI audit
+// compares the goal against what actually executed.
+describe('demo steering junctures', () => {
+  const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+  const junctureHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  const junctureMod = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+
+  // The SHIPPED runner, extracted from ANTI and driven with stub hooks.
+  function makeRunner(acRunPlan, ctxRef) {
+    const start = antiSrc.indexOf('onRunDemoPlan: async (steps, hooks, options) => {');
+    const end = antiSrc.indexOf('onOpenCinematicStudio', start);
+    expect(start, 'onRunDemoPlan present').toBeGreaterThan(-1);
+    expect(end, 'runner slice bounded').toBeGreaterThan(start);
+    const body = antiSrc.slice(start, end);
+    const AC = {
+      runPlan: acRunPlan,
+      validatePlan: () => ({ ok: true, items: [{ status: 'ready' }] }),
+    };
+    const factory = new Function(
+      'window', '_planRunRef', '_alloCmdCtxRef', '_alloCmdCtx', 'addToast', 'document',
+      'return {' + body + '};'
+    );
+    return factory(
+      { AlloModules: { AlloCommands: AC } },
+      { current: { running: false, stop: false } },
+      ctxRef || { current: { contentLoaded: true, aFn: () => {} } },
+      () => ({}),
+      () => {},
+      { visibilityState: 'visible' }
+    ).onRunDemoPlan;
+  }
+  const fastSteps = [
+    { commandId: 'step_a', pauseAfter: 0.5 },
+    { commandId: 'step_b', pauseAfter: 0.5 },
+  ];
+  const junctureOpts = { cursorEmphasis: false };
+
+  it('retry re-runs the SAME step and the run still completes', async () => {
+    let bAttempts = 0;
+    const decisions = [];
+    const runner = makeRunner(async (getCtx, steps) => {
+      if (steps[0].commandId === 'step_b' && ++bAttempts === 1) return { ok: false, reason: 'boom' };
+      return { ok: true };
+    });
+    const r = await runner(fastSteps, {
+      shouldStop: () => false,
+      onStep: () => {},
+      onDecision: (p) => { decisions.push(p); return 'retry'; },
+    }, junctureOpts);
+    expect(r.ok).toBe(true);
+    expect(r.completed).toBe(2);
+    expect(bAttempts).toBe(2);
+    expect(decisions).toHaveLength(1);
+    expect(decisions[0].reason).toBe('boom');
+    expect(decisions[0].index).toBe(1);
+  }, 15000);
+
+  it('skip moves past the failed step without counting it', async () => {
+    const runner = makeRunner(async (getCtx, steps) =>
+      steps[0].commandId === 'step_a' ? { ok: false, reason: 'boom' } : { ok: true });
+    const r = await runner(fastSteps, {
+      shouldStop: () => false, onStep: () => {}, onDecision: () => 'skip',
+    }, junctureOpts);
+    expect(r.ok).toBe(true);
+    expect(r.completed).toBe(1); // step_b only; the skipped step is not claimed
+  }, 15000);
+
+  it('stop (or any unknown choice) ends the run as teacher-stopped with the real reason', async () => {
+    const runner = makeRunner(async () => ({ ok: false, reason: 'boom' }));
+    const r = await runner(fastSteps, {
+      shouldStop: () => false, onStep: () => {}, onDecision: () => 'launch_missiles',
+    }, junctureOpts);
+    expect(r.ok).toBe(false);
+    expect(r.stopped).toBe(true);
+    expect(r.reason).toBe('boom');
+    expect(r.completed).toBe(0);
+  }, 15000);
+
+  it('without an onDecision hook the old hard-stop behavior is unchanged', async () => {
+    const runner = makeRunner(async () => ({ ok: false, reason: 'boom' }));
+    const r = await runner(fastSteps, { shouldStop: () => false, onStep: () => {} }, junctureOpts);
+    expect(r.ok).toBe(false);
+    expect(r.stopped).toBe(false);
+    expect(r.reason).toBe('boom');
+  }, 15000);
+
+  it('returns a primitives-only state summary for the audit, functions dropped', async () => {
+    const ctxRef = { current: { contentLoaded: true, count: 3, view: 'quiz', secretFn: () => {}, longText: 'x'.repeat(200) } };
+    const runner = makeRunner(async () => ({ ok: true }), ctxRef);
+    const r = await runner([{ commandId: 'step_a', pauseAfter: 0.5 }], { shouldStop: () => false, onStep: () => {} }, junctureOpts);
+    expect(r.ok).toBe(true);
+    expect(r.stateSummary).toEqual({ contentLoaded: true, count: 3, view: 'quiz' });
+  }, 15000);
+
+  it('the wait is bounded and both ANTI copies carry the juncture', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(resolve(process.cwd(), path), 'utf-8');
+      expect(app, path).toContain("typeof hooks.onDecision === 'function'");
+      expect(app, path).toContain('startedWaiting > 240000');
+      expect(app, path).toContain("if (choice === 'retry') { i--; continue; }");
+      expect(app, path).toContain('stateSummary: stateSummaryForAudit()');
+    }
+  });
+
+  it('popup pauses the recording for the juncture and resumes before driving on', () => {
+    const start = junctureHtml.indexOf('function pauseRecordingForJuncture');
+    const juncture = junctureHtml.slice(start, junctureHtml.indexOf('function maybeRunDemoObjectiveAudit'));
+    expect(start).toBeGreaterThan(-1);
+    expect(juncture).toContain('rec.pause()');
+    expect(juncture).toContain('stopCaptions()');
+    expect(juncture).toContain('rec.resume()');
+    expect(juncture).toContain('startCaptions()');
+    // Stop keeps the recorder paused so decision time never reaches the video.
+    expect(juncture).toContain('Leave the recorder paused');
+    // A juncture arriving when no demo is active answers stop instead of pausing.
+    expect(juncture).toMatch(/if \(!demoState\.running \|\| !demoState\.active\) \{\s*postToOpener\(\{ type: 'allostudio-demodecision', token: token, choice: 'stop' \}\);/);
+  });
+
+  it('popup clears the juncture on run end and on local recovery', () => {
+    const finallyStart = junctureHtml.indexOf('if (demoRunBridgeController === runBridgeController)');
+    const finallyBlock = junctureHtml.slice(finallyStart, junctureHtml.indexOf("$('demoStopBtn').hidden = true;", finallyStart));
+    expect(finallyBlock).toContain('hideDemoJuncture();');
+    const recover = junctureHtml.slice(junctureHtml.indexOf('function demoRecoverLocal'), junctureHtml.indexOf("$('demoStopBtn').addEventListener"));
+    expect(recover).toContain('hideDemoJuncture();');
+    // And a fresh run starts with a clean panel + a cleared audit card.
+    const runStart = junctureHtml.indexOf('demoState.active = true; demoState.events = [];');
+    const runStartBlock = junctureHtml.slice(runStart, runStart + 400);
+    expect(runStartBlock).toContain('hideDemoJuncture();');
+    expect(runStartBlock).toContain("$('demoObjectiveCard').hidden = true;");
+  });
+
+  it('module decision relay uses a one-shot token behind the full trust boundary', () => {
+    const relay = junctureMod.slice(junctureMod.indexOf('onDecision: function (payload)'), junctureMod.indexOf('{ rehearsal: !!drReq.rehearsal'));
+    expect(relay).toContain("ev2.data.type !== 'allostudio-demodecision' || ev2.data.token !== token");
+    expect(relay).toContain('ev2.origin !== STUDIO_ORIGIN');
+    expect(relay).toContain('ev2.data.bridge !== vsTakeStore.token');
+    expect(relay).toContain('ev2.source !== vsTakeStore.studioWin');
+    expect(relay).toMatch(/choice === 'retry' \|\| choice === 'skip' \? choice : 'stop'/);
+    expect(relay).toContain('allostudio-demodecision-request');
+  });
+});
+
+describe('demo objective audit', () => {
+  const auditHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  const auditMod = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+
+  it('sanitizer collapses malformed verdicts to the conservative answer', () => {
+    expect(VS.vsSanitizeDemoAudit(null)).toEqual({ achieved: 'no', summary: '', missing: [], followUpGoal: '' });
+    expect(VS.vsSanitizeDemoAudit({ achieved: 'ABSOLUTELY', summary: 42 }).achieved).toBe('no');
+    const clean = VS.vsSanitizeDemoAudit({
+      achieved: 'partial',
+      summary: ' s '.repeat(200),
+      missing: ['a', '', null, 'b'.repeat(400), 'c', 'd', 'e', 'f'],
+      followUpGoal: 'g'.repeat(400),
+    });
+    expect(clean.achieved).toBe('partial');
+    expect(clean.summary.length).toBeLessThanOrEqual(300);
+    expect(clean.missing).toHaveLength(5);
+    expect(clean.missing[1]).toHaveLength(160);
+    expect(clean.followUpGoal).toHaveLength(300);
+  });
+
+  it('module audit call is jsonMode ON, search OFF, and judges only from evidence', () => {
+    const audit = auditMod.slice(auditMod.indexOf("ev.data.type === 'allostudio-demoaudit-request'"), auditMod.indexOf("ev.data.type === 'allostudio-demostop'"));
+    expect(audit).toContain('auditGemini(auditPrompt, true, false)');
+    expect(audit).toContain('never assume a step succeeded beyond its stated outcome');
+    expect(audit).toContain('vsSanitizeDemoAudit(parsed)');
+    // Honest refusal when AI is unreachable - no verdict invented.
+    expect(audit).toContain("daRespond({ error: 'AI is not connected right now' })");
+    expect(auditMod).toContain("'allostudio-demoaudit-request',"); // in the receiver whitelist
+  });
+
+  it('popup labels the verdict as advisory and routes follow-ups through the consent flow', () => {
+    expect(auditHtml).toContain('AI assessment — the step report and the video are the ground truth.');
+    expect(auditHtml).toContain('The step report above is still the ground truth of what ran.');
+    const btnAt = auditHtml.indexOf("$('demoObjectivePlanBtn').addEventListener");
+    const followUp = auditHtml.slice(btnAt, btnAt + 700);
+    // The follow-up goes through the NORMAL plan flow (review before record),
+    // never straight to execution.
+    expect(followUp).toContain("$('demoPlanBtn').click();");
+    expect(followUp).not.toContain('demoStartBtn');
+    // Outcomes come from the demostep log, not assumed success.
+    expect(auditHtml).toContain("'started but never confirmed done'");
+    expect(auditHtml).toContain("'never started'");
+  });
+
+  it('mirrors carry the new surfaces', () => {
+    const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf-8').replace(/\r\n/g, '\n');
+    expect(read('desktop/web-app/public/video_studio/video_studio.html')).toContain('demoJuncturePanel');
+    expect(read('desktop/web-app/public/video_studio_module.js')).toContain('vsSanitizeDemoAudit');
+  });
+});

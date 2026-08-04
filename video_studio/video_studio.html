@@ -471,6 +471,24 @@
         <pre id="demoScriptReviewText" style="white-space:pre-wrap;margin:6px 0 0;font:inherit;color:var(--dim)"></pre>
       </div>
       <div class="status" id="demoPrivacyIndicator" role="status" aria-live="polite" style="border:1px solid var(--line);border-radius:8px;padding:7px 9px">Privacy: not recording. No screen content is being captured.</div>
+      <div id="demoJuncturePanel" hidden role="alertdialog" aria-labelledby="demoJunctureTitle" aria-describedby="demoJunctureReason" style="border:2px solid var(--warn, #d97706);border-radius:10px;padding:10px;margin:8px 0">
+        <div id="demoJunctureTitle" style="font-weight:800">⏸ Demo paused — a step needs your call</div>
+        <div class="status" id="demoJunctureReason" style="margin-top:6px"></div>
+        <div class="row" style="margin-top:8px">
+          <button class="action" id="demoJunctureRetryBtn">↻ Retry this step</button>
+          <button class="quiet" id="demoJunctureSkipBtn">⤼ Skip it and continue</button>
+          <button class="danger" id="demoJunctureStopBtn">🛑 Stop the demo</button>
+        </div>
+        <div class="status" style="margin-top:6px">The recording is paused, so this pause will not appear in the video. If you do nothing, the demo stops on its own in about 4 minutes.</div>
+      </div>
+      <div id="demoObjectiveCard" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0" aria-live="polite">
+        <div style="font-weight:800">🎯 Objective check</div>
+        <div class="status" id="demoObjectiveStatus" style="margin-top:6px"></div>
+        <ul id="demoObjectiveMissing" style="margin:6px 0 0 18px;padding:0"></ul>
+        <div class="row" style="margin-top:8px">
+          <button class="action" id="demoObjectivePlanBtn" hidden>✨ Plan the remaining work</button>
+        </div>
+      </div>
       <div class="status" id="demoStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
     <div class="stage" id="stage">
@@ -13744,6 +13762,138 @@ function buildContactSheet(t, count, shouldCancel) {
     }
     setStatus($('demoStatus'), (d.phase === 'start' ? '⏳' : '✅') + ' Step ' + ((Number(d.index) || 0) + 1) + ': ' + String(d.label || '').slice(0, 120), 'ok');
   });
+  // ── Steering junctures: a failed step pauses the recording and asks ──
+  // The runner waits (bounded at ~4 minutes) for retry / skip / stop. The
+  // recording is paused for the whole decision, so deliberation never
+  // appears in the video; retry/skip resume it just before driving on.
+  var demoJunctureToken = null;
+  var demoJuncturePriorFocus = null;
+  function hideDemoJuncture() {
+    demoJunctureToken = null;
+    if (!$('demoJuncturePanel').hidden) {
+      $('demoJuncturePanel').hidden = true;
+      try { if (demoJuncturePriorFocus && typeof demoJuncturePriorFocus.focus === 'function') demoJuncturePriorFocus.focus(); } catch (_) {}
+    }
+    demoJuncturePriorFocus = null;
+  }
+  function pauseRecordingForJuncture() {
+    if (rec && rec.state === 'recording') {
+      try { rec.pause(); } catch (_) {}
+      paused = true;
+      stopCaptions();
+    }
+  }
+  function resumeRecordingFromJuncture() {
+    if (rec && rec.state === 'paused') {
+      try { rec.resume(); } catch (_) {}
+      paused = false;
+      startCaptions();
+    }
+  }
+  function sendDemoJunctureChoice(choice) {
+    var token = demoJunctureToken;
+    hideDemoJuncture();
+    if (!token) return;
+    if (choice === 'stop') {
+      // Leave the recorder paused: the run response's wrap-up stops it, so
+      // none of the decision time reaches the video.
+      setStatus($('demoStatus'), 'Stopping the demo at your request…', 'warn');
+      postToOpener({ type: 'allostudio-demodecision', token: token, choice: 'stop' });
+      return;
+    }
+    setStatus($('demoStatus'), choice === 'retry' ? 'Retrying the step — recording resumes now.' : 'Skipping the step — recording resumes now.', 'ok');
+    resumeRecordingFromJuncture();
+    setTimeout(function () { postToOpener({ type: 'allostudio-demodecision', token: token, choice: choice }); }, 300);
+  }
+  $('demoJunctureRetryBtn').addEventListener('click', function () { sendDemoJunctureChoice('retry'); });
+  $('demoJunctureSkipBtn').addEventListener('click', function () { sendDemoJunctureChoice('skip'); });
+  $('demoJunctureStopBtn').addEventListener('click', function () { sendDemoJunctureChoice('stop'); });
+  window.addEventListener('message', function (ev) {
+    if (!isOpenerMessage(ev, 'allostudio-demodecision-request')) return;
+    var token = String(ev.data.token || '');
+    if (!token) return;
+    if (!demoState.running || !demoState.active) {
+      postToOpener({ type: 'allostudio-demodecision', token: token, choice: 'stop' });
+      return;
+    }
+    demoJunctureToken = token;
+    pauseRecordingForJuncture();
+    var stepNo = Math.max(0, Math.round(Number(ev.data.index) || 0)) + 1;
+    $('demoJunctureReason').textContent = 'Step ' + stepNo + (ev.data.label ? ' (' + String(ev.data.label).slice(0, 90) + ')' : '') + ' did not finish: ' + String(ev.data.reason || 'no reason given').slice(0, 300);
+    demoJuncturePriorFocus = document.activeElement;
+    $('demoJuncturePanel').hidden = false;
+    try { $('demoJunctureRetryBtn').focus(); } catch (_) {}
+    announce('Demo paused: a step needs your decision');
+  });
+  // ── Objective audit: did the demo actually achieve the teacher's goal? ──
+  // Text-only: goal + per-step outcomes from the demostep log + the runner's
+  // primitive state flags. Advisory by design — the card says so — and a
+  // failed audit call shows an honest unavailable line, never a verdict.
+  var demoObjectiveFollowUpGoal = '';
+  function maybeRunDemoObjectiveAudit(steps, resp) {
+    if (!resp || resp.error) return;
+    var goal = String($('demoGoal').value || '').trim();
+    if (!goal && demoState.officialId) goal = 'Complete the official ' + demoState.officialId + ' tutorial from start to finish.';
+    if (!goal || !steps || !steps.length) return;
+    var events = (demoState.events || []).slice();
+    var stepSummaries = steps.slice(0, 8).map(function (s, i) {
+      var last = null;
+      events.forEach(function (e) { if (e.index === i) last = e; });
+      return {
+        label: String(s.label || s.commandId || s.id || ('Step ' + (i + 1))).slice(0, 90),
+        commandId: String(s.commandId || s.id || '').slice(0, 60),
+        outcome: last ? (last.phase === 'done' ? 'completed' : 'started but never confirmed done') : 'never started'
+      };
+    });
+    var card = $('demoObjectiveCard');
+    card.hidden = false;
+    demoObjectiveFollowUpGoal = '';
+    $('demoObjectivePlanBtn').hidden = true;
+    $('demoObjectiveMissing').innerHTML = '';
+    $('demoObjectiveStatus').textContent = 'Asking the AI to compare the goal against what actually ran…';
+    bridgeRequest('allostudio-demoaudit-request', {
+      goal: goal.slice(0, 300),
+      runStatus: resp.ok ? 'completed' : (resp.timedOut ? 'timed_out' : 'stopped_early'),
+      reason: String(resp.reason || '').slice(0, 300),
+      completed: resp.completed != null ? resp.completed : null,
+      steps: stepSummaries,
+      stateSummary: resp.stateSummary || null
+    }, 60000).then(function (data) {
+      if (data.error) {
+        $('demoObjectiveStatus').textContent = 'Objective check unavailable (' + String(data.error).slice(0, 140) + '). The step report above is still the ground truth of what ran.';
+        return;
+      }
+      renderDemoObjectiveVerdict(data);
+    });
+  }
+  function renderDemoObjectiveVerdict(data) {
+    var achieved = data.achieved === 'yes' ? 'yes' : (data.achieved === 'partial' ? 'partial' : 'no');
+    var lead = achieved === 'yes' ? '✅ Goal achieved.' : achieved === 'partial' ? '🟡 Partially achieved.' : '❌ Not achieved.';
+    $('demoObjectiveStatus').textContent = lead + ' ' + String(data.summary || '').slice(0, 300) + ' (AI assessment — the step report and the video are the ground truth.)';
+    var list = $('demoObjectiveMissing');
+    list.innerHTML = '';
+    (Array.isArray(data.missing) ? data.missing.slice(0, 5) : []).forEach(function (m) {
+      var li = document.createElement('li');
+      li.className = 'status';
+      li.textContent = String(m).slice(0, 160);
+      list.appendChild(li);
+    });
+    demoObjectiveFollowUpGoal = String(data.followUpGoal || '').trim().slice(0, 300);
+    if (achieved !== 'yes' && demoObjectiveFollowUpGoal) {
+      $('demoObjectivePlanBtn').hidden = false;
+      announce('Objective check: ' + lead + ' A follow-up plan is available');
+    } else {
+      announce('Objective check: ' + lead);
+    }
+  }
+  $('demoObjectivePlanBtn').addEventListener('click', function () {
+    if (!demoObjectiveFollowUpGoal) return;
+    $('demoGoal').value = demoObjectiveFollowUpGoal;
+    saveDemoDraft();
+    $('demoObjectivePlanBtn').hidden = true;
+    setStatus($('demoStatus'), 'Planning the follow-up — review the proposed steps before recording; nothing runs on its own.', 'ok');
+    $('demoPlanBtn').click();
+  });
   async function runManualDemoPreflight() {
     if (!approvedDemoSteps().length || demoState.running || demoStartPending || demoRehearsePending || demoManualPreflightPending) return;
     demoManualPreflightPending = true;
@@ -13838,6 +13988,8 @@ function buildContactSheet(t, count, shouldCancel) {
     demoState.active = true; demoState.events = []; demoState.activeSteps = steps.map(cleanDemoDraftStep); beginDemoRunReport(steps); demoState.running = true;
     syncDemoPlanSourceControls();
     syncDemoExecutionControls();
+    hideDemoJuncture();
+    $('demoObjectiveCard').hidden = true;
     try {
       await startRecording();
       if (!rec || rec.state === 'inactive') {
@@ -13924,6 +14076,7 @@ function buildContactSheet(t, count, shouldCancel) {
         }
         setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.' + continuationNote, 'warn');
       }
+      maybeRunDemoObjectiveAudit(steps, resp);
       // Pin the recorder this demo was driving. startRecording() builds a NEW
       // MediaRecorder each time, so without this identity check a teacher who
       // started a fresh recording within the 1.6s wrap-up window had it stopped
@@ -13938,6 +14091,7 @@ function buildContactSheet(t, count, shouldCancel) {
     } finally {
       if (demoRunBridgeController === runBridgeController) { demoRunBridgeController = null; demoRunBridgeRequestId = null; }
       demoState.running = false;
+      hideDemoJuncture();
       syncDemoPlanSourceControls();
       syncDemoExecutionControls();
       $('demoStopBtn').hidden = true;
@@ -13962,6 +14116,7 @@ function buildContactSheet(t, count, shouldCancel) {
     demoRunBridgeController = null;
     demoRunBridgeRequestId = null;
     if (bridgeController) { try { bridgeController.abort(); } catch (_) {} }
+    hideDemoJuncture();
     demoState.abandoned = true;
     finishDemoRunReport('interrupted', { reason: reason });
     demoState.running = false;

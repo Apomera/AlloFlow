@@ -2921,7 +2921,24 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
+  // Clamp a Gemini objective-audit reply to the exact shape the popup renders.
+  // The verdict is advisory; anything malformed collapses to the conservative
+  // answer ('no') rather than an invented success.
+  function vsSanitizeDemoAudit(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var achieved = raw.achieved === 'yes' || raw.achieved === 'partial' || raw.achieved === 'no' ? raw.achieved : 'no';
+    var missing = (Array.isArray(raw.missing) ? raw.missing : []).map(function (m) {
+      return String(m == null ? '' : m).trim().slice(0, 160);
+    }).filter(Boolean).slice(0, 5);
+    return {
+      achieved: achieved,
+      summary: String(raw.summary || '').trim().slice(0, 300),
+      missing: missing,
+      followUpGoal: String(raw.followUpGoal || '').trim().slice(0, 300)
+    };
+  }
+
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues, vsSanitizeDemoAudit: vsSanitizeDemoAudit };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3115,6 +3132,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-demoscript-cancel',
     'allostudio-demovalidate-request',
     'allostudio-demorun-request',
+    'allostudio-demoaudit-request',
     'allostudio-demostop',
     'allostudio-closed'
   ];
@@ -3394,14 +3412,104 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             signal: demoRunController.signal,
             onStep: function (i, phase, label, narration) {
               postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
+            },
+            // Steering juncture: the runner calls this when a step fails and
+            // waits for the teacher's choice. The popup pauses the recording,
+            // shows retry / skip / stop, and answers with a one-shot token.
+            // The runner bounds the wait itself; here we only guarantee that a
+            // stopped demo never leaves a dangling listener.
+            onDecision: function (payload) {
+              return new Promise(function (resolve) {
+                var token = 'jd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                var settled = false;
+                var guard = null;
+                function finish(choice) {
+                  if (settled) return;
+                  settled = true;
+                  window.removeEventListener('message', onChoice);
+                  if (guard) clearInterval(guard);
+                  resolve(choice === 'retry' || choice === 'skip' ? choice : 'stop');
+                }
+                function onChoice(ev2) {
+                  if (!ev2 || !ev2.data || ev2.data.type !== 'allostudio-demodecision' || ev2.data.token !== token) return;
+                  // Same trust boundary as vsDemoBridgeReceiver: right origin,
+                  // right window, right bridge token — plus the one-shot token.
+                  if (ev2.origin && ev2.origin !== STUDIO_ORIGIN) return;
+                  if (vsTakeStore.token && ev2.data.bridge !== vsTakeStore.token) return;
+                  if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev2.source !== vsTakeStore.studioWin) return;
+                  finish(String(ev2.data.choice || 'stop'));
+                }
+                window.addEventListener('message', onChoice);
+                guard = setInterval(function () {
+                  if (demoRunRef.current.stop || !demoRunRef.current.running) finish('stop');
+                }, 500);
+                postToStudio(drReplyTo, { type: 'allostudio-demodecision-request', id: drReq.id, token: token, index: Math.max(0, Math.round(Number(payload && payload.index) || 0)), label: String((payload && payload.label) || '').slice(0, 120), reason: String((payload && payload.reason) || '').slice(0, 300), timedOut: !!(payload && payload.timedOut) });
+              });
             }
           }, { rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) });
         }).then(function (result) {
           demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
-          drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
+          var summary = null;
+          if (result && result.stateSummary && typeof result.stateSummary === 'object') {
+            summary = {};
+            var kept = 0;
+            Object.keys(result.stateSummary).forEach(function (k) {
+              if (kept >= 60) return;
+              var v = result.stateSummary[k];
+              if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) { summary[String(k).slice(0, 40)] = v; kept++; }
+            });
+          }
+          drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null, stateSummary: summary });
         }).catch(function (e) {
           demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false, controller: null };
           drRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-demoaudit-request') {
+        // Objective audit: text-only comparison of the teacher's goal against
+        // what actually executed plus the runner's post-run state flags. No
+        // frames leave the device; the verdict is advisory and the popup says
+        // so. Same callGemini shim as every other AI feature (model-agnostic).
+        var daReq = ev.data;
+        var daReplyTo = studioWinRef.current;
+        var daRespond = function (payload) {
+          postToStudio(daReplyTo, Object.assign({ type: 'allostudio-demoaudit-response', id: daReq.id }, payload));
+        };
+        var auditGemini = propsRef.current.callGemini;
+        if (typeof auditGemini !== 'function') { daRespond({ error: 'AI is not connected right now' }); return; }
+        var auditGoal = String(daReq.goal || '').slice(0, 300).trim();
+        if (!auditGoal) { daRespond({ error: 'no goal to audit' }); return; }
+        var auditSteps = (Array.isArray(daReq.steps) ? daReq.steps : []).slice(0, 8).map(function (s) {
+          return {
+            label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90),
+            outcome: String((s && s.outcome) || 'unknown').slice(0, 40)
+          };
+        }).filter(function (s) { return s.label; });
+        var auditState = {};
+        if (daReq.stateSummary && typeof daReq.stateSummary === 'object') {
+          Object.keys(daReq.stateSummary).slice(0, 60).forEach(function (k) {
+            var v = daReq.stateSummary[k];
+            if (typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length <= 60)) auditState[String(k).slice(0, 40)] = v;
+          });
+        }
+        var auditPrompt = 'You are auditing whether an automated software demo achieved the teacher\'s goal.\n'
+          + 'GOAL: ' + auditGoal + '\n'
+          + 'RUN STATUS: ' + String(daReq.runStatus || 'unknown').slice(0, 24)
+          + (daReq.reason ? (' — ' + String(daReq.reason).slice(0, 300)) : '') + '\n'
+          + 'EXECUTED STEPS (label — outcome):\n'
+          + auditSteps.map(function (s, i) { return (i + 1) + '. ' + s.label + ' — ' + s.outcome; }).join('\n') + '\n'
+          + 'APP STATE FLAGS AFTER THE RUN (JSON): ' + JSON.stringify(auditState) + '\n'
+          + 'Judge ONLY from this evidence; never assume a step succeeded beyond its stated outcome. '
+          + 'Reply with STRICT JSON only: {"achieved":"yes"|"partial"|"no","summary":"one or two plain sentences for the teacher","missing":["up to 5 concrete gaps; empty if none"],"followUpGoal":"one imperative goal sentence that would close the gaps; empty if achieved"}';
+        Promise.resolve(auditGemini(auditPrompt, true, false)).then(function (raw) {
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (_) {
+            var m = String(raw || '').match(/\{[\s\S]*\}/);
+            if (m) { try { parsed = JSON.parse(m[0]); } catch (_) {} }
+          }
+          if (!parsed || typeof parsed !== 'object') { daRespond({ error: 'the AI reply was not readable' }); return; }
+          daRespond(vsSanitizeDemoAudit(parsed));
+        }).catch(function (e) {
+          daRespond({ error: String((e && e.message) || e).slice(0, 200) });
         });
       } else if (ev.data.type === 'allostudio-demostop') {
         demoRunRef.current.stop = true;

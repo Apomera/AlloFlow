@@ -47546,6 +47546,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
                         const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
                         let completed = 0;
+                        // Post-run objective audit reads these flags: only primitives,
+                        // capped, from the LIVE ctx (the ref tracks renders). Booleans
+                        // like contentLoaded are exactly the evidence "did the goal
+                        // land" needs, and nothing student-authored fits in 60 chars
+                        // of whitelisted primitive — long strings are dropped.
+                        const stateSummaryForAudit = () => {
+                            try {
+                                const liveCtx = _alloCmdCtxRef.current || _alloCmdCtx();
+                                const summary = {};
+                                let kept = 0;
+                                for (const key of Object.keys(liveCtx)) {
+                                    const value = liveCtx[key];
+                                    if (typeof value === 'boolean' || typeof value === 'number' || (typeof value === 'string' && value.length <= 60)) {
+                                        summary[key] = value;
+                                        if (++kept >= 60) break;
+                                    }
+                                }
+                                return summary;
+                            } catch (_) { return null; }
+                        };
                         for (let i = 0; i < list.length; i++) {
                             if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                             let completionEvent = null;
@@ -47579,7 +47599,29 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     }
                                 }
                             });
-                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), timedOut: !!(r && r.timedOut), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            if (!r || !r.ok) {
+                                const failReason = (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.');
+                                const stoppedByTeacher = !!(r && r.stopped);
+                                // Steering juncture: a failed step no longer hard-ends the
+                                // run. The popup pauses the recording (so the pause never
+                                // reaches the video) and asks the teacher retry / skip /
+                                // stop. Bounded: silence for 4 minutes, a stop request, or
+                                // a rejected hook all collapse to the old stop behavior.
+                                if (!stoppedByTeacher && hooks && typeof hooks.onDecision === 'function') {
+                                    const choice = await new Promise(resolve => {
+                                        let done = false;
+                                        let guard = null;
+                                        const finish = v => { if (!done) { done = true; clearInterval(guard); resolve(v === 'retry' || v === 'skip' ? v : 'stop'); } };
+                                        const startedWaiting = Date.now();
+                                        guard = setInterval(() => { if (stopWanted() || Date.now() - startedWaiting > 240000) finish('stop'); }, 250);
+                                        Promise.resolve(hooks.onDecision({ index: i, label: list[i].commandId, reason: failReason, timedOut: !!(r && r.timedOut) })).then(finish, () => finish('stop'));
+                                    });
+                                    if (choice === 'retry') { i--; continue; }
+                                    if (choice === 'skip') continue;
+                                    return { ok: false, completed, stopped: true, timedOut: !!(r && r.timedOut), reason: failReason, stateSummary: stateSummaryForAudit() };
+                                }
+                                return { ok: false, completed, stopped: stoppedByTeacher, timedOut: !!(r && r.timedOut), reason: failReason, stateSummary: stateSummaryForAudit() };
+                            }
                             const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(list[i].pauseAfter) || 2.2)) * 1000);
                             for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await new Promise(resolve => setTimeout(resolve, Math.min(100, resultHoldMs - held)));
                             const done = completionEvent || { label: list[i].commandId, narration: 'Step complete.' };
@@ -47588,7 +47630,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                         }
                         addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
-                        return { ok: true, completed };
+                        return { ok: true, completed, stateSummary: stateSummaryForAudit() };
                     } finally {
                         cursorMarkers.forEach(marker => { try { marker.remove(); } catch (_) {} });
                         cursorMarkers.clear();
