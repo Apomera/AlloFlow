@@ -601,6 +601,68 @@ describe('voice loop spoken replies and language', () => {
   });
 });
 
+// Coverage batch (2026-08-04): 10 commands from the audit's gap list.
+describe('coverage batch commands', () => {
+  it('generation trio is registered, source-gated, and awaits completion', async () => {
+    const log = [];
+    const { ctx } = mkCtx({
+      generateNoteTaking: () => Promise.resolve().then(() => log.push('notes')),
+      generateAnchorChart: () => Promise.resolve().then(() => log.push('chart')),
+      generateConceptSort: () => Promise.resolve().then(() => log.push('sort')),
+    });
+    const pr = await AC.runPlan(ctx, [
+      { commandId: 'generate_note_taking', params: {} },
+      { commandId: 'generate_anchor_chart', params: {} },
+      { commandId: 'generate_concept_sort', params: {} },
+    ]);
+    expect(pr.ok).toBe(true);
+    expect(log).toEqual(['notes', 'chart', 'sort']);
+    // And they vanish without source, like their siblings.
+    const bare = mkCtx({ hasSourceOrAnalysis: false }).ctx;
+    expect(AC.buildAlloCommands(bare).find((c) => c.id === 'generate_anchor_chart')).toBeUndefined();
+  });
+
+  it('glossary games are glossary-gated and run the host handler', () => {
+    const log = [];
+    const { ctx } = mkCtx({ contentIsGlossary: true, startMemoryGame: () => log.push('memory'), startMatchingGame: () => log.push('match'), startBingoGame: () => log.push('bingo') });
+    for (const id of ['start_memory_game', 'start_matching_game', 'start_bingo_game']) {
+      const r = AC.runCommandById(ctx, id, {}, {});
+      expect(r.handled, id).toBe(true);
+    }
+    expect(log).toEqual(['memory', 'match', 'bingo']);
+    const noGloss = mkCtx({ contentIsGlossary: false, startMemoryGame: () => {} }).ctx;
+    expect(AC.buildAlloCommands(noGloss).find((c) => c.id === 'start_memory_game')).toBeUndefined();
+  });
+
+  it('display/read-aloud commands clamp and narrate real state', () => {
+    let speed = 1.75;
+    const { ctx } = mkCtx({
+      cycleColorOverlay: () => 'blue',
+      toggleAnimations: () => true,
+      animationsDisabled: false,
+      adjustVoiceSpeed: (d) => { speed = Math.max(0.5, Math.min(2, speed + d)); return speed; },
+    });
+    expect(AC.runCommandById(ctx, 'cycle_color_overlay', {}, {}).narration).toContain('blue');
+    expect(AC.runCommandById(ctx, 'voice_speed_up', {}, {}).narration).toContain('2x');
+    expect(AC.runCommandById(ctx, 'voice_speed_up', {}, {}).narration).toContain('2x'); // clamped
+    // No bionic command: the header's "bionic" toggle IS toggle_focus_mode,
+    // which already exists — the audit's bionic row was a false gap.
+    expect(AC.buildAlloCommands(ctx).find((c) => c.id === 'toggle_bionic_text')).toBeUndefined();
+    expect(AC.getCommandContract('generate_anchor_chart').demoSafe).not.toBe(false);
+  });
+
+  it('both ANTI copies carry the new ctx capabilities', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:']) {
+        expect(app, path + ' ' + cap).toContain(cap);
+      }
+      // Generation caps carry the honest-failure contract like their siblings.
+      expect(app, path).toContain("handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true })");
+    }
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

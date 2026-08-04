@@ -36114,6 +36114,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // Flashcards render ONLY inside GlossaryView — switch to it first (gated on glossary content
       // by `contentIsGlossary` in the registry) so the deck actually mounts instead of silently no-op'ing.
       launchFlashcards: () => { try { setActiveView('glossary'); } catch (_) {} launchInteractiveFlashcards('standard'); },
+      // Coverage batch (2026-08-04): glossary games + display/read-aloud settings,
+      // each a thin wrapper on the existing host handler beside it.
+      startMemoryGame: () => { try { setActiveView('glossary'); } catch (_) {} handleSetIsMemoryGameToTrue(); },
+      startMatchingGame: () => { try { setActiveView('glossary'); } catch (_) {} handleSetIsMatchingGameToTrue(); },
+      startBingoGame: () => { try { setActiveView('glossary'); } catch (_) {} if (isTeacherMode) handleSetIsBingoGameToTrue(); else handleSetIsStudentBingoGameToTrue(); },
+      cycleColorOverlay: () => { const order = ['none', 'blue', 'peach', 'yellow']; const next = order[(order.indexOf(colorOverlay) + 1) % order.length]; setColorOverlay(next); return next; },
+      toggleAnimations: () => { setDisableAnimations(prev => !prev); return true; },
+      animationsDisabled: disableAnimations,
+      adjustVoiceSpeed: (delta) => { const next = Math.round(Math.max(0.5, Math.min(2, (Number(voiceSpeed) || 1) + (Number(delta) || 0))) * 100) / 100; setVoiceSpeed(next); return next; },
+      generateNoteTaking: () => handleGenerate('note-taking', null, false, null, { rethrowErrors: true }),
+      generateAnchorChart: () => handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true }),
+      generateConceptSort: () => handleGenerate('concept-sort', null, false, null, { rethrowErrors: true }),
       contentIsGlossary: !!generatedContent && generatedContent.type === 'glossary',
       resetScaffolds: handleResetScaffolds,         // self-confirms via setConfirmDialog
       openPersona: handleSetActiveViewToPersona,
